@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { NextIntlClientProvider } from "next-intl";
-import { getMessages } from "next-intl/server";
+import { getMessages, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
 
@@ -23,6 +23,8 @@ export default async function RootLayout(props: {
 }): Promise<JSX.Element> {
   const { locale } = await props.params;
   if (!locales.includes(locale)) notFound();
+
+  setRequestLocale(locale);
 
   const messages = await getMessages();
   const dir = localeDir[locale];

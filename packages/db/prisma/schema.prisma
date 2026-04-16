@@ -5,8 +5,10 @@
 //   3. Update docs/erd.md.
 
 generator client {
-  provider        = "prisma-client-js"
-  previewFeatures = ["fullTextSearchPostgres"]
+  provider = "prisma-client-js"
+  // Full-text search for Postgres will be added via raw SQL GIN/tsvector in a
+  // later migration (Sprint 5+). @@fulltext is MySQL-only in Prisma 5; do not
+  // re-add it for Postgres.
 }
 
 datasource db {
@@ -185,7 +187,7 @@ model Profile {
   skills         ProfileSkill[]
 
   @@index([handle])
-  @@fulltext([firstName, lastName, headline, about])
+  // FTS: add Postgres GIN index on (firstName || lastName || headline || about) via raw SQL migration.
 }
 
 model Experience {
@@ -297,7 +299,7 @@ model Post {
 
   @@index([authorId, createdAt])
   @@index([createdAt])
-  @@fulltext([body])
+  // FTS: raw SQL GIN index on body added in a later migration.
 }
 
 model Media {
@@ -497,7 +499,7 @@ model Job {
 
   @@index([companyId])
   @@index([isActive, createdAt])
-  @@fulltext([title, description])
+  // FTS: raw SQL GIN index on (title || description) added in a later migration.
 }
 
 model Application {

@@ -7,7 +7,6 @@
     "moduleResolution": "Bundler",
     "jsx": "react-native",
     "allowJs": true,
-    "noEmit": true,
-    "types": ["node"]
+    "noEmit": true
   }
 }
