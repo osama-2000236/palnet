@@ -6,7 +6,10 @@ import { LoggerModule } from "nestjs-pino";
 
 import { AllExceptionsFilter } from "./common/exception.filter";
 import { loadEnv } from "./config/env";
+import { AuthModule } from "./modules/auth/auth.module";
 import { HealthModule } from "./modules/health/health.module";
+import { PrismaModule } from "./modules/prisma/prisma.module";
+import { ProfilesModule } from "./modules/profiles/profiles.module";
 
 const env = loadEnv();
 
@@ -29,7 +32,10 @@ const env = loadEnv();
       { name: "default", ttl: 60_000, limit: 100 },
       { name: "auth", ttl: 60_000, limit: 10 },
     ]),
+    PrismaModule,
     HealthModule,
+    AuthModule,
+    ProfilesModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },

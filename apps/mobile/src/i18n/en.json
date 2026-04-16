@@ -4,30 +4,74 @@
     "loading": "Loading…",
     "retry": "Retry",
     "cancel": "Cancel",
-    "save": "Save"
+    "save": "Save",
+    "continue": "Continue",
+    "genericError": "Something went wrong. Please try again."
   },
   "landing": {
     "title": "Palestine's Professional Network",
     "subtitle": "Build your professional presence, connect with peers, and discover jobs in Palestine and beyond.",
-    "cta": "Create your account"
+    "cta": "Create your account",
+    "haveAccount": "Already have an account?",
+    "login": "Sign in"
   },
   "auth": {
     "login": "Sign in",
     "register": "Create account",
     "logout": "Sign out",
     "email": "Email",
-    "password": "Password"
+    "password": "Password",
+    "firstName": "First name",
+    "lastName": "Last name",
+    "acceptTerms": "I agree to the Terms and Privacy Policy",
+    "submitRegister": "Create my account",
+    "submitLogin": "Sign in",
+    "toLogin": "Already have an account? Sign in",
+    "toRegister": "No account yet? Create one",
+    "errors": {
+      "CONFLICT": "An account with this email already exists.",
+      "AUTH_UNAUTHORIZED": "Invalid email or password.",
+      "VALIDATION_FAILED": "Please check the fields and try again.",
+      "RATE_LIMITED": "Too many attempts. Try again later.",
+      "INTERNAL": "An unexpected error occurred."
+    }
   },
-  "feed": { "empty": "Start by publishing your first post." },
+  "onboarding": {
+    "title": "Complete your profile",
+    "subtitle": "This helps others find you.",
+    "handle": "Your handle",
+    "handleHint": "Appears as /in/{handle}",
+    "headline": "Headline",
+    "location": "Location (city)",
+    "submit": "Save and continue"
+  },
+  "feed": {
+    "title": "Feed",
+    "empty": "Start by publishing your first post.",
+    "welcome": "Welcome {name} — your account is ready."
+  },
   "profile": {
     "about": "About",
     "experience": "Experience",
     "education": "Education",
     "skills": "Skills"
   },
-  "network": { "myConnections": "My connections", "invitations": "Invitations" },
-  "messaging": { "newMessage": "New message" },
-  "notifications": { "title": "Notifications" },
-  "jobs": { "search": "Search jobs", "apply": "Apply" },
-  "company": { "about": "About", "jobs": "Jobs" }
+  "network": {
+    "myConnections": "My connections",
+    "invitations": "Invitations"
+  },
+  "messaging": {
+    "newMessage": "New message"
+  },
+  "notifications": {
+    "title": "Notifications"
+  },
+  "jobs": {
+    "search": "Search jobs",
+    "apply": "Apply"
+  },
+  "company": {
+    "about": "About",
+    "jobs": "Jobs"
+  }
 }

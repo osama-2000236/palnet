@@ -1,0 +1,40 @@
+"use client";
+
+import type { AuthSession } from "@palnet/shared";
+
+const KEY = "palnet.session.v1";
+
+export function readSession(): AuthSession | null {
+  if (typeof window === "undefined") return null;
+  const raw = window.localStorage.getItem(KEY);
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw) as AuthSession;
+  } catch {
+    return null;
+  }
+}
+
+export function writeSession(session: AuthSession): void {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(KEY, JSON.stringify(session));
+}
+
+export function clearSession(): void {
+  if (typeof window === "undefined") return;
+  window.localStorage.removeItem(KEY);
+}
+
+export function getAccessToken(): string | null {
+  return readSession()?.tokens.accessToken ?? null;
+}
+
+// Stable device identifier so the API can track sessions per device.
+export function getDeviceId(): string {
+  if (typeof window === "undefined") return "ssr";
+  const existing = window.localStorage.getItem("palnet.deviceId");
+  if (existing) return existing;
+  const id = `web-${crypto.randomUUID()}`;
+  window.localStorage.setItem("palnet.deviceId", id);
+  return id;
+}

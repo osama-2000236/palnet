@@ -4,30 +4,74 @@
     "loading": "جارٍ التحميل…",
     "retry": "إعادة المحاولة",
     "cancel": "إلغاء",
-    "save": "حفظ"
+    "save": "حفظ",
+    "continue": "متابعة",
+    "genericError": "حدث خطأ ما. حاول مرة أخرى."
   },
   "landing": {
     "title": "شبكة فلسطين المهنية",
     "subtitle": "ابنِ حضورك المهني، تواصل مع زملائك، واكتشف فرص العمل في فلسطين والعالم.",
-    "cta": "أنشئ حسابك"
+    "cta": "أنشئ حسابك",
+    "haveAccount": "لديك حساب؟",
+    "login": "سجّل الدخول"
   },
   "auth": {
     "login": "تسجيل الدخول",
     "register": "إنشاء حساب",
     "logout": "تسجيل الخروج",
     "email": "البريد الإلكتروني",
-    "password": "كلمة المرور"
+    "password": "كلمة المرور",
+    "firstName": "الاسم الأول",
+    "lastName": "الاسم الأخير",
+    "acceptTerms": "أوافق على الشروط وسياسة الخصوصية",
+    "submitRegister": "أنشئ حسابي",
+    "submitLogin": "ادخل",
+    "toLogin": "لديك حساب؟ سجّل الدخول",
+    "toRegister": "ليس لديك حساب؟ أنشئ واحدًا",
+    "errors": {
+      "CONFLICT": "يوجد حساب بهذا البريد بالفعل.",
+      "AUTH_UNAUTHORIZED": "البريد أو كلمة المرور غير صحيحين.",
+      "VALIDATION_FAILED": "تحقق من الحقول ثم حاول مرة أخرى.",
+      "RATE_LIMITED": "تم تجاوز الحد. حاول لاحقًا.",
+      "INTERNAL": "حدث خطأ غير متوقع."
+    }
   },
-  "feed": { "empty": "ابدأ بنشر أول منشور لك." },
+  "onboarding": {
+    "title": "أكمل ملفك الشخصي",
+    "subtitle": "هذه المعلومات تساعد الآخرين على إيجادك.",
+    "handle": "المعرّف الخاص بك",
+    "handleHint": "سيظهر كرابط: /in/{handle}",
+    "headline": "المسمى الوظيفي",
+    "location": "الموقع (مدينة)",
+    "submit": "احفظ وتابع"
+  },
+  "feed": {
+    "title": "الخلاصة",
+    "empty": "ابدأ بنشر أول منشور لك.",
+    "welcome": "أهلًا {name} — حسابك جاهز."
+  },
   "profile": {
     "about": "نبذة",
     "experience": "الخبرات",
     "education": "التعليم",
     "skills": "المهارات"
   },
-  "network": { "myConnections": "علاقاتي", "invitations": "الدعوات" },
-  "messaging": { "newMessage": "رسالة جديدة" },
-  "notifications": { "title": "الإشعارات" },
-  "jobs": { "search": "ابحث عن وظيفة", "apply": "قدّم طلبك" },
-  "company": { "about": "عن الشركة", "jobs": "الوظائف" }
+  "network": {
+    "myConnections": "علاقاتي",
+    "invitations": "الدعوات"
+  },
+  "messaging": {
+    "newMessage": "رسالة جديدة"
+  },
+  "notifications": {
+    "title": "الإشعارات"
+  },
+  "jobs": {
+    "search": "ابحث عن وظيفة",
+    "apply": "قدّم طلبك"
+  },
+  "company": {
+    "about": "عن الشركة",
+    "jobs": "الوظائف"
+  }
 }
