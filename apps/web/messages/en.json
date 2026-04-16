@@ -1,0 +1,48 @@
+{
+  "common": {
+    "appName": "PalNet",
+    "loading": "Loading…",
+    "retry": "Retry",
+    "cancel": "Cancel",
+    "save": "Save"
+  },
+  "landing": {
+    "title": "Palestine's Professional Network",
+    "subtitle": "Build your professional presence, connect with peers, and discover jobs in Palestine and beyond.",
+    "cta": "Create your account"
+  },
+  "auth": {
+    "login": "Sign in",
+    "register": "Create account",
+    "logout": "Sign out",
+    "email": "Email",
+    "password": "Password"
+  },
+  "feed": {
+    "empty": "Start by publishing your first post."
+  },
+  "profile": {
+    "about": "About",
+    "experience": "Experience",
+    "education": "Education",
+    "skills": "Skills"
+  },
+  "network": {
+    "myConnections": "My connections",
+    "invitations": "Invitations"
+  },
+  "messaging": {
+    "newMessage": "New message"
+  },
+  "notifications": {
+    "title": "Notifications"
+  },
+  "jobs": {
+    "search": "Search jobs",
+    "apply": "Apply"
+  },
+  "company": {
+    "about": "About",
+    "jobs": "Jobs"
+  }
+}
