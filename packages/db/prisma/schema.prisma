@@ -1,0 +1,540 @@
+// PalNet — Prisma schema
+// Authoritative data model. Any change here must:
+//   1. Ship a migration in the same PR.
+//   2. Update packages/shared/src/schemas/* if the shape is exposed to clients.
+//   3. Update docs/erd.md.
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["fullTextSearchPostgres"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// Enums
+// ──────────────────────────────────────────────────────────────────────────
+
+enum UserRole {
+  USER
+  COMPANY_ADMIN
+  MODERATOR
+  ADMIN
+}
+
+enum ConnectionStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  WITHDRAWN
+  BLOCKED
+}
+
+enum ReactionType {
+  LIKE
+  CELEBRATE
+  SUPPORT
+  LOVE
+  INSIGHTFUL
+  FUNNY
+}
+
+enum MediaKind {
+  IMAGE
+  VIDEO
+  DOCUMENT
+}
+
+enum NotificationType {
+  CONNECTION_REQUEST
+  CONNECTION_ACCEPTED
+  POST_REACTION
+  POST_COMMENT
+  POST_MENTION
+  MESSAGE_RECEIVED
+  JOB_APPLICATION_UPDATE
+  PROFILE_VIEW
+}
+
+enum JobType {
+  FULL_TIME
+  PART_TIME
+  CONTRACT
+  INTERNSHIP
+  VOLUNTEER
+  TEMPORARY
+}
+
+enum JobLocationMode {
+  ONSITE
+  HYBRID
+  REMOTE
+}
+
+enum ApplicationStatus {
+  SUBMITTED
+  REVIEWING
+  SHORTLISTED
+  REJECTED
+  HIRED
+  WITHDRAWN
+}
+
+enum ReportReason {
+  SPAM
+  HARASSMENT
+  HATE
+  MISINFORMATION
+  NUDITY
+  VIOLENCE
+  OTHER
+}
+
+enum CompanyMemberRole {
+  OWNER
+  ADMIN
+  EDITOR
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// Identity & Auth
+// ──────────────────────────────────────────────────────────────────────────
+
+model User {
+  id             String    @id @default(cuid())
+  email          String    @unique
+  emailVerified  DateTime?
+  phone          String?   @unique
+  passwordHash   String
+  role           UserRole  @default(USER)
+  locale         String    @default("ar-PS")
+  isActive       Boolean   @default(true)
+  lastSeenAt     DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  deletedAt      DateTime?
+
+  profile           Profile?
+  refreshTokens     RefreshToken[]
+  sentConnections   Connection[]    @relation("ConnectionRequester")
+  recvConnections   Connection[]    @relation("ConnectionReceiver")
+  posts             Post[]
+  reactions         Reaction[]
+  comments          Comment[]
+  reposts           Repost[]
+  sentMessages      Message[]       @relation("MessageAuthor")
+  chatMemberships   ChatRoomMember[]
+  notifications     Notification[]  @relation("NotificationRecipient")
+  notificationsSent Notification[]  @relation("NotificationActor")
+  applications      Application[]
+  companyMemberships CompanyMember[]
+  postedJobs        Job[]           @relation("JobPoster")
+  blockedByMe       BlockedUser[]   @relation("Blocker")
+  blockedMe         BlockedUser[]   @relation("Blocked")
+  reportsFiled      Report[]        @relation("Reporter")
+
+  @@index([email])
+  @@index([role])
+}
+
+model RefreshToken {
+  id         String   @id @default(cuid())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     String
+  tokenHash  String   @unique
+  deviceId   String
+  userAgent  String?
+  ipAddress  String?
+  expiresAt  DateTime
+  revokedAt  DateTime?
+  createdAt  DateTime @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// Profile
+// ──────────────────────────────────────────────────────────────────────────
+
+model Profile {
+  id             String   @id @default(cuid())
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId         String   @unique
+  handle         String   @unique // e.g. /in/osama-hamad
+  firstName      String
+  lastName       String
+  headline       String?
+  about          String?  @db.Text
+  location       String?  // city in Palestine, e.g. "Ramallah" or "رام الله"
+  country        String   @default("PS")
+  avatarUrl      String?
+  coverUrl       String?
+  website        String?
+  pronouns       String?
+  openToWork     Boolean  @default(false)
+  hiring         Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  experiences    Experience[]
+  educations     Education[]
+  skills         ProfileSkill[]
+
+  @@index([handle])
+  @@fulltext([firstName, lastName, headline, about])
+}
+
+model Experience {
+  id          String    @id @default(cuid())
+  profile     Profile   @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  profileId   String
+  title       String
+  companyName String
+  company     Company?  @relation(fields: [companyId], references: [id], onDelete: SetNull)
+  companyId   String?
+  location    String?
+  locationMode JobLocationMode @default(ONSITE)
+  startDate   DateTime
+  endDate     DateTime?
+  description String?   @db.Text
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([profileId])
+  @@index([companyId])
+}
+
+model Education {
+  id           String   @id @default(cuid())
+  profile      Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  profileId    String
+  school       String
+  degree       String?
+  fieldOfStudy String?
+  startDate    DateTime?
+  endDate      DateTime?
+  description  String?  @db.Text
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([profileId])
+}
+
+model Skill {
+  id        String         @id @default(cuid())
+  name      String         @unique
+  slug      String         @unique
+  createdAt DateTime       @default(now())
+  profiles  ProfileSkill[]
+}
+
+model ProfileSkill {
+  profile    Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  profileId  String
+  skill      Skill   @relation(fields: [skillId], references: [id], onDelete: Cascade)
+  skillId    String
+  endorsements Int   @default(0)
+
+  @@id([profileId, skillId])
+  @@index([skillId])
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// Social graph
+// ──────────────────────────────────────────────────────────────────────────
+
+model Connection {
+  id          String           @id @default(cuid())
+  requester   User             @relation("ConnectionRequester", fields: [requesterId], references: [id], onDelete: Cascade)
+  requesterId String
+  receiver    User             @relation("ConnectionReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
+  receiverId  String
+  status      ConnectionStatus @default(PENDING)
+  message     String?          @db.Text
+  createdAt   DateTime         @default(now())
+  respondedAt DateTime?
+  updatedAt   DateTime         @updatedAt
+
+  @@unique([requesterId, receiverId])
+  @@index([receiverId, status])
+  @@index([requesterId, status])
+}
+
+model BlockedUser {
+  id        String   @id @default(cuid())
+  blocker   User     @relation("Blocker", fields: [blockerId], references: [id], onDelete: Cascade)
+  blockerId String
+  blocked   User     @relation("Blocked", fields: [blockedId], references: [id], onDelete: Cascade)
+  blockedId String
+  createdAt DateTime @default(now())
+
+  @@unique([blockerId, blockedId])
+  @@index([blockedId])
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// Content
+// ──────────────────────────────────────────────────────────────────────────
+
+model Post {
+  id        String     @id @default(cuid())
+  author    User       @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  authorId  String
+  body      String     @db.Text
+  language  String     @default("ar")
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  deletedAt DateTime?
+
+  media     Media[]
+  reactions Reaction[]
+  comments  Comment[]
+  reposts   Repost[]
+
+  @@index([authorId, createdAt])
+  @@index([createdAt])
+  @@fulltext([body])
+}
+
+model Media {
+  id        String    @id @default(cuid())
+  post      Post?     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId    String?
+  url       String
+  kind      MediaKind
+  mimeType  String
+  width     Int?
+  height    Int?
+  durationMs Int?
+  sizeBytes Int?
+  createdAt DateTime  @default(now())
+
+  @@index([postId])
+}
+
+model Reaction {
+  id        String       @id @default(cuid())
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  post      Post         @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId    String
+  type      ReactionType @default(LIKE)
+  createdAt DateTime     @default(now())
+
+  @@unique([userId, postId])
+  @@index([postId, type])
+}
+
+model Comment {
+  id        String    @id @default(cuid())
+  author    User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  authorId  String
+  post      Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId    String
+  parent    Comment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: SetNull)
+  parentId  String?
+  replies   Comment[] @relation("CommentReplies")
+  body      String    @db.Text
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@index([postId, createdAt])
+  @@index([authorId])
+}
+
+model Repost {
+  id        String   @id @default(cuid())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId    String
+  comment   String?  @db.Text
+  createdAt DateTime @default(now())
+
+  @@unique([userId, postId])
+  @@index([postId])
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// Messaging
+// ──────────────────────────────────────────────────────────────────────────
+
+model ChatRoom {
+  id        String            @id @default(cuid())
+  isGroup   Boolean           @default(false)
+  title     String?
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+
+  members   ChatRoomMember[]
+  messages  Message[]
+}
+
+model ChatRoomMember {
+  id          String   @id @default(cuid())
+  room        ChatRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  roomId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String
+  joinedAt    DateTime @default(now())
+  lastReadAt  DateTime?
+  mutedUntil  DateTime?
+
+  @@unique([roomId, userId])
+  @@index([userId])
+}
+
+model Message {
+  id         String    @id @default(cuid())
+  room       ChatRoom  @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  roomId     String
+  author     User      @relation("MessageAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  authorId   String
+  body       String    @db.Text
+  mediaUrl   String?
+  createdAt  DateTime  @default(now())
+  editedAt   DateTime?
+  deletedAt  DateTime?
+
+  @@index([roomId, createdAt])
+  @@index([authorId])
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// Notifications
+// ──────────────────────────────────────────────────────────────────────────
+
+model Notification {
+  id          String           @id @default(cuid())
+  recipient   User             @relation("NotificationRecipient", fields: [recipientId], references: [id], onDelete: Cascade)
+  recipientId String
+  actor       User?            @relation("NotificationActor", fields: [actorId], references: [id], onDelete: SetNull)
+  actorId     String?
+  type        NotificationType
+  // polymorphic reference — one of these is set
+  postId      String?
+  commentId   String?
+  connectionId String?
+  messageId   String?
+  jobId       String?
+  data        Json?
+  readAt      DateTime?
+  createdAt   DateTime         @default(now())
+
+  @@index([recipientId, readAt])
+  @@index([recipientId, createdAt])
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// Jobs
+// ──────────────────────────────────────────────────────────────────────────
+
+model Company {
+  id           String           @id @default(cuid())
+  slug         String           @unique
+  name         String
+  tagline      String?
+  about        String?          @db.Text
+  website      String?
+  industry     String?
+  sizeBucket   String?          // "1-10", "11-50", ...
+  logoUrl      String?
+  coverUrl     String?
+  country      String           @default("PS")
+  city         String?
+  verified     Boolean          @default(false)
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  members      CompanyMember[]
+  jobs         Job[]
+  experiences  Experience[]
+
+  @@index([name])
+}
+
+model CompanyMember {
+  id         String            @id @default(cuid())
+  company    Company           @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  companyId  String
+  user       User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     String
+  role       CompanyMemberRole @default(EDITOR)
+  createdAt  DateTime          @default(now())
+
+  @@unique([companyId, userId])
+  @@index([userId])
+}
+
+model Job {
+  id             String           @id @default(cuid())
+  company        Company          @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  companyId      String
+  postedBy       User             @relation("JobPoster", fields: [postedById], references: [id], onDelete: Cascade)
+  postedById     String
+  title          String
+  description    String           @db.Text
+  type           JobType
+  locationMode   JobLocationMode
+  city           String?
+  country        String           @default("PS")
+  salaryMin      Int?
+  salaryMax      Int?
+  salaryCurrency String?          @default("ILS")
+  skillsRequired String[]
+  isActive       Boolean          @default(true)
+  expiresAt      DateTime?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  deletedAt      DateTime?
+
+  applications   Application[]
+
+  @@index([companyId])
+  @@index([isActive, createdAt])
+  @@fulltext([title, description])
+}
+
+model Application {
+  id         String            @id @default(cuid())
+  job        Job               @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  jobId      String
+  applicant  User              @relation(fields: [applicantId], references: [id], onDelete: Cascade)
+  applicantId String
+  resumeUrl  String?
+  coverLetter String?          @db.Text
+  status     ApplicationStatus @default(SUBMITTED)
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+
+  @@unique([jobId, applicantId])
+  @@index([applicantId])
+  @@index([jobId, status])
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// Moderation
+// ──────────────────────────────────────────────────────────────────────────
+
+model Report {
+  id            String       @id @default(cuid())
+  reporter      User         @relation("Reporter", fields: [reporterId], references: [id], onDelete: Cascade)
+  reporterId    String
+  reason        ReportReason
+  details       String?      @db.Text
+  targetUserId  String?
+  targetPostId  String?
+  targetCommentId String?
+  targetMessageId String?
+  resolvedAt    DateTime?
+  resolvedNote  String?      @db.Text
+  createdAt     DateTime     @default(now())
+
+  @@index([reporterId])
+  @@index([resolvedAt])
+}

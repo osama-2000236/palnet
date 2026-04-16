@@ -1,0 +1,203 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: "20"
+  PNPM_VERSION: "9.12.0"
+  # Dummy values so Zod env validation passes in CI — real secrets live in Render/Vercel.
+  DATABASE_URL: "postgresql://ci:ci@localhost:5432/palnet_ci?schema=public"
+  DIRECT_URL: "postgresql://ci:ci@localhost:5432/palnet_ci?schema=public"
+  JWT_ACCESS_SECRET: "ci-access-secret-at-least-32-characters-long"
+  JWT_REFRESH_SECRET: "ci-refresh-secret-at-least-32-characters-long"
+  CORS_ORIGINS: "http://localhost:3000"
+
+jobs:
+  install:
+    runs-on: ubuntu-latest
+    outputs:
+      cache-hit: ${{ steps.pnpm-cache.outputs.cache-hit }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - name: Install deps
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma client
+        run: pnpm --filter @palnet/db db:generate
+
+      - name: Cache workspace
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            node_modules
+            **/node_modules
+            .turbo
+          key: ws-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}
+
+  lint:
+    needs: install
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - uses: actions/cache/restore@v4
+        with:
+          path: |
+            node_modules
+            **/node_modules
+            .turbo
+          key: ws-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @palnet/db db:generate
+      - run: pnpm lint
+      - run: pnpm format:check
+
+  type-check:
+    needs: install
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - uses: actions/cache/restore@v4
+        with:
+          path: |
+            node_modules
+            **/node_modules
+            .turbo
+          key: ws-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @palnet/db db:generate
+      - run: pnpm type-check
+
+  test:
+    needs: install
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: ci
+          POSTGRES_PASSWORD: ci
+          POSTGRES_DB: palnet_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - uses: actions/cache/restore@v4
+        with:
+          path: |
+            node_modules
+            **/node_modules
+            .turbo
+          key: ws-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @palnet/db db:generate
+      - run: pnpm --filter @palnet/db db:deploy
+      - run: pnpm test
+
+  build-web:
+    needs: install
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - uses: actions/cache/restore@v4
+        with:
+          path: |
+            node_modules
+            **/node_modules
+            .turbo
+          key: ws-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @palnet/db db:generate
+      - run: pnpm --filter @palnet/web build
+        env:
+          NEXT_PUBLIC_API_URL: http://localhost:4000/api/v1
+          NEXT_PUBLIC_WS_URL: http://localhost:4000
+          NEXT_PUBLIC_DEFAULT_LOCALE: ar-PS
+
+  e2e-web:
+    needs: build-web
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: ci
+          POSTGRES_PASSWORD: ci
+          POSTGRES_DB: palnet_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @palnet/db db:generate
+      - run: pnpm --filter @palnet/db db:deploy
+      - run: pnpm --filter @palnet/web exec playwright install --with-deps chromium
+      - name: Start API + Web and run Playwright
+        run: pnpm --filter @palnet/web e2e
+        env:
+          NEXT_PUBLIC_API_URL: http://localhost:4000/api/v1
+          NEXT_PUBLIC_WS_URL: http://localhost:4000
+          NEXT_PUBLIC_DEFAULT_LOCALE: ar-PS

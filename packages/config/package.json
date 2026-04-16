@@ -1,0 +1,14 @@
+{
+  "name": "@palnet/config",
+  "version": "0.0.1",
+  "private": true,
+  "main": "./index.js",
+  "files": [
+    "tsconfig.base.json",
+    "tsconfig.nest.json",
+    "tsconfig.next.json",
+    "tsconfig.expo.json",
+    "eslint-preset.js",
+    "tailwind-preset.js"
+  ]
+}
