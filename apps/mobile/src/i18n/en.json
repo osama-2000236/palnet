@@ -61,7 +61,20 @@
     "like": "Like",
     "liked": "Liked ✓",
     "comments": "Comments",
-    "reposts": "Reposts"
+    "reposts": "Reposts",
+    "commentPlaceholder": "Add a comment…",
+    "commentSubmit": "Reply",
+    "commentError": "Could not post comment.",
+    "loadMoreComments": "Show more comments"
+  },
+  "search": {
+    "title": "Search",
+    "placeholder": "Search people…",
+    "submit": "Search",
+    "noResults": "No people match that search.",
+    "prompt": "Try a name or handle to find people.",
+    "loadMore": "Load more",
+    "loadingMore": "Loading…"
   },
   "profile": {
     "about": "About",

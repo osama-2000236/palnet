@@ -17,6 +17,7 @@ const FeedPage = cursorPage(PostSchema);
 export default function FeedPageRoute(): JSX.Element {
   const t = useTranslations("feed");
   const tNet = useTranslations("network");
+  const tSearch = useTranslations("search");
   const router = useRouter();
   const [posts, setPosts] = useState<Post[]>([]);
   const [cursor, setCursor] = useState<string | null>(null);
@@ -63,12 +64,20 @@ export default function FeedPageRoute(): JSX.Element {
             </p>
           ) : null}
         </div>
-        <Link
-          href="/network"
-          className="rounded-md border border-ink-muted/30 px-3 py-1.5 text-sm text-ink hover:bg-ink-muted/5"
-        >
-          {tNet("title")}
-        </Link>
+        <div className="flex gap-2">
+          <Link
+            href="/search"
+            className="rounded-md border border-ink-muted/30 px-3 py-1.5 text-sm text-ink hover:bg-ink-muted/5"
+          >
+            {tSearch("title")}
+          </Link>
+          <Link
+            href="/network"
+            className="rounded-md border border-ink-muted/30 px-3 py-1.5 text-sm text-ink hover:bg-ink-muted/5"
+          >
+            {tNet("title")}
+          </Link>
+        </div>
       </header>
 
       <Composer onPosted={(p) => setPosts((prev) => [p, ...prev])} />

@@ -11,3 +11,4 @@ export * from "./schemas/message";
 export * from "./schemas/notification";
 export * from "./schemas/job";
 export * from "./schemas/company";
+export * from "./schemas/search";

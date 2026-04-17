@@ -16,6 +16,7 @@ import { PrismaModule } from "./modules/prisma/prisma.module";
 import { ProfilesModule } from "./modules/profiles/profiles.module";
 import { ReactionsModule } from "./modules/reactions/reactions.module";
 import { RepostsModule } from "./modules/reposts/reposts.module";
+import { SearchModule } from "./modules/search/search.module";
 
 const env = loadEnv();
 
@@ -48,6 +49,7 @@ const env = loadEnv();
     CommentsModule,
     RepostsModule,
     ConnectionsModule,
+    SearchModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },

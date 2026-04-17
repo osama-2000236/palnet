@@ -61,7 +61,20 @@
     "like": "أعجبني",
     "liked": "أعجبني ✓",
     "comments": "تعليقات",
-    "reposts": "إعادة نشر"
+    "reposts": "إعادة نشر",
+    "commentPlaceholder": "أضف تعليقًا…",
+    "commentSubmit": "رد",
+    "commentError": "تعذّر نشر التعليق.",
+    "loadMoreComments": "عرض المزيد من التعليقات"
+  },
+  "search": {
+    "title": "بحث",
+    "placeholder": "ابحث عن أشخاص بالاسم أو المعرّف أو المسمى الوظيفي…",
+    "submit": "بحث",
+    "noResults": "لا نتائج مطابقة.",
+    "prompt": "جرّب اسمًا أو معرّفًا للبحث عن أشخاص.",
+    "loadMore": "تحميل المزيد",
+    "loadingMore": "جارٍ التحميل…"
   },
   "profile": {
     "about": "نبذة",

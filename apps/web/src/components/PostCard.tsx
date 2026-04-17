@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 
+import { Comments } from "@/components/Comments";
 import { getAccessToken } from "@/lib/session";
 
 export function PostCard({
@@ -16,6 +17,7 @@ export function PostCard({
 }): JSX.Element {
   const t = useTranslations("post");
   const [busy, setBusy] = useState(false);
+  const [showComments, setShowComments] = useState(false);
 
   async function toggleReaction(): Promise<void> {
     const token = getAccessToken();
@@ -90,13 +92,32 @@ export function PostCard({
         >
           {post.viewer.reaction ? t("liked") : t("like")} ({post.counts.reactions})
         </button>
-        <span className="text-ink-muted">
-          {t("comments")}: {post.counts.comments}
-        </span>
+        <button
+          type="button"
+          onClick={() => setShowComments((s) => !s)}
+          className="text-ink-muted hover:text-ink"
+        >
+          {t("comments")} ({post.counts.comments})
+        </button>
         <span className="text-ink-muted">
           {t("reposts")}: {post.counts.reposts}
         </span>
       </footer>
+
+      {showComments ? (
+        <Comments
+          postId={post.id}
+          onCountChange={(delta) =>
+            onChange?.({
+              ...post,
+              counts: {
+                ...post.counts,
+                comments: Math.max(0, post.counts.comments + delta),
+              },
+            })
+          }
+        />
+      ) : null}
     </article>
   );
 }
