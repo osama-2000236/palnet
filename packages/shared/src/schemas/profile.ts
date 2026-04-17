@@ -90,6 +90,23 @@ export const UpdateProfileBody = Profile.omit({
 }).partial();
 export type UpdateProfileBody = z.infer<typeof UpdateProfileBody>;
 
+// ──────────────────────────────────────────────────────────────────────────
+// Nested CRUD bodies (used by /profiles/me/{experiences,educations,skills})
+// ──────────────────────────────────────────────────────────────────────────
+
+export const ExperienceBody = Experience.omit({ id: true });
+export type ExperienceBody = z.infer<typeof ExperienceBody>;
+
+export const EducationBody = Education.omit({ id: true });
+export type EducationBody = z.infer<typeof EducationBody>;
+
+// Add a skill by free-form name — server find-or-creates the Skill row,
+// then upserts the (profile, skill) association.
+export const AddSkillBody = z.object({
+  name: z.string().min(1).max(60),
+});
+export type AddSkillBody = z.infer<typeof AddSkillBody>;
+
 export const OnboardProfileBody = z.object({
   handle: Handle,
   firstName: z.string().min(1).max(60),

@@ -46,6 +46,28 @@ export async function apiFetch<T extends z.ZodTypeAny>(
   return schema.parse(body) as z.infer<T>;
 }
 
+// For mutation endpoints returning 204 No Content (or where the response body is not needed).
+export async function apiCall(
+  path: string,
+  opts: ApiFetchOptions = {},
+): Promise<void> {
+  const headers = new Headers(opts.headers);
+  if (opts.body !== undefined) headers.set("Content-Type", "application/json");
+  if (opts.token) headers.set("Authorization", `Bearer ${opts.token}`);
+
+  const res = await fetch(`${BASE}${path}`, {
+    ...opts,
+    headers,
+    body: opts.body === undefined ? undefined : JSON.stringify(opts.body),
+  });
+  if (res.ok) return;
+  const json = (await res.json().catch(() => ({}))) as unknown;
+  const parsed = ApiError.safeParse(json);
+  const code = parsed.success ? parsed.data.error.code : "INTERNAL";
+  const details = parsed.success ? parsed.data.error.details : undefined;
+  throw new ApiRequestError(res.status, code, details);
+}
+
 export async function apiFetchPage<T extends z.ZodTypeAny>(
   path: string,
   envelope: T,

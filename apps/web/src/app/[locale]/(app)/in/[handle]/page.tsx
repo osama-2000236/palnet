@@ -1,6 +1,7 @@
 "use client";
 
 import { Profile as ProfileSchema, type Profile } from "@palnet/shared";
+import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
@@ -60,11 +61,20 @@ export default function ProfileRoute(): JSX.Element {
             ) : null}
             <p className="text-xs text-ink-muted">/in/{profile.handle}</p>
           </div>
-          <ConnectButton
-            targetUserId={profile.userId}
-            viewer={profile.viewer}
-            onChange={(next) => setProfile({ ...profile, viewer: next })}
-          />
+          {profile.viewer?.isSelf ? (
+            <Link
+              href="/me/edit"
+              className="rounded-md border border-ink-muted/30 px-4 py-2 text-sm text-ink hover:bg-ink-muted/5"
+            >
+              {t("edit")}
+            </Link>
+          ) : (
+            <ConnectButton
+              targetUserId={profile.userId}
+              viewer={profile.viewer}
+              onChange={(next) => setProfile({ ...profile, viewer: next })}
+            />
+          )}
         </div>
       </section>
 

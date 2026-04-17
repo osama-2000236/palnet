@@ -144,6 +144,15 @@ export default function ProfileScreen(): JSX.Element {
           ) : null}
           <Text className="mt-1 text-xs text-ink-muted">/in/{profile.handle}</Text>
 
+          {profile.viewer?.isSelf ? (
+            <Pressable
+              onPress={() => router.push("/(app)/me/edit")}
+              className="mt-3 self-start rounded-md border border-ink-muted/30 px-4 py-2"
+            >
+              <Text className="text-ink">{t("profile.edit")}</Text>
+            </Pressable>
+          ) : null}
+
           {profile.viewer && !profile.viewer.isSelf ? (
             <View className="mt-3 flex-row gap-2">
               {!conn ||

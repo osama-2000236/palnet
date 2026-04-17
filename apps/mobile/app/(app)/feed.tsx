@@ -12,7 +12,7 @@ import {
 } from "react-native";
 
 import { CommentsList } from "@/components/CommentsList";
-import { apiFetchPage } from "@/lib/api";
+import { apiCall, apiFetchPage } from "@/lib/api";
 import { getAccessToken, readSession } from "@/lib/session";
 
 const FeedPage = cursorPage(PostSchema);
@@ -137,6 +137,45 @@ function PostRow({
 }): JSX.Element {
   const { t } = useTranslation();
   const [showComments, setShowComments] = useState(false);
+  const [busy, setBusy] = useState(false);
+
+  async function toggleReaction(): Promise<void> {
+    if (busy) return;
+    const token = await getAccessToken();
+    if (!token) return;
+    const wasLiked = post.viewer.reaction !== null;
+    const optimistic: Post = {
+      ...post,
+      viewer: { ...post.viewer, reaction: wasLiked ? null : "LIKE" },
+      counts: {
+        ...post.counts,
+        reactions: Math.max(0, post.counts.reactions + (wasLiked ? -1 : 1)),
+      },
+    };
+    onChange?.(optimistic);
+    setBusy(true);
+    try {
+      if (wasLiked) {
+        await apiCall(`/posts/${post.id}/reaction`, {
+          method: "DELETE",
+          token,
+        });
+      } else {
+        await apiCall(`/posts/${post.id}/reaction`, {
+          method: "PUT",
+          body: { type: "LIKE" },
+          token,
+        });
+      }
+    } catch {
+      onChange?.(post);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  const liked = post.viewer.reaction !== null;
+
   return (
     <View className="rounded-md border border-ink-muted/20 bg-white p-4">
       <Pressable onPress={() => router.push(`/(app)/in/${post.author.handle}`)}>
@@ -149,9 +188,17 @@ function PostRow({
       ) : null}
       <Text className="mt-2 text-ink">{post.body}</Text>
       <View className="mt-3 flex-row gap-4 border-t border-ink-muted/10 pt-2">
-        <Text className="text-sm text-ink-muted">
-          {t("post.like")} ({post.counts.reactions})
-        </Text>
+        <Pressable onPress={toggleReaction} disabled={busy}>
+          <Text
+            className={
+              liked
+                ? "text-sm font-semibold text-brand-600"
+                : "text-sm text-ink-muted"
+            }
+          >
+            {liked ? t("post.liked") : t("post.like")} ({post.counts.reactions})
+          </Text>
+        </Pressable>
         <Pressable onPress={() => setShowComments((s) => !s)}>
           <Text className="text-sm text-ink-muted">
             {t("post.comments")} ({post.counts.comments})

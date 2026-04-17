@@ -81,7 +81,21 @@
     "experience": "Experience",
     "education": "Education",
     "skills": "Skills",
-    "notFound": "Profile not found."
+    "notFound": "Profile not found.",
+    "edit": "Edit profile",
+    "editTitle": "Edit profile",
+    "basics": "Basics",
+    "save": "Save",
+    "cancel": "Cancel",
+    "add": "Add",
+    "remove": "Remove",
+    "expTitle": "Title (e.g. Software Engineer)",
+    "company": "Company",
+    "description": "Description",
+    "school": "School",
+    "degree": "Degree",
+    "fieldOfStudy": "Field of study",
+    "addSkillPlaceholder": "Add a skill…"
   },
   "network": {
     "title": "My network",

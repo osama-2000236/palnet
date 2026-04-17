@@ -6,6 +6,7 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 
 import { Comments } from "@/components/Comments";
+import { apiCall } from "@/lib/api";
 import { getAccessToken } from "@/lib/session";
 
 export function PostCard({
@@ -21,40 +22,35 @@ export function PostCard({
 
   async function toggleReaction(): Promise<void> {
     const token = getAccessToken();
-    if (!token) return;
+    if (!token || busy) return;
+    const wasLiked = post.viewer.reaction !== null;
+    // Optimistic update
+    const optimistic: Post = {
+      ...post,
+      viewer: { ...post.viewer, reaction: wasLiked ? null : "LIKE" },
+      counts: {
+        ...post.counts,
+        reactions: Math.max(0, post.counts.reactions + (wasLiked ? -1 : 1)),
+      },
+    };
+    onChange?.(optimistic);
     setBusy(true);
     try {
-      if (post.viewer.reaction) {
-        await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000/api/v1"}/posts/${post.id}/reaction`,
-          { method: "DELETE", headers: { Authorization: `Bearer ${token}` } },
-        );
-        onChange?.({
-          ...post,
-          viewer: { ...post.viewer, reaction: null },
-          counts: {
-            ...post.counts,
-            reactions: Math.max(0, post.counts.reactions - 1),
-          },
+      if (wasLiked) {
+        await apiCall(`/posts/${post.id}/reaction`, {
+          method: "DELETE",
+          token,
         });
       } else {
-        await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000/api/v1"}/posts/${post.id}/reaction`,
-          {
-            method: "PUT",
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ type: "LIKE" }),
-          },
-        );
-        onChange?.({
-          ...post,
-          viewer: { ...post.viewer, reaction: "LIKE" },
-          counts: { ...post.counts, reactions: post.counts.reactions + 1 },
+        await apiCall(`/posts/${post.id}/reaction`, {
+          method: "PUT",
+          body: { type: "LIKE" },
+          token,
         });
       }
+    } catch {
+      // Roll back on failure
+      onChange?.(post);
     } finally {
       setBusy(false);
     }
