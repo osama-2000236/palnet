@@ -7,9 +7,14 @@ import { LoggerModule } from "nestjs-pino";
 import { AllExceptionsFilter } from "./common/exception.filter";
 import { loadEnv } from "./config/env";
 import { AuthModule } from "./modules/auth/auth.module";
+import { CommentsModule } from "./modules/comments/comments.module";
+import { FeedModule } from "./modules/feed/feed.module";
 import { HealthModule } from "./modules/health/health.module";
+import { PostsModule } from "./modules/posts/posts.module";
 import { PrismaModule } from "./modules/prisma/prisma.module";
 import { ProfilesModule } from "./modules/profiles/profiles.module";
+import { ReactionsModule } from "./modules/reactions/reactions.module";
+import { RepostsModule } from "./modules/reposts/reposts.module";
 
 const env = loadEnv();
 
@@ -36,6 +41,11 @@ const env = loadEnv();
     HealthModule,
     AuthModule,
     ProfilesModule,
+    PostsModule,
+    FeedModule,
+    ReactionsModule,
+    CommentsModule,
+    RepostsModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },

@@ -48,7 +48,20 @@
   "feed": {
     "title": "Feed",
     "empty": "Start by publishing your first post.",
-    "welcome": "Welcome {name} — your account is ready."
+    "welcome": "Welcome {name} — your account is ready.",
+    "loadMore": "Load more",
+    "loadingMore": "Loading…"
+  },
+  "composer": {
+    "title": "What's on your mind?",
+    "placeholder": "Share an idea, a project, or a professional update…",
+    "submit": "Post"
+  },
+  "post": {
+    "like": "Like",
+    "liked": "Liked ✓",
+    "comments": "Comments",
+    "reposts": "Reposts"
   },
   "profile": {
     "about": "About",

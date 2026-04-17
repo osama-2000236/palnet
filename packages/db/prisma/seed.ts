@@ -1,5 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-import { randomBytes, scryptSync } from "node:crypto";
+import * as bcrypt from "bcrypt";
 
 const prisma = new PrismaClient();
 
@@ -41,7 +41,8 @@ async function main() {
   }
 
   // One demo user so dev sign-in is one click away.
-  const passwordHash = hashPassword("Password123");
+  // Must use bcrypt to match AuthService.login.
+  const passwordHash = await bcrypt.hash("Password123", 12);
   const demoUser = await prisma.user.upsert({
     where: { email: "demo@palnet.ps" },
     update: {},
@@ -64,15 +65,7 @@ async function main() {
   });
 
   // eslint-disable-next-line no-console
-  console.warn(`[seed] ready — demo user ${demoUser.email}`);
-}
-
-// NOTE: real auth uses bcrypt; this seed uses scrypt to avoid a runtime dep.
-// The password is OVERWRITTEN via the register flow in tests. Do not reuse.
-function hashPassword(plain: string): string {
-  const salt = randomBytes(16).toString("hex");
-  const hash = scryptSync(plain, salt, 64).toString("hex");
-  return `scrypt$${salt}$${hash}`;
+  console.warn(`[seed] ready — demo user ${demoUser.email} (password: Password123)`);
 }
 
 main()

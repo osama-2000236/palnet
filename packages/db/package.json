@@ -22,7 +22,9 @@
   },
   "devDependencies": {
     "@palnet/config": "workspace:*",
+    "@types/bcrypt": "^5.0.2",
     "@types/node": "^22.7.5",
+    "bcrypt": "^5.1.1",
     "prisma": "^5.22.0",
     "rimraf": "^6.0.1",
     "tsx": "^4.19.0",

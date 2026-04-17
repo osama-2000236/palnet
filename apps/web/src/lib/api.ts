@@ -45,3 +45,27 @@ export async function apiFetch<T extends z.ZodTypeAny>(
   const body = (json as { data?: unknown }).data ?? json;
   return schema.parse(body) as z.infer<T>;
 }
+
+// For paginated endpoints that return `{ data: [...], meta: {...} }` at the top level.
+export async function apiFetchPage<T extends z.ZodTypeAny>(
+  path: string,
+  envelope: T,
+  opts: ApiFetchOptions = {},
+): Promise<z.infer<T>> {
+  const headers = new Headers(opts.headers);
+  if (opts.body !== undefined) headers.set("Content-Type", "application/json");
+  if (opts.token) headers.set("Authorization", `Bearer ${opts.token}`);
+
+  const res = await fetch(`${BASE}${path}`, {
+    ...opts,
+    headers,
+    body: opts.body === undefined ? undefined : JSON.stringify(opts.body),
+  });
+  const json = (await res.json().catch(() => ({}))) as unknown;
+  if (!res.ok) {
+    const parsed = ApiError.safeParse(json);
+    const code = parsed.success ? parsed.data.error.code : "INTERNAL";
+    throw new ApiRequestError(res.status, code);
+  }
+  return envelope.parse(json) as z.infer<T>;
+}
