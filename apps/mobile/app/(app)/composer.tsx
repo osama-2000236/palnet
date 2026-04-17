@@ -1,9 +1,16 @@
-import { CreatePostBody, Post } from "@palnet/shared";
+import {
+  CreatePostBody,
+  MediaKind,
+  type MediaRef,
+  Post,
+} from "@palnet/shared";
+import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
+  Image,
   Pressable,
   SafeAreaView,
   Text,
@@ -13,19 +20,59 @@ import {
 
 import { apiFetch, ApiRequestError } from "@/lib/api";
 import { getAccessToken } from "@/lib/session";
+import { uploadAsset } from "@/lib/uploads";
 
 export default function ComposerScreen(): JSX.Element {
   const { t } = useTranslation();
   const [body, setBody] = useState("");
+  const [media, setMedia] = useState<MediaRef[]>([]);
   const [busy, setBusy] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  async function pickImage(): Promise<void> {
+    const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!perm.granted) return;
+    const picked = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      quality: 0.85,
+    });
+    if (picked.canceled || !picked.assets[0]) return;
+    const asset = picked.assets[0];
+    const token = await getAccessToken();
+    if (!token) return;
+    setUploading(true);
+    try {
+      const publicUrl = await uploadAsset({
+        asset: {
+          uri: asset.uri,
+          mimeType: asset.mimeType ?? "image/jpeg",
+          sizeBytes: asset.fileSize ?? 0,
+          filename: asset.fileName ?? undefined,
+        },
+        purpose: "POST_MEDIA",
+        token,
+      });
+      setMedia((prev) => [
+        ...prev,
+        {
+          url: publicUrl,
+          kind: MediaKind.IMAGE,
+          mimeType: asset.mimeType ?? "image/jpeg",
+          sizeBytes: asset.fileSize ?? null,
+        },
+      ]);
+    } finally {
+      setUploading(false);
+    }
+  }
 
   async function submit(): Promise<void> {
     setError(null);
     const parsed = CreatePostBody.safeParse({
       body,
       language: "ar",
-      media: [],
+      media,
     });
     if (!parsed.success) {
       setError(t("auth.errors.VALIDATION_FAILED"));
@@ -71,6 +118,34 @@ export default function ComposerScreen(): JSX.Element {
           textAlignVertical="top"
         />
         <Text className="self-end text-xs text-ink-muted">{body.length} / 3000</Text>
+
+        {media.length > 0 ? (
+          <View className="flex-row flex-wrap gap-2">
+            {media.map((m, i) => (
+              <Pressable
+                key={m.url}
+                onPress={() =>
+                  setMedia((prev) => prev.filter((_, j) => j !== i))
+                }
+              >
+                <Image
+                  source={{ uri: m.url }}
+                  style={{ width: 80, height: 80, borderRadius: 6 }}
+                />
+              </Pressable>
+            ))}
+          </View>
+        ) : null}
+
+        <Pressable
+          onPress={pickImage}
+          disabled={uploading || media.length >= 8}
+          className="self-start rounded-md border border-ink-muted/30 px-3 py-2"
+        >
+          <Text className="text-sm text-ink">
+            {uploading ? t("composer.uploading") : `+ ${t("composer.addImage")}`}
+          </Text>
+        </Pressable>
 
         {error ? (
           <Text className="text-sm text-red-600" accessibilityRole="alert">

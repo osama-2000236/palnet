@@ -75,6 +75,28 @@ export function PostCard({
 
       <p className="whitespace-pre-wrap text-ink">{post.body}</p>
 
+      {post.media.length > 0 ? (
+        <div
+          className={
+            post.media.length === 1
+              ? "grid grid-cols-1 gap-1"
+              : "grid grid-cols-2 gap-1"
+          }
+        >
+          {post.media.map((m) =>
+            m.kind === "IMAGE" ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                key={m.id ?? m.url}
+                src={m.url}
+                alt=""
+                className="max-h-96 w-full rounded-md border border-ink-muted/10 object-cover"
+              />
+            ) : null,
+          )}
+        </div>
+      ) : null}
+
       <footer className="flex items-center gap-4 border-t border-ink-muted/10 pt-2 text-sm">
         <button
           type="button"

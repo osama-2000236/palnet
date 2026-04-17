@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
+  Image,
   Pressable,
   SafeAreaView,
   ScrollView,
@@ -133,6 +134,12 @@ export default function ProfileScreen(): JSX.Element {
     <SafeAreaView className="flex-1 bg-surface-muted">
       <ScrollView contentContainerClassName="p-4 gap-4">
         <View className="rounded-md border border-ink-muted/20 bg-white p-4">
+          {profile.avatarUrl ? (
+            <Image
+              source={{ uri: profile.avatarUrl }}
+              style={{ width: 72, height: 72, borderRadius: 36, marginBottom: 8 }}
+            />
+          ) : null}
           <Text className="text-2xl font-bold text-ink">
             {profile.firstName} {profile.lastName}
           </Text>

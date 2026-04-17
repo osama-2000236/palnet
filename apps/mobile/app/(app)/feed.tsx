@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
   FlatList,
+  Image,
   Pressable,
   SafeAreaView,
   Text,
@@ -187,6 +188,24 @@ function PostRow({
         <Text className="text-sm text-ink-muted">{post.author.headline}</Text>
       ) : null}
       <Text className="mt-2 text-ink">{post.body}</Text>
+      {post.media.length > 0 ? (
+        <View className="mt-2 flex-row flex-wrap gap-1">
+          {post.media.map((m) =>
+            m.kind === "IMAGE" ? (
+              <Image
+                key={m.id ?? m.url}
+                source={{ uri: m.url }}
+                style={{
+                  width: post.media.length === 1 ? "100%" : "49%",
+                  height: 180,
+                  borderRadius: 6,
+                }}
+                resizeMode="cover"
+              />
+            ) : null,
+          )}
+        </View>
+      ) : null}
       <View className="mt-3 flex-row gap-4 border-t border-ink-muted/10 pt-2">
         <Pressable onPress={toggleReaction} disabled={busy}>
           <Text

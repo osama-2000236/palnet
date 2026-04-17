@@ -55,7 +55,9 @@
   "composer": {
     "title": "ماذا يدور في بالك؟",
     "placeholder": "شارك فكرة، مشروع، أو تحديث مهني…",
-    "submit": "انشر"
+    "submit": "انشر",
+    "addImage": "إضافة صورة",
+    "uploading": "جارٍ الرفع…"
   },
   "post": {
     "like": "أعجبني",
@@ -95,7 +97,9 @@
     "school": "الجامعة/المدرسة",
     "degree": "الشهادة",
     "fieldOfStudy": "التخصص",
-    "addSkillPlaceholder": "أضف مهارة…"
+    "addSkillPlaceholder": "أضف مهارة…",
+    "changeAvatar": "تغيير الصورة",
+    "uploading": "جارٍ الرفع…"
   },
   "network": {
     "title": "شبكتي",

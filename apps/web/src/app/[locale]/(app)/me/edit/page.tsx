@@ -19,6 +19,7 @@ import { useEffect, useState } from "react";
 
 import { apiFetch } from "@/lib/api";
 import { getAccessToken } from "@/lib/session";
+import { uploadFile } from "@/lib/uploads";
 
 export default function EditProfilePage(): JSX.Element {
   const router = useRouter();
@@ -89,6 +90,37 @@ function BasicsSection({
   });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+
+  async function onAvatarChange(
+    e: React.ChangeEvent<HTMLInputElement>,
+  ): Promise<void> {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const token = getAccessToken();
+    if (!token) return;
+    setError(null);
+    setUploading(true);
+    try {
+      const publicUrl = await uploadFile({
+        file,
+        purpose: "AVATAR",
+        token,
+      });
+      const next = await apiFetch("/profiles/me", ProfileSchema, {
+        method: "PATCH",
+        body: { avatarUrl: publicUrl },
+        token,
+      });
+      onChanged(next);
+    } catch {
+      setError(t("uploadFailed"));
+    } finally {
+      setUploading(false);
+      // Reset input so re-selecting the same file re-triggers onChange.
+      e.target.value = "";
+    }
+  }
 
   async function save(): Promise<void> {
     setError(null);
@@ -123,6 +155,33 @@ function BasicsSection({
   return (
     <section className="rounded-md border border-ink-muted/20 bg-white p-6">
       <h2 className="mb-3 text-xl font-semibold text-ink">{t("basics")}</h2>
+
+      <div className="mb-4 flex items-center gap-4">
+        {profile.avatarUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={profile.avatarUrl}
+            alt=""
+            className="h-16 w-16 rounded-full border border-ink-muted/20 object-cover"
+          />
+        ) : (
+          <div className="flex h-16 w-16 items-center justify-center rounded-full border border-ink-muted/20 bg-surface-muted text-xs text-ink-muted">
+            {profile.firstName[0]}
+            {profile.lastName[0]}
+          </div>
+        )}
+        <label className="cursor-pointer rounded-md border border-ink-muted/30 px-3 py-2 text-sm text-ink hover:bg-ink-muted/5">
+          {uploading ? t("uploading") : t("changeAvatar")}
+          <input
+            type="file"
+            accept="image/png,image/jpeg,image/webp"
+            onChange={onAvatarChange}
+            disabled={uploading}
+            className="hidden"
+          />
+        </label>
+      </div>
+
       <div className="grid gap-3 md:grid-cols-2">
         <Field label={tOn("firstName" as never) as string}>
           <input

@@ -7,11 +7,13 @@ import {
   UpdateProfileBody,
   type Profile,
 } from "@palnet/shared";
+import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
+  Image,
   Pressable,
   SafeAreaView,
   ScrollView,
@@ -22,6 +24,7 @@ import {
 
 import { apiFetch } from "@/lib/api";
 import { getAccessToken } from "@/lib/session";
+import { uploadAsset } from "@/lib/uploads";
 
 export default function EditProfileScreen(): JSX.Element {
   const { t } = useTranslation();
@@ -129,6 +132,43 @@ function BasicsCard({
   const [about, setAbout] = useState(profile.about ?? "");
   const [location, setLocation] = useState(profile.location ?? "");
   const [busy, setBusy] = useState(false);
+  const [uploading, setUploading] = useState(false);
+
+  async function pickAvatar(): Promise<void> {
+    const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!perm.granted) return;
+    const picked = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.85,
+    });
+    if (picked.canceled || !picked.assets[0]) return;
+    const asset = picked.assets[0];
+    const token = await getAccessToken();
+    if (!token) return;
+    setUploading(true);
+    try {
+      const publicUrl = await uploadAsset({
+        asset: {
+          uri: asset.uri,
+          mimeType: asset.mimeType ?? "image/jpeg",
+          sizeBytes: asset.fileSize ?? 0,
+          filename: asset.fileName ?? undefined,
+        },
+        purpose: "AVATAR",
+        token,
+      });
+      const next = await apiFetch("/profiles/me", ProfileSchema, {
+        method: "PATCH",
+        body: { avatarUrl: publicUrl },
+        token,
+      });
+      onChanged(next);
+    } finally {
+      setUploading(false);
+    }
+  }
 
   async function save(): Promise<void> {
     const parsed = UpdateProfileBody.safeParse({
@@ -156,6 +196,30 @@ function BasicsCard({
 
   return (
     <Card title={t("profile.basics")}>
+      <View className="mb-3 flex-row items-center gap-3">
+        {profile.avatarUrl ? (
+          <Image
+            source={{ uri: profile.avatarUrl }}
+            style={{ width: 64, height: 64, borderRadius: 32 }}
+          />
+        ) : (
+          <View className="h-16 w-16 items-center justify-center rounded-full border border-ink-muted/20 bg-surface-muted">
+            <Text className="text-xs text-ink-muted">
+              {profile.firstName[0]}
+              {profile.lastName[0]}
+            </Text>
+          </View>
+        )}
+        <Pressable
+          onPress={pickAvatar}
+          disabled={uploading}
+          className="rounded-md border border-ink-muted/30 px-3 py-2"
+        >
+          <Text className="text-sm text-ink">
+            {uploading ? t("profile.uploading") : t("profile.changeAvatar")}
+          </Text>
+        </Pressable>
+      </View>
       <Input value={firstName} onChangeText={setFirstName} placeholder="First name" />
       <Input value={lastName} onChangeText={setLastName} placeholder="Last name" />
       <Input

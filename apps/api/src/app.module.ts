@@ -11,6 +11,7 @@ import { CommentsModule } from "./modules/comments/comments.module";
 import { ConnectionsModule } from "./modules/connections/connections.module";
 import { FeedModule } from "./modules/feed/feed.module";
 import { HealthModule } from "./modules/health/health.module";
+import { MediaModule } from "./modules/media/media.module";
 import { PostsModule } from "./modules/posts/posts.module";
 import { PrismaModule } from "./modules/prisma/prisma.module";
 import { ProfilesModule } from "./modules/profiles/profiles.module";
@@ -50,6 +51,7 @@ const env = loadEnv();
     RepostsModule,
     ConnectionsModule,
     SearchModule,
+    MediaModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },

@@ -55,7 +55,9 @@
   "composer": {
     "title": "What's on your mind?",
     "placeholder": "Share an idea, a project, or a professional update…",
-    "submit": "Post"
+    "submit": "Post",
+    "addImage": "Add image",
+    "uploading": "Uploading…"
   },
   "post": {
     "like": "Like",
@@ -95,7 +97,9 @@
     "school": "School",
     "degree": "Degree",
     "fieldOfStudy": "Field of study",
-    "addSkillPlaceholder": "Add a skill…"
+    "addSkillPlaceholder": "Add a skill…",
+    "changeAvatar": "Change photo",
+    "uploading": "Uploading…"
   },
   "network": {
     "title": "My network",
