@@ -12,6 +12,7 @@ import * as jwt from "jsonwebtoken";
 
 import type { Env } from "../../../config/env";
 import type { AuthUser } from "../decorators/current-user.decorator";
+import { IS_OPTIONAL_AUTH_KEY } from "../decorators/optional-auth.decorator";
 import { IS_PUBLIC_KEY } from "../decorators/public.decorator";
 
 interface AccessTokenPayload {
@@ -35,11 +36,20 @@ export class JwtAuthGuard implements CanActivate {
     ]);
     if (isPublic) return true;
 
+    const isOptional = this.reflector.getAllAndOverride<boolean>(
+      IS_OPTIONAL_AUTH_KEY,
+      [ctx.getHandler(), ctx.getClass()],
+    );
+
     const req = ctx.switchToHttp().getRequest<Request & { user?: AuthUser }>();
     const header = req.headers.authorization ?? "";
     const match = /^Bearer\s+(.+)$/.exec(header);
     const token = match?.[1];
-    if (!token) throw unauthorized("Missing bearer token.");
+
+    if (!token) {
+      if (isOptional) return true;
+      throw unauthorized("Missing bearer token.");
+    }
 
     try {
       const secret = this.config.getOrThrow<string>("JWT_ACCESS_SECRET");
@@ -53,6 +63,7 @@ export class JwtAuthGuard implements CanActivate {
       };
       return true;
     } catch {
+      if (isOptional) return true;
       throw unauthorized("Invalid or expired token.");
     }
   }

@@ -1,0 +1,93 @@
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Post,
+  Query,
+  UsePipes,
+} from "@nestjs/common";
+import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
+import {
+  RespondConnectionBody,
+  SendConnectionBody,
+  type ConnectionListItem,
+} from "@palnet/shared";
+import { z } from "zod";
+
+import { ZodValidationPipe } from "../../common/zod-pipe";
+import {
+  CurrentUser,
+  type AuthUser,
+} from "../auth/decorators/current-user.decorator";
+import { ConnectionsService } from "./connections.service";
+
+const ListQuery = z.object({
+  filter: z.enum(["ACCEPTED", "INCOMING", "OUTGOING"]).default("ACCEPTED"),
+});
+type ListQuery = z.infer<typeof ListQuery>;
+
+@ApiTags("connections")
+@ApiBearerAuth()
+@Controller("connections")
+export class ConnectionsController {
+  constructor(private readonly connections: ConnectionsService) {}
+
+  @Post()
+  @HttpCode(HttpStatus.CREATED)
+  @UsePipes(new ZodValidationPipe(SendConnectionBody))
+  async send(
+    @CurrentUser() user: AuthUser,
+    @Body() body: SendConnectionBody,
+  ) {
+    const data = await this.connections.send(user.id, body);
+    return { data };
+  }
+
+  @Post(":id/respond")
+  async respond(
+    @CurrentUser() user: AuthUser,
+    @Param("id") id: string,
+    @Body(new ZodValidationPipe(RespondConnectionBody))
+    body: RespondConnectionBody,
+  ) {
+    const data = await this.connections.respond(user.id, id, body);
+    return { data };
+  }
+
+  @Post(":id/withdraw")
+  async withdraw(
+    @CurrentUser() user: AuthUser,
+    @Param("id") id: string,
+  ) {
+    const data = await this.connections.withdraw(user.id, id);
+    return { data };
+  }
+
+  @Delete(":id")
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async remove(
+    @CurrentUser() user: AuthUser,
+    @Param("id") id: string,
+  ): Promise<void> {
+    await this.connections.remove(user.id, id);
+  }
+
+  @Get()
+  async list(
+    @CurrentUser() user: AuthUser,
+    @Query(new ZodValidationPipe(ListQuery)) query: ListQuery,
+  ): Promise<{ data: ConnectionListItem[] }> {
+    const data = await this.connections.listMine(user.id, query.filter);
+    return { data };
+  }
+
+  @Get("counts")
+  async counts(@CurrentUser() user: AuthUser) {
+    const data = await this.connections.counts(user.id);
+    return { data };
+  }
+}

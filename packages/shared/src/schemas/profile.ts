@@ -40,6 +40,24 @@ export const Skill = z.object({
 });
 export type Skill = z.infer<typeof Skill>;
 
+export const ViewerProfileState = z.object({
+  isSelf: z.boolean(),
+  connection: z
+    .object({
+      status: z.enum([
+        "PENDING",
+        "ACCEPTED",
+        "DECLINED",
+        "WITHDRAWN",
+        "BLOCKED",
+      ]),
+      direction: z.enum(["OUTGOING", "INCOMING"]),
+      connectionId: z.string().cuid(),
+    })
+    .nullable(),
+});
+export type ViewerProfileState = z.infer<typeof ViewerProfileState>;
+
 export const Profile = z.object({
   id: z.string().cuid(),
   userId: z.string().cuid(),
@@ -59,6 +77,7 @@ export const Profile = z.object({
   experiences: z.array(Experience).default([]),
   educations: z.array(Education).default([]),
   skills: z.array(Skill).default([]),
+  viewer: ViewerProfileState.optional(),
 });
 export type Profile = z.infer<typeof Profile>;
 

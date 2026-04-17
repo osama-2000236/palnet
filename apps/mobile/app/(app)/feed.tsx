@@ -57,13 +57,21 @@ export default function FeedScreen(): JSX.Element {
   return (
     <SafeAreaView className="flex-1 bg-surface-muted">
       <View className="flex-1 px-4 pt-8">
-        <View className="mb-3 flex-col gap-1">
-          <Text className="text-3xl font-bold text-ink">{t("feed.title")}</Text>
-          {name ? (
-            <Text className="text-ink-muted">
-              {t("feed.welcome", { name })}
-            </Text>
-          ) : null}
+        <View className="mb-3 flex-row items-center justify-between">
+          <View className="flex-col gap-1">
+            <Text className="text-3xl font-bold text-ink">{t("feed.title")}</Text>
+            {name ? (
+              <Text className="text-ink-muted">
+                {t("feed.welcome", { name })}
+              </Text>
+            ) : null}
+          </View>
+          <Pressable
+            onPress={() => router.push("/(app)/network")}
+            className="rounded-md border border-ink-muted/30 px-3 py-1.5"
+          >
+            <Text className="text-xs text-ink">{t("network.title")}</Text>
+          </Pressable>
         </View>
 
         <Pressable

@@ -67,11 +67,21 @@
     "about": "About",
     "experience": "Experience",
     "education": "Education",
-    "skills": "Skills"
+    "skills": "Skills",
+    "notFound": "Profile not found."
   },
   "network": {
+    "title": "My network",
     "myConnections": "My connections",
-    "invitations": "Invitations"
+    "invitations": "Invitations",
+    "sent": "Sent",
+    "empty": "Nothing here yet.",
+    "connect": "Connect",
+    "withdraw": "Withdraw",
+    "accept": "Accept",
+    "decline": "Ignore",
+    "removeConnection": "Remove",
+    "error": "Could not send request."
   },
   "messaging": {
     "newMessage": "New message"

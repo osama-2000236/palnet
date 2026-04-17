@@ -1,6 +1,7 @@
 "use client";
 
 import { type Post, cursorPage } from "@palnet/shared";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
@@ -15,6 +16,7 @@ const FeedPage = cursorPage(PostSchema);
 
 export default function FeedPageRoute(): JSX.Element {
   const t = useTranslations("feed");
+  const tNet = useTranslations("network");
   const router = useRouter();
   const [posts, setPosts] = useState<Post[]>([]);
   const [cursor, setCursor] = useState<string | null>(null);
@@ -52,13 +54,21 @@ export default function FeedPageRoute(): JSX.Element {
 
   return (
     <main className="mx-auto flex w-full max-w-[680px] flex-col gap-4 px-6 py-8">
-      <header className="flex flex-col gap-1">
-        <h1 className="text-3xl font-bold text-ink">{t("title")}</h1>
-        {name ? (
-          <p className="text-ink-muted" data-testid="feed-welcome">
-            {t("welcome", { name })}
-          </p>
-        ) : null}
+      <header className="flex flex-wrap items-start justify-between gap-3">
+        <div className="flex flex-col gap-1">
+          <h1 className="text-3xl font-bold text-ink">{t("title")}</h1>
+          {name ? (
+            <p className="text-ink-muted" data-testid="feed-welcome">
+              {t("welcome", { name })}
+            </p>
+          ) : null}
+        </div>
+        <Link
+          href="/network"
+          className="rounded-md border border-ink-muted/30 px-3 py-1.5 text-sm text-ink hover:bg-ink-muted/5"
+        >
+          {tNet("title")}
+        </Link>
       </header>
 
       <Composer onPosted={(p) => setPosts((prev) => [p, ...prev])} />

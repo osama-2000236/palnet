@@ -67,11 +67,21 @@
     "about": "نبذة",
     "experience": "الخبرات",
     "education": "التعليم",
-    "skills": "المهارات"
+    "skills": "المهارات",
+    "notFound": "الملف الشخصي غير موجود."
   },
   "network": {
+    "title": "شبكتي",
     "myConnections": "علاقاتي",
-    "invitations": "الدعوات"
+    "invitations": "الدعوات",
+    "sent": "المُرسلة",
+    "empty": "لا يوجد شيء هنا بعد.",
+    "connect": "تواصل",
+    "withdraw": "سحب الطلب",
+    "accept": "قبول",
+    "decline": "رفض",
+    "removeConnection": "إزالة",
+    "error": "تعذّر إرسال الطلب."
   },
   "messaging": {
     "newMessage": "رسالة جديدة"

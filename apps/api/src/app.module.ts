@@ -8,6 +8,7 @@ import { AllExceptionsFilter } from "./common/exception.filter";
 import { loadEnv } from "./config/env";
 import { AuthModule } from "./modules/auth/auth.module";
 import { CommentsModule } from "./modules/comments/comments.module";
+import { ConnectionsModule } from "./modules/connections/connections.module";
 import { FeedModule } from "./modules/feed/feed.module";
 import { HealthModule } from "./modules/health/health.module";
 import { PostsModule } from "./modules/posts/posts.module";
@@ -46,6 +47,7 @@ const env = loadEnv();
     ReactionsModule,
     CommentsModule,
     RepostsModule,
+    ConnectionsModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },

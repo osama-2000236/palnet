@@ -1,6 +1,7 @@
 "use client";
 
 import type { Post } from "@palnet/shared";
+import Link from "next/link";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 
@@ -60,9 +61,12 @@ export function PostCard({
   return (
     <article className="flex flex-col gap-3 rounded-md border border-ink-muted/20 bg-white p-4 shadow-card">
       <header className="flex flex-col">
-        <span className="font-semibold text-ink">
+        <Link
+          href={`/in/${post.author.handle}`}
+          className="font-semibold text-ink hover:underline"
+        >
           {post.author.firstName} {post.author.lastName}
-        </span>
+        </Link>
         {post.author.headline ? (
           <span className="text-sm text-ink-muted">{post.author.headline}</span>
         ) : null}

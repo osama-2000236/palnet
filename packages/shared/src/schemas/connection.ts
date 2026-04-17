@@ -12,6 +12,17 @@ export const RespondConnectionBody = z.object({
 });
 export type RespondConnectionBody = z.infer<typeof RespondConnectionBody>;
 
+// A short public projection of a user/profile for connection lists.
+export const ConnectionUser = z.object({
+  userId: z.string().cuid(),
+  handle: z.string(),
+  firstName: z.string(),
+  lastName: z.string(),
+  headline: z.string().nullish(),
+  avatarUrl: z.string().url().nullish(),
+});
+export type ConnectionUser = z.infer<typeof ConnectionUser>;
+
 export const Connection = z.object({
   id: z.string().cuid(),
   requesterId: z.string().cuid(),
@@ -22,3 +33,27 @@ export const Connection = z.object({
   respondedAt: z.string().datetime().nullable(),
 });
 export type Connection = z.infer<typeof Connection>;
+
+// Entry returned in the "my connections" list — the *other* party plus the
+// connection row that joins us.
+export const ConnectionListItem = z.object({
+  connectionId: z.string().cuid(),
+  status: z.nativeEnum(ConnectionStatus),
+  direction: z.enum(["OUTGOING", "INCOMING"]),
+  createdAt: z.string().datetime(),
+  respondedAt: z.string().datetime().nullable(),
+  message: z.string().nullable(),
+  user: ConnectionUser,
+});
+export type ConnectionListItem = z.infer<typeof ConnectionListItem>;
+
+// Viewer-scoped connection state between the viewer and another user.
+// Used on profile pages and anywhere we need a single badge.
+export const ViewerConnectionState = z.object({
+  // null → not connected, no pending
+  status: z.nativeEnum(ConnectionStatus).nullable(),
+  // direction of the *most recent* row, or null
+  direction: z.enum(["OUTGOING", "INCOMING", "SELF"]).nullable(),
+  connectionId: z.string().cuid().nullable(),
+});
+export type ViewerConnectionState = z.infer<typeof ViewerConnectionState>;
