@@ -120,7 +120,17 @@
     "error": "تعذّر إرسال الطلب."
   },
   "messaging": {
-    "newMessage": "رسالة جديدة"
+    "title": "الرسائل",
+    "newMessage": "رسالة جديدة",
+    "emptyList": "لا توجد محادثات بعد.",
+    "emptyThread": "لا توجد رسائل بعد — ابدأ بالسلام.",
+    "composePlaceholder": "اكتب رسالة…",
+    "send": "إرسال",
+    "sendFailed": "تعذّر إرسال الرسالة.",
+    "selectPrompt": "اختر محادثة لبدء القراءة.",
+    "loadOlder": "تحميل الرسائل الأقدم",
+    "you": "أنت",
+    "online": "مباشر"
   },
   "notifications": {
     "title": "الإشعارات"

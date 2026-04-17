@@ -1,4 +1,5 @@
 import {
+  ChatRoom as ChatRoomSchema,
   Profile as ProfileSchema,
   type Profile,
 } from "@palnet/shared";
@@ -208,6 +209,33 @@ export default function ProfileScreen(): JSX.Element {
                   </Text>
                 </Pressable>
               ) : null}
+              <Pressable
+                disabled={busy}
+                onPress={async () => {
+                  const token = await getAccessToken();
+                  if (!token) return;
+                  setBusy(true);
+                  try {
+                    const room = await apiFetch(
+                      "/messaging/rooms",
+                      ChatRoomSchema,
+                      {
+                        method: "POST",
+                        token,
+                        body: { otherUserId: profile.userId },
+                      },
+                    );
+                    router.push(`/(app)/messages/${room.id}`);
+                  } catch {
+                    // no-op
+                  } finally {
+                    setBusy(false);
+                  }
+                }}
+                className="rounded-md border border-ink-muted/30 px-4 py-2"
+              >
+                <Text className="text-ink">{t("messaging.newMessage")}</Text>
+              </Pressable>
             </View>
           ) : null}
         </View>

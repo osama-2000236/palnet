@@ -44,7 +44,14 @@ export class JwtAuthGuard implements CanActivate {
     const req = ctx.switchToHttp().getRequest<Request & { user?: AuthUser }>();
     const header = req.headers.authorization ?? "";
     const match = /^Bearer\s+(.+)$/.exec(header);
-    const token = match?.[1];
+    // EventSource (SSE) in browsers cannot set custom headers, so we also
+    // accept `?access_token=` as a fallback. Safe because the token is still
+    // signed and short-lived.
+    const queryToken =
+      typeof req.query?.access_token === "string"
+        ? req.query.access_token
+        : undefined;
+    const token = match?.[1] ?? queryToken;
 
     if (!token) {
       if (isOptional) return true;

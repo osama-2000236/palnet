@@ -1,8 +1,12 @@
 "use client";
 
-import { Profile as ProfileSchema, type Profile } from "@palnet/shared";
+import {
+  ChatRoom as ChatRoomSchema,
+  Profile as ProfileSchema,
+  type Profile,
+} from "@palnet/shared";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 
@@ -14,9 +18,12 @@ export default function ProfileRoute(): JSX.Element {
   const params = useParams<{ handle: string }>();
   const handle = params?.handle;
   const t = useTranslations("profile");
+  const tMsg = useTranslations("messaging");
+  const router = useRouter();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [openingDm, setOpeningDm] = useState(false);
 
   useEffect(() => {
     if (!handle) return;
@@ -69,11 +76,37 @@ export default function ProfileRoute(): JSX.Element {
               {t("edit")}
             </Link>
           ) : (
-            <ConnectButton
-              targetUserId={profile.userId}
-              viewer={profile.viewer}
-              onChange={(next) => setProfile({ ...profile, viewer: next })}
-            />
+            <div className="flex flex-wrap items-center gap-2">
+              <ConnectButton
+                targetUserId={profile.userId}
+                viewer={profile.viewer}
+                onChange={(next) => setProfile({ ...profile, viewer: next })}
+              />
+              <button
+                type="button"
+                disabled={openingDm}
+                onClick={async () => {
+                  const token = getAccessToken();
+                  if (!token) return;
+                  setOpeningDm(true);
+                  try {
+                    await apiFetch("/messaging/rooms", ChatRoomSchema, {
+                      method: "POST",
+                      token,
+                      body: { otherUserId: profile.userId },
+                    });
+                    router.push("/messages");
+                  } catch {
+                    // no-op; keeps profile page stable
+                  } finally {
+                    setOpeningDm(false);
+                  }
+                }}
+                className="rounded-md border border-ink-muted/30 px-4 py-2 text-sm text-ink hover:bg-ink-muted/5 disabled:opacity-60"
+              >
+                {tMsg("newMessage")}
+              </button>
+            </div>
           )}
         </div>
       </section>

@@ -392,17 +392,19 @@ model ChatRoomMember {
 }
 
 model Message {
-  id         String    @id @default(cuid())
-  room       ChatRoom  @relation(fields: [roomId], references: [id], onDelete: Cascade)
-  roomId     String
-  author     User      @relation("MessageAuthor", fields: [authorId], references: [id], onDelete: Cascade)
-  authorId   String
-  body       String    @db.Text
-  mediaUrl   String?
-  createdAt  DateTime  @default(now())
-  editedAt   DateTime?
-  deletedAt  DateTime?
+  id              String    @id @default(cuid())
+  room            ChatRoom  @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  roomId          String
+  author          User      @relation("MessageAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  authorId        String
+  body            String    @db.Text
+  mediaUrl        String?
+  clientMessageId String?
+  createdAt       DateTime  @default(now())
+  editedAt        DateTime?
+  deletedAt       DateTime?
 
+  @@unique([roomId, authorId, clientMessageId])
   @@index([roomId, createdAt])
   @@index([authorId])
 }

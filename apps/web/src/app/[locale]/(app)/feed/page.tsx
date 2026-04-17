@@ -18,6 +18,7 @@ export default function FeedPageRoute(): JSX.Element {
   const t = useTranslations("feed");
   const tNet = useTranslations("network");
   const tSearch = useTranslations("search");
+  const tMsg = useTranslations("messaging");
   const router = useRouter();
   const [posts, setPosts] = useState<Post[]>([]);
   const [cursor, setCursor] = useState<string | null>(null);
@@ -76,6 +77,12 @@ export default function FeedPageRoute(): JSX.Element {
             className="rounded-md border border-ink-muted/30 px-3 py-1.5 text-sm text-ink hover:bg-ink-muted/5"
           >
             {tNet("title")}
+          </Link>
+          <Link
+            href="/messages"
+            className="rounded-md border border-ink-muted/30 px-3 py-1.5 text-sm text-ink hover:bg-ink-muted/5"
+          >
+            {tMsg("title")}
           </Link>
         </div>
       </header>

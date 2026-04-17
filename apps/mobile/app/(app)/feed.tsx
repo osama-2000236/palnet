@@ -81,6 +81,12 @@ export default function FeedScreen(): JSX.Element {
             >
               <Text className="text-xs text-ink">{t("network.title")}</Text>
             </Pressable>
+            <Pressable
+              onPress={() => router.push("/(app)/messages")}
+              className="rounded-md border border-ink-muted/30 px-3 py-1.5"
+            >
+              <Text className="text-xs text-ink">{t("messaging.title")}</Text>
+            </Pressable>
           </View>
         </View>
 

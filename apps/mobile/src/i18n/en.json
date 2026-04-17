@@ -115,7 +115,15 @@
     "error": "Could not send request."
   },
   "messaging": {
-    "newMessage": "New message"
+    "title": "Messages",
+    "newMessage": "New message",
+    "emptyList": "No conversations yet.",
+    "emptyThread": "No messages yet — say hi.",
+    "composePlaceholder": "Write a message…",
+    "send": "Send",
+    "sendFailed": "Could not send message.",
+    "loadOlder": "Load older messages",
+    "you": "You"
   },
   "notifications": {
     "title": "Notifications"
