@@ -2,6 +2,7 @@ import { Test } from "@nestjs/testing";
 import { ErrorCode } from "@palnet/shared";
 
 import { DomainException } from "../../common/domain-exception";
+import { NotificationsService } from "../notifications/notifications.service";
 import { PrismaService } from "../prisma/prisma.service";
 import { ConnectionsService } from "./connections.service";
 
@@ -43,6 +44,10 @@ describe("ConnectionsService", () => {
       providers: [
         ConnectionsService,
         { provide: PrismaService, useValue: prisma },
+        {
+          provide: NotificationsService,
+          useValue: { notify: jest.fn().mockResolvedValue(undefined) },
+        },
       ],
     }).compile();
     service = moduleRef.get(ConnectionsService);

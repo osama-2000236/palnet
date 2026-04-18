@@ -7,6 +7,7 @@ import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 
 import { Composer } from "@/components/Composer";
+import { NotificationsBell } from "@/components/NotificationsBell";
 import { PostCard } from "@/components/PostCard";
 import { apiFetchPage } from "@/lib/api";
 import { Post as PostSchema } from "@palnet/shared";
@@ -84,6 +85,7 @@ export default function FeedPageRoute(): JSX.Element {
           >
             {tMsg("title")}
           </Link>
+          <NotificationsBell />
         </div>
       </header>
 

@@ -126,7 +126,20 @@
     "you": "You"
   },
   "notifications": {
-    "title": "Notifications"
+    "title": "Notifications",
+    "empty": "You're all caught up.",
+    "loadMore": "Load more",
+    "loading": "Loading…",
+    "templates": {
+      "CONNECTION_REQUEST": "{actor} wants to connect with you.",
+      "CONNECTION_ACCEPTED": "{actor} accepted your connection request.",
+      "POST_REACTION": "{actor} reacted to your post.",
+      "POST_COMMENT": "{actor} commented on your post.",
+      "POST_MENTION": "{actor} mentioned you in a post.",
+      "MESSAGE_RECEIVED": "{actor} sent you a message.",
+      "JOB_APPLICATION_UPDATE": "Your application has an update.",
+      "PROFILE_VIEW": "{actor} viewed your profile."
+    }
   },
   "jobs": {
     "search": "Search jobs",

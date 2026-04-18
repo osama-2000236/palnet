@@ -4,9 +4,11 @@ import {
   type CreateCommentBody,
   type CursorPageMeta,
   ErrorCode,
+  NotificationType,
 } from "@palnet/shared";
 
 import { DomainException } from "../../common/domain-exception";
+import { NotificationsService } from "../notifications/notifications.service";
 import { PrismaService } from "../prisma/prisma.service";
 
 interface CommentWithAuthor {
@@ -68,7 +70,10 @@ const COMMENT_INCLUDE = {
 
 @Injectable()
 export class CommentsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notifications: NotificationsService,
+  ) {}
 
   async create(
     viewerId: string,
@@ -77,16 +82,17 @@ export class CommentsService {
   ): Promise<CommentDto> {
     const post = await this.prisma.post.findFirst({
       where: { id: postId, deletedAt: null },
-      select: { id: true },
+      select: { id: true, authorId: true },
     });
     if (!post) {
       throw new DomainException(ErrorCode.NOT_FOUND, "Post not found.", 404);
     }
 
+    let parentAuthorId: string | null = null;
     if (body.parentId) {
       const parent = await this.prisma.comment.findFirst({
         where: { id: body.parentId, postId, deletedAt: null },
-        select: { id: true },
+        select: { id: true, authorId: true },
       });
       if (!parent) {
         throw new DomainException(
@@ -95,6 +101,7 @@ export class CommentsService {
           404,
         );
       }
+      parentAuthorId = parent.authorId;
     }
 
     const row = await this.prisma.comment.create({
@@ -106,7 +113,27 @@ export class CommentsService {
       },
       include: COMMENT_INCLUDE,
     });
-    return toCommentDto(row as unknown as CommentWithAuthor);
+    const dto = toCommentDto(row as unknown as CommentWithAuthor);
+
+    // Notify the post author about the new comment.
+    void this.notifications.notify({
+      type: NotificationType.POST_COMMENT,
+      recipientId: post.authorId,
+      actorId: viewerId,
+      postId,
+      commentId: dto.id,
+    });
+    // Also notify the parent-comment author on a reply (if different from post author).
+    if (parentAuthorId && parentAuthorId !== post.authorId) {
+      void this.notifications.notify({
+        type: NotificationType.POST_COMMENT,
+        recipientId: parentAuthorId,
+        actorId: viewerId,
+        postId,
+        commentId: dto.id,
+      });
+    }
+    return dto;
   }
 
   async list(

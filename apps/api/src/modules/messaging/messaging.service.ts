@@ -3,10 +3,12 @@ import {
   type ChatRoom as ChatRoomDto,
   ErrorCode,
   type Message as MessageDto,
+  NotificationType,
   type SendMessageBody,
 } from "@palnet/shared";
 
 import { DomainException } from "../../common/domain-exception";
+import { NotificationsService } from "../notifications/notifications.service";
 import { PrismaService } from "../prisma/prisma.service";
 import { MessagingBus } from "./messaging.bus";
 
@@ -51,6 +53,7 @@ export class MessagingService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly bus: MessagingBus,
+    private readonly notifications: NotificationsService,
   ) {}
 
   // ─────────────────────────────────────────────────────────────────────
@@ -249,6 +252,20 @@ export class MessagingService {
     });
     for (const m of members) {
       this.bus.publish(m.userId, { type: "message.new", payload: dto });
+    }
+
+    // Drop a dedup'd notification on every OTHER member. We intentionally
+    // leave messageId null and record roomId in `data` so the dedup key is
+    // (type, recipient, actor) — a DM burst collapses into one unread entry.
+    for (const m of members) {
+      if (m.userId === viewerId) continue;
+      void this.notifications.notify({
+        type: NotificationType.MESSAGE_RECEIVED,
+        recipientId: m.userId,
+        actorId: viewerId,
+        data: { roomId, lastMessageId: dto.id },
+        dedupe: true,
+      });
     }
 
     return dto;

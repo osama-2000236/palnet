@@ -1,6 +1,7 @@
 import { Test } from "@nestjs/testing";
 import { ErrorCode } from "@palnet/shared";
 
+import { NotificationsService } from "../notifications/notifications.service";
 import { PrismaService } from "../prisma/prisma.service";
 import { MessagingBus } from "./messaging.bus";
 import { MessagingService } from "./messaging.service";
@@ -90,15 +91,18 @@ describe("MessagingService", () => {
   let service: MessagingService;
   let prisma: PrismaStub;
   let bus: { publish: jest.Mock; subscribe: jest.Mock };
+  let notifications: { notify: jest.Mock };
 
   beforeEach(async () => {
     prisma = buildPrisma();
     bus = { publish: jest.fn(), subscribe: jest.fn() };
+    notifications = { notify: jest.fn().mockResolvedValue(undefined) };
     const moduleRef = await Test.createTestingModule({
       providers: [
         MessagingService,
         { provide: PrismaService, useValue: prisma },
         { provide: MessagingBus, useValue: bus },
+        { provide: NotificationsService, useValue: notifications },
       ],
     }).compile();
     service = moduleRef.get(MessagingService);

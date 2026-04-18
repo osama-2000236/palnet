@@ -1,6 +1,7 @@
 import { cursorPage, Post as PostSchema, type Post } from "@palnet/shared";
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
+import { z } from "zod";
 import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
@@ -13,10 +14,11 @@ import {
 } from "react-native";
 
 import { CommentsList } from "@/components/CommentsList";
-import { apiCall, apiFetchPage } from "@/lib/api";
+import { apiCall, apiFetch, apiFetchPage } from "@/lib/api";
 import { getAccessToken, readSession } from "@/lib/session";
 
 const FeedPage = cursorPage(PostSchema);
+const UnreadCountEnvelope = z.object({ count: z.number().int().nonnegative() });
 
 export default function FeedScreen(): JSX.Element {
   const { t } = useTranslation();
@@ -25,6 +27,22 @@ export default function FeedScreen(): JSX.Element {
   const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(false);
   const [name, setName] = useState<string | null>(null);
+  const [unread, setUnread] = useState<number>(0);
+
+  const loadUnread = useCallback(async (): Promise<void> => {
+    const token = await getAccessToken();
+    if (!token) return;
+    try {
+      const out = await apiFetch(
+        "/notifications/unread-count",
+        UnreadCountEnvelope,
+        { token },
+      );
+      setUnread(out.count);
+    } catch {
+      /* ignore */
+    }
+  }, []);
 
   const load = useCallback(async (after: string | null): Promise<void> => {
     const token = await getAccessToken();
@@ -53,8 +71,15 @@ export default function FeedScreen(): JSX.Element {
       }
       setName(session.user.email.split("@")[0] ?? session.user.email);
       await load(null);
+      await loadUnread();
     })();
-  }, [load]);
+  }, [load, loadUnread]);
+
+  useFocusEffect(
+    useCallback(() => {
+      void loadUnread();
+    }, [loadUnread]),
+  );
 
   return (
     <SafeAreaView className="flex-1 bg-surface-muted">
@@ -86,6 +111,31 @@ export default function FeedScreen(): JSX.Element {
               className="rounded-md border border-ink-muted/30 px-3 py-1.5"
             >
               <Text className="text-xs text-ink">{t("messaging.title")}</Text>
+            </Pressable>
+            <Pressable
+              onPress={() => router.push("/(app)/notifications")}
+              accessibilityLabel={t("notifications.title")}
+              className="relative rounded-md border border-ink-muted/30 px-3 py-1.5"
+            >
+              <Text className="text-xs text-ink">🔔</Text>
+              {unread > 0 ? (
+                <View
+                  style={{
+                    position: "absolute",
+                    top: -6,
+                    right: -6,
+                    minWidth: 18,
+                    height: 18,
+                    borderRadius: 9,
+                    paddingHorizontal: 4,
+                  }}
+                  className="items-center justify-center bg-brand-600"
+                >
+                  <Text className="text-[10px] font-semibold text-white">
+                    {unread > 99 ? "99+" : unread}
+                  </Text>
+                </View>
+              ) : null}
             </Pressable>
           </View>
         </View>

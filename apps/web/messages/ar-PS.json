@@ -133,7 +133,21 @@
     "online": "مباشر"
   },
   "notifications": {
-    "title": "الإشعارات"
+    "title": "الإشعارات",
+    "empty": "ما في جديد عندك.",
+    "loadMore": "تحميل المزيد",
+    "loading": "عم يحمّل…",
+    "live": "مباشر",
+    "templates": {
+      "CONNECTION_REQUEST": "بدّو {actor} يتواصل معك.",
+      "CONNECTION_ACCEPTED": "قبل {actor} طلب التواصل تبعك.",
+      "POST_REACTION": "تفاعل {actor} مع منشورك.",
+      "POST_COMMENT": "علّق {actor} ع منشورك.",
+      "POST_MENTION": "أشار إلك {actor} بمنشور.",
+      "MESSAGE_RECEIVED": "بعتلك {actor} رسالة.",
+      "JOB_APPLICATION_UPDATE": "في تحديث على طلبك للوظيفة.",
+      "PROFILE_VIEW": "شاف {actor} ملفك."
+    }
   },
   "jobs": {
     "search": "ابحث عن وظيفة",

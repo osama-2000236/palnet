@@ -30,3 +30,20 @@ export const MarkNotificationsReadBody = z.object({
   all: z.boolean().optional(),
 }).refine((v) => !!v.ids || v.all === true, { message: "IDS_OR_ALL_REQUIRED" });
 export type MarkNotificationsReadBody = z.infer<typeof MarkNotificationsReadBody>;
+
+// Server-sent event shapes for the /notifications/stream endpoint.
+export const WsNotificationEvent = z.discriminatedUnion("type", [
+  z.object({ type: z.literal("notification.new"), payload: Notification }),
+  z.object({
+    type: z.literal("notification.read"),
+    payload: z.object({
+      ids: z.array(z.string().cuid()),
+      at: z.string().datetime(),
+    }),
+  }),
+  z.object({
+    type: z.literal("notification.unread-count"),
+    payload: z.object({ count: z.number().int().nonnegative() }),
+  }),
+]);
+export type WsNotificationEvent = z.infer<typeof WsNotificationEvent>;

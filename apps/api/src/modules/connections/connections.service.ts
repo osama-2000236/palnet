@@ -1,12 +1,14 @@
 import { Injectable } from "@nestjs/common";
 import {
   ErrorCode,
+  NotificationType,
   type ConnectionListItem,
   type RespondConnectionBody,
   type SendConnectionBody,
 } from "@palnet/shared";
 
 import { DomainException } from "../../common/domain-exception";
+import { NotificationsService } from "../notifications/notifications.service";
 import { PrismaService } from "../prisma/prisma.service";
 
 type Direction = "OUTGOING" | "INCOMING";
@@ -44,7 +46,10 @@ interface ConnectionWithUsers {
 
 @Injectable()
 export class ConnectionsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notifications: NotificationsService,
+  ) {}
 
   // ────────────────────────────────────────────────────────────────────
   // Mutations
@@ -88,7 +93,7 @@ export class ConnectionsService {
           409,
         );
       }
-      return this.prisma.connection.update({
+      const updated = await this.prisma.connection.update({
         where: { id: existing.id },
         data: {
           requesterId,
@@ -98,9 +103,17 @@ export class ConnectionsService {
           respondedAt: null,
         },
       });
+      void this.notifications.notify({
+        type: NotificationType.CONNECTION_REQUEST,
+        recipientId: body.receiverId,
+        actorId: requesterId,
+        connectionId: updated.id,
+        dedupe: true,
+      });
+      return updated;
     }
 
-    return this.prisma.connection.create({
+    const created = await this.prisma.connection.create({
       data: {
         requesterId,
         receiverId: body.receiverId,
@@ -108,6 +121,13 @@ export class ConnectionsService {
         message: body.message ?? null,
       },
     });
+    void this.notifications.notify({
+      type: NotificationType.CONNECTION_REQUEST,
+      recipientId: body.receiverId,
+      actorId: requesterId,
+      connectionId: created.id,
+    });
+    return created;
   }
 
   async respond(
@@ -139,13 +159,22 @@ export class ConnectionsService {
         409,
       );
     }
-    return this.prisma.connection.update({
+    const updated = await this.prisma.connection.update({
       where: { id: connectionId },
       data: {
         status: body.action === "ACCEPT" ? "ACCEPTED" : "DECLINED",
         respondedAt: new Date(),
       },
     });
+    if (body.action === "ACCEPT") {
+      void this.notifications.notify({
+        type: NotificationType.CONNECTION_ACCEPTED,
+        recipientId: row.requesterId,
+        actorId: viewerId,
+        connectionId: row.id,
+      });
+    }
+    return updated;
   }
 
   async withdraw(viewerId: string, connectionId: string) {
