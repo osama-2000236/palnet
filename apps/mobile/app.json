@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "PalNet",
-    "slug": "palnet",
+    "name": "Baydar",
+    "slug": "baydar",
     "version": "0.1.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "scheme": "palnet",
+    "scheme": "baydar",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "ios": {

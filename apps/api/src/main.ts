@@ -22,8 +22,8 @@ async function bootstrap(): Promise<void> {
   });
 
   const config = new DocumentBuilder()
-    .setTitle("PalNet API")
-    .setDescription("Palestine-first professional network — REST contract")
+    .setTitle("Baydar API")
+    .setDescription("Baydar — Arabic-first professional network. REST contract.")
     .setVersion("0.1.0")
     .addBearerAuth()
     .build();

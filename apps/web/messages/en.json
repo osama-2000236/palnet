@@ -1,6 +1,6 @@
 {
   "common": {
-    "appName": "PalNet",
+    "appName": "Baydar",
     "loading": "Loading…",
     "retry": "Retry",
     "cancel": "Cancel",
@@ -9,8 +9,8 @@
     "genericError": "Something went wrong. Please try again."
   },
   "landing": {
-    "title": "Palestine's Professional Network",
-    "subtitle": "Build your professional presence, connect with peers, and discover jobs in Palestine and beyond.",
+    "title": "The professional network for the Arab world.",
+    "subtitle": "Build your presence, connect with peers, and discover jobs — in Arabic first.",
     "cta": "Create your account",
     "haveAccount": "Already have an account?",
     "login": "Sign in"

@@ -2,7 +2,7 @@
   "name": "@palnet/api",
   "version": "0.0.1",
   "private": true,
-  "description": "PalNet NestJS API — REST + WebSockets + Swagger",
+  "description": "Baydar NestJS API — REST + SSE + Swagger",
   "main": "dist/main.js",
   "scripts": {
     "build": "nest build",

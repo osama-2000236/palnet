@@ -4,11 +4,77 @@
 
 :root {
   color-scheme: light;
+
+  /* Brand (olive) — Baydar mark color */
+  --brand-50: #f4f6ef;
+  --brand-100: #e6ebd6;
+  --brand-200: #ccd6a8;
+  --brand-300: #a9b878;
+  --brand-400: #879953;
+  --brand-500: #687a3a;
+  --brand-600: #526030;
+  --brand-700: #3f4a26;
+  --brand-800: #2e371d;
+  --brand-900: #1f2513;
+
+  /* Accent (terracotta) — single CTA per screen, unread badges */
+  --accent-50: #fbf0ea;
+  --accent-100: #f4dbce;
+  --accent-500: #c65a3a;
+  --accent-600: #a8482c;
+  --accent-700: #8b3a22;
+
+  /* Ink (foreground) */
+  --ink: #1a1a17;
+  --ink-muted: #5c5a52;
+  --ink-subtle: #8a8880;
+  --ink-inverse: #ffffff;
+
+  /* Surface (backgrounds) */
+  --surface: #ffffff;
+  --surface-muted: #faf9f5;
+  --surface-subtle: #f1efe7;
+  --surface-sunken: #ebe8dc;
+
+  --line-soft: rgba(26, 26, 23, 0.08);
+  --line-hard: rgba(26, 26, 23, 0.16);
+
+  --success: #3b7a3b;
+  --warning: #b07a1a;
+  --danger: #a83232;
+  --info: #2f6d8a;
+
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+
+  --shadow-card: 0 1px 2px rgba(26, 26, 23, 0.04),
+    0 1px 3px rgba(26, 26, 23, 0.05);
+  --shadow-pop: 0 10px 28px rgba(26, 26, 23, 0.12);
+
+  --nav-h: 56px;
+  --max-w: 1128px;
+  --mobile-tab-h: 64px;
+}
+
+/* RTL helper: flip icons that need directional mirroring. Apply .rtl-mirror
+ * to arrows, navigation chevrons, send icons — NOT to clocks, padlocks,
+ * magnifiers, or numbers. */
+[dir="rtl"] .rtl-mirror {
+  transform: scaleX(-1);
 }
 
 html,
 body {
   height: 100%;
+}
+
+html {
+  font-family:
+    var(--font-naskh), var(--font-sans-arabic), "IBM Plex Sans Arabic",
+    "IBM Plex Sans", system-ui, sans-serif;
 }
 
 body {

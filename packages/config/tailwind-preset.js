@@ -1,42 +1,56 @@
 // Shared Tailwind preset for web (Next.js) and mobile (NativeWind).
-// Keep tokens consistent across platforms — any new color/spacing/font goes here.
+// Mirrors packages/ui-tokens/src/index.ts — keep them in sync.
+// Any new color/spacing/font lives in ui-tokens first, then lands here.
 
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   theme: {
     extend: {
       colors: {
-        // Brand palette — Palestine-inspired but neutral-friendly for professional UX.
+        // Brand: deep olive. The Baydar (بيدر) mark color.
         brand: {
-          50: "#eff6ff",
-          100: "#dbeafe",
-          200: "#bfdbfe",
-          300: "#93c5fd",
-          400: "#60a5fa",
-          500: "#3b82f6",
-          600: "#2563eb",
-          700: "#1d4ed8",
-          800: "#1e40af",
-          900: "#1e3a8a",
+          50: "#f4f6ef",
+          100: "#e6ebd6",
+          200: "#ccd6a8",
+          300: "#a9b878",
+          400: "#879953",
+          500: "#687a3a",
+          600: "#526030", // primary
+          700: "#3f4a26", // hover
+          800: "#2e371d",
+          900: "#1f2513",
         },
+        // Accent: terracotta. One CTA per screen, unread badges, notification dots.
         accent: {
-          // Olive/green nod — recognizable, professional.
-          500: "#4d7c0f",
-          600: "#3f6212",
+          50: "#fbf0ea",
+          100: "#f4dbce",
+          500: "#c65a3a",
+          600: "#a8482c",
+          700: "#8b3a22",
         },
         surface: {
           DEFAULT: "#ffffff",
-          muted: "#f8fafc",
-          subtle: "#f1f5f9",
+          muted: "#faf9f5",
+          subtle: "#f1efe7",
+          sunken: "#ebe8dc",
         },
         ink: {
-          DEFAULT: "#0f172a",
-          muted: "#475569",
-          subtle: "#64748b",
+          DEFAULT: "#1a1a17",
+          muted: "#5c5a52",
+          subtle: "#8a8880",
+          inverse: "#ffffff",
         },
+        line: {
+          soft: "rgba(26, 26, 23, 0.08)",
+          hard: "rgba(26, 26, 23, 0.16)",
+        },
+        success: "#3b7a3b",
+        warning: "#b07a1a",
+        danger: "#a83232",
+        info: "#2f6d8a",
       },
       fontFamily: {
-        // Arabic-first stack. "IBM Plex Sans Arabic" for headlines, "Noto Naskh Arabic" body.
+        // Arabic-first stack.
         sans: [
           "IBM Plex Sans Arabic",
           "IBM Plex Sans",
@@ -52,6 +66,7 @@ module.exports = {
           "system-ui",
           "sans-serif",
         ],
+        mono: ["IBM Plex Mono", "ui-monospace", "monospace"],
       },
       borderRadius: {
         xs: "4px",
@@ -66,8 +81,8 @@ module.exports = {
         18: "4.5rem",
       },
       boxShadow: {
-        card: "0 1px 2px rgba(15, 23, 42, 0.04), 0 1px 3px rgba(15, 23, 42, 0.06)",
-        pop: "0 8px 24px rgba(15, 23, 42, 0.10)",
+        card: "0 1px 2px rgba(26,26,23,0.04), 0 1px 3px rgba(26,26,23,0.05)",
+        pop: "0 10px 28px rgba(26,26,23,0.12)",
       },
     },
   },
