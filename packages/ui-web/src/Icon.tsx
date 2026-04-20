@@ -20,6 +20,7 @@ export type IconName =
   | "bell"
   | "bookmark"
   | "briefcase"
+  | "calendar"
   | "check"
   | "chevron-down"
   | "comment"
@@ -153,6 +154,14 @@ export function Icon({
         <svg {...common}>
           {title ? <title>{title}</title> : null}
           <path d="M4 5h16v12H8l-4 4z" />
+        </svg>
+      );
+    case "calendar":
+      return (
+        <svg {...common}>
+          {title ? <title>{title}</title> : null}
+          <rect x="3" y="5" width="18" height="16" rx="2" />
+          <path d="M3 10h18M8 3v4M16 3v4" />
         </svg>
       );
     case "repost":
