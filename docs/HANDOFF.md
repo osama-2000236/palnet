@@ -93,15 +93,52 @@ Cosmetic-but-cheap items that *did* land in Sprint 1:
 - Unread badges use `accent-600`; own-message bubbles use `brand-600` — the two
   signals no longer collide.
 
-### Sprint 2 — AppShell + nav (web)
+### Sprint 2 — AppShell + nav (web) ✅ DONE
 
-1. Build `<AppShell>` per `docs/components/AppShell.md`.
-2. Wrap every `(app)` route in it.
-3. Make search input navigate to `/search` on keystroke.
-4. Wire unread counts from Messages + Notifications.
-5. Add `⌘K` / `Ctrl+K` search focus.
-6. Profile menu dropdown: "View profile", "Settings", "Sign out".
-7. Keyboard tab order audit.
+1. ✅ Build `<AppShell>` per `docs/components/AppShell.md`.
+2. ✅ Wrap every `(app)` route in it (new `apps/web/src/app/[locale]/(app)/layout.tsx`).
+3. ✅ Make search input navigate to `/search` on keystroke.
+4. ✅ Wire unread counts from Messages + Notifications (SSE, both streams).
+5. ✅ Add `⌘K` / `Ctrl+K` search focus.
+6. ✅ Profile menu dropdown: "View profile", "Settings", "Sign out".
+7. ✅ Keyboard tab order audit (Tab through nav, ⬅/➡ rove RTL-aware,
+   Home/End jump, ⬆/⬇ navigate open menu, Esc closes + returns focus).
+
+**Landed in Sprint 2:**
+
+- New atom `<Icon>` (exported from `@palnet/ui-web`) consolidates every inline
+  SVG glyph — home / users / briefcase / message / bell / search / chevron-down /
+  thumb / repost / send / check / x / more / plus / bookmark / logo. Always
+  inherits `currentColor`, never ships a hex.
+- New organism `<AppShell>` with 5 nav slots + profile menu + search pill.
+  `aria-current="page"` on the active item, `aria-label` on the <nav> landmark,
+  badges announce unread counts via an `sr-only` template (e.g. "3 رسائل غير
+  مقروءة"). `focus-visible` ring on every interactive element.
+- `(app)/layout.tsx` is the one place that fetches `/profiles/me`, subscribes
+  to `/notifications/stream` and `/messaging/stream`, and keeps the badge
+  numbers live. `/onboarding` is exempt (no shell before the user has a
+  profile).
+- Feed page stopped hand-rolling its cross-nav header (`NotificationsBell` +
+  inline text links) — that responsibility lives in the shell now.
+- New `nav.*` translations (ar + en) keep the shell free of hardcoded strings.
+
+### Sprint 2 QA gap list (observed vs. prototype)
+
+Things scoped for later sprints so Sprint 2 stays "chrome only":
+
+- **Jobs screen is a 404.** The nav links to `/jobs` but the route doesn't
+  exist yet. → Sprint 6.
+- **Profile menu has no avatar hero inside the dropdown.** Prototype shows
+  a compact me-card at the top of the menu (avatar + name + headline + "View
+  profile" CTA). Today's menu is a plain list. → Sprint 3 (lands with the
+  left-rail mini profile) or Sprint 6 polish.
+- **Search debounce.** Every keystroke pushes the URL and triggers the search
+  page's fetch. Acceptable because the search page already fetches on value
+  change, but a 150ms debounce on the router push would cut churn. → Sprint 3
+  or later.
+- **Mobile top bar.** The spec calls for the web shell on ≥ md; small screens
+  should collapse to tabs (per `docs/design/MOBILE.md`). Currently the web
+  shell renders everywhere. → Sprint 5 when the mobile app lands.
 
 ### Sprint 3 — Feed polish
 
