@@ -57,7 +57,7 @@ export function PostCard({
   }
 
   return (
-    <article className="flex flex-col gap-3 rounded-md border border-ink-muted/20 bg-white p-4 shadow-card">
+    <article className="flex flex-col gap-3 rounded-md border border-ink-muted/20 bg-surface p-4 shadow-card">
       <header className="flex flex-col">
         <Link
           href={`/in/${post.author.handle}`}

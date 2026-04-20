@@ -287,7 +287,7 @@ export default function MessagesPage(): JSX.Element {
 
       <div className="grid min-h-[520px] grid-cols-1 gap-4 md:grid-cols-[280px_1fr]">
         {/* Rooms list */}
-        <aside className="flex flex-col gap-1 rounded-md border border-ink-muted/20 bg-white p-2 shadow-card">
+        <aside className="flex flex-col gap-1 rounded-md border border-ink-muted/20 bg-surface p-2 shadow-card">
           {rooms.length === 0 ? (
             <p className="p-4 text-sm text-ink-muted">{t("emptyList")}</p>
           ) : (
@@ -315,7 +315,7 @@ export default function MessagesPage(): JSX.Element {
                       {label}
                     </span>
                     {room.unreadCount > 0 ? (
-                      <span className="rounded-full bg-brand-600 px-1.5 text-xs text-white">
+                      <span className="rounded-full bg-accent-600 px-1.5 text-xs text-ink-inverse">
                         {room.unreadCount}
                       </span>
                     ) : null}
@@ -332,7 +332,7 @@ export default function MessagesPage(): JSX.Element {
         </aside>
 
         {/* Active thread */}
-        <section className="flex min-h-[520px] flex-col rounded-md border border-ink-muted/20 bg-white shadow-card">
+        <section className="flex min-h-[520px] flex-col rounded-md border border-ink-muted/20 bg-surface shadow-card">
           {!activeRoomId ? (
             <div className="flex flex-1 items-center justify-center p-8 text-sm text-ink-muted">
               {t("selectPrompt")}
@@ -385,7 +385,7 @@ export default function MessagesPage(): JSX.Element {
                         key={m.id}
                         className={`flex max-w-[75%] flex-col gap-0.5 rounded-lg px-3 py-2 text-sm ${
                           mine
-                            ? "self-end bg-brand-600 text-white"
+                            ? "self-end bg-brand-600 text-ink-inverse"
                             : "self-start bg-ink-muted/10 text-ink"
                         }`}
                       >
@@ -394,7 +394,7 @@ export default function MessagesPage(): JSX.Element {
                         </span>
                         <span
                           className={`text-[10px] ${
-                            mine ? "text-white/70" : "text-ink-muted"
+                            mine ? "text-ink-inverse/70" : "text-ink-muted"
                           }`}
                         >
                           {formatTime(m.createdAt)}
@@ -408,7 +408,7 @@ export default function MessagesPage(): JSX.Element {
               {error ? (
                 <p
                   role="alert"
-                  className="border-t border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700"
+                  className="border-t border-danger/20 bg-danger/10 px-4 py-2 text-sm text-danger"
                 >
                   {error}
                 </p>
@@ -438,7 +438,7 @@ export default function MessagesPage(): JSX.Element {
                 <button
                   type="submit"
                   disabled={sending || draft.trim().length === 0}
-                  className="rounded-md bg-brand-600 px-4 py-2 text-sm text-white shadow-card hover:bg-brand-700 disabled:opacity-60"
+                  className="rounded-md bg-brand-600 px-4 py-2 text-sm text-ink-inverse shadow-card hover:bg-brand-700 disabled:opacity-60"
                 >
                   {t("send")}
                 </button>

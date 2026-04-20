@@ -127,7 +127,7 @@ export default function RegisterPage(): JSX.Element {
       </label>
 
       {error ? (
-        <p role="alert" className="text-sm text-red-600">
+        <p role="alert" className="text-sm text-danger">
           {error}
         </p>
       ) : null}
@@ -135,7 +135,7 @@ export default function RegisterPage(): JSX.Element {
       <button
         type="submit"
         disabled={busy}
-        className="rounded-md bg-brand-600 px-4 py-2 text-white shadow-card hover:bg-brand-700 disabled:opacity-60"
+        className="rounded-md bg-brand-600 px-4 py-2 text-ink-inverse shadow-card hover:bg-brand-700 disabled:opacity-60"
       >
         {t("submitRegister")}
       </button>

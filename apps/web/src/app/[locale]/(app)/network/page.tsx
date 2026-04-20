@@ -106,7 +106,7 @@ export default function NetworkRoute(): JSX.Element {
       {loading ? (
         <p className="text-ink-muted">…</p>
       ) : items.length === 0 ? (
-        <p className="rounded-md border border-ink-muted/20 bg-white p-6 text-ink-muted">
+        <p className="rounded-md border border-ink-muted/20 bg-surface p-6 text-ink-muted">
           {t("empty")}
         </p>
       ) : (
@@ -114,7 +114,7 @@ export default function NetworkRoute(): JSX.Element {
           {items.map((c) => (
             <li
               key={c.connectionId}
-              className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-ink-muted/20 bg-white p-4"
+              className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-ink-muted/20 bg-surface p-4"
             >
               <Link href={`/in/${c.user.handle}`} className="flex flex-col">
                 <span className="font-semibold text-ink">
@@ -132,7 +132,7 @@ export default function NetworkRoute(): JSX.Element {
                   <button
                     type="button"
                     onClick={() => void respond(c.connectionId, "ACCEPT")}
-                    className="rounded-md bg-brand-600 px-3 py-1.5 text-sm font-semibold text-white"
+                    className="rounded-md bg-brand-600 px-3 py-1.5 text-sm font-semibold text-ink-inverse"
                   >
                     {t("accept")}
                   </button>
@@ -184,7 +184,7 @@ function FilterTab({
       onClick={onClick}
       className={
         active
-          ? "rounded-md bg-brand-600 px-4 py-1.5 text-sm font-semibold text-white"
+          ? "rounded-md bg-brand-600 px-4 py-1.5 text-sm font-semibold text-ink-inverse"
           : "rounded-md border border-ink-muted/30 px-4 py-1.5 text-sm text-ink hover:bg-ink-muted/5"
       }
     >

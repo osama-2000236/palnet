@@ -153,7 +153,7 @@ function BasicsSection({
   }
 
   return (
-    <section className="rounded-md border border-ink-muted/20 bg-white p-6">
+    <section className="rounded-md border border-ink-muted/20 bg-surface p-6">
       <h2 className="mb-3 text-xl font-semibold text-ink">{t("basics")}</h2>
 
       <div className="mb-4 flex items-center gap-4">
@@ -223,13 +223,13 @@ function BasicsSection({
           maxLength={120}
         />
       </Field>
-      {error ? <p className="text-sm text-red-600">{error}</p> : null}
+      {error ? <p className="text-sm text-danger">{error}</p> : null}
       <div className="mt-3 flex justify-end">
         <button
           type="button"
           onClick={save}
           disabled={busy}
-          className="rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
+          className="rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-ink-inverse disabled:opacity-60"
         >
           {t("save")}
         </button>
@@ -301,7 +301,7 @@ function ExperiencesSection({
   }
 
   return (
-    <section className="rounded-md border border-ink-muted/20 bg-white p-6">
+    <section className="rounded-md border border-ink-muted/20 bg-surface p-6">
       <div className="mb-3 flex items-center justify-between">
         <h2 className="text-xl font-semibold text-ink">{t("experience")}</h2>
         {!draft ? (
@@ -333,7 +333,7 @@ function ExperiencesSection({
                 type="button"
                 onClick={() => void remove(e.id as string)}
                 disabled={busy}
-                className="text-xs text-red-600 hover:underline"
+                className="text-xs text-danger hover:underline"
               >
                 {t("remove")}
               </button>
@@ -390,7 +390,7 @@ function ExperiencesSection({
               type="button"
               onClick={add}
               disabled={busy}
-              className="rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
+              className="rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-ink-inverse disabled:opacity-60"
             >
               {t("save")}
             </button>
@@ -462,7 +462,7 @@ function EducationsSection({
   }
 
   return (
-    <section className="rounded-md border border-ink-muted/20 bg-white p-6">
+    <section className="rounded-md border border-ink-muted/20 bg-surface p-6">
       <div className="mb-3 flex items-center justify-between">
         <h2 className="text-xl font-semibold text-ink">{t("education")}</h2>
         {!draft ? (
@@ -496,7 +496,7 @@ function EducationsSection({
                 type="button"
                 onClick={() => void remove(e.id as string)}
                 disabled={busy}
-                className="text-xs text-red-600 hover:underline"
+                className="text-xs text-danger hover:underline"
               >
                 {t("remove")}
               </button>
@@ -541,7 +541,7 @@ function EducationsSection({
               type="button"
               onClick={add}
               disabled={busy}
-              className="rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
+              className="rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-ink-inverse disabled:opacity-60"
             >
               {t("save")}
             </button>
@@ -603,7 +603,7 @@ function SkillsSection({
   }
 
   return (
-    <section className="rounded-md border border-ink-muted/20 bg-white p-6">
+    <section className="rounded-md border border-ink-muted/20 bg-surface p-6">
       <h2 className="mb-3 text-xl font-semibold text-ink">{t("skills")}</h2>
       <ul className="mb-3 flex flex-wrap gap-2">
         {profile.skills.map((s) => (
@@ -617,7 +617,7 @@ function SkillsSection({
               onClick={() => void remove(s)}
               disabled={busy}
               aria-label={t("remove")}
-              className="text-xs text-red-600 hover:underline"
+              className="text-xs text-danger hover:underline"
             >
               ×
             </button>
@@ -639,7 +639,7 @@ function SkillsSection({
           type="button"
           onClick={add}
           disabled={busy || name.trim().length === 0}
-          className="rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
+          className="rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-ink-inverse disabled:opacity-60"
         >
           {t("add")}
         </button>

@@ -54,7 +54,7 @@ export default function ProfileRoute(): JSX.Element {
 
   return (
     <main className="mx-auto flex w-full max-w-[840px] flex-col gap-6 px-6 py-8">
-      <section className="rounded-md border border-ink-muted/20 bg-white p-6 shadow-card">
+      <section className="rounded-md border border-ink-muted/20 bg-surface p-6 shadow-card">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="flex flex-col">
             <h1 className="text-3xl font-bold text-ink">
@@ -112,14 +112,14 @@ export default function ProfileRoute(): JSX.Element {
       </section>
 
       {profile.about ? (
-        <section className="rounded-md border border-ink-muted/20 bg-white p-6">
+        <section className="rounded-md border border-ink-muted/20 bg-surface p-6">
           <h2 className="mb-2 text-xl font-semibold text-ink">{t("about")}</h2>
           <p className="whitespace-pre-wrap text-ink">{profile.about}</p>
         </section>
       ) : null}
 
       {profile.experiences.length > 0 ? (
-        <section className="rounded-md border border-ink-muted/20 bg-white p-6">
+        <section className="rounded-md border border-ink-muted/20 bg-surface p-6">
           <h2 className="mb-3 text-xl font-semibold text-ink">
             {t("experience")}
           </h2>
@@ -138,7 +138,7 @@ export default function ProfileRoute(): JSX.Element {
       ) : null}
 
       {profile.educations.length > 0 ? (
-        <section className="rounded-md border border-ink-muted/20 bg-white p-6">
+        <section className="rounded-md border border-ink-muted/20 bg-surface p-6">
           <h2 className="mb-3 text-xl font-semibold text-ink">
             {t("education")}
           </h2>
@@ -159,7 +159,7 @@ export default function ProfileRoute(): JSX.Element {
       ) : null}
 
       {profile.skills.length > 0 ? (
-        <section className="rounded-md border border-ink-muted/20 bg-white p-6">
+        <section className="rounded-md border border-ink-muted/20 bg-surface p-6">
           <h2 className="mb-3 text-xl font-semibold text-ink">{t("skills")}</h2>
           <ul className="flex flex-wrap gap-2">
             {profile.skills.map((s) => (

@@ -122,13 +122,13 @@ export default function NetworkScreen(): JSX.Element {
                 <ActivityIndicator />
               </View>
             ) : (
-              <View className="rounded-md border border-ink-muted/20 bg-white p-6">
+              <View className="rounded-md border border-ink-muted/20 bg-surface p-6">
                 <Text className="text-ink-muted">{t("network.empty")}</Text>
               </View>
             )
           }
           renderItem={({ item: c }) => (
-            <View className="flex-row items-center justify-between rounded-md border border-ink-muted/20 bg-white p-3">
+            <View className="flex-row items-center justify-between rounded-md border border-ink-muted/20 bg-surface p-3">
               <Pressable
                 onPress={() => router.push(`/(app)/in/${c.user.handle}`)}
                 className="flex-1"
@@ -149,7 +149,7 @@ export default function NetworkScreen(): JSX.Element {
                     onPress={() => void respond(c.connectionId, "ACCEPT")}
                     className="rounded-md bg-brand-600 px-3 py-1.5"
                   >
-                    <Text className="text-xs text-white">
+                    <Text className="text-xs text-ink-inverse">
                       {t("network.accept")}
                     </Text>
                   </Pressable>
@@ -208,7 +208,7 @@ function FilterTab({
       }
     >
       <Text
-        className={active ? "text-xs font-semibold text-white" : "text-xs text-ink"}
+        className={active ? "text-xs font-semibold text-ink-inverse" : "text-xs text-ink"}
       >
         {children}
       </Text>

@@ -86,18 +86,18 @@ function SearchInner(): JSX.Element {
           value={q}
           onChange={(e) => setQ(e.target.value)}
           placeholder={t("placeholder")}
-          className="flex-1 rounded-md border border-ink-muted/30 bg-white px-3 py-2 text-ink"
+          className="flex-1 rounded-md border border-ink-muted/30 bg-surface px-3 py-2 text-ink"
         />
         <button
           type="submit"
-          className="rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-white"
+          className="rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-ink-inverse"
         >
           {t("submit")}
         </button>
       </form>
 
       {hits.length === 0 && !loading ? (
-        <p className="rounded-md border border-ink-muted/20 bg-white p-6 text-ink-muted">
+        <p className="rounded-md border border-ink-muted/20 bg-surface p-6 text-ink-muted">
           {q.trim() ? t("noResults") : t("prompt")}
         </p>
       ) : (
@@ -105,7 +105,7 @@ function SearchInner(): JSX.Element {
           {hits.map((p) => (
             <li
               key={p.userId}
-              className="rounded-md border border-ink-muted/20 bg-white p-4"
+              className="rounded-md border border-ink-muted/20 bg-surface p-4"
             >
               <Link href={`/in/${p.handle}`} className="flex flex-col">
                 <span className="font-semibold text-ink">

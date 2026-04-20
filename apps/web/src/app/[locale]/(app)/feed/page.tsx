@@ -92,7 +92,7 @@ export default function FeedPageRoute(): JSX.Element {
       <Composer onPosted={(p) => setPosts((prev) => [p, ...prev])} />
 
       {posts.length === 0 && !loading ? (
-        <div className="rounded-md border border-ink-muted/20 bg-white p-6 text-ink-muted">
+        <div className="rounded-md border border-ink-muted/20 bg-surface p-6 text-ink-muted">
           {t("empty")}
         </div>
       ) : (

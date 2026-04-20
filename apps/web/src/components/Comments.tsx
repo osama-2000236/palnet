@@ -119,18 +119,18 @@ export function Comments({
           onChange={(e) => setDraft(e.target.value)}
           placeholder={t("commentPlaceholder")}
           maxLength={2000}
-          className="flex-1 rounded-md border border-ink-muted/30 bg-white px-3 py-1.5 text-sm text-ink"
+          className="flex-1 rounded-md border border-ink-muted/30 bg-surface px-3 py-1.5 text-sm text-ink"
         />
         <button
           type="submit"
           disabled={busy || draft.trim().length === 0}
-          className="rounded-md bg-brand-600 px-3 py-1.5 text-sm font-semibold text-white disabled:opacity-60"
+          className="rounded-md bg-brand-600 px-3 py-1.5 text-sm font-semibold text-ink-inverse disabled:opacity-60"
         >
           {t("commentSubmit")}
         </button>
       </form>
       {error ? (
-        <span className="text-xs text-red-600" role="alert">
+        <span className="text-xs text-danger" role="alert">
           {error}
         </span>
       ) : null}

@@ -5,6 +5,7 @@ import {
   type ChatRoom,
   type Message,
 } from "@palnet/shared";
+import { tokens } from "@palnet/ui-tokens";
 import { router, useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -145,7 +146,7 @@ export default function MessageThreadScreen(): JSX.Element {
         behavior={Platform.OS === "ios" ? "padding" : undefined}
         className="flex-1"
       >
-        <View className="flex-row items-center gap-2 border-b border-ink-muted/10 bg-white px-4 py-3">
+        <View className="flex-row items-center gap-2 border-b border-ink-muted/10 bg-surface px-4 py-3">
           <Pressable onPress={() => router.back()}>
             <Text className="text-brand-600">‹</Text>
           </Pressable>
@@ -173,12 +174,12 @@ export default function MessageThreadScreen(): JSX.Element {
         />
 
         {error ? (
-          <View className="border-t border-red-200 bg-red-50 px-4 py-2">
-            <Text className="text-sm text-red-700">{error}</Text>
+          <View className="border-t border-danger/20 bg-danger/10 px-4 py-2">
+            <Text className="text-sm text-danger">{error}</Text>
           </View>
         ) : null}
 
-        <View className="flex-row items-end gap-2 border-t border-ink-muted/10 bg-white p-2">
+        <View className="flex-row items-end gap-2 border-t border-ink-muted/10 bg-surface p-2">
           <TextInput
             value={draft}
             onChangeText={setDraft}
@@ -193,9 +194,9 @@ export default function MessageThreadScreen(): JSX.Element {
             className="rounded-md bg-brand-600 px-4 py-2 disabled:opacity-60"
           >
             {sending ? (
-              <ActivityIndicator color="#fff" />
+              <ActivityIndicator color={tokens.color.ink.inverse} />
             ) : (
-              <Text className="text-sm text-white">{t("messaging.send")}</Text>
+              <Text className="text-sm text-ink-inverse">{t("messaging.send")}</Text>
             )}
           </Pressable>
         </View>
@@ -219,7 +220,7 @@ function MessageBubble({
           : "self-start bg-ink-muted/10"
       }`}
     >
-      <Text className={mine ? "text-white" : "text-ink"}>{message.body}</Text>
+      <Text className={mine ? "text-ink-inverse" : "text-ink"}>{message.body}</Text>
     </View>
   );
 }

@@ -113,14 +113,14 @@ export function CommentsList({
           onChangeText={setDraft}
           placeholder={t("post.commentPlaceholder")}
           maxLength={2000}
-          className="flex-1 rounded-md border border-ink-muted/30 bg-white px-3 py-1.5 text-ink"
+          className="flex-1 rounded-md border border-ink-muted/30 bg-surface px-3 py-1.5 text-ink"
         />
         <Pressable
           onPress={submit}
           disabled={busy || draft.trim().length === 0}
           className="rounded-md bg-brand-600 px-3 py-1.5"
         >
-          <Text className="text-xs font-semibold text-white">
+          <Text className="text-xs font-semibold text-ink-inverse">
             {t("post.commentSubmit")}
           </Text>
         </Pressable>

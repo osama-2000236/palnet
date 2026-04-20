@@ -93,7 +93,7 @@ export function Composer({
   }
 
   return (
-    <section className="flex flex-col gap-2 rounded-md border border-ink-muted/20 bg-white p-4 shadow-card">
+    <section className="flex flex-col gap-2 rounded-md border border-ink-muted/20 bg-surface p-4 shadow-card">
       <label className="text-sm font-semibold text-ink">{t("title")}</label>
       <textarea
         value={body}
@@ -119,7 +119,7 @@ export function Composer({
                   setMedia((prev) => prev.filter((_, j) => j !== i))
                 }
                 aria-label="remove"
-                className="absolute -top-2 -end-2 flex h-5 w-5 items-center justify-center rounded-full bg-white text-xs text-red-600 shadow"
+                className="absolute -top-2 -end-2 flex h-5 w-5 items-center justify-center rounded-full bg-surface text-xs text-danger shadow-card"
               >
                 ×
               </button>
@@ -129,7 +129,7 @@ export function Composer({
       ) : null}
 
       {error ? (
-        <p role="alert" className="text-sm text-red-600">
+        <p role="alert" className="text-sm text-danger">
           {error}
         </p>
       ) : null}
@@ -150,7 +150,7 @@ export function Composer({
             type="button"
             onClick={submit}
             disabled={busy || body.trim().length === 0}
-            className="rounded-md bg-brand-600 px-4 py-2 text-white shadow-card hover:bg-brand-700 disabled:opacity-60"
+            className="rounded-md bg-brand-600 px-4 py-2 text-ink-inverse shadow-card hover:bg-brand-700 disabled:opacity-60"
           >
             {t("submit")}
           </button>

@@ -27,7 +27,7 @@ export default function Landing(): JSX.Element {
           onPress={() => router.push("/(auth)/register")}
           className="mt-4 rounded-md bg-brand-600 px-6 py-3 shadow-card"
         >
-          <Text className="text-white">{t("landing.cta")}</Text>
+          <Text className="text-ink-inverse">{t("landing.cta")}</Text>
         </Pressable>
         <Pressable onPress={() => router.push("/(auth)/login")}>
           <Text className="text-brand-600">{t("landing.login")}</Text>

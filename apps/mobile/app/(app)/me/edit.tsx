@@ -86,7 +86,7 @@ function Card({
   children: React.ReactNode;
 }): JSX.Element {
   return (
-    <View className="rounded-md border border-ink-muted/20 bg-white p-4">
+    <View className="rounded-md border border-ink-muted/20 bg-surface p-4">
       <Text className="mb-3 text-lg font-semibold text-ink">{title}</Text>
       {children}
     </View>
@@ -110,7 +110,7 @@ function Input({
       onChangeText={onChangeText}
       placeholder={placeholder}
       multiline={multiline}
-      className="mb-2 rounded-md border border-ink-muted/30 bg-white px-3 py-2 text-ink"
+      className="mb-2 rounded-md border border-ink-muted/30 bg-surface px-3 py-2 text-ink"
       style={multiline ? { minHeight: 80, textAlignVertical: "top" } : undefined}
     />
   );
@@ -234,7 +234,7 @@ function BasicsCard({
         disabled={busy}
         className="self-end rounded-md bg-brand-600 px-4 py-2"
       >
-        <Text className="text-sm font-semibold text-white">
+        <Text className="text-sm font-semibold text-ink-inverse">
           {t("profile.save")}
         </Text>
       </Pressable>
@@ -324,7 +324,7 @@ function ExperiencesCard({
           </View>
           {e.id ? (
             <Pressable onPress={() => void remove(e.id as string)} disabled={busy}>
-              <Text className="text-xs text-red-600">{t("profile.remove")}</Text>
+              <Text className="text-xs text-danger">{t("profile.remove")}</Text>
             </Pressable>
           ) : null}
         </View>
@@ -345,7 +345,7 @@ function ExperiencesCard({
               disabled={busy}
               className="rounded-md bg-brand-600 px-4 py-2"
             >
-              <Text className="text-sm font-semibold text-white">
+              <Text className="text-sm font-semibold text-ink-inverse">
                 {t("profile.save")}
               </Text>
             </Pressable>
@@ -439,7 +439,7 @@ function EducationsCard({
           </View>
           {e.id ? (
             <Pressable onPress={() => void remove(e.id as string)} disabled={busy}>
-              <Text className="text-xs text-red-600">{t("profile.remove")}</Text>
+              <Text className="text-xs text-danger">{t("profile.remove")}</Text>
             </Pressable>
           ) : null}
         </View>
@@ -459,7 +459,7 @@ function EducationsCard({
               disabled={busy}
               className="rounded-md bg-brand-600 px-4 py-2"
             >
-              <Text className="text-sm font-semibold text-white">
+              <Text className="text-sm font-semibold text-ink-inverse">
                 {t("profile.save")}
               </Text>
             </Pressable>
@@ -533,7 +533,7 @@ function SkillsCard({
             className="flex-row items-center gap-1 rounded-full border border-ink-muted/30 px-3 py-1"
           >
             <Text className="text-sm text-ink">{s.name}</Text>
-            <Text className="text-xs text-red-600"> ×</Text>
+            <Text className="text-xs text-danger"> ×</Text>
           </Pressable>
         ))}
       </View>
@@ -543,14 +543,14 @@ function SkillsCard({
           onChangeText={setName}
           placeholder={t("profile.addSkillPlaceholder") ?? "Add a skill"}
           maxLength={60}
-          className="flex-1 rounded-md border border-ink-muted/30 bg-white px-3 py-2 text-ink"
+          className="flex-1 rounded-md border border-ink-muted/30 bg-surface px-3 py-2 text-ink"
         />
         <Pressable
           onPress={add}
           disabled={busy || name.trim().length === 0}
           className="rounded-md bg-brand-600 px-4 py-2"
         >
-          <Text className="text-sm font-semibold text-white">
+          <Text className="text-sm font-semibold text-ink-inverse">
             {t("profile.add")}
           </Text>
         </Pressable>

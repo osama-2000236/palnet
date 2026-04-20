@@ -110,7 +110,7 @@ export function ConnectButton({
   }
 
   const buttonClasses =
-    "rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-white shadow-card disabled:opacity-60";
+    "rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-ink-inverse shadow-card disabled:opacity-60";
   const secondary =
     "rounded-md border border-ink-muted/30 px-4 py-2 text-sm text-ink hover:bg-ink-muted/5 disabled:opacity-60";
 
@@ -126,7 +126,7 @@ export function ConnectButton({
         >
           {t("connect")}
         </button>
-        {error ? <span className="text-xs text-red-600">{error}</span> : null}
+        {error ? <span className="text-xs text-danger">{error}</span> : null}
       </div>
     );
   }

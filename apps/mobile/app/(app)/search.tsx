@@ -75,7 +75,7 @@ export default function SearchScreen(): JSX.Element {
               setTouched(true);
               void run(q, null);
             }}
-            className="flex-1 rounded-md border border-ink-muted/30 bg-white px-3 py-2 text-ink"
+            className="flex-1 rounded-md border border-ink-muted/30 bg-surface px-3 py-2 text-ink"
           />
           <Pressable
             onPress={() => {
@@ -84,7 +84,7 @@ export default function SearchScreen(): JSX.Element {
             }}
             className="rounded-md bg-brand-600 px-4 py-2"
           >
-            <Text className="text-sm font-semibold text-white">
+            <Text className="text-sm font-semibold text-ink-inverse">
               {t("search.submit")}
             </Text>
           </Pressable>
@@ -97,7 +97,7 @@ export default function SearchScreen(): JSX.Element {
           renderItem={({ item }) => (
             <Pressable
               onPress={() => router.push(`/(app)/in/${item.handle}`)}
-              className="rounded-md border border-ink-muted/20 bg-white p-3"
+              className="rounded-md border border-ink-muted/20 bg-surface p-3"
             >
               <Text className="font-semibold text-ink">
                 {item.firstName} {item.lastName}
@@ -116,7 +116,7 @@ export default function SearchScreen(): JSX.Element {
           }}
           ListEmptyComponent={
             loading ? null : (
-              <View className="rounded-md border border-ink-muted/20 bg-white p-6">
+              <View className="rounded-md border border-ink-muted/20 bg-surface p-6">
                 <Text className="text-ink-muted">
                   {touched ? t("search.noResults") : t("search.prompt")}
                 </Text>

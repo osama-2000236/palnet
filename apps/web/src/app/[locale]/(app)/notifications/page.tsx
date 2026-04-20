@@ -130,7 +130,7 @@ export default function NotificationsPageRoute(): JSX.Element {
       </header>
 
       {items.length === 0 && !loading ? (
-        <div className="rounded-md border border-ink-muted/20 bg-white p-6 text-sm text-ink-muted">
+        <div className="rounded-md border border-ink-muted/20 bg-surface p-6 text-sm text-ink-muted">
           {t("empty")}
         </div>
       ) : (
@@ -174,7 +174,7 @@ function NotificationRow({ item }: { item: Notification }): JSX.Element {
       className={`flex items-start gap-3 rounded-md border p-3 transition ${
         unread
           ? "border-brand-500/30 bg-brand-50"
-          : "border-ink-muted/20 bg-white"
+          : "border-ink-muted/20 bg-surface"
       }`}
     >
       {actor?.avatarUrl ? (
@@ -199,7 +199,7 @@ function NotificationRow({ item }: { item: Notification }): JSX.Element {
       {unread ? (
         <span
           aria-hidden="true"
-          className="mt-1 h-2 w-2 flex-none rounded-full bg-brand-600"
+          className="mt-1 h-2 w-2 flex-none rounded-full bg-accent-600"
         />
       ) : null}
     </div>

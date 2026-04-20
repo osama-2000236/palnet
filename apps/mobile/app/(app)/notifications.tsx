@@ -99,7 +99,7 @@ export default function NotificationsScreen(): JSX.Element {
           }}
           ListEmptyComponent={
             loading ? null : (
-              <View className="rounded-md border border-ink-muted/20 bg-white p-6">
+              <View className="rounded-md border border-ink-muted/20 bg-surface p-6">
                 <Text className="text-ink-muted">{t("notifications.empty")}</Text>
               </View>
             )
@@ -133,7 +133,7 @@ function NotificationRow({ item }: { item: Notification }): JSX.Element {
       className={`flex-row items-start gap-3 rounded-md border p-3 ${
         unread
           ? "border-brand-500/30 bg-brand-50"
-          : "border-ink-muted/20 bg-white"
+          : "border-ink-muted/20 bg-surface"
       }`}
     >
       {actor?.avatarUrl ? (
@@ -155,7 +155,7 @@ function NotificationRow({ item }: { item: Notification }): JSX.Element {
         </Text>
       </View>
       {unread ? (
-        <View className="mt-1 h-2 w-2 rounded-full bg-brand-600" />
+        <View className="mt-1 h-2 w-2 rounded-full bg-accent-600" />
       ) : null}
     </View>
   );

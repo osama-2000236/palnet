@@ -75,7 +75,7 @@ export default function MessagesListScreen(): JSX.Element {
           ItemSeparatorComponent={() => <View className="h-2" />}
           ListEmptyComponent={
             loading ? null : (
-              <View className="rounded-md border border-ink-muted/20 bg-white p-6">
+              <View className="rounded-md border border-ink-muted/20 bg-surface p-6">
                 <Text className="text-ink-muted">
                   {t("messaging.emptyList")}
                 </Text>
@@ -111,7 +111,7 @@ function RoomRow({
   return (
     <Pressable
       onPress={() => router.push(`/(app)/messages/${room.id}`)}
-      className="flex-row items-center justify-between rounded-md border border-ink-muted/20 bg-white px-4 py-3"
+      className="flex-row items-center justify-between rounded-md border border-ink-muted/20 bg-surface px-4 py-3"
     >
       <View className="flex-1">
         <Text className="text-base font-semibold text-ink">{label}</Text>
@@ -122,8 +122,8 @@ function RoomRow({
         ) : null}
       </View>
       {room.unreadCount > 0 ? (
-        <View className="ms-2 rounded-full bg-brand-600 px-2 py-0.5">
-          <Text className="text-xs text-white">{room.unreadCount}</Text>
+        <View className="ms-2 rounded-full bg-accent-600 px-2 py-0.5">
+          <Text className="text-xs text-ink-inverse">{room.unreadCount}</Text>
         </View>
       ) : null}
     </Pressable>

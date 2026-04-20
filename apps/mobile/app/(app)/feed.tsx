@@ -129,9 +129,9 @@ export default function FeedScreen(): JSX.Element {
                     borderRadius: 9,
                     paddingHorizontal: 4,
                   }}
-                  className="items-center justify-center bg-brand-600"
+                  className="items-center justify-center bg-accent-600"
                 >
-                  <Text className="text-[10px] font-semibold text-white">
+                  <Text className="text-[10px] font-semibold text-ink-inverse">
                     {unread > 99 ? "99+" : unread}
                   </Text>
                 </View>
@@ -142,7 +142,7 @@ export default function FeedScreen(): JSX.Element {
 
         <Pressable
           onPress={() => router.push("/(app)/composer")}
-          className="mb-3 rounded-md border border-ink-muted/20 bg-white p-4"
+          className="mb-3 rounded-md border border-ink-muted/20 bg-surface p-4"
         >
           <Text className="text-ink-muted">{t("composer.placeholder")}</Text>
         </Pressable>
@@ -167,7 +167,7 @@ export default function FeedScreen(): JSX.Element {
           }}
           ListEmptyComponent={
             loading ? null : (
-              <View className="rounded-md border border-ink-muted/20 bg-white p-6">
+              <View className="rounded-md border border-ink-muted/20 bg-surface p-6">
                 <Text className="text-ink-muted">{t("feed.empty")}</Text>
               </View>
             )
@@ -234,7 +234,7 @@ function PostRow({
   const liked = post.viewer.reaction !== null;
 
   return (
-    <View className="rounded-md border border-ink-muted/20 bg-white p-4">
+    <View className="rounded-md border border-ink-muted/20 bg-surface p-4">
       <Pressable onPress={() => router.push(`/(app)/in/${post.author.handle}`)}>
         <Text className="font-semibold text-ink">
           {post.author.firstName} {post.author.lastName}

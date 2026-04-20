@@ -17,7 +17,7 @@ export default async function LandingPage({
       <p className="max-w-xl text-ink-muted">{t("subtitle")}</p>
       <Link
         href="/register"
-        className="inline-flex items-center rounded-md bg-brand-600 px-6 py-3 text-white shadow-card hover:bg-brand-700"
+        className="inline-flex items-center rounded-md bg-brand-600 px-6 py-3 text-ink-inverse shadow-card hover:bg-brand-700"
       >
         {t("cta")}
       </Link>

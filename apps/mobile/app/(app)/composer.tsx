@@ -4,6 +4,7 @@ import {
   type MediaRef,
   Post,
 } from "@palnet/shared";
+import { tokens } from "@palnet/ui-tokens";
 import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
 import { useState } from "react";
@@ -114,7 +115,7 @@ export default function ComposerScreen(): JSX.Element {
           placeholder={t("composer.placeholder")}
           multiline
           maxLength={3000}
-          className="min-h-[160px] rounded-md border border-ink-muted/30 bg-white p-3 text-ink"
+          className="min-h-[160px] rounded-md border border-ink-muted/30 bg-surface p-3 text-ink"
           textAlignVertical="top"
         />
         <Text className="self-end text-xs text-ink-muted">{body.length} / 3000</Text>
@@ -148,7 +149,7 @@ export default function ComposerScreen(): JSX.Element {
         </Pressable>
 
         {error ? (
-          <Text className="text-sm text-red-600" accessibilityRole="alert">
+          <Text className="text-sm text-danger" accessibilityRole="alert">
             {error}
           </Text>
         ) : null}
@@ -159,9 +160,9 @@ export default function ComposerScreen(): JSX.Element {
           className="rounded-md bg-brand-600 px-6 py-3 shadow-card"
         >
           {busy ? (
-            <ActivityIndicator color="#fff" />
+            <ActivityIndicator color={tokens.color.ink.inverse} />
           ) : (
-            <Text className="text-center text-white">{t("composer.submit")}</Text>
+            <Text className="text-center text-ink-inverse">{t("composer.submit")}</Text>
           )}
         </Pressable>
 

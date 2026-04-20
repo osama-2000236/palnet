@@ -1,3 +1,4 @@
+import { tokens } from "@palnet/ui-tokens";
 import { router } from "expo-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -49,7 +50,7 @@ export default function LoginScreen(): JSX.Element {
             autoComplete="email"
             keyboardType="email-address"
             autoCapitalize="none"
-            className="rounded-md border border-ink-muted/30 bg-white px-3 py-2 text-ink"
+            className="rounded-md border border-ink-muted/30 bg-surface px-3 py-2 text-ink"
           />
         </View>
 
@@ -60,12 +61,12 @@ export default function LoginScreen(): JSX.Element {
             onChangeText={setPassword}
             secureTextEntry
             autoComplete="password"
-            className="rounded-md border border-ink-muted/30 bg-white px-3 py-2 text-ink"
+            className="rounded-md border border-ink-muted/30 bg-surface px-3 py-2 text-ink"
           />
         </View>
 
         {error ? (
-          <Text className="text-sm text-red-600" accessibilityRole="alert">
+          <Text className="text-sm text-danger" accessibilityRole="alert">
             {error}
           </Text>
         ) : null}
@@ -76,9 +77,9 @@ export default function LoginScreen(): JSX.Element {
           className="rounded-md bg-brand-600 px-6 py-3 shadow-card"
         >
           {busy ? (
-            <ActivityIndicator color="#fff" />
+            <ActivityIndicator color={tokens.color.ink.inverse} />
           ) : (
-            <Text className="text-center text-white">{t("auth.submitLogin")}</Text>
+            <Text className="text-center text-ink-inverse">{t("auth.submitLogin")}</Text>
           )}
         </Pressable>
 
