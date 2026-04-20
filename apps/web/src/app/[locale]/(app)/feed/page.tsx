@@ -2,13 +2,11 @@
 
 import { type Post, cursorPage } from "@palnet/shared";
 import { Surface } from "@palnet/ui-web";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 
 import { Composer } from "@/components/Composer";
-import { NotificationsBell } from "@/components/NotificationsBell";
 import { PostCard } from "@/components/PostCard";
 import { apiFetchPage } from "@/lib/api";
 import { Post as PostSchema } from "@palnet/shared";
@@ -18,9 +16,6 @@ const FeedPage = cursorPage(PostSchema);
 
 export default function FeedPageRoute(): JSX.Element {
   const t = useTranslations("feed");
-  const tNet = useTranslations("network");
-  const tSearch = useTranslations("search");
-  const tMsg = useTranslations("messaging");
   const router = useRouter();
   const [posts, setPosts] = useState<Post[]>([]);
   const [cursor, setCursor] = useState<string | null>(null);
@@ -58,36 +53,13 @@ export default function FeedPageRoute(): JSX.Element {
 
   return (
     <main className="mx-auto flex w-full max-w-[680px] flex-col gap-4 px-6 py-8">
-      <header className="flex flex-wrap items-start justify-between gap-3">
-        <div className="flex flex-col gap-1">
-          <h1 className="text-3xl font-bold text-ink">{t("title")}</h1>
-          {name ? (
-            <p className="text-ink-muted" data-testid="feed-welcome">
-              {t("welcome", { name })}
-            </p>
-          ) : null}
-        </div>
-        <div className="flex gap-2">
-          <Link
-            href="/search"
-            className="rounded-md border border-ink-muted/30 px-3 py-1.5 text-sm text-ink hover:bg-ink-muted/5"
-          >
-            {tSearch("title")}
-          </Link>
-          <Link
-            href="/network"
-            className="rounded-md border border-ink-muted/30 px-3 py-1.5 text-sm text-ink hover:bg-ink-muted/5"
-          >
-            {tNet("title")}
-          </Link>
-          <Link
-            href="/messages"
-            className="rounded-md border border-ink-muted/30 px-3 py-1.5 text-sm text-ink hover:bg-ink-muted/5"
-          >
-            {tMsg("title")}
-          </Link>
-          <NotificationsBell />
-        </div>
+      <header className="flex flex-col gap-1">
+        <h1 className="text-3xl font-bold text-ink">{t("title")}</h1>
+        {name ? (
+          <p className="text-ink-muted" data-testid="feed-welcome">
+            {t("welcome", { name })}
+          </p>
+        ) : null}
       </header>
 
       <Composer onPosted={(p) => setPosts((prev) => [p, ...prev])} />
