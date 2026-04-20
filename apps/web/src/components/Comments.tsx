@@ -6,6 +6,7 @@ import {
   cursorPage,
   type Comment,
 } from "@palnet/shared";
+import { Avatar } from "@palnet/ui-web";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
@@ -88,15 +89,23 @@ export function Comments({
           {items.map((c) => (
             <li
               key={c.id}
-              className="rounded-md bg-surface-muted px-3 py-2 text-sm"
+              className="flex items-start gap-2 rounded-md bg-surface-muted px-3 py-2 text-sm"
             >
               <Link
                 href={`/in/${c.author.handle}`}
-                className="font-semibold text-ink hover:underline"
+                aria-label={`${c.author.firstName} ${c.author.lastName}`}
               >
-                {c.author.firstName} {c.author.lastName}
+                <Avatar user={c.author} size="sm" />
               </Link>
-              <p className="whitespace-pre-wrap text-ink">{c.body}</p>
+              <div className="flex min-w-0 flex-1 flex-col">
+                <Link
+                  href={`/in/${c.author.handle}`}
+                  className="font-semibold text-ink hover:underline"
+                >
+                  {c.author.firstName} {c.author.lastName}
+                </Link>
+                <p className="whitespace-pre-wrap text-ink">{c.body}</p>
+              </div>
             </li>
           ))}
         </ul>

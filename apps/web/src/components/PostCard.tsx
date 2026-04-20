@@ -1,7 +1,7 @@
 "use client";
 
 import type { Post } from "@palnet/shared";
-import { Surface } from "@palnet/ui-web";
+import { Avatar, Surface } from "@palnet/ui-web";
 import Link from "next/link";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
@@ -59,19 +59,24 @@ export function PostCard({
 
   return (
     <Surface as="article" variant="card" className="flex flex-col gap-3">
-      <header className="flex flex-col">
-        <Link
-          href={`/in/${post.author.handle}`}
-          className="font-semibold text-ink hover:underline"
-        >
-          {post.author.firstName} {post.author.lastName}
+      <header className="flex items-start gap-3">
+        <Link href={`/in/${post.author.handle}`} aria-label={`${post.author.firstName} ${post.author.lastName}`}>
+          <Avatar user={post.author} size="md" />
         </Link>
-        {post.author.headline ? (
-          <span className="text-sm text-ink-muted">{post.author.headline}</span>
-        ) : null}
-        <time className="text-xs text-ink-muted" dateTime={post.createdAt}>
-          {new Date(post.createdAt).toLocaleString()}
-        </time>
+        <div className="flex min-w-0 flex-col">
+          <Link
+            href={`/in/${post.author.handle}`}
+            className="font-semibold text-ink hover:underline"
+          >
+            {post.author.firstName} {post.author.lastName}
+          </Link>
+          {post.author.headline ? (
+            <span className="text-sm text-ink-muted">{post.author.headline}</span>
+          ) : null}
+          <time className="text-xs text-ink-muted" dateTime={post.createdAt}>
+            {new Date(post.createdAt).toLocaleString()}
+          </time>
+        </div>
       </header>
 
       <p className="whitespace-pre-wrap text-ink">{post.body}</p>

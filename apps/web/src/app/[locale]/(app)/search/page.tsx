@@ -5,7 +5,7 @@ import {
   SearchPersonHit as SearchPersonHitSchema,
   type SearchPersonHit,
 } from "@palnet/shared";
-import { Surface } from "@palnet/ui-web";
+import { Avatar, Surface } from "@palnet/ui-web";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -105,19 +105,31 @@ function SearchInner(): JSX.Element {
         <ul className="flex flex-col gap-3">
           {hits.map((p) => (
             <Surface as="li" key={p.userId} variant="flat" padding="4">
-              <Link href={`/in/${p.handle}`} className="flex flex-col">
-                <span className="font-semibold text-ink">
-                  {p.firstName} {p.lastName}
-                </span>
-                <span className="text-xs text-ink-muted">/in/{p.handle}</span>
-                {p.headline ? (
-                  <span className="mt-1 text-sm text-ink-muted">
-                    {p.headline}
+              <Link href={`/in/${p.handle}`} className="flex items-start gap-3">
+                <Avatar
+                  user={{
+                    id: p.userId,
+                    handle: p.handle,
+                    firstName: p.firstName,
+                    lastName: p.lastName,
+                    avatarUrl: p.avatarUrl,
+                  }}
+                  size="lg"
+                />
+                <div className="flex min-w-0 flex-col">
+                  <span className="font-semibold text-ink">
+                    {p.firstName} {p.lastName}
                   </span>
-                ) : null}
-                {p.location ? (
-                  <span className="text-xs text-ink-muted">{p.location}</span>
-                ) : null}
+                  <span className="text-xs text-ink-muted">/in/{p.handle}</span>
+                  {p.headline ? (
+                    <span className="mt-1 text-sm text-ink-muted">
+                      {p.headline}
+                    </span>
+                  ) : null}
+                  {p.location ? (
+                    <span className="text-xs text-ink-muted">{p.location}</span>
+                  ) : null}
+                </div>
               </Link>
             </Surface>
           ))}

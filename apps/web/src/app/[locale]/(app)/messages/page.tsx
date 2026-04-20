@@ -8,7 +8,7 @@ import {
   type ChatRoom,
   type Message,
 } from "@palnet/shared";
-import { Surface } from "@palnet/ui-web";
+import { Avatar, Surface } from "@palnet/ui-web";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -305,27 +305,43 @@ export default function MessagesPage(): JSX.Element {
                   key={room.id}
                   type="button"
                   onClick={() => setActiveRoomId(room.id)}
-                  className={`flex flex-col gap-1 rounded-md px-3 py-2 text-start ${
+                  className={`flex items-center gap-3 rounded-md px-3 py-2 text-start ${
                     isActive
                       ? "bg-brand-50 text-ink"
                       : "text-ink hover:bg-ink-muted/5"
                   }`}
                 >
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="truncate text-sm font-semibold">
-                      {label}
-                    </span>
-                    {room.unreadCount > 0 ? (
-                      <span className="rounded-full bg-accent-600 px-1.5 text-xs text-ink-inverse">
-                        {room.unreadCount}
+                  <Avatar
+                    user={
+                      other
+                        ? {
+                            id: other.userId,
+                            handle: other.handle,
+                            firstName: other.firstName,
+                            lastName: other.lastName,
+                            avatarUrl: other.avatarUrl,
+                          }
+                        : { handle: room.title ?? room.id }
+                    }
+                    size="md"
+                  />
+                  <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="truncate text-sm font-semibold">
+                        {label}
+                      </span>
+                      {room.unreadCount > 0 ? (
+                        <span className="rounded-full bg-accent-600 px-1.5 text-xs text-ink-inverse">
+                          {room.unreadCount}
+                        </span>
+                      ) : null}
+                    </div>
+                    {room.lastMessage ? (
+                      <span className="truncate text-xs text-ink-muted">
+                        {room.lastMessage.body}
                       </span>
                     ) : null}
                   </div>
-                  {room.lastMessage ? (
-                    <span className="truncate text-xs text-ink-muted">
-                      {room.lastMessage.body}
-                    </span>
-                  ) : null}
                 </button>
               );
             })
@@ -340,15 +356,32 @@ export default function MessagesPage(): JSX.Element {
             </div>
           ) : (
             <>
-              <div className="border-b border-ink-muted/10 px-4 py-3">
+              <div className="flex items-center gap-3 border-b border-ink-muted/10 px-4 py-3">
                 {otherMember ? (
-                  <Link
-                    href={`/in/${otherMember.handle}`}
-                    className="text-sm font-semibold text-ink hover:underline"
-                  >
-                    {`${otherMember.firstName} ${otherMember.lastName}`.trim() ||
-                      otherMember.handle}
-                  </Link>
+                  <>
+                    <Link
+                      href={`/in/${otherMember.handle}`}
+                      aria-label={`${otherMember.firstName} ${otherMember.lastName}`.trim() || otherMember.handle}
+                    >
+                      <Avatar
+                        user={{
+                          id: otherMember.userId,
+                          handle: otherMember.handle,
+                          firstName: otherMember.firstName,
+                          lastName: otherMember.lastName,
+                          avatarUrl: otherMember.avatarUrl,
+                        }}
+                        size="sm"
+                      />
+                    </Link>
+                    <Link
+                      href={`/in/${otherMember.handle}`}
+                      className="text-sm font-semibold text-ink hover:underline"
+                    >
+                      {`${otherMember.firstName} ${otherMember.lastName}`.trim() ||
+                        otherMember.handle}
+                    </Link>
+                  </>
                 ) : (
                   <span className="text-sm font-semibold text-ink">
                     {activeRoom?.title ?? activeRoomId}

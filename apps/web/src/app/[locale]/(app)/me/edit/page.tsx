@@ -12,7 +12,7 @@ import {
   type Profile,
   type Skill,
 } from "@palnet/shared";
-import { Surface } from "@palnet/ui-web";
+import { Avatar, Surface } from "@palnet/ui-web";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -158,19 +158,16 @@ function BasicsSection({
       <h2 className="mb-3 text-xl font-semibold text-ink">{t("basics")}</h2>
 
       <div className="mb-4 flex items-center gap-4">
-        {profile.avatarUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={profile.avatarUrl}
-            alt=""
-            className="h-16 w-16 rounded-full border border-ink-muted/20 object-cover"
-          />
-        ) : (
-          <div className="flex h-16 w-16 items-center justify-center rounded-full border border-ink-muted/20 bg-surface-muted text-xs text-ink-muted">
-            {profile.firstName[0]}
-            {profile.lastName[0]}
-          </div>
-        )}
+        <Avatar
+          user={{
+            id: profile.userId,
+            handle: profile.handle,
+            firstName: profile.firstName,
+            lastName: profile.lastName,
+            avatarUrl: profile.avatarUrl ?? null,
+          }}
+          size="lg"
+        />
         <label className="cursor-pointer rounded-md border border-ink-muted/30 px-3 py-2 text-sm text-ink hover:bg-ink-muted/5">
           {uploading ? t("uploading") : t("changeAvatar")}
           <input

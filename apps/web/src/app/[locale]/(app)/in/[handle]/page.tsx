@@ -5,7 +5,7 @@ import {
   Profile as ProfileSchema,
   type Profile,
 } from "@palnet/shared";
-import { Surface } from "@palnet/ui-web";
+import { Avatar, Surface } from "@palnet/ui-web";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -57,17 +57,30 @@ export default function ProfileRoute(): JSX.Element {
     <main className="mx-auto flex w-full max-w-[840px] flex-col gap-6 px-6 py-8">
       <Surface as="section" variant="hero" padding="6">
         <div className="flex flex-wrap items-start justify-between gap-4">
-          <div className="flex flex-col">
-            <h1 className="text-3xl font-bold text-ink">
-              {profile.firstName} {profile.lastName}
-            </h1>
-            {profile.headline ? (
-              <p className="text-ink-muted">{profile.headline}</p>
-            ) : null}
-            {profile.location ? (
-              <p className="text-sm text-ink-muted">{profile.location}</p>
-            ) : null}
-            <p className="text-xs text-ink-muted">/in/{profile.handle}</p>
+          <div className="flex items-start gap-4">
+            <Avatar
+              user={{
+                id: profile.userId,
+                handle: profile.handle,
+                firstName: profile.firstName,
+                lastName: profile.lastName,
+                avatarUrl: profile.avatarUrl ?? null,
+              }}
+              size="xl"
+              ring
+            />
+            <div className="flex flex-col">
+              <h1 className="text-3xl font-bold text-ink">
+                {profile.firstName} {profile.lastName}
+              </h1>
+              {profile.headline ? (
+                <p className="text-ink-muted">{profile.headline}</p>
+              ) : null}
+              {profile.location ? (
+                <p className="text-sm text-ink-muted">{profile.location}</p>
+              ) : null}
+              <p className="text-xs text-ink-muted">/in/{profile.handle}</p>
+            </div>
           </div>
           {profile.viewer?.isSelf ? (
             <Link

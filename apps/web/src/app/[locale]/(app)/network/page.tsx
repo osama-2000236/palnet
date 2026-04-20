@@ -4,7 +4,7 @@ import {
   ConnectionListItem as ConnectionListItemSchema,
   type ConnectionListItem,
 } from "@palnet/shared";
-import { Surface } from "@palnet/ui-web";
+import { Avatar, Surface } from "@palnet/ui-web";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -120,15 +120,30 @@ export default function NetworkRoute(): JSX.Element {
               padding="4"
               className="flex flex-wrap items-center justify-between gap-3"
             >
-              <Link href={`/in/${c.user.handle}`} className="flex flex-col">
-                <span className="font-semibold text-ink">
-                  {c.user.firstName} {c.user.lastName}
-                </span>
-                {c.user.headline ? (
-                  <span className="text-sm text-ink-muted">
-                    {c.user.headline}
+              <Link
+                href={`/in/${c.user.handle}`}
+                className="flex min-w-0 items-center gap-3"
+              >
+                <Avatar
+                  user={{
+                    id: c.user.userId,
+                    handle: c.user.handle,
+                    firstName: c.user.firstName,
+                    lastName: c.user.lastName,
+                    avatarUrl: c.user.avatarUrl ?? null,
+                  }}
+                  size="md"
+                />
+                <div className="flex min-w-0 flex-col">
+                  <span className="font-semibold text-ink">
+                    {c.user.firstName} {c.user.lastName}
                   </span>
-                ) : null}
+                  {c.user.headline ? (
+                    <span className="text-sm text-ink-muted">
+                      {c.user.headline}
+                    </span>
+                  ) : null}
+                </div>
               </Link>
 
               {filter === "INCOMING" ? (

@@ -7,7 +7,7 @@ import {
   WsNotificationEvent,
   type Notification,
 } from "@palnet/shared";
-import { Surface } from "@palnet/ui-web";
+import { Avatar, Surface } from "@palnet/ui-web";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -178,21 +178,8 @@ function NotificationRow({ item }: { item: Notification }): JSX.Element {
           : "border-ink-muted/20 bg-surface"
       }`}
     >
-      {actor?.avatarUrl ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={actor.avatarUrl}
-          alt=""
-          className="h-10 w-10 flex-none rounded-full object-cover"
-        />
-      ) : (
-        <div
-          aria-hidden="true"
-          className="flex h-10 w-10 flex-none items-center justify-center rounded-full bg-ink-muted/10 text-sm font-semibold text-ink"
-        >
-          {initialsOf(actorName) || "?"}
-        </div>
-      )}
+      <Avatar user={actor ?? { handle: "system" }} size="md" />
+
       <div className="flex flex-1 flex-col gap-0.5">
         <p className="text-sm text-ink">{body}</p>
         <p className="text-xs text-ink-muted">{formatRelative(item.createdAt)}</p>
@@ -244,14 +231,6 @@ function hrefFor(n: Notification): string | null {
     return `/in/${n.actor.handle}`;
   }
   return null;
-}
-
-function initialsOf(name: string): string {
-  const parts = name.trim().split(/\s+/);
-  if (parts.length === 0) return "";
-  const first = parts[0]?.[0] ?? "";
-  const last = parts.length > 1 ? (parts[parts.length - 1]?.[0] ?? "") : "";
-  return (first + last).toUpperCase();
 }
 
 function formatRelative(iso: string): string {
