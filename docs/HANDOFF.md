@@ -140,15 +140,62 @@ Things scoped for later sprints so Sprint 2 stays "chrome only":
   should collapse to tabs (per `docs/design/MOBILE.md`). Currently the web
   shell renders everywhere. → Sprint 5 when the mobile app lands.
 
-### Sprint 3 — Feed polish
+### Sprint 3 — Feed polish ✅ DONE
 
-1. Build proper `<Composer>` (expand-on-click pattern from prototype).
-2. Rebuild `<PostCard>` per spec.
-3. Right rail: "People you may know" + "Suggested jobs".
-4. Left rail: mini-profile card with hero gradient.
-5. Empty state: "You don't follow anyone yet — see Network."
-6. Skeleton cards during fetch.
-7. Optimistic reactions.
+1. ✅ Shared `<Composer>` in `packages/ui-web` — two-state (collapsed pill
+   with 3 quiet icon chips; expanded avatar + name + autoFocus textarea +
+   media tray + char counter + submit). Web host owns upload + post.
+2. ✅ Shared `<PostCard>` in `packages/ui-web` — header with Avatar md +
+   name + headline + time + audience line + `…` menu, body at 15/1.7,
+   media grid, stats row with olive thumb badge, divider, 4-button
+   action bar (like/comment/repost/send, `flex-1` each), and a
+   `commentsSlot` the host mounts the existing Comments region into.
+3. ✅ Shared `<PostCardSkeleton>` matching the card layout — rendered
+   while the first page of `/feed` is fetching.
+4. ✅ Backend: `GET /connections/suggestions?limit=N` → returns
+   `{ data: PersonSuggestion[] }`. Excludes every userId the viewer
+   already has any connection row with. `PersonSuggestion` now lives
+   in `packages/shared/src/schemas/connection.ts` so the mobile app
+   can reuse the exact same shape in Sprint 5.
+5. ✅ Feed page rewritten as `225 / 1fr / 300` grid on `lg:`; collapses
+   to a single column below. Left rail = mini-profile hero (olive
+   gradient + ringed lg avatar + headline). Right rail = PYMK list
+   (first 4) + "Suggested jobs (قريبًا)" placeholder + footer caption.
+6. ✅ Empty state — tinted surface with home glyph + title + description,
+   replaces the old flat one-liner.
+7. ✅ Optimistic reactions — unchanged logic, now running inside the
+   shared PostCard shell via `onToggleReaction` + `busy` prop.
+
+**Landed in Sprint 3:**
+
+- `packages/ui-web/src/Composer.tsx` + `PostCard.tsx` + `PostCardSkeleton.tsx`
+- `packages/shared/src/schemas/connection.ts` — `PersonSuggestion` schema
+- `apps/api/src/modules/connections/*` — `suggestions()` + controller route
+- `apps/web/src/app/[locale]/(app)/feed/page.tsx` — 3-col layout + rails
+- `apps/web/src/components/{Composer,PostCard}.tsx` — thin host wrappers
+- `apps/web/messages/{ar-PS,en}.json` — `post.*`, `feed.rail.*`, `composer.*`
+
+#### Sprint 3 QA gap list (observed vs. prototype)
+
+Things scoped for later sprints so Sprint 3 stays "feed-only":
+
+- **Left-rail connection count is a placeholder `—`.** The card fetches
+  `me` but not `/connections/counts`; the prototype shows "الاتصالات · 142".
+  Cheap to add — one `apiFetch("/connections/counts", ...)` in the same
+  effect. → Sprint 6 polish.
+- **PYMK "Connect" button navigates to the profile instead of sending a
+  request inline.** The backend already has `POST /connections`, but a
+  one-click connect flow needs a confirm modal per the Network spec.
+  → Sprint 6.
+- **Suggested jobs is literally a "قريبًا" card.** Jobs ships Sprint 6.
+- **No comments pagination in the Comments slot.** The existing
+  `<Comments>` component handles it; verified still works — but the
+  tinted comments region could use a compact scroll container when the
+  list grows past ~6. → Sprint 6 polish.
+- **PostCard timestamp is `toLocaleString()`** — prototype wants relative
+  ("قبل ٣ ساعات") with absolute on hover. → Sprint 6.
+- **Repost + Share actions are no-ops.** Per spec the handlers exist on
+  the shared shell; host wiring lands with repost composer. → Sprint 6.
 
 ### Sprint 4 — Messages
 
