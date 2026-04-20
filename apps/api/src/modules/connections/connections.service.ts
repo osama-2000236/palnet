@@ -3,6 +3,7 @@ import {
   ErrorCode,
   NotificationType,
   type ConnectionListItem,
+  type PersonSuggestion,
   type RespondConnectionBody,
   type SendConnectionBody,
 } from "@palnet/shared";
@@ -291,6 +292,68 @@ export class ConnectionsService {
     })) as unknown as ConnectionWithUsers[];
 
     return rows.map((row) => this.toListItem(row, viewerId));
+  }
+
+  /**
+   * "People you may know" — pragmatic v1 suggestion feed.
+   *
+   * Rule of thumb: return profiles the viewer has **no existing connection row
+   * with** (any status — pending, accepted, withdrawn, declined, blocked).
+   * That keeps the list clean without a dedicated "dismissed" table. We order
+   * by most recent profile activity so new joiners surface first.
+   *
+   * A real recommendation pass (shared-connection counts, location match,
+   * co-workers) lives behind this same endpoint — upgrade the query without
+   * changing the wire shape.
+   */
+  async suggestions(
+    viewerId: string,
+    limit: number,
+  ): Promise<PersonSuggestion[]> {
+    // 1. All user ids the viewer already has *any* connection row with.
+    const existing = await this.prisma.connection.findMany({
+      where: {
+        OR: [{ requesterId: viewerId }, { receiverId: viewerId }],
+      },
+      select: { requesterId: true, receiverId: true },
+    });
+    const excluded = new Set<string>([viewerId]);
+    for (const row of existing) {
+      excluded.add(row.requesterId);
+      excluded.add(row.receiverId);
+    }
+
+    // 2. Pull candidate profiles — must have completed onboarding (exists on
+    //    Profile), user still active, deletedAt null.
+    const rows = await this.prisma.profile.findMany({
+      where: {
+        userId: { notIn: Array.from(excluded) },
+        user: { isActive: true, deletedAt: null },
+      },
+      orderBy: [{ updatedAt: "desc" }],
+      take: Math.max(1, Math.min(limit, 20)),
+      select: {
+        userId: true,
+        handle: true,
+        firstName: true,
+        lastName: true,
+        headline: true,
+        avatarUrl: true,
+      },
+    });
+
+    return rows.map((p) => ({
+      user: {
+        userId: p.userId,
+        handle: p.handle,
+        firstName: p.firstName,
+        lastName: p.lastName,
+        headline: p.headline ?? null,
+        avatarUrl: p.avatarUrl ?? null,
+      },
+      reasonCode: "SUGGESTED" as const,
+      reasonCount: null,
+    }));
   }
 
   async counts(viewerId: string) {

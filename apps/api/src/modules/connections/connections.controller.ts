@@ -15,6 +15,7 @@ import {
   RespondConnectionBody,
   SendConnectionBody,
   type ConnectionListItem,
+  type PersonSuggestion,
 } from "@palnet/shared";
 import { z } from "zod";
 
@@ -29,6 +30,11 @@ const ListQuery = z.object({
   filter: z.enum(["ACCEPTED", "INCOMING", "OUTGOING"]).default("ACCEPTED"),
 });
 type ListQuery = z.infer<typeof ListQuery>;
+
+const SuggestionsQuery = z.object({
+  limit: z.coerce.number().int().min(1).max(20).default(6),
+});
+type SuggestionsQuery = z.infer<typeof SuggestionsQuery>;
 
 @ApiTags("connections")
 @ApiBearerAuth()
@@ -88,6 +94,15 @@ export class ConnectionsController {
   @Get("counts")
   async counts(@CurrentUser() user: AuthUser) {
     const data = await this.connections.counts(user.id);
+    return { data };
+  }
+
+  @Get("suggestions")
+  async suggestions(
+    @CurrentUser() user: AuthUser,
+    @Query(new ZodValidationPipe(SuggestionsQuery)) query: SuggestionsQuery,
+  ): Promise<{ data: PersonSuggestion[] }> {
+    const data = await this.connections.suggestions(user.id, query.limit);
     return { data };
   }
 }
