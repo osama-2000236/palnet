@@ -8,6 +8,15 @@
     "continue": "Continue",
     "genericError": "Something went wrong. Please try again."
   },
+  "nav": {
+    "main": "Primary navigation",
+    "searchPlaceholder": "Search people, jobs, companies…",
+    "jobs": "Jobs",
+    "myProfile": "Me",
+    "settings": "Settings",
+    "unreadMessages": "{count} unread messages",
+    "unreadNotifications": "{count} unread notifications"
+  },
   "landing": {
     "title": "The professional network for the Arab world.",
     "subtitle": "Build your presence, connect with peers, and discover jobs — in Arabic first.",

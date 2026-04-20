@@ -8,6 +8,15 @@
     "continue": "متابعة",
     "genericError": "حدث خطأ ما. حاول مرة أخرى."
   },
+  "nav": {
+    "main": "التنقل الرئيسي",
+    "searchPlaceholder": "ابحث عن أشخاص، وظائف، شركات…",
+    "jobs": "الوظائف",
+    "myProfile": "ملفي",
+    "settings": "الإعدادات",
+    "unreadMessages": "{count} رسائل غير مقروءة",
+    "unreadNotifications": "{count} إشعارات غير مقروءة"
+  },
   "landing": {
     "title": "بيدر — شبكتك المهنية العربية.",
     "subtitle": "جيب شغلك عالبيدر. شبكتك، بلغتك.",
