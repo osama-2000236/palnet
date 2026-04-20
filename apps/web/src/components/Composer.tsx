@@ -1,36 +1,55 @@
 "use client";
 
-import { CreatePostBody, MediaKind, type MediaRef, Post } from "@palnet/shared";
-import { Surface } from "@palnet/ui-web";
-import { useState } from "react";
+// Thin web wrapper around @palnet/ui-web's <Composer>. This file owns the
+// network concerns: profile fetch (for the avatar), media upload, post
+// creation. The shared component owns the UI, state machine, and i18n.
+
+import {
+  CreatePostBody,
+  MediaKind,
+  type MediaRef,
+  Post,
+  Profile,
+} from "@palnet/shared";
+import { Composer as ComposerShell, type ComposerMedia } from "@palnet/ui-web";
 import { useTranslations } from "next-intl";
+import { useEffect, useState } from "react";
 
 import { apiFetch, ApiRequestError } from "@/lib/api";
 import { getAccessToken } from "@/lib/session";
 import { uploadFile } from "@/lib/uploads";
 
 export function Composer({
+  me = null,
   onPosted,
 }: {
+  /**
+   * The signed-in viewer's profile, for the avatar + audience line. Optional
+   * — the shell renders a neutral avatar until the host fetches it.
+   */
+  me?: Profile | null;
   onPosted: (post: Post) => void;
 }): JSX.Element {
   const t = useTranslations("composer");
   const tAuth = useTranslations("auth");
-  const [body, setBody] = useState("");
-  const [media, setMedia] = useState<MediaRef[]>([]);
+  const tCommon = useTranslations("common");
+
+  const [media, setMedia] = useState<ComposerMedia[]>([]);
   const [busy, setBusy] = useState(false);
-  const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  async function onPickImage(
-    e: React.ChangeEvent<HTMLInputElement>,
+  // Clear the error when the user begins a new action.
+  useEffect(() => {
+    if (busy) setError(null);
+  }, [busy]);
+
+  async function onPickMedia(
+    file: File,
+    kind: "IMAGE" | "VIDEO",
   ): Promise<void> {
-    const file = e.target.files?.[0];
-    if (!file) return;
     const token = getAccessToken();
     if (!token) return;
     setError(null);
-    setUploading(true);
     try {
       const publicUrl = await uploadFile({
         file,
@@ -40,26 +59,33 @@ export function Composer({
       setMedia((prev) => [
         ...prev,
         {
+          id: publicUrl,
           url: publicUrl,
-          kind: MediaKind.IMAGE,
+          kind,
           mimeType: file.type,
           sizeBytes: file.size,
         },
       ]);
     } catch {
       setError(t("uploadFailed"));
-    } finally {
-      setUploading(false);
-      e.target.value = "";
     }
   }
 
-  async function submit(): Promise<void> {
-    setError(null);
+  function onRemoveMedia(id: string): void {
+    setMedia((prev) => prev.filter((m) => m.id !== id));
+  }
+
+  async function onSubmit(body: string): Promise<void> {
+    const apiMedia: MediaRef[] = media.map((m) => ({
+      url: m.url,
+      kind: m.kind === "IMAGE" ? MediaKind.IMAGE : MediaKind.VIDEO,
+      mimeType: m.mimeType,
+      sizeBytes: m.sizeBytes,
+    }));
     const parsed = CreatePostBody.safeParse({
       body,
       language: "ar",
-      media,
+      media: apiMedia,
     });
     if (!parsed.success) {
       setError(tAuth("errors.VALIDATION_FAILED"));
@@ -75,7 +101,6 @@ export function Composer({
         token,
       });
       onPosted(post);
-      setBody("");
       setMedia([]);
     } catch (err) {
       if (err instanceof ApiRequestError) {
@@ -83,10 +108,10 @@ export function Composer({
         try {
           setError(tAuth(key as Parameters<typeof tAuth>[0]));
         } catch {
-          setError(tAuth("errors.INTERNAL"));
+          setError(tCommon("genericError"));
         }
       } else {
-        setError(tAuth("errors.INTERNAL"));
+        setError(tCommon("genericError"));
       }
     } finally {
       setBusy(false);
@@ -94,69 +119,37 @@ export function Composer({
   }
 
   return (
-    <Surface as="section" variant="card" className="flex flex-col gap-2">
-      <label className="text-sm font-semibold text-ink">{t("title")}</label>
-      <textarea
-        value={body}
-        onChange={(e) => setBody(e.target.value)}
-        placeholder={t("placeholder")}
-        rows={3}
-        maxLength={3000}
-        className="rounded-md border border-ink-muted/30 p-3 text-ink"
-      />
-      {media.length > 0 ? (
-        <ul className="flex flex-wrap gap-2">
-          {media.map((m, i) => (
-            <li key={m.url} className="relative">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={m.url}
-                alt=""
-                className="h-20 w-20 rounded-md border border-ink-muted/20 object-cover"
-              />
-              <button
-                type="button"
-                onClick={() =>
-                  setMedia((prev) => prev.filter((_, j) => j !== i))
-                }
-                aria-label="remove"
-                className="absolute -top-2 -end-2 flex h-5 w-5 items-center justify-center rounded-full bg-surface text-xs text-danger shadow-card"
-              >
-                ×
-              </button>
-            </li>
-          ))}
-        </ul>
-      ) : null}
-
-      {error ? (
-        <p role="alert" className="text-sm text-danger">
-          {error}
-        </p>
-      ) : null}
-      <div className="flex items-center justify-between gap-3">
-        <label className="cursor-pointer text-sm text-ink-muted hover:text-ink">
-          {uploading ? t("uploading") : `+ ${t("addImage")}`}
-          <input
-            type="file"
-            accept="image/png,image/jpeg,image/webp"
-            onChange={onPickImage}
-            disabled={uploading || media.length >= 8}
-            className="hidden"
-          />
-        </label>
-        <div className="flex items-center gap-3">
-          <span className="text-xs text-ink-muted">{body.length} / 3000</span>
-          <button
-            type="button"
-            onClick={submit}
-            disabled={busy || body.trim().length === 0}
-            className="rounded-md bg-brand-600 px-4 py-2 text-ink-inverse shadow-card hover:bg-brand-700 disabled:opacity-60"
-          >
-            {t("submit")}
-          </button>
-        </div>
-      </div>
-    </Surface>
+    <ComposerShell
+      me={
+        me
+          ? {
+              id: me.userId,
+              handle: me.handle,
+              firstName: me.firstName,
+              lastName: me.lastName,
+              avatarUrl: me.avatarUrl ?? null,
+            }
+          : null
+      }
+      labels={{
+        startPrompt: t("placeholder"),
+        expandedPlaceholder: t("placeholder"),
+        audienceHint: t("audienceHint"),
+        addImage: t("addImage"),
+        addVideo: t("addVideo"),
+        addEvent: t("addEvent"),
+        cancel: tCommon("cancel"),
+        submit: t("submit"),
+        uploading: t("uploading"),
+        removeMedia: t("removeMedia"),
+        uploadFailed: t("uploadFailed"),
+      }}
+      media={media}
+      busy={busy}
+      error={error}
+      onSubmit={onSubmit}
+      onPickMedia={onPickMedia}
+      onRemoveMedia={onRemoveMedia}
+    />
   );
 }

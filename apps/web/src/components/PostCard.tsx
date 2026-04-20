@@ -1,10 +1,15 @@
 "use client";
 
+// Thin web wrapper around @palnet/ui-web's <PostCard>. The shared component
+// owns the visual shell and state machine; this file owns the network (reaction
+// API call + optimistic reconcile) and mounts our existing Comments region
+// into the shared card via `commentsSlot`.
+
 import type { Post } from "@palnet/shared";
-import { Avatar, Surface } from "@palnet/ui-web";
-import Link from "next/link";
-import { useState } from "react";
+import { PostCard as PostCardShell } from "@palnet/ui-web";
 import { useTranslations } from "next-intl";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 import { Comments } from "@/components/Comments";
 import { apiCall } from "@/lib/api";
@@ -18,14 +23,14 @@ export function PostCard({
   onChange?: (next: Post) => void;
 }): JSX.Element {
   const t = useTranslations("post");
+  const router = useRouter();
   const [busy, setBusy] = useState(false);
-  const [showComments, setShowComments] = useState(false);
+  const [commentsOpen, setCommentsOpen] = useState(false);
 
   async function toggleReaction(): Promise<void> {
     const token = getAccessToken();
     if (!token || busy) return;
     const wasLiked = post.viewer.reaction !== null;
-    // Optimistic update
     const optimistic: Post = {
       ...post,
       viewer: { ...post.viewer, reaction: wasLiked ? null : "LIKE" },
@@ -50,7 +55,6 @@ export function PostCard({
         });
       }
     } catch {
-      // Roll back on failure
       onChange?.(post);
     } finally {
       setBusy(false);
@@ -58,77 +62,43 @@ export function PostCard({
   }
 
   return (
-    <Surface as="article" variant="card" className="flex flex-col gap-3">
-      <header className="flex items-start gap-3">
-        <Link href={`/in/${post.author.handle}`} aria-label={`${post.author.firstName} ${post.author.lastName}`}>
-          <Avatar user={post.author} size="md" />
-        </Link>
-        <div className="flex min-w-0 flex-col">
-          <Link
-            href={`/in/${post.author.handle}`}
-            className="font-semibold text-ink hover:underline"
-          >
-            {post.author.firstName} {post.author.lastName}
-          </Link>
-          {post.author.headline ? (
-            <span className="text-sm text-ink-muted">{post.author.headline}</span>
-          ) : null}
-          <time className="text-xs text-ink-muted" dateTime={post.createdAt}>
-            {new Date(post.createdAt).toLocaleString()}
-          </time>
-        </div>
-      </header>
-
-      <p className="whitespace-pre-wrap text-ink">{post.body}</p>
-
-      {post.media.length > 0 ? (
-        <div
-          className={
-            post.media.length === 1
-              ? "grid grid-cols-1 gap-1"
-              : "grid grid-cols-2 gap-1"
-          }
-        >
-          {post.media.map((m) =>
-            m.kind === "IMAGE" ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                key={m.id ?? m.url}
-                src={m.url}
-                alt=""
-                className="max-h-96 w-full rounded-md border border-ink-muted/10 object-cover"
-              />
-            ) : null,
-          )}
-        </div>
-      ) : null}
-
-      <footer className="flex items-center gap-4 border-t border-ink-muted/10 pt-2 text-sm">
-        <button
-          type="button"
-          onClick={toggleReaction}
-          disabled={busy}
-          className={
-            post.viewer.reaction
-              ? "font-semibold text-brand-600"
-              : "text-ink-muted hover:text-ink"
-          }
-        >
-          {post.viewer.reaction ? t("liked") : t("like")} ({post.counts.reactions})
-        </button>
-        <button
-          type="button"
-          onClick={() => setShowComments((s) => !s)}
-          className="text-ink-muted hover:text-ink"
-        >
-          {t("comments")} ({post.counts.comments})
-        </button>
-        <span className="text-ink-muted">
-          {t("reposts")}: {post.counts.reposts}
-        </span>
-      </footer>
-
-      {showComments ? (
+    <PostCardShell
+      id={post.id}
+      author={{
+        id: post.author.id,
+        handle: post.author.handle,
+        firstName: post.author.firstName,
+        lastName: post.author.lastName,
+        avatarUrl: post.author.avatarUrl,
+        headline: post.author.headline,
+      }}
+      body={post.body}
+      media={post.media.map((m) => ({
+        id: m.id ?? m.url,
+        url: m.url,
+        kind: m.kind === "IMAGE" ? "IMAGE" : "VIDEO",
+      }))}
+      timestamp={new Date(post.createdAt).toLocaleString()}
+      counts={post.counts}
+      liked={post.viewer.reaction !== null}
+      busy={busy}
+      labels={{
+        like: t("like"),
+        liked: t("liked"),
+        comment: t("comment"),
+        repost: t("repost"),
+        send: t("send"),
+        commentsCount: (count) => t("commentsCount", { count }),
+        repostsCount: (count) => t("repostsCount", { count }),
+        authorLabel: `${post.author.firstName} ${post.author.lastName}`.trim(),
+        moreOptions: t("moreOptions"),
+        publicAudience: t("publicAudience"),
+      }}
+      commentsOpen={commentsOpen}
+      onToggleComments={setCommentsOpen}
+      onToggleReaction={() => void toggleReaction()}
+      onOpenProfile={() => router.push(`/in/${post.author.handle}`)}
+      commentsSlot={
         <Comments
           postId={post.id}
           onCountChange={(delta) =>
@@ -141,7 +111,7 @@ export function PostCard({
             })
           }
         />
-      ) : null}
-    </Surface>
+      }
+    />
   );
 }
