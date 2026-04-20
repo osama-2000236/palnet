@@ -47,6 +47,20 @@ export const ConnectionListItem = z.object({
 });
 export type ConnectionListItem = z.infer<typeof ConnectionListItem>;
 
+// A single "people you may know" row — the lightweight projection used by the
+// feed right rail and the /network suggestions tab. Reuses ConnectionUser so
+// both web and (Sprint 5) mobile consume the same shape.
+export const PersonSuggestion = z.object({
+  user: ConnectionUser,
+  /** Short token-backed reason string, e.g. "SHARED_CONNECTIONS". */
+  reasonCode: z
+    .enum(["SHARED_CONNECTIONS", "SAME_LOCATION", "SUGGESTED"])
+    .default("SUGGESTED"),
+  /** Optional numeric hint shown next to the reason (e.g. shared-count). */
+  reasonCount: z.number().int().nonnegative().nullish(),
+});
+export type PersonSuggestion = z.infer<typeof PersonSuggestion>;
+
 // Viewer-scoped connection state between the viewer and another user.
 // Used on profile pages and anywhere we need a single badge.
 export const ViewerConnectionState = z.object({
