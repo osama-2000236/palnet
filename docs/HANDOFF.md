@@ -39,21 +39,59 @@
 
 Each sprint = ~1 week of focused work. Order matters; don't skip ahead.
 
-### Sprint 1 — Foundation swap (web)
+### Sprint 1 — Foundation swap (web) ✅ DONE
 
 **Goal:** get the web app onto the new tokens + surface system. No new features.
 
-1. Replace `packages/ui-tokens/src/index.ts` with the file from `handoff/`.
-2. Regenerate `tokens.css` + `tokens.native.ts`.
-3. Wire the Tailwind preset in `apps/web/tailwind.config.ts`.
-4. Load IBM Plex Sans Arabic + Noto Naskh Arabic via `next/font/google` in `app/layout.tsx`.
-5. Global search-replace any `bg-blue-*`, `text-slate-*`, raw hex in components → token class.
-6. Build `<Surface>` atom in `packages/ui-web`. Replace every ad-hoc card in the app.
-7. Build `<Avatar>` atom. Drop it into every place a person appears (PostCard header, comments, connection rows, message rooms).
-8. Run `pnpm lint:tokens` — make it pass.
-9. Visual-QA every existing screen against the prototype.
+1. ✅ Replace `packages/ui-tokens/src/index.ts` with the file from `handoff/`.
+2. ✅ Regenerate `tokens.css` + `tokens.native.ts`.
+3. ✅ Wire the Tailwind preset in `apps/web/tailwind.config.ts`.
+4. ✅ Load IBM Plex Sans Arabic + Noto Naskh Arabic via `next/font/google` in `app/layout.tsx`.
+5. ✅ Global search-replace any `bg-blue-*`, `text-slate-*`, raw hex in components → token class.
+6. ✅ Build `<Surface>` atom in `packages/ui-web`. Replace every ad-hoc card in the app.
+7. ✅ Build `<Avatar>` atom. Drop it into every place a person appears.
+8. ✅ Run `pnpm lint:tokens` — green across web + mobile + ui-web.
+9. ✅ Visual-QA every existing screen against the prototype. Gap list below feeds Sprints 2–4.
 
 **Definition of done:** app looks like the prototype's olive aesthetic, even though features haven't changed.
+
+#### Sprint 1 QA gap list (observed vs. prototype)
+
+Things that *look* wrong today but are on the roadmap — not Sprint 1 fixes:
+
+- **No AppShell.** Every `(app)` route has its own inline header with hand-rolled
+  link buttons + a bell. Prototype has a sticky top nav with logo, rounded search
+  pill, 5 nav items (home/network/jobs/messages/notifications), avatar dropdown.
+  → Sprint 2.
+- **Feed is a single 680px column.** Prototype is a 3-column grid (225 / 1fr / 300):
+  left rail mini-profile hero with olive gradient, center column, right rail with
+  "People you may know" + "Suggested jobs" + footer caption. → Sprint 3.
+- **Composer is always expanded.** Prototype collapses to avatar + "Start a post…"
+  pill + inline icon buttons, expands on click. → Sprint 3.
+- **PostCard missing the reactions badge row.** Prototype shows an olive circle
+  with a thumb icon + count, stats line ("N comments · N reposts"), divider, then
+  a 4-button action bar (like / comment / repost / send) where each button grows
+  `flex: 1`. Our card is: body → 3-button footer. → Sprint 3.
+- **Messages thread has no bubble component.** Current implementation inlines
+  `self-end bg-brand-600` for own messages, `bg-ink-muted/10` for other. Prototype
+  wants a real `<MessageBubble>` with status ticks, time grouping, online dot on
+  the header avatar. → Sprint 4.
+- **No skeletons.** Every loading state is a "…" glyph. Prototype assumes skeleton
+  shapes that match the real content. → Sprint 3/6.
+- **Empty states are bare `<p>` tags.** Prototype expects title + description +
+  primary action. → Sprint 6.
+- **NotificationsBell icon is a custom inline SVG.** Once AppShell lands it will
+  consume the shared `Icon` atom (not yet built). → Sprint 2.
+
+Cosmetic-but-cheap items that *did* land in Sprint 1:
+
+- Every surface routes through the 5-variant `<Surface>` atom (flat/card/hero/tinted/row).
+- Every person uses `<Avatar>` (xs/sm/md/lg/xl, ring, online dot) on a deterministic
+  token-backed palette.
+- Brand olive + terracotta accent are the only colors; no Tailwind default palettes remain.
+- Status chips ("online" in messages, "live" in notifications) use `success` token.
+- Unread badges use `accent-600`; own-message bubbles use `brand-600` — the two
+  signals no longer collide.
 
 ### Sprint 2 — AppShell + nav (web)
 
