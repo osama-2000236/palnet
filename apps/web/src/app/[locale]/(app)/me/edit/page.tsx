@@ -12,6 +12,7 @@ import {
   type Profile,
   type Skill,
 } from "@palnet/shared";
+import { Surface } from "@palnet/ui-web";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -153,7 +154,7 @@ function BasicsSection({
   }
 
   return (
-    <section className="rounded-md border border-ink-muted/20 bg-surface p-6">
+    <Surface as="section" variant="flat" padding="6">
       <h2 className="mb-3 text-xl font-semibold text-ink">{t("basics")}</h2>
 
       <div className="mb-4 flex items-center gap-4">
@@ -234,7 +235,7 @@ function BasicsSection({
           {t("save")}
         </button>
       </div>
-    </section>
+    </Surface>
   );
 }
 
@@ -301,7 +302,7 @@ function ExperiencesSection({
   }
 
   return (
-    <section className="rounded-md border border-ink-muted/20 bg-surface p-6">
+    <Surface as="section" variant="flat" padding="6">
       <div className="mb-3 flex items-center justify-between">
         <h2 className="text-xl font-semibold text-ink">{t("experience")}</h2>
         {!draft ? (
@@ -397,7 +398,7 @@ function ExperiencesSection({
           </div>
         </div>
       ) : null}
-    </section>
+    </Surface>
   );
 }
 
@@ -462,7 +463,7 @@ function EducationsSection({
   }
 
   return (
-    <section className="rounded-md border border-ink-muted/20 bg-surface p-6">
+    <Surface as="section" variant="flat" padding="6">
       <div className="mb-3 flex items-center justify-between">
         <h2 className="text-xl font-semibold text-ink">{t("education")}</h2>
         {!draft ? (
@@ -548,7 +549,7 @@ function EducationsSection({
           </div>
         </div>
       ) : null}
-    </section>
+    </Surface>
   );
 }
 
@@ -603,7 +604,7 @@ function SkillsSection({
   }
 
   return (
-    <section className="rounded-md border border-ink-muted/20 bg-surface p-6">
+    <Surface as="section" variant="flat" padding="6">
       <h2 className="mb-3 text-xl font-semibold text-ink">{t("skills")}</h2>
       <ul className="mb-3 flex flex-wrap gap-2">
         {profile.skills.map((s) => (
@@ -644,7 +645,7 @@ function SkillsSection({
           {t("add")}
         </button>
       </div>
-    </section>
+    </Surface>
   );
 }
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { CreatePostBody, MediaKind, type MediaRef, Post } from "@palnet/shared";
+import { Surface } from "@palnet/ui-web";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 
@@ -93,7 +94,7 @@ export function Composer({
   }
 
   return (
-    <section className="flex flex-col gap-2 rounded-md border border-ink-muted/20 bg-surface p-4 shadow-card">
+    <Surface as="section" variant="card" className="flex flex-col gap-2">
       <label className="text-sm font-semibold text-ink">{t("title")}</label>
       <textarea
         value={body}
@@ -156,6 +157,6 @@ export function Composer({
           </button>
         </div>
       </div>
-    </section>
+    </Surface>
   );
 }

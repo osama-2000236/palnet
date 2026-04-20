@@ -4,6 +4,7 @@ import {
   ConnectionListItem as ConnectionListItemSchema,
   type ConnectionListItem,
 } from "@palnet/shared";
+import { Surface } from "@palnet/ui-web";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -106,15 +107,18 @@ export default function NetworkRoute(): JSX.Element {
       {loading ? (
         <p className="text-ink-muted">…</p>
       ) : items.length === 0 ? (
-        <p className="rounded-md border border-ink-muted/20 bg-surface p-6 text-ink-muted">
+        <Surface variant="flat" padding="6" className="text-ink-muted">
           {t("empty")}
-        </p>
+        </Surface>
       ) : (
         <ul className="flex flex-col gap-3">
           {items.map((c) => (
-            <li
+            <Surface
+              as="li"
               key={c.connectionId}
-              className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-ink-muted/20 bg-surface p-4"
+              variant="flat"
+              padding="4"
+              className="flex flex-wrap items-center justify-between gap-3"
             >
               <Link href={`/in/${c.user.handle}`} className="flex flex-col">
                 <span className="font-semibold text-ink">
@@ -161,7 +165,7 @@ export default function NetworkRoute(): JSX.Element {
                   {t("removeConnection")}
                 </button>
               )}
-            </li>
+            </Surface>
           ))}
         </ul>
       )}

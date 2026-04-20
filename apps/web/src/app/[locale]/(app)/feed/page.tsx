@@ -1,6 +1,7 @@
 "use client";
 
 import { type Post, cursorPage } from "@palnet/shared";
+import { Surface } from "@palnet/ui-web";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -92,9 +93,9 @@ export default function FeedPageRoute(): JSX.Element {
       <Composer onPosted={(p) => setPosts((prev) => [p, ...prev])} />
 
       {posts.length === 0 && !loading ? (
-        <div className="rounded-md border border-ink-muted/20 bg-surface p-6 text-ink-muted">
+        <Surface variant="flat" padding="6" className="text-ink-muted">
           {t("empty")}
-        </div>
+        </Surface>
       ) : (
         <ul className="flex flex-col gap-4">
           {posts.map((p) => (

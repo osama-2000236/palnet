@@ -1,6 +1,7 @@
 "use client";
 
 import type { Post } from "@palnet/shared";
+import { Surface } from "@palnet/ui-web";
 import Link from "next/link";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
@@ -57,7 +58,7 @@ export function PostCard({
   }
 
   return (
-    <article className="flex flex-col gap-3 rounded-md border border-ink-muted/20 bg-surface p-4 shadow-card">
+    <Surface as="article" variant="card" className="flex flex-col gap-3">
       <header className="flex flex-col">
         <Link
           href={`/in/${post.author.handle}`}
@@ -136,6 +137,6 @@ export function PostCard({
           }
         />
       ) : null}
-    </article>
+    </Surface>
   );
 }

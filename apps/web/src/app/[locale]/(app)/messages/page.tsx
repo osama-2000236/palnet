@@ -8,6 +8,7 @@ import {
   type ChatRoom,
   type Message,
 } from "@palnet/shared";
+import { Surface } from "@palnet/ui-web";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -278,8 +279,8 @@ export default function MessagesPage(): JSX.Element {
       <header className="flex items-center justify-between gap-3">
         <h1 className="text-2xl font-bold text-ink">{t("title")}</h1>
         {sseLive ? (
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-green-100 px-2 py-0.5 text-xs text-green-700">
-            <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-success/10 px-2 py-0.5 text-xs text-success">
+            <span className="h-1.5 w-1.5 rounded-full bg-success" />
             {t("online")}
           </span>
         ) : null}
@@ -287,7 +288,7 @@ export default function MessagesPage(): JSX.Element {
 
       <div className="grid min-h-[520px] grid-cols-1 gap-4 md:grid-cols-[280px_1fr]">
         {/* Rooms list */}
-        <aside className="flex flex-col gap-1 rounded-md border border-ink-muted/20 bg-surface p-2 shadow-card">
+        <Surface as="aside" variant="card" padding="2" className="flex flex-col gap-1">
           {rooms.length === 0 ? (
             <p className="p-4 text-sm text-ink-muted">{t("emptyList")}</p>
           ) : (
@@ -329,10 +330,10 @@ export default function MessagesPage(): JSX.Element {
               );
             })
           )}
-        </aside>
+        </Surface>
 
         {/* Active thread */}
-        <section className="flex min-h-[520px] flex-col rounded-md border border-ink-muted/20 bg-surface shadow-card">
+        <Surface as="section" variant="card" padding="0" className="flex min-h-[520px] flex-col">
           {!activeRoomId ? (
             <div className="flex flex-1 items-center justify-center p-8 text-sm text-ink-muted">
               {t("selectPrompt")}
@@ -445,7 +446,7 @@ export default function MessagesPage(): JSX.Element {
               </form>
             </>
           )}
-        </section>
+        </Surface>
       </div>
     </main>
   );

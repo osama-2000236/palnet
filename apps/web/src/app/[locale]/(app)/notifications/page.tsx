@@ -7,6 +7,7 @@ import {
   WsNotificationEvent,
   type Notification,
 } from "@palnet/shared";
+import { Surface } from "@palnet/ui-web";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -122,17 +123,17 @@ export default function NotificationsPageRoute(): JSX.Element {
       <header className="flex items-center justify-between gap-3">
         <h1 className="text-2xl font-bold text-ink">{t("title")}</h1>
         {sseLive ? (
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-green-100 px-2 py-0.5 text-xs text-green-700">
-            <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-success/10 px-2 py-0.5 text-xs text-success">
+            <span className="h-1.5 w-1.5 rounded-full bg-success" />
             {t("live")}
           </span>
         ) : null}
       </header>
 
       {items.length === 0 && !loading ? (
-        <div className="rounded-md border border-ink-muted/20 bg-surface p-6 text-sm text-ink-muted">
+        <Surface variant="flat" padding="6" className="text-sm text-ink-muted">
           {t("empty")}
-        </div>
+        </Surface>
       ) : (
         <ul className="flex flex-col gap-2">
           {items.map((n) => (

@@ -7,6 +7,7 @@ const config: Config = {
   content: [
     "./src/**/*.{ts,tsx}",
     "../../packages/ui-tokens/src/**/*.{ts,tsx}",
+    "../../packages/ui-web/src/**/*.{ts,tsx}",
   ],
   theme: { extend: {} },
   plugins: [],

@@ -5,6 +5,7 @@ import {
   SearchPersonHit as SearchPersonHitSchema,
   type SearchPersonHit,
 } from "@palnet/shared";
+import { Surface } from "@palnet/ui-web";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -97,16 +98,13 @@ function SearchInner(): JSX.Element {
       </form>
 
       {hits.length === 0 && !loading ? (
-        <p className="rounded-md border border-ink-muted/20 bg-surface p-6 text-ink-muted">
+        <Surface variant="flat" padding="6" className="text-ink-muted">
           {q.trim() ? t("noResults") : t("prompt")}
-        </p>
+        </Surface>
       ) : (
         <ul className="flex flex-col gap-3">
           {hits.map((p) => (
-            <li
-              key={p.userId}
-              className="rounded-md border border-ink-muted/20 bg-surface p-4"
-            >
+            <Surface as="li" key={p.userId} variant="flat" padding="4">
               <Link href={`/in/${p.handle}`} className="flex flex-col">
                 <span className="font-semibold text-ink">
                   {p.firstName} {p.lastName}
@@ -121,7 +119,7 @@ function SearchInner(): JSX.Element {
                   <span className="text-xs text-ink-muted">{p.location}</span>
                 ) : null}
               </Link>
-            </li>
+            </Surface>
           ))}
         </ul>
       )}
