@@ -245,18 +245,19 @@ Things scoped for later sprints so Sprint 3 stays "feed-only":
 5. ✅ **ui-native `Icon` atom** — same `IconName` union as web, 24×24 viewBox, react-native-svg host. Tab-bar emoji glyphs replaced with real icons (home, users, briefcase, message, bell, search); focused tab gets a heavier stroke instead of a filled variant.
 6. ✅ **`jobs.*` i18n namespace** (title, filters, search, city, type/locationLabels, appliedBadge, description, skills, empty/notFound copy, countSummary, from/upTo) added to both web catalogs (en + ar-PS) and mobile catalogs (en + ar) matching the shared `JobType` / `JobLocationMode` enum values.
 7. ✅ **Notifications polish** — first-load skeleton (4 rows) + friendly tinted empty state with brand checkmark. Stops the "empty card flash" on open.
-8. ⏳ Accessibility pass (axe-core clean).
-9. ⏳ Arabic translation QA by native speaker.
-10. ⏳ Perf budget check.
+8. ✅ **Feed right-rail jobs** — replaces the `قريبًا` placeholder with a live mini-list backed by `/jobs?limit=3`. Falls back to the placeholder copy when the endpoint returns empty.
+9. ✅ **Search skeleton** — four pulsing person rows while the first query is in flight. Prevents the empty-state copy flashing between submit and first response.
+10. ✅ **Mobile profile ported** to `Surface` / `Avatar` / `Button` from `@palnet/ui-native`. Same connection matrix, same optimistic updates; styling now flows through `nativeTokens` instead of nativewind class strings.
+11. ⏳ Accessibility pass (axe-core clean).
+12. ⏳ Arabic translation QA by native speaker.
+13. ⏳ Perf budget check.
 
 #### Sprint 6 gap list (deferred / still to do)
 
 - **Jobs filters on mobile** — only the bare list. No filter sheet yet; the web filter aside doesn't port cleanly to a phone viewport. Revisit with a bottom-sheet when we have a sheet primitive in ui-native.
 - **Apply flow has no cover-letter / resume picker.** `POST /jobs/:id/apply` sends an empty body; the API schema allows both but the UI doesn't collect them. v1 posture is "one tap apply" per spec.
 - **Salary formatting** — `toLocaleString()` with no explicit locale, so it'll render Western digits even in Arabic. Revisit once we pick a canonical digit script policy.
-- **Jobs suggested rail on /feed** still says "قريبًا". Now that the list endpoint exists, we could wire 3 suggestions into the right-rail — low priority, deferred.
-- **Search page skeleton** — still flashes a plain `prompt` line. Extend the notifications pattern (skeleton rows on first submit).
-- **Mobile profile / messages / onboarding screens** still use raw RN primitives. Keep porting to `Surface` / `Avatar` / `Button` incrementally — not blocking.
+- **Mobile messages / onboarding screens** still use raw RN primitives. Keep porting to `Surface` / `Avatar` / `Button` incrementally — not blocking.
 - **axe-core run** against `/jobs`, `/jobs/[id]`, and `/notifications` hasn't happened this sprint.
 - **Arabic copy QA** — jobs strings were authored by a non-native. Needs a native-speaker pass before launch.
 
