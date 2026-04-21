@@ -1,18 +1,21 @@
 // Mobile job detail. Hero with company logo + title + meta + apply button.
 // Applied badge flips optimistically on press, rolls back on failure.
 
-import { Job as JobSchema, type Job } from "@palnet/shared";
-import { Button, Surface, nativeTokens } from "@palnet/ui-native";
+import { ApplyToJobBody, Job as JobSchema, type Job } from "@palnet/shared";
+import { Button, Sheet, Surface, nativeTokens } from "@palnet/ui-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
   Image,
+  KeyboardAvoidingView,
+  Platform,
   Pressable,
   SafeAreaView,
   ScrollView,
   Text,
+  TextInput,
   View,
 } from "react-native";
 
@@ -27,7 +30,10 @@ export default function JobDetailScreen(): JSX.Element {
   const [job, setJob] = useState<Job | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [applying, setApplying] = useState(false);
+  const [applyOpen, setApplyOpen] = useState(false);
+  const [coverLetter, setCoverLetter] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -50,24 +56,42 @@ export default function JobDetailScreen(): JSX.Element {
     };
   }, [jobId]);
 
-  const handleApply = useCallback(async (): Promise<void> => {
-    if (!job || applying) return;
+  const openApply = useCallback(() => {
+    setSubmitError(null);
+    setCoverLetter("");
+    setApplyOpen(true);
+  }, []);
+
+  const submitApply = useCallback(async (): Promise<void> => {
+    if (!job || submitting) return;
     const token = await getAccessToken();
     if (!token) return;
-    setApplying(true);
-    setJob((j) => (j ? { ...j, viewer: { ...j.viewer, hasApplied: true } } : j));
+    setSubmitError(null);
+    const trimmed = coverLetter.trim();
+    const parsed = ApplyToJobBody.safeParse(
+      trimmed ? { coverLetter: trimmed } : {},
+    );
+    if (!parsed.success) {
+      setSubmitError(t("common.genericError"));
+      return;
+    }
+    setSubmitting(true);
     try {
       await apiCall(`/jobs/${job.id}/apply`, {
         method: "POST",
         token,
-        body: {},
+        body: parsed.data,
       });
-    } catch {
-      setJob((j) => (j ? { ...j, viewer: { ...j.viewer, hasApplied: false } } : j));
+      setJob((j) =>
+        j ? { ...j, viewer: { ...j.viewer, hasApplied: true } } : j,
+      );
+      setApplyOpen(false);
+    } catch (e) {
+      setSubmitError((e as Error).message || t("common.genericError"));
     } finally {
-      setApplying(false);
+      setSubmitting(false);
     }
-  }, [job, applying]);
+  }, [job, submitting, coverLetter, t]);
 
   if (loading) {
     return (
@@ -146,8 +170,7 @@ export default function JobDetailScreen(): JSX.Element {
             ) : (
               <Button
                 variant="accent"
-                onPress={handleApply}
-                loading={applying}
+                onPress={openApply}
                 accessibilityLabel={t("jobs.apply")}
               >
                 {t("jobs.apply")}
@@ -174,6 +197,120 @@ export default function JobDetailScreen(): JSX.Element {
           </Surface>
         ) : null}
       </ScrollView>
+
+      <Sheet
+        open={applyOpen}
+        onClose={() => (submitting ? undefined : setApplyOpen(false))}
+        title={t("jobs.applyTitle", { title: job.title })}
+        closeLabel={t("common.cancel")}
+        scroll={false}
+      >
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
+          style={{ gap: nativeTokens.space[3] }}
+        >
+          <Text
+            style={{
+              color: nativeTokens.color.inkMuted,
+              fontFamily: nativeTokens.type.family.sans,
+              fontSize: nativeTokens.type.scale.small.size,
+            }}
+          >
+            {t("jobs.applySubtitle", { company: job.company.name })}
+          </Text>
+
+          <View style={{ gap: nativeTokens.space[1] }}>
+            <Text
+              style={{
+                color: nativeTokens.color.ink,
+                fontFamily: nativeTokens.type.family.sans,
+                fontSize: nativeTokens.type.scale.small.size,
+                fontWeight: "600",
+              }}
+            >
+              {t("jobs.coverLetterLabel")}
+            </Text>
+            <TextInput
+              value={coverLetter}
+              onChangeText={setCoverLetter}
+              placeholder={t("jobs.coverLetterPlaceholder")}
+              placeholderTextColor={nativeTokens.color.inkMuted}
+              multiline
+              maxLength={8000}
+              style={{
+                minHeight: 140,
+                borderRadius: nativeTokens.radius.md,
+                borderWidth: 1,
+                borderColor: nativeTokens.color.lineHard,
+                backgroundColor: nativeTokens.color.surface,
+                paddingHorizontal: nativeTokens.space[3],
+                paddingVertical: nativeTokens.space[2],
+                color: nativeTokens.color.ink,
+                fontFamily: nativeTokens.type.family.sans,
+                fontSize: nativeTokens.type.scale.body.size,
+                textAlignVertical: "top",
+              }}
+            />
+            <Text
+              style={{
+                color: nativeTokens.color.inkMuted,
+                fontFamily: nativeTokens.type.family.sans,
+                fontSize: nativeTokens.type.scale.caption.size,
+              }}
+            >
+              {t("jobs.coverLetterHint")}
+            </Text>
+          </View>
+
+          {submitError ? (
+            <View
+              accessibilityRole="alert"
+              style={{
+                backgroundColor: nativeTokens.color.dangerSoft,
+                borderWidth: 1,
+                borderColor: nativeTokens.color.danger,
+                borderRadius: nativeTokens.radius.md,
+                paddingHorizontal: nativeTokens.space[3],
+                paddingVertical: nativeTokens.space[2],
+              }}
+            >
+              <Text
+                style={{
+                  color: nativeTokens.color.danger,
+                  fontFamily: nativeTokens.type.family.sans,
+                  fontSize: nativeTokens.type.scale.small.size,
+                }}
+              >
+                {submitError}
+              </Text>
+            </View>
+          ) : null}
+
+          <View
+            style={{
+              flexDirection: "row",
+              justifyContent: "flex-end",
+              gap: nativeTokens.space[2],
+              marginTop: nativeTokens.space[2],
+            }}
+          >
+            <Button
+              variant="ghost"
+              onPress={() => setApplyOpen(false)}
+              disabled={submitting}
+            >
+              {t("common.cancel")}
+            </Button>
+            <Button
+              variant="accent"
+              onPress={() => void submitApply()}
+              loading={submitting}
+            >
+              {t("jobs.submitApplication")}
+            </Button>
+          </View>
+        </KeyboardAvoidingView>
+      </Sheet>
     </SafeAreaView>
   );
 }
