@@ -1,15 +1,17 @@
+// Mobile profile screen. Uses ui-native atoms (Surface, Avatar, Button) +
+// nativeTokens so styling stays in lockstep with the web twin.
+
 import {
   ChatRoom as ChatRoomSchema,
   Profile as ProfileSchema,
   type Profile,
 } from "@palnet/shared";
+import { Avatar, Button, Surface, nativeTokens } from "@palnet/ui-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
-  Image,
-  Pressable,
   SafeAreaView,
   ScrollView,
   Text,
@@ -115,7 +117,14 @@ export default function ProfileScreen(): JSX.Element {
 
   if (loading) {
     return (
-      <SafeAreaView className="flex-1 items-center justify-center bg-surface-muted">
+      <SafeAreaView
+        style={{
+          flex: 1,
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: nativeTokens.color.surfaceMuted,
+        }}
+      >
         <ActivityIndicator />
       </SafeAreaView>
     );
@@ -123,8 +132,25 @@ export default function ProfileScreen(): JSX.Element {
 
   if (error || !profile) {
     return (
-      <SafeAreaView className="flex-1 bg-surface-muted p-6">
-        <Text className="text-ink-muted">{error ?? t("profile.notFound")}</Text>
+      <SafeAreaView
+        style={{
+          flex: 1,
+          backgroundColor: nativeTokens.color.surfaceMuted,
+          padding: nativeTokens.space[4],
+        }}
+      >
+        <Surface variant="tinted" padding="6">
+          <Text
+            style={{
+              color: nativeTokens.color.inkMuted,
+              fontFamily: nativeTokens.type.family.sans,
+              fontSize: nativeTokens.type.scale.body.size,
+              textAlign: "center",
+            }}
+          >
+            {error ?? t("profile.notFound")}
+          </Text>
+        </Surface>
       </SafeAreaView>
     );
   }
@@ -132,84 +158,151 @@ export default function ProfileScreen(): JSX.Element {
   const conn = profile.viewer?.connection;
 
   return (
-    <SafeAreaView className="flex-1 bg-surface-muted">
-      <ScrollView contentContainerClassName="p-4 gap-4">
-        <View className="rounded-md border border-ink-muted/20 bg-surface p-4">
-          {profile.avatarUrl ? (
-            <Image
-              source={{ uri: profile.avatarUrl }}
-              style={{ width: 72, height: 72, borderRadius: 36, marginBottom: 8 }}
-            />
-          ) : null}
-          <Text className="text-2xl font-bold text-ink">
+    <SafeAreaView
+      style={{ flex: 1, backgroundColor: nativeTokens.color.surfaceMuted }}
+    >
+      <ScrollView
+        contentContainerStyle={{
+          padding: nativeTokens.space[4],
+          gap: nativeTokens.space[4],
+        }}
+      >
+        <Surface variant="card" padding="4">
+          <Avatar
+            user={{
+              id: profile.userId,
+              handle: profile.handle,
+              firstName: profile.firstName,
+              lastName: profile.lastName,
+              avatarUrl: profile.avatarUrl,
+            }}
+            size="xl"
+          />
+          <Text
+            style={{
+              marginTop: nativeTokens.space[3],
+              color: nativeTokens.color.ink,
+              fontFamily: nativeTokens.type.family.sans,
+              fontSize: nativeTokens.type.scale.display.size,
+              lineHeight: nativeTokens.type.scale.display.line,
+              fontWeight: "700",
+            }}
+          >
             {profile.firstName} {profile.lastName}
           </Text>
           {profile.headline ? (
-            <Text className="text-ink-muted">{profile.headline}</Text>
+            <Text
+              style={{
+                color: nativeTokens.color.inkMuted,
+                fontFamily: nativeTokens.type.family.sans,
+                fontSize: nativeTokens.type.scale.body.size,
+                marginTop: 2,
+              }}
+            >
+              {profile.headline}
+            </Text>
           ) : null}
           {profile.location ? (
-            <Text className="text-sm text-ink-muted">{profile.location}</Text>
+            <Text
+              style={{
+                color: nativeTokens.color.inkMuted,
+                fontFamily: nativeTokens.type.family.sans,
+                fontSize: nativeTokens.type.scale.small.size,
+                marginTop: 2,
+              }}
+            >
+              {profile.location}
+            </Text>
           ) : null}
-          <Text className="mt-1 text-xs text-ink-muted">/in/{profile.handle}</Text>
+          <Text
+            style={{
+              color: nativeTokens.color.inkMuted,
+              fontFamily: nativeTokens.type.family.sans,
+              fontSize: nativeTokens.type.scale.small.size,
+              marginTop: nativeTokens.space[1],
+            }}
+          >
+            /in/{profile.handle}
+          </Text>
 
           {profile.viewer?.isSelf ? (
-            <Pressable
-              onPress={() => router.push("/(app)/me/edit")}
-              className="mt-3 self-start rounded-md border border-ink-muted/30 px-4 py-2"
+            <View
+              style={{
+                marginTop: nativeTokens.space[3],
+                alignSelf: "flex-start",
+              }}
             >
-              <Text className="text-ink">{t("profile.edit")}</Text>
-            </Pressable>
+              <Button
+                variant="secondary"
+                size="md"
+                onPress={() => router.push("/(app)/me/edit")}
+              >
+                {t("profile.edit")}
+              </Button>
+            </View>
           ) : null}
 
           {profile.viewer && !profile.viewer.isSelf ? (
-            <View className="mt-3 flex-row gap-2">
+            <View
+              style={{
+                marginTop: nativeTokens.space[3],
+                flexDirection: "row",
+                flexWrap: "wrap",
+                gap: nativeTokens.space[2],
+              }}
+            >
               {!conn ||
               conn.status === "WITHDRAWN" ||
               conn.status === "DECLINED" ? (
-                <Pressable
+                <Button
+                  variant="primary"
+                  size="md"
+                  disabled={busy}
                   onPress={() => void connectionAction("CONNECT")}
-                  disabled={busy}
-                  className="rounded-md bg-brand-600 px-4 py-2"
                 >
-                  <Text className="text-ink-inverse">{t("network.connect")}</Text>
-                </Pressable>
+                  {t("network.connect")}
+                </Button>
               ) : conn.status === "PENDING" && conn.direction === "OUTGOING" ? (
-                <Pressable
-                  onPress={() => void connectionAction("WITHDRAW")}
+                <Button
+                  variant="secondary"
+                  size="md"
                   disabled={busy}
-                  className="rounded-md border border-ink-muted/30 px-4 py-2"
+                  onPress={() => void connectionAction("WITHDRAW")}
                 >
-                  <Text className="text-ink">{t("network.withdraw")}</Text>
-                </Pressable>
+                  {t("network.withdraw")}
+                </Button>
               ) : conn.status === "PENDING" && conn.direction === "INCOMING" ? (
                 <>
-                  <Pressable
+                  <Button
+                    variant="primary"
+                    size="md"
+                    disabled={busy}
                     onPress={() => void connectionAction("ACCEPT")}
-                    disabled={busy}
-                    className="rounded-md bg-brand-600 px-4 py-2"
                   >
-                    <Text className="text-ink-inverse">{t("network.accept")}</Text>
-                  </Pressable>
-                  <Pressable
+                    {t("network.accept")}
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="md"
+                    disabled={busy}
                     onPress={() => void connectionAction("DECLINE")}
-                    disabled={busy}
-                    className="rounded-md border border-ink-muted/30 px-4 py-2"
                   >
-                    <Text className="text-ink">{t("network.decline")}</Text>
-                  </Pressable>
+                    {t("network.decline")}
+                  </Button>
                 </>
               ) : conn.status === "ACCEPTED" ? (
-                <Pressable
-                  onPress={() => void connectionAction("REMOVE")}
+                <Button
+                  variant="secondary"
+                  size="md"
                   disabled={busy}
-                  className="rounded-md border border-ink-muted/30 px-4 py-2"
+                  onPress={() => void connectionAction("REMOVE")}
                 >
-                  <Text className="text-ink">
-                    {t("network.removeConnection")}
-                  </Text>
-                </Pressable>
+                  {t("network.removeConnection")}
+                </Button>
               ) : null}
-              <Pressable
+              <Button
+                variant="secondary"
+                size="md"
                 disabled={busy}
                 onPress={async () => {
                   const token = await getAccessToken();
@@ -225,38 +318,79 @@ export default function ProfileScreen(): JSX.Element {
                         body: { otherUserId: profile.userId },
                       },
                     );
-                    router.push(`/(app)/messages/${room.id}`);
+                    router.push({
+                      pathname: "/(app)/messages/[roomId]",
+                      params: { roomId: room.id },
+                    });
                   } catch {
                     // no-op
                   } finally {
                     setBusy(false);
                   }
                 }}
-                className="rounded-md border border-ink-muted/30 px-4 py-2"
               >
-                <Text className="text-ink">{t("messaging.newMessage")}</Text>
-              </Pressable>
+                {t("messaging.newMessage")}
+              </Button>
             </View>
           ) : null}
-        </View>
+        </Surface>
 
         {profile.about ? (
           <Section title={t("profile.about")}>
-            <Text className="text-ink">{profile.about}</Text>
+            <Text
+              style={{
+                color: nativeTokens.color.ink,
+                fontFamily: nativeTokens.type.family.sans,
+                fontSize: nativeTokens.type.scale.body.size,
+                lineHeight: nativeTokens.type.scale.body.line,
+              }}
+            >
+              {profile.about}
+            </Text>
           </Section>
         ) : null}
 
         {profile.experiences.length > 0 ? (
           <Section title={t("profile.experience")}>
-            {profile.experiences.map((e) => (
+            {profile.experiences.map((e, idx) => (
               <View
                 key={e.id ?? `${e.companyName}-${e.startDate}`}
-                className="mb-3"
+                style={{
+                  marginTop: idx === 0 ? 0 : nativeTokens.space[3],
+                }}
               >
-                <Text className="font-semibold text-ink">{e.title}</Text>
-                <Text className="text-sm text-ink-muted">{e.companyName}</Text>
+                <Text
+                  style={{
+                    color: nativeTokens.color.ink,
+                    fontFamily: nativeTokens.type.family.sans,
+                    fontSize: nativeTokens.type.scale.h3.size,
+                    lineHeight: nativeTokens.type.scale.h3.line,
+                    fontWeight: "600",
+                  }}
+                >
+                  {e.title}
+                </Text>
+                <Text
+                  style={{
+                    color: nativeTokens.color.inkMuted,
+                    fontFamily: nativeTokens.type.family.sans,
+                    fontSize: nativeTokens.type.scale.small.size,
+                  }}
+                >
+                  {e.companyName}
+                </Text>
                 {e.description ? (
-                  <Text className="mt-1 text-sm text-ink">{e.description}</Text>
+                  <Text
+                    style={{
+                      marginTop: nativeTokens.space[1],
+                      color: nativeTokens.color.ink,
+                      fontFamily: nativeTokens.type.family.sans,
+                      fontSize: nativeTokens.type.scale.body.size,
+                      lineHeight: nativeTokens.type.scale.body.line,
+                    }}
+                  >
+                    {e.description}
+                  </Text>
                 ) : null}
               </View>
             ))}
@@ -265,11 +399,32 @@ export default function ProfileScreen(): JSX.Element {
 
         {profile.educations.length > 0 ? (
           <Section title={t("profile.education")}>
-            {profile.educations.map((e) => (
-              <View key={e.id ?? e.school} className="mb-3">
-                <Text className="font-semibold text-ink">{e.school}</Text>
+            {profile.educations.map((e, idx) => (
+              <View
+                key={e.id ?? e.school}
+                style={{
+                  marginTop: idx === 0 ? 0 : nativeTokens.space[3],
+                }}
+              >
+                <Text
+                  style={{
+                    color: nativeTokens.color.ink,
+                    fontFamily: nativeTokens.type.family.sans,
+                    fontSize: nativeTokens.type.scale.h3.size,
+                    lineHeight: nativeTokens.type.scale.h3.line,
+                    fontWeight: "600",
+                  }}
+                >
+                  {e.school}
+                </Text>
                 {e.degree ? (
-                  <Text className="text-sm text-ink-muted">
+                  <Text
+                    style={{
+                      color: nativeTokens.color.inkMuted,
+                      fontFamily: nativeTokens.type.family.sans,
+                      fontSize: nativeTokens.type.scale.small.size,
+                    }}
+                  >
                     {e.degree}
                     {e.fieldOfStudy ? ` · ${e.fieldOfStudy}` : ""}
                   </Text>
@@ -281,22 +436,49 @@ export default function ProfileScreen(): JSX.Element {
 
         {profile.skills.length > 0 ? (
           <Section title={t("profile.skills")}>
-            <View className="flex-row flex-wrap gap-2">
+            <View
+              style={{
+                flexDirection: "row",
+                flexWrap: "wrap",
+                gap: nativeTokens.space[2],
+              }}
+            >
               {profile.skills.map((s) => (
                 <View
                   key={s.id}
-                  className="rounded-full border border-ink-muted/30 px-3 py-1"
+                  style={{
+                    borderWidth: 1,
+                    borderColor: nativeTokens.color.lineHard,
+                    borderRadius: nativeTokens.radius.full,
+                    paddingHorizontal: nativeTokens.space[3],
+                    paddingVertical: nativeTokens.space[1],
+                  }}
                 >
-                  <Text className="text-sm text-ink">{s.name}</Text>
+                  <Text
+                    style={{
+                      color: nativeTokens.color.ink,
+                      fontFamily: nativeTokens.type.family.sans,
+                      fontSize: nativeTokens.type.scale.small.size,
+                    }}
+                  >
+                    {s.name}
+                  </Text>
                 </View>
               ))}
             </View>
           </Section>
         ) : null}
 
-        <Pressable onPress={() => router.back()} className="py-3">
-          <Text className="text-center text-ink-muted">{t("common.cancel")}</Text>
-        </Pressable>
+        <View style={{ paddingVertical: nativeTokens.space[3] }}>
+          <Button
+            variant="ghost"
+            size="md"
+            fullWidth
+            onPress={() => router.back()}
+          >
+            {t("common.cancel")}
+          </Button>
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -310,9 +492,20 @@ function Section({
   children: React.ReactNode;
 }): JSX.Element {
   return (
-    <View className="rounded-md border border-ink-muted/20 bg-surface p-4">
-      <Text className="mb-2 text-lg font-semibold text-ink">{title}</Text>
+    <Surface variant="card" padding="4">
+      <Text
+        style={{
+          marginBottom: nativeTokens.space[2],
+          color: nativeTokens.color.ink,
+          fontFamily: nativeTokens.type.family.sans,
+          fontSize: nativeTokens.type.scale.h2.size,
+          lineHeight: nativeTokens.type.scale.h2.line,
+          fontWeight: "600",
+        }}
+      >
+        {title}
+      </Text>
       {children}
-    </View>
+    </Surface>
   );
 }
