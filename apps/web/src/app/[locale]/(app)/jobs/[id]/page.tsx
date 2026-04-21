@@ -4,12 +4,12 @@
 //   • Hero: company logo + title + company name + meta line.
 //   • Description (pre-wrapped multi-paragraph).
 //   • Skills chips.
-//   • Apply CTA — POSTs to /jobs/:id/apply. Endpoint is idempotent so the
-//     button can be re-pressed without the client tracking state. A loading
-//     spinner keeps the press honest; success flips the button to a disabled
-//     "Applied" tag + inline confirmation.
+//   • Apply CTA — opens an <ApplyDialog> so the user can attach an optional
+//     cover letter. Submit POSTs to /jobs/:id/apply with `{ coverLetter }`.
+//     The endpoint is idempotent, so retrying after a network error is safe.
 
 import {
+  ApplyToJobBody,
   formatSalaryRange,
   Job as JobSchema,
   type Job,
@@ -18,7 +18,13 @@ import { Button, Surface } from "@palnet/ui-web";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
-import { useCallback, useEffect, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+} from "react";
 
 import { apiCall, apiFetch } from "@/lib/api";
 import { readSession } from "@/lib/session";
@@ -35,8 +41,7 @@ export default function JobDetailPage(): JSX.Element {
   const [job, setJob] = useState<Job | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [applying, setApplying] = useState(false);
-  const [applyError, setApplyError] = useState<string | null>(null);
+  const [applyOpen, setApplyOpen] = useState(false);
 
   useEffect(() => {
     const session = readSession();
@@ -57,25 +62,12 @@ export default function JobDetailPage(): JSX.Element {
       .finally(() => setLoading(false));
   }, [token, jobId, tCommon]);
 
-  const handleApply = useCallback(async (): Promise<void> => {
-    if (!token || !job || applying) return;
-    setApplying(true);
-    setApplyError(null);
-    // Optimistic: flip hasApplied before the round-trip. Rollback on failure.
-    setJob((j) => (j ? { ...j, viewer: { ...j.viewer, hasApplied: true } } : j));
-    try {
-      await apiCall(`/jobs/${job.id}/apply`, {
-        method: "POST",
-        token,
-        body: {},
-      });
-    } catch (e) {
-      setJob((j) => (j ? { ...j, viewer: { ...j.viewer, hasApplied: false } } : j));
-      setApplyError((e as Error).message || tCommon("genericError"));
-    } finally {
-      setApplying(false);
-    }
-  }, [token, job, applying, tCommon]);
+  const handleApplied = useCallback(() => {
+    setJob((j) =>
+      j ? { ...j, viewer: { ...j.viewer, hasApplied: true } } : j,
+    );
+    setApplyOpen(false);
+  }, []);
 
   if (loading) {
     return (
@@ -176,8 +168,7 @@ export default function JobDetailPage(): JSX.Element {
             ) : (
               <Button
                 variant="accent"
-                onClick={handleApply}
-                loading={applying}
+                onClick={() => setApplyOpen(true)}
                 aria-label={t("apply")}
               >
                 {t("apply")}
@@ -185,9 +176,6 @@ export default function JobDetailPage(): JSX.Element {
             )}
           </div>
         </div>
-        {applyError ? (
-          <p className="mt-3 text-xs text-danger">{applyError}</p>
-        ) : null}
       </Surface>
 
       <Surface variant="card" padding="6" className="mt-4">
@@ -212,6 +200,164 @@ export default function JobDetailPage(): JSX.Element {
           </ul>
         </Surface>
       ) : null}
+
+      {applyOpen && token ? (
+        <ApplyDialog
+          job={job}
+          token={token}
+          onClose={() => setApplyOpen(false)}
+          onApplied={handleApplied}
+        />
+      ) : null}
+    </div>
+  );
+}
+
+// ────────────────────────────────────────────────────────────────────────
+// ApplyDialog — centered modal with an optional cover letter field.
+// Focus jumps to the textarea on open; Esc + overlay click close.
+// Not extracted as a ui-web atom yet — we want two consumers first.
+// ────────────────────────────────────────────────────────────────────────
+
+interface ApplyDialogProps {
+  job: Job;
+  token: string;
+  onClose: () => void;
+  onApplied: () => void;
+}
+
+function ApplyDialog({
+  job,
+  token,
+  onClose,
+  onApplied,
+}: ApplyDialogProps): JSX.Element {
+  const t = useTranslations("jobs");
+  const tCommon = useTranslations("common");
+  const [coverLetter, setCoverLetter] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const titleId = useId();
+  const hintId = useId();
+
+  // Focus textarea on open; scroll-lock the body while the dialog is up.
+  useEffect(() => {
+    textareaRef.current?.focus();
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return (): void => {
+      document.body.style.overflow = prev;
+    };
+  }, []);
+
+  // Esc closes.
+  useEffect(() => {
+    function onKey(e: KeyboardEvent): void {
+      if (e.key === "Escape") {
+        e.stopPropagation();
+        onClose();
+      }
+    }
+    window.addEventListener("keydown", onKey);
+    return (): void => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  async function submit(): Promise<void> {
+    setSubmitError(null);
+    const trimmed = coverLetter.trim();
+    const parsed = ApplyToJobBody.safeParse(
+      trimmed ? { coverLetter: trimmed } : {},
+    );
+    if (!parsed.success) {
+      setSubmitError(tCommon("genericError"));
+      return;
+    }
+    setSubmitting(true);
+    try {
+      await apiCall(`/jobs/${job.id}/apply`, {
+        method: "POST",
+        token,
+        body: parsed.data,
+      });
+      onApplied();
+    } catch (e) {
+      setSubmitError((e as Error).message || tCommon("genericError"));
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <div
+      role="presentation"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 p-4"
+    >
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        aria-describedby={hintId}
+        className="w-full max-w-[560px] rounded-lg border border-line-soft bg-surface shadow-pop"
+      >
+        <div className="border-b border-line-soft px-5 py-4">
+          <h2 id={titleId} className="text-base font-semibold text-ink">
+            {t("applyTitle", { title: job.title })}
+          </h2>
+          <p id={hintId} className="mt-1 text-sm text-ink-muted">
+            {t("applySubtitle", { company: job.company.name })}
+          </p>
+        </div>
+
+        <div className="px-5 py-4">
+          <label className="flex flex-col gap-1">
+            <span className="text-sm font-medium text-ink">
+              {t("coverLetterLabel")}
+            </span>
+            <textarea
+              ref={textareaRef}
+              value={coverLetter}
+              onChange={(e) => setCoverLetter(e.target.value)}
+              maxLength={8000}
+              rows={6}
+              placeholder={t("coverLetterPlaceholder")}
+              className="min-h-[140px] resize-y rounded-md border border-line-hard bg-surface px-3 py-2 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-brand-600"
+            />
+            <span className="text-xs text-ink-muted">
+              {t("coverLetterHint")}
+            </span>
+          </label>
+
+          {submitError ? (
+            <p
+              role="alert"
+              className="mt-3 rounded-md border border-danger/30 bg-danger/10 px-3 py-2 text-xs text-danger"
+            >
+              {submitError}
+            </p>
+          ) : null}
+        </div>
+
+        <div className="flex items-center justify-end gap-2 border-t border-line-soft px-5 py-3">
+          <Button
+            variant="ghost"
+            onClick={onClose}
+            disabled={submitting}
+          >
+            {tCommon("cancel")}
+          </Button>
+          <Button
+            variant="accent"
+            onClick={() => void submit()}
+            loading={submitting}
+          >
+            {t("submitApplication")}
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }

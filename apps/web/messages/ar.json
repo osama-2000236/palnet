@@ -151,7 +151,13 @@
   },
   "jobs": {
     "search": "ابحث عن وظيفة",
-    "apply": "قدّم طلبك"
+    "apply": "قدّم طلبك",
+    "applyTitle": "التقديم على {title}",
+    "applySubtitle": "أرسل كلمة قصيرة إلى {company}. يمكنك تركها فارغة والتقديم مباشرة.",
+    "coverLetterLabel": "رسالة تعريفية (اختياري)",
+    "coverLetterPlaceholder": "اكتب لماذا أنت مناسب لهذا الدور…",
+    "coverLetterHint": "حتى 8,000 حرف.",
+    "submitApplication": "أرسل الطلب"
   },
   "company": {
     "about": "عن الشركة",
