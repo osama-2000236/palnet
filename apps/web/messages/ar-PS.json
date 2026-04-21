@@ -203,8 +203,40 @@
     }
   },
   "jobs": {
+    "title": "الوظائف",
+    "filters": "الفلاتر",
     "search": "ابحث عن وظيفة",
-    "apply": "قدّم طلبك"
+    "searchPlaceholder": "مسمى، شركة، كلمة مفتاحية…",
+    "city": "المدينة",
+    "cityPlaceholder": "مثال: رام الله",
+    "type": "النوع",
+    "location": "مكان العمل",
+    "any": "الكل",
+    "apply": "قدّم طلبك",
+    "appliedBadge": "تم التقديم",
+    "description": "وصف الوظيفة",
+    "skills": "المهارات المطلوبة",
+    "loadMore": "تحميل المزيد",
+    "emptyTitle": "ما في وظائف تطابق الفلاتر.",
+    "emptyDesc": "جرّب توسيع البحث أو إلغاء فلتر.",
+    "notFound": "هذه الوظيفة لم تعد متاحة.",
+    "countSummary": "{count} وظيفة",
+    "noneSummary": "لا نتائج",
+    "from": "من",
+    "upTo": "حتى",
+    "typeLabels": {
+      "FULL_TIME": "دوام كامل",
+      "PART_TIME": "دوام جزئي",
+      "CONTRACT": "عقد",
+      "INTERNSHIP": "تدريب",
+      "VOLUNTEER": "تطوع",
+      "TEMPORARY": "مؤقت"
+    },
+    "locationLabels": {
+      "ONSITE": "من المكتب",
+      "HYBRID": "هجين",
+      "REMOTE": "عن بُعد"
+    }
   },
   "company": {
     "about": "عن الشركة",

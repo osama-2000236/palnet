@@ -203,8 +203,40 @@
     }
   },
   "jobs": {
+    "title": "Jobs",
+    "filters": "Filters",
     "search": "Search jobs",
-    "apply": "Apply"
+    "searchPlaceholder": "Title, company, keyword…",
+    "city": "City",
+    "cityPlaceholder": "e.g. Ramallah",
+    "type": "Type",
+    "location": "Location",
+    "any": "Any",
+    "apply": "Apply",
+    "appliedBadge": "Applied",
+    "description": "Job description",
+    "skills": "Required skills",
+    "loadMore": "Load more",
+    "emptyTitle": "No jobs match those filters.",
+    "emptyDesc": "Try widening your search or clearing a filter.",
+    "notFound": "This job is no longer available.",
+    "countSummary": "{count} jobs",
+    "noneSummary": "No results",
+    "from": "from",
+    "upTo": "up to",
+    "typeLabels": {
+      "FULL_TIME": "Full-time",
+      "PART_TIME": "Part-time",
+      "CONTRACT": "Contract",
+      "INTERNSHIP": "Internship",
+      "VOLUNTEER": "Volunteer",
+      "TEMPORARY": "Temporary"
+    },
+    "locationLabels": {
+      "ONSITE": "On-site",
+      "HYBRID": "Hybrid",
+      "REMOTE": "Remote"
+    }
   },
   "company": {
     "about": "About",
