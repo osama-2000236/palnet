@@ -1,4 +1,5 @@
 import { cursorPage, Post as PostSchema, type Post } from "@palnet/shared";
+import { Avatar, Button, Surface, nativeTokens } from "@palnet/ui-native";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { z } from "zod";
@@ -83,68 +84,69 @@ export default function FeedScreen(): JSX.Element {
 
   return (
     <SafeAreaView className="flex-1 bg-surface-muted">
-      <View className="flex-1 px-4 pt-8">
-        <View className="mb-3 flex-row items-center justify-between">
-          <View className="flex-col gap-1">
-            <Text className="text-3xl font-bold text-ink">{t("feed.title")}</Text>
-            {name ? (
-              <Text className="text-ink-muted">
-                {t("feed.welcome", { name })}
-              </Text>
-            ) : null}
-          </View>
-          <View className="flex-row gap-2">
-            <Pressable
-              onPress={() => router.push("/(app)/search")}
-              className="rounded-md border border-ink-muted/30 px-3 py-1.5"
+      <View className="flex-1 px-4 pt-6">
+        <View className="mb-3 flex-col gap-0.5">
+          <Text
+            style={{
+              fontSize: nativeTokens.type.scale.display.size,
+              lineHeight: nativeTokens.type.scale.display.line,
+              fontWeight: "700",
+              color: nativeTokens.color.ink,
+              fontFamily: nativeTokens.type.family.sans,
+            }}
+          >
+            {t("feed.title")}
+          </Text>
+          {name ? (
+            <Text
+              style={{
+                color: nativeTokens.color.inkMuted,
+                fontSize: nativeTokens.type.scale.small.size,
+                lineHeight: nativeTokens.type.scale.small.line,
+                fontFamily: nativeTokens.type.family.sans,
+              }}
             >
-              <Text className="text-xs text-ink">{t("search.title")}</Text>
-            </Pressable>
-            <Pressable
-              onPress={() => router.push("/(app)/network")}
-              className="rounded-md border border-ink-muted/30 px-3 py-1.5"
+              {t("feed.welcome", { name })}
+            </Text>
+          ) : null}
+          {unread > 0 ? (
+            <Text
+              style={{
+                marginTop: nativeTokens.space[1],
+                alignSelf: "flex-start",
+                backgroundColor: nativeTokens.color.accent600,
+                color: nativeTokens.color.inkInverse,
+                fontSize: 11,
+                fontWeight: "700",
+                paddingHorizontal: nativeTokens.space[2],
+                paddingVertical: 2,
+                borderRadius: nativeTokens.radius.full,
+                fontFamily: nativeTokens.type.family.sans,
+              }}
+              accessibilityLabel={t("nav.unreadNotifications", { count: unread })}
             >
-              <Text className="text-xs text-ink">{t("network.title")}</Text>
-            </Pressable>
-            <Pressable
-              onPress={() => router.push("/(app)/messages")}
-              className="rounded-md border border-ink-muted/30 px-3 py-1.5"
-            >
-              <Text className="text-xs text-ink">{t("messaging.title")}</Text>
-            </Pressable>
-            <Pressable
-              onPress={() => router.push("/(app)/notifications")}
-              accessibilityLabel={t("notifications.title")}
-              className="relative rounded-md border border-ink-muted/30 px-3 py-1.5"
-            >
-              <Text className="text-xs text-ink">🔔</Text>
-              {unread > 0 ? (
-                <View
-                  style={{
-                    position: "absolute",
-                    top: -6,
-                    right: -6,
-                    minWidth: 18,
-                    height: 18,
-                    borderRadius: 9,
-                    paddingHorizontal: 4,
-                  }}
-                  className="items-center justify-center bg-accent-600"
-                >
-                  <Text className="text-[10px] font-semibold text-ink-inverse">
-                    {unread > 99 ? "99+" : unread}
-                  </Text>
-                </View>
-              ) : null}
-            </Pressable>
-          </View>
+              {unread > 99 ? "99+" : String(unread)}
+            </Text>
+          ) : null}
         </View>
 
         <Pressable
           onPress={() => router.push("/(app)/composer")}
-          className="mb-3 rounded-md border border-ink-muted/20 bg-surface p-4"
+          style={{ marginBottom: nativeTokens.space[3] }}
+          accessibilityRole="button"
+          accessibilityLabel={t("composer.placeholder")}
         >
-          <Text className="text-ink-muted">{t("composer.placeholder")}</Text>
+          <Surface variant="card" padding="4">
+            <Text
+              style={{
+                color: nativeTokens.color.inkMuted,
+                fontSize: nativeTokens.type.scale.body.size,
+                fontFamily: nativeTokens.type.family.sans,
+              }}
+            >
+              {t("composer.placeholder")}
+            </Text>
+          </Surface>
         </Pressable>
 
         <FlatList
@@ -167,9 +169,17 @@ export default function FeedScreen(): JSX.Element {
           }}
           ListEmptyComponent={
             loading ? null : (
-              <View className="rounded-md border border-ink-muted/20 bg-surface p-6">
-                <Text className="text-ink-muted">{t("feed.empty")}</Text>
-              </View>
+              <Surface variant="tinted" padding="6">
+                <Text
+                  style={{
+                    color: nativeTokens.color.inkMuted,
+                    fontSize: nativeTokens.type.scale.body.size,
+                    fontFamily: nativeTokens.type.family.sans,
+                  }}
+                >
+                  {t("feed.empty")}
+                </Text>
+              </Surface>
             )
           }
           ListFooterComponent={
@@ -232,20 +242,66 @@ function PostRow({
   }
 
   const liked = post.viewer.reaction !== null;
+  const nameStyle = {
+    color: nativeTokens.color.ink,
+    fontSize: nativeTokens.type.scale.h3.size,
+    lineHeight: nativeTokens.type.scale.h3.line,
+    fontWeight: "600" as const,
+    fontFamily: nativeTokens.type.family.sans,
+  };
+  const mutedStyle = {
+    color: nativeTokens.color.inkMuted,
+    fontSize: nativeTokens.type.scale.small.size,
+    lineHeight: nativeTokens.type.scale.small.line,
+    fontFamily: nativeTokens.type.family.sans,
+  };
+  const bodyStyle = {
+    color: nativeTokens.color.ink,
+    fontSize: nativeTokens.type.scale.body.size,
+    lineHeight: nativeTokens.type.scale.body.line,
+    fontFamily: nativeTokens.type.family.body,
+    marginTop: nativeTokens.space[2],
+  };
 
   return (
-    <View className="rounded-md border border-ink-muted/20 bg-surface p-4">
-      <Pressable onPress={() => router.push(`/(app)/in/${post.author.handle}`)}>
-        <Text className="font-semibold text-ink">
-          {post.author.firstName} {post.author.lastName}
-        </Text>
+    <Surface variant="card" padding="4">
+      <Pressable
+        onPress={() => router.push(`/(app)/in/${post.author.handle}`)}
+        style={{ flexDirection: "row", alignItems: "center", gap: nativeTokens.space[3] }}
+        accessibilityRole="link"
+        accessibilityLabel={`${post.author.firstName} ${post.author.lastName}`}
+      >
+        <Avatar
+          user={{
+            id: post.author.id,
+            handle: post.author.handle,
+            firstName: post.author.firstName,
+            lastName: post.author.lastName,
+            avatarUrl: post.author.avatarUrl,
+          }}
+          size="md"
+        />
+        <View style={{ flex: 1 }}>
+          <Text style={nameStyle}>
+            {post.author.firstName} {post.author.lastName}
+          </Text>
+          {post.author.headline ? (
+            <Text style={mutedStyle} numberOfLines={1}>
+              {post.author.headline}
+            </Text>
+          ) : null}
+        </View>
       </Pressable>
-      {post.author.headline ? (
-        <Text className="text-sm text-ink-muted">{post.author.headline}</Text>
-      ) : null}
-      <Text className="mt-2 text-ink">{post.body}</Text>
+      <Text style={bodyStyle}>{post.body}</Text>
       {post.media.length > 0 ? (
-        <View className="mt-2 flex-row flex-wrap gap-1">
+        <View
+          style={{
+            marginTop: nativeTokens.space[2],
+            flexDirection: "row",
+            flexWrap: "wrap",
+            gap: nativeTokens.space[1],
+          }}
+        >
           {post.media.map((m) =>
             m.kind === "IMAGE" ? (
               <Image
@@ -254,7 +310,7 @@ function PostRow({
                 style={{
                   width: post.media.length === 1 ? "100%" : "49%",
                   height: 180,
-                  borderRadius: 6,
+                  borderRadius: nativeTokens.radius.sm,
                 }}
                 resizeMode="cover"
               />
@@ -262,24 +318,45 @@ function PostRow({
           )}
         </View>
       ) : null}
-      <View className="mt-3 flex-row gap-4 border-t border-ink-muted/10 pt-2">
-        <Pressable onPress={toggleReaction} disabled={busy}>
+      <View
+        style={{
+          marginTop: nativeTokens.space[3],
+          paddingTop: nativeTokens.space[2],
+          borderTopWidth: 1,
+          borderTopColor: nativeTokens.color.lineSoft,
+          flexDirection: "row",
+          gap: nativeTokens.space[4],
+        }}
+      >
+        <Pressable
+          onPress={toggleReaction}
+          disabled={busy}
+          accessibilityRole="button"
+          accessibilityState={{ disabled: busy, selected: liked }}
+          hitSlop={8}
+        >
           <Text
-            className={
-              liked
-                ? "text-sm font-semibold text-brand-600"
-                : "text-sm text-ink-muted"
-            }
+            style={[
+              mutedStyle,
+              liked && {
+                color: nativeTokens.color.brand700,
+                fontWeight: "600",
+              },
+            ]}
           >
             {liked ? t("post.liked") : t("post.like")} ({post.counts.reactions})
           </Text>
         </Pressable>
-        <Pressable onPress={() => setShowComments((s) => !s)}>
-          <Text className="text-sm text-ink-muted">
+        <Pressable
+          onPress={() => setShowComments((s) => !s)}
+          accessibilityRole="button"
+          hitSlop={8}
+        >
+          <Text style={mutedStyle}>
             {t("post.comments")} ({post.counts.comments})
           </Text>
         </Pressable>
-        <Text className="text-sm text-ink-muted">
+        <Text style={mutedStyle}>
           {t("post.reposts")}: {post.counts.reposts}
         </Text>
       </View>
@@ -298,6 +375,6 @@ function PostRow({
           }
         />
       ) : null}
-    </View>
+    </Surface>
   );
 }

@@ -18,7 +18,9 @@ const ROOT = process.cwd();
 const SCAN_DIRS = [
   "apps/web/src",
   "apps/mobile/src",
+  "apps/mobile/app",
   "packages/ui-web/src",
+  "packages/ui-native/src",
 ];
 const EXTS = new Set([".ts", ".tsx"]);
 
