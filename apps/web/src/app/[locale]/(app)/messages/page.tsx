@@ -1,5 +1,12 @@
 "use client";
 
+// Messages page — room list on the start side, active thread on the other.
+// Spec: docs/design/prototype/components/MessagesPage.jsx.
+//
+// Owns the network concerns (REST + SSE); delegates all visuals to
+// @palnet/ui-web shells (MessageBubble, RoomRow, TypingIndicator, Avatar,
+// Surface, Icon). Grouping logic lives in the shared `groupMessages` helper.
+
 import {
   ChatRoom as ChatRoomSchema,
   CursorPageMeta,
@@ -8,7 +15,16 @@ import {
   type ChatRoom,
   type Message,
 } from "@palnet/shared";
-import { Avatar, Surface } from "@palnet/ui-web";
+import {
+  Avatar,
+  Icon,
+  MessageBubble,
+  RoomRow,
+  Surface,
+  TypingIndicator,
+  groupMessages,
+  type MessageStatus,
+} from "@palnet/ui-web";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -33,6 +49,13 @@ const MessagesPageEnvelope = z.object({
 const API_BASE =
   process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000/api/v1";
 
+// Presence threshold — considered "online" if lastSeenAt is within this window.
+const ONLINE_WINDOW_MS = 2 * 60 * 1000;
+// Typing indicator auto-expires after this much silence from the sender.
+const TYPING_TTL_MS = 5 * 1000;
+// Minimum gap between outgoing typing POSTs while the user is actively typing.
+const TYPING_POST_THROTTLE_MS = 3 * 1000;
+
 export default function MessagesPage(): JSX.Element {
   const t = useTranslations("messaging");
   const router = useRouter();
@@ -45,11 +68,21 @@ export default function MessagesPage(): JSX.Element {
   const [hasMore, setHasMore] = useState(false);
   const [draft, setDraft] = useState("");
   const [sending, setSending] = useState(false);
-  const [sseLive, setSseLive] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [typingUserByRoom, setTypingUserByRoom] = useState<
+    Record<string, { userId: string; expiresAt: number }>
+  >({});
+  const [failedClientIds, setFailedClientIds] = useState<Set<string>>(
+    () => new Set(),
+  );
   const [error, setError] = useState<string | null>(null);
   const threadRef = useRef<HTMLDivElement | null>(null);
+  const lastTypingPostRef = useRef<{ roomId: string | null; at: number }>({
+    roomId: null,
+    at: 0,
+  });
 
-  // Session bootstrap.
+  // ───────── Session bootstrap ─────────
   useEffect(() => {
     const session = readSession();
     if (!session) {
@@ -60,7 +93,7 @@ export default function MessagesPage(): JSX.Element {
     setToken(session.tokens.accessToken);
   }, [router]);
 
-  // Initial room list.
+  // ───────── Initial room list ─────────
   const loadRooms = useCallback(async (tk: string): Promise<ChatRoom[]> => {
     const out = await apiFetchPage("/messaging/rooms", RoomsEnvelope, {
       token: tk,
@@ -79,7 +112,7 @@ export default function MessagesPage(): JSX.Element {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
-  // Messages for active room.
+  // ───────── Messages for active room ─────────
   const loadMessages = useCallback(
     async (roomId: string, after: string | null): Promise<void> => {
       if (!token) return;
@@ -105,14 +138,12 @@ export default function MessagesPage(): JSX.Element {
     setNextCursor(null);
     setHasMore(false);
     void loadMessages(activeRoomId, null).then(() => {
-      // Mark as read once loaded.
       if (activeRoomId) {
         void apiCall(`/messaging/rooms/${activeRoomId}/read`, {
           method: "POST",
           token,
         }).catch(() => {});
       }
-      // Scroll to newest.
       requestAnimationFrame(() => {
         if (threadRef.current) {
           threadRef.current.scrollTop = threadRef.current.scrollHeight;
@@ -121,13 +152,11 @@ export default function MessagesPage(): JSX.Element {
     });
   }, [activeRoomId, token, loadMessages]);
 
-  // SSE subscription — keyed by token so reconnects cleanly on login change.
+  // ───────── SSE ─────────
   useEffect(() => {
     if (!token) return;
     const url = `${API_BASE}/messaging/stream?access_token=${encodeURIComponent(token)}`;
     const es = new EventSource(url);
-    es.onopen = (): void => setSseLive(true);
-    es.onerror = (): void => setSseLive(false);
     es.onmessage = (evt): void => {
       try {
         const parsed = WsChatEvent.safeParse(JSON.parse(evt.data));
@@ -139,7 +168,6 @@ export default function MessagesPage(): JSX.Element {
     };
     return (): void => {
       es.close();
-      setSseLive(false);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
@@ -148,10 +176,8 @@ export default function MessagesPage(): JSX.Element {
     (event: WsChatEvent): void => {
       if (event.type === "message.new") {
         const m = event.payload;
-        // Update active thread if this message belongs to it.
         setMessages((prev) => {
           if (m.roomId !== activeRoomId) return prev;
-          // Reconcile with optimistic copy by clientMessageId.
           const idx = prev.findIndex(
             (x) => x.clientMessageId && x.clientMessageId === m.clientMessageId,
           );
@@ -163,7 +189,6 @@ export default function MessagesPage(): JSX.Element {
           if (prev.some((x) => x.id === m.id)) return prev;
           return [...prev, m];
         });
-        // Nudge room list — bump lastMessage & unread count for inactive rooms.
         setRooms((prev) =>
           prev
             .map((r) => {
@@ -181,7 +206,13 @@ export default function MessagesPage(): JSX.Element {
             })
             .sort((a, b) => (a.updatedAt < b.updatedAt ? 1 : -1)),
         );
-        // If active, auto-scroll and mark read.
+        // Clear the typing indicator from the sender the moment their message lands.
+        setTypingUserByRoom((prev) => {
+          if (!prev[m.roomId]) return prev;
+          const next = { ...prev };
+          delete next[m.roomId];
+          return next;
+        });
         if (m.roomId === activeRoomId && token) {
           requestAnimationFrame(() => {
             if (threadRef.current) {
@@ -208,11 +239,56 @@ export default function MessagesPage(): JSX.Element {
             };
           }),
         );
+      } else if (event.type === "typing") {
+        const { roomId, userId } = event.payload;
+        if (userId === viewerId) return;
+        setTypingUserByRoom((prev) => ({
+          ...prev,
+          [roomId]: { userId, expiresAt: Date.now() + TYPING_TTL_MS },
+        }));
       }
     },
     [activeRoomId, token, viewerId],
   );
 
+  // ───────── Typing TTL tick — prune expired entries ─────────
+  useEffect(() => {
+    if (Object.keys(typingUserByRoom).length === 0) return;
+    const iv = setInterval(() => {
+      setTypingUserByRoom((prev) => {
+        const now = Date.now();
+        let changed = false;
+        const next: typeof prev = {};
+        for (const [roomId, entry] of Object.entries(prev)) {
+          if (entry.expiresAt > now) next[roomId] = entry;
+          else changed = true;
+        }
+        return changed ? next : prev;
+      });
+    }, 1000);
+    return (): void => clearInterval(iv);
+  }, [typingUserByRoom]);
+
+  // ───────── Outgoing typing signal ─────────
+  const postTypingThrottled = useCallback((): void => {
+    if (!activeRoomId || !token) return;
+    const now = Date.now();
+    if (
+      lastTypingPostRef.current.roomId === activeRoomId &&
+      now - lastTypingPostRef.current.at < TYPING_POST_THROTTLE_MS
+    ) {
+      return;
+    }
+    lastTypingPostRef.current = { roomId: activeRoomId, at: now };
+    void apiCall(`/messaging/rooms/${activeRoomId}/typing`, {
+      method: "POST",
+      token,
+    }).catch(() => {
+      // Typing is a best-effort signal; swallow errors silently.
+    });
+  }, [activeRoomId, token]);
+
+  // ───────── Send ─────────
   async function submit(): Promise<void> {
     if (!activeRoomId || !token || draft.trim().length === 0) return;
     setSending(true);
@@ -232,6 +308,11 @@ export default function MessagesPage(): JSX.Element {
     };
     setMessages((prev) => [...prev, optimistic]);
     setDraft("");
+    requestAnimationFrame(() => {
+      if (threadRef.current) {
+        threadRef.current.scrollTop = threadRef.current.scrollHeight;
+      }
+    });
     try {
       const saved = await apiFetch(
         `/messaging/rooms/${activeRoomId}/messages`,
@@ -242,7 +323,6 @@ export default function MessagesPage(): JSX.Element {
           body: { body: optimistic.body, clientMessageId },
         },
       );
-      // Reconcile — SSE usually wins but ensure the pending row is replaced.
       setMessages((prev) => {
         const idx = prev.findIndex((x) => x.clientMessageId === clientMessageId);
         if (idx < 0) return prev;
@@ -251,20 +331,53 @@ export default function MessagesPage(): JSX.Element {
         return next;
       });
     } catch (err) {
-      // Drop the optimistic row on failure.
-      setMessages((prev) =>
-        prev.filter((x) => x.clientMessageId !== clientMessageId),
-      );
-      if (err instanceof ApiRequestError) {
-        setError(t("sendFailed"));
-      } else {
-        setError(t("sendFailed"));
-      }
+      // Keep the optimistic row around, mark as failed so the user can retry.
+      setFailedClientIds((prev) => {
+        const next = new Set(prev);
+        next.add(clientMessageId);
+        return next;
+      });
+      setError(err instanceof ApiRequestError ? t("sendFailed") : t("sendFailed"));
     } finally {
       setSending(false);
     }
   }
 
+  async function retryFailed(clientMessageId: string): Promise<void> {
+    const target = messages.find((m) => m.clientMessageId === clientMessageId);
+    if (!target || !activeRoomId || !token) return;
+    setFailedClientIds((prev) => {
+      const next = new Set(prev);
+      next.delete(clientMessageId);
+      return next;
+    });
+    try {
+      const saved = await apiFetch(
+        `/messaging/rooms/${activeRoomId}/messages`,
+        MessageSchema,
+        {
+          method: "POST",
+          token,
+          body: { body: target.body, clientMessageId },
+        },
+      );
+      setMessages((prev) => {
+        const idx = prev.findIndex((x) => x.clientMessageId === clientMessageId);
+        if (idx < 0) return prev;
+        const next = prev.slice();
+        next[idx] = saved;
+        return next;
+      });
+    } catch {
+      setFailedClientIds((prev) => {
+        const next = new Set(prev);
+        next.add(clientMessageId);
+        return next;
+      });
+    }
+  }
+
+  // ───────── Derived state ─────────
   const activeRoom = useMemo(
     () => rooms.find((r) => r.id === activeRoomId) ?? null,
     [rooms, activeRoomId],
@@ -274,44 +387,103 @@ export default function MessagesPage(): JSX.Element {
     return activeRoom.members.find((m) => m.userId !== viewerId) ?? null;
   }, [activeRoom, viewerId]);
 
-  return (
-    <main className="mx-auto flex w-full max-w-[1100px] flex-col gap-4 px-6 py-6">
-      <header className="flex items-center justify-between gap-3">
-        <h1 className="text-2xl font-bold text-ink">{t("title")}</h1>
-        {sseLive ? (
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-success/10 px-2 py-0.5 text-xs text-success">
-            <span className="h-1.5 w-1.5 rounded-full bg-success" />
-            {t("online")}
-          </span>
-        ) : null}
-      </header>
+  const otherLastReadAtMs = useMemo(() => {
+    if (!otherMember?.lastReadAt) return 0;
+    return Date.parse(otherMember.lastReadAt);
+  }, [otherMember]);
 
-      <div className="grid min-h-[520px] grid-cols-1 gap-4 md:grid-cols-[280px_1fr]">
+  const otherOnline = useMemo(
+    () =>
+      otherMember?.lastSeenAt
+        ? Date.now() - Date.parse(otherMember.lastSeenAt) < ONLINE_WINDOW_MS
+        : false,
+    [otherMember],
+  );
+
+  const filteredRooms = useMemo(() => {
+    const q = searchTerm.trim().toLocaleLowerCase();
+    if (!q) return rooms;
+    return rooms.filter((r) => {
+      const other = viewerId
+        ? r.members.find((m) => m.userId !== viewerId)
+        : null;
+      const haystack = [
+        other?.firstName,
+        other?.lastName,
+        other?.handle,
+        r.title,
+        r.lastMessage?.body,
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLocaleLowerCase();
+      return haystack.includes(q);
+    });
+  }, [rooms, searchTerm, viewerId]);
+
+  const grouped = useMemo(
+    () =>
+      groupMessages(messages, {
+        authorId: (m) => m.authorId,
+        createdAt: (m) => m.createdAt,
+      }),
+    [messages],
+  );
+
+  const activeTyping =
+    activeRoomId && typingUserByRoom[activeRoomId]
+      ? typingUserByRoom[activeRoomId]
+      : null;
+
+  // ───────── Render ─────────
+  return (
+    <main className="mx-auto w-full max-w-[1128px] px-4 py-6 lg:px-6">
+      <Surface
+        as="section"
+        variant="card"
+        padding="0"
+        className="grid min-h-[calc(100vh-8rem)] grid-cols-1 overflow-hidden md:grid-cols-[320px_minmax(0,1fr)]"
+      >
         {/* Rooms list */}
-        <Surface as="aside" variant="card" padding="2" className="flex flex-col gap-1">
-          {rooms.length === 0 ? (
-            <p className="p-4 text-sm text-ink-muted">{t("emptyList")}</p>
-          ) : (
-            rooms.map((room) => {
-              const other = viewerId
-                ? room.members.find((m) => m.userId !== viewerId)
-                : null;
-              const label = other
-                ? `${other.firstName} ${other.lastName}`.trim() || other.handle
-                : (room.title ?? room.id);
-              const isActive = room.id === activeRoomId;
-              return (
-                <button
-                  key={room.id}
-                  type="button"
-                  onClick={() => setActiveRoomId(room.id)}
-                  className={`flex items-center gap-3 rounded-md px-3 py-2 text-start ${
-                    isActive
-                      ? "bg-brand-50 text-ink"
-                      : "text-ink hover:bg-ink-muted/5"
-                  }`}
-                >
-                  <Avatar
+        <aside className="flex min-h-0 flex-col border-line-soft md:border-e">
+          <div className="flex items-center justify-between gap-2 border-b border-line-soft px-4 py-3">
+            <h1 className="text-base font-semibold text-ink">{t("title")}</h1>
+            <button
+              type="button"
+              aria-label={t("newMessage")}
+              className="inline-flex h-8 w-8 items-center justify-center rounded-md text-ink-muted hover:bg-surface-subtle hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-600"
+            >
+              <Icon name="plus" size={18} />
+            </button>
+          </div>
+          <div className="px-3 py-2">
+            <label className="flex items-center gap-2 rounded-full bg-surface-subtle px-3 py-1.5">
+              <Icon name="search" size={14} />
+              <input
+                type="search"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder={t("searchPlaceholder")}
+                className="w-full bg-transparent text-sm text-ink placeholder:text-ink-muted focus:outline-none"
+              />
+            </label>
+          </div>
+          <div className="flex-1 overflow-y-auto">
+            {filteredRooms.length === 0 ? (
+              <p className="p-4 text-sm text-ink-muted">
+                {searchTerm ? t("searchNoResults") : t("emptyList")}
+              </p>
+            ) : (
+              filteredRooms.map((room) => {
+                const other = viewerId
+                  ? room.members.find((m) => m.userId !== viewerId)
+                  : null;
+                const online =
+                  other?.lastSeenAt != null &&
+                  Date.now() - Date.parse(other.lastSeenAt) < ONLINE_WINDOW_MS;
+                return (
+                  <RoomRow
+                    key={room.id}
                     user={
                       other
                         ? {
@@ -323,45 +495,33 @@ export default function MessagesPage(): JSX.Element {
                           }
                         : { handle: room.title ?? room.id }
                     }
-                    size="md"
+                    preview={room.lastMessage?.body ?? ""}
+                    timestamp={shortTime(room.updatedAt)}
+                    unreadCount={room.unreadCount}
+                    online={online}
+                    active={room.id === activeRoomId}
+                    onClick={() => setActiveRoomId(room.id)}
                   />
-                  <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="truncate text-sm font-semibold">
-                        {label}
-                      </span>
-                      {room.unreadCount > 0 ? (
-                        <span className="rounded-full bg-accent-600 px-1.5 text-xs text-ink-inverse">
-                          {room.unreadCount}
-                        </span>
-                      ) : null}
-                    </div>
-                    {room.lastMessage ? (
-                      <span className="truncate text-xs text-ink-muted">
-                        {room.lastMessage.body}
-                      </span>
-                    ) : null}
-                  </div>
-                </button>
-              );
-            })
-          )}
-        </Surface>
+                );
+              })
+            )}
+          </div>
+        </aside>
 
         {/* Active thread */}
-        <Surface as="section" variant="card" padding="0" className="flex min-h-[520px] flex-col">
+        <section className="flex min-h-0 flex-col">
           {!activeRoomId ? (
             <div className="flex flex-1 items-center justify-center p-8 text-sm text-ink-muted">
               {t("selectPrompt")}
             </div>
           ) : (
             <>
-              <div className="flex items-center gap-3 border-b border-ink-muted/10 px-4 py-3">
+              <header className="flex items-center gap-3 border-b border-line-soft px-5 py-3">
                 {otherMember ? (
                   <>
                     <Link
                       href={`/in/${otherMember.handle}`}
-                      aria-label={`${otherMember.firstName} ${otherMember.lastName}`.trim() || otherMember.handle}
+                      aria-label={`${otherMember.firstName} ${otherMember.lastName}`.trim()}
                     >
                       <Avatar
                         user={{
@@ -371,27 +531,37 @@ export default function MessagesPage(): JSX.Element {
                           lastName: otherMember.lastName,
                           avatarUrl: otherMember.avatarUrl,
                         }}
-                        size="sm"
+                        size="md"
+                        online={otherOnline}
                       />
                     </Link>
-                    <Link
-                      href={`/in/${otherMember.handle}`}
-                      className="text-sm font-semibold text-ink hover:underline"
-                    >
-                      {`${otherMember.firstName} ${otherMember.lastName}`.trim() ||
-                        otherMember.handle}
-                    </Link>
+                    <div className="flex min-w-0 flex-col">
+                      <Link
+                        href={`/in/${otherMember.handle}`}
+                        className="truncate text-sm font-semibold text-ink hover:underline"
+                      >
+                        {`${otherMember.firstName} ${otherMember.lastName}`.trim() ||
+                          otherMember.handle}
+                      </Link>
+                      <span className="text-[11px] text-ink-muted">
+                        {otherOnline
+                          ? t("onlineNow")
+                          : otherMember.lastSeenAt
+                            ? `${t("lastSeen")} · ${shortDate(otherMember.lastSeenAt)}`
+                            : ""}
+                      </span>
+                    </div>
                   </>
                 ) : (
                   <span className="text-sm font-semibold text-ink">
                     {activeRoom?.title ?? activeRoomId}
                   </span>
                 )}
-              </div>
+              </header>
 
               <div
                 ref={threadRef}
-                className="flex flex-1 flex-col gap-2 overflow-y-auto px-4 py-3"
+                className="flex flex-1 flex-col overflow-y-auto bg-surface-subtle px-5 py-4"
               >
                 {hasMore ? (
                   <button
@@ -401,41 +571,81 @@ export default function MessagesPage(): JSX.Element {
                       nextCursor &&
                       void loadMessages(activeRoomId, nextCursor)
                     }
-                    className="self-center rounded-md border border-ink-muted/30 px-3 py-1 text-xs text-ink hover:bg-ink-muted/5"
+                    className="mb-3 self-center rounded-full border border-line-soft bg-surface px-3 py-1 text-[11px] text-ink-muted hover:bg-surface-muted"
                   >
                     {t("loadOlder")}
                   </button>
                 ) : null}
 
-                {messages.length === 0 ? (
+                {messages.length === 0 && !activeTyping ? (
                   <p className="py-6 text-center text-sm text-ink-muted">
                     {t("emptyThread")}
                   </p>
                 ) : (
-                  messages.map((m) => {
-                    const mine = m.authorId === viewerId;
-                    return (
-                      <div
-                        key={m.id}
-                        className={`flex max-w-[75%] flex-col gap-0.5 rounded-lg px-3 py-2 text-sm ${
-                          mine
-                            ? "self-end bg-brand-600 text-ink-inverse"
-                            : "self-start bg-ink-muted/10 text-ink"
-                        }`}
-                      >
-                        <span className="whitespace-pre-wrap break-words">
-                          {m.body}
-                        </span>
-                        <span
-                          className={`text-[10px] ${
-                            mine ? "text-ink-inverse/70" : "text-ink-muted"
-                          }`}
+                  <ul
+                    role="log"
+                    aria-live="polite"
+                    className="flex flex-col gap-0.5"
+                  >
+                    {grouped.map(({ message: m, tail, showTimestamp, startsRun }) => {
+                      const mine = m.authorId === viewerId;
+                      const status: MessageStatus | undefined = mine
+                        ? computeStatus(
+                            m,
+                            failedClientIds,
+                            otherLastReadAtMs,
+                          )
+                        : undefined;
+                      return (
+                        <div
+                          key={m.id}
+                          className={startsRun ? "mt-2 first:mt-0" : ""}
                         >
-                          {formatTime(m.createdAt)}
-                        </span>
-                      </div>
-                    );
-                  })
+                          <MessageBubble
+                            side={mine ? "mine" : "theirs"}
+                            tail={tail}
+                            timestamp={
+                              showTimestamp ? shortTime(m.createdAt) : null
+                            }
+                            status={status}
+                            authorName={
+                              !mine && otherMember
+                                ? `${otherMember.firstName} ${otherMember.lastName}`.trim()
+                                : undefined
+                            }
+                            onRetry={
+                              m.clientMessageId
+                                ? () =>
+                                    void retryFailed(m.clientMessageId as string)
+                                : undefined
+                            }
+                            labels={{
+                              ownPrefix: (time) =>
+                                t("ownPrefix", { time }),
+                              otherPrefix: (name, time) =>
+                                t("otherPrefix", { name, time }),
+                              failedHint: t("failedHint"),
+                              statusSending: t("statusSending"),
+                              statusSent: t("statusSent"),
+                              statusDelivered: t("statusDelivered"),
+                              statusRead: t("statusRead"),
+                              statusFailed: t("statusFailed"),
+                            }}
+                          >
+                            {m.body}
+                          </MessageBubble>
+                        </div>
+                      );
+                    })}
+                    {activeTyping && otherMember ? (
+                      <TypingIndicator
+                        label={t("typing", {
+                          name: `${otherMember.firstName} ${otherMember.lastName}`.trim() ||
+                            otherMember.handle,
+                        })}
+                      />
+                    ) : null}
+                  </ul>
                 )}
               </div>
 
@@ -453,15 +663,18 @@ export default function MessagesPage(): JSX.Element {
                   e.preventDefault();
                   void submit();
                 }}
-                className="flex items-end gap-2 border-t border-ink-muted/10 p-3"
+                className="flex items-end gap-2 border-t border-line-soft bg-surface p-3"
               >
                 <textarea
                   value={draft}
-                  onChange={(e) => setDraft(e.target.value)}
+                  onChange={(e) => {
+                    setDraft(e.target.value);
+                    if (e.target.value.trim().length > 0) postTypingThrottled();
+                  }}
                   placeholder={t("composePlaceholder")}
-                  rows={2}
+                  rows={1}
                   maxLength={5000}
-                  className="flex-1 resize-none rounded-md border border-ink-muted/30 p-2 text-sm text-ink"
+                  className="min-h-10 flex-1 resize-none rounded-full border border-line-soft bg-surface px-4 py-2.5 text-sm text-ink placeholder:text-ink-muted focus:outline-none focus-visible:border-brand-600 focus-visible:ring-2 focus-visible:ring-brand-600/30"
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && !e.shiftKey) {
                       e.preventDefault();
@@ -472,22 +685,56 @@ export default function MessagesPage(): JSX.Element {
                 <button
                   type="submit"
                   disabled={sending || draft.trim().length === 0}
-                  className="rounded-md bg-brand-600 px-4 py-2 text-sm text-ink-inverse shadow-card hover:bg-brand-700 disabled:opacity-60"
+                  className="inline-flex items-center gap-1.5 rounded-full bg-brand-600 px-4 py-2 text-sm font-semibold text-ink-inverse shadow-card hover:bg-brand-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:cursor-not-allowed disabled:opacity-60"
                 >
+                  <Icon name="send-paper" size={14} />
                   {t("send")}
                 </button>
               </form>
             </>
           )}
-        </Surface>
-      </div>
+        </section>
+      </Surface>
     </main>
   );
 }
 
-function formatTime(iso: string): string {
+// ────────────────────────────────────────────────────────────────────────
+// Derived status — pragmatic v1 maps the 3 actually-measurable states
+// ────────────────────────────────────────────────────────────────────────
+function computeStatus(
+  m: Message,
+  failedClientIds: Set<string>,
+  otherLastReadAtMs: number,
+): MessageStatus {
+  if (m.clientMessageId && failedClientIds.has(m.clientMessageId)) {
+    return "failed";
+  }
+  if (m.id.startsWith("pending-")) return "sending";
+  const createdAtMs = Date.parse(m.createdAt);
+  if (otherLastReadAtMs >= createdAtMs) return "read";
+  return "sent";
+}
+
+// ────────────────────────────────────────────────────────────────────────
+// Cheap locale-aware time + date formatters used throughout the page
+// ────────────────────────────────────────────────────────────────────────
+function shortTime(iso: string): string {
   try {
     return new Date(iso).toLocaleTimeString(undefined, {
+      hour: "numeric",
+      minute: "2-digit",
+    });
+  } catch {
+    return "";
+  }
+}
+
+function shortDate(iso: string): string {
+  try {
+    return new Date(iso).toLocaleString(undefined, {
+      month: "short",
+      day: "numeric",
       hour: "numeric",
       minute: "2-digit",
     });

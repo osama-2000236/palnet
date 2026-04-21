@@ -160,6 +160,8 @@
   "messaging": {
     "title": "الرسائل",
     "newMessage": "رسالة جديدة",
+    "searchPlaceholder": "ابحث في الرسائل",
+    "searchNoResults": "لا توجد محادثات مطابقة.",
     "emptyList": "لا توجد محادثات بعد.",
     "emptyThread": "لا توجد رسائل بعد — ابدأ بالسلام.",
     "composePlaceholder": "اكتب رسالة…",
@@ -168,7 +170,20 @@
     "selectPrompt": "اختر محادثة لبدء القراءة.",
     "loadOlder": "تحميل الرسائل الأقدم",
     "you": "أنت",
-    "online": "مباشر"
+    "online": "مباشر",
+    "onlineNow": "متصل الآن",
+    "lastSeen": "آخر ظهور",
+    "typing": "{name} يكتب…",
+    "today": "اليوم",
+    "yesterday": "أمس",
+    "ownPrefix": "أنت، الساعة {time}:",
+    "otherPrefix": "{name}، الساعة {time}:",
+    "statusSending": "قيد الإرسال",
+    "statusSent": "تم الإرسال",
+    "statusDelivered": "تم التسليم",
+    "statusRead": "قُرئت",
+    "statusFailed": "فشل الإرسال",
+    "failedHint": "تعذّر الإرسال، انقر لإعادة المحاولة"
   },
   "notifications": {
     "title": "الإشعارات",

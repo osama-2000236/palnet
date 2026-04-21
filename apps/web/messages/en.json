@@ -160,6 +160,8 @@
   "messaging": {
     "title": "Messages",
     "newMessage": "New message",
+    "searchPlaceholder": "Search messages",
+    "searchNoResults": "No matching conversations.",
     "emptyList": "No conversations yet.",
     "emptyThread": "No messages yet — say hi.",
     "composePlaceholder": "Write a message…",
@@ -168,7 +170,20 @@
     "selectPrompt": "Pick a conversation to start reading.",
     "loadOlder": "Load older messages",
     "you": "You",
-    "online": "Live"
+    "online": "Live",
+    "onlineNow": "Active now",
+    "lastSeen": "Last seen",
+    "typing": "{name} is typing…",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "ownPrefix": "You, at {time}:",
+    "otherPrefix": "{name}, at {time}:",
+    "statusSending": "Sending",
+    "statusSent": "Sent",
+    "statusDelivered": "Delivered",
+    "statusRead": "Read",
+    "statusFailed": "Failed to send",
+    "failedHint": "Send failed — tap to retry"
   },
   "notifications": {
     "title": "Notifications",
