@@ -201,3 +201,30 @@ jobs:
           NEXT_PUBLIC_API_URL: http://localhost:4000/api/v1
           NEXT_PUBLIC_WS_URL: http://localhost:4000
           NEXT_PUBLIC_DEFAULT_LOCALE: ar-PS
+
+  lighthouse-web:
+    needs: build-web
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @palnet/db db:generate
+      - run: pnpm --filter @palnet/web build
+        env:
+          NEXT_PUBLIC_API_URL: http://localhost:4000/api/v1
+          NEXT_PUBLIC_WS_URL: http://localhost:4000
+          NEXT_PUBLIC_DEFAULT_LOCALE: ar-PS
+      - name: Lighthouse CI
+        run: npx --yes @lhci/cli@0.14.x autorun --config=./apps/web/lighthouserc.json
+        env:
+          NEXT_PUBLIC_API_URL: http://localhost:4000/api/v1
+          NEXT_PUBLIC_WS_URL: http://localhost:4000
+          NEXT_PUBLIC_DEFAULT_LOCALE: ar-PS
