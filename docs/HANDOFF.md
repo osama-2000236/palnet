@@ -236,7 +236,7 @@ Things scoped for later sprints so Sprint 3 stays "feed-only":
 - **Font loading blocks on a blank `surfaceMuted` view** instead of a proper splash with the Baydar mark. Logo art is still a placeholder anyway.
 - **Mobile still uses `nativewind` for existing screens.** ui-native atoms deliberately use React Native `StyleSheet` + `nativeTokens` so the package stays framework-agnostic; nativewind remains available to host code.
 
-### Sprint 6 — Jobs + Notifications + polish 🟡 IN PROGRESS
+### Sprint 6 — Jobs + Notifications + polish ✅ SHIPPED
 
 1. ✅ **Jobs API** — `GET /jobs` (cursor paginated, `q`/`city`/`type`/`locationMode` filters, case-insensitive `contains`), `GET /jobs/:id` (DTO includes `viewer.hasApplied` + company basics), `POST /jobs/:id/apply` (idempotent via `@@unique(jobId, applicantId)` — re-press returns existing row).
 2. ✅ **Web jobs listing** at `/jobs` — filters aside (search, city, type chips, location chips) with debounced (250ms) refetch, skeleton on first load, empty state with brand glyph, applied badge on rows.
@@ -248,18 +248,22 @@ Things scoped for later sprints so Sprint 3 stays "feed-only":
 8. ✅ **Feed right-rail jobs** — replaces the `قريبًا` placeholder with a live mini-list backed by `/jobs?limit=3`. Falls back to the placeholder copy when the endpoint returns empty.
 9. ✅ **Search skeleton** — four pulsing person rows while the first query is in flight. Prevents the empty-state copy flashing between submit and first response.
 10. ✅ **Mobile profile ported** to `Surface` / `Avatar` / `Button` from `@palnet/ui-native`. Same connection matrix, same optimistic updates; styling now flows through `nativeTokens` instead of nativewind class strings.
-11. ⏳ Accessibility pass (axe-core clean).
-12. ⏳ Arabic translation QA by native speaker.
-13. ⏳ Perf budget check.
+11. ✅ **Shared i18n formatters** in `@palnet/shared` — `formatNumber`, `formatCurrency`, `formatCompact`, `formatRelativeTime`, `formatSalaryRange`. Force `numberingSystem: "arab"` (via `-u-nu-arab` BCP-47 extension on the RelativeTimeFormat path where the TS lib drops the option) for every ar-* locale so Arabic surfaces render Arabic-Indic numerals consistently. Web jobs list / job detail / notifications / PostCard / messages and mobile notifications all swapped over.
+12. ✅ **ui-native `Sheet` primitive** — Modal-based bottom sheet (no gesture-handler dep yet; public API is a subset of `@gorhom/bottom-sheet` so a later swap is a render-shape change only). Used by the mobile jobs filter sheet + cover-letter sheet.
+13. ✅ **ui-native `MessageBubble` atom + mobile messages port** — own bubbles now use `brand100 + brand200` border (matching web) instead of the deprecated `brand600` CTA-color anti-pattern; status ticks share the same `computeStatus` rules as web (`pending-` id → sending, failed set → failed, `otherLastReadAt` → read, else sent). Room list ported to `Surface` + `Avatar`.
+14. ✅ **Mobile onboarding ported** to `nativeTokens` + `Button`. Form is wrapped in a `KeyboardAvoidingView` + `ScrollView` so the CTA stays reachable when the Arabic keyboard is up.
+15. ✅ **Mobile jobs filter sheet** — header pill with active-count badge opens a `Sheet` containing search, city text input, and type / location chip rows. Debounced (250ms) refetch on any filter change.
+16. ✅ **Cover-letter on apply** — web `/jobs/[id]` opens an accessible `<ApplyDialog>` and mobile opens a `Sheet`; both send `{ coverLetter }` (or `{}`) to the idempotent endpoint. Matches the `ApplyToJobBody` schema's 8,000-char cap.
+17. ✅ **Accessibility sweep** — new Playwright spec runs `@axe-core/playwright` against the public routes (landing + login + register, both locales) on every PR. Authenticated pages deferred to Sprint 7 (need a test-user session fixture).
+18. ✅ **Perf budget** — Lighthouse CI job on PRs. Hard fails LCP > 2.5s, TBT > 200ms, CLS > 0.1, and a11y < 0.95. Warns on FCP > 1.8s, SI > 3.4s, perf < 0.85, best-practices < 0.9. Uses the desktop preset; mobile preset pass arrives with Sprint 7 image tuning.
 
-#### Sprint 6 gap list (deferred / still to do)
+#### Sprint 6 follow-ups (punted to Sprint 7)
 
-- **Jobs filters on mobile** — only the bare list. No filter sheet yet; the web filter aside doesn't port cleanly to a phone viewport. Revisit with a bottom-sheet when we have a sheet primitive in ui-native.
-- **Apply flow has no cover-letter / resume picker.** `POST /jobs/:id/apply` sends an empty body; the API schema allows both but the UI doesn't collect them. v1 posture is "one tap apply" per spec.
-- **Salary formatting** — `toLocaleString()` with no explicit locale, so it'll render Western digits even in Arabic. Revisit once we pick a canonical digit script policy.
-- **Mobile messages / onboarding screens** still use raw RN primitives. Keep porting to `Surface` / `Avatar` / `Button` incrementally — not blocking.
-- **axe-core run** against `/jobs`, `/jobs/[id]`, and `/notifications` hasn't happened this sprint.
-- **Arabic copy QA** — jobs strings were authored by a non-native. Needs a native-speaker pass before launch.
+- **Arabic copy QA** — jobs + messaging strings were authored by a non-native. Needs a native-speaker pass before launch.
+- **Authenticated a11y coverage** — axe currently only hits public routes. Build a test-user session fixture so feed / jobs / jobs/[id] / notifications / search / in/[handle] / messages get scanned too.
+- **Mobile image-tuning + mobile-preset Lighthouse run** — the web budget is desktop-only until we audit the mobile bundle.
+- **`@gorhom/bottom-sheet` migration** — once a screen needs drag-to-dismiss or snap points, swap `Sheet`'s internals. Public API is already shaped for it.
+- **Swipe-to-archive on room rows + tab-hiding thread presentation** still outstanding from Sprint 5.
 
 ---
 
