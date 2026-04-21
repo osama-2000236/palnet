@@ -6,3 +6,5 @@ export { Avatar } from "./Avatar";
 export type { AvatarProps, AvatarSize, AvatarUser } from "./Avatar";
 export { Button } from "./Button";
 export type { ButtonProps, ButtonVariant, ButtonSize } from "./Button";
+export { Icon } from "./Icon";
+export type { IconName, IconProps } from "./Icon";

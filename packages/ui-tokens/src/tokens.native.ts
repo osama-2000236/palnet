@@ -34,10 +34,11 @@ export const nativeTokens = {
     lineSoft: "rgba(26, 26, 23, 0.08)",
     lineHard: "rgba(26, 26, 23, 0.16)",
 
-    success: "#3b7a3b",
-    warning: "#b07a1a",
-    danger:  "#a83232",
-    info:    "#2f6d8a",
+    success:     "#3b7a3b",
+    successSoft: "rgba(59, 122, 59, 0.12)",
+    warning:     "#b07a1a",
+    danger:      "#a83232",
+    info:        "#2f6d8a",
   },
   radius: { xs: 4, sm: 6, md: 10, lg: 14, xl: 20, full: 9999 },
   shadow: {
