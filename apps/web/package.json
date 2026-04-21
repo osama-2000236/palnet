@@ -27,6 +27,7 @@
     "zustand": "^5.0.1"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.11.2",
     "@palnet/config": "workspace:*",
     "@playwright/test": "^1.48.1",
     "@types/node": "^22.7.5",
