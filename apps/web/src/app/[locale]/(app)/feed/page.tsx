@@ -9,6 +9,8 @@
 // rail, and delegates everything visual to @palnet/ui-web shells.
 
 import {
+  Job as JobSchema,
+  type Job,
   PersonSuggestion as PersonSuggestionSchema,
   type PersonSuggestion,
   type Post,
@@ -36,6 +38,7 @@ import { apiFetch, apiFetchPage } from "@/lib/api";
 import { getAccessToken, readSession } from "@/lib/session";
 
 const FeedPage = cursorPage(PostSchema);
+const JobsSuggestionsPage = cursorPage(JobSchema);
 const SuggestionsEnvelope = z.object({
   data: z.array(PersonSuggestionSchema),
 });
@@ -45,6 +48,7 @@ export default function FeedPageRoute(): JSX.Element {
   const router = useRouter();
   const [me, setMe] = useState<Profile | null>(null);
   const [suggestions, setSuggestions] = useState<PersonSuggestion[]>([]);
+  const [jobSuggestions, setJobSuggestions] = useState<Job[]>([]);
   const [posts, setPosts] = useState<Post[]>([]);
   const [cursor, setCursor] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
@@ -89,6 +93,12 @@ export default function FeedPageRoute(): JSX.Element {
     )
       .then((out) => setSuggestions(out.data))
       .catch(() => setSuggestions([]));
+
+    // Right-rail jobs — top 3 newest active jobs. Not personalized yet; a
+    // real "suggested" endpoint that factors in skills + location is deferred.
+    void apiFetchPage("/jobs?limit=3", JobsSuggestionsPage, { token })
+      .then((page) => setJobSuggestions(page.data))
+      .catch(() => setJobSuggestions([]));
 
     void load(null);
   }, [router, load]);
@@ -143,7 +153,7 @@ export default function FeedPageRoute(): JSX.Element {
         ) : null}
       </div>
 
-      <RightRail suggestions={suggestions} />
+      <RightRail suggestions={suggestions} jobs={jobSuggestions} />
     </main>
   );
 }
@@ -233,10 +243,13 @@ function QuickLink({
 
 function RightRail({
   suggestions,
+  jobs,
 }: {
   suggestions: PersonSuggestion[];
+  jobs: Job[];
 }): JSX.Element {
   const t = useTranslations("feed.rail");
+  const tJobs = useTranslations("jobs");
   return (
     <aside className="hidden flex-col gap-3 lg:sticky lg:top-20 lg:flex">
       <Surface variant="card" padding="0">
@@ -297,9 +310,68 @@ function RightRail({
         )}
       </Surface>
 
-      <Surface variant="card" padding="4" className="flex flex-col gap-2">
-        <span className="text-sm font-semibold text-ink">{t("jobs")}</span>
-        <span className="text-xs text-ink-muted">{t("jobsComingSoon")}</span>
+      <Surface variant="card" padding="0">
+        <div className="flex items-center justify-between px-4 pt-3">
+          <span className="text-sm font-semibold text-ink">{t("jobs")}</span>
+          <Link
+            href="/jobs"
+            className="text-xs text-ink-muted hover:text-brand-700"
+          >
+            {t("pymkAll")}
+          </Link>
+        </div>
+        {jobs.length > 0 ? (
+          <ul className="flex flex-col">
+            {jobs.map((j) => {
+              const metaParts = [
+                j.city,
+                tJobs(`locationLabels.${j.locationMode}`),
+              ].filter(Boolean) as string[];
+              return (
+                <li
+                  key={j.id}
+                  className="border-t border-line-soft px-4 py-3 first:border-t-0"
+                >
+                  <Link
+                    href={`/jobs/${j.id}`}
+                    className="flex items-start gap-2.5 hover:opacity-90"
+                  >
+                    <div
+                      className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-md bg-surface-sunken text-xs font-semibold text-ink-muted"
+                      aria-hidden="true"
+                    >
+                      {j.company.logoUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={j.company.logoUrl}
+                          alt=""
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        (j.company.name[0] ?? "?").toUpperCase()
+                      )}
+                    </div>
+                    <div className="flex min-w-0 flex-1 flex-col">
+                      <span className="truncate text-sm font-semibold text-ink">
+                        {j.title}
+                      </span>
+                      <span className="truncate text-xs text-ink-muted">
+                        {j.company.name}
+                      </span>
+                      {metaParts.length > 0 ? (
+                        <span className="mt-0.5 truncate text-[11px] text-ink-muted">
+                          {metaParts.join(" · ")}
+                        </span>
+                      ) : null}
+                    </div>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        ) : (
+          <div className="px-4 py-3 text-xs text-ink-muted">{t("jobsComingSoon")}</div>
+        )}
       </Surface>
 
       <p className="text-center text-[11px] text-ink-muted">{t("footer")}</p>
