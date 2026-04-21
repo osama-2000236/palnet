@@ -1,12 +1,18 @@
+// Onboarding — ported to ui-native atoms + nativeTokens.
+// Mirrors the web /onboarding layout: title, subtitle, stacked fields, one
+// CTA. Uses Button for the submit so the loading/disabled pattern matches
+// every other screen.
+
 import { OnboardProfileBody, Profile } from "@palnet/shared";
-import { tokens } from "@palnet/ui-tokens";
+import { Button, nativeTokens } from "@palnet/ui-native";
 import { router } from "expo-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
-  ActivityIndicator,
-  Pressable,
+  KeyboardAvoidingView,
+  Platform,
   SafeAreaView,
+  ScrollView,
   Text,
   TextInput,
   View,
@@ -56,7 +62,11 @@ export default function OnboardingScreen(): JSX.Element {
       router.replace("/(app)/feed");
     } catch (e) {
       if (e instanceof ApiRequestError) {
-        setError(t(`auth.errors.${e.code}`, { defaultValue: t("auth.errors.INTERNAL") }));
+        setError(
+          t(`auth.errors.${e.code}`, {
+            defaultValue: t("auth.errors.INTERNAL"),
+          }),
+        );
       } else {
         setError(t("auth.errors.INTERNAL"));
       }
@@ -66,59 +76,101 @@ export default function OnboardingScreen(): JSX.Element {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-surface-muted">
-      <View className="flex-1 gap-4 px-6 pt-12">
-        <Text className="text-3xl font-bold text-ink">{t("onboarding.title")}</Text>
-        <Text className="text-ink-muted">{t("onboarding.subtitle")}</Text>
-
-        <Field
-          label={t("auth.firstName")}
-          value={firstName}
-          onChangeText={setFirstName}
-        />
-        <Field
-          label={t("auth.lastName")}
-          value={lastName}
-          onChangeText={setLastName}
-        />
-        <Field
-          label={t("onboarding.handle")}
-          value={handle}
-          onChangeText={(v) => setHandle(v.toLowerCase())}
-          autoCapitalize="none"
-        />
-        <Text className="-mt-2 text-xs text-ink-muted">
-          {t("onboarding.handleHint", { handle: handle || "your-handle" })}
-        </Text>
-        <Field
-          label={t("onboarding.headline")}
-          value={headline}
-          onChangeText={setHeadline}
-        />
-        <Field
-          label={t("onboarding.location")}
-          value={location}
-          onChangeText={setLocation}
-        />
-
-        {error ? (
-          <Text className="text-sm text-danger" accessibilityRole="alert">
-            {error}
-          </Text>
-        ) : null}
-
-        <Pressable
-          onPress={onSubmit}
-          disabled={busy}
-          className="rounded-md bg-brand-600 px-6 py-3 shadow-card"
+    <SafeAreaView
+      style={{ flex: 1, backgroundColor: nativeTokens.color.surfaceMuted }}
+    >
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        style={{ flex: 1 }}
+      >
+        <ScrollView
+          contentContainerStyle={{
+            flexGrow: 1,
+            paddingHorizontal: nativeTokens.space[6],
+            paddingTop: nativeTokens.space[12],
+            paddingBottom: nativeTokens.space[8],
+            gap: nativeTokens.space[4],
+          }}
+          keyboardShouldPersistTaps="handled"
         >
-          {busy ? (
-            <ActivityIndicator color={tokens.color.ink.inverse} />
-          ) : (
-            <Text className="text-center text-ink-inverse">{t("onboarding.submit")}</Text>
-          )}
-        </Pressable>
-      </View>
+          <Text
+            style={{
+              color: nativeTokens.color.ink,
+              fontFamily: nativeTokens.type.family.sans,
+              fontSize: nativeTokens.type.scale.display.size,
+              lineHeight: nativeTokens.type.scale.display.line,
+              fontWeight: "700",
+            }}
+          >
+            {t("onboarding.title")}
+          </Text>
+          <Text
+            style={{
+              color: nativeTokens.color.inkMuted,
+              fontFamily: nativeTokens.type.family.sans,
+              fontSize: nativeTokens.type.scale.body.size,
+              lineHeight: nativeTokens.type.scale.body.line,
+            }}
+          >
+            {t("onboarding.subtitle")}
+          </Text>
+
+          <Field
+            label={t("auth.firstName")}
+            value={firstName}
+            onChangeText={setFirstName}
+          />
+          <Field
+            label={t("auth.lastName")}
+            value={lastName}
+            onChangeText={setLastName}
+          />
+          <Field
+            label={t("onboarding.handle")}
+            value={handle}
+            onChangeText={(v) => setHandle(v.toLowerCase())}
+            autoCapitalize="none"
+            hint={t("onboarding.handleHint", {
+              handle: handle || "your-handle",
+            })}
+          />
+          <Field
+            label={t("onboarding.headline")}
+            value={headline}
+            onChangeText={setHeadline}
+          />
+          <Field
+            label={t("onboarding.location")}
+            value={location}
+            onChangeText={setLocation}
+          />
+
+          {error ? (
+            <Text
+              accessibilityRole="alert"
+              style={{
+                color: nativeTokens.color.danger,
+                fontFamily: nativeTokens.type.family.sans,
+                fontSize: nativeTokens.type.scale.small.size,
+              }}
+            >
+              {error}
+            </Text>
+          ) : null}
+
+          <View style={{ marginTop: nativeTokens.space[2] }}>
+            <Button
+              variant="primary"
+              size="lg"
+              fullWidth
+              loading={busy}
+              onPress={() => void onSubmit()}
+            >
+              {t("onboarding.submit")}
+            </Button>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
@@ -128,16 +180,47 @@ function Field(props: {
   value: string;
   onChangeText: (v: string) => void;
   autoCapitalize?: React.ComponentProps<typeof TextInput>["autoCapitalize"];
+  hint?: string;
 }): JSX.Element {
   return (
-    <View className="flex-col gap-1">
-      <Text className="text-sm text-ink-muted">{props.label}</Text>
+    <View style={{ gap: nativeTokens.space[1] }}>
+      <Text
+        style={{
+          color: nativeTokens.color.inkMuted,
+          fontFamily: nativeTokens.type.family.sans,
+          fontSize: nativeTokens.type.scale.small.size,
+        }}
+      >
+        {props.label}
+      </Text>
       <TextInput
         value={props.value}
         onChangeText={props.onChangeText}
         autoCapitalize={props.autoCapitalize}
-        className="rounded-md border border-ink-muted/30 bg-surface px-3 py-2 text-ink"
+        placeholderTextColor={nativeTokens.color.inkMuted}
+        style={{
+          borderRadius: nativeTokens.radius.md,
+          borderWidth: 1,
+          borderColor: nativeTokens.color.lineHard,
+          backgroundColor: nativeTokens.color.surface,
+          paddingHorizontal: nativeTokens.space[3],
+          paddingVertical: nativeTokens.space[2],
+          color: nativeTokens.color.ink,
+          fontFamily: nativeTokens.type.family.sans,
+          fontSize: nativeTokens.type.scale.body.size,
+        }}
       />
+      {props.hint ? (
+        <Text
+          style={{
+            color: nativeTokens.color.inkMuted,
+            fontFamily: nativeTokens.type.family.sans,
+            fontSize: nativeTokens.type.scale.caption.size,
+          }}
+        >
+          {props.hint}
+        </Text>
+      ) : null}
     </View>
   );
 }
