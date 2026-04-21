@@ -1,8 +1,9 @@
 const preset = require("@palnet/config/tailwind-preset");
+const nativewindPreset = require("nativewind/preset");
 
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  presets: [preset],
+  presets: [nativewindPreset, preset],
   content: [
     "./App.tsx",
     "./src/**/*.{ts,tsx}",
