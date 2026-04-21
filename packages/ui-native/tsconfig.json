@@ -1,0 +1,14 @@
+{
+  "extends": "@palnet/config/tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "./src",
+    "module": "CommonJS",
+    "moduleResolution": "Node",
+    "jsx": "react-jsx",
+    "lib": ["ES2022"],
+    "types": ["react-native"],
+    "noEmit": true
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules"]
+}
