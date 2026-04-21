@@ -142,8 +142,30 @@
     }
   },
   "jobs": {
+    "title": "Jobs",
     "search": "Search jobs",
-    "apply": "Apply"
+    "searchPlaceholder": "Title, company, keyword…",
+    "apply": "Apply",
+    "appliedBadge": "Applied",
+    "description": "Job description",
+    "skills": "Required skills",
+    "loadMore": "Load more",
+    "emptyTitle": "No jobs match those filters.",
+    "emptyDesc": "Try widening your search or clearing a filter.",
+    "notFound": "This job is no longer available.",
+    "typeLabels": {
+      "FULL_TIME": "Full-time",
+      "PART_TIME": "Part-time",
+      "CONTRACT": "Contract",
+      "INTERNSHIP": "Internship",
+      "VOLUNTEER": "Volunteer",
+      "TEMPORARY": "Temporary"
+    },
+    "locationLabels": {
+      "ONSITE": "On-site",
+      "HYBRID": "Hybrid",
+      "REMOTE": "Remote"
+    }
   },
   "company": {
     "about": "About",

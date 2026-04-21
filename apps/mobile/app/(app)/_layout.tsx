@@ -1,42 +1,19 @@
-// Bottom-tab AppShell for the authenticated app. Five visible tabs:
-// feed · network · messages · notifications · search. Everything else
+// Bottom-tab AppShell for the authenticated app. Six visible tabs:
+// feed · network · jobs · messages · notifications · search. Everything else
 // (composer, onboarding, profile-edit, public profile, room detail) still
 // lives under this route group but renders `href: null` so it doesn't appear
 // in the tab bar — those screens are pushed via router.push().
+//
+// Tab glyphs come from ui-native Icon — same 24×24 stroke set as the web
+// header on /feed, so the two platforms stay visually locked in step.
 
 import { Tabs, router } from "expo-router";
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { Platform, Text } from "react-native";
+import { Platform } from "react-native";
 
-import { nativeTokens } from "@palnet/ui-native";
+import { Icon, type IconName, nativeTokens } from "@palnet/ui-native";
 import { readSession } from "@/lib/session";
-
-// Tiny glyph helper — keeps the shell free of an icon-font dependency.
-// Replace with real icons in Sprint 6 once ui-native ports the Icon atom.
-function TabGlyph({
-  label,
-  color,
-  focused,
-}: {
-  label: string;
-  color: string;
-  focused: boolean;
-}): JSX.Element {
-  return (
-    <Text
-      style={{
-        fontSize: 20,
-        color,
-        fontWeight: focused ? "700" : "500",
-        fontFamily: nativeTokens.type.family.sans,
-      }}
-      accessibilityElementsHidden
-    >
-      {label}
-    </Text>
-  );
-}
 
 export default function AppTabsLayout(): JSX.Element {
   const { t } = useTranslation();
@@ -74,7 +51,7 @@ export default function AppTabsLayout(): JSX.Element {
         options={{
           title: t("feed.title"),
           tabBarIcon: ({ color, focused }) => (
-            <TabGlyph label="⌂" color={color} focused={focused} />
+            <TabIcon name="home" color={color} focused={focused} />
           ),
         }}
       />
@@ -83,7 +60,16 @@ export default function AppTabsLayout(): JSX.Element {
         options={{
           title: t("network.title"),
           tabBarIcon: ({ color, focused }) => (
-            <TabGlyph label="👥" color={color} focused={focused} />
+            <TabIcon name="users" color={color} focused={focused} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="jobs"
+        options={{
+          title: t("jobs.title"),
+          tabBarIcon: ({ color, focused }) => (
+            <TabIcon name="briefcase" color={color} focused={focused} />
           ),
         }}
       />
@@ -92,7 +78,7 @@ export default function AppTabsLayout(): JSX.Element {
         options={{
           title: t("messaging.title"),
           tabBarIcon: ({ color, focused }) => (
-            <TabGlyph label="✉" color={color} focused={focused} />
+            <TabIcon name="message" color={color} focused={focused} />
           ),
         }}
       />
@@ -101,7 +87,7 @@ export default function AppTabsLayout(): JSX.Element {
         options={{
           title: t("notifications.title"),
           tabBarIcon: ({ color, focused }) => (
-            <TabGlyph label="🔔" color={color} focused={focused} />
+            <TabIcon name="bell" color={color} focused={focused} />
           ),
         }}
       />
@@ -110,7 +96,7 @@ export default function AppTabsLayout(): JSX.Element {
         options={{
           title: t("search.title"),
           tabBarIcon: ({ color, focused }) => (
-            <TabGlyph label="🔍" color={color} focused={focused} />
+            <TabIcon name="search" color={color} focused={focused} />
           ),
         }}
       />
@@ -121,6 +107,21 @@ export default function AppTabsLayout(): JSX.Element {
       <Tabs.Screen name="onboarding" options={{ href: null }} />
       <Tabs.Screen name="me/edit" options={{ href: null }} />
       <Tabs.Screen name="in/[handle]" options={{ href: null }} />
+      <Tabs.Screen name="jobs/[id]" options={{ href: null }} />
     </Tabs>
   );
+}
+
+// Tab icons: bump stroke-width a touch when focused so the active tab reads
+// bolder without needing a separate filled glyph set.
+function TabIcon({
+  name,
+  color,
+  focused,
+}: {
+  name: IconName;
+  color: string;
+  focused: boolean;
+}): JSX.Element {
+  return <Icon name={name} color={color} size={22} strokeWidth={focused ? 2.2 : 1.8} />;
 }
