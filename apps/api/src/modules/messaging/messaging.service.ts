@@ -28,6 +28,7 @@ interface MemberRow {
   userId: string;
   lastReadAt: Date | null;
   user: {
+    lastSeenAt: Date | null;
     profile: {
       handle: string;
       firstName: string;
@@ -118,6 +119,7 @@ export class MessagingService {
           include: {
             user: {
               select: {
+                lastSeenAt: true,
                 profile: {
                   select: {
                     handle: true,
@@ -154,6 +156,7 @@ export class MessagingService {
           include: {
             user: {
               select: {
+                lastSeenAt: true,
                 profile: {
                   select: {
                     handle: true,
@@ -271,6 +274,26 @@ export class MessagingService {
     return dto;
   }
 
+  /**
+   * Broadcast a "typing" signal to every OTHER member of the room. Pure
+   * in-memory fan-out via the MessagingBus — nothing is persisted. Clients
+   * debounce these calls (one every ~3s while actively typing) and apply a
+   * 5-second client-side expiry so the bubble disappears when keystrokes stop.
+   */
+  async publishTyping(viewerId: string, roomId: string): Promise<void> {
+    await this.requireMembership(viewerId, roomId);
+    const members = await this.prisma.chatRoomMember.findMany({
+      where: { roomId, userId: { not: viewerId } },
+      select: { userId: true },
+    });
+    for (const m of members) {
+      this.bus.publish(m.userId, {
+        type: "typing",
+        payload: { roomId, userId: viewerId },
+      });
+    }
+  }
+
   async markRead(viewerId: string, roomId: string): Promise<void> {
     await this.requireMembership(viewerId, roomId);
     const at = new Date();
@@ -342,6 +365,7 @@ export class MessagingService {
         lastName: m.user.profile?.lastName ?? "",
         avatarUrl: m.user.profile?.avatarUrl ?? null,
         lastReadAt: m.lastReadAt ? m.lastReadAt.toISOString() : null,
+        lastSeenAt: m.user.lastSeenAt ? m.user.lastSeenAt.toISOString() : null,
       })),
       updatedAt: row.updatedAt.toISOString(),
     };
