@@ -1,5 +1,6 @@
 import {
   cursorPage,
+  formatRelativeTime,
   Notification as NotificationSchema,
   NotificationType,
   type Notification,
@@ -118,7 +119,7 @@ export default function NotificationsScreen(): JSX.Element {
 }
 
 function NotificationRow({ item }: { item: Notification }): JSX.Element {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const actor = item.actor;
   const actorName = actor
     ? `${actor.firstName} ${actor.lastName}`.trim() || actor.handle
@@ -151,7 +152,7 @@ function NotificationRow({ item }: { item: Notification }): JSX.Element {
       <View className="flex-1">
         <Text className="text-sm text-ink">{body}</Text>
         <Text className="text-xs text-ink-muted">
-          {formatRelative(item.createdAt)}
+          {formatRelativeTime(item.createdAt, i18n.language)}
         </Text>
       </View>
       {unread ? (
@@ -199,22 +200,4 @@ function initialsOf(name: string): string {
   const first = parts[0]?.[0] ?? "";
   const last = parts.length > 1 ? (parts[parts.length - 1]?.[0] ?? "") : "";
   return (first + last).toUpperCase();
-}
-
-function formatRelative(iso: string): string {
-  try {
-    const then = new Date(iso).getTime();
-    const now = Date.now();
-    const secs = Math.max(0, Math.round((now - then) / 1000));
-    if (secs < 60) return `${secs}s`;
-    const mins = Math.round(secs / 60);
-    if (mins < 60) return `${mins}m`;
-    const hrs = Math.round(mins / 60);
-    if (hrs < 24) return `${hrs}h`;
-    const days = Math.round(hrs / 24);
-    if (days < 7) return `${days}d`;
-    return new Date(iso).toLocaleDateString();
-  } catch {
-    return "";
-  }
 }
