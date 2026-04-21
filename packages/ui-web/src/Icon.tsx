@@ -22,7 +22,9 @@ export type IconName =
   | "briefcase"
   | "calendar"
   | "check"
+  | "check-double"
   | "chevron-down"
+  | "clock"
   | "comment"
   | "home"
   | "image"
@@ -191,6 +193,23 @@ export function Icon({
         <svg {...common}>
           {title ? <title>{title}</title> : null}
           <path d="m5 12 5 5L20 7" />
+        </svg>
+      );
+    case "check-double":
+      // Two overlapping ticks — WhatsApp-style delivered / read indicator.
+      return (
+        <svg {...common}>
+          {title ? <title>{title}</title> : null}
+          <path d="m3 12 4 4L15 7" />
+          <path d="m10 16 1 1L22 7" />
+        </svg>
+      );
+    case "clock":
+      return (
+        <svg {...common}>
+          {title ? <title>{title}</title> : null}
+          <circle cx="12" cy="12" r="8.5" />
+          <path d="M12 7v5l3 2" />
         </svg>
       );
     case "x":
