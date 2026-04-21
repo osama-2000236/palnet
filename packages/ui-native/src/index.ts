@@ -10,3 +10,9 @@ export { Icon } from "./Icon";
 export type { IconName, IconProps } from "./Icon";
 export { Sheet } from "./Sheet";
 export type { SheetProps } from "./Sheet";
+export { MessageBubble } from "./MessageBubble";
+export type {
+  MessageBubbleLabels,
+  MessageBubbleProps,
+  MessageStatus,
+} from "./MessageBubble";
