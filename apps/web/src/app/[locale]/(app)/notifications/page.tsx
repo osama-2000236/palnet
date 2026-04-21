@@ -28,6 +28,7 @@ export default function NotificationsPageRoute(): JSX.Element {
   const [cursor, setCursor] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [firstLoad, setFirstLoad] = useState(true);
   const [sseLive, setSseLive] = useState(false);
 
   // Session bootstrap.
@@ -56,6 +57,7 @@ export default function NotificationsPageRoute(): JSX.Element {
         setHasMore(page.meta.hasMore);
       } finally {
         setLoading(false);
+        setFirstLoad(false);
       }
     },
     [],
@@ -130,9 +132,25 @@ export default function NotificationsPageRoute(): JSX.Element {
         ) : null}
       </header>
 
-      {items.length === 0 && !loading ? (
-        <Surface variant="flat" padding="6" className="text-sm text-ink-muted">
-          {t("empty")}
+      {firstLoad ? (
+        <ul className="flex flex-col gap-2" aria-hidden="true">
+          {[0, 1, 2, 3].map((i) => (
+            <li key={i}>
+              <NotificationRowSkeleton />
+            </li>
+          ))}
+        </ul>
+      ) : items.length === 0 ? (
+        <Surface variant="tinted" padding="8">
+          <div className="mx-auto max-w-sm text-center">
+            <div
+              aria-hidden="true"
+              className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-brand-50 text-lg text-brand-700"
+            >
+              ✓
+            </div>
+            <p className="text-sm font-semibold text-ink">{t("empty")}</p>
+          </div>
         </Surface>
       ) : (
         <ul className="flex flex-col gap-2">
@@ -199,6 +217,18 @@ function NotificationRow({ item }: { item: Notification }): JSX.Element {
     </Link>
   ) : (
     content
+  );
+}
+
+function NotificationRowSkeleton(): JSX.Element {
+  return (
+    <div className="flex items-start gap-3 rounded-md border border-ink-muted/20 bg-surface p-3">
+      <div className="h-10 w-10 animate-pulse rounded-full bg-surface-sunken" />
+      <div className="flex-1 space-y-2">
+        <div className="h-3 w-3/4 animate-pulse rounded bg-surface-sunken" />
+        <div className="h-3 w-1/4 animate-pulse rounded bg-surface-sunken" />
+      </div>
+    </div>
   );
 }
 
