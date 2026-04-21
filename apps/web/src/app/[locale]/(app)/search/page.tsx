@@ -97,7 +97,15 @@ function SearchInner(): JSX.Element {
         </button>
       </form>
 
-      {hits.length === 0 && !loading ? (
+      {loading && hits.length === 0 ? (
+        <ul className="flex flex-col gap-3" aria-hidden="true">
+          {[0, 1, 2, 3].map((i) => (
+            <li key={i}>
+              <PersonHitSkeleton />
+            </li>
+          ))}
+        </ul>
+      ) : hits.length === 0 ? (
         <Surface variant="flat" padding="6" className="text-ink-muted">
           {q.trim() ? t("noResults") : t("prompt")}
         </Surface>
@@ -147,5 +155,18 @@ function SearchInner(): JSX.Element {
         </button>
       ) : null}
     </main>
+  );
+}
+
+function PersonHitSkeleton(): JSX.Element {
+  return (
+    <div className="flex items-start gap-3 rounded-md border border-ink-muted/20 bg-surface p-4">
+      <div className="h-14 w-14 animate-pulse rounded-full bg-surface-sunken" />
+      <div className="flex flex-1 flex-col gap-2">
+        <div className="h-4 w-1/3 animate-pulse rounded bg-surface-sunken" />
+        <div className="h-3 w-1/5 animate-pulse rounded bg-surface-sunken" />
+        <div className="h-3 w-2/3 animate-pulse rounded bg-surface-sunken" />
+      </div>
+    </div>
   );
 }
