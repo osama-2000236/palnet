@@ -11,6 +11,7 @@ import { CommentsModule } from "./modules/comments/comments.module";
 import { ConnectionsModule } from "./modules/connections/connections.module";
 import { FeedModule } from "./modules/feed/feed.module";
 import { HealthModule } from "./modules/health/health.module";
+import { JobsModule } from "./modules/jobs/jobs.module";
 import { MediaModule } from "./modules/media/media.module";
 import { MessagingModule } from "./modules/messaging/messaging.module";
 import { NotificationsModule } from "./modules/notifications/notifications.module";
@@ -56,6 +57,7 @@ const env = loadEnv();
     MediaModule,
     MessagingModule,
     NotificationsModule,
+    JobsModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },
