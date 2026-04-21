@@ -197,14 +197,24 @@ Things scoped for later sprints so Sprint 3 stays "feed-only":
 - **Repost + Share actions are no-ops.** Per spec the handlers exist on
   the shared shell; host wiring lands with repost composer. → Sprint 6.
 
-### Sprint 4 — Messages
+### Sprint 4 — Messages ✅ DONE
 
-1. Build `<MessageBubble>` per spec (no CTA-color collision).
-2. Thread grouping (runs of consecutive messages).
-3. Status ticks (sending/sent/delivered/read/failed).
-4. Online dot on avatars in room list.
-5. Type-ahead indicator (debounced SSE).
-6. Room list search.
+1. ✅ Build `<MessageBubble>` per spec (no CTA-color collision — mine uses `brand-100` fill, never `brand-600`).
+2. ✅ Thread grouping (runs of consecutive messages; 2-min window, 10-min gap-before triggers timestamp).
+3. ✅ Status ticks (sending/sent/delivered/read/failed) — pragmatic mapping: pending client id → sending, other's `lastReadAt >= createdAt` → read, else sent. Delivered enum reserved for future receipts.
+4. ✅ Online dot on avatars in room list (2-min `lastSeenAt` threshold).
+5. ✅ Type-ahead indicator — 3s outgoing throttle, 5s client-side TTL, fanout via `POST /messaging/rooms/:id/typing` + SSE `typing` event (no persistence).
+6. ✅ Room list search — client-side filter over firstName/lastName/handle/title/lastMessage.body.
+
+#### Sprint 4 QA gap list (deferred to Sprint 6)
+
+- **No message edit/delete.** Spec doesn't call for either in v1.
+- **No media in messages.** `mediaUrl` field exists in the DTO; no upload path or renderer yet.
+- **No group rooms.** `isGroup` + `title` exist on `ChatRoom` but creation UX + member management are not built.
+- **No jump-to-unread scroll.** Thread opens at the newest message; we don't scroll to the first unread.
+- **No read-receipt per-recipient list for groups.** Single `lastReadAt` per member is stored; UI picks "the other" member in DMs only.
+- **Typing indicator is server-ephemeral.** If a tab reconnects mid-burst, it misses the in-flight event. Acceptable for v1.
+- **`lastSeenAt` is not bumped by this app yet.** The column exists; wiring a heartbeat on SSE-connect is a Sprint 6 task.
 
 ### Sprint 5 — Mobile app kickoff
 
