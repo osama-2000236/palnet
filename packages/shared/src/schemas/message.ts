@@ -38,6 +38,11 @@ export const ChatRoom = z.object({
       lastName: z.string(),
       avatarUrl: z.string().url().nullable(),
       lastReadAt: z.string().datetime().nullable(),
+      /**
+       * Per-user "last active" timestamp sourced from User.lastSeenAt.
+       * Presence is derived client-side: online = now - lastSeenAt < 2 min.
+       */
+      lastSeenAt: z.string().datetime().nullable(),
     }),
   ),
   updatedAt: z.string().datetime(),
