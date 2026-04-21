@@ -236,14 +236,29 @@ Things scoped for later sprints so Sprint 3 stays "feed-only":
 - **Font loading blocks on a blank `surfaceMuted` view** instead of a proper splash with the Baydar mark. Logo art is still a placeholder anyway.
 - **Mobile still uses `nativewind` for existing screens.** ui-native atoms deliberately use React Native `StyleSheet` + `nativeTokens` so the package stays framework-agnostic; nativewind remains available to host code.
 
-### Sprint 6 — Jobs + Notifications + polish
+### Sprint 6 — Jobs + Notifications + polish 🟡 IN PROGRESS
 
-1. Jobs listing + job detail screens (web + mobile).
-2. Notifications center with read/unread state.
-3. Empty states + skeletons everywhere missing.
-4. Accessibility pass (axe-core clean).
-5. Arabic translation QA by native speaker.
-6. Perf budget check.
+1. ✅ **Jobs API** — `GET /jobs` (cursor paginated, `q`/`city`/`type`/`locationMode` filters, case-insensitive `contains`), `GET /jobs/:id` (DTO includes `viewer.hasApplied` + company basics), `POST /jobs/:id/apply` (idempotent via `@@unique(jobId, applicantId)` — re-press returns existing row).
+2. ✅ **Web jobs listing** at `/jobs` — filters aside (search, city, type chips, location chips) with debounced (250ms) refetch, skeleton on first load, empty state with brand glyph, applied badge on rows.
+3. ✅ **Web job detail** at `/jobs/[id]` — hero `Surface` with logo + title + company link + meta + salary, description section, skills chips. Apply button is the canonical `ui-web/Button accent` with optimistic `hasApplied` flip + rollback on error.
+4. ✅ **Mobile jobs tab** — `/(app)/jobs/index.tsx` (paginated list, skeleton, empty state, applied badge) and `/(app)/jobs/[id].tsx` (hero, description, skills, optimistic apply). Bottom tabs expanded to six entries.
+5. ✅ **ui-native `Icon` atom** — same `IconName` union as web, 24×24 viewBox, react-native-svg host. Tab-bar emoji glyphs replaced with real icons (home, users, briefcase, message, bell, search); focused tab gets a heavier stroke instead of a filled variant.
+6. ✅ **`jobs.*` i18n namespace** (title, filters, search, city, type/locationLabels, appliedBadge, description, skills, empty/notFound copy, countSummary, from/upTo) added to both web catalogs (en + ar-PS) and mobile catalogs (en + ar) matching the shared `JobType` / `JobLocationMode` enum values.
+7. ✅ **Notifications polish** — first-load skeleton (4 rows) + friendly tinted empty state with brand checkmark. Stops the "empty card flash" on open.
+8. ⏳ Accessibility pass (axe-core clean).
+9. ⏳ Arabic translation QA by native speaker.
+10. ⏳ Perf budget check.
+
+#### Sprint 6 gap list (deferred / still to do)
+
+- **Jobs filters on mobile** — only the bare list. No filter sheet yet; the web filter aside doesn't port cleanly to a phone viewport. Revisit with a bottom-sheet when we have a sheet primitive in ui-native.
+- **Apply flow has no cover-letter / resume picker.** `POST /jobs/:id/apply` sends an empty body; the API schema allows both but the UI doesn't collect them. v1 posture is "one tap apply" per spec.
+- **Salary formatting** — `toLocaleString()` with no explicit locale, so it'll render Western digits even in Arabic. Revisit once we pick a canonical digit script policy.
+- **Jobs suggested rail on /feed** still says "قريبًا". Now that the list endpoint exists, we could wire 3 suggestions into the right-rail — low priority, deferred.
+- **Search page skeleton** — still flashes a plain `prompt` line. Extend the notifications pattern (skeleton rows on first submit).
+- **Mobile profile / messages / onboarding screens** still use raw RN primitives. Keep porting to `Surface` / `Avatar` / `Button` incrementally — not blocking.
+- **axe-core run** against `/jobs`, `/jobs/[id]`, and `/notifications` hasn't happened this sprint.
+- **Arabic copy QA** — jobs strings were authored by a non-native. Needs a native-speaker pass before launch.
 
 ---
 
