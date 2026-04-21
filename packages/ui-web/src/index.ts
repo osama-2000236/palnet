@@ -38,3 +38,5 @@ export { TypingIndicator } from "./TypingIndicator";
 export type { TypingIndicatorProps } from "./TypingIndicator";
 export { groupMessages } from "./groupMessages";
 export type { GroupedMessage, GroupMessagesOptions } from "./groupMessages";
+export { Button } from "./Button";
+export type { ButtonProps, ButtonVariant, ButtonSize } from "./Button";
