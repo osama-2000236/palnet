@@ -216,15 +216,25 @@ Things scoped for later sprints so Sprint 3 stays "feed-only":
 - **Typing indicator is server-ephemeral.** If a tab reconnects mid-burst, it misses the in-flight event. Acceptable for v1.
 - **`lastSeenAt` is not bumped by this app yet.** The column exists; wiring a heartbeat on SSE-connect is a Sprint 6 task.
 
-### Sprint 5 — Mobile app kickoff
+### Sprint 5 — Mobile app kickoff 🟡 IN PROGRESS
 
-1. Expo app boots, fonts bundled, RTL forced.
-2. Auth reuses `packages/api` endpoints.
-3. Bottom tab AppShell with 5 items.
-4. Port `<Avatar>`, `<Button>`, `<Surface>` to `packages/ui-native` — **same prop API as web**.
-5. Feed screen mirrors web feed (single column).
-6. Profile screen.
-7. Messages screen with gesture back + swipe-to-archive rooms.
+1. ✅ Expo app boots with IBM Plex Sans Arabic + Noto Naskh Arabic bundled via `@expo-google-fonts`; RTL forced at root via `I18nManager.forceRTL`.
+2. ✅ Auth wires to `packages/api` (pre-existing; unchanged this sprint).
+3. ✅ Bottom-tab AppShell — 5 tabs (feed · network · messages · notifications · search). Non-tab routes (composer, onboarding, me/edit, in/[handle]) render via `href: null` so they push without showing a tab.
+4. ✅ `packages/ui-native` scaffolded with `Avatar`, `Button`, `Surface` — prop APIs mirror ui-web (same variants, same sizes, `onClick` → `onPress`). Canonical web `Button` also landed alongside.
+5. 🟡 Feed screen dogfooded with `Surface` + `Avatar` + token-styled text; `PostRow` now uses the shared atoms. Other screens still on inline ad-hoc styling — port as needed in Sprint 6.
+6. ⏳ Profile screen not yet ported to ui-native atoms (still inline).
+7. ⏳ Messages screen not yet ported (still inline, no swipe-to-archive).
+
+#### Sprint 5 QA gap list (deferred / deliberate debt)
+
+- **Other mobile screens (messages, network, search, notifications, onboarding, me/edit, in/[handle]) still use raw RN primitives + nativewind classes.** Port to `Surface` / `Avatar` / `Button` incrementally.
+- **Tab icons are emoji stubs.** Port the web `Icon` atom to `ui-native` and replace the `TabGlyph` text nodes.
+- **Swipe-to-archive on room rows** not implemented (needs `react-native-gesture-handler` + a `Swipeable` wrapper).
+- **Messages → thread uses the default push animation** (tab bar stays visible). Standard mobile pattern is "modal-like" presentation that hides the tab; revisit if users complain.
+- **`lint:tokens` now scans `apps/mobile/app` + `packages/ui-native/src`** too — any new hex in those trees fails the check.
+- **Font loading blocks on a blank `surfaceMuted` view** instead of a proper splash with the Baydar mark. Logo art is still a placeholder anyway.
+- **Mobile still uses `nativewind` for existing screens.** ui-native atoms deliberately use React Native `StyleSheet` + `nativeTokens` so the package stays framework-agnostic; nativewind remains available to host code.
 
 ### Sprint 6 — Jobs + Notifications + polish
 
