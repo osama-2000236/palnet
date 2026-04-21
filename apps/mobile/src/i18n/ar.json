@@ -125,7 +125,18 @@
     "send": "إرسال",
     "sendFailed": "تعذّر إرسال الرسالة.",
     "loadOlder": "تحميل الرسائل الأقدم",
-    "you": "أنت"
+    "retry": "إعادة المحاولة",
+    "you": "أنت",
+    "ownPrefix": "أنت، الساعة {time}:",
+    "otherPrefix": "{name}، الساعة {time}:",
+    "failedHint": "تعذّر الإرسال، انقر لإعادة المحاولة",
+    "status": {
+      "sending": "جارٍ الإرسال",
+      "sent": "تم الإرسال",
+      "delivered": "تم التسليم",
+      "read": "مقروءة",
+      "failed": "فشل الإرسال"
+    }
   },
   "notifications": {
     "title": "الإشعارات",

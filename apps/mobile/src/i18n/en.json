@@ -125,7 +125,18 @@
     "send": "Send",
     "sendFailed": "Could not send message.",
     "loadOlder": "Load older messages",
-    "you": "You"
+    "retry": "Retry",
+    "you": "You",
+    "ownPrefix": "You, at {time}:",
+    "otherPrefix": "{name}, at {time}:",
+    "failedHint": "Send failed — tap to retry",
+    "status": {
+      "sending": "Sending",
+      "sent": "Sent",
+      "delivered": "Delivered",
+      "read": "Read",
+      "failed": "Failed to send"
+    }
   },
   "notifications": {
     "title": "Notifications",

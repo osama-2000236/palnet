@@ -1,3 +1,12 @@
+// Message thread — ported to ui-native atoms.
+// Uses MessageBubble (shared visual with web) with status derived from the
+// same rules web uses (pending- id → sending, failed set → failed,
+// otherLastReadAt → read, else sent).
+//
+// No SSE yet on mobile; 4s polling reconciles state. That means "sending"
+// only flashes briefly; the rest of the time messages arrive as "sent" or
+// "read" straight from the server.
+
 import {
   ChatRoom as ChatRoomSchema,
   CursorPageMeta,
@@ -5,9 +14,15 @@ import {
   type ChatRoom,
   type Message,
 } from "@palnet/shared";
-import { tokens } from "@palnet/ui-tokens";
+import {
+  MessageBubble,
+  Surface,
+  nativeTokens,
+  type MessageBubbleLabels,
+  type MessageStatus,
+} from "@palnet/ui-native";
 import { router, useLocalSearchParams } from "expo-router";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
@@ -23,7 +38,7 @@ import {
 import { z } from "zod";
 
 import { apiCall, apiFetch, apiFetchPage } from "@/lib/api";
-import { getAccessToken, readSession } from "@/lib/session";
+import { readSession } from "@/lib/session";
 
 const MessagesPageEnvelope = z.object({
   data: z.array(MessageSchema),
@@ -33,13 +48,17 @@ const MessagesPageEnvelope = z.object({
 const POLL_INTERVAL_MS = 4000;
 
 export default function MessageThreadScreen(): JSX.Element {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const locale = i18n.language;
   const params = useLocalSearchParams<{ roomId: string }>();
   const roomId = params.roomId;
   const [viewerId, setViewerId] = useState<string | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [room, setRoom] = useState<ChatRoom | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
+  const [failedClientIds, setFailedClientIds] = useState<Set<string>>(
+    () => new Set(),
+  );
   const [draft, setDraft] = useState("");
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -87,6 +106,42 @@ export default function MessageThreadScreen(): JSX.Element {
     return (): void => clearInterval(timer);
   }, [token, roomId, refresh]);
 
+  const sendBody = useCallback(
+    async (text: string, clientMessageId: string): Promise<void> => {
+      if (!token || !roomId) return;
+      try {
+        const saved = await apiFetch(
+          `/messaging/rooms/${roomId}/messages`,
+          MessageSchema,
+          {
+            method: "POST",
+            token,
+            body: { body: text, clientMessageId },
+          },
+        );
+        setMessages((prev) =>
+          prev.map((x) =>
+            x.clientMessageId === clientMessageId ? saved : x,
+          ),
+        );
+        setFailedClientIds((prev) => {
+          if (!prev.has(clientMessageId)) return prev;
+          const next = new Set(prev);
+          next.delete(clientMessageId);
+          return next;
+        });
+      } catch {
+        setFailedClientIds((prev) => {
+          const next = new Set(prev);
+          next.add(clientMessageId);
+          return next;
+        });
+        setError(t("messaging.sendFailed"));
+      }
+    },
+    [token, roomId, t],
+  );
+
   async function submit(): Promise<void> {
     if (!token || !roomId || draft.trim().length === 0) return;
     setSending(true);
@@ -108,65 +163,164 @@ export default function MessageThreadScreen(): JSX.Element {
     setMessages((prev) => [...prev, optimistic]);
     setDraft("");
     try {
-      const saved = await apiFetch(
-        `/messaging/rooms/${roomId}/messages`,
-        MessageSchema,
-        {
-          method: "POST",
-          token,
-          body: { body: text, clientMessageId },
-        },
-      );
-      setMessages((prev) =>
-        prev.map((x) =>
-          x.clientMessageId === clientMessageId ? saved : x,
-        ),
-      );
-    } catch {
-      setMessages((prev) =>
-        prev.filter((x) => x.clientMessageId !== clientMessageId),
-      );
-      setError(t("messaging.sendFailed"));
+      await sendBody(text, clientMessageId);
     } finally {
       setSending(false);
     }
   }
 
-  const other =
-    viewerId && room
-      ? (room.members.find((m) => m.userId !== viewerId) ?? null)
-      : null;
-  const title = other
+  const retryFailed = useCallback(
+    (clientMessageId: string): void => {
+      const target = messages.find(
+        (m) => m.clientMessageId === clientMessageId,
+      );
+      if (!target) return;
+      setFailedClientIds((prev) => {
+        if (!prev.has(clientMessageId)) return prev;
+        const next = new Set(prev);
+        next.delete(clientMessageId);
+        return next;
+      });
+      void sendBody(target.body, clientMessageId);
+    },
+    [messages, sendBody],
+  );
+
+  const other = useMemo(
+    () =>
+      viewerId && room
+        ? (room.members.find((m) => m.userId !== viewerId) ?? null)
+        : null,
+    [viewerId, room],
+  );
+  const otherName = other
     ? `${other.firstName} ${other.lastName}`.trim() || other.handle
-    : (room?.title ?? "");
+    : "";
+  const title = otherName || (room?.title ?? "");
+
+  const otherLastReadAtMs = useMemo(() => {
+    if (!other?.lastReadAt) return 0;
+    return Date.parse(other.lastReadAt);
+  }, [other]);
+
+  const labels: MessageBubbleLabels = useMemo(
+    () => ({
+      ownPrefix: (time) => t("messaging.ownPrefix", { time }),
+      otherPrefix: (name, time) =>
+        t("messaging.otherPrefix", { name, time }),
+      failedHint: t("messaging.failedHint"),
+      statusSending: t("messaging.status.sending"),
+      statusSent: t("messaging.status.sent"),
+      statusDelivered: t("messaging.status.delivered"),
+      statusRead: t("messaging.status.read"),
+      statusFailed: t("messaging.status.failed"),
+    }),
+    [t],
+  );
 
   return (
-    <SafeAreaView className="flex-1 bg-surface-muted">
+    <SafeAreaView
+      style={{ flex: 1, backgroundColor: nativeTokens.color.surfaceMuted }}
+    >
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : undefined}
-        className="flex-1"
+        style={{ flex: 1 }}
       >
-        <View className="flex-row items-center gap-2 border-b border-ink-muted/10 bg-surface px-4 py-3">
-          <Pressable onPress={() => router.back()}>
-            <Text className="text-brand-600">‹</Text>
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            gap: nativeTokens.space[2],
+            borderBottomWidth: 1,
+            borderBottomColor: nativeTokens.color.lineSoft,
+            backgroundColor: nativeTokens.color.surface,
+            paddingHorizontal: nativeTokens.space[4],
+            paddingVertical: nativeTokens.space[3],
+          }}
+        >
+          <Pressable
+            onPress={() => router.back()}
+            hitSlop={12}
+            accessibilityRole="button"
+          >
+            <Text
+              style={{
+                color: nativeTokens.color.brand600,
+                fontSize: nativeTokens.type.scale.h3.size,
+                fontFamily: nativeTokens.type.family.sans,
+              }}
+            >
+              ‹
+            </Text>
           </Pressable>
-          <Text className="text-base font-semibold text-ink">{title}</Text>
+          <Text
+            numberOfLines={1}
+            style={{
+              flex: 1,
+              color: nativeTokens.color.ink,
+              fontFamily: nativeTokens.type.family.sans,
+              fontSize: nativeTokens.type.scale.body.size,
+              fontWeight: "600",
+            }}
+          >
+            {title}
+          </Text>
         </View>
 
         <FlatList
           ref={listRef}
           data={messages}
           keyExtractor={(m) => m.id}
-          contentContainerStyle={{ padding: 12, gap: 6 }}
-          renderItem={({ item }) => (
-            <MessageBubble message={item} mine={item.authorId === viewerId} />
-          )}
+          contentContainerStyle={{
+            padding: nativeTokens.space[3],
+            gap: 6,
+          }}
+          renderItem={({ item, index }) => {
+            const prev = messages[index - 1];
+            const next = messages[index + 1];
+            const mine = item.authorId === viewerId;
+            const prevSameAuthor =
+              prev && prev.authorId === item.authorId;
+            const nextSameAuthor =
+              next && next.authorId === item.authorId;
+            const tail = !nextSameAuthor;
+            const status: MessageStatus | undefined = mine
+              ? computeStatus(item, failedClientIds, otherLastReadAtMs)
+              : undefined;
+            return (
+              <View style={{ marginTop: prevSameAuthor ? 0 : 6 }}>
+                <MessageBubble
+                  side={mine ? "mine" : "theirs"}
+                  tail={tail}
+                  timestamp={tail ? shortTime(item.createdAt, locale) : null}
+                  status={status}
+                  authorName={!mine ? otherName : undefined}
+                  onRetry={
+                    item.clientMessageId
+                      ? () =>
+                          retryFailed(item.clientMessageId as string)
+                      : undefined
+                  }
+                  labels={labels}
+                >
+                  {item.body}
+                </MessageBubble>
+              </View>
+            );
+          }}
           ListEmptyComponent={
-            <View className="py-8">
-              <Text className="text-center text-sm text-ink-muted">
+            <Surface variant="tinted" padding="6">
+              <Text
+                style={{
+                  color: nativeTokens.color.inkMuted,
+                  fontFamily: nativeTokens.type.family.sans,
+                  fontSize: nativeTokens.type.scale.body.size,
+                  textAlign: "center",
+                }}
+              >
                 {t("messaging.emptyThread")}
               </Text>
-            </View>
+            </Surface>
           }
           onContentSizeChange={() =>
             listRef.current?.scrollToEnd({ animated: false })
@@ -174,29 +328,89 @@ export default function MessageThreadScreen(): JSX.Element {
         />
 
         {error ? (
-          <View className="border-t border-danger/20 bg-danger/10 px-4 py-2">
-            <Text className="text-sm text-danger">{error}</Text>
+          <View
+            accessibilityRole="alert"
+            style={{
+              borderTopWidth: 1,
+              borderTopColor: nativeTokens.color.danger,
+              backgroundColor: nativeTokens.color.dangerSoft,
+              paddingHorizontal: nativeTokens.space[4],
+              paddingVertical: nativeTokens.space[2],
+            }}
+          >
+            <Text
+              style={{
+                color: nativeTokens.color.danger,
+                fontFamily: nativeTokens.type.family.sans,
+                fontSize: nativeTokens.type.scale.small.size,
+              }}
+            >
+              {error}
+            </Text>
           </View>
         ) : null}
 
-        <View className="flex-row items-end gap-2 border-t border-ink-muted/10 bg-surface p-2">
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "flex-end",
+            gap: nativeTokens.space[2],
+            borderTopWidth: 1,
+            borderTopColor: nativeTokens.color.lineSoft,
+            backgroundColor: nativeTokens.color.surface,
+            padding: nativeTokens.space[2],
+          }}
+        >
           <TextInput
             value={draft}
             onChangeText={setDraft}
             placeholder={t("messaging.composePlaceholder")}
+            placeholderTextColor={nativeTokens.color.inkMuted}
             multiline
             maxLength={5000}
-            className="flex-1 rounded-md border border-ink-muted/30 px-3 py-2 text-sm text-ink"
+            style={{
+              flex: 1,
+              borderRadius: nativeTokens.radius.md,
+              borderWidth: 1,
+              borderColor: nativeTokens.color.lineHard,
+              paddingHorizontal: nativeTokens.space[3],
+              paddingVertical: nativeTokens.space[2],
+              color: nativeTokens.color.ink,
+              fontFamily: nativeTokens.type.family.sans,
+              fontSize: nativeTokens.type.scale.body.size,
+              maxHeight: 120,
+            }}
           />
           <Pressable
             disabled={sending || draft.trim().length === 0}
             onPress={() => void submit()}
-            className="rounded-md bg-brand-600 px-4 py-2 disabled:opacity-60"
+            accessibilityRole="button"
+            style={({ pressed }) => ({
+              borderRadius: nativeTokens.radius.md,
+              backgroundColor: nativeTokens.color.brand600,
+              paddingHorizontal: nativeTokens.space[4],
+              paddingVertical: nativeTokens.space[2],
+              opacity:
+                sending || draft.trim().length === 0
+                  ? 0.6
+                  : pressed
+                    ? 0.85
+                    : 1,
+            })}
           >
             {sending ? (
-              <ActivityIndicator color={tokens.color.ink.inverse} />
+              <ActivityIndicator color={nativeTokens.color.inkInverse} />
             ) : (
-              <Text className="text-sm text-ink-inverse">{t("messaging.send")}</Text>
+              <Text
+                style={{
+                  color: nativeTokens.color.inkInverse,
+                  fontFamily: nativeTokens.type.family.sans,
+                  fontSize: nativeTokens.type.scale.body.size,
+                  fontWeight: "600",
+                }}
+              >
+                {t("messaging.send")}
+              </Text>
             )}
           </Pressable>
         </View>
@@ -205,22 +419,32 @@ export default function MessageThreadScreen(): JSX.Element {
   );
 }
 
-function MessageBubble({
-  message,
-  mine,
-}: {
-  message: Message;
-  mine: boolean;
-}): JSX.Element {
-  return (
-    <View
-      className={`max-w-[75%] rounded-lg px-3 py-2 ${
-        mine
-          ? "self-end bg-brand-600"
-          : "self-start bg-ink-muted/10"
-      }`}
-    >
-      <Text className={mine ? "text-ink-inverse" : "text-ink"}>{message.body}</Text>
-    </View>
-  );
+// ─── helpers ─────────────────────────────────────────────────────────────
+
+function computeStatus(
+  m: Message,
+  failedClientIds: Set<string>,
+  otherLastReadAtMs: number,
+): MessageStatus {
+  if (m.clientMessageId && failedClientIds.has(m.clientMessageId)) {
+    return "failed";
+  }
+  if (m.id.startsWith("pending-")) return "sending";
+  const createdAtMs = Date.parse(m.createdAt);
+  if (otherLastReadAtMs >= createdAtMs) return "read";
+  return "sent";
+}
+
+function shortTime(iso: string, locale: string): string {
+  try {
+    const tag = locale.toLowerCase().startsWith("ar")
+      ? `${locale}-u-nu-arab`
+      : locale;
+    return new Date(iso).toLocaleTimeString(tag, {
+      hour: "numeric",
+      minute: "2-digit",
+    });
+  } catch {
+    return "";
+  }
 }
