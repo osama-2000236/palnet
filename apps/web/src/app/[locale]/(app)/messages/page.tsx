@@ -27,7 +27,7 @@ import {
 } from "@palnet/ui-web";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import {
   useCallback,
   useEffect,
@@ -58,6 +58,7 @@ const TYPING_POST_THROTTLE_MS = 3 * 1000;
 
 export default function MessagesPage(): JSX.Element {
   const t = useTranslations("messaging");
+  const locale = useLocale();
   const router = useRouter();
   const [viewerId, setViewerId] = useState<string | null>(null);
   const [token, setToken] = useState<string | null>(null);
@@ -496,7 +497,7 @@ export default function MessagesPage(): JSX.Element {
                         : { handle: room.title ?? room.id }
                     }
                     preview={room.lastMessage?.body ?? ""}
-                    timestamp={shortTime(room.updatedAt)}
+                    timestamp={shortTime(room.updatedAt, locale)}
                     unreadCount={room.unreadCount}
                     online={online}
                     active={room.id === activeRoomId}
@@ -547,7 +548,7 @@ export default function MessagesPage(): JSX.Element {
                         {otherOnline
                           ? t("onlineNow")
                           : otherMember.lastSeenAt
-                            ? `${t("lastSeen")} · ${shortDate(otherMember.lastSeenAt)}`
+                            ? `${t("lastSeen")} · ${shortDate(otherMember.lastSeenAt, locale)}`
                             : ""}
                       </span>
                     </div>
@@ -605,7 +606,7 @@ export default function MessagesPage(): JSX.Element {
                             side={mine ? "mine" : "theirs"}
                             tail={tail}
                             timestamp={
-                              showTimestamp ? shortTime(m.createdAt) : null
+                              showTimestamp ? shortTime(m.createdAt, locale) : null
                             }
                             status={status}
                             authorName={
@@ -719,9 +720,12 @@ function computeStatus(
 // ────────────────────────────────────────────────────────────────────────
 // Cheap locale-aware time + date formatters used throughout the page
 // ────────────────────────────────────────────────────────────────────────
-function shortTime(iso: string): string {
+function shortTime(iso: string, locale: string): string {
   try {
-    return new Date(iso).toLocaleTimeString(undefined, {
+    const tag = locale.toLowerCase().startsWith("ar")
+      ? `${locale}-u-nu-arab`
+      : locale;
+    return new Date(iso).toLocaleTimeString(tag, {
       hour: "numeric",
       minute: "2-digit",
     });
@@ -730,9 +734,12 @@ function shortTime(iso: string): string {
   }
 }
 
-function shortDate(iso: string): string {
+function shortDate(iso: string, locale: string): string {
   try {
-    return new Date(iso).toLocaleString(undefined, {
+    const tag = locale.toLowerCase().startsWith("ar")
+      ? `${locale}-u-nu-arab`
+      : locale;
+    return new Date(iso).toLocaleString(tag, {
       month: "short",
       day: "numeric",
       hour: "numeric",

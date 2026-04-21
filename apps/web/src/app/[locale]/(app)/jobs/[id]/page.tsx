@@ -10,13 +10,14 @@
 //     "Applied" tag + inline confirmation.
 
 import {
+  formatSalaryRange,
   Job as JobSchema,
   type Job,
 } from "@palnet/shared";
 import { Button, Surface } from "@palnet/ui-web";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 
 import { apiCall, apiFetch } from "@/lib/api";
@@ -25,6 +26,7 @@ import { readSession } from "@/lib/session";
 export default function JobDetailPage(): JSX.Element {
   const t = useTranslations("jobs");
   const tCommon = useTranslations("common");
+  const locale = useLocale();
   const params = useParams<{ id: string }>();
   const router = useRouter();
   const jobId = typeof params?.id === "string" ? params.id : "";
@@ -118,10 +120,12 @@ export default function JobDetailPage(): JSX.Element {
     t(`typeLabels.${job.type}`),
   ].filter(Boolean) as string[];
 
-  const salary =
-    job.salaryMin || job.salaryMax
-      ? `${job.salaryMin ? job.salaryMin.toLocaleString() : ""}${job.salaryMin && job.salaryMax ? "–" : ""}${job.salaryMax ? job.salaryMax.toLocaleString() : ""} ${job.salaryCurrency ?? ""}`.trim()
-      : null;
+  const salary = formatSalaryRange(
+    job.salaryMin,
+    job.salaryMax,
+    job.salaryCurrency ?? "USD",
+    locale,
+  );
 
   return (
     <div className="mx-auto w-full max-w-[820px] px-4 py-6">

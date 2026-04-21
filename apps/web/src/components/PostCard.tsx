@@ -5,9 +5,9 @@
 // API call + optimistic reconcile) and mounts our existing Comments region
 // into the shared card via `commentsSlot`.
 
-import type { Post } from "@palnet/shared";
+import { formatRelativeTime, type Post } from "@palnet/shared";
 import { PostCard as PostCardShell } from "@palnet/ui-web";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -23,6 +23,7 @@ export function PostCard({
   onChange?: (next: Post) => void;
 }): JSX.Element {
   const t = useTranslations("post");
+  const locale = useLocale();
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [commentsOpen, setCommentsOpen] = useState(false);
@@ -78,7 +79,7 @@ export function PostCard({
         url: m.url,
         kind: m.kind === "IMAGE" ? "IMAGE" : "VIDEO",
       }))}
-      timestamp={new Date(post.createdAt).toLocaleString()}
+      timestamp={formatRelativeTime(post.createdAt, locale)}
       counts={post.counts}
       liked={post.viewer.reaction !== null}
       busy={busy}

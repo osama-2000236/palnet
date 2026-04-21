@@ -2,6 +2,7 @@
 
 import {
   cursorPage,
+  formatRelativeTime,
   Notification as NotificationSchema,
   NotificationType,
   WsNotificationEvent,
@@ -10,7 +11,7 @@ import {
 import { Avatar, Surface } from "@palnet/ui-web";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 
 import { apiCall, apiFetchPage } from "@/lib/api";
@@ -178,6 +179,7 @@ export default function NotificationsPageRoute(): JSX.Element {
 
 function NotificationRow({ item }: { item: Notification }): JSX.Element {
   const tTemplates = useTranslations("notifications.templates");
+  const locale = useLocale();
   const actor = item.actor;
   const actorName = actor
     ? `${actor.firstName} ${actor.lastName}`.trim() || actor.handle
@@ -200,7 +202,7 @@ function NotificationRow({ item }: { item: Notification }): JSX.Element {
 
       <div className="flex flex-1 flex-col gap-0.5">
         <p className="text-sm text-ink">{body}</p>
-        <p className="text-xs text-ink-muted">{formatRelative(item.createdAt)}</p>
+        <p className="text-xs text-ink-muted">{formatRelativeTime(item.createdAt, locale)}</p>
       </div>
       {unread ? (
         <span
@@ -263,20 +265,3 @@ function hrefFor(n: Notification): string | null {
   return null;
 }
 
-function formatRelative(iso: string): string {
-  try {
-    const then = new Date(iso).getTime();
-    const now = Date.now();
-    const secs = Math.max(0, Math.round((now - then) / 1000));
-    if (secs < 60) return `${secs}s`;
-    const mins = Math.round(secs / 60);
-    if (mins < 60) return `${mins}m`;
-    const hrs = Math.round(mins / 60);
-    if (hrs < 24) return `${hrs}h`;
-    const days = Math.round(hrs / 24);
-    if (days < 7) return `${days}d`;
-    return new Date(iso).toLocaleDateString();
-  } catch {
-    return "";
-  }
-}

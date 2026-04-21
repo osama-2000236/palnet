@@ -12,6 +12,7 @@
 
 import {
   cursorPage,
+  formatCurrency,
   Job as JobSchema,
   JobLocationMode,
   JobType,
@@ -20,7 +21,7 @@ import {
 import { Surface } from "@palnet/ui-web";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 
 import { apiFetchPage } from "@/lib/api";
@@ -47,19 +48,27 @@ function buildQs(filters: Filters, after: string | null): string {
   return qs.toString();
 }
 
-function formatSalary(job: Job, t: (k: string) => string): string | null {
+function formatSalary(
+  job: Job,
+  t: (k: string) => string,
+  locale: string,
+): string | null {
   const { salaryMin, salaryMax, salaryCurrency } = job;
   if (!salaryMin && !salaryMax) return null;
-  const cur = salaryCurrency ?? "";
-  const n = (v: number): string => v.toLocaleString();
-  if (salaryMin && salaryMax) return `${n(salaryMin)}–${n(salaryMax)} ${cur}`.trim();
-  if (salaryMin) return `${t("from")} ${n(salaryMin)} ${cur}`.trim();
-  return `${t("upTo")} ${n(salaryMax!)} ${cur}`.trim();
+  const cur = salaryCurrency ?? "USD";
+  if (salaryMin && salaryMax) {
+    return `${formatCurrency(salaryMin, cur, locale)}–${formatCurrency(salaryMax, cur, locale)}`;
+  }
+  if (salaryMin) {
+    return `${t("from")} ${formatCurrency(salaryMin, cur, locale)}`;
+  }
+  return `${t("upTo")} ${formatCurrency(salaryMax!, cur, locale)}`;
 }
 
 export default function JobsPageRoute(): JSX.Element {
   const t = useTranslations("jobs");
   const tCommon = useTranslations("common");
+  const locale = useLocale();
   const router = useRouter();
 
   const [token, setToken] = useState<string | null>(null);
@@ -223,7 +232,7 @@ export default function JobsPageRoute(): JSX.Element {
             <ul className="space-y-3">
               {items.map((job) => (
                 <li key={job.id}>
-                  <JobListRow job={job} salary={formatSalary(job, t)} />
+                  <JobListRow job={job} salary={formatSalary(job, t, locale)} />
                 </li>
               ))}
             </ul>
