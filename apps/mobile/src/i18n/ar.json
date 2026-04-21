@@ -6,6 +6,8 @@
     "cancel": "إلغاء",
     "save": "حفظ",
     "continue": "متابعة",
+    "clear": "مسح",
+    "done": "تم",
     "genericError": "حدث خطأ ما. حاول مرة أخرى."
   },
   "landing": {
@@ -143,8 +145,13 @@
   },
   "jobs": {
     "title": "الوظائف",
+    "filters": "الفلاتر",
     "search": "ابحث عن وظيفة",
     "searchPlaceholder": "مسمى، شركة، كلمة مفتاحية…",
+    "city": "المدينة",
+    "cityPlaceholder": "مثل رام الله",
+    "type": "النوع",
+    "location": "مكان العمل",
     "apply": "قدّم طلبك",
     "appliedBadge": "تم التقديم",
     "description": "وصف الوظيفة",

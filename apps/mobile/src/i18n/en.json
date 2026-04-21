@@ -6,6 +6,8 @@
     "cancel": "Cancel",
     "save": "Save",
     "continue": "Continue",
+    "clear": "Clear",
+    "done": "Done",
     "genericError": "Something went wrong. Please try again."
   },
   "landing": {
@@ -143,8 +145,13 @@
   },
   "jobs": {
     "title": "Jobs",
+    "filters": "Filters",
     "search": "Search jobs",
     "searchPlaceholder": "Title, company, keyword…",
+    "city": "City",
+    "cityPlaceholder": "e.g. Ramallah",
+    "type": "Type",
+    "location": "Location",
     "apply": "Apply",
     "appliedBadge": "Applied",
     "description": "Job description",
