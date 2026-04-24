@@ -6,14 +6,20 @@ import { LoggerModule } from "nestjs-pino";
 
 import { AllExceptionsFilter } from "./common/exception.filter";
 import { loadEnv } from "./config/env";
+import { createThrottlerOptions } from "./config/throttler";
+import { AccountModule } from "./modules/account/account.module";
+import { AdminModule } from "./modules/admin/admin.module";
+import { ApplicationsModule } from "./modules/applications/applications.module";
 import { AuthModule } from "./modules/auth/auth.module";
 import { CommentsModule } from "./modules/comments/comments.module";
+import { CompaniesModule } from "./modules/companies/companies.module";
 import { ConnectionsModule } from "./modules/connections/connections.module";
 import { FeedModule } from "./modules/feed/feed.module";
 import { HealthModule } from "./modules/health/health.module";
 import { JobsModule } from "./modules/jobs/jobs.module";
 import { MediaModule } from "./modules/media/media.module";
 import { MessagingModule } from "./modules/messaging/messaging.module";
+import { ModerationModule } from "./modules/moderation/moderation.module";
 import { NotificationsModule } from "./modules/notifications/notifications.module";
 import { PostsModule } from "./modules/posts/posts.module";
 import { PrismaModule } from "./modules/prisma/prisma.module";
@@ -39,13 +45,13 @@ const env = loadEnv();
         }),
       },
     }),
-    ThrottlerModule.forRoot([
-      { name: "default", ttl: 60_000, limit: 100 },
-      { name: "auth", ttl: 60_000, limit: 10 },
-    ]),
+    ThrottlerModule.forRoot(createThrottlerOptions(env)),
     PrismaModule,
     HealthModule,
     AuthModule,
+    AccountModule,
+    CompaniesModule,
+    ApplicationsModule,
     ProfilesModule,
     PostsModule,
     FeedModule,
@@ -56,8 +62,10 @@ const env = loadEnv();
     SearchModule,
     MediaModule,
     MessagingModule,
+    ModerationModule,
     NotificationsModule,
     JobsModule,
+    AdminModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },
