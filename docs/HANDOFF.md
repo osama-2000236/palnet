@@ -573,6 +573,71 @@ Sprint 13 verification:
 
 ---
 
+### Sprint 14 — Admin depth (suspensions / takedowns / appeals / audit log) ✅ IMPLEMENTED
+
+**Goal:** close the Sprint 11 follow-up "Admin depth" gap — moderation becomes actionable, not just audit-only.
+
+1. ✅ **Schema** — `User.suspendedAt|suspendedReason|suspendedById`, `Post.takedownAt|takedownReason|takedownById`, `Report.appealedAt|appealNote|appealStatus|appealDecisionNote|appealReviewedAt|appealReviewedBy`, and append-only `AuditLog(action, actorId, targetUserId, targetPostId, targetReportId, note, createdAt)` with indexes for filter columns. `AppealStatus` + `AuditAction` enums live in Prisma and mirror into `@palnet/shared`.
+2. ✅ **Shared contracts** — `packages/shared/src/schemas/admin-depth.ts` adds `SuspendUserBody`, `UnsuspendUserBody`, `TakedownPostBody`, `RestorePostBody`, `AppealReportBody`, `ReviewAppealBody`, `AppealAck`, `AuditLogItem`, `AuditLogListQuery` (filters: `action`, `actor`, `targetUserId`, `targetPostId`, `targetReportId`, `createdFrom/To`), `AuditLogExportQuery`, and `AuditLogPage`. `AdminReportItem` grows the appeal fields; `AuthSession.user` grows `suspendedAt` + `suspendedReason` so clients can render the banner without a second fetch.
+3. ✅ **API — admin actions** (moderator + admin only, each wrapped in a Prisma `$transaction` with an AuditLog row):
+   - `POST /admin/users/:id/suspend` — sets `suspendedAt/Reason/ById`, revokes all refresh tokens for that user, writes `USER_SUSPEND`.
+   - `POST /admin/users/:id/unsuspend` — clears suspension, writes `USER_UNSUSPEND`.
+   - `POST /admin/posts/:id/takedown` — sets `takedownAt/Reason/ById`, writes `POST_TAKEDOWN`. Feed + single-post reads filter `takedownAt: null`, so taken-down posts read as 404 to everyone except future admin surfaces.
+   - `POST /admin/posts/:id/restore` — clears takedown, writes `POST_RESTORE`.
+   - `POST /admin/reports/:id/appeal/review` — body `{ decision: "UPHELD" | "DENIED", decisionNote? }`. On `UPHELD`, reverses the originating action (clears target user suspension and/or target post takedown) in the same transaction and writes `REPORT_APPEAL_REVIEW`.
+4. ✅ **API — user appeal** — `POST /reports/:id/appeal` (owner-of-target only, rate-limited 5/min, `@AllowSuspended()`). Validates that the report is resolved and has no prior appeal. Ownership resolves via separate `post/comment/message` lookups because `Report` stores only target IDs, not relations. Sets `appealedAt`, `appealNote`, `appealStatus = PENDING`.
+5. ✅ **API — audit search + CSV** — `GET /admin/audit` (cursor-paginated, filters as above, includes hydrated actor summary) and `GET /admin/audit/export.csv` (up to 500 rows, `text/csv; charset=utf-8`, `Content-Disposition: attachment`). Both moderator + admin only.
+6. ✅ **Guardrail — SuspensionGuard** — global guard ordered `JwtAuthGuard → SuspensionGuard → RolesGuard`. Queries `User.suspendedAt` on every non-GET request and returns `USER_SUSPENDED` 403 with the reason in the message. JWTs can't carry live suspension state, so the DB check is per mutating request. `@AllowSuspended()` opts out `/auth/logout`, `/auth/me`, and `POST /reports/:id/appeal` so a suspended user can still sign out, read their own status, and file an appeal.
+7. ✅ **Web — moderation console** — `/admin/moderation/reports` report detail now exposes suspend / unsuspend (`USER` target) + takedown / restore (`POST` target) buttons with a shared reason input, and an Appeal block showing status + history + uphold/deny controls when `appealStatus === "PENDING"`. New `runAdminAction` helper funnels all four admin mutations through one error path. Test IDs: `admin-suspend`, `admin-unsuspend`, `admin-takedown`, `admin-restore`, `admin-action-reason`, `admin-appeal-uphold`, `admin-appeal-deny`, `admin-appeal-note`.
+8. ✅ **Web — audit search** — new `/admin/audit` page: action select (localized action labels), actor / target user / target post / target report text filters, created-from/to date filters, cursor pagination, and CSV export button (`audit-export-csv`). Mirrors existing moderation console `Surface` patterns.
+9. ✅ **Web + Mobile — suspension banner** — authed web layout (`apps/web/src/app/[locale]/(app)/layout.tsx`) and mobile tabs layout (`apps/mobile/app/(app)/_layout.tsx`) both fetch `/auth/me` and render a top-of-shell `SuspensionBanner` whenever `suspendedAt` is set. Copy: `suspension.banner` + `suspension.bannerWithReason` + `suspension.appealCta`. Test ID: `suspension-banner`.
+10. ✅ **Copy** — `apps/web/messages/{en,ar,ar-PS}.json` add the full `admin.moderation.admin-actions`, `admin.audit.*` (including `actions.{USER_SUSPEND,USER_UNSUSPEND,POST_TAKEDOWN,POST_RESTORE,REPORT_RESOLVE,REPORT_APPEAL_REVIEW}`), and `suspension.*` blocks. Mobile `apps/mobile/src/i18n/{en,ar}.json` add the `suspension.*` block.
+
+Verification notes:
+
+- `corepack pnpm --filter @palnet/shared type-check` clean.
+- `corepack pnpm --filter @palnet/api type-check` clean.
+- `corepack pnpm --filter @palnet/web type-check` clean.
+- `corepack pnpm --filter @palnet/mobile type-check` clean.
+- `corepack pnpm --filter @palnet/db db:generate` — Prisma `EPERM` on `query_engine-windows.dll.node` while a dev server held the DLL open. The admin-depth fields are already in the generated client; re-run once the dev server is stopped for a clean regen.
+
+#### Sprint 14 follow-ups
+
+- **User-side appeal UI** — ✅ shipped in Sprint 15 (`/me/appeals`).
+- **Admin post surface** — taken-down posts 404 everywhere, including `/admin/posts/:id`. Add a read-only admin post detail so moderators can inspect the body they took down.
+- **AuditLog retention** — the table is append-only and unbounded. Decide retention (likely 1 year + export-to-cold-storage) before it grows past a practical size.
+- **Tests** — ✅ shipped in Sprint 15 (AdminService + SuspensionGuard specs).
+- **Notifications** — ✅ shipped in Sprint 15 (`MODERATION_*` NotificationType values).
+
+---
+
+### Sprint 15 — Sprint 14 follow-ups (appeals UI + moderation notifications + tests) ✅ IMPLEMENTED
+
+**Goal:** close the three highest-leverage Sprint 14 follow-ups so a suspended / taken-down user has a real path through the product, and moderation logic has baseline unit coverage.
+
+1. ✅ **Shared + Prisma — 5 new `NotificationType` values** — `MODERATION_USER_SUSPENDED`, `MODERATION_USER_UNSUSPENDED`, `MODERATION_POST_TAKEDOWN`, `MODERATION_POST_RESTORED`, `MODERATION_APPEAL_REVIEWED`. Mirrored in `packages/shared/src/enums.ts` and `packages/db/prisma/schema.prisma`. Additive migration `202604240005_moderation_notification_types` uses `ALTER TYPE "NotificationType" ADD VALUE IF NOT EXISTS` so the change is safe on a live enum column.
+2. ✅ **API — AdminService emits notifications** — `AdminService` now depends on `NotificationsService` and fires a `notify(...)` after every successful mutation's `$transaction`: `suspendUser` → `MODERATION_USER_SUSPENDED` (`{ reason }`); `unsuspendUser` → `MODERATION_USER_UNSUSPENDED` (optional `{ note }`); `takedownPost` / `restorePost` → post author (select extended with `authorId`); `reviewAppeal` → recipient resolved from the report's target type via new private `resolveAppealRecipient()` helper (select extended to `targetCommentId` + `targetMessageId`). All five types map to `TYPE_TO_EVENT: null` in `notifications.service.ts`, so they bypass the mute-preferences check and are not fanned out to email / push — banner + in-app only.
+3. ✅ **API — `GET /reports/mine`** — new `listMyReports(viewerId, query)` on `ModerationService`. Parallel `findMany` on `post` / `comment` / `message` resolves "reports whose target I own", `AND { resolvedAt: { not: null } }` filters to resolved reports only, then projects `AdminReportItem` → `MyReportItem` dropping `reporter` + `resolvedBy` for privacy. Controller route `@Get("reports/mine")` is `@AllowSuspended()` so a suspended user can still see their own history. New shared schemas: `MyReportItem`, `MyReportsListQuery`, `MyReportsPage` (cursor-paged).
+4. ✅ **Web — `/me/appeals` page** — `apps/web/src/app/[locale]/(app)/me/appeals/page.tsx`: fetches `/reports/mine`, renders per-report `Surface` card with reason / target excerpt / moderator resolution note / status badge (`PENDING`/`UPHELD`/`DENIED`) / decision note. Not-yet-appealed resolved reports show an inline file-appeal form with a 10-char minimum textarea and `APPEAL_ALREADY_FILED` error mapping. Load-more uses the cursor envelope. Test IDs: `my-appeal-{id}`, `my-appeal-note-{id}`, `my-appeal-submit-{id}`. `SuspensionBanner` in `(app)/layout.tsx` now carries a real `<a href="/me/appeals">` CTA (`suspension-appeal-cta`).
+5. ✅ **Copy** — `apps/web/messages/{en,ar,ar-PS}.json` add the full `appeals.*` block (page title/description/empty/loading/error, `targetKind.*`, `status.*`, `reasons.*`, form labels) plus a `moderationNotifications.*` block with 8 keys covering the 5 types (base + `_WITH_REASON` / `_UPHELD` / `_DENIED` variants). All three files re-parsed via `JSON.parse` to guarantee no trailing-comma drift.
+6. ✅ **Tests** — `apps/api/src/modules/admin/admin.service.spec.ts` (13 cases) + `apps/api/src/modules/auth/guards/suspension.guard.spec.ts` (7 cases). 22/22 green under `jest --runInBand`. AdminService spec drives Prisma + `NotificationsService` via `jest.fn()` stubs, asserts on `prisma.$transaction.mock.calls[0][0].length` to lock the op-count per mutation (suspend = 3, unsuspend = 3, appeal UPHELD = 3, DENIED = 2), and verifies every mutation emits exactly one notify with the right payload. SuspensionGuard spec stubs `ExecutionContext` + `Reflector` and locks the four decision paths: public (no user) pass, `GET` / `HEAD` pass without DB hit, `@AllowSuspended()` pass without DB hit, non-suspended pass, suspended on `POST` / `PATCH` → `DomainException` with `code: USER_SUSPENDED` and status 403 and the reason in `getResponse().error.message`.
+
+Verification notes:
+
+- `corepack pnpm --filter @palnet/api exec jest --runInBand admin.service.spec suspension.guard.spec` — 22/22 passing.
+- `corepack pnpm -r run --if-present type-check` — clean across `@palnet/shared`, `@palnet/db`, `@palnet/ui-tokens`, `@palnet/ui-web`, `@palnet/ui-native`, `@palnet/api`, `@palnet/web`, `@palnet/mobile`.
+- Prisma client regen required once after the enum addition (`corepack pnpm --filter @palnet/db db:generate`) to pick up the new `NotificationType` literals in the typed client.
+
+#### Sprint 15 follow-ups
+
+- **Admin post surface** — still the top Sprint 14 leftover. `/admin/posts/:id` should render the taken-down body read-only so moderators can audit their own decisions without 404s.
+- **AuditLog retention** — unchanged; still needs a policy decision (1-year rolling + cold-storage export is the obvious default).
+- **Mobile appeals UI** — web has `/me/appeals`; mobile still relies on the banner alone. Mirror the page in `apps/mobile` once `ui-native` has a textarea primitive.
+- **Email / push for moderation notifications** — currently in-app only (`TYPE_TO_EVENT: null`). If policy shifts to "moderated users always get emailed," lift the types into real `NotificationEvent` values and wire copy.
+- **Ownership resolution on `/reports/mine`** — scales by the viewer's post/comment/message count. Fine at MVP; revisit with a denormalized `targetAuthorId` column on `Report` if it becomes a hotspot.
+
+---
+
 ## What Claude Code should NOT do
 
 - ❌ Redesign anything. The prototype + DESIGN.md is the design. If you want to change a decision, ask the user — don't unilaterally "improve."
