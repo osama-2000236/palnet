@@ -43,6 +43,17 @@ export const NotificationType = {
   MESSAGE_RECEIVED: "MESSAGE_RECEIVED",
   JOB_APPLICATION_UPDATE: "JOB_APPLICATION_UPDATE",
   PROFILE_VIEW: "PROFILE_VIEW",
+  // Moderation outcomes visible to the affected user. Payload in `data`:
+  //   MODERATION_USER_SUSPENDED   — { reason: string }
+  //   MODERATION_USER_UNSUSPENDED — { note?: string }
+  //   MODERATION_POST_TAKEDOWN    — { postId: string, reason: string }
+  //   MODERATION_POST_RESTORED    — { postId: string, note?: string }
+  //   MODERATION_APPEAL_REVIEWED  — { reportId: string, decision: "UPHELD"|"DENIED", note?: string }
+  MODERATION_USER_SUSPENDED: "MODERATION_USER_SUSPENDED",
+  MODERATION_USER_UNSUSPENDED: "MODERATION_USER_UNSUSPENDED",
+  MODERATION_POST_TAKEDOWN: "MODERATION_POST_TAKEDOWN",
+  MODERATION_POST_RESTORED: "MODERATION_POST_RESTORED",
+  MODERATION_APPEAL_REVIEWED: "MODERATION_APPEAL_REVIEWED",
 } as const;
 export type NotificationType = (typeof NotificationType)[keyof typeof NotificationType];
 

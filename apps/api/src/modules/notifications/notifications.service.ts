@@ -30,6 +30,13 @@ const TYPE_TO_EVENT: Record<NotificationType, NotificationEvent | null> = {
   MESSAGE_RECEIVED: "messages",
   JOB_APPLICATION_UPDATE: "jobs",
   PROFILE_VIEW: null,
+  // Moderation outcomes are not user-muteable: no pref bucket, so the in-app
+  // row is always created and no email/push fanout happens by default.
+  MODERATION_USER_SUSPENDED: null,
+  MODERATION_USER_UNSUSPENDED: null,
+  MODERATION_POST_TAKEDOWN: null,
+  MODERATION_POST_RESTORED: null,
+  MODERATION_APPEAL_REVIEWED: null,
 };
 
 // Human-readable template per notification type for the email/push subject +
@@ -70,6 +77,26 @@ const TYPE_COPY: Record<
   PROFILE_VIEW: {
     subject: (a) => `${a} viewed your profile`,
     body: (a) => `${a} viewed your profile.`,
+  },
+  MODERATION_USER_SUSPENDED: {
+    subject: () => `Your Baydar account has been suspended`,
+    body: () => `Your account has been suspended by moderators.`,
+  },
+  MODERATION_USER_UNSUSPENDED: {
+    subject: () => `Your Baydar suspension has been lifted`,
+    body: () => `Your account suspension has been lifted.`,
+  },
+  MODERATION_POST_TAKEDOWN: {
+    subject: () => `Your post was removed by moderators`,
+    body: () => `A post of yours was taken down by moderators.`,
+  },
+  MODERATION_POST_RESTORED: {
+    subject: () => `Your post has been restored`,
+    body: () => `A post of yours was restored by moderators.`,
+  },
+  MODERATION_APPEAL_REVIEWED: {
+    subject: () => `Your appeal has been reviewed`,
+    body: () => `Moderators reviewed your appeal.`,
   },
 };
 
