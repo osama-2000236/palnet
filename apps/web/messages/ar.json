@@ -492,6 +492,60 @@
     "bannerWithReason": "تم إيقاف حسابك: {reason}",
     "appealCta": "تقديم طعن"
   },
+  "appeals": {
+    "title": "الإشراف والطعون",
+    "description": "البلاغات التي تمّت معالجتها ضد محتواك. يمكنك تقديم طعن واحد لكل قرار.",
+    "loading": "جارٍ التحميل…",
+    "loadMore": "تحميل المزيد",
+    "loadError": "تعذّر تحميل سجل الإشراف الخاص بك.",
+    "emptyTitle": "لا يوجد ما يمكن الطعن عليه",
+    "emptyBody": "لا توجد بلاغات تمّت معالجتها ضد محتواك.",
+    "reason": "السبب",
+    "excerpt": "المحتوى",
+    "moderatorNote": "ملاحظة المشرف",
+    "yourNote": "طعنك",
+    "reviewerNote": "ملاحظة المراجع",
+    "resolvedAt": "تمّت المعالجة في {date}",
+    "appealFiledAt": "قُدّم الطعن في {date}",
+    "noteLabel": "اشرح لماذا ينبغي عكس هذا القرار",
+    "notePlaceholder": "أضف سياقًا قد يكون فات المشرف.",
+    "submit": "إرسال الطعن",
+    "submitting": "جارٍ الإرسال…",
+    "errorNoteTooShort": "اكتب 10 أحرف على الأقل حتى يعتمد عليها المراجع.",
+    "errorAlreadyFiled": "تم تقديم طعن لهذا البلاغ مسبقًا.",
+    "errorGeneric": "حدث خطأ. حاول مجددًا.",
+    "statusNone": "لا يوجد طعن",
+    "status": {
+      "PENDING": "قيد المراجعة",
+      "UPHELD": "قُبل",
+      "DENIED": "رُفض"
+    },
+    "targetKind": {
+      "USER": "بلاغ ضد حسابك",
+      "POST": "بلاغ ضد منشورك",
+      "COMMENT": "بلاغ ضد تعليقك",
+      "MESSAGE": "بلاغ ضد رسالتك"
+    },
+    "reasons": {
+      "SPAM": "محتوى مزعج",
+      "HARASSMENT": "تحرّش",
+      "HATE_SPEECH": "خطاب كراهية",
+      "VIOLENCE": "عنف",
+      "ADULT_CONTENT": "محتوى للبالغين",
+      "IMPERSONATION": "انتحال هوية",
+      "OTHER": "أخرى"
+    }
+  },
+  "moderationNotifications": {
+    "MODERATION_USER_SUSPENDED": "تم إيقاف حسابك.",
+    "MODERATION_USER_SUSPENDED_WITH_REASON": "تم إيقاف حسابك: {reason}",
+    "MODERATION_USER_UNSUSPENDED": "تم رفع الإيقاف عن حسابك.",
+    "MODERATION_POST_TAKEDOWN": "تمّت إزالة منشور لك.",
+    "MODERATION_POST_TAKEDOWN_WITH_REASON": "تمّت إزالة منشور لك: {reason}",
+    "MODERATION_POST_RESTORED": "تمّت إعادة منشور لك.",
+    "MODERATION_APPEAL_REVIEWED_UPHELD": "قُبل طعنك.",
+    "MODERATION_APPEAL_REVIEWED_DENIED": "رُفض طعنك."
+  },
   "moderation": {
     "more": "خيارات إضافية",
     "reportUser": "الإبلاغ عن هذا الشخص",

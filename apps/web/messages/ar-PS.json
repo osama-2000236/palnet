@@ -536,6 +536,60 @@
     "bannerWithReason": "حسابك موقوف: {reason}",
     "appealCta": "قدّم طعن"
   },
+  "appeals": {
+    "title": "الإشراف والطعون",
+    "description": "البلاغات اللي إنحلّت ضد محتواك. بتقدر تقدّم طعن واحد على كل قرار.",
+    "loading": "عم يحمّل…",
+    "loadMore": "حمّل المزيد",
+    "loadError": "ما قدرنا نحمّل سجل الإشراف تبعك.",
+    "emptyTitle": "ما في شي تطعن عليه",
+    "emptyBody": "ما في بلاغات إنحلّت ضد محتواك.",
+    "reason": "السبب",
+    "excerpt": "المحتوى",
+    "moderatorNote": "ملاحظة المشرف",
+    "yourNote": "طعنك",
+    "reviewerNote": "ملاحظة المراجع",
+    "resolvedAt": "إنحلّ بتاريخ {date}",
+    "appealFiledAt": "الطعن إنقدّم بتاريخ {date}",
+    "noteLabel": "إشرح ليش لازم يترجع بالقرار",
+    "notePlaceholder": "ضيف سياق ممكن المشرف ما شافه.",
+    "submit": "قدّم الطعن",
+    "submitting": "عم يرسل…",
+    "errorNoteTooShort": "إكتب 10 أحرف على الأقل لليعتمد عليهم المراجع.",
+    "errorAlreadyFiled": "في طعن مقدّم قبل هيك عالبلاغ.",
+    "errorGeneric": "صار خطأ. جرّب كمان مرة.",
+    "statusNone": "ما في طعن",
+    "status": {
+      "PENDING": "تحت المراجعة",
+      "UPHELD": "إنقبل",
+      "DENIED": "إنرفض"
+    },
+    "targetKind": {
+      "USER": "بلاغ ضد حسابك",
+      "POST": "بلاغ ضد منشورك",
+      "COMMENT": "بلاغ ضد تعليقك",
+      "MESSAGE": "بلاغ ضد رسالتك"
+    },
+    "reasons": {
+      "SPAM": "محتوى مزعج",
+      "HARASSMENT": "تحرّش",
+      "HATE_SPEECH": "خطاب كراهية",
+      "VIOLENCE": "عنف",
+      "ADULT_CONTENT": "محتوى للبالغين",
+      "IMPERSONATION": "انتحال هوية",
+      "OTHER": "غير هيك"
+    }
+  },
+  "moderationNotifications": {
+    "MODERATION_USER_SUSPENDED": "إنوقف حسابك.",
+    "MODERATION_USER_SUSPENDED_WITH_REASON": "إنوقف حسابك: {reason}",
+    "MODERATION_USER_UNSUSPENDED": "إنرفع الإيقاف عن حسابك.",
+    "MODERATION_POST_TAKEDOWN": "إنشال منشور إلك.",
+    "MODERATION_POST_TAKEDOWN_WITH_REASON": "إنشال منشور إلك: {reason}",
+    "MODERATION_POST_RESTORED": "رُجّع منشور إلك.",
+    "MODERATION_APPEAL_REVIEWED_UPHELD": "إنقبل طعنك.",
+    "MODERATION_APPEAL_REVIEWED_DENIED": "إنرفض طعنك."
+  },
   "moderation": {
     "more": "خيارات إضافية",
     "reportUser": "الإبلاغ عن هذا الشخص",

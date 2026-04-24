@@ -8,113 +8,180 @@
 // header on /feed, so the two platforms stay visually locked in step.
 
 import { Tabs, router } from "expo-router";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Platform } from "react-native";
+import { Platform, StyleSheet, Text, View } from "react-native";
+import { z } from "zod";
 
 import { Icon, type IconName, nativeTokens } from "@palnet/ui-native";
+import { apiFetch } from "@/lib/api";
 import { readSession } from "@/lib/session";
+
+const AuthMeUser = z.object({
+  id: z.string(),
+  email: z.string(),
+  role: z.string(),
+  locale: z.string(),
+  emailVerified: z.boolean(),
+  suspendedAt: z.string().datetime().nullable().optional(),
+  suspendedReason: z.string().nullable().optional(),
+});
 
 export default function AppTabsLayout(): JSX.Element {
   const { t } = useTranslation();
+  const [suspendedAt, setSuspendedAt] = useState<string | null>(null);
+  const [suspendedReason, setSuspendedReason] = useState<string | null>(null);
 
   // Gate the whole authenticated area on having a session. If missing, bounce
   // back to the landing page which itself redirects to /login.
   useEffect(() => {
+    let cancelled = false;
     void (async () => {
       const session = await readSession();
-      if (!session) router.replace("/(auth)/login");
+      if (!session) {
+        router.replace("/(auth)/login");
+        return;
+      }
+      try {
+        const me = await apiFetch("/auth/me", AuthMeUser, {
+          token: session.tokens.accessToken,
+        });
+        if (cancelled) return;
+        setSuspendedAt(me.suspendedAt ?? null);
+        setSuspendedReason(me.suspendedReason ?? null);
+      } catch {
+        // non-fatal — banner stays hidden.
+      }
     })();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   return (
-    <Tabs
-      screenOptions={{
-        headerShown: false,
-        tabBarActiveTintColor: nativeTokens.color.brand700,
-        tabBarInactiveTintColor: nativeTokens.color.inkMuted,
-        tabBarStyle: {
-          height: nativeTokens.chrome.tabHeight + (Platform.OS === "ios" ? 20 : 0),
-          paddingTop: nativeTokens.space[1],
-          paddingBottom: Platform.OS === "ios" ? nativeTokens.space[4] : nativeTokens.space[2],
-          backgroundColor: nativeTokens.color.surface,
-          borderTopColor: nativeTokens.color.lineSoft,
-        },
-        tabBarLabelStyle: {
-          fontSize: 11,
-          fontFamily: nativeTokens.type.family.sans,
-        },
-      }}
-    >
-      <Tabs.Screen
-        name="feed"
-        options={{
-          title: t("feed.title"),
-          tabBarIcon: ({ color, focused }) => (
-            <TabIcon name="home" color={color} focused={focused} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="network"
-        options={{
-          title: t("network.title"),
-          tabBarIcon: ({ color, focused }) => (
-            <TabIcon name="users" color={color} focused={focused} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="jobs"
-        options={{
-          title: t("jobs.title"),
-          tabBarIcon: ({ color, focused }) => (
-            <TabIcon name="briefcase" color={color} focused={focused} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="messages"
-        options={{
-          title: t("messaging.title"),
-          tabBarIcon: ({ color, focused }) => (
-            <TabIcon name="message" color={color} focused={focused} />
-          ),
-          tabBarButtonTestID: "tab-messages",
-        }}
-      />
-      <Tabs.Screen
-        name="notifications"
-        options={{
-          title: t("notifications.title"),
-          tabBarIcon: ({ color, focused }) => (
-            <TabIcon name="bell" color={color} focused={focused} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="settings"
-        options={{
-          title: t("nav.me"),
-          tabBarIcon: ({ color, focused }) => (
-            <TabIcon name="user" color={color} focused={focused} />
-          ),
-          tabBarButtonTestID: "tab-me",
-        }}
-      />
+    <View style={styles.root}>
+      {suspendedAt ? (
+        <View style={styles.banner} testID="suspension-banner" accessibilityRole="alert">
+          <Text style={styles.bannerText}>
+            {suspendedReason
+              ? t("suspension.bannerWithReason", { reason: suspendedReason })
+              : t("suspension.banner")}
+          </Text>
+        </View>
+      ) : null}
+      <View style={styles.tabsWrap}>
+        <Tabs
+          screenOptions={{
+            headerShown: false,
+            tabBarActiveTintColor: nativeTokens.color.brand700,
+            tabBarInactiveTintColor: nativeTokens.color.inkMuted,
+            tabBarStyle: {
+              height: nativeTokens.chrome.tabHeight + (Platform.OS === "ios" ? 20 : 0),
+              paddingTop: nativeTokens.space[1],
+              paddingBottom: Platform.OS === "ios" ? nativeTokens.space[4] : nativeTokens.space[2],
+              backgroundColor: nativeTokens.color.surface,
+              borderTopColor: nativeTokens.color.lineSoft,
+            },
+            tabBarLabelStyle: {
+              fontSize: 11,
+              fontFamily: nativeTokens.type.family.sans,
+            },
+          }}
+        >
+          <Tabs.Screen
+            name="feed"
+            options={{
+              title: t("feed.title"),
+              tabBarIcon: ({ color, focused }) => (
+                <TabIcon name="home" color={color} focused={focused} />
+              ),
+            }}
+          />
+          <Tabs.Screen
+            name="network"
+            options={{
+              title: t("network.title"),
+              tabBarIcon: ({ color, focused }) => (
+                <TabIcon name="users" color={color} focused={focused} />
+              ),
+            }}
+          />
+          <Tabs.Screen
+            name="jobs"
+            options={{
+              title: t("jobs.title"),
+              tabBarIcon: ({ color, focused }) => (
+                <TabIcon name="briefcase" color={color} focused={focused} />
+              ),
+            }}
+          />
+          <Tabs.Screen
+            name="messages"
+            options={{
+              title: t("messaging.title"),
+              tabBarIcon: ({ color, focused }) => (
+                <TabIcon name="message" color={color} focused={focused} />
+              ),
+              tabBarButtonTestID: "tab-messages",
+            }}
+          />
+          <Tabs.Screen
+            name="notifications"
+            options={{
+              title: t("notifications.title"),
+              tabBarIcon: ({ color, focused }) => (
+                <TabIcon name="bell" color={color} focused={focused} />
+              ),
+            }}
+          />
+          <Tabs.Screen
+            name="settings"
+            options={{
+              title: t("nav.me"),
+              tabBarIcon: ({ color, focused }) => (
+                <TabIcon name="user" color={color} focused={focused} />
+              ),
+              tabBarButtonTestID: "tab-me",
+            }}
+          />
 
-      {/* Routes that exist inside (app) but shouldn't have a tab. Setting
+          {/* Routes that exist inside (app) but shouldn't have a tab. Setting
          href: null hides them from the tab bar while keeping them pushable. */}
-      <Tabs.Screen name="search" options={{ href: null }} />
-      <Tabs.Screen name="composer" options={{ href: null }} />
-      <Tabs.Screen name="onboarding" options={{ href: null }} />
-      <Tabs.Screen name="me/edit" options={{ href: null }} />
-      <Tabs.Screen name="in/[handle]" options={{ href: null }} />
-      <Tabs.Screen name="jobs/applications" options={{ href: null }} />
-      <Tabs.Screen name="jobs/[id]" options={{ href: null }} />
-    </Tabs>
+          <Tabs.Screen name="search" options={{ href: null }} />
+          <Tabs.Screen name="composer" options={{ href: null }} />
+          <Tabs.Screen name="onboarding" options={{ href: null }} />
+          <Tabs.Screen name="me/edit" options={{ href: null }} />
+          <Tabs.Screen name="in/[handle]" options={{ href: null }} />
+          <Tabs.Screen name="jobs/applications" options={{ href: null }} />
+          <Tabs.Screen name="jobs/[id]" options={{ href: null }} />
+        </Tabs>
+      </View>
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  root: {
+    flex: 1,
+    backgroundColor: nativeTokens.color.surface,
+  },
+  tabsWrap: {
+    flex: 1,
+  },
+  banner: {
+    paddingHorizontal: nativeTokens.space[4],
+    paddingVertical: nativeTokens.space[3],
+    backgroundColor: nativeTokens.color.surface,
+    borderBottomWidth: 1,
+    borderBottomColor: nativeTokens.color.lineSoft,
+  },
+  bannerText: {
+    color: nativeTokens.color.danger,
+    fontSize: 14,
+    fontWeight: "600",
+    fontFamily: nativeTokens.type.family.sans,
+  },
+});
 
 // Tab icons: bump stroke-width a touch when focused so the active tab reads
 // bolder without needing a separate filled glyph set.

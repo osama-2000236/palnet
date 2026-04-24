@@ -10,6 +10,9 @@ import {
   type CreateReportBody,
   type CursorPageMeta,
   ErrorCode,
+  type MyReportItem,
+  type MyReportsListQuery,
+  type MyReportsPage,
   type ReportAck,
   type ReportTargetKind,
   type ResolveReportBody,
@@ -266,6 +269,79 @@ export class ModerationService {
     const data = await Promise.all(rows.map((row) => this.toAdminItem(row)));
 
     return reportsToCsv(data);
+  }
+
+  // ── User-facing: reports against the viewer's own content ────────────
+
+  // Lists reports where the viewer is the target (user reports) or owns the
+  // targeted content (post/comment/message). Only *resolved* reports are
+  // surfaced: unresolved reports are still in triage and revealing them
+  // would tip off the target before moderators act. Reporter/resolver
+  // identity is stripped — `MyReportItem` drops those fields entirely.
+  async listMyReports(viewerId: string, query: MyReportsListQuery): Promise<MyReportsPage> {
+    const [postIds, commentIds, messageIds] = await Promise.all([
+      this.prisma.post.findMany({
+        where: { authorId: viewerId },
+        select: { id: true },
+      }),
+      this.prisma.comment.findMany({
+        where: { authorId: viewerId },
+        select: { id: true },
+      }),
+      this.prisma.message.findMany({
+        where: { authorId: viewerId },
+        select: { id: true },
+      }),
+    ]);
+
+    const ownershipOr: Prisma.ReportWhereInput[] = [{ targetUserId: viewerId }];
+    if (postIds.length > 0) {
+      ownershipOr.push({ targetPostId: { in: postIds.map((p) => p.id) } });
+    }
+    if (commentIds.length > 0) {
+      ownershipOr.push({ targetCommentId: { in: commentIds.map((c) => c.id) } });
+    }
+    if (messageIds.length > 0) {
+      ownershipOr.push({ targetMessageId: { in: messageIds.map((m) => m.id) } });
+    }
+
+    const rows = await this.prisma.report.findMany({
+      where: {
+        AND: [{ OR: ownershipOr }, { resolvedAt: { not: null } }],
+      },
+      orderBy: [{ resolvedAt: "desc" }, { id: "desc" }],
+      take: query.limit + 1,
+      ...(query.after ? { cursor: { id: query.after }, skip: 1 } : {}),
+      include: reportIncludes,
+    });
+
+    const hasMore = rows.length > query.limit;
+    const pageRows = hasMore ? rows.slice(0, query.limit) : rows;
+    const admin = await Promise.all(pageRows.map((row) => this.toAdminItem(row)));
+    const data: MyReportItem[] = admin.map((row) => ({
+      id: row.id,
+      reason: row.reason,
+      targetKind: row.targetKind,
+      targetId: row.targetId,
+      target: row.target,
+      createdAt: row.createdAt,
+      resolvedAt: row.resolvedAt,
+      resolvedNote: row.resolvedNote,
+      appealedAt: row.appealedAt,
+      appealNote: row.appealNote,
+      appealStatus: row.appealStatus,
+      appealDecisionNote: row.appealDecisionNote,
+      appealReviewedAt: row.appealReviewedAt,
+    }));
+
+    return {
+      data,
+      meta: {
+        hasMore,
+        limit: query.limit,
+        nextCursor: hasMore ? (pageRows[pageRows.length - 1]?.id ?? null) : null,
+      },
+    };
   }
 
   private async toAdminItem(row: ReportRow): Promise<AdminReportItem> {

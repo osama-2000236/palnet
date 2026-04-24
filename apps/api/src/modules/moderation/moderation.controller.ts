@@ -22,6 +22,8 @@ import {
   type BlockedUserList,
   BlockUserBody,
   CreateReportBody,
+  MyReportsListQuery,
+  type MyReportsPage,
   type ReportAck,
   ResolveReportBody,
   UserRole,
@@ -43,6 +45,17 @@ export class ModerationController {
     private readonly moderation: ModerationService,
     private readonly adminService: AdminService,
   ) {}
+
+  // Viewer's own moderation history — resolved reports filed against their
+  // content. Suspended users can read this so they know what to appeal.
+  @Get("reports/mine")
+  @AllowSuspended()
+  async listMyReports(
+    @CurrentUser() user: AuthUser,
+    @Query(new ZodValidationPipe(MyReportsListQuery)) query: MyReportsListQuery,
+  ): Promise<MyReportsPage> {
+    return this.moderation.listMyReports(user.id, query);
+  }
 
   // User-side appeal — the one moderation action a suspended account must
   // still be able to take, hence @AllowSuspended().

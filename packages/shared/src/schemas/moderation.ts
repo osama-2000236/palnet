@@ -163,3 +163,33 @@ export const ResolveReportBody = z
   })
   .strict();
 export type ResolveReportBody = z.infer<typeof ResolveReportBody>;
+
+// ──────────────────────────────────────────────────────────────────────────
+// User-facing view of reports filed against a viewer's own content. This
+// exists so the viewer can (a) see what was actioned and why, and (b) file
+// an appeal. Reporter identity and resolver identity are intentionally
+// stripped — reporters get privacy, moderators speak with one voice.
+// ──────────────────────────────────────────────────────────────────────────
+
+export const MyReportItem = z.object({
+  id: z.string().cuid(),
+  reason: ReportReasonEnum,
+  targetKind: ReportTargetKind,
+  targetId: z.string().cuid(),
+  target: AdminReportTargetPreview,
+  createdAt: z.string().datetime(),
+  resolvedAt: z.string().datetime().nullable(),
+  resolvedNote: z.string().nullable(),
+  appealedAt: z.string().datetime().nullable(),
+  appealNote: z.string().nullable(),
+  appealStatus: AppealStatusEnumForReport.nullable(),
+  appealDecisionNote: z.string().nullable(),
+  appealReviewedAt: z.string().datetime().nullable(),
+});
+export type MyReportItem = z.infer<typeof MyReportItem>;
+
+export const MyReportsListQuery = CursorPageQuery.extend({});
+export type MyReportsListQuery = z.infer<typeof MyReportsListQuery>;
+
+export const MyReportsPage = cursorPage(MyReportItem);
+export type MyReportsPage = z.infer<typeof MyReportsPage>;

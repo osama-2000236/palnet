@@ -50,6 +50,10 @@
     "invalid": "Link invalid or expired.",
     "missingToken": "No verification token in the link."
   },
+  "suspension": {
+    "banner": "Your account is suspended. You can view Baydar but cannot post, message, or react until the suspension is lifted.",
+    "bannerWithReason": "Your account is suspended: {{reason}}"
+  },
   "resetPassword": {
     "title": "Reset password",
     "missingToken": "This link is missing a reset token.",

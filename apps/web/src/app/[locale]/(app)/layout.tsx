@@ -24,6 +24,7 @@ import {
   type Profile,
 } from "@palnet/shared";
 import { AppShell, type AppShellLabels, type AppShellRoute } from "@palnet/ui-web";
+import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
@@ -42,6 +43,8 @@ const AuthMeUser = z.object({
   role: z.string(),
   locale: z.string(),
   emailVerified: z.boolean(),
+  suspendedAt: z.string().datetime().nullable().optional(),
+  suspendedReason: z.string().nullable().optional(),
 });
 
 /**
@@ -92,6 +95,8 @@ export default function AppLayout({ children }: { children: ReactNode }): JSX.El
   const [messagesUnread, setMessagesUnread] = useState(0);
   const [emailVerified, setEmailVerified] = useState<boolean>(true);
   const [role, setRole] = useState<string | null>(null);
+  const [suspendedAt, setSuspendedAt] = useState<string | null>(null);
+  const [suspendedReason, setSuspendedReason] = useState<string | null>(null);
 
   // Session bootstrap — redirect to /login if missing.
   useEffect(() => {
@@ -122,6 +127,8 @@ export default function AppLayout({ children }: { children: ReactNode }): JSX.El
         if (!cancelled) {
           setEmailVerified(u.emailVerified);
           setRole(u.role);
+          setSuspendedAt(u.suspendedAt ?? null);
+          setSuspendedReason(u.suspendedReason ?? null);
         }
       })
       .catch(() => {});
@@ -364,9 +371,32 @@ export default function AppLayout({ children }: { children: ReactNode }): JSX.El
       onOpenModeration={canModerate ? onOpenModeration : undefined}
       onSignOut={onSignOut}
     >
+      {suspendedAt ? <SuspensionBanner reason={suspendedReason} /> : null}
       {!emailVerified && token ? <VerifyEmailBanner token={token} /> : null}
       {children}
     </AppShell>
+  );
+}
+
+function SuspensionBanner({ reason }: { reason: string | null }): JSX.Element {
+  const t = useTranslations("suspension");
+  const message = reason ? t("bannerWithReason", { reason }) : t("banner");
+  return (
+    <div
+      role="alert"
+      aria-live="polite"
+      data-testid="suspension-banner"
+      className="text-ink border-danger/40 bg-danger/5 mx-auto mb-4 flex w-full max-w-[1128px] flex-wrap items-start gap-3 rounded-md border px-4 py-3 text-sm"
+    >
+      <p className="min-w-0 flex-1 font-semibold">{message}</p>
+      <Link
+        href="/me/appeals"
+        data-testid="suspension-appeal-cta"
+        className="text-ink border-line-hard bg-surface hover:bg-surface-subtle rounded-md border px-3 py-1 text-xs font-semibold"
+      >
+        {t("appealCta")}
+      </Link>
+    </div>
   );
 }
 
