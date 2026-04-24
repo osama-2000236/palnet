@@ -11,7 +11,7 @@ A LinkedIn-equivalent professional network built **for Palestine first**: Arabic
 1. [`project-spec.md`](project-spec.md) — **the single source of truth.** Feed this file to every AI prompt before generating code. Contains locked stack, conventions, and prompt guardrails.
 2. [`docs/erd.md`](docs/erd.md) — Entity relationship diagram and Prisma schema walkthrough.
 3. [`docs/sprint-plan.md`](docs/sprint-plan.md) — Sprint 1 through 5 with explicit "build now" / "do not build yet" lists.
-4. [`docs/api-contract.md`](docs/api-contract.md) — REST endpoints, request/response DTOs, WebSocket events.
+4. [`docs/api-contract.md`](docs/api-contract.md) — REST endpoints, request/response DTOs, SSE events.
 5. [`docs/design-system.md`](docs/design-system.md) — Atomic component inventory for web and mobile.
 6. [`docs/localization-palestine.md`](docs/localization-palestine.md) — Arabic-first rules, RTL invariants, locale defaults, calendar and date conventions.
 7. [`docs/testing-strategy.md`](docs/testing-strategy.md) — Jest, Playwright, Detox coverage rules.
@@ -28,7 +28,7 @@ A LinkedIn-equivalent professional network built **for Palestine first**: Arabic
 | Web | Next.js 15 (App Router) + Tailwind + shadcn/ui | SEO for profiles + app shell; RTL-friendly |
 | Mobile | Expo (React Native) + NativeWind | iOS + Android from one codebase; OTA updates via EAS |
 | Validation | Zod (shared in `packages/shared`) | One schema → DTO on server + form types on clients |
-| Real-time | Socket.io | Battle-tested, simple rooms for DMs and notifications |
+| Real-time | Authenticated SSE / EventSource | Simple beta transport for DMs and notifications without a separate socket client |
 | Auth | JWT access+refresh, bcrypt, OAuth2 (Google) | No third-party auth dep; migration to Clerk/Auth.js reserved |
 | Media storage | Cloudflare R2 (S3-compatible) | Free egress, cheaper than S3 |
 | Hosting — web | Vercel | Zero-config Next.js, global edge |
@@ -45,7 +45,7 @@ C:\LinkedIn\
   apps/
     web/        # Next.js 15 — SSR profiles, app shell, admin pages
     mobile/     # Expo — iOS + Android
-    api/        # NestJS — REST + WebSockets + Swagger
+    api/        # NestJS — REST + SSE + Swagger
   packages/
     shared/     # Zod schemas, DTOs, domain types, constants
     db/         # Prisma schema + generated client + migrations
@@ -77,7 +77,7 @@ The prior README described an AWS EKS / Kafka / Neptune / OpenSearch / Aurora / 
 2. **Sprint 1** — Auth + profile onboarding (web + mobile).
 3. **Sprint 2** — Feed: post text/media, chronological feed, like.
 4. **Sprint 3** — Profiles + connections graph.
-5. **Sprint 4** — Messaging + notifications (Socket.io).
+5. **Sprint 4** — Messaging + notifications (SSE).
 6. **Sprint 5** — Jobs board + applications.
 7. **Sprint 6+** — Company pages, groups, verification, premium (post-PMF).
 

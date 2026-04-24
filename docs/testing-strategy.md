@@ -4,13 +4,13 @@ Testing is not optional — it is how we keep AI-generated code from silently br
 
 ## Layers
 
-| Layer | Tool | Lives in | Runs on |
-| --- | --- | --- | --- |
-| Unit | Jest + ts-jest | `apps/api/src/**/*.spec.ts`, `packages/*/src/**/*.spec.ts` | Every PR |
-| Integration (API) | Jest + Supertest | `apps/api/test/**` | Every PR |
-| E2E web | Playwright | `apps/web/e2e/**` | Every PR |
-| E2E mobile | Detox | `apps/mobile/e2e/**` | Nightly + pre-release |
-| Contract | `zod` schemas imported into both api + clients | N/A — type system does this | Build time |
+| Layer             | Tool                                           | Lives in                                                   | Runs on               |
+| ----------------- | ---------------------------------------------- | ---------------------------------------------------------- | --------------------- |
+| Unit              | Jest + ts-jest                                 | `apps/api/src/**/*.spec.ts`, `packages/*/src/**/*.spec.ts` | Every PR              |
+| Integration (API) | Jest + Supertest                               | `apps/api/test/**`                                         | Every PR              |
+| E2E web           | Playwright                                     | `apps/web/e2e/**`                                          | Every PR              |
+| E2E mobile        | Detox                                          | `apps/mobile/e2e/**`                                       | Nightly + pre-release |
+| Contract          | `zod` schemas imported into both api + clients | N/A — type system does this                                | Build time            |
 
 ## Mandatory Coverage Rules
 
@@ -30,7 +30,14 @@ Testing is not optional — it is how we keep AI-generated code from silently br
 ## Playwright Setup
 
 - Runs against a local stack brought up by `pnpm dev` in CI.
+- Local `pnpm --filter @palnet/web e2e` reuses an already-running API/web stack when `http://localhost:4000/api/docs` and `http://localhost:3000/en/login` are healthy; otherwise Playwright boots its own local stack.
 - Browsers: Chromium only in CI for speed; Firefox + WebKit locally before release.
+- Authed a11y has a seeded QA harness:
+  1. Copy `.env.test.example` to `.env.qa.local` or set `QA_ENV_FILE` to another local QA env file.
+  2. Ensure `DATABASE_URL` and `DIRECT_URL` point at a disposable QA/test Postgres database, not the dev DB.
+  3. Run `corepack pnpm qa:web-authed` or `QA_ENV_FILE=.env.qa.local corepack pnpm qa:web-authed`.
+  4. The harness validates required env keys, runs psql smoke, migrate status/deploy, generate, seed, workspace UI package builds, then `corepack pnpm --filter @palnet/web e2e:a11y-authed`.
+- CI runs `pnpm --filter @palnet/web e2e:a11y-authed` after migrate + seed. Any axe violation on seeded authenticated routes fails the `e2e-web` job.
 - Every test must:
   1. Use `test.use({ locale: 'ar-PS' })` for primary run.
   2. Switch to `locale: 'en'` in a follow-up `test.describe` block for layout sanity.
@@ -44,7 +51,7 @@ Testing is not optional — it is how we keep AI-generated code from silently br
 ## What Not to Test
 
 - Do not test Prisma's own behavior.
-- Do not test Zod's own behavior — assume `z.string().email()` works; test *that your schema composition is right*.
+- Do not test Zod's own behavior — assume `z.string().email()` works; test _that your schema composition is right_.
 - Do not write tests that only assert "did this render without throwing" — that's what type-check + build already does.
 
 ## CI Gates
@@ -54,8 +61,9 @@ A PR merges only when:
 1. `pnpm lint` — zero errors.
 2. `pnpm type-check` — zero errors.
 3. `pnpm test` — all unit + integration green.
-4. `pnpm --filter @palnet/web e2e` — Playwright green (Chromium).
-5. Build succeeds for `@palnet/api`, `@palnet/web`.
+4. `pnpm --filter @palnet/web e2e:a11y-authed` — seeded authenticated axe scan green (Chromium).
+5. `pnpm --filter @palnet/web e2e` — Playwright green (Chromium).
+6. Build succeeds for `@palnet/api`, `@palnet/web`.
 
 Mobile E2E (Detox) is a nightly job, not a PR gate, because simulator time is expensive. Manual smoke required before shipping mobile releases.
 

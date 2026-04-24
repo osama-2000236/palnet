@@ -35,7 +35,7 @@ These are locked. Do not reopen without explicit user approval.
 | Styling (web) | Tailwind CSS + shadcn/ui | TW 3.x |
 | Styling (mobile) | NativeWind | 4.x |
 | Validation | Zod | 3.x |
-| Realtime | Socket.io | 4.x |
+| Realtime | Authenticated SSE / EventSource | Native browser support, enough for beta DMs + notifications |
 | Auth | Self-managed JWT + bcrypt, OAuth2 Google (Sprint 1.5) | — |
 | Media | Cloudflare R2 via `@aws-sdk/client-s3` | — |
 | Hosting — web | Vercel | — |
@@ -51,7 +51,7 @@ These are locked. Do not reopen without explicit user approval.
 
 - **Modular monolith** for the API. One NestJS app, modules per domain (`auth`, `users`, `profiles`, `connections`, `posts`, `interactions`, `messages`, `notifications`, `jobs`, `applications`, `companies`, `media`, `search`). **Do not split into microservices.**
 - **REST + OpenAPI/Swagger**, not GraphQL. Nest's `@nestjs/swagger` auto-generates the spec.
-- **WebSockets (Socket.io)** only for live DMs and notifications. Everything else is REST.
+- **Authenticated SSE / EventSource** only for live DMs and notifications. Everything else is REST.
 - **Shared DTO contract:** every request/response body has a matching Zod schema in `packages/shared/src/schemas/`. Nest imports the schema with `nestjs-zod` and uses the inferred type. Next.js and Expo import the same schema for forms.
 - **DB access only through `@palnet/db`** (a workspace package wrapping Prisma). No direct `new PrismaClient()` anywhere in app code.
 - **Auth:** JWT access (15 min) + refresh (30 day, rotated). Refresh tokens stored hashed in Postgres with device id. Passwords bcrypt cost 12.
@@ -144,7 +144,7 @@ Invariants:
 - Base path: `/api/v1`
 - Always return `{ data, meta }` on success, `{ error: { code, message, details? } }` on error.
 - Error codes are enum strings (`AUTH_INVALID_CREDENTIALS`, `PROFILE_NOT_FOUND`, etc.) defined in `@palnet/shared/enums`.
-- WebSocket namespaces: `/chat`, `/notifications`. Rooms keyed `user:<userId>` for personal events, `room:<chatRoomId>` for DMs.
+- SSE streams: `/messaging/stream`, `/notifications/stream`. Both accept standard bearer auth and the browser fallback `?access_token=` for `EventSource`.
 
 Full endpoint list in [`docs/api-contract.md`](docs/api-contract.md).
 

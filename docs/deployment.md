@@ -13,39 +13,46 @@ Users
 
 All clients → api.palnet.ps (Render) ←→ Neon (Postgres)
                                     ←→ Cloudflare R2 (media)
-                                    ←→ self-hosted Socket.io on Render
+                                    ←→ Render Redis/Key Value (optional throttling)
+                                    ←→ authenticated SSE streams on the same API service
 ```
 
 ## Environments
 
-| Env | API | Web | DB | Notes |
-| --- | --- | --- | --- | --- |
-| `dev` | localhost:4000 | localhost:3000 | Neon dev branch | per-developer Neon branch |
-| `preview` | Render preview env | Vercel preview | Neon branch per PR | automatic on PR open |
-| `prod` | Render service | Vercel prod | Neon main branch | manual promote |
+| Env       | API                | Web            | DB                 | Notes                     |
+| --------- | ------------------ | -------------- | ------------------ | ------------------------- |
+| `dev`     | localhost:4000     | localhost:3000 | Neon dev branch    | per-developer Neon branch |
+| `preview` | Render preview env | Vercel preview | Neon branch per PR | automatic on PR open      |
+| `prod`    | Render service     | Vercel prod    | Neon main branch   | manual promote            |
 
 ## First-time Setup (runbook)
 
 ### 1. Secrets
-- Render: `DATABASE_URL`, `DIRECT_URL`, `JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET`, `CORS_ORIGINS`, `R2_*`, `GOOGLE_*`.
-- Vercel: `NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_WS_URL`, `NEXT_PUBLIC_DEFAULT_LOCALE`.
-- EAS: `EXPO_PUBLIC_API_URL`, `EXPO_PUBLIC_WS_URL`, `EXPO_PUBLIC_DEFAULT_LOCALE`.
+
+- Render: `DATABASE_URL`, `DIRECT_URL`, `JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET`, `CORS_ORIGINS`, optional `REDIS_URL`, `R2_*`, `GOOGLE_*`.
+- Vercel: `NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_DEFAULT_LOCALE`.
+- EAS: `EXPO_PUBLIC_API_URL`, `EXPO_PUBLIC_DEFAULT_LOCALE`.
+- `NEXT_PUBLIC_WS_URL` / `EXPO_PUBLIC_WS_URL` are deprecated compatibility vars for beta. Clients derive SSE URLs from the API base instead.
 - Never commit `.env.local`.
 
 ### 2. Neon
+
 - Create project `palnet`.
 - Branch `main` = prod. Enable "branch per PR" integration with GitHub.
 - Daily backups on by default — verify in the project settings.
 
 ### 3. Render (API)
+
 - Create Web Service from GitHub repo, root `apps/api`, Dockerfile based build.
 - Build command: `pnpm install --frozen-lockfile && pnpm --filter @palnet/db db:generate && pnpm --filter @palnet/api build`.
 - Start command: `node dist/main.js`.
 - Health check path: `/api/v1/health`.
 - Autoscale off day one; one instance. Turn on later only if needed.
 - Add a **pre-deploy job** that runs `pnpm --filter @palnet/db db:deploy` (Prisma migrate deploy).
+- `REDIS_URL` is optional. When absent, Nest throttling uses in-memory storage. When set to a Render Redis/Key Value URL, throttling uses Redis-backed storage so limits survive restarts and multiple API instances.
 
 ### 4. Vercel (Web)
+
 - Import repo. Root directory `apps/web`. Framework preset Next.js.
 - Build command: `pnpm --filter @palnet/web build` with `TURBO_TEAM`/`TURBO_TOKEN` env if using remote cache.
 - Install command: `pnpm install --frozen-lockfile` at repo root.
@@ -53,12 +60,14 @@ All clients → api.palnet.ps (Render) ←→ Neon (Postgres)
 - Custom domain `palnet.ps` + `www.palnet.ps` (redirect apex → www or vice versa — pick one).
 
 ### 5. EAS (Mobile)
+
 - `npx eas-cli init` inside `apps/mobile`.
 - `eas build --profile production --platform all` after signing credentials set up.
 - `eas submit` when store listings are ready.
 - OTA: `eas update --branch production` for JS-only hotfixes.
 
 ### 6. Cloudflare R2
+
 - Create bucket `palnet-media-prod` (private) and `palnet-media-dev`.
 - Public media served via custom domain `media.palnet.ps` mapped to R2 via a CNAME.
 - Signed PUT URLs minted by the API only; uploads clamp to:
@@ -67,6 +76,7 @@ All clients → api.palnet.ps (Render) ←→ Neon (Postgres)
   - Documents: 20 MB, `application/pdf`.
 
 ### 7. DNS
+
 - `palnet.ps` → Vercel
 - `api.palnet.ps` → Render
 - `media.palnet.ps` → R2 public
@@ -82,7 +92,8 @@ All clients → api.palnet.ps (Render) ←→ Neon (Postgres)
 4. `pnpm type-check`
 5. `pnpm test`
 6. `pnpm --filter @palnet/web build` (sanity)
-7. Playwright against a spun-up local stack (Chromium).
+7. Seeded authed a11y gate: `pnpm --filter @palnet/web e2e:a11y-authed`.
+8. Playwright against a spun-up local stack (Chromium).
 
 Deploy is handled by Vercel + Render's own GitHub integrations — no manual deploy step. Main-branch merge triggers prod. PR triggers preview.
 
@@ -94,6 +105,21 @@ Deploy is handled by Vercel + Render's own GitHub integrations — no manual dep
 - UptimeRobot on `api.palnet.ps/api/v1/health` and `palnet.ps/`.
 - Error budget and SLO dashboards deferred to post-PMF.
 
+## Launch QA Checklist
+
+Before promoting prod:
+
+1. `QA_ENV_FILE=.env.qa.local corepack pnpm qa:web-authed` against disposable QA DB only
+2. Confirm QA harness reports migrate/seed and 13/13 Chromium authed a11y checks passing
+3. `corepack pnpm --filter @palnet/api test -- --runInBand`
+4. `corepack pnpm --filter @palnet/api type-check`
+5. `corepack pnpm --filter @palnet/web type-check`
+6. `corepack pnpm --filter @palnet/mobile type-check`
+7. `corepack pnpm --filter @palnet/shared type-check`
+8. `corepack pnpm --filter @palnet/db type-check`
+9. Re-run `corepack pnpm --filter @palnet/web e2e:a11y-authed` if web code changed after the QA harness
+10. Maestro flows remain manual until a device runner or Maestro Cloud is chosen.
+
 ## Backups & Recovery
 
 - Neon daily backups retained 7 days on free; bump tier if RPO needs tightening.
@@ -103,7 +129,8 @@ Deploy is handled by Vercel + Render's own GitHub integrations — no manual dep
 ## Cost Sanity (approximate, solo-builder tier, monthly)
 
 - Vercel Hobby: $0 until limits → Pro $20/mo when prod launches publicly.
-- Render Starter (API + Socket.io in one): $7/mo.
+- Render Starter (API + SSE in one): $7/mo.
+- Render Redis/Key Value: optional for persistent throttling; enable before horizontal API scaling.
 - Neon Launch: $0 for dev, $19/mo once prod traffic starts.
 - R2: pay-per-use, effectively $0 to start.
 - EAS free tier: $0 for low-volume builds; Production plan $19/mo when shipping monthly builds.
