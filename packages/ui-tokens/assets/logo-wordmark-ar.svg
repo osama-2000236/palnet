@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Baydar Arabic wordmark: mark + "بيدر".
+  Text uses the brand stack (IBM Plex Sans Arabic / Noto Naskh Arabic) so
+  hosts with the font loaded render correctly; fallback is serif.
+  RTL-safe: the mark sits to the right of the Arabic text so the reading
+  order is mark → وَرْدَة → جُذُور … (which in Arabic reads right-to-left).
+-->
+<svg viewBox="0 0 220 64" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="بيدر — Baydar">
+  <title>بيدر</title>
+  <!-- Mark pinned to start (right side in RTL layout). Placed on the right here
+       because SVG x increases left→right; Arabic readers expect mark→text flow
+       when embedded RTL. Web/App consumers can mirror this with transform if
+       the layout flows LTR. -->
+  <g transform="translate(156, 0)">
+    <circle cx="32" cy="32" r="30" fill="#526030"/>
+    <g fill="#f4f6ef">
+      <rect x="31" y="14" width="2" height="37" rx="1"/>
+      <ellipse cx="27" cy="19" rx="2.6" ry="4.6" transform="rotate(-28 27 19)"/>
+      <ellipse cx="37" cy="19" rx="2.6" ry="4.6" transform="rotate(28 37 19)"/>
+      <ellipse cx="26" cy="27" rx="2.8" ry="4.8" transform="rotate(-28 26 27)"/>
+      <ellipse cx="38" cy="27" rx="2.8" ry="4.8" transform="rotate(28 38 27)"/>
+      <ellipse cx="25" cy="35" rx="2.8" ry="4.8" transform="rotate(-28 25 35)"/>
+      <ellipse cx="39" cy="35" rx="2.8" ry="4.8" transform="rotate(28 39 35)"/>
+      <ellipse cx="24" cy="43" rx="2.8" ry="4.8" transform="rotate(-28 24 43)"/>
+      <ellipse cx="40" cy="43" rx="2.8" ry="4.8" transform="rotate(28 40 43)"/>
+    </g>
+  </g>
+  <text
+    x="144"
+    y="44"
+    text-anchor="end"
+    direction="rtl"
+    font-family="'IBM Plex Sans Arabic','Noto Naskh Arabic',serif"
+    font-size="36"
+    font-weight="700"
+    fill="#3f4a26"
+  >بيدر</text>
+</svg>

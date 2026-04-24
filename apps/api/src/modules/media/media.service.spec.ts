@@ -6,7 +6,8 @@ jest.mock("@aws-sdk/s3-request-presigner", () => ({
   getSignedUrl: jest.fn(async () => "https://signed.example/put"),
 }));
 
-import { DomainException } from "../../common/domain-exception";
+import type { DomainException } from "../../common/domain-exception";
+
 import { MediaService } from "./media.service";
 
 function makeConfig(env: Record<string, string | undefined>): ConfigService {

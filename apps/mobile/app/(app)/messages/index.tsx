@@ -1,5 +1,12 @@
 // Messages list — room roster. Uses ui-native Surface + Avatar so rows look
 // like the web `/messages` left rail instead of the raw-RN cards.
+//
+// Rows support swipe-to-archive (Sprint 9 A3). The Swipeable wrapper from
+// react-native-gesture-handler reveals an archive action from the trailing
+// edge; the action hits POST /messaging/rooms/:id/archive and optimistically
+// removes the row from the list. A new incoming message auto-unarchives the
+// room server-side, so reconciling state is "refetch on focus" — the existing
+// useFocusEffect already does that.
 
 import {
   ChatRoom as ChatRoomSchema,
@@ -12,14 +19,16 @@ import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
   FlatList,
+  I18nManager,
   Pressable,
   SafeAreaView,
   Text,
   View,
 } from "react-native";
+import { Swipeable } from "react-native-gesture-handler";
 import { z } from "zod";
 
-import { apiFetchPage } from "@/lib/api";
+import { apiCall, apiFetchPage } from "@/lib/api";
 import { getAccessToken, readSession } from "@/lib/session";
 
 const RoomsEnvelope = z.object({ data: z.array(ChatRoomSchema) });
@@ -65,6 +74,7 @@ export default function MessagesListScreen(): JSX.Element {
   return (
     <SafeAreaView
       style={{ flex: 1, backgroundColor: nativeTokens.color.surfaceMuted }}
+      testID="messages-screen"
     >
       <View
         style={{
@@ -90,7 +100,25 @@ export default function MessagesListScreen(): JSX.Element {
           data={rooms}
           keyExtractor={(r) => r.id}
           renderItem={({ item }) => (
-            <RoomRow room={item} viewerId={viewerId} />
+            <RoomRow
+              room={item}
+              viewerId={viewerId}
+              onArchive={async () => {
+                const token = await getAccessToken();
+                if (!token) return;
+                // Optimistic remove — refetch on focus covers the rare
+                // failure case, and the API is idempotent anyway.
+                setRooms((prev) => prev.filter((x) => x.id !== item.id));
+                await apiCall(`/messaging/rooms/${item.id}/archive`, {
+                  method: "POST",
+                  token,
+                }).catch(() => {
+                  // Restore on failure so the user isn't silently misled.
+                  void load();
+                });
+              }}
+              archiveLabel={t("messaging.archive")}
+            />
           )}
           ItemSeparatorComponent={() => (
             <View style={{ height: nativeTokens.space[2] }} />
@@ -127,9 +155,13 @@ export default function MessagesListScreen(): JSX.Element {
 function RoomRow({
   room,
   viewerId,
+  onArchive,
+  archiveLabel,
 }: {
   room: ChatRoom;
   viewerId: string | null;
+  onArchive: () => Promise<void> | void;
+  archiveLabel: string;
 }): JSX.Element {
   const other = viewerId
     ? room.members.find((m) => m.userId !== viewerId)
@@ -147,7 +179,48 @@ function RoomRow({
       }
     : null;
 
+  // Swipe direction: in an RTL layout the natural "end edge" is on the
+  // visual left, but Swipeable's rightActions/leftActions are named in
+  // absolute terms. Use `renderRightActions` for LTR and the mirror for
+  // RTL so the gesture always reveals from the trailing edge.
+  const renderArchiveAction = (): JSX.Element => (
+    <Pressable
+      onPress={() => void onArchive()}
+      accessibilityRole="button"
+      accessibilityLabel={archiveLabel}
+      style={{
+        backgroundColor: nativeTokens.color.accent600,
+        justifyContent: "center",
+        alignItems: "center",
+        paddingHorizontal: nativeTokens.space[5],
+        borderRadius: nativeTokens.radius.md,
+        marginStart: nativeTokens.space[2],
+      }}
+    >
+      <Text
+        style={{
+          color: nativeTokens.color.inkInverse,
+          fontFamily: nativeTokens.type.family.sans,
+          fontSize: nativeTokens.type.scale.small.size,
+          fontWeight: "700",
+        }}
+      >
+        {archiveLabel}
+      </Text>
+    </Pressable>
+  );
+
+  const swipeProps = I18nManager.isRTL
+    ? { renderLeftActions: renderArchiveAction }
+    : { renderRightActions: renderArchiveAction };
+
   return (
+    <Swipeable
+      {...swipeProps}
+      overshootLeft={false}
+      overshootRight={false}
+      friction={1.8}
+    >
     <Pressable
       onPress={() =>
         router.push({
@@ -157,6 +230,7 @@ function RoomRow({
       }
       accessibilityRole="link"
       accessibilityLabel={label}
+      testID={`message-room-${room.id}`}
     >
       <Surface variant="card" padding="3">
         <View
@@ -223,5 +297,6 @@ function RoomRow({
         </View>
       </Surface>
     </Pressable>
+    </Swipeable>
   );
 }

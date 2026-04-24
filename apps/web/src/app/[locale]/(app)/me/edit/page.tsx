@@ -20,7 +20,7 @@ import { useEffect, useState } from "react";
 
 import { apiFetch } from "@/lib/api";
 import { getAccessToken } from "@/lib/session";
-import { uploadFile } from "@/lib/uploads";
+import { uploadImage } from "@/lib/uploads";
 
 export default function EditProfilePage(): JSX.Element {
   const router = useRouter();
@@ -91,37 +91,49 @@ function BasicsSection({
   });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [uploading, setUploading] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [uploadingCover, setUploadingCover] = useState(false);
 
-  async function onAvatarChange(
+  async function uploadAndPatch(
     e: React.ChangeEvent<HTMLInputElement>,
+    purpose: "AVATAR" | "COVER",
+    setFlag: (v: boolean) => void,
   ): Promise<void> {
     const file = e.target.files?.[0];
     if (!file) return;
     const token = getAccessToken();
     if (!token) return;
     setError(null);
-    setUploading(true);
+    setFlag(true);
     try {
-      const publicUrl = await uploadFile({
+      const { publicUrl, blurhash } = await uploadImage({
         file,
-        purpose: "AVATAR",
+        purpose,
         token,
       });
+      const patch =
+        purpose === "AVATAR"
+          ? { avatarUrl: publicUrl, avatarBlur: blurhash }
+          : { coverUrl: publicUrl, coverBlur: blurhash };
       const next = await apiFetch("/profiles/me", ProfileSchema, {
         method: "PATCH",
-        body: { avatarUrl: publicUrl },
+        body: patch,
         token,
       });
       onChanged(next);
     } catch {
       setError(t("uploadFailed"));
     } finally {
-      setUploading(false);
+      setFlag(false);
       // Reset input so re-selecting the same file re-triggers onChange.
       e.target.value = "";
     }
   }
+
+  const onAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) =>
+    uploadAndPatch(e, "AVATAR", setUploadingAvatar);
+  const onCoverChange = (e: React.ChangeEvent<HTMLInputElement>) =>
+    uploadAndPatch(e, "COVER", setUploadingCover);
 
   async function save(): Promise<void> {
     setError(null);
@@ -169,12 +181,22 @@ function BasicsSection({
           size="lg"
         />
         <label className="cursor-pointer rounded-md border border-ink-muted/30 px-3 py-2 text-sm text-ink hover:bg-ink-muted/5">
-          {uploading ? t("uploading") : t("changeAvatar")}
+          {uploadingAvatar ? t("uploading") : t("changeAvatar")}
           <input
             type="file"
             accept="image/png,image/jpeg,image/webp"
             onChange={onAvatarChange}
-            disabled={uploading}
+            disabled={uploadingAvatar}
+            className="hidden"
+          />
+        </label>
+        <label className="cursor-pointer rounded-md border border-ink-muted/30 px-3 py-2 text-sm text-ink hover:bg-ink-muted/5">
+          {uploadingCover ? t("uploading") : t("changeCover")}
+          <input
+            type="file"
+            accept="image/png,image/jpeg,image/webp"
+            onChange={onCoverChange}
+            disabled={uploadingCover}
             className="hidden"
           />
         </label>

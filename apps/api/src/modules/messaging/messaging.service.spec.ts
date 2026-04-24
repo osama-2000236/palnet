@@ -2,7 +2,9 @@ import { Test } from "@nestjs/testing";
 import { ErrorCode } from "@palnet/shared";
 
 import { NotificationsService } from "../notifications/notifications.service";
+import { ModerationService } from "../moderation/moderation.service";
 import { PrismaService } from "../prisma/prisma.service";
+
 import { MessagingBus } from "./messaging.bus";
 import { MessagingService } from "./messaging.service";
 
@@ -10,6 +12,7 @@ type PrismaStub = {
   user: { findUnique: jest.Mock };
   chatRoom: {
     findFirst: jest.Mock;
+    findUnique: jest.Mock;
     findMany: jest.Mock;
     create: jest.Mock;
     update: jest.Mock;
@@ -32,6 +35,7 @@ function buildPrisma(): PrismaStub {
     user: { findUnique: jest.fn() },
     chatRoom: {
       findFirst: jest.fn(),
+      findUnique: jest.fn(),
       findMany: jest.fn(),
       create: jest.fn(),
       update: jest.fn(),
@@ -92,17 +96,24 @@ describe("MessagingService", () => {
   let prisma: PrismaStub;
   let bus: { publish: jest.Mock; subscribe: jest.Mock };
   let notifications: { notify: jest.Mock };
+  let moderation: { blockedIds: jest.Mock };
 
   beforeEach(async () => {
     prisma = buildPrisma();
     bus = { publish: jest.fn(), subscribe: jest.fn() };
     notifications = { notify: jest.fn().mockResolvedValue(undefined) };
+    moderation = { blockedIds: jest.fn().mockResolvedValue([]) };
+    prisma.chatRoom.findUnique.mockResolvedValue({
+      isGroup: false,
+      members: [{ userId: "u_me" }, { userId: "u_them" }],
+    });
     const moduleRef = await Test.createTestingModule({
       providers: [
         MessagingService,
         { provide: PrismaService, useValue: prisma },
         { provide: MessagingBus, useValue: bus },
         { provide: NotificationsService, useValue: notifications },
+        { provide: ModerationService, useValue: moderation },
       ],
     }).compile();
     service = moduleRef.get(MessagingService);
@@ -153,6 +164,16 @@ describe("MessagingService", () => {
       await expect(
         service.findOrCreateDm("u_me", "u_ghost"),
       ).rejects.toMatchObject({ code: ErrorCode.NOT_FOUND });
+    });
+
+    it("404s when either side has blocked the other", async () => {
+      prisma.user.findUnique.mockResolvedValue({ id: "u_them" });
+      moderation.blockedIds.mockResolvedValue(["u_them"]);
+
+      await expect(
+        service.findOrCreateDm("u_me", "u_them"),
+      ).rejects.toMatchObject({ code: ErrorCode.NOT_FOUND });
+      expect(prisma.chatRoom.create).not.toHaveBeenCalled();
     });
   });
 
@@ -221,6 +242,18 @@ describe("MessagingService", () => {
           clientMessageId: "c_3",
         }),
       ).rejects.toMatchObject({ code: ErrorCode.NOT_FOUND });
+    });
+
+    it("404s when a 1:1 room member is blocked", async () => {
+      moderation.blockedIds.mockResolvedValue(["u_them"]);
+
+      await expect(
+        service.sendMessage("u_me", "room_1", {
+          body: "hi",
+          clientMessageId: "c_4",
+        }),
+      ).rejects.toMatchObject({ code: ErrorCode.NOT_FOUND });
+      expect(prisma.message.create).not.toHaveBeenCalled();
     });
   });
 

@@ -36,7 +36,7 @@ import {
 } from "react";
 import { z } from "zod";
 
-import { apiFetch, apiFetchPage } from "@/lib/api";
+import { apiCall, apiFetch, apiFetchPage } from "@/lib/api";
 import { clearSession, readSession } from "@/lib/session";
 
 const API_BASE =
@@ -44,6 +44,13 @@ const API_BASE =
 
 const UnreadCount = z.object({ count: z.number().int().nonnegative() });
 const RoomsEnvelope = z.object({ data: z.array(ChatRoomSchema) });
+const AuthMeUser = z.object({
+  id: z.string(),
+  email: z.string(),
+  role: z.string(),
+  locale: z.string(),
+  emailVerified: z.boolean(),
+});
 
 /**
  * Map a pathname to the nav slot it should highlight.
@@ -55,6 +62,7 @@ function routeOf(pathname: string, myHandle: string | null): AppShellRoute | nul
   if (path === "/" || path.startsWith("/feed")) return "feed";
   if (path.startsWith("/network")) return "network";
   if (path.startsWith("/jobs")) return "jobs";
+  if (path.startsWith("/me/jobs")) return "jobs";
   if (path.startsWith("/messages")) return "messages";
   if (path.startsWith("/notifications")) return "notifications";
   if (path.startsWith("/me")) return "profile";
@@ -94,6 +102,8 @@ export default function AppLayout({
   const [me, setMe] = useState<Profile | null>(null);
   const [notificationsUnread, setNotificationsUnread] = useState(0);
   const [messagesUnread, setMessagesUnread] = useState(0);
+  const [emailVerified, setEmailVerified] = useState<boolean>(true);
+  const [role, setRole] = useState<string | null>(null);
 
   // Session bootstrap — redirect to /login if missing.
   useEffect(() => {
@@ -103,6 +113,9 @@ export default function AppLayout({
       return;
     }
     setToken(session.tokens.accessToken);
+    // Default to "verified" if an older session lacks the flag; the /auth/me
+    // fetch below overrides with the authoritative value.
+    setEmailVerified(session.user.emailVerified ?? true);
   }, [router]);
 
   // Fetch me once we have a token.
@@ -116,6 +129,14 @@ export default function AppLayout({
       .catch(() => {
         // Not fatal — shell renders with an empty avatar until fetched.
       });
+    void apiFetch("/auth/me", AuthMeUser, { token })
+      .then((u) => {
+        if (!cancelled) {
+          setEmailVerified(u.emailVerified);
+          setRole(u.role);
+        }
+      })
+      .catch(() => {});
     return () => {
       cancelled = true;
     };
@@ -276,14 +297,19 @@ export default function AppLayout({
   }, [router, me?.handle]);
 
   const onOpenSettings = useCallback(() => {
-    // No dedicated Settings screen yet — profile edit is the closest.
-    router.push("/me/edit");
+    router.push("/settings/account");
+  }, [router]);
+
+  const onOpenModeration = useCallback(() => {
+    router.push("/admin/moderation/reports");
   }, [router]);
 
   const onSignOut = useCallback(() => {
     clearSession();
     router.push("/login");
   }, [router]);
+
+  const canModerate = role === "MODERATOR" || role === "ADMIN";
 
   const labels: AppShellLabels = useMemo(
     () => ({
@@ -301,13 +327,14 @@ export default function AppLayout({
       myProfile: tNav("myProfile"),
       viewProfile: tProfile("viewPublic"),
       settings: tNav("settings"),
+      moderation: tNav("moderation"),
       signOut: tAuth("logout"),
       unreadTemplate: {
-        messages: tNav("unreadMessages"),
-        notifications: tNav("unreadNotifications"),
+        messages: tNav("unreadMessages", { count: "{count}" }),
+        notifications: tNav("unreadNotifications", { count: "{count}" }),
       },
     }),
-    [tCommon, tNav, tFeed, tNetwork, tMsg, tNotif, tSearch, tProfile, tAuth],
+      [tCommon, tNav, tFeed, tNetwork, tMsg, tNotif, tSearch, tProfile, tAuth],
   );
 
   if (bare) {
@@ -337,9 +364,58 @@ export default function AppLayout({
       onNavigate={onNavigate}
       onViewProfile={onViewProfile}
       onOpenSettings={onOpenSettings}
+      onOpenModeration={canModerate ? onOpenModeration : undefined}
       onSignOut={onSignOut}
     >
+      {!emailVerified && token ? <VerifyEmailBanner token={token} /> : null}
       {children}
     </AppShell>
+  );
+}
+
+function VerifyEmailBanner({ token }: { token: string }): JSX.Element | null {
+  const t = useTranslations("verifyEmail");
+  const [sent, setSent] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState(false);
+
+  async function resend(): Promise<void> {
+    setBusy(true);
+    setError(false);
+    try {
+      await apiCall("/auth/email/verify/request", { method: "POST", token });
+      setSent(true);
+    } catch {
+      setError(true);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div
+      role="region"
+      aria-label={t("bannerLabel")}
+      className="mx-auto mb-4 flex w-full max-w-[1128px] flex-wrap items-center justify-between gap-3 rounded-md border border-amber-500/40 bg-amber-50 px-4 py-3 text-sm text-ink"
+    >
+      <p className="min-w-0">{sent ? t("sentBody") : t("body")}</p>
+      {sent ? null : (
+        <button
+          type="button"
+          onClick={() => {
+            void resend();
+          }}
+          disabled={busy}
+          className="rounded-md bg-brand-600 px-3 py-1.5 text-sm font-semibold text-ink-inverse disabled:opacity-60"
+        >
+          {t("resend")}
+        </button>
+      )}
+      {error ? (
+        <span role="alert" className="text-sm text-danger">
+          {t("error")}
+        </span>
+      ) : null}
+    </div>
   );
 }

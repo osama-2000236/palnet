@@ -39,7 +39,11 @@ export type IconName =
   | "thumb"
   | "users"
   | "video"
-  | "x";
+  | "x"
+  | "settings"
+  | "log-out"
+  | "flag"
+  | "shield-off";
 
 export interface IconProps extends Omit<SVGProps<SVGSVGElement>, "name"> {
   name: IconName;
@@ -275,6 +279,43 @@ export function Icon({
             strokeLinecap="round"
             strokeLinejoin="round"
           />
+        </svg>
+      );
+    case "settings":
+      // Gear: eight-tooth silhouette + center dot. Kept simple to read at
+      // 18px alongside other header glyphs.
+      return (
+        <svg {...common}>
+          {title ? <title>{title}</title> : null}
+          <circle cx="12" cy="12" r="3" />
+          <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z" />
+        </svg>
+      );
+    case "log-out":
+      return (
+        <svg {...common}>
+          {title ? <title>{title}</title> : null}
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+          <path d="m16 17 5-5-5-5" />
+          <path d="M21 12H9" />
+        </svg>
+      );
+    case "flag":
+      return (
+        <svg {...common}>
+          {title ? <title>{title}</title> : null}
+          <path d="M4 22V4" />
+          <path d="M4 4h13l-2 4 2 4H4" />
+        </svg>
+      );
+    case "shield-off":
+      // Block / unblock glyph — shield with a slash.
+      return (
+        <svg {...common}>
+          {title ? <title>{title}</title> : null}
+          <path d="M19.7 14A9 9 0 0 0 20 10V5l-8-3-3.5 1.3" />
+          <path d="M4.7 4.7 4 5v5a9 9 0 0 0 8 9 9 9 0 0 0 2.7-.4" />
+          <path d="M2 2l20 20" />
         </svg>
       );
     default:

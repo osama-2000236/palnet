@@ -11,6 +11,8 @@ import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 
+import { MoreMenu } from "@/components/MoreMenu";
+import { ReportDialog } from "@/components/ReportDialog";
 import { apiFetch, apiFetchPage } from "@/lib/api";
 import { getAccessToken } from "@/lib/session";
 
@@ -24,6 +26,7 @@ export function Comments({
   onCountChange?: (delta: number) => void;
 }): JSX.Element {
   const t = useTranslations("post");
+  const tModeration = useTranslations("moderation");
   const [items, setItems] = useState<Comment[]>([]);
   const [cursor, setCursor] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(false);
@@ -31,6 +34,7 @@ export function Comments({
   const [draft, setDraft] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [reportCommentId, setReportCommentId] = useState<string | null>(null);
 
   const load = useCallback(
     async (after: string | null): Promise<void> => {
@@ -98,12 +102,24 @@ export function Comments({
                 <Avatar user={c.author} size="sm" />
               </Link>
               <div className="flex min-w-0 flex-1 flex-col">
-                <Link
-                  href={`/in/${c.author.handle}`}
-                  className="font-semibold text-ink hover:underline"
-                >
-                  {c.author.firstName} {c.author.lastName}
-                </Link>
+                <div className="flex min-w-0 items-start justify-between gap-2">
+                  <Link
+                    href={`/in/${c.author.handle}`}
+                    className="min-w-0 truncate font-semibold text-ink hover:underline"
+                  >
+                    {c.author.firstName} {c.author.lastName}
+                  </Link>
+                  <MoreMenu
+                    label={tModeration("more")}
+                    items={[
+                      {
+                        key: "report",
+                        label: tModeration("reportComment"),
+                        onClick: () => setReportCommentId(c.id),
+                      },
+                    ]}
+                  />
+                </div>
                 <p className="whitespace-pre-wrap text-ink">{c.body}</p>
               </div>
             </li>
@@ -143,6 +159,12 @@ export function Comments({
           {error}
         </span>
       ) : null}
+      <ReportDialog
+        open={reportCommentId !== null}
+        targetKind="COMMENT"
+        targetId={reportCommentId ?? ""}
+        onClose={() => setReportCommentId(null)}
+      />
     </div>
   );
 }

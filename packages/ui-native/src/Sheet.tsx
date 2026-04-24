@@ -14,6 +14,7 @@
 // swipe the handle area to close. RTL aware: the close button sits at the
 // `end` edge via `writingDirection`/flexDirection flip.
 
+import type { ReactNode } from "react";
 import {
   Modal,
   Pressable,
@@ -24,7 +25,6 @@ import {
   I18nManager,
   type ScrollViewProps,
 } from "react-native";
-import type { ReactNode } from "react";
 
 import { nativeTokens } from "./tokens";
 

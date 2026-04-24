@@ -122,9 +122,9 @@ export default function JobsPageRoute(): JSX.Element {
 
   return (
     <div className="mx-auto grid w-full max-w-[1128px] grid-cols-1 gap-6 px-4 py-6 lg:grid-cols-[260px_minmax(0,1fr)]">
-      <aside className="hidden lg:block">
-        <Surface variant="card" padding="4" as="aside">
-          <h2 className="mb-3 text-sm font-semibold text-ink">{t("filters")}</h2>
+      <aside className="hidden lg:block" aria-label={t("filters")}>
+        <Surface variant="card" padding="4">
+          <div className="mb-3 text-sm font-semibold text-ink">{t("filters")}</div>
 
           <label className="mb-3 block">
             <span className="mb-1 block text-xs text-ink-muted">{t("search")}</span>
@@ -192,14 +192,22 @@ export default function JobsPageRoute(): JSX.Element {
 
       <main>
         <div className="mb-4 flex items-center justify-between">
-          <h1 className="text-xl font-semibold text-ink">{t("title")}</h1>
-          <span className="text-sm text-ink-muted" aria-live="polite">
-            {items.length > 0
-              ? t("countSummary", { count: items.length })
-              : firstLoad
-                ? ""
-                : t("noneSummary")}
-          </span>
+          <div>
+            <h1 className="text-xl font-semibold text-ink">{t("title")}</h1>
+            <span className="text-sm text-ink-muted" aria-live="polite">
+              {items.length > 0
+                ? t("countSummary", { count: items.length })
+                : firstLoad
+                  ? ""
+                  : t("noneSummary")}
+            </span>
+          </div>
+          <Link
+            href="/me/jobs"
+            className="text-sm font-medium text-brand-700 hover:text-brand-800"
+          >
+            {t("myApplications")}
+          </Link>
         </div>
 
         {firstLoad ? (
@@ -315,9 +323,9 @@ function JobListRow({
           <div className="min-w-0 flex-1">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <h3 className="truncate text-base font-semibold text-ink">
+                <h2 className="truncate text-base font-semibold text-ink">
                   {job.title}
-                </h3>
+                </h2>
                 <p className="truncate text-sm text-ink-muted">
                   {job.company.name}
                 </p>

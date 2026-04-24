@@ -88,10 +88,10 @@ enum ApplicationStatus {
 enum ReportReason {
   SPAM
   HARASSMENT
-  HATE
-  MISINFORMATION
-  NUDITY
+  HATE_SPEECH
   VIOLENCE
+  ADULT_CONTENT
+  IMPERSONATION
   OTHER
 }
 
@@ -99,6 +99,28 @@ enum CompanyMemberRole {
   OWNER
   ADMIN
   EDITOR
+}
+
+// Admin actions recorded by the moderation audit log. Every row in
+// AuditLog is a permanent, operator-visible record of something a
+// moderator/admin did. Do not delete rows — mark a decision obsolete
+// via a follow-up row instead.
+enum AuditAction {
+  USER_SUSPEND
+  USER_UNSUSPEND
+  POST_TAKEDOWN
+  POST_RESTORE
+  REPORT_RESOLVE
+  REPORT_APPEAL_REVIEW
+}
+
+// Three-state appeal outcome. PENDING = user filed, not yet reviewed.
+// UPHELD = moderator agreed with user; original decision reversed.
+// DENIED = moderator disagreed; decision stands.
+enum AppealStatus {
+  PENDING
+  UPHELD
+  DENIED
 }
 
 // ──────────────────────────────────────────────────────────────────────────
@@ -118,9 +140,22 @@ model User {
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
   deletedAt      DateTime?
+  notificationPrefs Json?
+
+  // Moderation suspension — set via /admin/users/:id/suspend. Non-null
+  // suspendedAt blocks writes and hides the profile from search/feed.
+  // Clearing it (unsuspend) reverses the action; the audit log keeps
+  // the history.
+  suspendedAt       DateTime?
+  suspendedReason   String?
+  suspendedBy       User?      @relation("UserSuspender", fields: [suspendedById], references: [id], onDelete: SetNull)
+  suspendedById     String?
+  suspensionsIssued User[]     @relation("UserSuspender")
 
   profile           Profile?
   refreshTokens     RefreshToken[]
+  emailVerificationTokens EmailVerificationToken[]
+  passwordResetTokens    PasswordResetToken[]
   sentConnections   Connection[]    @relation("ConnectionRequester")
   recvConnections   Connection[]    @relation("ConnectionReceiver")
   posts             Post[]
@@ -137,9 +172,16 @@ model User {
   blockedByMe       BlockedUser[]   @relation("Blocker")
   blockedMe         BlockedUser[]   @relation("Blocked")
   reportsFiled      Report[]        @relation("Reporter")
+  reportsResolved   Report[]        @relation("ReportResolver")
+  appealsReviewed   Report[]        @relation("AppealReviewer")
+  pushTokens        PushToken[]
+  postsTakenDown    Post[]          @relation("PostTakedownActor")
+  auditActions      AuditLog[]      @relation("AuditActor")
+  auditTargetUser   AuditLog[]      @relation("AuditTargetUser")
 
   @@index([email])
   @@index([role])
+  @@index([suspendedAt])
 }
 
 model RefreshToken {
@@ -153,6 +195,54 @@ model RefreshToken {
   expiresAt  DateTime
   revokedAt  DateTime?
   createdAt  DateTime @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+// Per-device push token registration. One row per (userId, deviceId); the
+// deviceId is the same value the mobile client sends in the auth refresh
+// flow so we can revoke push alongside sessions. Tokens rotate on most
+// OSes, so register is upsert-by-(userId, deviceId).
+model PushToken {
+  id         String   @id @default(cuid())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     String
+  deviceId   String
+  token      String
+  platform   String   // "ios" | "android" | "web"
+  createdAt  DateTime @default(now())
+  lastSeenAt DateTime @default(now())
+
+  @@unique([userId, deviceId])
+  @@index([userId])
+}
+
+// One-time tokens for email verification. The raw value lives only in the
+// link we email; DB stores the SHA-256 hash. consumedAt is set on first use.
+model EmailVerificationToken {
+  id         String    @id @default(cuid())
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     String
+  email      String    // the email we're verifying — lets us reject if the user changed it in the meantime
+  tokenHash  String    @unique
+  expiresAt  DateTime
+  consumedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+// One-time tokens for password reset. Same storage model — hash at rest.
+model PasswordResetToken {
+  id         String    @id @default(cuid())
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     String
+  tokenHash  String    @unique
+  expiresAt  DateTime
+  consumedAt DateTime?
+  createdAt  DateTime  @default(now())
 
   @@index([userId])
   @@index([expiresAt])
@@ -174,7 +264,9 @@ model Profile {
   location       String?  // city in Palestine, e.g. "Ramallah" or "رام الله"
   country        String   @default("PS")
   avatarUrl      String?
+  avatarBlur     String?
   coverUrl       String?
+  coverBlur      String?
   website        String?
   pronouns       String?
   openToWork     Boolean  @default(false)
@@ -292,6 +384,14 @@ model Post {
   updatedAt DateTime   @updatedAt
   deletedAt DateTime?
 
+  // Moderation takedown. Non-null takedownAt hides the post from feed,
+  // profile, search, and read endpoints — except for the author (who
+  // still sees it flagged) and moderators (who see it in admin tools).
+  takedownAt      DateTime?
+  takedownReason  String?
+  takedownBy      User?     @relation("PostTakedownActor", fields: [takedownById], references: [id], onDelete: SetNull)
+  takedownById    String?
+
   media     Media[]
   reactions Reaction[]
   comments  Comment[]
@@ -299,6 +399,7 @@ model Post {
 
   @@index([authorId, createdAt])
   @@index([createdAt])
+  @@index([takedownAt])
   // FTS: raw SQL GIN index on body added in a later migration.
 }
 
@@ -307,6 +408,7 @@ model Media {
   post      Post?     @relation(fields: [postId], references: [id], onDelete: Cascade)
   postId    String?
   url       String
+  blurhash  String?
   kind      MediaKind
   mimeType  String
   width     Int?
@@ -386,9 +488,14 @@ model ChatRoomMember {
   joinedAt    DateTime @default(now())
   lastReadAt  DateTime?
   mutedUntil  DateTime?
+  // Per-member archive. Archived rooms drop out of the default list.
+  // A new message resets archivedAt to null so the conversation resurfaces.
+  // Nullable = not archived.
+  archivedAt  DateTime?
 
   @@unique([roomId, userId])
   @@index([userId])
+  @@index([userId, archivedAt])
 }
 
 model Message {
@@ -448,7 +555,9 @@ model Company {
   industry     String?
   sizeBucket   String?          // "1-10", "11-50", ...
   logoUrl      String?
+  logoBlur     String?
   coverUrl     String?
+  coverBlur    String?
   country      String           @default("PS")
   city         String?
   verified     Boolean          @default(false)
@@ -537,8 +646,50 @@ model Report {
   targetMessageId String?
   resolvedAt    DateTime?
   resolvedNote  String?      @db.Text
+  resolvedBy    User?        @relation("ReportResolver", fields: [resolvedById], references: [id], onDelete: SetNull)
+  resolvedById  String?
+
+  // Appeal flow — target of a resolved report (or their representative)
+  // files an appeal note via /reports/:id/appeal. Moderator reviews and
+  // sets appealStatus to UPHELD or DENIED with an optional note. Only
+  // one appeal per report; a second attempt is rejected.
+  appealedAt         DateTime?
+  appealNote         String?     @db.Text
+  appealStatus       AppealStatus?
+  appealDecisionNote String?     @db.Text
+  appealReviewedAt   DateTime?
+  appealReviewedBy   User?       @relation("AppealReviewer", fields: [appealReviewedById], references: [id], onDelete: SetNull)
+  appealReviewedById String?
+
   createdAt     DateTime     @default(now())
 
   @@index([reporterId])
   @@index([resolvedAt])
+  @@index([resolvedById])
+  @@index([appealedAt])
+  @@index([appealStatus])
+}
+
+// Append-only record of every admin action. Populated by the services
+// that perform the action — never written directly from controllers.
+// Rows are never updated or deleted; corrections are new rows.
+model AuditLog {
+  id             String      @id @default(cuid())
+  actor          User        @relation("AuditActor", fields: [actorId], references: [id], onDelete: Cascade)
+  actorId        String
+  action         AuditAction
+  // At most one target is set per row; which one depends on action.
+  targetUser     User?       @relation("AuditTargetUser", fields: [targetUserId], references: [id], onDelete: SetNull)
+  targetUserId   String?
+  targetPostId   String?
+  targetReportId String?
+  note           String?     @db.Text
+  createdAt      DateTime    @default(now())
+
+  @@index([actorId, createdAt])
+  @@index([action, createdAt])
+  @@index([targetUserId])
+  @@index([targetPostId])
+  @@index([targetReportId])
+  @@index([createdAt])
 }

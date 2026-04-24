@@ -5,6 +5,7 @@ import type {
   SearchPersonHit,
 } from "@palnet/shared";
 
+import { ModerationService } from "../moderation/moderation.service";
 import { PrismaService } from "../prisma/prisma.service";
 
 interface ProfileSearchRow {
@@ -20,23 +21,37 @@ interface ProfileSearchRow {
 
 @Injectable()
 export class SearchService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly moderation: ModerationService,
+  ) {}
 
   async people(
     query: PeopleSearchQuery,
+    viewerId: string | null,
   ): Promise<{ data: SearchPersonHit[]; meta: CursorPageMeta }> {
     const q = query.q.trim();
     const limit = query.limit;
+
+    // Anyone on either side of a block with the viewer is dropped from the
+    // results. Anonymous search skips this — the blocked relationship only
+    // exists in the authed context anyway.
+    const blocked = viewerId ? await this.moderation.blockedIds(viewerId) : [];
 
     // Substring match across handle/firstName/lastName/headline. Postgres
     // `mode: "insensitive"` keeps us case-insensitive without needing
     // trigram/fts indexes yet; we'll layer GIN FTS in a later sprint.
     const where = {
-      OR: [
-        { handle: { contains: q, mode: "insensitive" as const } },
-        { firstName: { contains: q, mode: "insensitive" as const } },
-        { lastName: { contains: q, mode: "insensitive" as const } },
-        { headline: { contains: q, mode: "insensitive" as const } },
+      AND: [
+        {
+          OR: [
+            { handle: { contains: q, mode: "insensitive" as const } },
+            { firstName: { contains: q, mode: "insensitive" as const } },
+            { lastName: { contains: q, mode: "insensitive" as const } },
+            { headline: { contains: q, mode: "insensitive" as const } },
+          ],
+        },
+        ...(blocked.length > 0 ? [{ userId: { notIn: blocked } }] : []),
       ],
     };
 

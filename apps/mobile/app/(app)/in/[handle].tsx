@@ -6,12 +6,13 @@ import {
   Profile as ProfileSchema,
   type Profile,
 } from "@palnet/shared";
-import { Avatar, Button, Surface, nativeTokens } from "@palnet/ui-native";
+import { Avatar, Button, Image, Surface, nativeTokens } from "@palnet/ui-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
+  Pressable,
   SafeAreaView,
   ScrollView,
   Text,
@@ -19,6 +20,7 @@ import {
 } from "react-native";
 import { z } from "zod";
 
+import { UserActions } from "@/components/UserActions";
 import { apiFetch } from "@/lib/api";
 import { getAccessToken } from "@/lib/session";
 
@@ -31,6 +33,7 @@ export default function ProfileScreen(): JSX.Element {
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [actionsOpen, setActionsOpen] = useState(false);
 
   useEffect(() => {
     if (!handle) return;
@@ -156,10 +159,12 @@ export default function ProfileScreen(): JSX.Element {
   }
 
   const conn = profile.viewer?.connection;
+  const displayName = `${profile.firstName} ${profile.lastName}`.trim() || profile.handle;
 
   return (
     <SafeAreaView
       style={{ flex: 1, backgroundColor: nativeTokens.color.surfaceMuted }}
+      testID="profile-screen"
     >
       <ScrollView
         contentContainerStyle={{
@@ -167,6 +172,18 @@ export default function ProfileScreen(): JSX.Element {
           gap: nativeTokens.space[4],
         }}
       >
+        {profile.coverUrl ? (
+          <Image
+            source={{ uri: profile.coverUrl }}
+            alt=""
+            blurhash={profile.coverBlur ?? null}
+            style={{
+              width: "100%",
+              height: 140,
+              borderRadius: nativeTokens.radius.md,
+            }}
+          />
+        ) : null}
         <Surface variant="card" padding="4">
           <Avatar
             user={{
@@ -221,6 +238,7 @@ export default function ProfileScreen(): JSX.Element {
               fontSize: nativeTokens.type.scale.small.size,
               marginTop: nativeTokens.space[1],
             }}
+            testID="profile-handle"
           >
             /in/{profile.handle}
           </Text>
@@ -304,6 +322,7 @@ export default function ProfileScreen(): JSX.Element {
                 variant="secondary"
                 size="md"
                 disabled={busy}
+                testID="profile-message"
                 onPress={async () => {
                   const token = await getAccessToken();
                   if (!token) return;
@@ -331,8 +350,42 @@ export default function ProfileScreen(): JSX.Element {
               >
                 {t("messaging.newMessage")}
               </Button>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={t("moderation.more")}
+                testID="profile-actions"
+                onPress={() => setActionsOpen(true)}
+                style={({ pressed }) => ({
+                  minHeight: 40,
+                  minWidth: 40,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  borderRadius: nativeTokens.radius.md,
+                  borderWidth: 1,
+                  borderColor: nativeTokens.color.lineHard,
+                  opacity: pressed ? 0.7 : 1,
+                })}
+              >
+                <Text
+                  style={{
+                    color: nativeTokens.color.ink,
+                    fontFamily: nativeTokens.type.family.sans,
+                    fontSize: nativeTokens.type.scale.h3.size,
+                    fontWeight: "700",
+                  }}
+                >
+                  ⋯
+                </Text>
+              </Pressable>
             </View>
           ) : null}
+          <UserActions
+            open={actionsOpen}
+            onClose={() => setActionsOpen(false)}
+            userId={profile.userId}
+            userName={displayName}
+            onBlocked={() => router.replace("/(app)/feed")}
+          />
         </Surface>
 
         {profile.about ? (

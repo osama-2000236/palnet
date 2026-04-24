@@ -8,8 +8,10 @@ import {
 } from "@palnet/shared";
 
 import { DomainException } from "../../common/domain-exception";
+import { ModerationService } from "../moderation/moderation.service";
 import { NotificationsService } from "../notifications/notifications.service";
 import { PrismaService } from "../prisma/prisma.service";
+
 import { MessagingBus } from "./messaging.bus";
 
 interface MessageRow {
@@ -47,14 +49,13 @@ interface RoomRow {
   messages: MessageRow[];
 }
 
-const PAGE_LIMIT = 30;
-
 @Injectable()
 export class MessagingService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly bus: MessagingBus,
     private readonly notifications: NotificationsService,
+    private readonly moderation: ModerationService,
   ) {}
 
   // ─────────────────────────────────────────────────────────────────────
@@ -77,6 +78,14 @@ export class MessagingService {
       select: { id: true },
     });
     if (!other) {
+      throw new DomainException(ErrorCode.NOT_FOUND, "User not found.", 404);
+    }
+
+    // Blocks are symmetric: if either side blocked the other, neither can
+    // open a DM. We surface as NOT_FOUND rather than a distinct code so
+    // the target can't confirm whether they've been blocked.
+    const blocked = await this.moderation.blockedIds(viewerId);
+    if (blocked.includes(otherUserId)) {
       throw new DomainException(ErrorCode.NOT_FOUND, "User not found.", 404);
     }
 
@@ -109,9 +118,37 @@ export class MessagingService {
     return this.getRoomDto(created.id, viewerId);
   }
 
-  async listMyRooms(viewerId: string): Promise<ChatRoomDto[]> {
+  async listMyRooms(
+    viewerId: string,
+    opts: { archived?: boolean } = {},
+  ): Promise<ChatRoomDto[]> {
+    const archived = opts.archived === true;
+    const blocked = await this.moderation.blockedIds(viewerId);
     const rooms = (await this.prisma.chatRoom.findMany({
-      where: { members: { some: { userId: viewerId } } },
+      where: {
+        members: {
+          some: {
+            userId: viewerId,
+            // Default list: only rows the viewer hasn't archived.
+            // archived=true returns only their archived rows.
+            archivedAt: archived ? { not: null } : null,
+          },
+        },
+        // Drop 1:1 rooms whose only other member is on either side of a
+        // block with the viewer. Group rooms stay — a block in a group
+        // conversation silences the blocked user's messages but doesn't
+        // kick the viewer out.
+        ...(blocked.length > 0
+          ? {
+              NOT: {
+                AND: [
+                  { isGroup: false },
+                  { members: { some: { userId: { in: blocked } } } },
+                ],
+              },
+            }
+          : {}),
+      },
       orderBy: { updatedAt: "desc" },
       take: 100,
       include: {
@@ -245,6 +282,18 @@ export class MessagingService {
       data: { updatedAt: new Date() },
     });
 
+    // A new message resurfaces the room for every member who'd archived it —
+    // mirrors what mainstream messengers do. Archiver (the viewer) is left
+    // untouched: they might want their own thread to stay archived.
+    await this.prisma.chatRoomMember.updateMany({
+      where: {
+        roomId,
+        userId: { not: viewerId },
+        archivedAt: { not: null },
+      },
+      data: { archivedAt: null },
+    });
+
     const dto = toMessageDto(created);
 
     // Fan out to every member except the author's other tabs also get it so
@@ -315,6 +364,28 @@ export class MessagingService {
     }
   }
 
+  /**
+   * Archive a room for the viewer only. Idempotent: if already archived,
+   * the timestamp is left alone so clients can safely retry on network
+   * flakes without losing the original archive time.
+   */
+  async archiveRoom(viewerId: string, roomId: string): Promise<void> {
+    await this.requireMembership(viewerId, roomId);
+    await this.prisma.chatRoomMember.updateMany({
+      where: { roomId, userId: viewerId, archivedAt: null },
+      data: { archivedAt: new Date() },
+    });
+  }
+
+  /** Restore a previously archived room. Idempotent. */
+  async unarchiveRoom(viewerId: string, roomId: string): Promise<void> {
+    await this.requireMembership(viewerId, roomId);
+    await this.prisma.chatRoomMember.updateMany({
+      where: { roomId, userId: viewerId, archivedAt: { not: null } },
+      data: { archivedAt: null },
+    });
+  }
+
   // ─────────────────────────────────────────────────────────────────────
   // Helpers
   // ─────────────────────────────────────────────────────────────────────
@@ -329,6 +400,27 @@ export class MessagingService {
     });
     if (!m) {
       throw new DomainException(ErrorCode.NOT_FOUND, "Room not found.", 404);
+    }
+
+    // For 1:1 rooms, a block between the two members slams the door shut
+    // for BOTH sides — list/send/mark-read all 404. Group rooms stay
+    // reachable; silencing is handled by the UI (muting the blocked user's
+    // messages on render).
+    const room = await this.prisma.chatRoom.findUnique({
+      where: { id: roomId },
+      select: {
+        isGroup: true,
+        members: { select: { userId: true } },
+      },
+    });
+    if (room && !room.isGroup) {
+      const other = room.members.find((mm) => mm.userId !== userId);
+      if (other) {
+        const blocked = await this.moderation.blockedIds(userId);
+        if (blocked.includes(other.userId)) {
+          throw new DomainException(ErrorCode.NOT_FOUND, "Room not found.", 404);
+        }
+      }
     }
   }
 

@@ -14,7 +14,9 @@ export interface ProfileWithIncludes {
   location: string | null;
   country: string;
   avatarUrl: string | null;
+  avatarBlur: string | null;
   coverUrl: string | null;
+  coverBlur: string | null;
   website: string | null;
   pronouns: string | null;
   openToWork: boolean;
@@ -66,7 +68,9 @@ export function toProfileDto(
     location: row.location,
     country: row.country,
     avatarUrl: row.avatarUrl,
+    avatarBlur: row.avatarBlur,
     coverUrl: row.coverUrl,
+    coverBlur: row.coverBlur,
     website: row.website,
     pronouns: row.pronouns,
     openToWork: row.openToWork,

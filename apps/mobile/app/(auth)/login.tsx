@@ -45,6 +45,7 @@ export default function LoginScreen(): JSX.Element {
         <View className="flex-col gap-1">
           <Text className="text-sm text-ink-muted">{t("auth.email")}</Text>
           <TextInput
+            testID="login-email"
             value={email}
             onChangeText={setEmail}
             autoComplete="email"
@@ -57,6 +58,7 @@ export default function LoginScreen(): JSX.Element {
         <View className="flex-col gap-1">
           <Text className="text-sm text-ink-muted">{t("auth.password")}</Text>
           <TextInput
+            testID="login-password"
             value={password}
             onChangeText={setPassword}
             secureTextEntry
@@ -72,6 +74,7 @@ export default function LoginScreen(): JSX.Element {
         ) : null}
 
         <Pressable
+          testID="login-submit"
           onPress={onSubmit}
           disabled={busy}
           className="rounded-md bg-brand-600 px-6 py-3 shadow-card"

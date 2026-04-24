@@ -8,6 +8,7 @@ import {
 
 import { DomainException } from "../../common/domain-exception";
 import { PrismaService } from "../prisma/prisma.service";
+
 import { postInclude, toPostDto, type PostWithIncludes } from "./posts.mapper";
 
 @Injectable()
@@ -33,6 +34,7 @@ export class PostsService {
                 height: m.height ?? null,
                 durationMs: m.durationMs ?? null,
                 sizeBytes: m.sizeBytes ?? null,
+                blurhash: m.blurhash ?? null,
               })),
             }
           : undefined,
@@ -44,7 +46,9 @@ export class PostsService {
 
   async getById(viewerId: string, postId: string): Promise<PostDto> {
     const post = await this.prisma.post.findFirst({
-      where: { id: postId, deletedAt: null },
+      // Taken-down posts read as "not found" to everyone except admins —
+      // admins hit a dedicated `/admin/posts/:id` surface (future).
+      where: { id: postId, deletedAt: null, takedownAt: null },
       include: postInclude(viewerId),
     });
     if (!post) {

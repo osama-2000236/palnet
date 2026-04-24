@@ -8,9 +8,9 @@ import {
   Param,
   Post,
   Query,
-  UsePipes,
 } from "@nestjs/common";
 import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
+import { Throttle } from "@nestjs/throttler";
 import {
   RespondConnectionBody,
   SendConnectionBody,
@@ -24,6 +24,7 @@ import {
   CurrentUser,
   type AuthUser,
 } from "../auth/decorators/current-user.decorator";
+
 import { ConnectionsService } from "./connections.service";
 
 const ListQuery = z.object({
@@ -44,10 +45,13 @@ export class ConnectionsController {
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  @UsePipes(new ZodValidationPipe(SendConnectionBody))
+  // Outgoing connection requests — 20/min is plenty for a human browsing
+  // suggestions; bots trying to flood an inbox stop here.
+  @Throttle({ default: { limit: 20, ttl: 60_000 } })
   async send(
     @CurrentUser() user: AuthUser,
-    @Body() body: SendConnectionBody,
+    @Body(new ZodValidationPipe(SendConnectionBody))
+    body: SendConnectionBody,
   ) {
     const data = await this.connections.send(user.id, body);
     return { data };

@@ -1,5 +1,5 @@
 import { cursorPage, Post as PostSchema, type Post } from "@palnet/shared";
-import { Avatar, Button, Surface, nativeTokens } from "@palnet/ui-native";
+import { Avatar, Button, Icon, Surface, nativeTokens } from "@palnet/ui-native";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { z } from "zod";
@@ -15,6 +15,7 @@ import {
 } from "react-native";
 
 import { CommentsList } from "@/components/CommentsList";
+import { PostActions } from "@/components/PostActions";
 import { apiCall, apiFetch, apiFetchPage } from "@/lib/api";
 import { getAccessToken, readSession } from "@/lib/session";
 
@@ -83,10 +84,18 @@ export default function FeedScreen(): JSX.Element {
   );
 
   return (
-    <SafeAreaView className="flex-1 bg-surface-muted">
+    <SafeAreaView className="flex-1 bg-surface-muted" testID="screen-feed">
       <View className="flex-1 px-4 pt-6">
-        <View className="mb-3 flex-col gap-0.5">
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "flex-start",
+            justifyContent: "space-between",
+          }}
+        >
+        <View className="mb-3 flex-col gap-0.5" style={{ flex: 1 }}>
           <Text
+            testID="feed-title"
             style={{
               fontSize: nativeTokens.type.scale.display.size,
               lineHeight: nativeTokens.type.scale.display.line,
@@ -129,12 +138,27 @@ export default function FeedScreen(): JSX.Element {
             </Text>
           ) : null}
         </View>
+        <Pressable
+          testID="feed-search"
+          accessibilityRole="button"
+          accessibilityLabel={t("search.title")}
+          onPress={() => router.push("/(app)/search" as never)}
+          hitSlop={8}
+          style={{
+            padding: nativeTokens.space[2],
+            marginTop: -nativeTokens.space[1],
+          }}
+        >
+          <Icon name="search" color={nativeTokens.color.inkMuted} size={22} />
+        </Pressable>
+        </View>
 
         <Pressable
           onPress={() => router.push("/(app)/composer")}
           style={{ marginBottom: nativeTokens.space[3] }}
           accessibilityRole="button"
           accessibilityLabel={t("composer.placeholder")}
+          testID="feed-composer"
         >
           <Surface variant="card" padding="4">
             <Text
@@ -158,6 +182,11 @@ export default function FeedScreen(): JSX.Element {
               onChange={(next) =>
                 setPosts((prev) =>
                   prev.map((x) => (x.id === next.id ? next : x)),
+                )
+              }
+              onHide={() =>
+                setPosts((prev) =>
+                  prev.filter((x) => x.author.id !== item.author.id),
                 )
               }
             />
@@ -198,13 +227,16 @@ export default function FeedScreen(): JSX.Element {
 function PostRow({
   post,
   onChange,
+  onHide,
 }: {
   post: Post;
   onChange?: (next: Post) => void;
+  onHide?: () => void;
 }): JSX.Element {
   const { t } = useTranslation();
   const [showComments, setShowComments] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [actionsOpen, setActionsOpen] = useState(false);
 
   async function toggleReaction(): Promise<void> {
     if (busy) return;
@@ -263,35 +295,68 @@ function PostRow({
     marginTop: nativeTokens.space[2],
   };
 
+  const authorName =
+    `${post.author.firstName} ${post.author.lastName}`.trim() ||
+    post.author.handle;
+
   return (
     <Surface variant="card" padding="4">
-      <Pressable
-        onPress={() => router.push(`/(app)/in/${post.author.handle}`)}
-        style={{ flexDirection: "row", alignItems: "center", gap: nativeTokens.space[3] }}
-        accessibilityRole="link"
-        accessibilityLabel={`${post.author.firstName} ${post.author.lastName}`}
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          gap: nativeTokens.space[2],
+        }}
       >
-        <Avatar
-          user={{
-            id: post.author.id,
-            handle: post.author.handle,
-            firstName: post.author.firstName,
-            lastName: post.author.lastName,
-            avatarUrl: post.author.avatarUrl,
+        <Pressable
+          onPress={() => router.push(`/(app)/in/${post.author.handle}`)}
+          style={{
+            flex: 1,
+            flexDirection: "row",
+            alignItems: "center",
+            gap: nativeTokens.space[3],
           }}
-          size="md"
-        />
-        <View style={{ flex: 1 }}>
-          <Text style={nameStyle}>
-            {post.author.firstName} {post.author.lastName}
-          </Text>
-          {post.author.headline ? (
-            <Text style={mutedStyle} numberOfLines={1}>
-              {post.author.headline}
+          accessibilityRole="link"
+          accessibilityLabel={authorName}
+        >
+          <Avatar
+            user={{
+              id: post.author.id,
+              handle: post.author.handle,
+              firstName: post.author.firstName,
+              lastName: post.author.lastName,
+              avatarUrl: post.author.avatarUrl,
+            }}
+            size="md"
+          />
+          <View style={{ flex: 1 }}>
+            <Text style={nameStyle}>
+              {post.author.firstName} {post.author.lastName}
             </Text>
-          ) : null}
-        </View>
-      </Pressable>
+            {post.author.headline ? (
+              <Text style={mutedStyle} numberOfLines={1}>
+                {post.author.headline}
+              </Text>
+            ) : null}
+          </View>
+        </Pressable>
+        <Pressable
+          onPress={() => setActionsOpen(true)}
+          hitSlop={8}
+          accessibilityRole="button"
+          accessibilityLabel={t("moderation.more")}
+          testID={`post-more-${post.id}`}
+          style={{
+            width: 32,
+            height: 32,
+            alignItems: "center",
+            justifyContent: "center",
+            borderRadius: nativeTokens.radius.full,
+          }}
+        >
+          <Icon name="more" size={18} color={nativeTokens.color.inkMuted} />
+        </Pressable>
+      </View>
       <Text style={bodyStyle}>{post.body}</Text>
       {post.media.length > 0 ? (
         <View
@@ -375,6 +440,16 @@ function PostRow({
           }
         />
       ) : null}
+
+      <PostActions
+        open={actionsOpen}
+        onClose={() => setActionsOpen(false)}
+        authorId={post.author.id}
+        authorName={authorName}
+        targetKind="POST"
+        targetId={post.id}
+        onHide={onHide}
+      />
     </Surface>
   );
 }

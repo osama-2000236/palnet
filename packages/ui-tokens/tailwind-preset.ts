@@ -5,6 +5,7 @@
 //   export default { presets: [preset], content: [...] };
 
 import type { Config } from "tailwindcss";
+
 import { tokens } from "./src/index";
 
 const preset: Partial<Config> = {

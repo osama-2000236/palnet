@@ -17,7 +17,7 @@ import { useEffect, useState } from "react";
 
 import { apiFetch, ApiRequestError } from "@/lib/api";
 import { getAccessToken } from "@/lib/session";
-import { uploadFile } from "@/lib/uploads";
+import { uploadFile, uploadImage } from "@/lib/uploads";
 
 export function Composer({
   me = null,
@@ -51,21 +51,42 @@ export function Composer({
     if (!token) return;
     setError(null);
     try {
-      const publicUrl = await uploadFile({
-        file,
-        purpose: "POST_MEDIA",
-        token,
-      });
-      setMedia((prev) => [
-        ...prev,
-        {
-          id: publicUrl,
-          url: publicUrl,
-          kind,
-          mimeType: file.type,
-          sizeBytes: file.size,
-        },
-      ]);
+      // Images get a blurhash placeholder for progressive render; videos
+      // skip the extra hop since we have no cheap poster decode.
+      if (kind === "IMAGE") {
+        const { publicUrl, blurhash } = await uploadImage({
+          file,
+          purpose: "POST_MEDIA",
+          token,
+        });
+        setMedia((prev) => [
+          ...prev,
+          {
+            id: publicUrl,
+            url: publicUrl,
+            kind,
+            mimeType: file.type,
+            sizeBytes: file.size,
+            blurhash,
+          },
+        ]);
+      } else {
+        const publicUrl = await uploadFile({
+          file,
+          purpose: "POST_MEDIA",
+          token,
+        });
+        setMedia((prev) => [
+          ...prev,
+          {
+            id: publicUrl,
+            url: publicUrl,
+            kind,
+            mimeType: file.type,
+            sizeBytes: file.size,
+          },
+        ]);
+      }
     } catch {
       setError(t("uploadFailed"));
     }
@@ -81,6 +102,7 @@ export function Composer({
       kind: m.kind === "IMAGE" ? MediaKind.IMAGE : MediaKind.VIDEO,
       mimeType: m.mimeType,
       sizeBytes: m.sizeBytes,
+      blurhash: m.blurhash ?? null,
     }));
     const parsed = CreatePostBody.safeParse({
       body,

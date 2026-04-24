@@ -8,13 +8,14 @@ import {
   Param,
   Patch,
   Post,
-  UsePipes,
 } from "@nestjs/common";
 import { ApiBearerAuth, ApiOkResponse, ApiTags } from "@nestjs/swagger";
+import { Throttle } from "@nestjs/throttler";
 import { CreatePostBody, type Post as PostDto, UpdatePostBody } from "@palnet/shared";
 
 import { ZodValidationPipe } from "../../common/zod-pipe";
 import { CurrentUser, type AuthUser } from "../auth/decorators/current-user.decorator";
+
 import { PostsService } from "./posts.service";
 
 @ApiTags("posts")
@@ -25,11 +26,15 @@ export class PostsController {
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  @UsePipes(new ZodValidationPipe(CreatePostBody))
+  // Post creation is user-driven but spammable; 20/min keeps humans happy
+  // and flags bursty scripts. The global guard still enforces 100/60s
+  // across the account.
+  @Throttle({ default: { limit: 20, ttl: 60_000 } })
   @ApiOkResponse({ description: "Create a post." })
   async create(
     @CurrentUser() user: AuthUser,
-    @Body() body: CreatePostBody,
+    @Body(new ZodValidationPipe(CreatePostBody))
+    body: CreatePostBody,
   ): Promise<{ data: PostDto }> {
     const data = await this.posts.create(user.id, body);
     return { data };
@@ -45,11 +50,11 @@ export class PostsController {
   }
 
   @Patch(":id")
-  @UsePipes(new ZodValidationPipe(UpdatePostBody))
   async update(
     @CurrentUser() user: AuthUser,
     @Param("id") id: string,
-    @Body() body: UpdatePostBody,
+    @Body(new ZodValidationPipe(UpdatePostBody))
+    body: UpdatePostBody,
   ): Promise<{ data: PostDto }> {
     const data = await this.posts.update(user.id, id, body);
     return { data };

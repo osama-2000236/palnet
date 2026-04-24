@@ -1,4 +1,5 @@
 import {
+  HashedUpload,
   MediaKind,
   PresignedUpload,
   type MediaPurpose,
@@ -46,4 +47,24 @@ export async function uploadFile(args: {
   }
 
   return signed.publicUrl;
+}
+
+// Upload + blurhash in one shot. Failure of the hash step is non-fatal —
+// the image itself is still uploaded and usable without a placeholder.
+export async function uploadImage(args: {
+  file: File;
+  purpose: MediaPurpose;
+  token: string;
+}): Promise<{ publicUrl: string; blurhash: string | null }> {
+  const publicUrl = await uploadFile(args);
+  try {
+    const hashed = await apiFetch("/media/hash", HashedUpload, {
+      method: "POST",
+      body: { url: publicUrl },
+      token: args.token,
+    });
+    return { publicUrl, blurhash: hashed.blurhash };
+  } catch {
+    return { publicUrl, blurhash: null };
+  }
 }

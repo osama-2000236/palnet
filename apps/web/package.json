@@ -10,6 +10,7 @@
     "type-check": "tsc --noEmit",
     "test": "jest --passWithNoTests",
     "e2e": "playwright test",
+    "e2e:a11y-authed": "playwright test e2e/a11y-authed.spec.ts --project=chromium-en",
     "lhci": "lhci autorun --config=./lighthouserc.json"
   },
   "dependencies": {

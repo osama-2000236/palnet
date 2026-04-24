@@ -106,7 +106,7 @@ export default function ComposerScreen(): JSX.Element {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-surface-muted">
+    <SafeAreaView className="flex-1 bg-surface-muted" testID="composer-screen">
       <View className="flex-1 gap-3 px-6 pt-8">
         <Text className="text-3xl font-bold text-ink">{t("composer.title")}</Text>
         <TextInput
@@ -117,6 +117,7 @@ export default function ComposerScreen(): JSX.Element {
           maxLength={3000}
           className="min-h-[160px] rounded-md border border-ink-muted/30 bg-surface p-3 text-ink"
           textAlignVertical="top"
+          testID="composer-body"
         />
         <Text className="self-end text-xs text-ink-muted">{body.length} / 3000</Text>
 
@@ -158,6 +159,7 @@ export default function ComposerScreen(): JSX.Element {
           onPress={submit}
           disabled={busy || body.trim().length === 0}
           className="rounded-md bg-brand-600 px-6 py-3 shadow-card"
+          testID="composer-submit"
         >
           {busy ? (
             <ActivityIndicator color={tokens.color.ink.inverse} />

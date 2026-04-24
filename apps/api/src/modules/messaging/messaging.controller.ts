@@ -8,9 +8,9 @@ import {
   Post,
   Query,
   Sse,
-  UsePipes,
 } from "@nestjs/common";
 import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
+import { Throttle } from "@nestjs/throttler";
 import {
   type ChatRoom,
   CreateOrGetDmBody,
@@ -26,6 +26,7 @@ import {
   CurrentUser,
   type AuthUser,
 } from "../auth/decorators/current-user.decorator";
+
 import { MessagingBus } from "./messaging.bus";
 import { MessagingService } from "./messaging.service";
 
@@ -44,16 +45,22 @@ export class MessagingController {
   ) {}
 
   @Get("rooms")
-  async listRooms(@CurrentUser() user: AuthUser): Promise<{ data: ChatRoom[] }> {
-    const data = await this.messaging.listMyRooms(user.id);
+  async listRooms(
+    @CurrentUser() user: AuthUser,
+    @Query("archived") archived?: string,
+  ): Promise<{ data: ChatRoom[] }> {
+    const data = await this.messaging.listMyRooms(user.id, {
+      archived: archived === "1" || archived === "true",
+    });
     return { data };
   }
 
   @Post("rooms")
-  @UsePipes(new ZodValidationPipe(CreateOrGetDmBody))
+  @Throttle({ default: { limit: 20, ttl: 60_000 } })
   async findOrCreateDm(
     @CurrentUser() user: AuthUser,
-    @Body() body: CreateOrGetDmBody,
+    @Body(new ZodValidationPipe(CreateOrGetDmBody))
+    body: CreateOrGetDmBody,
   ): Promise<ChatRoom> {
     return this.messaging.findOrCreateDm(user.id, body.otherUserId);
   }
@@ -96,11 +103,14 @@ export class MessagingController {
   }
 
   @Post("rooms/:id/messages")
-  @UsePipes(new ZodValidationPipe(SendMessageBody))
+  // Send burst — 60/min per user across all rooms. Keeps a fast chatter
+  // happy, cuts a broadcast bot off before it hits the global 100/60s.
+  @Throttle({ default: { limit: 60, ttl: 60_000 } })
   async sendMessage(
     @CurrentUser() user: AuthUser,
     @Param("id") id: string,
-    @Body() body: SendMessageBody,
+    @Body(new ZodValidationPipe(SendMessageBody))
+    body: SendMessageBody,
   ): Promise<Message> {
     return this.messaging.sendMessage(user.id, id, body);
   }
@@ -114,8 +124,27 @@ export class MessagingController {
     await this.messaging.markRead(user.id, id);
   }
 
+  @Post("rooms/:id/archive")
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async archive(
+    @CurrentUser() user: AuthUser,
+    @Param("id") id: string,
+  ): Promise<void> {
+    await this.messaging.archiveRoom(user.id, id);
+  }
+
+  @Post("rooms/:id/unarchive")
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async unarchive(
+    @CurrentUser() user: AuthUser,
+    @Param("id") id: string,
+  ): Promise<void> {
+    await this.messaging.unarchiveRoom(user.id, id);
+  }
+
   @Post("rooms/:id/typing")
   @HttpCode(HttpStatus.NO_CONTENT)
+  @Throttle({ default: { limit: 120, ttl: 60_000 } })
   async typing(
     @CurrentUser() user: AuthUser,
     @Param("id") id: string,

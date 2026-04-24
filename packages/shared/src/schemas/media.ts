@@ -4,7 +4,13 @@ import { MediaKind } from "../enums";
 
 // Where the uploaded asset will live in the product surface. Drives the
 // storage key prefix and public URL path.
-export const MediaPurpose = z.enum(["AVATAR", "COVER", "POST_MEDIA"]);
+export const MediaPurpose = z.enum([
+  "AVATAR",
+  "COVER",
+  "POST_MEDIA",
+  "COMPANY_LOGO",
+  "COMPANY_COVER",
+]);
 export type MediaPurpose = z.infer<typeof MediaPurpose>;
 
 // ──────────────────────────────────────────────────────────────────────────
@@ -40,3 +46,20 @@ export const PresignedUpload = z.object({
   expiresAt: z.string().datetime(),
 });
 export type PresignedUpload = z.infer<typeof PresignedUpload>;
+
+// ──────────────────────────────────────────────────────────────────────────
+// Blurhash precompute
+// ──────────────────────────────────────────────────────────────────────────
+
+// Client calls POST /media/hash with the public R2 URL after a successful
+// upload. Server fetches, downsamples via sharp, encodes via blurhash, and
+// returns a ~30-char placeholder string safe to persist alongside the URL.
+export const HashUploadBody = z.object({
+  url: z.string().url(),
+});
+export type HashUploadBody = z.infer<typeof HashUploadBody>;
+
+export const HashedUpload = z.object({
+  blurhash: z.string().min(6).max(200),
+});
+export type HashedUpload = z.infer<typeof HashedUpload>;

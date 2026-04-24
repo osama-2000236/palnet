@@ -103,7 +103,12 @@ export function Avatar({
   );
 
   return (
-    <span className={box} aria-label={label || undefined} role="img">
+    <span
+      className={box}
+      aria-hidden={label ? undefined : true}
+      aria-label={label || undefined}
+      role={label ? "img" : undefined}
+    >
       {user.avatarUrl ? (
         <img
           src={user.avatarUrl}

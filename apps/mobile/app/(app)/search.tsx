@@ -59,7 +59,7 @@ export default function SearchScreen(): JSX.Element {
   );
 
   return (
-    <SafeAreaView className="flex-1 bg-surface-muted">
+    <SafeAreaView className="flex-1 bg-surface-muted" testID="search-screen">
       <View className="flex-1 px-4 pt-8">
         <Text className="mb-3 text-3xl font-bold text-ink">
           {t("search.title")}
@@ -76,6 +76,7 @@ export default function SearchScreen(): JSX.Element {
               void run(q, null);
             }}
             className="flex-1 rounded-md border border-ink-muted/30 bg-surface px-3 py-2 text-ink"
+            testID="search-input"
           />
           <Pressable
             onPress={() => {
@@ -83,6 +84,7 @@ export default function SearchScreen(): JSX.Element {
               void run(q, null);
             }}
             className="rounded-md bg-brand-600 px-4 py-2"
+            testID="search-submit"
           >
             <Text className="text-sm font-semibold text-ink-inverse">
               {t("search.submit")}
@@ -98,6 +100,7 @@ export default function SearchScreen(): JSX.Element {
             <Pressable
               onPress={() => router.push(`/(app)/in/${item.handle}`)}
               className="rounded-md border border-ink-muted/20 bg-surface p-3"
+              testID={`search-result-${item.handle}`}
             >
               <Text className="font-semibold text-ink">
                 {item.firstName} {item.lastName}

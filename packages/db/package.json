@@ -4,17 +4,20 @@
   "private": true,
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "dev": "tsc -p tsconfig.json --watch",
     "clean": "rimraf dist",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
+    "db:status": "prisma migrate status",
     "db:deploy": "prisma migrate deploy",
     "db:studio": "prisma studio",
     "db:seed": "tsx prisma/seed.ts",
-    "lint": "eslint .",
+    "lint": "eslint \"src/**/*.ts\" \"prisma/**/*.ts\"",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {

@@ -1,4 +1,5 @@
 import { z } from "zod";
+
 import { JobLocationMode } from "../enums";
 
 // Handle: /in/<handle> — lowercase ascii, digits, dash; 3-30 chars; unique.
@@ -69,7 +70,9 @@ export const Profile = z.object({
   location: z.string().max(120).nullish(),
   country: z.string().length(2).default("PS"),
   avatarUrl: z.string().url().nullish(),
+  avatarBlur: z.string().nullish(),
   coverUrl: z.string().url().nullish(),
+  coverBlur: z.string().nullish(),
   website: z.string().url().nullish(),
   pronouns: z.string().max(40).nullish(),
   openToWork: z.boolean(),

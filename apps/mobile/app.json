@@ -20,7 +20,7 @@
       "package": "ps.palnet.app",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#f4f6ef"
       }
     },
     "web": {

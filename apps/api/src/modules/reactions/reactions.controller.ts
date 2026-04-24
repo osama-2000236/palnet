@@ -6,28 +6,32 @@ import {
   HttpStatus,
   Param,
   Put,
-  UsePipes,
 } from "@nestjs/common";
 import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
+import { Throttle } from "@nestjs/throttler";
 import { SetReactionBody } from "@palnet/shared";
 
 import { ZodValidationPipe } from "../../common/zod-pipe";
 import { CurrentUser, type AuthUser } from "../auth/decorators/current-user.decorator";
+
 import { ReactionsService } from "./reactions.service";
 
 @ApiTags("reactions")
 @ApiBearerAuth()
 @Controller("posts/:id/reaction")
+// Reactions toggle quickly as users scroll; 60/min per endpoint covers
+// heavy scrolling without letting a script drive reaction spikes.
+@Throttle({ default: { limit: 60, ttl: 60_000 } })
 export class ReactionsController {
   constructor(private readonly reactions: ReactionsService) {}
 
   @Put()
   @HttpCode(HttpStatus.NO_CONTENT)
-  @UsePipes(new ZodValidationPipe(SetReactionBody))
   async set(
     @CurrentUser() user: AuthUser,
     @Param("id") id: string,
-    @Body() body: SetReactionBody,
+    @Body(new ZodValidationPipe(SetReactionBody))
+    body: SetReactionBody,
   ): Promise<void> {
     await this.reactions.set(user.id, id, body.type);
   }

@@ -8,9 +8,9 @@ import {
   Param,
   Post,
   Query,
-  UsePipes,
 } from "@nestjs/common";
 import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
+import { Throttle } from "@nestjs/throttler";
 import {
   type Comment as CommentDto,
   CreateCommentBody,
@@ -20,6 +20,7 @@ import {
 
 import { ZodValidationPipe } from "../../common/zod-pipe";
 import { CurrentUser, type AuthUser } from "../auth/decorators/current-user.decorator";
+
 import { CommentsService } from "./comments.service";
 
 @ApiTags("comments")
@@ -29,11 +30,14 @@ export class CommentsController {
   constructor(private readonly comments: CommentsService) {}
 
   @Post("posts/:id/comments")
-  @UsePipes(new ZodValidationPipe(CreateCommentBody))
+  // Comment write throttle — 30/min absorbs a burst of replies on a thread
+  // without letting a bot flood a single post.
+  @Throttle({ default: { limit: 30, ttl: 60_000 } })
   async create(
     @CurrentUser() user: AuthUser,
     @Param("id") postId: string,
-    @Body() body: CreateCommentBody,
+    @Body(new ZodValidationPipe(CreateCommentBody))
+    body: CreateCommentBody,
   ): Promise<{ data: CommentDto }> {
     const data = await this.comments.create(user.id, postId, body);
     return { data };

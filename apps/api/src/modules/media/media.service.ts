@@ -6,10 +6,13 @@ import { Injectable, Logger } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import {
   ErrorCode,
+  type HashedUpload,
   type PresignUploadBody,
   type PresignedUpload,
   type MediaPurpose,
 } from "@palnet/shared";
+import { encode as encodeBlurhash } from "blurhash";
+import sharp from "sharp";
 
 import { DomainException } from "../../common/domain-exception";
 import type { Env } from "../../config/env";
@@ -19,6 +22,8 @@ const PURPOSE_LIMITS: Record<MediaPurpose, { maxBytes: number; kinds: string[] }
   AVATAR: { maxBytes: 2 * 1024 * 1024, kinds: ["IMAGE"] },
   COVER: { maxBytes: 5 * 1024 * 1024, kinds: ["IMAGE"] },
   POST_MEDIA: { maxBytes: 25 * 1024 * 1024, kinds: ["IMAGE", "VIDEO"] },
+  COMPANY_LOGO: { maxBytes: 2 * 1024 * 1024, kinds: ["IMAGE"] },
+  COMPANY_COVER: { maxBytes: 5 * 1024 * 1024, kinds: ["IMAGE"] },
 };
 
 const PRESIGN_TTL_SECONDS = 60 * 5; // 5 minutes
@@ -104,6 +109,79 @@ export class MediaService {
       headers: { "Content-Type": body.mimeType },
       expiresAt: new Date(Date.now() + PRESIGN_TTL_SECONDS * 1000).toISOString(),
     };
+  }
+
+  // Download uploaded image, downsample, and encode as a blurhash placeholder.
+  // SSRF guard: only fetch URLs that live under our configured R2 publicBase.
+  async computeBlurhash(url: string): Promise<HashedUpload> {
+    if (!this.publicBase) {
+      throw new DomainException(
+        ErrorCode.INTERNAL,
+        "Media storage is not configured. Set R2_* env vars.",
+        503,
+      );
+    }
+
+    let parsed: URL;
+    try {
+      parsed = new URL(url);
+    } catch {
+      throw new DomainException(
+        ErrorCode.VALIDATION_FAILED,
+        "Invalid URL.",
+        400,
+      );
+    }
+
+    const base = new URL(this.publicBase);
+    if (parsed.origin !== base.origin) {
+      throw new DomainException(
+        ErrorCode.VALIDATION_FAILED,
+        "URL must live under the configured media origin.",
+        400,
+      );
+    }
+
+    let buffer: Buffer;
+    try {
+      const res = await fetch(url);
+      if (!res.ok) {
+        throw new DomainException(
+          ErrorCode.VALIDATION_FAILED,
+          `Fetch failed: ${res.status}`,
+          400,
+        );
+      }
+      const ab = await res.arrayBuffer();
+      buffer = Buffer.from(ab);
+    } catch (err) {
+      if (err instanceof DomainException) throw err;
+      this.log.warn({ err, url }, "blurhash fetch failed");
+      throw new DomainException(
+        ErrorCode.INTERNAL,
+        "Could not fetch media for hashing.",
+        502,
+      );
+    }
+
+    // 32×32 is blurhash's recommended downsample size — any larger is wasteful,
+    // any smaller loses the low-frequency signal the placeholder needs.
+    const { data, info } = await sharp(buffer)
+      .raw()
+      .ensureAlpha()
+      .resize(32, 32, { fit: "inside" })
+      .toBuffer({ resolveWithObject: true });
+
+    // 4×3 components = ~30-char hash, good balance of detail vs. payload.
+    const hash = encodeBlurhash(
+      new Uint8ClampedArray(data),
+      info.width,
+      info.height,
+      4,
+      3,
+    );
+
+    return { blurhash: hash };
   }
 }
 

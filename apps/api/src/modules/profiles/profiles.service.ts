@@ -11,6 +11,7 @@ import {
 
 import { DomainException } from "../../common/domain-exception";
 import { PrismaService } from "../prisma/prisma.service";
+
 import { profileInclude, toProfileDto } from "./profiles.mapper";
 
 @Injectable()

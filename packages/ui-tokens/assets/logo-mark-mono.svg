@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Baydar mark — monochrome. Inherits `currentColor` from CSS so it adapts
+  to any surface (light mark on olive, olive mark on cream, etc.).
+-->
+<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Baydar">
+  <title>Baydar</title>
+  <circle cx="32" cy="32" r="30" fill="none" stroke="currentColor" stroke-width="2.5"/>
+  <g fill="currentColor">
+    <rect x="31" y="14" width="2" height="37" rx="1"/>
+    <ellipse cx="27" cy="19" rx="2.6" ry="4.6" transform="rotate(-28 27 19)"/>
+    <ellipse cx="37" cy="19" rx="2.6" ry="4.6" transform="rotate(28 37 19)"/>
+    <ellipse cx="26" cy="27" rx="2.8" ry="4.8" transform="rotate(-28 26 27)"/>
+    <ellipse cx="38" cy="27" rx="2.8" ry="4.8" transform="rotate(28 38 27)"/>
+    <ellipse cx="25" cy="35" rx="2.8" ry="4.8" transform="rotate(-28 25 35)"/>
+    <ellipse cx="39" cy="35" rx="2.8" ry="4.8" transform="rotate(28 39 35)"/>
+    <ellipse cx="24" cy="43" rx="2.8" ry="4.8" transform="rotate(-28 24 43)"/>
+    <ellipse cx="40" cy="43" rx="2.8" ry="4.8" transform="rotate(28 40 43)"/>
+  </g>
+</svg>

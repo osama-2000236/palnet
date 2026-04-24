@@ -3,6 +3,8 @@ export { Surface } from "./Surface";
 export type { SurfaceProps, SurfaceVariant, SurfacePadding } from "./Surface";
 export { Avatar } from "./Avatar";
 export type { AvatarProps, AvatarSize, AvatarUser } from "./Avatar";
+export { Image } from "./Image";
+export type { ImageProps } from "./Image";
 export { Icon } from "./Icon";
 export type { IconProps, IconName } from "./Icon";
 export { AppShell } from "./AppShell";
@@ -26,6 +28,8 @@ export type {
   PostCardCounts,
 } from "./PostCard";
 export { PostCardSkeleton } from "./PostCardSkeleton";
+export { ProfilePageSkeleton } from "./ProfilePageSkeleton";
+export { CompanyPageSkeleton } from "./CompanyPageSkeleton";
 export { MessageBubble } from "./MessageBubble";
 export type {
   MessageBubbleProps,

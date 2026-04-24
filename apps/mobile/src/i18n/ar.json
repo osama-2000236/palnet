@@ -10,6 +10,10 @@
     "done": "تم",
     "genericError": "حدث خطأ ما. حاول مرة أخرى."
   },
+  "nav": {
+    "me": "أنا",
+    "unreadNotifications": "{count} إشعارات غير مقروءة"
+  },
   "landing": {
     "title": "بيدر — الشبكة المهنية للعالم العربي.",
     "subtitle": "حيث يلتقي أثرك بفرصتك. شبكتك، بلغتك.",
@@ -37,6 +41,22 @@
       "RATE_LIMITED": "تم تجاوز الحد. حاول لاحقًا.",
       "INTERNAL": "حدث خطأ غير متوقع."
     }
+  },
+  "verifyEmail": {
+    "title": "تحقق من بريدك الإلكتروني",
+    "verifying": "جارٍ التحقق…",
+    "success": "تم التحقق من بريدك الإلكتروني.",
+    "goFeed": "اذهب إلى الخلاصة",
+    "invalid": "الرابط غير صالح أو منتهي الصلاحية.",
+    "missingToken": "لا يوجد رمز تحقق في الرابط."
+  },
+  "resetPassword": {
+    "title": "إعادة تعيين كلمة المرور",
+    "missingToken": "هذا الرابط لا يحتوي على رمز إعادة تعيين.",
+    "success": "تم تحديث كلمة المرور. سجّل الدخول للمتابعة.",
+    "toLogin": "اذهب إلى تسجيل الدخول",
+    "newPassword": "كلمة المرور الجديدة",
+    "submit": "إعادة تعيين كلمة المرور"
   },
   "onboarding": {
     "title": "أكمل ملفك الشخصي",
@@ -119,6 +139,8 @@
   "messaging": {
     "title": "الرسائل",
     "newMessage": "رسالة جديدة",
+    "archive": "أرشفة",
+    "unarchive": "إلغاء الأرشفة",
     "emptyList": "لا توجد محادثات بعد.",
     "emptyThread": "لا توجد رسائل بعد — ابدأ بالسلام.",
     "composePlaceholder": "اكتب رسالة…",
@@ -154,6 +176,108 @@
       "PROFILE_VIEW": "شاهد {actor} ملفك الشخصي."
     }
   },
+  "settings": {
+    "title": "الإعدادات",
+    "profileSubtitle": "الملف الشخصي والحساب والخصوصية",
+    "account": "الحساب",
+    "accountSubtitle": "البريد، كلمة المرور، حذف الحساب",
+    "sessions": "الجلسات النشطة",
+    "sessionsSubtitle": "الأجهزة المسجّل دخولها إلى حسابك",
+    "notifications": "الإشعارات",
+    "notificationsSubtitle": "ما الذي نرسل لك بشأنه، وأين",
+    "signOutConfirmTitle": "تسجيل الخروج؟",
+    "signOutConfirmBody": "سيتم تسجيل خروجك من هذا الجهاز فقط. بياناتك ستبقى محفوظة.",
+    "signOutSubtitle": "إنهاء هذه الجلسة على هذا الجهاز",
+    "editProfile": "تعديل الملف الشخصي",
+    "changeEmail": "تغيير البريد الإلكتروني",
+    "newEmail": "البريد الجديد",
+    "currentPassword": "كلمة المرور الحالية",
+    "invalidInput": "تحقق من المدخلات.",
+    "emailUpdated": "تم تغيير البريد. تحقق من العنوان الجديد.",
+    "changePassword": "تغيير كلمة المرور",
+    "passwordTooShort": "يجب أن تكون كلمة المرور 8 أحرف على الأقل.",
+    "newPassword": "كلمة المرور الجديدة",
+    "updatePassword": "تحديث كلمة المرور",
+    "deleteAccount": "حذف الحساب",
+    "deleteAccountHint": "اكتب DELETE للتأكيد وأدخل كلمة المرور.",
+    "deleteTypeDelete": "اكتب DELETE للتأكيد.",
+    "deleteConfirmTitle": "حذف الحساب؟",
+    "deleteConfirmBody": "سيتم تعطيل ملفك الشخصي وتحرير بريدك الإلكتروني. لا يمكن التراجع عن هذا الإجراء.",
+    "deleteConfirmCta": "احذف حسابي",
+    "sessionsInfo": {
+      "description": "الأجهزة المسجل دخولها إلى حسابك حاليًا.",
+      "current": "هذا الجهاز",
+      "revoke": "إنهاء",
+      "revokeAll": "تسجيل الخروج من باقي الأجهزة",
+      "empty": "لا توجد جلسات نشطة.",
+      "genericError": "تعذّر إنهاء الجلسة. حاول مرة أخرى.",
+      "unknownDevice": "جهاز غير معروف",
+      "revokeConfirmBody": "هل تريد إنهاء هذه الجلسة من حسابك؟",
+      "revokeAllConfirmTitle": "تسجيل الخروج من باقي الأجهزة؟",
+      "revokeAllConfirmBody": "سيتم تسجيل الخروج من كل الأجهزة الأخرى. سيبقى هذا الجهاز مسجّلًا."
+    },
+    "blocks": "الحسابات المحظورة",
+    "blocksSubtitle": "الأشخاص الذين حظرتهم",
+    "blocksInfo": {
+      "title": "الحسابات المحظورة",
+      "description": "الأشخاص الذين تحظرهم لن يروا منشوراتك ولن يراسلوك ولن يفتحوا ملفك. ولن يظهروا في منشوراتك وبحثك.",
+      "empty": "لم تحظر أحدًا بعد.",
+      "unblock": "إلغاء الحظر",
+      "unblockConfirmTitle": "إلغاء حظر {name}؟",
+      "unblockConfirmBody": "سيتمكن من رؤية منشوراتك العامة وإرسال طلبات تواصل إليك مجددًا.",
+      "genericError": "تعذّر التحديث. حاول مرة أخرى."
+    },
+    "notificationPrefs": {
+      "title": "تفضيلات الإشعارات",
+      "description": "اختر ما تريد استقباله وبأي قناة.",
+      "channels": {
+        "inApp": "داخل التطبيق",
+        "email": "البريد",
+        "push": "تنبيه فوري"
+      },
+      "events": {
+        "connections": "طلبات التواصل",
+        "messages": "الرسائل المباشرة",
+        "reactions": "التفاعلات على منشوراتك",
+        "comments": "التعليقات على منشوراتك",
+        "jobs": "الوظائف المطابقة"
+      },
+      "saveOk": "تم حفظ التفضيلات.",
+      "genericError": "تعذّر حفظ التفضيلات."
+    }
+  },
+  "moderation": {
+    "more": "خيارات إضافية",
+    "reportPost": "الإبلاغ عن هذا المنشور",
+    "reportUser": "الإبلاغ عن هذا الشخص",
+    "reportComment": "الإبلاغ عن هذا التعليق",
+    "reportMessage": "الإبلاغ عن هذه الرسالة",
+    "blockUser": "حظر {name}",
+    "blockConfirmTitle": "حظر {name}؟",
+    "blockConfirmBody": "لن ترى منشوراته ولن يراسلك. ولن يرى منشوراتك. يمكنك التراجع من الإعدادات ← الحسابات المحظورة.",
+    "blockCta": "حظر",
+    "blockErrorToast": "تعذّر الحظر. حاول مرة أخرى.",
+    "reportDialog": {
+      "title": "إبلاغ",
+      "subtitle": "أخبرنا بالمشكلة. سيراجعها مشرف.",
+      "reasonLegend": "ما سبب الإبلاغ؟",
+      "detailsLabel": "تفاصيل (اختياري)",
+      "detailsPlaceholder": "أضف أي معلومة تراها مفيدة.",
+      "submit": "إرسال البلاغ",
+      "successTitle": "تم استلام البلاغ",
+      "successBody": "شكرًا. سيراجعه مشرف قريبًا.",
+      "genericError": "تعذّر الإرسال. حاول مرة أخرى.",
+      "reasons": {
+        "SPAM": "إزعاج أو احتيال",
+        "HARASSMENT": "مضايقة أو تنمّر",
+        "HATE_SPEECH": "خطاب كراهية",
+        "VIOLENCE": "عنف أو تهديد",
+        "ADULT_CONTENT": "محتوى جنسي أو غير لائق",
+        "IMPERSONATION": "انتحال شخصية",
+        "OTHER": "سبب آخر"
+      }
+    }
+  },
   "jobs": {
     "title": "الوظائف",
     "filters": "الفلاتر",
@@ -177,6 +301,18 @@
     "emptyTitle": "ما في وظائف تطابق الفلاتر.",
     "emptyDesc": "جرّب توسيع البحث أو إلغاء فلتر.",
     "notFound": "هذه الوظيفة لم تعد متاحة.",
+    "myApplications": "طلباتي",
+    "backToJobs": "العودة للوظائف",
+    "emptyApplicationsTitle": "لم تقدم على أي وظيفة بعد.",
+    "appliedOn": "تم التقديم {date}",
+    "applicationStatusLabels": {
+      "SUBMITTED": "تم التقديم",
+      "REVIEWING": "قيد المراجعة",
+      "SHORTLISTED": "ضمن القائمة المختصرة",
+      "REJECTED": "مرفوض",
+      "HIRED": "تم التوظيف",
+      "WITHDRAWN": "مسحوب"
+    },
     "typeLabels": {
       "FULL_TIME": "دوام كامل",
       "PART_TIME": "دوام جزئي",

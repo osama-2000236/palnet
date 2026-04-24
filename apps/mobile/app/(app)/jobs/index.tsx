@@ -151,60 +151,87 @@ export default function JobsScreen(): JSX.Element {
             {t("jobs.title")}
           </Text>
 
-          <Pressable
-            onPress={() => setSheetOpen(true)}
-            accessibilityRole="button"
-            accessibilityLabel={t("jobs.filters")}
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              gap: nativeTokens.space[2],
-              paddingHorizontal: nativeTokens.space[3],
-              paddingVertical: nativeTokens.space[2],
-              borderRadius: nativeTokens.radius.full,
-              borderWidth: 1,
-              borderColor: nativeTokens.color.lineHard,
-              backgroundColor:
-                activeCount > 0
-                  ? nativeTokens.color.brand50
-                  : nativeTokens.color.surface,
-            }}
-          >
-            <Text
+          <View style={{ flexDirection: "row", alignItems: "center", gap: nativeTokens.space[2] }}>
+            <Pressable
+              onPress={() => router.push("/(app)/jobs/applications")}
+              accessibilityRole="button"
+              accessibilityLabel={t("jobs.myApplications")}
               style={{
-                color: nativeTokens.color.ink,
-                fontFamily: nativeTokens.type.family.sans,
-                fontSize: nativeTokens.type.scale.small.size,
-                fontWeight: "600",
+                paddingHorizontal: nativeTokens.space[3],
+                paddingVertical: nativeTokens.space[2],
+                borderRadius: nativeTokens.radius.full,
+                borderWidth: 1,
+                borderColor: nativeTokens.color.lineHard,
+                backgroundColor: nativeTokens.color.surface,
               }}
             >
-              {t("jobs.filters")}
-            </Text>
-            {activeCount > 0 ? (
-              <View
+              <Text
                 style={{
-                  minWidth: 20,
-                  height: 20,
-                  paddingHorizontal: 6,
-                  borderRadius: nativeTokens.radius.full,
-                  backgroundColor: nativeTokens.color.brand600,
-                  alignItems: "center",
-                  justifyContent: "center",
+                  color: nativeTokens.color.ink,
+                  fontFamily: nativeTokens.type.family.sans,
+                  fontSize: nativeTokens.type.scale.small.size,
+                  fontWeight: "600",
                 }}
               >
-                <Text
+                {t("jobs.myApplications")}
+              </Text>
+            </Pressable>
+
+            <Pressable
+              onPress={() => setSheetOpen(true)}
+              accessibilityRole="button"
+              accessibilityLabel={t("jobs.filters")}
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                gap: nativeTokens.space[2],
+                paddingHorizontal: nativeTokens.space[3],
+                paddingVertical: nativeTokens.space[2],
+                borderRadius: nativeTokens.radius.full,
+                borderWidth: 1,
+                borderColor: nativeTokens.color.lineHard,
+                backgroundColor:
+                  activeCount > 0
+                    ? nativeTokens.color.brand50
+                    : nativeTokens.color.surface,
+              }}
+            >
+              <Text
+                style={{
+                  color: nativeTokens.color.ink,
+                  fontFamily: nativeTokens.type.family.sans,
+                  fontSize: nativeTokens.type.scale.small.size,
+                  fontWeight: "600",
+                }}
+              >
+                {t("jobs.filters")}
+              </Text>
+              {activeCount > 0 ? (
+                <View
                   style={{
-                    color: nativeTokens.color.inkInverse,
-                    fontSize: 11,
-                    fontWeight: "700",
-                    fontFamily: nativeTokens.type.family.sans,
+                    minWidth: 20,
+                    height: 20,
+                    paddingHorizontal: 6,
+                    borderRadius: nativeTokens.radius.full,
+                    backgroundColor: nativeTokens.color.brand600,
+                    alignItems: "center",
+                    justifyContent: "center",
                   }}
                 >
-                  {activeCount}
-                </Text>
-              </View>
-            ) : null}
-          </Pressable>
+                  <Text
+                    style={{
+                      color: nativeTokens.color.inkInverse,
+                      fontSize: 11,
+                      fontWeight: "700",
+                      fontFamily: nativeTokens.type.family.sans,
+                    }}
+                  >
+                    {activeCount}
+                  </Text>
+                </View>
+              ) : null}
+            </Pressable>
+          </View>
         </View>
 
         {firstLoad ? (

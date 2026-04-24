@@ -46,7 +46,33 @@ export const AuthSession = z.object({
     email: Email,
     role: z.enum(["USER", "COMPANY_ADMIN", "MODERATOR", "ADMIN"]),
     locale: z.string(),
+    emailVerified: z.boolean(),
+    // Populated only while an admin has the account suspended. UI renders
+    // a read-only banner and blocks mutation forms when this is set.
+    suspendedAt: z.string().datetime().nullable().optional(),
+    suspendedReason: z.string().nullable().optional(),
   }),
   tokens: AuthTokens,
 });
 export type AuthSession = z.infer<typeof AuthSession>;
+
+// Body for POST /auth/email/verify — single-use token from the verification
+// email.
+export const VerifyEmailBody = z.object({
+  token: z.string().min(16).max(256),
+});
+export type VerifyEmailBody = z.infer<typeof VerifyEmailBody>;
+
+// Body for POST /auth/password/reset/request — user types their email. We
+// never leak whether the address exists (always 204).
+export const RequestPasswordResetBody = z.object({
+  email: Email,
+});
+export type RequestPasswordResetBody = z.infer<typeof RequestPasswordResetBody>;
+
+// Body for POST /auth/password/reset — consume token, set new password.
+export const ResetPasswordBody = z.object({
+  token: z.string().min(16).max(256),
+  newPassword: Password,
+});
+export type ResetPasswordBody = z.infer<typeof ResetPasswordBody>;

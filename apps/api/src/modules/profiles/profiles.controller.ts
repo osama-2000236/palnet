@@ -7,7 +7,6 @@ import {
   Patch,
   Post,
   Put,
-  UsePipes,
 } from "@nestjs/common";
 import { ApiBearerAuth, ApiOkResponse, ApiTags } from "@nestjs/swagger";
 import {
@@ -26,6 +25,7 @@ import {
 } from "../auth/decorators/current-user.decorator";
 import { OptionalAuth } from "../auth/decorators/optional-auth.decorator";
 import { OptionalUser } from "../auth/decorators/optional-user.decorator";
+
 import { ProfilesService } from "./profiles.service";
 
 @ApiTags("profiles")
@@ -36,10 +36,10 @@ export class ProfilesController {
   @Post("onboard")
   @ApiBearerAuth()
   @ApiOkResponse({ description: "Create or complete the current user's profile." })
-  @UsePipes(new ZodValidationPipe(OnboardProfileBody))
   async onboard(
     @CurrentUser() user: AuthUser,
-    @Body() body: OnboardProfileBody,
+    @Body(new ZodValidationPipe(OnboardProfileBody))
+    body: OnboardProfileBody,
   ): Promise<{ data: ProfileDto }> {
     const data = await this.profiles.onboard(user.id, body);
     return { data };
@@ -47,10 +47,10 @@ export class ProfilesController {
 
   @Patch("me")
   @ApiBearerAuth()
-  @UsePipes(new ZodValidationPipe(UpdateProfileBody))
   async updateMe(
     @CurrentUser() user: AuthUser,
-    @Body() body: UpdateProfileBody,
+    @Body(new ZodValidationPipe(UpdateProfileBody))
+    body: UpdateProfileBody,
   ): Promise<{ data: ProfileDto }> {
     const data = await this.profiles.updateMine(user.id, body);
     return { data };
@@ -67,10 +67,10 @@ export class ProfilesController {
 
   @Post("me/experiences")
   @ApiBearerAuth()
-  @UsePipes(new ZodValidationPipe(ExperienceBody))
   async addExperience(
     @CurrentUser() user: AuthUser,
-    @Body() body: ExperienceBody,
+    @Body(new ZodValidationPipe(ExperienceBody))
+    body: ExperienceBody,
   ): Promise<{ data: ProfileDto }> {
     const data = await this.profiles.addExperience(user.id, body);
     return { data };
@@ -78,11 +78,11 @@ export class ProfilesController {
 
   @Put("me/experiences/:id")
   @ApiBearerAuth()
-  @UsePipes(new ZodValidationPipe(ExperienceBody))
   async updateExperience(
     @CurrentUser() user: AuthUser,
     @Param("id") id: string,
-    @Body() body: ExperienceBody,
+    @Body(new ZodValidationPipe(ExperienceBody))
+    body: ExperienceBody,
   ): Promise<{ data: ProfileDto }> {
     const data = await this.profiles.updateExperience(user.id, id, body);
     return { data };
@@ -102,10 +102,10 @@ export class ProfilesController {
 
   @Post("me/educations")
   @ApiBearerAuth()
-  @UsePipes(new ZodValidationPipe(EducationBody))
   async addEducation(
     @CurrentUser() user: AuthUser,
-    @Body() body: EducationBody,
+    @Body(new ZodValidationPipe(EducationBody))
+    body: EducationBody,
   ): Promise<{ data: ProfileDto }> {
     const data = await this.profiles.addEducation(user.id, body);
     return { data };
@@ -113,11 +113,11 @@ export class ProfilesController {
 
   @Put("me/educations/:id")
   @ApiBearerAuth()
-  @UsePipes(new ZodValidationPipe(EducationBody))
   async updateEducation(
     @CurrentUser() user: AuthUser,
     @Param("id") id: string,
-    @Body() body: EducationBody,
+    @Body(new ZodValidationPipe(EducationBody))
+    body: EducationBody,
   ): Promise<{ data: ProfileDto }> {
     const data = await this.profiles.updateEducation(user.id, id, body);
     return { data };
@@ -137,10 +137,10 @@ export class ProfilesController {
 
   @Post("me/skills")
   @ApiBearerAuth()
-  @UsePipes(new ZodValidationPipe(AddSkillBody))
   async addSkill(
     @CurrentUser() user: AuthUser,
-    @Body() body: AddSkillBody,
+    @Body(new ZodValidationPipe(AddSkillBody))
+    body: AddSkillBody,
   ): Promise<{ data: ProfileDto }> {
     const data = await this.profiles.addSkill(user.id, body);
     return { data };

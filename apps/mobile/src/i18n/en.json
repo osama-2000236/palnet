@@ -10,6 +10,10 @@
     "done": "Done",
     "genericError": "Something went wrong. Please try again."
   },
+  "nav": {
+    "me": "Me",
+    "unreadNotifications": "{count} unread notifications"
+  },
   "landing": {
     "title": "The professional network for the Arab world.",
     "subtitle": "Build your presence, connect with peers, and discover jobs — in Arabic first.",
@@ -37,6 +41,22 @@
       "RATE_LIMITED": "Too many attempts. Try again later.",
       "INTERNAL": "An unexpected error occurred."
     }
+  },
+  "verifyEmail": {
+    "title": "Verify your email",
+    "verifying": "Verifying…",
+    "success": "Your email is verified.",
+    "goFeed": "Go to feed",
+    "invalid": "Link invalid or expired.",
+    "missingToken": "No verification token in the link."
+  },
+  "resetPassword": {
+    "title": "Reset password",
+    "missingToken": "This link is missing a reset token.",
+    "success": "Your password is updated. Sign in to continue.",
+    "toLogin": "Go to sign in",
+    "newPassword": "New password",
+    "submit": "Reset password"
   },
   "onboarding": {
     "title": "Complete your profile",
@@ -119,6 +139,8 @@
   "messaging": {
     "title": "Messages",
     "newMessage": "New message",
+    "archive": "Archive",
+    "unarchive": "Unarchive",
     "emptyList": "No conversations yet.",
     "emptyThread": "No messages yet — say hi.",
     "composePlaceholder": "Write a message…",
@@ -154,6 +176,108 @@
       "PROFILE_VIEW": "{actor} viewed your profile."
     }
   },
+  "settings": {
+    "title": "Settings",
+    "profileSubtitle": "Profile, account, and privacy",
+    "account": "Account",
+    "accountSubtitle": "Email, password, delete account",
+    "sessions": "Active sessions",
+    "sessionsSubtitle": "Devices signed into your account",
+    "notifications": "Notifications",
+    "notificationsSubtitle": "What we ping you about, and where",
+    "signOutConfirmTitle": "Sign out?",
+    "signOutConfirmBody": "You'll be signed out on this device. Your data stays safe.",
+    "signOutSubtitle": "End this session on this device",
+    "editProfile": "Edit profile",
+    "changeEmail": "Change email",
+    "newEmail": "New email",
+    "currentPassword": "Current password",
+    "invalidInput": "Check your inputs.",
+    "emailUpdated": "Email changed. Verify the new address.",
+    "changePassword": "Change password",
+    "passwordTooShort": "Password must be at least 8 characters.",
+    "newPassword": "New password",
+    "updatePassword": "Update password",
+    "deleteAccount": "Delete account",
+    "deleteAccountHint": "Type DELETE to confirm and enter your password.",
+    "deleteTypeDelete": "Type DELETE to confirm.",
+    "deleteConfirmTitle": "Delete account?",
+    "deleteConfirmBody": "This deactivates your profile and frees your email. This action cannot be undone.",
+    "deleteConfirmCta": "Delete my account",
+    "sessionsInfo": {
+      "description": "Devices currently signed in to your account.",
+      "current": "This device",
+      "revoke": "Revoke",
+      "revokeAll": "Sign out everywhere else",
+      "empty": "No active sessions.",
+      "genericError": "Could not revoke. Try again.",
+      "unknownDevice": "Unknown device",
+      "revokeConfirmBody": "Sign this device out of your account?",
+      "revokeAllConfirmTitle": "Sign out everywhere else?",
+      "revokeAllConfirmBody": "All other devices will be signed out. This device stays signed in."
+    },
+    "blocks": "Blocked accounts",
+    "blocksSubtitle": "People you've blocked",
+    "blocksInfo": {
+      "title": "Blocked accounts",
+      "description": "People you've blocked can't see your posts, message you, or open your profile. They also stop appearing in your feed and search.",
+      "empty": "You haven't blocked anyone.",
+      "unblock": "Unblock",
+      "unblockConfirmTitle": "Unblock {name}?",
+      "unblockConfirmBody": "They'll be able to see your public posts and send you connection requests again.",
+      "genericError": "Could not update. Try again."
+    },
+    "notificationPrefs": {
+      "title": "Notification preferences",
+      "description": "Choose what you receive and how.",
+      "channels": {
+        "inApp": "In app",
+        "email": "Email",
+        "push": "Push"
+      },
+      "events": {
+        "connections": "Connection requests",
+        "messages": "Direct messages",
+        "reactions": "Reactions on your posts",
+        "comments": "Comments on your posts",
+        "jobs": "Job matches"
+      },
+      "saveOk": "Preferences saved.",
+      "genericError": "Could not save preferences."
+    }
+  },
+  "moderation": {
+    "more": "More options",
+    "reportPost": "Report this post",
+    "reportUser": "Report this person",
+    "reportComment": "Report this comment",
+    "reportMessage": "Report this message",
+    "blockUser": "Block {name}",
+    "blockConfirmTitle": "Block {name}?",
+    "blockConfirmBody": "You won't see their posts or messages. They won't see yours. You can undo this from Settings → Blocked accounts.",
+    "blockCta": "Block",
+    "blockErrorToast": "Could not block. Try again.",
+    "reportDialog": {
+      "title": "Report",
+      "subtitle": "Tell us what's wrong. A moderator will review.",
+      "reasonLegend": "Why are you reporting this?",
+      "detailsLabel": "Details (optional)",
+      "detailsPlaceholder": "Add anything we should know.",
+      "submit": "Submit report",
+      "successTitle": "Report received",
+      "successBody": "Thanks. A human will take a look.",
+      "genericError": "Could not submit. Try again.",
+      "reasons": {
+        "SPAM": "Spam or scam",
+        "HARASSMENT": "Harassment or bullying",
+        "HATE_SPEECH": "Hate speech",
+        "VIOLENCE": "Violence or threats",
+        "ADULT_CONTENT": "Adult or sexual content",
+        "IMPERSONATION": "Impersonation",
+        "OTHER": "Something else"
+      }
+    }
+  },
   "jobs": {
     "title": "Jobs",
     "filters": "Filters",
@@ -177,6 +301,18 @@
     "emptyTitle": "No jobs match those filters.",
     "emptyDesc": "Try widening your search or clearing a filter.",
     "notFound": "This job is no longer available.",
+    "myApplications": "My applications",
+    "backToJobs": "Back to jobs",
+    "emptyApplicationsTitle": "You haven't applied to any jobs yet.",
+    "appliedOn": "Applied {date}",
+    "applicationStatusLabels": {
+      "SUBMITTED": "Submitted",
+      "REVIEWING": "Reviewing",
+      "SHORTLISTED": "Shortlisted",
+      "REJECTED": "Rejected",
+      "HIRED": "Hired",
+      "WITHDRAWN": "Withdrawn"
+    },
     "typeLabels": {
       "FULL_TIME": "Full-time",
       "PART_TIME": "Part-time",

@@ -1,8 +1,9 @@
 import { Test } from "@nestjs/testing";
 import { ErrorCode, JobLocationMode } from "@palnet/shared";
 
-import { DomainException } from "../../common/domain-exception";
+import type { DomainException } from "../../common/domain-exception";
 import { PrismaService } from "../prisma/prisma.service";
+
 import { ProfilesService } from "./profiles.service";
 
 type PrismaStub = {

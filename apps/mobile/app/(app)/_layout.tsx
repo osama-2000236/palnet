@@ -80,6 +80,7 @@ export default function AppTabsLayout(): JSX.Element {
           tabBarIcon: ({ color, focused }) => (
             <TabIcon name="message" color={color} focused={focused} />
           ),
+          tabBarButtonTestID: "tab-messages",
         }}
       />
       <Tabs.Screen
@@ -92,21 +93,24 @@ export default function AppTabsLayout(): JSX.Element {
         }}
       />
       <Tabs.Screen
-        name="search"
+        name="settings"
         options={{
-          title: t("search.title"),
+          title: t("nav.me"),
           tabBarIcon: ({ color, focused }) => (
-            <TabIcon name="search" color={color} focused={focused} />
+            <TabIcon name="user" color={color} focused={focused} />
           ),
+          tabBarButtonTestID: "tab-me",
         }}
       />
 
       {/* Routes that exist inside (app) but shouldn't have a tab. Setting
          href: null hides them from the tab bar while keeping them pushable. */}
+      <Tabs.Screen name="search" options={{ href: null }} />
       <Tabs.Screen name="composer" options={{ href: null }} />
       <Tabs.Screen name="onboarding" options={{ href: null }} />
       <Tabs.Screen name="me/edit" options={{ href: null }} />
       <Tabs.Screen name="in/[handle]" options={{ href: null }} />
+      <Tabs.Screen name="jobs/applications" options={{ href: null }} />
       <Tabs.Screen name="jobs/[id]" options={{ href: null }} />
     </Tabs>
   );

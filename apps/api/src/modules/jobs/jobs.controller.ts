@@ -1,11 +1,12 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
+  Patch,
   Post,
   Query,
-  UsePipes,
 } from "@nestjs/common";
 import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 import {
@@ -16,6 +17,8 @@ import {
   type Job as JobDto,
   JobLocationMode,
   JobType,
+  CreateJobBody,
+  UpdateJobBody,
 } from "@palnet/shared";
 import { z } from "zod";
 
@@ -24,6 +27,7 @@ import {
   CurrentUser,
   type AuthUser,
 } from "../auth/decorators/current-user.decorator";
+
 import { JobsService } from "./jobs.service";
 
 const JobListQuery = CursorPageQuery.extend({
@@ -36,16 +40,16 @@ type JobListQuery = z.infer<typeof JobListQuery>;
 
 @ApiTags("jobs")
 @ApiBearerAuth()
-@Controller("jobs")
+@Controller()
 export class JobsController {
   constructor(private readonly jobs: JobsService) {}
 
-  @Get()
+  @Get("jobs")
   async list(
     @CurrentUser() user: AuthUser,
     @Query(new ZodValidationPipe(JobListQuery)) query: JobListQuery,
   ): Promise<{ data: JobDto[]; meta: CursorPageMeta }> {
-    return this.jobs.list(user.id, query.after ?? null, query.limit, {
+    return this.jobs.list(user, query.after ?? null, query.limit, {
       q: query.q ?? null,
       city: query.city ?? null,
       type: query.type ?? null,
@@ -53,20 +57,48 @@ export class JobsController {
     });
   }
 
-  @Get(":id")
+  @Get("jobs/:id")
   async getOne(
     @CurrentUser() user: AuthUser,
     @Param("id") id: string,
   ): Promise<JobDto> {
-    return this.jobs.getOne(user.id, id);
+    return this.jobs.getOne(user, id);
   }
 
-  @Post(":id/apply")
-  @UsePipes(new ZodValidationPipe(ApplyToJobBody))
+  @Post("companies/:id/jobs")
+  async create(
+    @CurrentUser() user: AuthUser,
+    @Param("id") id: string,
+    @Body(new ZodValidationPipe(CreateJobBody))
+    body: CreateJobBody,
+  ): Promise<JobDto> {
+    return this.jobs.create(user, id, body);
+  }
+
+  @Patch("jobs/:id")
+  async update(
+    @CurrentUser() user: AuthUser,
+    @Param("id") id: string,
+    @Body(new ZodValidationPipe(UpdateJobBody))
+    body: UpdateJobBody,
+  ): Promise<JobDto> {
+    return this.jobs.update(user, id, body);
+  }
+
+  @Delete("jobs/:id")
+  async remove(
+    @CurrentUser() user: AuthUser,
+    @Param("id") id: string,
+  ): Promise<JobDto> {
+    return this.jobs.remove(user, id);
+  }
+
+  @Post("jobs/:id/apply")
   async apply(
     @CurrentUser() user: AuthUser,
     @Param("id") id: string,
-    @Body() body: ApplyToJobBody,
+    @Body(new ZodValidationPipe(ApplyToJobBody))
+    body: ApplyToJobBody,
   ): Promise<{ id: string; status: ApplicationStatus }> {
     return this.jobs.apply(user.id, id, body);
   }

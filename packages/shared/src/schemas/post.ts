@@ -1,4 +1,5 @@
 import { z } from "zod";
+
 import { MediaKind } from "../enums";
 
 export const MediaRef = z.object({
@@ -10,6 +11,7 @@ export const MediaRef = z.object({
   height: z.number().int().positive().nullish(),
   durationMs: z.number().int().positive().nullish(),
   sizeBytes: z.number().int().positive().nullish(),
+  blurhash: z.string().max(200).nullish(),
 });
 export type MediaRef = z.infer<typeof MediaRef>;
 

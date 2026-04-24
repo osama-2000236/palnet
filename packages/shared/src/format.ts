@@ -154,11 +154,15 @@ export function formatSalaryRange(
   currency: string,
   locale: string,
 ): string | null {
-  if (min == null && max == null) return null;
-  if (min != null && max != null) {
+  if (min === null || min === undefined) {
+    if (max === null || max === undefined) return null;
+    return formatCurrency(max, currency, locale);
+  }
+  if (max === null || max === undefined) {
+    return formatCurrency(min, currency, locale);
+  }
+  if (min !== null && min !== undefined && max !== null && max !== undefined) {
     return `${formatCurrency(min, currency, locale)} – ${formatCurrency(max, currency, locale)}`;
   }
-  if (min != null) return formatCurrency(min, currency, locale);
-  if (max != null) return formatCurrency(max, currency, locale);
   return null;
 }

@@ -5,7 +5,6 @@ import {
   Post,
   Query,
   Sse,
-  UsePipes,
 } from "@nestjs/common";
 import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 import {
@@ -13,6 +12,7 @@ import {
   type CursorPageMeta,
   MarkNotificationsReadBody,
   type Notification,
+  NotificationPreferences,
 } from "@palnet/shared";
 import { Observable } from "rxjs";
 
@@ -21,6 +21,7 @@ import {
   CurrentUser,
   type AuthUser,
 } from "../auth/decorators/current-user.decorator";
+
 import {
   NotificationsBus,
   type NotificationEvent,
@@ -66,12 +67,33 @@ export class NotificationsController {
   }
 
   @Post("read")
-  @UsePipes(new ZodValidationPipe(MarkNotificationsReadBody))
   async markRead(
     @CurrentUser() user: AuthUser,
-    @Body() body: MarkNotificationsReadBody,
+    @Body(new ZodValidationPipe(MarkNotificationsReadBody))
+    body: MarkNotificationsReadBody,
   ): Promise<{ count: number }> {
     return this.notifications.markRead(user.id, body);
+  }
+
+  @Get("preferences")
+  async getPreferences(
+    @CurrentUser() user: AuthUser,
+  ): Promise<{ preferences: NotificationPreferences }> {
+    const preferences = await this.notifications.getPreferences(user.id);
+    return { preferences };
+  }
+
+  @Post("preferences")
+  async updatePreferences(
+    @CurrentUser() user: AuthUser,
+    @Body(new ZodValidationPipe(NotificationPreferences))
+    body: NotificationPreferences,
+  ): Promise<{ preferences: NotificationPreferences }> {
+    const preferences = await this.notifications.updatePreferences(
+      user.id,
+      body,
+    );
+    return { preferences };
   }
 
   @Sse("stream")

@@ -36,6 +36,8 @@ export interface ComposerMedia {
   /** MIME type (required — `CreatePostBody` rejects media without it). */
   mimeType: string;
   sizeBytes?: number;
+  /** Optional blurhash placeholder for progressive image rendering. */
+  blurhash?: string | null;
 }
 
 export interface ComposerLabels {

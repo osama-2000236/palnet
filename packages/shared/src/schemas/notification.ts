@@ -1,4 +1,5 @@
 import { z } from "zod";
+
 import { NotificationType } from "../enums";
 
 export const Notification = z.object({
@@ -30,6 +31,53 @@ export const MarkNotificationsReadBody = z.object({
   all: z.boolean().optional(),
 }).refine((v) => !!v.ids || v.all === true, { message: "IDS_OR_ALL_REQUIRED" });
 export type MarkNotificationsReadBody = z.infer<typeof MarkNotificationsReadBody>;
+
+// Server-sent event shapes for the /notifications/stream endpoint.
+// ─────────────── Preferences ───────────────
+
+// Channels a notification can land on. "in-app" is always delivered — the
+// toggle controls whether it's surfaced as a ring/sound/dot vs. quietly
+// recorded. Email + push gate the respective sends.
+export const NotificationChannel = z.enum(["inApp", "email", "push"]);
+export type NotificationChannel = z.infer<typeof NotificationChannel>;
+
+// Event buckets shown in settings. Each maps internally to one or more
+// NotificationType values on the server side.
+export const NotificationEvent = z.enum([
+  "connections",
+  "messages",
+  "reactions",
+  "comments",
+  "jobs",
+]);
+export type NotificationEvent = z.infer<typeof NotificationEvent>;
+
+// Flat map: event -> channel -> enabled. Missing entries default to true
+// server-side so new events stay opt-out until the user turns them off.
+export const NotificationPreferences = z.object({
+  inApp: z.object({
+    connections: z.boolean(),
+    messages: z.boolean(),
+    reactions: z.boolean(),
+    comments: z.boolean(),
+    jobs: z.boolean(),
+  }),
+  email: z.object({
+    connections: z.boolean(),
+    messages: z.boolean(),
+    reactions: z.boolean(),
+    comments: z.boolean(),
+    jobs: z.boolean(),
+  }),
+  push: z.object({
+    connections: z.boolean(),
+    messages: z.boolean(),
+    reactions: z.boolean(),
+    comments: z.boolean(),
+    jobs: z.boolean(),
+  }),
+});
+export type NotificationPreferences = z.infer<typeof NotificationPreferences>;
 
 // Server-sent event shapes for the /notifications/stream endpoint.
 export const WsNotificationEvent = z.discriminatedUnion("type", [

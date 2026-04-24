@@ -60,6 +60,7 @@ export interface AppShellLabels {
   myProfile: string;
   viewProfile: string;
   settings: string;
+  moderation?: string;
   signOut: string;
   /**
    * Screen-reader template for unread badges. `{count}` is replaced with the
@@ -95,6 +96,7 @@ export interface AppShellProps {
   /** Profile menu actions. Each is optional — omitted items are hidden. */
   onViewProfile?(): void;
   onOpenSettings?(): void;
+  onOpenModeration?(): void;
   onSignOut?(): void;
 
   /** Route group to highlight "my profile" when on /me or /in/{myHandle}. */
@@ -132,6 +134,7 @@ export function AppShell({
   onNavigate,
   onViewProfile,
   onOpenSettings,
+  onOpenModeration,
   onSignOut,
   children,
 }: AppShellProps): JSX.Element {
@@ -431,6 +434,16 @@ export function AppShell({
                       {labels.settings}
                     </MenuItem>
                   ) : null}
+                  {onOpenModeration && labels.moderation ? (
+                    <MenuItem
+                      onSelect={() => {
+                        setMenuOpen(false);
+                        onOpenModeration();
+                      }}
+                    >
+                      {labels.moderation}
+                    </MenuItem>
+                  ) : null}
                   {onSignOut ? (
                     <>
                       <div
@@ -454,7 +467,7 @@ export function AppShell({
         </div>
       </header>
 
-      <main>{children}</main>
+      <div>{children}</div>
     </div>
   );
 }

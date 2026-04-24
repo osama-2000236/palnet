@@ -1,8 +1,10 @@
 import { z } from "zod";
+
 import { ApplicationStatus, JobLocationMode, JobType } from "../enums";
 
+import { CompanySummary, UserPreview } from "./company";
+
 export const CreateJobBody = z.object({
-  companyId: z.string().cuid(),
   title: z.string().min(3).max(160),
   description: z.string().min(30).max(20000),
   type: z.nativeEnum(JobType),
@@ -17,8 +19,14 @@ export const CreateJobBody = z.object({
 });
 export type CreateJobBody = z.infer<typeof CreateJobBody>;
 
-export const UpdateJobBody = CreateJobBody.partial().omit({ companyId: true });
+export const UpdateJobBody = CreateJobBody.partial();
 export type UpdateJobBody = z.infer<typeof UpdateJobBody>;
+
+export const JobViewerState = z.object({
+  hasApplied: z.boolean(),
+  canManage: z.boolean(),
+});
+export type JobViewerState = z.infer<typeof JobViewerState>;
 
 export const Job = z.object({
   id: z.string().cuid(),
@@ -37,15 +45,8 @@ export const Job = z.object({
   isActive: z.boolean(),
   expiresAt: z.string().datetime().nullable(),
   createdAt: z.string().datetime(),
-  company: z.object({
-    id: z.string().cuid(),
-    slug: z.string(),
-    name: z.string(),
-    logoUrl: z.string().url().nullable(),
-  }),
-  viewer: z.object({
-    hasApplied: z.boolean(),
-  }),
+  company: CompanySummary,
+  viewer: JobViewerState,
 });
 export type Job = z.infer<typeof Job>;
 
@@ -59,6 +60,31 @@ export const UpdateApplicationStatusBody = z.object({
   status: z.nativeEnum(ApplicationStatus),
 });
 export type UpdateApplicationStatusBody = z.infer<typeof UpdateApplicationStatusBody>;
+
+export const ApplicationJobSummary = z.object({
+  id: z.string().cuid(),
+  title: z.string(),
+  type: z.nativeEnum(JobType),
+  locationMode: z.nativeEnum(JobLocationMode),
+  city: z.string().nullable(),
+});
+export type ApplicationJobSummary = z.infer<typeof ApplicationJobSummary>;
+
+export const Application = z.object({
+  id: z.string().cuid(),
+  status: z.nativeEnum(ApplicationStatus),
+  resumeUrl: z.string().url().nullable(),
+  coverLetter: z.string().nullable(),
+  createdAt: z.string().datetime(),
+  updatedAt: z.string().datetime(),
+  applicant: UserPreview,
+  job: ApplicationJobSummary,
+  company: CompanySummary,
+  viewer: z.object({
+    canManage: z.boolean(),
+  }),
+});
+export type Application = z.infer<typeof Application>;
 
 export const JobSearchQuery = z.object({
   q: z.string().max(120).optional(),

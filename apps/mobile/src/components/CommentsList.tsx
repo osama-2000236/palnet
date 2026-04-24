@@ -15,6 +15,7 @@ import {
   View,
 } from "react-native";
 
+import { ReportDialog } from "@/components/ReportDialog";
 import { apiFetch, apiFetchPage } from "@/lib/api";
 import { getAccessToken } from "@/lib/session";
 
@@ -34,6 +35,7 @@ export function CommentsList({
   const [loading, setLoading] = useState(false);
   const [draft, setDraft] = useState("");
   const [busy, setBusy] = useState(false);
+  const [reportCommentId, setReportCommentId] = useState<string | null>(null);
 
   const load = useCallback(
     async (after: string | null): Promise<void> => {
@@ -94,6 +96,15 @@ export function CommentsList({
             </Text>
           </Pressable>
           <Text className="text-ink">{c.body}</Text>
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => setReportCommentId(c.id)}
+            className="mt-1 self-start rounded px-1 py-0.5"
+          >
+            <Text className="text-xs text-ink-muted">
+              {t("moderation.reportComment")}
+            </Text>
+          </Pressable>
         </View>
       ))}
 
@@ -125,6 +136,12 @@ export function CommentsList({
           </Text>
         </Pressable>
       </View>
+      <ReportDialog
+        open={reportCommentId !== null}
+        onClose={() => setReportCommentId(null)}
+        targetKind="COMMENT"
+        targetId={reportCommentId ?? ""}
+      />
     </View>
   );
 }

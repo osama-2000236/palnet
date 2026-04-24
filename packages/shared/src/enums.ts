@@ -76,13 +76,30 @@ export type ApplicationStatus = (typeof ApplicationStatus)[keyof typeof Applicat
 export const ReportReason = {
   SPAM: "SPAM",
   HARASSMENT: "HARASSMENT",
-  HATE: "HATE",
-  MISINFORMATION: "MISINFORMATION",
-  NUDITY: "NUDITY",
+  HATE_SPEECH: "HATE_SPEECH",
   VIOLENCE: "VIOLENCE",
+  ADULT_CONTENT: "ADULT_CONTENT",
+  IMPERSONATION: "IMPERSONATION",
   OTHER: "OTHER",
 } as const;
 export type ReportReason = (typeof ReportReason)[keyof typeof ReportReason];
+
+export const AppealStatus = {
+  PENDING: "PENDING",
+  UPHELD: "UPHELD",
+  DENIED: "DENIED",
+} as const;
+export type AppealStatus = (typeof AppealStatus)[keyof typeof AppealStatus];
+
+export const AuditAction = {
+  USER_SUSPEND: "USER_SUSPEND",
+  USER_UNSUSPEND: "USER_UNSUSPEND",
+  POST_TAKEDOWN: "POST_TAKEDOWN",
+  POST_RESTORE: "POST_RESTORE",
+  REPORT_RESOLVE: "REPORT_RESOLVE",
+  REPORT_APPEAL_REVIEW: "REPORT_APPEAL_REVIEW",
+} as const;
+export type AuditAction = (typeof AuditAction)[keyof typeof AuditAction];
 
 export const CompanyMemberRole = {
   OWNER: "OWNER",
@@ -113,5 +130,9 @@ export const ErrorCode = {
   MEDIA_UNSUPPORTED: "MEDIA_UNSUPPORTED",
   JOB_CLOSED: "JOB_CLOSED",
   APPLICATION_DUPLICATE: "APPLICATION_DUPLICATE",
+  USER_SUSPENDED: "USER_SUSPENDED",
+  POST_TAKEN_DOWN: "POST_TAKEN_DOWN",
+  APPEAL_ALREADY_FILED: "APPEAL_ALREADY_FILED",
+  APPEAL_NOT_FOUND: "APPEAL_NOT_FOUND",
 } as const;
 export type ErrorCode = (typeof ErrorCode)[keyof typeof ErrorCode];

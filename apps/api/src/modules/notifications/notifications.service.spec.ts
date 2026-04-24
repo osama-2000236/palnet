@@ -1,7 +1,10 @@
+import { ConfigService } from "@nestjs/config";
 import { Test } from "@nestjs/testing";
 import { NotificationType } from "@palnet/shared";
 
+import { MailService } from "../mail/mail.service";
 import { PrismaService } from "../prisma/prisma.service";
+
 import { NotificationsBus } from "./notifications.bus";
 import { NotificationsService } from "./notifications.service";
 
@@ -13,6 +16,9 @@ type PrismaStub = {
     updateMany: jest.Mock;
     count: jest.Mock;
   };
+  user: {
+    findUnique: jest.Mock;
+  };
 };
 
 function buildPrisma(): PrismaStub {
@@ -23,6 +29,13 @@ function buildPrisma(): PrismaStub {
       findMany: jest.fn(),
       updateMany: jest.fn(),
       count: jest.fn(),
+    },
+    user: {
+      findUnique: jest.fn().mockResolvedValue({
+        email: "rec@example.com",
+        notificationPrefs: null,
+        isActive: true,
+      }),
     },
   };
 }
@@ -58,15 +71,23 @@ describe("NotificationsService", () => {
   let service: NotificationsService;
   let prisma: PrismaStub;
   let bus: { publish: jest.Mock; subscribe: jest.Mock };
+  let mail: { sendNotificationEmail: jest.Mock };
 
   beforeEach(async () => {
     prisma = buildPrisma();
     bus = { publish: jest.fn(), subscribe: jest.fn() };
+    mail = { sendNotificationEmail: jest.fn().mockResolvedValue(undefined) };
+    const config = {
+      getOrThrow: jest.fn().mockReturnValue("http://localhost:3000/verify-email"),
+      get: jest.fn().mockReturnValue("http://localhost:3000/verify-email"),
+    };
     const moduleRef = await Test.createTestingModule({
       providers: [
         NotificationsService,
         { provide: PrismaService, useValue: prisma },
         { provide: NotificationsBus, useValue: bus },
+        { provide: MailService, useValue: mail },
+        { provide: ConfigService, useValue: config },
       ],
     }).compile();
     service = moduleRef.get(NotificationsService);

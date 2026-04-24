@@ -18,6 +18,7 @@ import { useState, type ReactNode } from "react";
 import { Avatar, type AvatarUser } from "./Avatar";
 import { cx } from "./cx";
 import { Icon, type IconName } from "./Icon";
+import { Image } from "./Image";
 import { Surface } from "./Surface";
 
 export interface PostCardAuthor extends AvatarUser {
@@ -28,6 +29,7 @@ export interface PostCardMedia {
   id?: string | null;
   url: string;
   kind: "IMAGE" | "VIDEO";
+  blurhash?: string | null;
 }
 
 export interface PostCardCounts {
@@ -86,6 +88,12 @@ export interface PostCardProps {
   /** Controlled comments-open state. Falls back to internal state. */
   commentsOpen?: boolean;
   onToggleComments?(next: boolean): void;
+  /**
+   * Overflow menu. When provided, replaces the default "⋯" icon button in
+   * the header — hosts mount their own menu component (Report/Block/…)
+   * so business logic stays out of ui-web.
+   */
+  moreMenu?: ReactNode;
 }
 
 export function PostCard({
@@ -105,6 +113,7 @@ export function PostCard({
   commentsSlot,
   commentsOpen,
   onToggleComments,
+  moreMenu,
 }: PostCardProps): JSX.Element {
   const [internalOpen, setInternalOpen] = useState(false);
   const open = commentsOpen ?? internalOpen;
@@ -152,13 +161,15 @@ export function PostCard({
             {labels.publicAudience}
           </span>
         </div>
-        <button
-          type="button"
-          aria-label={labels.moreOptions}
-          className="inline-flex h-8 w-8 items-center justify-center rounded-md text-ink-muted hover:bg-surface-subtle hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-600"
-        >
-          <Icon name="more" size={18} />
-        </button>
+        {moreMenu ?? (
+          <button
+            type="button"
+            aria-label={labels.moreOptions}
+            className="inline-flex h-8 w-8 items-center justify-center rounded-md text-ink-muted hover:bg-surface-subtle hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-600"
+          >
+            <Icon name="more" size={18} />
+          </button>
+        )}
       </header>
 
       {/* Body */}
@@ -179,9 +190,11 @@ export function PostCard({
           {media.map((m, i) => (
             <li key={m.id ?? m.url ?? i} className="relative">
               {m.kind === "IMAGE" ? (
-                <img
+                <Image
                   src={m.url}
                   alt=""
+                  blurhash={m.blurhash ?? null}
+                  wrapperClassName="max-h-[420px] w-full"
                   className="max-h-[420px] w-full object-cover"
                 />
               ) : (

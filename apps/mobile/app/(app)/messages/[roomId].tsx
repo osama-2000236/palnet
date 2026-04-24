@@ -37,6 +37,8 @@ import {
 } from "react-native";
 import { z } from "zod";
 
+import { ReportDialog } from "@/components/ReportDialog";
+import { UserActions } from "@/components/UserActions";
 import { apiCall, apiFetch, apiFetchPage } from "@/lib/api";
 import { readSession } from "@/lib/session";
 
@@ -62,6 +64,8 @@ export default function MessageThreadScreen(): JSX.Element {
   const [draft, setDraft] = useState("");
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [actionsOpen, setActionsOpen] = useState(false);
+  const [reportMessageId, setReportMessageId] = useState<string | null>(null);
   const listRef = useRef<FlatList<Message> | null>(null);
 
   useEffect(() => {
@@ -221,6 +225,7 @@ export default function MessageThreadScreen(): JSX.Element {
   return (
     <SafeAreaView
       style={{ flex: 1, backgroundColor: nativeTokens.color.surfaceMuted }}
+      testID="message-thread-screen"
     >
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : undefined}
@@ -265,7 +270,36 @@ export default function MessageThreadScreen(): JSX.Element {
           >
             {title}
           </Text>
+          {other ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={t("moderation.more")}
+              onPress={() => setActionsOpen(true)}
+              hitSlop={10}
+              testID="message-thread-actions"
+            >
+              <Text
+                style={{
+                  color: nativeTokens.color.ink,
+                  fontFamily: nativeTokens.type.family.sans,
+                  fontSize: nativeTokens.type.scale.h3.size,
+                  fontWeight: "700",
+                }}
+              >
+                ⋯
+              </Text>
+            </Pressable>
+          ) : null}
         </View>
+        {other ? (
+          <UserActions
+            open={actionsOpen}
+            onClose={() => setActionsOpen(false)}
+            userId={other.userId}
+            userName={otherName}
+            onBlocked={() => router.replace("/(app)/messages")}
+          />
+        ) : null}
 
         <FlatList
           ref={listRef}
@@ -305,6 +339,23 @@ export default function MessageThreadScreen(): JSX.Element {
                 >
                   {item.body}
                 </MessageBubble>
+                {!mine && !item.id.startsWith("pending-") ? (
+                  <Pressable
+                    accessibilityRole="button"
+                    onPress={() => setReportMessageId(item.id)}
+                    style={{ alignSelf: "flex-start", paddingTop: 2 }}
+                  >
+                    <Text
+                      style={{
+                        color: nativeTokens.color.inkMuted,
+                        fontFamily: nativeTokens.type.family.sans,
+                        fontSize: nativeTokens.type.scale.caption.size,
+                      }}
+                    >
+                      {t("moderation.reportMessage")}
+                    </Text>
+                  </Pressable>
+                ) : null}
               </View>
             );
           }}
@@ -380,11 +431,13 @@ export default function MessageThreadScreen(): JSX.Element {
               fontSize: nativeTokens.type.scale.body.size,
               maxHeight: 120,
             }}
+            testID="message-thread-input"
           />
           <Pressable
             disabled={sending || draft.trim().length === 0}
             onPress={() => void submit()}
             accessibilityRole="button"
+            testID="message-thread-send"
             style={({ pressed }) => ({
               borderRadius: nativeTokens.radius.md,
               backgroundColor: nativeTokens.color.brand600,
@@ -414,6 +467,12 @@ export default function MessageThreadScreen(): JSX.Element {
             )}
           </Pressable>
         </View>
+        <ReportDialog
+          open={reportMessageId !== null}
+          onClose={() => setReportMessageId(null)}
+          targetKind="MESSAGE"
+          targetId={reportMessageId ?? ""}
+        />
       </KeyboardAvoidingView>
     </SafeAreaView>
   );

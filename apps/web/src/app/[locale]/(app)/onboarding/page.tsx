@@ -3,10 +3,20 @@
 import { OnboardProfileBody, Profile } from "@palnet/shared";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { z } from "zod";
 
 import { apiFetch, ApiRequestError } from "@/lib/api";
 import { getAccessToken } from "@/lib/session";
+
+const BootstrapProfile = z.object({
+  handle: z.string().nullish(),
+  firstName: z.string().nullish(),
+  lastName: z.string().nullish(),
+  headline: z.string().nullish(),
+  location: z.string().nullish(),
+  country: z.string().nullish(),
+});
 
 export default function OnboardingPage(): JSX.Element {
   const t = useTranslations("onboarding");
@@ -20,14 +30,66 @@ export default function OnboardingPage(): JSX.Element {
     location: "",
     country: "PS",
   });
+  const [ready, setReady] = useState(false);
+  const [hasProfileName, setHasProfileName] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    const token = getAccessToken();
+    if (!token) {
+      router.replace("/login");
+      return;
+    }
+
+    let cancelled = false;
+
+    void apiFetch("/profiles/me", BootstrapProfile, { token })
+      .then((profile) => {
+        if (cancelled) return;
+
+        const firstName = profile.firstName?.trim() ?? "";
+        const lastName = profile.lastName?.trim() ?? "";
+        const handle = resolveHandle({
+          handle: profile.handle ?? "",
+          firstName,
+          lastName,
+        });
+
+        setState({
+          handle,
+          firstName,
+          lastName,
+          headline: profile.headline ?? "",
+          location: profile.location ?? "",
+          country: profile.country ?? "PS",
+        });
+        setHasProfileName(Boolean(firstName && lastName));
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setHasProfileName(false);
+      })
+      .finally(() => {
+        if (!cancelled) setReady(true);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [router]);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>): Promise<void> {
     e.preventDefault();
     setError(null);
 
-    const parsed = OnboardProfileBody.safeParse(state);
+    const nextState = {
+      ...state,
+      handle: resolveHandle(state),
+    };
+    setState(nextState);
+
+    const parsed = OnboardProfileBody.safeParse(nextState);
     if (!parsed.success) {
       setError(tAuth("errors.VALIDATION_FAILED"));
       return;
@@ -74,25 +136,31 @@ export default function OnboardingPage(): JSX.Element {
         <p className="text-ink-muted">{t("subtitle")}</p>
       </header>
 
-      <label className="flex flex-col gap-1">
-        <span className="text-sm text-ink-muted">{tAuth("firstName")}</span>
-        <input
-          className="rounded-md border border-ink-muted/30 px-3 py-2"
-          value={state.firstName}
-          onChange={(e) => setState({ ...state, firstName: e.target.value })}
-          required
-        />
-      </label>
+      {!ready ? (
+        <div className="h-28 animate-pulse rounded-2xl bg-sand-100/70" />
+      ) : !hasProfileName ? (
+        <>
+          <label className="flex flex-col gap-1">
+            <span className="text-sm text-ink-muted">{tAuth("firstName")}</span>
+            <input
+              className="rounded-md border border-ink-muted/30 px-3 py-2"
+              value={state.firstName}
+              onChange={(e) => setState({ ...state, firstName: e.target.value })}
+              required
+            />
+          </label>
 
-      <label className="flex flex-col gap-1">
-        <span className="text-sm text-ink-muted">{tAuth("lastName")}</span>
-        <input
-          className="rounded-md border border-ink-muted/30 px-3 py-2"
-          value={state.lastName}
-          onChange={(e) => setState({ ...state, lastName: e.target.value })}
-          required
-        />
-      </label>
+          <label className="flex flex-col gap-1">
+            <span className="text-sm text-ink-muted">{tAuth("lastName")}</span>
+            <input
+              className="rounded-md border border-ink-muted/30 px-3 py-2"
+              value={state.lastName}
+              onChange={(e) => setState({ ...state, lastName: e.target.value })}
+              required
+            />
+          </label>
+        </>
+      ) : null}
 
       <label className="flex flex-col gap-1">
         <span className="text-sm text-ink-muted">{t("handle")}</span>
@@ -101,7 +169,10 @@ export default function OnboardingPage(): JSX.Element {
           className="rounded-md border border-ink-muted/30 px-3 py-2"
           value={state.handle}
           onChange={(e) =>
-            setState({ ...state, handle: e.target.value.toLowerCase() })
+            setState({
+              ...state,
+              handle: normalizeHandleInput(e.target.value),
+            })
           }
           required
           pattern="[a-z0-9][a-z0-9-]+[a-z0-9]"
@@ -141,11 +212,41 @@ export default function OnboardingPage(): JSX.Element {
 
       <button
         type="submit"
-        disabled={busy}
+        disabled={busy || !ready}
         className="rounded-md bg-brand-600 px-4 py-2 text-ink-inverse shadow-card hover:bg-brand-700 disabled:opacity-60"
       >
         {t("submit")}
       </button>
     </form>
   );
+}
+
+function resolveHandle(input: {
+  handle: string;
+  firstName: string;
+  lastName: string;
+}): string {
+  const existing = normalizeHandleInput(input.handle);
+  if (isValidHandle(existing)) return existing;
+
+  const fromName = normalizeHandleInput(`${input.firstName}-${input.lastName}`);
+  if (isValidHandle(fromName)) return fromName;
+
+  return `member-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+function normalizeHandleInput(value: string): string {
+  return value
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .replace(/-+/g, "-")
+    .slice(0, 30)
+    .replace(/-+$/g, "");
+}
+
+function isValidHandle(value: string): boolean {
+  return value.length >= 3 && /^[a-z0-9][a-z0-9-]*[a-z0-9]$/.test(value);
 }

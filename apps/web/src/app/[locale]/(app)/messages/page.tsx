@@ -26,9 +26,10 @@ import {
   type MessageStatus,
 } from "@palnet/ui-web";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import {
+  Suspense,
   useCallback,
   useEffect,
   useMemo,
@@ -37,6 +38,8 @@ import {
 } from "react";
 import { z } from "zod";
 
+import { MoreMenu } from "@/components/MoreMenu";
+import { ReportDialog } from "@/components/ReportDialog";
 import { apiCall, apiFetch, ApiRequestError, apiFetchPage } from "@/lib/api";
 import { readSession } from "@/lib/session";
 
@@ -57,9 +60,20 @@ const TYPING_TTL_MS = 5 * 1000;
 const TYPING_POST_THROTTLE_MS = 3 * 1000;
 
 export default function MessagesPage(): JSX.Element {
+  return (
+    <Suspense fallback={<MessagesPageFallback />}>
+      <MessagesPageContent />
+    </Suspense>
+  );
+}
+
+function MessagesPageContent(): JSX.Element {
   const t = useTranslations("messaging");
+  const tModeration = useTranslations("moderation");
   const locale = useLocale();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const requestedRoomId = searchParams.get("room");
   const [viewerId, setViewerId] = useState<string | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [rooms, setRooms] = useState<ChatRoom[]>([]);
@@ -77,6 +91,8 @@ export default function MessagesPage(): JSX.Element {
     () => new Set(),
   );
   const [error, setError] = useState<string | null>(null);
+  const [reportMessageId, setReportMessageId] = useState<string | null>(null);
+  const [blockingUser, setBlockingUser] = useState(false);
   const threadRef = useRef<HTMLDivElement | null>(null);
   const lastTypingPostRef = useRef<{ roomId: string | null; at: number }>({
     roomId: null,
@@ -103,15 +119,64 @@ export default function MessagesPage(): JSX.Element {
     return out.data;
   }, []);
 
+  const loadRoomById = useCallback(
+    async (roomId: string, tk: string): Promise<void> => {
+      const room = await apiFetch(`/messaging/rooms/${roomId}`, ChatRoomSchema, {
+        token: tk,
+      });
+      setRooms((prev) => {
+        const existing = prev.findIndex((item) => item.id === room.id);
+        if (existing >= 0) {
+          const next = prev.slice();
+          next[existing] = room;
+          return next;
+        }
+        return [room, ...prev];
+      });
+      setActiveRoomId(room.id);
+    },
+    [],
+  );
+
   useEffect(() => {
     if (!token) return;
     void loadRooms(token).then((list) => {
-      if (!activeRoomId && list.length > 0) {
+      if (
+        requestedRoomId &&
+        list.some((room) => room.id === requestedRoomId) &&
+        activeRoomId !== requestedRoomId
+      ) {
+        setActiveRoomId(requestedRoomId);
+        return;
+      }
+      if (!requestedRoomId && !activeRoomId && list.length > 0) {
         setActiveRoomId(list[0]!.id);
       }
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [token]);
+  }, [token, requestedRoomId]);
+
+  useEffect(() => {
+    if (
+      requestedRoomId &&
+      rooms.some((room) => room.id === requestedRoomId) &&
+      activeRoomId !== requestedRoomId
+    ) {
+      setActiveRoomId(requestedRoomId);
+    }
+  }, [activeRoomId, requestedRoomId, rooms]);
+
+  useEffect(() => {
+    if (
+      !token ||
+      !requestedRoomId ||
+      rooms.some((room) => room.id === requestedRoomId)
+    ) {
+      return;
+    }
+
+    void loadRoomById(requestedRoomId, token).catch(() => {});
+  }, [loadRoomById, requestedRoomId, rooms, token]);
 
   // ───────── Messages for active room ─────────
   const loadMessages = useCallback(
@@ -436,6 +501,35 @@ export default function MessagesPage(): JSX.Element {
       ? typingUserByRoom[activeRoomId]
       : null;
 
+  async function blockOtherMember(): Promise<void> {
+    if (!token || !activeRoomId || !otherMember || blockingUser) return;
+    const name =
+      `${otherMember.firstName} ${otherMember.lastName}`.trim() ||
+      otherMember.handle;
+    const ok = window.confirm(
+      `${tModeration("blockConfirmTitle", { name })}\n\n${tModeration(
+        "blockConfirmBody",
+      )}`,
+    );
+    if (!ok) return;
+    setBlockingUser(true);
+    try {
+      await apiCall("/blocks", {
+        method: "POST",
+        token,
+        body: { userId: otherMember.userId },
+      });
+      setRooms((prev) => prev.filter((room) => room.id !== activeRoomId));
+      setActiveRoomId(null);
+      setMessages([]);
+      router.replace("/messages");
+    } catch {
+      setError(tModeration("blockErrorToast"));
+    } finally {
+      setBlockingUser(false);
+    }
+  }
+
   // ───────── Render ─────────
   return (
     <main className="mx-auto w-full max-w-[1128px] px-4 py-6 lg:px-6">
@@ -446,7 +540,7 @@ export default function MessagesPage(): JSX.Element {
         className="grid min-h-[calc(100vh-8rem)] grid-cols-1 overflow-hidden md:grid-cols-[320px_minmax(0,1fr)]"
       >
         {/* Rooms list */}
-        <aside className="flex min-h-0 flex-col border-line-soft md:border-e">
+        <div className="flex min-h-0 flex-col border-line-soft md:border-e">
           <div className="flex items-center justify-between gap-2 border-b border-line-soft px-4 py-3">
             <h1 className="text-base font-semibold text-ink">{t("title")}</h1>
             <button
@@ -507,7 +601,7 @@ export default function MessagesPage(): JSX.Element {
               })
             )}
           </div>
-        </aside>
+        </div>
 
         {/* Active thread */}
         <section className="flex min-h-0 flex-col">
@@ -558,6 +652,25 @@ export default function MessagesPage(): JSX.Element {
                     {activeRoom?.title ?? activeRoomId}
                   </span>
                 )}
+                {otherMember ? (
+                  <div className="ms-auto">
+                    <MoreMenu
+                      label={tModeration("more")}
+                      items={[
+                        {
+                          key: "block",
+                          label: tModeration("blockUser", {
+                            name:
+                              `${otherMember.firstName} ${otherMember.lastName}`.trim() ||
+                              otherMember.handle,
+                          }),
+                          danger: true,
+                          onClick: () => void blockOtherMember(),
+                        },
+                      ]}
+                    />
+                  </div>
+                ) : null}
               </header>
 
               <div
@@ -635,6 +748,17 @@ export default function MessagesPage(): JSX.Element {
                           >
                             {m.body}
                           </MessageBubble>
+                          {!mine && !m.id.startsWith("pending-") ? (
+                            <div className="mt-1 flex justify-start">
+                              <button
+                                type="button"
+                                onClick={() => setReportMessageId(m.id)}
+                                className="rounded px-2 py-0.5 text-[11px] text-ink-muted hover:bg-surface hover:text-ink"
+                              >
+                                {tModeration("reportMessage")}
+                              </button>
+                            </div>
+                          ) : null}
                         </div>
                       );
                     })}
@@ -695,6 +819,27 @@ export default function MessagesPage(): JSX.Element {
             </>
           )}
         </section>
+      </Surface>
+      <ReportDialog
+        open={reportMessageId !== null}
+        targetKind="MESSAGE"
+        targetId={reportMessageId ?? ""}
+        onClose={() => setReportMessageId(null)}
+      />
+    </main>
+  );
+}
+
+function MessagesPageFallback(): JSX.Element {
+  return (
+    <main className="mx-auto w-full max-w-[1128px] px-4 py-6 lg:px-6">
+      <Surface
+        as="section"
+        variant="card"
+        padding="6"
+        className="min-h-[calc(100vh-8rem)]"
+      >
+        <p className="text-sm text-ink-muted">Loading messages…</p>
       </Surface>
     </main>
   );

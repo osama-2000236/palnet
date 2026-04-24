@@ -9,8 +9,8 @@
 // logical corner properties yet, so we reverse the ends under RTL via
 // I18nManager.isRTL at render time.
 
-import { I18nManager, Pressable, Text, View } from "react-native";
 import type { ReactNode } from "react";
+import { I18nManager, Pressable, Text, View } from "react-native";
 
 import { Icon } from "./Icon";
 import { nativeTokens } from "./tokens";

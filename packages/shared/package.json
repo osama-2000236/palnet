@@ -9,7 +9,7 @@
     "build": "tsc -p tsconfig.json",
     "dev": "tsc -p tsconfig.json --watch",
     "clean": "rimraf dist",
-    "lint": "eslint .",
+    "lint": "eslint \"src/**/*.ts\"",
     "type-check": "tsc --noEmit",
     "test": "jest --passWithNoTests"
   },
