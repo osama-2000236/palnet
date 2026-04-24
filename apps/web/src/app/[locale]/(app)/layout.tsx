@@ -26,21 +26,13 @@ import {
 import { AppShell, type AppShellLabels, type AppShellRoute } from "@palnet/ui-web";
 import { usePathname, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  type ReactNode,
-} from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { z } from "zod";
 
 import { apiCall, apiFetch, apiFetchPage } from "@/lib/api";
 import { clearSession, readSession } from "@/lib/session";
 
-const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000/api/v1";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000/api/v1";
 
 const UnreadCount = z.object({ count: z.number().int().nonnegative() });
 const RoomsEnvelope = z.object({ data: z.array(ChatRoomSchema) });
@@ -80,11 +72,7 @@ function sumUnread(rooms: ChatRoom[]): number {
   return rooms.reduce((acc, r) => acc + r.unreadCount, 0);
 }
 
-export default function AppLayout({
-  children,
-}: {
-  children: ReactNode;
-}): JSX.Element {
+export default function AppLayout({ children }: { children: ReactNode }): JSX.Element {
   const router = useRouter();
   const pathname = usePathname();
 
@@ -171,19 +159,16 @@ export default function AppLayout({
 
   // Messages unread — sum of per-room counts. Refetch on any chat event to
   // keep the badge honest; the rooms list is small.
-  const refetchRooms = useCallback(
-    async (tk: string): Promise<void> => {
-      try {
-        const out = await apiFetchPage("/messaging/rooms", RoomsEnvelope, {
-          token: tk,
-        });
-        setMessagesUnread(sumUnread(out.data));
-      } catch {
-        // ignore
-      }
-    },
-    [],
-  );
+  const refetchRooms = useCallback(async (tk: string): Promise<void> => {
+    try {
+      const out = await apiFetchPage("/messaging/rooms", RoomsEnvelope, {
+        token: tk,
+      });
+      setMessagesUnread(sumUnread(out.data));
+    } catch {
+      // ignore
+    }
+  }, []);
 
   const refetchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => {
@@ -334,7 +319,7 @@ export default function AppLayout({
         notifications: tNav("unreadNotifications", { count: "{count}" }),
       },
     }),
-      [tCommon, tNav, tFeed, tNetwork, tMsg, tNotif, tSearch, tProfile, tAuth],
+    [tCommon, tNav, tFeed, tNetwork, tMsg, tNotif, tSearch, tProfile, tAuth],
   );
 
   if (bare) {
@@ -396,7 +381,7 @@ function VerifyEmailBanner({ token }: { token: string }): JSX.Element | null {
     <div
       role="region"
       aria-label={t("bannerLabel")}
-      className="mx-auto mb-4 flex w-full max-w-[1128px] flex-wrap items-center justify-between gap-3 rounded-md border border-amber-500/40 bg-amber-50 px-4 py-3 text-sm text-ink"
+      className="text-ink mx-auto mb-4 flex w-full max-w-[1128px] flex-wrap items-center justify-between gap-3 rounded-md border border-amber-500/40 bg-amber-50 px-4 py-3 text-sm"
     >
       <p className="min-w-0">{sent ? t("sentBody") : t("body")}</p>
       {sent ? null : (
@@ -406,13 +391,13 @@ function VerifyEmailBanner({ token }: { token: string }): JSX.Element | null {
             void resend();
           }}
           disabled={busy}
-          className="rounded-md bg-brand-600 px-3 py-1.5 text-sm font-semibold text-ink-inverse disabled:opacity-60"
+          className="bg-brand-600 text-ink-inverse rounded-md px-3 py-1.5 text-sm font-semibold disabled:opacity-60"
         >
           {t("resend")}
         </button>
       )}
       {error ? (
-        <span role="alert" className="text-sm text-danger">
+        <span role="alert" className="text-danger text-sm">
           {t("error")}
         </span>
       ) : null}

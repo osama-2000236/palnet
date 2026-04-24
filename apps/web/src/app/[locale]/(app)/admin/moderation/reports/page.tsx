@@ -159,24 +159,18 @@ export default function AdminReportsPage(): JSX.Element {
   // Refresh a single report row in-place after a side-effect (suspend,
   // takedown, appeal review). We re-fetch the detail so resolved+appeal
   // state stays accurate without a full page reload.
-  const refreshReport = useCallback(
-    async (tk: string, id: string): Promise<void> => {
-      try {
-        const updated = await apiFetch(`/admin/reports/${id}`, AdminReportItem, {
-          token: tk,
-        });
-        setItems((prev) => prev.map((r) => (r.id === updated.id ? updated : r)));
-      } catch {
-        /* keep existing row — next full list load will sync */
-      }
-    },
-    [],
-  );
+  const refreshReport = useCallback(async (tk: string, id: string): Promise<void> => {
+    try {
+      const updated = await apiFetch(`/admin/reports/${id}`, AdminReportItem, {
+        token: tk,
+      });
+      setItems((prev) => prev.map((r) => (r.id === updated.id ? updated : r)));
+    } catch {
+      /* keep existing row — next full list load will sync */
+    }
+  }, []);
 
-  async function runAdminAction(
-    path: string,
-    body: Record<string, unknown>,
-  ): Promise<boolean> {
+  async function runAdminAction(path: string, body: Record<string, unknown>): Promise<boolean> {
     if (!token || actionBusy) return false;
     setActionBusy(true);
     setError(false);
@@ -492,9 +486,7 @@ export default function AdminReportsPage(): JSX.Element {
               onUnsuspend={(note) => void unsuspendTarget(active.targetId, note)}
               onTakedown={(reason) => void takedownTarget(active.targetId, reason)}
               onRestore={(note) => void restoreTarget(active.targetId, note)}
-              onReviewAppeal={(decision, note) =>
-                void reviewAppeal(active.id, decision, note)
-              }
+              onReviewAppeal={(decision, note) => void reviewAppeal(active.id, decision, note)}
             />
           ) : (
             <p className="text-ink-muted text-sm">{t("selectPrompt")}</p>
@@ -597,9 +589,7 @@ function ReportDetail({
         <section className="border-line-soft rounded-md border p-3">
           <h3 className="text-ink mb-2 text-sm font-semibold">{t("adminActions")}</h3>
           <label className="block">
-            <span className="text-ink-muted mb-1 block text-xs">
-              {t("adminActionReason")}
-            </span>
+            <span className="text-ink-muted mb-1 block text-xs">{t("adminActionReason")}</span>
             <input
               value={actionReason}
               onChange={(e) => setActionReason(e.currentTarget.value)}
@@ -623,9 +613,7 @@ function ReportDetail({
                 <button
                   type="button"
                   disabled={actionBusy}
-                  onClick={() =>
-                    onUnsuspend(actionReason.trim() || undefined)
-                  }
+                  onClick={() => onUnsuspend(actionReason.trim() || undefined)}
                   className="border-line-hard bg-surface text-ink rounded-md border px-3 py-1.5 text-sm font-semibold disabled:opacity-60"
                   data-testid="admin-unsuspend"
                 >
@@ -647,9 +635,7 @@ function ReportDetail({
                 <button
                   type="button"
                   disabled={actionBusy}
-                  onClick={() =>
-                    onRestore(actionReason.trim() || undefined)
-                  }
+                  onClick={() => onRestore(actionReason.trim() || undefined)}
                   className="border-line-hard bg-surface text-ink rounded-md border px-3 py-1.5 text-sm font-semibold disabled:opacity-60"
                   data-testid="admin-restore"
                 >
@@ -669,15 +655,10 @@ function ReportDetail({
             value={t(`appealStatusValues.${report.appealStatus}`)}
           />
           {report.appealedAt ? (
-            <InfoRow
-              label={t("appealedAt")}
-              value={new Date(report.appealedAt).toLocaleString()}
-            />
+            <InfoRow label={t("appealedAt")} value={new Date(report.appealedAt).toLocaleString()} />
           ) : null}
           {report.appealNote ? (
-            <p className="text-ink mt-2 whitespace-pre-wrap text-sm">
-              {report.appealNote}
-            </p>
+            <p className="text-ink mt-2 whitespace-pre-wrap text-sm">{report.appealNote}</p>
           ) : null}
           {report.appealReviewedAt ? (
             <InfoRow
@@ -693,9 +674,7 @@ function ReportDetail({
           {appealPending ? (
             <div className="mt-3 flex flex-col gap-2">
               <label className="block">
-                <span className="text-ink-muted mb-1 block text-xs">
-                  {t("appealDecisionNote")}
-                </span>
+                <span className="text-ink-muted mb-1 block text-xs">{t("appealDecisionNote")}</span>
                 <textarea
                   value={appealNoteDraft}
                   onChange={(e) => setAppealNoteDraft(e.currentTarget.value)}
@@ -709,9 +688,7 @@ function ReportDetail({
                 <button
                   type="button"
                   disabled={actionBusy}
-                  onClick={() =>
-                    onReviewAppeal("UPHELD", appealNoteDraft.trim() || undefined)
-                  }
+                  onClick={() => onReviewAppeal("UPHELD", appealNoteDraft.trim() || undefined)}
                   className="bg-brand-600 text-ink-inverse rounded-md px-3 py-1.5 text-sm font-semibold disabled:opacity-60"
                   data-testid="admin-appeal-uphold"
                 >
@@ -720,9 +697,7 @@ function ReportDetail({
                 <button
                   type="button"
                   disabled={actionBusy}
-                  onClick={() =>
-                    onReviewAppeal("DENIED", appealNoteDraft.trim() || undefined)
-                  }
+                  onClick={() => onReviewAppeal("DENIED", appealNoteDraft.trim() || undefined)}
                   className="border-line-hard bg-surface text-ink rounded-md border px-3 py-1.5 text-sm font-semibold disabled:opacity-60"
                   data-testid="admin-appeal-deny"
                 >

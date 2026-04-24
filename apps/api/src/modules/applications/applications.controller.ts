@@ -1,11 +1,4 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Param,
-  Patch,
-  Query,
-} from "@nestjs/common";
+import { Body, Controller, Get, Param, Patch, Query } from "@nestjs/common";
 import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 import {
   type Application,
@@ -15,10 +8,7 @@ import {
 } from "@palnet/shared";
 
 import { ZodValidationPipe } from "../../common/zod-pipe";
-import {
-  CurrentUser,
-  type AuthUser,
-} from "../auth/decorators/current-user.decorator";
+import { CurrentUser, type AuthUser } from "../auth/decorators/current-user.decorator";
 
 import { ApplicationsService } from "./applications.service";
 
@@ -43,13 +33,7 @@ export class ApplicationsController {
     @Param("jobId") jobId: string,
     @Query(new ZodValidationPipe(CursorPageQuery)) query: CursorPageQuery,
   ): Promise<{ data: Application[]; meta: CursorPageMeta }> {
-    return this.applications.listForJob(
-      user,
-      id,
-      jobId,
-      query.after ?? null,
-      query.limit,
-    );
+    return this.applications.listForJob(user, id, jobId, query.after ?? null, query.limit);
   }
 
   @Patch("applications/:id/status")

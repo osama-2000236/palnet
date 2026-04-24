@@ -54,7 +54,7 @@ All clients → api.palnet.ps (Render) ←→ Neon (Postgres)
 ### 4. Vercel (Web)
 
 - Import repo. Root directory `apps/web`. Framework preset Next.js.
-- Build command: `pnpm --filter @palnet/web build` with `TURBO_TEAM`/`TURBO_TOKEN` env if using remote cache.
+- Build command: `pnpm --filter @palnet/web... build` with `TURBO_TEAM`/`TURBO_TOKEN` env if using remote cache.
 - Install command: `pnpm install --frozen-lockfile` at repo root.
 - `NEXT_PUBLIC_*` vars set per environment.
 - Custom domain `palnet.ps` + `www.palnet.ps` (redirect apex → www or vice versa — pick one).
@@ -91,7 +91,7 @@ All clients → api.palnet.ps (Render) ←→ Neon (Postgres)
 3. `pnpm lint`
 4. `pnpm type-check`
 5. `pnpm test`
-6. `pnpm --filter @palnet/web build` (sanity)
+6. `pnpm --filter @palnet/web... build` (sanity, including workspace deps)
 7. Seeded authed a11y gate: `pnpm --filter @palnet/web e2e:a11y-authed`.
 8. Playwright against a spun-up local stack (Chromium).
 

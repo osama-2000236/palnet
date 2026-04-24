@@ -6,12 +6,12 @@ it here, regenerate consumers.
 
 ## Files
 
-| File | Use |
-|---|---|
-| `logo-mark.svg` | Filled mark (olive circle + cream wheat head). Default for app icons, favicons, and hero positioning. |
-| `logo-mark-mono.svg` | Monochrome mark. Uses `currentColor` — style via CSS. Use on light-on-dark or when color needs to match a surface. |
+| File                   | Use                                                                                                                 |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `logo-mark.svg`        | Filled mark (olive circle + cream wheat head). Default for app icons, favicons, and hero positioning.               |
+| `logo-mark-mono.svg`   | Monochrome mark. Uses `currentColor` — style via CSS. Use on light-on-dark or when color needs to match a surface.  |
 | `logo-wordmark-ar.svg` | Mark + Arabic wordmark "بيدر". RTL-friendly; mark is to the right of the text. Default wordmark in Arabic contexts. |
-| `logo-wordmark-en.svg` | Mark + Latin wordmark "Baydar". LTR layout. Use in English contexts and for non-Arabic-speaking channels. |
+| `logo-wordmark-en.svg` | Mark + Latin wordmark "Baydar". LTR layout. Use in English contexts and for non-Arabic-speaking channels.           |
 
 ## Brand concept
 

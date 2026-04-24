@@ -80,9 +80,7 @@ export function Sheet({
               styles.header,
               // Flip header items for RTL so the close button sits at the
               // logical end edge.
-              I18nManager.isRTL
-                ? { flexDirection: "row-reverse" }
-                : { flexDirection: "row" },
+              I18nManager.isRTL ? { flexDirection: "row-reverse" } : { flexDirection: "row" },
             ]}
           >
             <Text style={styles.title} numberOfLines={1}>

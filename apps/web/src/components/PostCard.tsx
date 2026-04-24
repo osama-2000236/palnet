@@ -40,8 +40,7 @@ export function PostCard({
   const [reportOpen, setReportOpen] = useState(false);
 
   const authorName =
-    `${post.author.firstName} ${post.author.lastName}`.trim() ||
-    post.author.handle;
+    `${post.author.firstName} ${post.author.lastName}`.trim() || post.author.handle;
 
   async function toggleReaction(): Promise<void> {
     const token = getAccessToken();
@@ -81,9 +80,7 @@ export function PostCard({
     const token = getAccessToken();
     if (!token) return;
     const ok = window.confirm(
-      `${tMod("blockConfirmTitle", { name: authorName })}\n\n${tMod(
-        "blockConfirmBody",
-      )}`,
+      `${tMod("blockConfirmTitle", { name: authorName })}\n\n${tMod("blockConfirmBody")}`,
     );
     if (!ok) return;
     try {

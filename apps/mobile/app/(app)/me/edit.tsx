@@ -47,23 +47,19 @@ export default function EditProfileScreen(): JSX.Element {
 
   if (loading || !profile) {
     return (
-      <SafeAreaView className="flex-1 items-center justify-center bg-surface-muted">
+      <SafeAreaView className="bg-surface-muted flex-1 items-center justify-center">
         <ActivityIndicator />
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-surface-muted">
+    <SafeAreaView className="bg-surface-muted flex-1">
       <ScrollView contentContainerClassName="p-4 gap-4">
         <View className="flex-row items-center justify-between">
-          <Text className="text-2xl font-bold text-ink">
-            {t("profile.editTitle")}
-          </Text>
+          <Text className="text-ink text-2xl font-bold">{t("profile.editTitle")}</Text>
           <Pressable onPress={() => router.back()}>
-            <Text className="text-sm text-ink-muted">
-              {t("common.cancel")}
-            </Text>
+            <Text className="text-ink-muted text-sm">{t("common.cancel")}</Text>
           </Pressable>
         </View>
 
@@ -78,16 +74,10 @@ export default function EditProfileScreen(): JSX.Element {
 
 // ──────────────────────────────────────────────────────────────────────────
 
-function Card({
-  title,
-  children,
-}: {
-  title: string;
-  children: React.ReactNode;
-}): JSX.Element {
+function Card({ title, children }: { title: string; children: React.ReactNode }): JSX.Element {
   return (
-    <View className="rounded-md border border-ink-muted/20 bg-surface p-4">
-      <Text className="mb-3 text-lg font-semibold text-ink">{title}</Text>
+    <View className="border-ink-muted/20 bg-surface rounded-md border p-4">
+      <Text className="text-ink mb-3 text-lg font-semibold">{title}</Text>
       {children}
     </View>
   );
@@ -110,7 +100,7 @@ function Input({
       onChangeText={onChangeText}
       placeholder={placeholder}
       multiline={multiline}
-      className="mb-2 rounded-md border border-ink-muted/30 bg-surface px-3 py-2 text-ink"
+      className="border-ink-muted/30 bg-surface text-ink mb-2 rounded-md border px-3 py-2"
       style={multiline ? { minHeight: 80, textAlignVertical: "top" } : undefined}
     />
   );
@@ -203,8 +193,8 @@ function BasicsCard({
             style={{ width: 64, height: 64, borderRadius: 32 }}
           />
         ) : (
-          <View className="h-16 w-16 items-center justify-center rounded-full border border-ink-muted/20 bg-surface-muted">
-            <Text className="text-xs text-ink-muted">
+          <View className="border-ink-muted/20 bg-surface-muted h-16 w-16 items-center justify-center rounded-full border">
+            <Text className="text-ink-muted text-xs">
               {profile.firstName[0]}
               {profile.lastName[0]}
             </Text>
@@ -213,9 +203,9 @@ function BasicsCard({
         <Pressable
           onPress={pickAvatar}
           disabled={uploading}
-          className="rounded-md border border-ink-muted/30 px-3 py-2"
+          className="border-ink-muted/30 rounded-md border px-3 py-2"
         >
-          <Text className="text-sm text-ink">
+          <Text className="text-ink text-sm">
             {uploading ? t("profile.uploading") : t("profile.changeAvatar")}
           </Text>
         </Pressable>
@@ -228,15 +218,17 @@ function BasicsCard({
         placeholder={t("onboarding.headline") ?? "Headline"}
       />
       <Input value={about} onChangeText={setAbout} placeholder={t("profile.about")} multiline />
-      <Input value={location} onChangeText={setLocation} placeholder={t("onboarding.location") ?? "Location"} />
+      <Input
+        value={location}
+        onChangeText={setLocation}
+        placeholder={t("onboarding.location") ?? "Location"}
+      />
       <Pressable
         onPress={save}
         disabled={busy}
-        className="self-end rounded-md bg-brand-600 px-4 py-2"
+        className="bg-brand-600 self-end rounded-md px-4 py-2"
       >
-        <Text className="text-sm font-semibold text-ink-inverse">
-          {t("profile.save")}
-        </Text>
+        <Text className="text-ink-inverse text-sm font-semibold">{t("profile.save")}</Text>
       </Pressable>
     </Card>
   );
@@ -256,9 +248,7 @@ function ExperiencesCard({
   const [title, setTitle] = useState("");
   const [companyName, setCompanyName] = useState("");
   const [description, setDescription] = useState("");
-  const [startDate, setStartDate] = useState(
-    new Date().toISOString().slice(0, 10),
-  );
+  const [startDate, setStartDate] = useState(new Date().toISOString().slice(0, 10));
   const [busy, setBusy] = useState(false);
 
   async function add(): Promise<void> {
@@ -277,11 +267,11 @@ function ExperiencesCard({
     if (!token) return;
     setBusy(true);
     try {
-      const next = await apiFetch(
-        "/profiles/me/experiences",
-        ProfileSchema,
-        { method: "POST", body: parsed.data, token },
-      );
+      const next = await apiFetch("/profiles/me/experiences", ProfileSchema, {
+        method: "POST",
+        body: parsed.data,
+        token,
+      });
       onChanged(next);
       setShow(false);
       setTitle("");
@@ -297,11 +287,10 @@ function ExperiencesCard({
     if (!token) return;
     setBusy(true);
     try {
-      const next = await apiFetch(
-        `/profiles/me/experiences/${id}`,
-        ProfileSchema,
-        { method: "DELETE", token },
-      );
+      const next = await apiFetch(`/profiles/me/experiences/${id}`, ProfileSchema, {
+        method: "DELETE",
+        token,
+      });
       onChanged(next);
     } finally {
       setBusy(false);
@@ -316,44 +305,49 @@ function ExperiencesCard({
           className="mb-3 flex-row items-start justify-between"
         >
           <View className="flex-1">
-            <Text className="font-semibold text-ink">{e.title}</Text>
-            <Text className="text-sm text-ink-muted">{e.companyName}</Text>
-            {e.description ? (
-              <Text className="mt-1 text-sm text-ink">{e.description}</Text>
-            ) : null}
+            <Text className="text-ink font-semibold">{e.title}</Text>
+            <Text className="text-ink-muted text-sm">{e.companyName}</Text>
+            {e.description ? <Text className="text-ink mt-1 text-sm">{e.description}</Text> : null}
           </View>
           {e.id ? (
             <Pressable onPress={() => void remove(e.id as string)} disabled={busy}>
-              <Text className="text-xs text-danger">{t("profile.remove")}</Text>
+              <Text className="text-danger text-xs">{t("profile.remove")}</Text>
             </Pressable>
           ) : null}
         </View>
       ))}
 
       {show ? (
-        <View className="mt-2 rounded-md border border-brand-600/30 bg-brand-600/5 p-3">
-          <Input value={title} onChangeText={setTitle} placeholder={t("profile.expTitle") ?? "Title"} />
-          <Input value={companyName} onChangeText={setCompanyName} placeholder={t("profile.company") ?? "Company"} />
+        <View className="border-brand-600/30 bg-brand-600/5 mt-2 rounded-md border p-3">
+          <Input
+            value={title}
+            onChangeText={setTitle}
+            placeholder={t("profile.expTitle") ?? "Title"}
+          />
+          <Input
+            value={companyName}
+            onChangeText={setCompanyName}
+            placeholder={t("profile.company") ?? "Company"}
+          />
           <Input value={startDate} onChangeText={setStartDate} placeholder="YYYY-MM-DD" />
-          <Input value={description} onChangeText={setDescription} placeholder={t("profile.description") ?? "Description"} multiline />
+          <Input
+            value={description}
+            onChangeText={setDescription}
+            placeholder={t("profile.description") ?? "Description"}
+            multiline
+          />
           <View className="flex-row justify-end gap-2">
             <Pressable onPress={() => setShow(false)}>
-              <Text className="text-sm text-ink-muted">{t("profile.cancel")}</Text>
+              <Text className="text-ink-muted text-sm">{t("profile.cancel")}</Text>
             </Pressable>
-            <Pressable
-              onPress={add}
-              disabled={busy}
-              className="rounded-md bg-brand-600 px-4 py-2"
-            >
-              <Text className="text-sm font-semibold text-ink-inverse">
-                {t("profile.save")}
-              </Text>
+            <Pressable onPress={add} disabled={busy} className="bg-brand-600 rounded-md px-4 py-2">
+              <Text className="text-ink-inverse text-sm font-semibold">{t("profile.save")}</Text>
             </Pressable>
           </View>
         </View>
       ) : (
         <Pressable onPress={() => setShow(true)}>
-          <Text className="text-sm text-brand-600">+ {t("profile.add")}</Text>
+          <Text className="text-brand-600 text-sm">+ {t("profile.add")}</Text>
         </Pressable>
       )}
     </Card>
@@ -390,11 +384,11 @@ function EducationsCard({
     if (!token) return;
     setBusy(true);
     try {
-      const next = await apiFetch(
-        "/profiles/me/educations",
-        ProfileSchema,
-        { method: "POST", body: parsed.data, token },
-      );
+      const next = await apiFetch("/profiles/me/educations", ProfileSchema, {
+        method: "POST",
+        body: parsed.data,
+        token,
+      });
       onChanged(next);
       setShow(false);
       setSchool("");
@@ -410,11 +404,10 @@ function EducationsCard({
     if (!token) return;
     setBusy(true);
     try {
-      const next = await apiFetch(
-        `/profiles/me/educations/${id}`,
-        ProfileSchema,
-        { method: "DELETE", token },
-      );
+      const next = await apiFetch(`/profiles/me/educations/${id}`, ProfileSchema, {
+        method: "DELETE",
+        token,
+      });
       onChanged(next);
     } finally {
       setBusy(false);
@@ -424,14 +417,11 @@ function EducationsCard({
   return (
     <Card title={t("profile.education")}>
       {profile.educations.map((e) => (
-        <View
-          key={e.id ?? e.school}
-          className="mb-3 flex-row items-start justify-between"
-        >
+        <View key={e.id ?? e.school} className="mb-3 flex-row items-start justify-between">
           <View className="flex-1">
-            <Text className="font-semibold text-ink">{e.school}</Text>
+            <Text className="text-ink font-semibold">{e.school}</Text>
             {e.degree ? (
-              <Text className="text-sm text-ink-muted">
+              <Text className="text-ink-muted text-sm">
                 {e.degree}
                 {e.fieldOfStudy ? ` · ${e.fieldOfStudy}` : ""}
               </Text>
@@ -439,35 +429,41 @@ function EducationsCard({
           </View>
           {e.id ? (
             <Pressable onPress={() => void remove(e.id as string)} disabled={busy}>
-              <Text className="text-xs text-danger">{t("profile.remove")}</Text>
+              <Text className="text-danger text-xs">{t("profile.remove")}</Text>
             </Pressable>
           ) : null}
         </View>
       ))}
 
       {show ? (
-        <View className="mt-2 rounded-md border border-brand-600/30 bg-brand-600/5 p-3">
-          <Input value={school} onChangeText={setSchool} placeholder={t("profile.school") ?? "School"} />
-          <Input value={degree} onChangeText={setDegree} placeholder={t("profile.degree") ?? "Degree"} />
-          <Input value={fieldOfStudy} onChangeText={setFieldOfStudy} placeholder={t("profile.fieldOfStudy") ?? "Field of study"} />
+        <View className="border-brand-600/30 bg-brand-600/5 mt-2 rounded-md border p-3">
+          <Input
+            value={school}
+            onChangeText={setSchool}
+            placeholder={t("profile.school") ?? "School"}
+          />
+          <Input
+            value={degree}
+            onChangeText={setDegree}
+            placeholder={t("profile.degree") ?? "Degree"}
+          />
+          <Input
+            value={fieldOfStudy}
+            onChangeText={setFieldOfStudy}
+            placeholder={t("profile.fieldOfStudy") ?? "Field of study"}
+          />
           <View className="flex-row justify-end gap-2">
             <Pressable onPress={() => setShow(false)}>
-              <Text className="text-sm text-ink-muted">{t("profile.cancel")}</Text>
+              <Text className="text-ink-muted text-sm">{t("profile.cancel")}</Text>
             </Pressable>
-            <Pressable
-              onPress={add}
-              disabled={busy}
-              className="rounded-md bg-brand-600 px-4 py-2"
-            >
-              <Text className="text-sm font-semibold text-ink-inverse">
-                {t("profile.save")}
-              </Text>
+            <Pressable onPress={add} disabled={busy} className="bg-brand-600 rounded-md px-4 py-2">
+              <Text className="text-ink-inverse text-sm font-semibold">{t("profile.save")}</Text>
             </Pressable>
           </View>
         </View>
       ) : (
         <Pressable onPress={() => setShow(true)}>
-          <Text className="text-sm text-brand-600">+ {t("profile.add")}</Text>
+          <Text className="text-brand-600 text-sm">+ {t("profile.add")}</Text>
         </Pressable>
       )}
     </Card>
@@ -511,11 +507,10 @@ function SkillsCard({
     if (!token) return;
     setBusy(true);
     try {
-      const next = await apiFetch(
-        `/profiles/me/skills/${skillId}`,
-        ProfileSchema,
-        { method: "DELETE", token },
-      );
+      const next = await apiFetch(`/profiles/me/skills/${skillId}`, ProfileSchema, {
+        method: "DELETE",
+        token,
+      });
       onChanged(next);
     } finally {
       setBusy(false);
@@ -530,10 +525,10 @@ function SkillsCard({
             key={s.id}
             onPress={() => void remove(s.id)}
             disabled={busy}
-            className="flex-row items-center gap-1 rounded-full border border-ink-muted/30 px-3 py-1"
+            className="border-ink-muted/30 flex-row items-center gap-1 rounded-full border px-3 py-1"
           >
-            <Text className="text-sm text-ink">{s.name}</Text>
-            <Text className="text-xs text-danger"> ×</Text>
+            <Text className="text-ink text-sm">{s.name}</Text>
+            <Text className="text-danger text-xs"> ×</Text>
           </Pressable>
         ))}
       </View>
@@ -543,16 +538,14 @@ function SkillsCard({
           onChangeText={setName}
           placeholder={t("profile.addSkillPlaceholder") ?? "Add a skill"}
           maxLength={60}
-          className="flex-1 rounded-md border border-ink-muted/30 bg-surface px-3 py-2 text-ink"
+          className="border-ink-muted/30 bg-surface text-ink flex-1 rounded-md border px-3 py-2"
         />
         <Pressable
           onPress={add}
           disabled={busy || name.trim().length === 0}
-          className="rounded-md bg-brand-600 px-4 py-2"
+          className="bg-brand-600 rounded-md px-4 py-2"
         >
-          <Text className="text-sm font-semibold text-ink-inverse">
-            {t("profile.add")}
-          </Text>
+          <Text className="text-ink-inverse text-sm font-semibold">{t("profile.add")}</Text>
         </Pressable>
       </View>
     </Card>

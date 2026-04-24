@@ -103,9 +103,7 @@ export class JobsService {
               ],
             }
           : {}),
-        ...(filters.city
-          ? { city: { contains: filters.city, mode: "insensitive" } }
-          : {}),
+        ...(filters.city ? { city: { contains: filters.city, mode: "insensitive" } } : {}),
         ...(filters.type ? { type: filters.type } : {}),
         ...(filters.locationMode ? { locationMode: filters.locationMode } : {}),
       },
@@ -138,17 +136,10 @@ export class JobsService {
       throw new DomainException(ErrorCode.NOT_FOUND, "Job not found.", 404);
     }
 
-    return toJobDto(
-      row,
-      viewer.role === "ADMIN" || isManageRole(row.company.members[0]?.role),
-    );
+    return toJobDto(row, viewer.role === "ADMIN" || isManageRole(row.company.members[0]?.role));
   }
 
-  async create(
-    viewer: AuthUser,
-    companyId: string,
-    body: CreateJobBody,
-  ): Promise<JobDto> {
+  async create(viewer: AuthUser, companyId: string, body: CreateJobBody): Promise<JobDto> {
     await this.companies.assertCanManage(viewer, companyId, "ANY_EDITOR");
 
     const created = await this.prisma.job.create({
@@ -173,11 +164,7 @@ export class JobsService {
     return toJobDto(created as unknown as JobRow, true);
   }
 
-  async update(
-    viewer: AuthUser,
-    id: string,
-    body: UpdateJobBody,
-  ): Promise<JobDto> {
+  async update(viewer: AuthUser, id: string, body: UpdateJobBody): Promise<JobDto> {
     const job = await this.prisma.job.findUnique({
       where: { id },
       select: { id: true, companyId: true, deletedAt: true },

@@ -1,18 +1,5 @@
-import {
-  Body,
-  Controller,
-  Get,
-  HttpCode,
-  HttpStatus,
-  Post,
-  UseGuards,
-} from "@nestjs/common";
-import {
-  ApiBearerAuth,
-  ApiCreatedResponse,
-  ApiOkResponse,
-  ApiTags,
-} from "@nestjs/swagger";
+import { Body, Controller, Get, HttpCode, HttpStatus, Post, UseGuards } from "@nestjs/common";
+import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiTags } from "@nestjs/swagger";
 import { Throttle } from "@nestjs/throttler";
 import {
   type AuthSession,
@@ -83,19 +70,14 @@ export class AuthController {
   @AllowSuspended()
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiBearerAuth()
-  async logout(
-    @CurrentUser() user: AuthUser,
-    @Body() body: { deviceId: string },
-  ): Promise<void> {
+  async logout(@CurrentUser() user: AuthUser, @Body() body: { deviceId: string }): Promise<void> {
     await this.auth.logout(user.id, body.deviceId);
   }
 
   @Get("me")
   @ApiBearerAuth()
   @ApiOkResponse({ description: "Current authenticated user summary." })
-  async me(
-    @CurrentUser() user: AuthUser,
-  ): Promise<{ data: AuthSession["user"] }> {
+  async me(@CurrentUser() user: AuthUser): Promise<{ data: AuthSession["user"] }> {
     const data = await this.auth.me(user.id);
     return { data };
   }

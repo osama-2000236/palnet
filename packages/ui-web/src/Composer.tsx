@@ -136,42 +136,28 @@ export function Composer({
         <button
           type="button"
           onClick={() => setExpanded(true)}
-          className="flex-1 cursor-pointer rounded-full border border-line-soft bg-surface-subtle px-4 py-2.5 text-start text-sm text-ink-muted hover:bg-surface-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+          className="border-line-soft bg-surface-subtle text-ink-muted hover:bg-surface-muted focus-visible:ring-brand-600 focus-visible:ring-offset-surface flex-1 cursor-pointer rounded-full border px-4 py-2.5 text-start text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
         >
           {labels.startPrompt}
         </button>
         <div className="hidden items-center gap-1 sm:flex">
-          <QuietChip
-            icon="image"
-            label={labels.addImage}
-            onClick={() => setExpanded(true)}
-          />
-          <QuietChip
-            icon="video"
-            label={labels.addVideo}
-            onClick={() => setExpanded(true)}
-          />
-          <QuietChip
-            icon="calendar"
-            label={labels.addEvent}
-            onClick={() => setExpanded(true)}
-          />
+          <QuietChip icon="image" label={labels.addImage} onClick={() => setExpanded(true)} />
+          <QuietChip icon="video" label={labels.addVideo} onClick={() => setExpanded(true)} />
+          <QuietChip icon="calendar" label={labels.addEvent} onClick={() => setExpanded(true)} />
         </div>
       </Surface>
     );
   }
 
-  const name = me
-    ? `${me.firstName ?? ""} ${me.lastName ?? ""}`.trim() || (me.handle ?? "")
-    : "";
+  const name = me ? `${me.firstName ?? ""} ${me.lastName ?? ""}`.trim() || (me.handle ?? "") : "";
 
   return (
     <Surface as="section" variant="card" padding="4" className="flex flex-col gap-3">
       <div className="flex items-center gap-3">
         <Avatar user={me} size="md" />
         <div className="flex min-w-0 flex-col">
-          <span className="truncate text-sm font-semibold text-ink">{name}</span>
-          <span className="text-xs text-ink-muted">{labels.audienceHint}</span>
+          <span className="text-ink truncate text-sm font-semibold">{name}</span>
+          <span className="text-ink-muted text-xs">{labels.audienceHint}</span>
         </div>
       </div>
 
@@ -182,7 +168,7 @@ export function Composer({
         placeholder={labels.expandedPlaceholder}
         rows={5}
         maxLength={maxLength}
-        className="w-full resize-none rounded-md border-0 bg-transparent p-0 text-base text-ink placeholder:text-ink-muted focus:outline-none"
+        className="text-ink placeholder:text-ink-muted w-full resize-none rounded-md border-0 bg-transparent p-0 text-base focus:outline-none"
       />
 
       {media.length > 0 ? (
@@ -193,10 +179,10 @@ export function Composer({
                 <img
                   src={m.url}
                   alt=""
-                  className="h-24 w-24 rounded-md border border-line-soft object-cover"
+                  className="border-line-soft h-24 w-24 rounded-md border object-cover"
                 />
               ) : (
-                <div className="flex h-24 w-24 items-center justify-center rounded-md border border-line-soft bg-surface-subtle text-ink-muted">
+                <div className="border-line-soft bg-surface-subtle text-ink-muted flex h-24 w-24 items-center justify-center rounded-md border">
                   <Icon name="video" size={24} />
                 </div>
               )}
@@ -205,7 +191,7 @@ export function Composer({
                   type="button"
                   onClick={() => onRemoveMedia(m.id)}
                   aria-label={labels.removeMedia}
-                  className="absolute -top-2 -end-2 inline-flex h-5 w-5 items-center justify-center rounded-full bg-surface text-ink-muted shadow-card hover:text-danger focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-600"
+                  className="bg-surface text-ink-muted shadow-card hover:text-danger focus-visible:ring-brand-600 absolute -end-2 -top-2 inline-flex h-5 w-5 items-center justify-center rounded-full focus:outline-none focus-visible:ring-2"
                 >
                   <Icon name="x" size={12} />
                 </button>
@@ -216,7 +202,7 @@ export function Composer({
       ) : null}
 
       {error ? (
-        <p role="alert" className="text-sm text-danger">
+        <p role="alert" className="text-danger text-sm">
           {error}
         </p>
       ) : null}
@@ -241,10 +227,8 @@ export function Composer({
           </>
         ) : null}
         <div className="flex-1" />
-        {uploading ? (
-          <span className="text-xs text-ink-muted">{labels.uploading}</span>
-        ) : null}
-        <span className="text-xs tabular-nums text-ink-muted">
+        {uploading ? <span className="text-ink-muted text-xs">{labels.uploading}</span> : null}
+        <span className="text-ink-muted text-xs tabular-nums">
           {body.length} / {maxLength}
         </span>
         <button
@@ -253,17 +237,15 @@ export function Composer({
             setExpanded(false);
             setBody("");
           }}
-          className="rounded-md border border-line-soft px-3 py-1.5 text-sm text-ink hover:bg-surface-subtle focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+          className="border-line-soft text-ink hover:bg-surface-subtle focus-visible:ring-brand-600 focus-visible:ring-offset-surface rounded-md border px-3 py-1.5 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
         >
           {labels.cancel}
         </button>
         <button
           type="button"
           onClick={() => void doSubmit()}
-          disabled={
-            busy || uploading || (body.trim().length === 0 && media.length === 0)
-          }
-          className="inline-flex items-center gap-1.5 rounded-md bg-brand-600 px-4 py-1.5 text-sm font-semibold text-ink-inverse shadow-card hover:bg-brand-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:cursor-not-allowed disabled:opacity-60"
+          disabled={busy || uploading || (body.trim().length === 0 && media.length === 0)}
+          className="bg-brand-600 text-ink-inverse shadow-card hover:bg-brand-700 focus-visible:ring-brand-600 focus-visible:ring-offset-surface inline-flex items-center gap-1.5 rounded-md px-4 py-1.5 text-sm font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
         >
           <Icon name="send-paper" size={14} />
           {labels.submit}
@@ -287,7 +269,7 @@ function QuietChip({
       type="button"
       onClick={onClick}
       className={cx(
-        "inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium text-ink-muted hover:bg-surface-subtle hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2 focus-visible:ring-offset-surface",
+        "text-ink-muted hover:bg-surface-subtle hover:text-ink focus-visible:ring-brand-600 focus-visible:ring-offset-surface inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
       )}
     >
       <Icon name={icon} size={14} />
@@ -312,7 +294,7 @@ function FileChip({
   return (
     <label
       className={cx(
-        "inline-flex cursor-pointer items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium text-ink-muted hover:bg-surface-subtle hover:text-ink focus-within:ring-2 focus-within:ring-brand-600",
+        "text-ink-muted hover:bg-surface-subtle hover:text-ink focus-within:ring-brand-600 inline-flex cursor-pointer items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium focus-within:ring-2",
         disabled && "cursor-not-allowed opacity-60",
       )}
     >
@@ -328,4 +310,3 @@ function FileChip({
     </label>
   );
 }
-

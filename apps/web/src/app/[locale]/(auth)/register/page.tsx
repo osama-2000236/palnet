@@ -58,17 +58,13 @@ export default function RegisterPage(): JSX.Element {
 
   return (
     <main className="px-6 py-12">
-      <form
-        onSubmit={onSubmit}
-        className="mx-auto flex w-full max-w-md flex-col gap-4"
-        noValidate
-      >
-        <h1 className="text-3xl font-bold text-ink">{t("register")}</h1>
+      <form onSubmit={onSubmit} className="mx-auto flex w-full max-w-md flex-col gap-4" noValidate>
+        <h1 className="text-ink text-3xl font-bold">{t("register")}</h1>
 
         <label className="flex flex-col gap-1">
-          <span className="text-sm text-ink-muted">{t("firstName")}</span>
+          <span className="text-ink-muted text-sm">{t("firstName")}</span>
           <input
-            className="rounded-md border border-ink-muted/30 px-3 py-2"
+            className="border-ink-muted/30 rounded-md border px-3 py-2"
             value={state.firstName}
             onChange={(e) => setState({ ...state, firstName: e.target.value })}
             required
@@ -77,9 +73,9 @@ export default function RegisterPage(): JSX.Element {
         </label>
 
         <label className="flex flex-col gap-1">
-          <span className="text-sm text-ink-muted">{t("lastName")}</span>
+          <span className="text-ink-muted text-sm">{t("lastName")}</span>
           <input
-            className="rounded-md border border-ink-muted/30 px-3 py-2"
+            className="border-ink-muted/30 rounded-md border px-3 py-2"
             value={state.lastName}
             onChange={(e) => setState({ ...state, lastName: e.target.value })}
             required
@@ -88,10 +84,10 @@ export default function RegisterPage(): JSX.Element {
         </label>
 
         <label className="flex flex-col gap-1">
-          <span className="text-sm text-ink-muted">{t("email")}</span>
+          <span className="text-ink-muted text-sm">{t("email")}</span>
           <input
             type="email"
-            className="rounded-md border border-ink-muted/30 px-3 py-2"
+            className="border-ink-muted/30 rounded-md border px-3 py-2"
             value={state.email}
             onChange={(e) => setState({ ...state, email: e.target.value })}
             required
@@ -102,10 +98,10 @@ export default function RegisterPage(): JSX.Element {
         </label>
 
         <label className="flex flex-col gap-1">
-          <span className="text-sm text-ink-muted">{t("password")}</span>
+          <span className="text-ink-muted text-sm">{t("password")}</span>
           <input
             type="password"
-            className="rounded-md border border-ink-muted/30 px-3 py-2"
+            className="border-ink-muted/30 rounded-md border px-3 py-2"
             value={state.password}
             onChange={(e) => setState({ ...state, password: e.target.value })}
             required
@@ -119,16 +115,14 @@ export default function RegisterPage(): JSX.Element {
           <input
             type="checkbox"
             checked={state.acceptTerms}
-            onChange={(e) =>
-              setState({ ...state, acceptTerms: e.target.checked })
-            }
+            onChange={(e) => setState({ ...state, acceptTerms: e.target.checked })}
             required
           />
           {t("acceptTerms")}
         </label>
 
         {error ? (
-          <p role="alert" className="text-sm text-danger">
+          <p role="alert" className="text-danger text-sm">
             {error}
           </p>
         ) : null}
@@ -136,7 +130,7 @@ export default function RegisterPage(): JSX.Element {
         <button
           type="submit"
           disabled={busy}
-          className="rounded-md bg-brand-600 px-4 py-2 text-ink-inverse shadow-card hover:bg-brand-700 disabled:opacity-60"
+          className="bg-brand-600 text-ink-inverse shadow-card hover:bg-brand-700 rounded-md px-4 py-2 disabled:opacity-60"
         >
           {t("submitRegister")}
         </button>

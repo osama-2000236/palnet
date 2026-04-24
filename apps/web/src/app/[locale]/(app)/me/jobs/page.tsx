@@ -60,9 +60,7 @@ export default function MyJobsPage(): JSX.Element {
   const [companies, setCompanies] = useState<ManagedCompany[]>([]);
   const [companiesLoading, setCompaniesLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [companyForm, setCompanyForm] = useState<CompanyFormState>(
-    EMPTY_COMPANY_FORM,
-  );
+  const [companyForm, setCompanyForm] = useState<CompanyFormState>(EMPTY_COMPANY_FORM);
   const [creatingCompany, setCreatingCompany] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
 
@@ -75,19 +73,22 @@ export default function MyJobsPage(): JSX.Element {
     setToken(session.tokens.accessToken);
   }, [router]);
 
-  const loadCompanies = useCallback(async (tk: string): Promise<void> => {
-    setCompaniesLoading(true);
-    try {
-      const data = await apiFetch("/companies/mine", ManagedCompaniesSchema, {
-        token: tk,
-      });
-      setCompanies(data);
-    } catch (err) {
-      setError((err as Error).message || tCommon("genericError"));
-    } finally {
-      setCompaniesLoading(false);
-    }
-  }, [tCommon]);
+  const loadCompanies = useCallback(
+    async (tk: string): Promise<void> => {
+      setCompaniesLoading(true);
+      try {
+        const data = await apiFetch("/companies/mine", ManagedCompaniesSchema, {
+          token: tk,
+        });
+        setCompanies(data);
+      } catch (err) {
+        setError((err as Error).message || tCommon("genericError"));
+      } finally {
+        setCompaniesLoading(false);
+      }
+    },
+    [tCommon],
+  );
 
   const loadApplications = useCallback(
     async (tk: string, after: string | null): Promise<void> => {
@@ -96,11 +97,9 @@ export default function MyJobsPage(): JSX.Element {
       try {
         const qs = new URLSearchParams({ limit: "20" });
         if (after) qs.set("after", after);
-        const page = await apiFetchPage(
-          `/me/applications?${qs.toString()}`,
-          ApplicationsPage,
-          { token: tk },
-        );
+        const page = await apiFetchPage(`/me/applications?${qs.toString()}`, ApplicationsPage, {
+          token: tk,
+        });
         setApplications((prev) => (after ? [...prev, ...page.data] : page.data));
         setCursor(page.meta.nextCursor);
         setHasMore(page.meta.hasMore);
@@ -160,17 +159,10 @@ export default function MyJobsPage(): JSX.Element {
     <main className="mx-auto flex w-full max-w-[1128px] flex-col gap-6 px-4 py-6">
       <header className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-ink">
-            {tJobs("myApplications")}
-          </h1>
-          <p className="text-sm text-ink-muted">
-            {tJobs("myApplicationsHint")}
-          </p>
+          <h1 className="text-ink text-2xl font-semibold">{tJobs("myApplications")}</h1>
+          <p className="text-ink-muted text-sm">{tJobs("myApplicationsHint")}</p>
         </div>
-        <Link
-          href="/jobs"
-          className="text-sm font-medium text-brand-700 hover:text-brand-800"
-        >
+        <Link href="/jobs" className="text-brand-700 hover:text-brand-800 text-sm font-medium">
           {tJobs("browseJobs")}
         </Link>
       </header>
@@ -181,16 +173,12 @@ export default function MyJobsPage(): JSX.Element {
             <ApplicationsSkeleton />
           ) : error ? (
             <Surface variant="tinted" padding="6">
-              <p className="text-sm text-ink-muted">{error}</p>
+              <p className="text-ink-muted text-sm">{error}</p>
             </Surface>
           ) : applications.length === 0 ? (
             <Surface variant="tinted" padding="8">
-              <p className="text-sm font-semibold text-ink">
-                {tJobs("emptyApplicationsTitle")}
-              </p>
-              <p className="mt-1 text-sm text-ink-muted">
-                {tJobs("emptyApplicationsBody")}
-              </p>
+              <p className="text-ink text-sm font-semibold">{tJobs("emptyApplicationsTitle")}</p>
+              <p className="text-ink-muted mt-1 text-sm">{tJobs("emptyApplicationsBody")}</p>
             </Surface>
           ) : (
             <>
@@ -202,34 +190,30 @@ export default function MyJobsPage(): JSX.Element {
                         <div className="min-w-0">
                           <Link
                             href={`/jobs/${application.job.id}`}
-                            className="block text-base font-semibold text-ink hover:text-brand-700"
+                            className="text-ink hover:text-brand-700 block text-base font-semibold"
                           >
                             {application.job.title}
                           </Link>
                           <Link
                             href={`/companies/${application.company.slug}`}
-                            className="mt-1 block text-sm text-ink-muted hover:text-ink"
+                            className="text-ink-muted hover:text-ink mt-1 block text-sm"
                           >
                             {application.company.name}
                           </Link>
-                          <p className="mt-2 text-xs text-ink-muted">
+                          <p className="text-ink-muted mt-2 text-xs">
                             {tJobs("appliedOn", {
-                              date: appliedFormatter.format(
-                                new Date(application.createdAt),
-                              ),
+                              date: appliedFormatter.format(new Date(application.createdAt)),
                             })}
                           </p>
                           {application.coverLetter ? (
-                            <p className="mt-2 line-clamp-3 text-sm text-ink-muted">
+                            <p className="text-ink-muted mt-2 line-clamp-3 text-sm">
                               {application.coverLetter}
                             </p>
                           ) : null}
                         </div>
                         <div className="flex shrink-0 flex-col items-start gap-2">
                           <StatusBadge
-                            label={tJobs(
-                              `applicationStatusLabels.${application.status}`,
-                            )}
+                            label={tJobs(`applicationStatusLabels.${application.status}`)}
                             status={application.status}
                           />
                           {application.resumeUrl ? (
@@ -237,7 +221,7 @@ export default function MyJobsPage(): JSX.Element {
                               href={application.resumeUrl}
                               target="_blank"
                               rel="noreferrer"
-                              className="text-xs font-medium text-brand-700 hover:text-brand-800"
+                              className="text-brand-700 hover:text-brand-800 text-xs font-medium"
                             >
                               {tJobs("resumeLink")}
                             </a>
@@ -268,42 +252,34 @@ export default function MyJobsPage(): JSX.Element {
           <Surface variant="card" padding="4">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <h2 className="text-base font-semibold text-ink">
-                  {tJobs("managedCompanies")}
-                </h2>
-                <p className="mt-1 text-sm text-ink-muted">
-                  {tJobs("managedCompaniesHint")}
-                </p>
+                <h2 className="text-ink text-base font-semibold">{tJobs("managedCompanies")}</h2>
+                <p className="text-ink-muted mt-1 text-sm">{tJobs("managedCompaniesHint")}</p>
               </div>
             </div>
 
             <div className="mt-4 space-y-3">
               {companiesLoading ? (
-                <p className="text-sm text-ink-muted">{tCommon("loading")}</p>
+                <p className="text-ink-muted text-sm">{tCommon("loading")}</p>
               ) : companies.length === 0 ? (
-                <p className="text-sm text-ink-muted">
-                  {tJobs("emptyCompanies")}
-                </p>
+                <p className="text-ink-muted text-sm">{tJobs("emptyCompanies")}</p>
               ) : (
                 companies.map((company) => (
                   <div
                     key={company.id}
-                    className="rounded-lg border border-line-soft bg-surface-muted p-3"
+                    className="border-line-soft bg-surface-muted rounded-lg border p-3"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
                         <Link
                           href={`/companies/${company.slug}`}
-                          className="block truncate text-sm font-semibold text-ink hover:text-brand-700"
+                          className="text-ink hover:text-brand-700 block truncate text-sm font-semibold"
                         >
                           {company.name}
                         </Link>
                         {company.tagline ? (
-                          <p className="mt-1 text-xs text-ink-muted">
-                            {company.tagline}
-                          </p>
+                          <p className="text-ink-muted mt-1 text-xs">{company.tagline}</p>
                         ) : null}
-                        <p className="mt-2 text-xs text-ink-muted">
+                        <p className="text-ink-muted mt-2 text-xs">
                           {tJobs("managedCompanyStats", {
                             jobs: company.counts.activeJobs,
                             members: company.counts.members,
@@ -312,7 +288,7 @@ export default function MyJobsPage(): JSX.Element {
                       </div>
                       <Link
                         href={`/companies/${company.slug}/admin`}
-                        className="text-xs font-medium text-brand-700 hover:text-brand-800"
+                        className="text-brand-700 hover:text-brand-800 text-xs font-medium"
                       >
                         {tJobs("manageCompany")}
                       </Link>
@@ -324,20 +300,14 @@ export default function MyJobsPage(): JSX.Element {
           </Surface>
 
           <Surface variant="card" padding="4">
-            <h2 className="text-base font-semibold text-ink">
-              {tJobs("createCompany")}
-            </h2>
-            <p className="mt-1 text-sm text-ink-muted">
-              {tJobs("createCompanyHint")}
-            </p>
+            <h2 className="text-ink text-base font-semibold">{tJobs("createCompany")}</h2>
+            <p className="text-ink-muted mt-1 text-sm">{tJobs("createCompanyHint")}</p>
 
             <div className="mt-4 space-y-3">
               <Field
                 label={tJobs("companyNameLabel")}
                 value={companyForm.name}
-                onChange={(value) =>
-                  setCompanyForm((prev) => ({ ...prev, name: value }))
-                }
+                onChange={(value) => setCompanyForm((prev) => ({ ...prev, name: value }))}
               />
               <Field
                 label={tJobs("companySlugLabel")}
@@ -352,41 +322,31 @@ export default function MyJobsPage(): JSX.Element {
               <Field
                 label={tJobs("companyTaglineLabel")}
                 value={companyForm.tagline}
-                onChange={(value) =>
-                  setCompanyForm((prev) => ({ ...prev, tagline: value }))
-                }
+                onChange={(value) => setCompanyForm((prev) => ({ ...prev, tagline: value }))}
               />
               <Field
                 label={tJobs("companyWebsiteLabel")}
                 value={companyForm.website}
-                onChange={(value) =>
-                  setCompanyForm((prev) => ({ ...prev, website: value }))
-                }
+                onChange={(value) => setCompanyForm((prev) => ({ ...prev, website: value }))}
               />
               <Field
                 label={tJobs("companyIndustryLabel")}
                 value={companyForm.industry}
-                onChange={(value) =>
-                  setCompanyForm((prev) => ({ ...prev, industry: value }))
-                }
+                onChange={(value) => setCompanyForm((prev) => ({ ...prev, industry: value }))}
               />
               <Field
                 label={tJobs("companyCityLabel")}
                 value={companyForm.city}
-                onChange={(value) =>
-                  setCompanyForm((prev) => ({ ...prev, city: value }))
-                }
+                onChange={(value) => setCompanyForm((prev) => ({ ...prev, city: value }))}
               />
               <Field
                 label={tJobs("companySizeLabel")}
                 value={companyForm.sizeBucket}
-                onChange={(value) =>
-                  setCompanyForm((prev) => ({ ...prev, sizeBucket: value }))
-                }
+                onChange={(value) => setCompanyForm((prev) => ({ ...prev, sizeBucket: value }))}
                 placeholder={tJobs("companySizePlaceholder")}
               />
               <label className="block">
-                <span className="mb-1 block text-xs font-medium text-ink-muted">
+                <span className="text-ink-muted mb-1 block text-xs font-medium">
                   {tJobs("companyAboutLabel")}
                 </span>
                 <textarea
@@ -398,12 +358,12 @@ export default function MyJobsPage(): JSX.Element {
                     }))
                   }
                   rows={5}
-                  className="w-full rounded-md border border-line-hard bg-surface px-3 py-2 text-sm text-ink placeholder:text-ink-subtle focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
+                  className="border-line-hard bg-surface text-ink placeholder:text-ink-subtle focus:border-brand-500 focus:ring-brand-500/20 w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2"
                 />
               </label>
 
               {createError ? (
-                <p className="rounded-md border border-danger/30 bg-danger/10 px-3 py-2 text-xs text-danger">
+                <p className="border-danger/30 bg-danger/10 text-danger rounded-md border px-3 py-2 text-xs">
                   {createError}
                 </p>
               ) : null}
@@ -436,15 +396,13 @@ function Field({
 }): JSX.Element {
   return (
     <label className="block">
-      <span className="mb-1 block text-xs font-medium text-ink-muted">
-        {label}
-      </span>
+      <span className="text-ink-muted mb-1 block text-xs font-medium">{label}</span>
       <input
         type="text"
         value={value}
         onChange={(event) => onChange(event.currentTarget.value)}
         placeholder={placeholder}
-        className="w-full rounded-md border border-line-hard bg-surface px-3 py-2 text-sm text-ink placeholder:text-ink-subtle focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
+        className="border-line-hard bg-surface text-ink placeholder:text-ink-subtle focus:border-brand-500 focus:ring-brand-500/20 w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2"
       />
     </label>
   );
@@ -467,9 +425,7 @@ function StatusBadge({
           : "border-line-hard bg-surface-subtle text-ink";
 
   return (
-    <span
-      className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-semibold ${tone}`}
-    >
+    <span className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-semibold ${tone}`}>
       {label}
     </span>
   );
@@ -481,9 +437,9 @@ function ApplicationsSkeleton(): JSX.Element {
       {[0, 1, 2].map((item) => (
         <Surface key={item} variant="card" padding="4">
           <div className="space-y-2">
-            <div className="h-4 w-1/2 animate-pulse rounded bg-surface-sunken" />
-            <div className="h-3 w-1/3 animate-pulse rounded bg-surface-sunken" />
-            <div className="h-3 w-2/3 animate-pulse rounded bg-surface-sunken" />
+            <div className="bg-surface-sunken h-4 w-1/2 animate-pulse rounded" />
+            <div className="bg-surface-sunken h-3 w-1/3 animate-pulse rounded" />
+            <div className="bg-surface-sunken h-3 w-2/3 animate-pulse rounded" />
           </div>
         </Surface>
       ))}

@@ -58,9 +58,7 @@ export default function MessageThreadScreen(): JSX.Element {
   const [token, setToken] = useState<string | null>(null);
   const [room, setRoom] = useState<ChatRoom | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
-  const [failedClientIds, setFailedClientIds] = useState<Set<string>>(
-    () => new Set(),
-  );
+  const [failedClientIds, setFailedClientIds] = useState<Set<string>>(() => new Set());
   const [draft, setDraft] = useState("");
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -85,11 +83,9 @@ export default function MessageThreadScreen(): JSX.Element {
     try {
       const [r, page] = await Promise.all([
         apiFetch(`/messaging/rooms/${roomId}`, ChatRoomSchema, { token }),
-        apiFetchPage(
-          `/messaging/rooms/${roomId}/messages?limit=30`,
-          MessagesPageEnvelope,
-          { token },
-        ),
+        apiFetchPage(`/messaging/rooms/${roomId}/messages?limit=30`, MessagesPageEnvelope, {
+          token,
+        }),
       ]);
       setRoom(r);
       setMessages([...page.data].reverse());
@@ -114,20 +110,12 @@ export default function MessageThreadScreen(): JSX.Element {
     async (text: string, clientMessageId: string): Promise<void> => {
       if (!token || !roomId) return;
       try {
-        const saved = await apiFetch(
-          `/messaging/rooms/${roomId}/messages`,
-          MessageSchema,
-          {
-            method: "POST",
-            token,
-            body: { body: text, clientMessageId },
-          },
-        );
-        setMessages((prev) =>
-          prev.map((x) =>
-            x.clientMessageId === clientMessageId ? saved : x,
-          ),
-        );
+        const saved = await apiFetch(`/messaging/rooms/${roomId}/messages`, MessageSchema, {
+          method: "POST",
+          token,
+          body: { body: text, clientMessageId },
+        });
+        setMessages((prev) => prev.map((x) => (x.clientMessageId === clientMessageId ? saved : x)));
         setFailedClientIds((prev) => {
           if (!prev.has(clientMessageId)) return prev;
           const next = new Set(prev);
@@ -150,9 +138,7 @@ export default function MessageThreadScreen(): JSX.Element {
     if (!token || !roomId || draft.trim().length === 0) return;
     setSending(true);
     setError(null);
-    const clientMessageId = `mob-${Date.now()}-${Math.random()
-      .toString(36)
-      .slice(2, 8)}`;
+    const clientMessageId = `mob-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     const text = draft.trim();
     const optimistic: Message = {
       id: `pending-${clientMessageId}`,
@@ -175,9 +161,7 @@ export default function MessageThreadScreen(): JSX.Element {
 
   const retryFailed = useCallback(
     (clientMessageId: string): void => {
-      const target = messages.find(
-        (m) => m.clientMessageId === clientMessageId,
-      );
+      const target = messages.find((m) => m.clientMessageId === clientMessageId);
       if (!target) return;
       setFailedClientIds((prev) => {
         if (!prev.has(clientMessageId)) return prev;
@@ -191,15 +175,10 @@ export default function MessageThreadScreen(): JSX.Element {
   );
 
   const other = useMemo(
-    () =>
-      viewerId && room
-        ? (room.members.find((m) => m.userId !== viewerId) ?? null)
-        : null,
+    () => (viewerId && room ? (room.members.find((m) => m.userId !== viewerId) ?? null) : null),
     [viewerId, room],
   );
-  const otherName = other
-    ? `${other.firstName} ${other.lastName}`.trim() || other.handle
-    : "";
+  const otherName = other ? `${other.firstName} ${other.lastName}`.trim() || other.handle : "";
   const title = otherName || (room?.title ?? "");
 
   const otherLastReadAtMs = useMemo(() => {
@@ -210,8 +189,7 @@ export default function MessageThreadScreen(): JSX.Element {
   const labels: MessageBubbleLabels = useMemo(
     () => ({
       ownPrefix: (time) => t("messaging.ownPrefix", { time }),
-      otherPrefix: (name, time) =>
-        t("messaging.otherPrefix", { name, time }),
+      otherPrefix: (name, time) => t("messaging.otherPrefix", { name, time }),
       failedHint: t("messaging.failedHint"),
       statusSending: t("messaging.status.sending"),
       statusSent: t("messaging.status.sent"),
@@ -243,11 +221,7 @@ export default function MessageThreadScreen(): JSX.Element {
             paddingVertical: nativeTokens.space[3],
           }}
         >
-          <Pressable
-            onPress={() => router.back()}
-            hitSlop={12}
-            accessibilityRole="button"
-          >
+          <Pressable onPress={() => router.back()} hitSlop={12} accessibilityRole="button">
             <Text
               style={{
                 color: nativeTokens.color.brand600,
@@ -313,10 +287,8 @@ export default function MessageThreadScreen(): JSX.Element {
             const prev = messages[index - 1];
             const next = messages[index + 1];
             const mine = item.authorId === viewerId;
-            const prevSameAuthor =
-              prev && prev.authorId === item.authorId;
-            const nextSameAuthor =
-              next && next.authorId === item.authorId;
+            const prevSameAuthor = prev && prev.authorId === item.authorId;
+            const nextSameAuthor = next && next.authorId === item.authorId;
             const tail = !nextSameAuthor;
             const status: MessageStatus | undefined = mine
               ? computeStatus(item, failedClientIds, otherLastReadAtMs)
@@ -331,8 +303,7 @@ export default function MessageThreadScreen(): JSX.Element {
                   authorName={!mine ? otherName : undefined}
                   onRetry={
                     item.clientMessageId
-                      ? () =>
-                          retryFailed(item.clientMessageId as string)
+                      ? () => retryFailed(item.clientMessageId as string)
                       : undefined
                   }
                   labels={labels}
@@ -373,9 +344,7 @@ export default function MessageThreadScreen(): JSX.Element {
               </Text>
             </Surface>
           }
-          onContentSizeChange={() =>
-            listRef.current?.scrollToEnd({ animated: false })
-          }
+          onContentSizeChange={() => listRef.current?.scrollToEnd({ animated: false })}
         />
 
         {error ? (
@@ -443,12 +412,7 @@ export default function MessageThreadScreen(): JSX.Element {
               backgroundColor: nativeTokens.color.brand600,
               paddingHorizontal: nativeTokens.space[4],
               paddingVertical: nativeTokens.space[2],
-              opacity:
-                sending || draft.trim().length === 0
-                  ? 0.6
-                  : pressed
-                    ? 0.85
-                    : 1,
+              opacity: sending || draft.trim().length === 0 ? 0.6 : pressed ? 0.85 : 1,
             })}
           >
             {sending ? (
@@ -496,9 +460,7 @@ function computeStatus(
 
 function shortTime(iso: string, locale: string): string {
   try {
-    const tag = locale.toLowerCase().startsWith("ar")
-      ? `${locale}-u-nu-arab`
-      : locale;
+    const tag = locale.toLowerCase().startsWith("ar") ? `${locale}-u-nu-arab` : locale;
     return new Date(iso).toLocaleTimeString(tag, {
       hour: "numeric",
       minute: "2-digit",

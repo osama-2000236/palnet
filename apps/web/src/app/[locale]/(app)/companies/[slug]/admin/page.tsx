@@ -96,9 +96,7 @@ export default function CompanyAdminPage(): JSX.Element {
   const [memberForm, setMemberForm] = useState<MemberFormState>(EMPTY_MEMBER_FORM);
   const [jobForm, setJobForm] = useState<JobFormState>(EMPTY_JOB_FORM);
   const [editingJobId, setEditingJobId] = useState<string | null>(null);
-  const [applicationsByJob, setApplicationsByJob] = useState<
-    Record<string, JobApplication[]>
-  >({});
+  const [applicationsByJob, setApplicationsByJob] = useState<Record<string, JobApplication[]>>({});
   const [loading, setLoading] = useState(true);
   const [savingCompany, setSavingCompany] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
@@ -106,9 +104,7 @@ export default function CompanyAdminPage(): JSX.Element {
   const [savingMember, setSavingMember] = useState(false);
   const [savingJob, setSavingJob] = useState(false);
   const [loadingJobId, setLoadingJobId] = useState<string | null>(null);
-  const [loadingApplicantsJobId, setLoadingApplicantsJobId] = useState<string | null>(
-    null,
-  );
+  const [loadingApplicantsJobId, setLoadingApplicantsJobId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const loadCompany = useCallback(
@@ -153,10 +149,7 @@ export default function CompanyAdminPage(): JSX.Element {
     void loadCompany(token);
   }, [token, slug, loadCompany]);
 
-  async function uploadCompanyMedia(
-    file: File,
-    kind: "logo" | "cover",
-  ): Promise<void> {
+  async function uploadCompanyMedia(file: File, kind: "logo" | "cover"): Promise<void> {
     if (!token || !company) return;
     const setBusy = kind === "logo" ? setUploadingLogo : setUploadingCover;
     setBusy(true);
@@ -339,7 +332,7 @@ export default function CompanyAdminPage(): JSX.Element {
     return (
       <main className="mx-auto max-w-[1128px] px-4 py-6">
         <Surface variant="card" padding="6">
-          <p className="text-sm text-ink-muted">{tCommon("loading")}</p>
+          <p className="text-ink-muted text-sm">{tCommon("loading")}</p>
         </Surface>
       </main>
     );
@@ -349,7 +342,7 @@ export default function CompanyAdminPage(): JSX.Element {
     return (
       <main className="mx-auto max-w-[1128px] px-4 py-6">
         <Surface variant="tinted" padding="6">
-          <p className="text-sm text-ink-muted">{error ?? tCompany("notFound")}</p>
+          <p className="text-ink-muted text-sm">{error ?? tCompany("notFound")}</p>
         </Surface>
       </main>
     );
@@ -359,7 +352,7 @@ export default function CompanyAdminPage(): JSX.Element {
     return (
       <main className="mx-auto max-w-[1128px] px-4 py-6">
         <Surface variant="tinted" padding="6">
-          <p className="text-sm text-ink-muted">{tCompany("forbidden")}</p>
+          <p className="text-ink-muted text-sm">{tCompany("forbidden")}</p>
         </Surface>
       </main>
     );
@@ -371,35 +364,29 @@ export default function CompanyAdminPage(): JSX.Element {
         <div>
           <Link
             href={`/companies/${company.slug}`}
-            className="text-sm font-medium text-brand-700 hover:text-brand-800"
+            className="text-brand-700 hover:text-brand-800 text-sm font-medium"
           >
             {company.name}
           </Link>
-          <h1 className="mt-1 text-2xl font-semibold text-ink">
-            {tCompany("adminTitle")}
-          </h1>
+          <h1 className="text-ink mt-1 text-2xl font-semibold">{tCompany("adminTitle")}</h1>
         </div>
       </header>
 
       {error ? (
         <Surface variant="tinted" padding="4">
-          <p className="text-sm text-ink-muted">{error}</p>
+          <p className="text-ink-muted text-sm">{error}</p>
         </Surface>
       ) : null}
 
       <section className="grid gap-6 lg:grid-cols-[380px_minmax(0,1fr)]">
         <div className="space-y-6">
           <Surface variant="card" padding="4">
-            <h2 className="text-base font-semibold text-ink">
-              {tCompany("media")}
-            </h2>
+            <h2 className="text-ink text-base font-semibold">{tCompany("media")}</h2>
             <div className="mt-4 space-y-4">
               <div>
-                <p className="mb-2 text-xs font-medium text-ink-muted">
-                  {tCompany("cover")}
-                </p>
+                <p className="text-ink-muted mb-2 text-xs font-medium">{tCompany("cover")}</p>
                 <div
-                  className="relative h-28 w-full overflow-hidden rounded-md border border-line-soft bg-surface-muted"
+                  className="border-line-soft bg-surface-muted relative h-28 w-full overflow-hidden rounded-md border"
                   style={
                     company.coverUrl
                       ? {
@@ -410,7 +397,7 @@ export default function CompanyAdminPage(): JSX.Element {
                       : undefined
                   }
                 />
-                <label className="mt-2 inline-block cursor-pointer rounded-md border border-line-hard bg-surface px-3 py-2 text-xs font-medium text-ink hover:bg-surface-muted">
+                <label className="border-line-hard bg-surface text-ink hover:bg-surface-muted mt-2 inline-block cursor-pointer rounded-md border px-3 py-2 text-xs font-medium">
                   {uploadingCover ? tCommon("loading") : tCompany("uploadCover")}
                   <input
                     type="file"
@@ -426,12 +413,10 @@ export default function CompanyAdminPage(): JSX.Element {
                 </label>
               </div>
               <div>
-                <p className="mb-2 text-xs font-medium text-ink-muted">
-                  {tCompany("logo")}
-                </p>
+                <p className="text-ink-muted mb-2 text-xs font-medium">{tCompany("logo")}</p>
                 <div className="flex items-center gap-3">
                   <div
-                    className="h-16 w-16 shrink-0 overflow-hidden rounded-md border border-line-soft bg-surface-muted"
+                    className="border-line-soft bg-surface-muted h-16 w-16 shrink-0 overflow-hidden rounded-md border"
                     style={
                       company.logoUrl
                         ? {
@@ -442,7 +427,7 @@ export default function CompanyAdminPage(): JSX.Element {
                         : undefined
                     }
                   />
-                  <label className="cursor-pointer rounded-md border border-line-hard bg-surface px-3 py-2 text-xs font-medium text-ink hover:bg-surface-muted">
+                  <label className="border-line-hard bg-surface text-ink hover:bg-surface-muted cursor-pointer rounded-md border px-3 py-2 text-xs font-medium">
                     {uploadingLogo ? tCommon("loading") : tCompany("uploadLogo")}
                     <input
                       type="file"
@@ -462,170 +447,146 @@ export default function CompanyAdminPage(): JSX.Element {
           </Surface>
 
           <Surface variant="card" padding="4">
-            <h2 className="text-base font-semibold text-ink">{tCompany("editCompany")}</h2>
+            <h2 className="text-ink text-base font-semibold">{tCompany("editCompany")}</h2>
             <div className="mt-4 space-y-3">
               <AdminField
                 label={tJobs("companyNameLabel")}
                 value={companyForm.name}
                 onChange={(value) =>
-                  setCompanyForm((prev) =>
-                    prev ? { ...prev, name: value } : prev,
-                  )
+                  setCompanyForm((prev) => (prev ? { ...prev, name: value } : prev))
                 }
               />
               <AdminField
                 label={tJobs("companyTaglineLabel")}
                 value={companyForm.tagline}
                 onChange={(value) =>
-                  setCompanyForm((prev) =>
-                    prev ? { ...prev, tagline: value } : prev,
-                  )
+                  setCompanyForm((prev) => (prev ? { ...prev, tagline: value } : prev))
                 }
               />
               <AdminField
                 label={tJobs("companyWebsiteLabel")}
                 value={companyForm.website}
                 onChange={(value) =>
-                  setCompanyForm((prev) =>
-                    prev ? { ...prev, website: value } : prev,
-                  )
+                  setCompanyForm((prev) => (prev ? { ...prev, website: value } : prev))
                 }
               />
               <AdminField
                 label={tJobs("companyIndustryLabel")}
                 value={companyForm.industry}
                 onChange={(value) =>
-                  setCompanyForm((prev) =>
-                    prev ? { ...prev, industry: value } : prev,
-                  )
+                  setCompanyForm((prev) => (prev ? { ...prev, industry: value } : prev))
                 }
               />
               <AdminField
                 label={tJobs("companySizeLabel")}
                 value={companyForm.sizeBucket}
                 onChange={(value) =>
-                  setCompanyForm((prev) =>
-                    prev ? { ...prev, sizeBucket: value } : prev,
-                  )
+                  setCompanyForm((prev) => (prev ? { ...prev, sizeBucket: value } : prev))
                 }
               />
               <AdminField
                 label={tJobs("companyCityLabel")}
                 value={companyForm.city}
                 onChange={(value) =>
-                  setCompanyForm((prev) =>
-                    prev ? { ...prev, city: value } : prev,
-                  )
+                  setCompanyForm((prev) => (prev ? { ...prev, city: value } : prev))
                 }
               />
               <label className="block">
-                <span className="mb-1 block text-xs font-medium text-ink-muted">
+                <span className="text-ink-muted mb-1 block text-xs font-medium">
                   {tJobs("companyAboutLabel")}
                 </span>
                 <textarea
                   value={companyForm.about}
                   onChange={(event) => {
                     const { value } = event.currentTarget;
-                    return (
-                    setCompanyForm((prev) =>
+                    return setCompanyForm((prev) =>
                       prev
                         ? {
                             ...prev,
                             about: value,
                           }
                         : prev,
-                    )
                     );
                   }}
                   rows={6}
-                  className="w-full rounded-md border border-line-hard bg-surface px-3 py-2 text-sm text-ink placeholder:text-ink-subtle focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
+                  className="border-line-hard bg-surface text-ink placeholder:text-ink-subtle focus:border-brand-500 focus:ring-brand-500/20 w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2"
                 />
               </label>
-              <Button
-                variant="accent"
-                onClick={() => void saveCompany()}
-                loading={savingCompany}
-              >
+              <Button variant="accent" onClick={() => void saveCompany()} loading={savingCompany}>
                 {tCompany("saveCompany")}
               </Button>
             </div>
           </Surface>
 
           {company.viewer.canManage ? (
-          <Surface variant="card" padding="4">
-            <h2 className="text-base font-semibold text-ink">{tCompany("members")}</h2>
-            <div className="mt-4 space-y-3">
-              <AdminField
-                label={tCompany("memberUserId")}
-                value={memberForm.userId}
-                onChange={(value) =>
-                  setMemberForm((prev) => ({ ...prev, userId: value }))
-                }
-                placeholder={tCompany("memberUserIdPlaceholder")}
-              />
-              <label className="block">
-                <span className="mb-1 block text-xs font-medium text-ink-muted">
-                  {tCompany("memberRole")}
-                </span>
-                <select
-                  value={memberForm.role}
-                  onChange={(event) =>
-                    setMemberForm((prev) => ({
-                      ...prev,
-                      role: event.currentTarget.value as MemberFormState["role"],
-                    }))
-                  }
-                  className="w-full rounded-md border border-line-hard bg-surface px-3 py-2 text-sm text-ink focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
-                >
-                  {Object.values(CompanyMemberRole).map((role) => (
-                    <option key={role} value={role}>
-                      {tCompany(`memberRoles.${role}`)}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <Button
-                variant="secondary"
-                onClick={() => void addMember()}
-                loading={savingMember}
-              >
-                {tCompany("addMember")}
-              </Button>
-            </div>
-
-            <ul className="mt-4 space-y-3">
-              {company.members.map((member) => (
-                <li
-                  key={member.id}
-                  className="flex items-center justify-between gap-3 rounded-lg border border-line-soft bg-surface-muted p-3"
-                >
-                  <div className="min-w-0">
-                    <Link
-                      href={`/in/${member.user.handle}`}
-                      className="block truncate text-sm font-semibold text-ink hover:text-brand-700"
-                    >
-                      {member.user.firstName} {member.user.lastName}
-                    </Link>
-                    <p className="mt-1 text-xs text-ink-muted">{member.role}</p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => void removeMember(member.user.userId)}
-                    className="text-xs font-medium text-danger hover:text-danger/80"
+            <Surface variant="card" padding="4">
+              <h2 className="text-ink text-base font-semibold">{tCompany("members")}</h2>
+              <div className="mt-4 space-y-3">
+                <AdminField
+                  label={tCompany("memberUserId")}
+                  value={memberForm.userId}
+                  onChange={(value) => setMemberForm((prev) => ({ ...prev, userId: value }))}
+                  placeholder={tCompany("memberUserIdPlaceholder")}
+                />
+                <label className="block">
+                  <span className="text-ink-muted mb-1 block text-xs font-medium">
+                    {tCompany("memberRole")}
+                  </span>
+                  <select
+                    value={memberForm.role}
+                    onChange={(event) =>
+                      setMemberForm((prev) => ({
+                        ...prev,
+                        role: event.currentTarget.value as MemberFormState["role"],
+                      }))
+                    }
+                    className="border-line-hard bg-surface text-ink focus:border-brand-500 focus:ring-brand-500/20 w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2"
                   >
-                    {tCompany("removeMember")}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </Surface>
+                    {Object.values(CompanyMemberRole).map((role) => (
+                      <option key={role} value={role}>
+                        {tCompany(`memberRoles.${role}`)}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <Button variant="secondary" onClick={() => void addMember()} loading={savingMember}>
+                  {tCompany("addMember")}
+                </Button>
+              </div>
+
+              <ul className="mt-4 space-y-3">
+                {company.members.map((member) => (
+                  <li
+                    key={member.id}
+                    className="border-line-soft bg-surface-muted flex items-center justify-between gap-3 rounded-lg border p-3"
+                  >
+                    <div className="min-w-0">
+                      <Link
+                        href={`/in/${member.user.handle}`}
+                        className="text-ink hover:text-brand-700 block truncate text-sm font-semibold"
+                      >
+                        {member.user.firstName} {member.user.lastName}
+                      </Link>
+                      <p className="text-ink-muted mt-1 text-xs">{member.role}</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => void removeMember(member.user.userId)}
+                      className="text-danger hover:text-danger/80 text-xs font-medium"
+                    >
+                      {tCompany("removeMember")}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </Surface>
           ) : null}
         </div>
 
         <div className="space-y-6">
           <Surface variant="card" padding="4">
             <div className="flex items-center justify-between gap-3">
-              <h2 className="text-base font-semibold text-ink">
+              <h2 className="text-ink text-base font-semibold">
                 {editingJobId ? tJobs("editJob") : tJobs("createJob")}
               </h2>
               {editingJobId ? (
@@ -635,7 +596,7 @@ export default function CompanyAdminPage(): JSX.Element {
                     setEditingJobId(null);
                     setJobForm(EMPTY_JOB_FORM);
                   }}
-                  className="text-sm font-medium text-ink-muted hover:text-ink"
+                  className="text-ink-muted hover:text-ink text-sm font-medium"
                 >
                   {tCommon("cancel")}
                 </button>
@@ -645,16 +606,12 @@ export default function CompanyAdminPage(): JSX.Element {
               <AdminField
                 label={tJobs("jobTitleLabel")}
                 value={jobForm.title}
-                onChange={(value) =>
-                  setJobForm((prev) => ({ ...prev, title: value }))
-                }
+                onChange={(value) => setJobForm((prev) => ({ ...prev, title: value }))}
               />
               <AdminField
                 label={tJobs("companyCityLabel")}
                 value={jobForm.city}
-                onChange={(value) =>
-                  setJobForm((prev) => ({ ...prev, city: value }))
-                }
+                onChange={(value) => setJobForm((prev) => ({ ...prev, city: value }))}
               />
               <SelectField
                 label={tJobs("type")}
@@ -688,101 +645,87 @@ export default function CompanyAdminPage(): JSX.Element {
                 label={tJobs("salaryMinLabel")}
                 type="number"
                 value={jobForm.salaryMin}
-                onChange={(value) =>
-                  setJobForm((prev) => ({ ...prev, salaryMin: value }))
-                }
+                onChange={(value) => setJobForm((prev) => ({ ...prev, salaryMin: value }))}
               />
               <AdminField
                 label={tJobs("salaryMaxLabel")}
                 type="number"
                 value={jobForm.salaryMax}
-                onChange={(value) =>
-                  setJobForm((prev) => ({ ...prev, salaryMax: value }))
-                }
+                onChange={(value) => setJobForm((prev) => ({ ...prev, salaryMax: value }))}
               />
               <AdminField
                 label={tJobs("salaryCurrencyLabel")}
                 value={jobForm.salaryCurrency}
-                onChange={(value) =>
-                  setJobForm((prev) => ({ ...prev, salaryCurrency: value }))
-                }
+                onChange={(value) => setJobForm((prev) => ({ ...prev, salaryCurrency: value }))}
               />
               <AdminField
                 label={tJobs("jobCountryLabel")}
                 value={jobForm.country}
-                onChange={(value) =>
-                  setJobForm((prev) => ({ ...prev, country: value }))
-                }
+                onChange={(value) => setJobForm((prev) => ({ ...prev, country: value }))}
               />
               <AdminField
                 label={tJobs("skillsListLabel")}
                 value={jobForm.skillsRequired}
-                onChange={(value) =>
-                  setJobForm((prev) => ({ ...prev, skillsRequired: value }))
-                }
+                onChange={(value) => setJobForm((prev) => ({ ...prev, skillsRequired: value }))}
                 placeholder={tJobs("skillsListPlaceholder")}
               />
               <AdminField
                 label={tJobs("expiresAtLabel")}
                 type="datetime-local"
                 value={jobForm.expiresAt}
-                onChange={(value) =>
-                  setJobForm((prev) => ({ ...prev, expiresAt: value }))
-                }
+                onChange={(value) => setJobForm((prev) => ({ ...prev, expiresAt: value }))}
               />
             </div>
             <label className="mt-3 block">
-              <span className="mb-1 block text-xs font-medium text-ink-muted">
+              <span className="text-ink-muted mb-1 block text-xs font-medium">
                 {tJobs("description")}
               </span>
               <textarea
                 value={jobForm.description}
                 onChange={(event) => {
                   const { value } = event.currentTarget;
-                  return (
-                  setJobForm((prev) => ({
+                  return setJobForm((prev) => ({
                     ...prev,
                     description: value,
-                  }))
-                  );
+                  }));
                 }}
                 rows={8}
-                className="w-full rounded-md border border-line-hard bg-surface px-3 py-2 text-sm text-ink placeholder:text-ink-subtle focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
+                className="border-line-hard bg-surface text-ink placeholder:text-ink-subtle focus:border-brand-500 focus:ring-brand-500/20 w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2"
               />
             </label>
             <div className="mt-4 flex gap-2">
-              <Button
-                variant="accent"
-                onClick={() => void saveJob()}
-                loading={savingJob}
-              >
+              <Button variant="accent" onClick={() => void saveJob()} loading={savingJob}>
                 {editingJobId ? tJobs("saveJob") : tJobs("createJob")}
               </Button>
             </div>
           </Surface>
 
           <Surface variant="card" padding="4">
-            <h2 className="text-base font-semibold text-ink">{tCompany("jobs")}</h2>
+            <h2 className="text-ink text-base font-semibold">{tCompany("jobs")}</h2>
             <div className="mt-4 space-y-4">
               {company.jobs.map((job) => (
                 <div
                   key={job.id}
-                  className="rounded-lg border border-line-soft bg-surface-muted p-4"
+                  className="border-line-soft bg-surface-muted rounded-lg border p-4"
                 >
                   <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                     <div>
                       <Link
                         href={`/jobs/${job.id}`}
-                        className="block text-sm font-semibold text-ink hover:text-brand-700"
+                        className="text-ink hover:text-brand-700 block text-sm font-semibold"
                       >
                         {job.title}
                       </Link>
-                      <p className="mt-1 text-xs text-ink-muted">
-                        {[job.city, tJobs(`locationLabels.${job.locationMode}`), tJobs(`typeLabels.${job.type}`)]
+                      <p className="text-ink-muted mt-1 text-xs">
+                        {[
+                          job.city,
+                          tJobs(`locationLabels.${job.locationMode}`),
+                          tJobs(`typeLabels.${job.type}`),
+                        ]
                           .filter(Boolean)
                           .join(" · ")}
                       </p>
-                      <p className="mt-2 text-xs text-ink-muted">
+                      <p className="text-ink-muted mt-2 text-xs">
                         {tJobs("applicationCount", { count: job.applicationCount })}
                       </p>
                     </div>
@@ -790,21 +733,21 @@ export default function CompanyAdminPage(): JSX.Element {
                       <button
                         type="button"
                         onClick={() => void editJob(job.id)}
-                        className="rounded-md border border-line-hard bg-surface px-3 py-2 text-xs font-medium text-ink hover:bg-surface"
+                        className="border-line-hard bg-surface text-ink hover:bg-surface rounded-md border px-3 py-2 text-xs font-medium"
                       >
                         {loadingJobId === job.id ? tCommon("loading") : tJobs("editJob")}
                       </button>
                       <button
                         type="button"
                         onClick={() => void closeJob(job.id)}
-                        className="rounded-md border border-danger/30 bg-danger/10 px-3 py-2 text-xs font-medium text-danger hover:bg-danger/20"
+                        className="border-danger/30 bg-danger/10 text-danger hover:bg-danger/20 rounded-md border px-3 py-2 text-xs font-medium"
                       >
                         {tJobs("closeJob")}
                       </button>
                       <button
                         type="button"
                         onClick={() => void loadApplicants(job.id)}
-                        className="rounded-md border border-brand-600/30 bg-brand-50 px-3 py-2 text-xs font-medium text-brand-700 hover:bg-brand-100"
+                        className="border-brand-600/30 bg-brand-50 text-brand-700 hover:bg-brand-100 rounded-md border px-3 py-2 text-xs font-medium"
                       >
                         {loadingApplicantsJobId === job.id
                           ? tCommon("loading")
@@ -818,38 +761,33 @@ export default function CompanyAdminPage(): JSX.Element {
                       {(applicationsByJob[job.id] ?? []).map((application) => (
                         <li
                           key={application.id}
-                          className="rounded-md border border-line-soft bg-surface p-3"
+                          className="border-line-soft bg-surface rounded-md border p-3"
                         >
                           <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                             <div>
                               <Link
                                 href={`/in/${application.applicant.handle}`}
-                                className="block text-sm font-semibold text-ink hover:text-brand-700"
+                                className="text-ink hover:text-brand-700 block text-sm font-semibold"
                               >
                                 {application.applicant.firstName} {application.applicant.lastName}
                               </Link>
                               {application.applicant.headline ? (
-                                <p className="mt-1 text-xs text-ink-muted">
+                                <p className="text-ink-muted mt-1 text-xs">
                                   {application.applicant.headline}
                                 </p>
                               ) : null}
                               {application.coverLetter ? (
-                                <p className="mt-2 text-sm text-ink-muted">
+                                <p className="text-ink-muted mt-2 text-sm">
                                   {application.coverLetter}
                                 </p>
                               ) : null}
                             </div>
                             <div className="flex flex-col items-start gap-2">
-                              <span className="rounded-full border border-line-hard bg-surface-subtle px-2.5 py-1 text-xs font-semibold text-ink">
+                              <span className="border-line-hard bg-surface-subtle text-ink rounded-full border px-2.5 py-1 text-xs font-semibold">
                                 {tJobs(`applicationStatusLabels.${application.status}`)}
                               </span>
                               <div className="flex flex-wrap gap-2">
-                                {[
-                                  "REVIEWING",
-                                  "SHORTLISTED",
-                                  "REJECTED",
-                                  "HIRED",
-                                ].map((status) => (
+                                {["REVIEWING", "SHORTLISTED", "REJECTED", "HIRED"].map((status) => (
                                   <button
                                     key={status}
                                     type="button"
@@ -860,7 +798,7 @@ export default function CompanyAdminPage(): JSX.Element {
                                         status as JobApplication["status"],
                                       )
                                     }
-                                    className="rounded-md border border-line-hard bg-surface px-2.5 py-1 text-[11px] font-medium text-ink hover:bg-surface-muted"
+                                    className="border-line-hard bg-surface text-ink hover:bg-surface-muted rounded-md border px-2.5 py-1 text-[11px] font-medium"
                                   >
                                     {tJobs(`applicationStatusLabels.${status}`)}
                                   </button>
@@ -872,7 +810,7 @@ export default function CompanyAdminPage(): JSX.Element {
                       ))}
                     </ul>
                   ) : applicationsByJob[job.id] ? (
-                    <p className="mt-4 text-sm text-ink-muted">{tJobs("noApplicants")}</p>
+                    <p className="text-ink-muted mt-4 text-sm">{tJobs("noApplicants")}</p>
                   ) : null}
                 </div>
               ))}
@@ -899,13 +837,13 @@ function AdminField({
 }): JSX.Element {
   return (
     <label className="block">
-      <span className="mb-1 block text-xs font-medium text-ink-muted">{label}</span>
+      <span className="text-ink-muted mb-1 block text-xs font-medium">{label}</span>
       <input
         type={type}
         value={value}
         onChange={(event) => onChange(event.currentTarget.value)}
         placeholder={placeholder}
-        className="w-full rounded-md border border-line-hard bg-surface px-3 py-2 text-sm text-ink placeholder:text-ink-subtle focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
+        className="border-line-hard bg-surface text-ink placeholder:text-ink-subtle focus:border-brand-500 focus:ring-brand-500/20 w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2"
       />
     </label>
   );
@@ -924,11 +862,11 @@ function SelectField({
 }): JSX.Element {
   return (
     <label className="block">
-      <span className="mb-1 block text-xs font-medium text-ink-muted">{label}</span>
+      <span className="text-ink-muted mb-1 block text-xs font-medium">{label}</span>
       <select
         value={value}
         onChange={(event) => onChange(event.currentTarget.value)}
-        className="w-full rounded-md border border-line-hard bg-surface px-3 py-2 text-sm text-ink focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
+        className="border-line-hard bg-surface text-ink focus:border-brand-500 focus:ring-brand-500/20 w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2"
       >
         {options.map((option) => (
           <option key={option.value} value={option.value}>

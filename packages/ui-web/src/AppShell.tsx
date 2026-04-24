@@ -37,13 +37,7 @@ import { Avatar, type AvatarUser } from "./Avatar";
 import { cx } from "./cx";
 import { Icon, type IconName } from "./Icon";
 
-export type AppShellRoute =
-  | "feed"
-  | "network"
-  | "jobs"
-  | "messages"
-  | "notifications"
-  | "profile";
+export type AppShellRoute = "feed" | "network" | "jobs" | "messages" | "notifications" | "profile";
 
 export interface AppShellLabels {
   /** Alt text for the logo button (announced to screen readers). */
@@ -66,10 +60,7 @@ export interface AppShellLabels {
    * Screen-reader template for unread badges. `{count}` is replaced with the
    * formatted number (e.g. "3 رسائل غير مقروءة"). Keep it short.
    */
-  unreadTemplate: Record<
-    Exclude<AppShellRoute, "profile" | "feed" | "network" | "jobs">,
-    string
-  >;
+  unreadTemplate: Record<Exclude<AppShellRoute, "profile" | "feed" | "network" | "jobs">, string>;
 }
 
 export interface AppShellProps {
@@ -154,10 +145,7 @@ export function AppShell({
       if (!(e.metaKey || e.ctrlKey)) return;
       const target = e.target as HTMLElement | null;
       const tag = target?.tagName;
-      const editing =
-        tag === "INPUT" ||
-        tag === "TEXTAREA" ||
-        (target?.isContentEditable ?? false);
+      const editing = tag === "INPUT" || tag === "TEXTAREA" || (target?.isContentEditable ?? false);
       // Allow ⌘K even while typing: it's a common "jump to search" gesture.
       // Only block when target is the search input itself (no-op).
       if (editing && target === searchInputRef.current) return;
@@ -196,79 +184,56 @@ export function AppShell({
   // Keys follow visual direction: ArrowRight always moves one step to the
   // physical right — which is "previous" in RTL and "next" in LTR. Home/End
   // jump to the first/last visible item.
-  const onNavKeyDown = useCallback(
-    (e: KeyboardEvent<HTMLElement>) => {
-      if (
-        e.key !== "ArrowLeft" &&
-        e.key !== "ArrowRight" &&
-        e.key !== "Home" &&
-        e.key !== "End"
-      ) {
-        return;
-      }
-      const nav = navRef.current;
-      if (!nav) return;
-      const focusables = Array.from(
-        nav.querySelectorAll<HTMLButtonElement>(
-          "button[data-nav-item], button[data-nav-profile]",
-        ),
-      );
-      const idx = focusables.indexOf(document.activeElement as HTMLButtonElement);
-      if (idx === -1) return;
-      e.preventDefault();
+  const onNavKeyDown = useCallback((e: KeyboardEvent<HTMLElement>) => {
+    if (e.key !== "ArrowLeft" && e.key !== "ArrowRight" && e.key !== "Home" && e.key !== "End") {
+      return;
+    }
+    const nav = navRef.current;
+    if (!nav) return;
+    const focusables = Array.from(
+      nav.querySelectorAll<HTMLButtonElement>("button[data-nav-item], button[data-nav-profile]"),
+    );
+    const idx = focusables.indexOf(document.activeElement as HTMLButtonElement);
+    if (idx === -1) return;
+    e.preventDefault();
 
-      if (e.key === "Home") {
-        focusables[0]?.focus();
-        return;
-      }
-      if (e.key === "End") {
-        focusables[focusables.length - 1]?.focus();
-        return;
-      }
+    if (e.key === "Home") {
+      focusables[0]?.focus();
+      return;
+    }
+    if (e.key === "End") {
+      focusables[focusables.length - 1]?.focus();
+      return;
+    }
 
-      const isRtl =
-        typeof document !== "undefined" &&
-        document.documentElement.getAttribute("dir") === "rtl";
-      // Visual "next" = DOM next in LTR, DOM previous in RTL.
-      const visualNext = isRtl
-        ? e.key === "ArrowLeft"
-        : e.key === "ArrowRight";
-      const step = visualNext ? 1 : -1;
-      const nextIdx = (idx + step + focusables.length) % focusables.length;
-      focusables[nextIdx]?.focus();
-    },
-    [],
-  );
+    const isRtl =
+      typeof document !== "undefined" && document.documentElement.getAttribute("dir") === "rtl";
+    // Visual "next" = DOM next in LTR, DOM previous in RTL.
+    const visualNext = isRtl ? e.key === "ArrowLeft" : e.key === "ArrowRight";
+    const step = visualNext ? 1 : -1;
+    const nextIdx = (idx + step + focusables.length) % focusables.length;
+    focusables[nextIdx]?.focus();
+  }, []);
 
   // When the profile menu opens, move focus to its first item. When it
   // closes (Esc, click-outside, selection), restore focus to the trigger.
   useEffect(() => {
     if (!menuOpen) return;
-    const first = menuRef.current?.querySelector<HTMLButtonElement>(
-      "[role='menuitem']",
-    );
+    const first = menuRef.current?.querySelector<HTMLButtonElement>("[role='menuitem']");
     first?.focus();
   }, [menuOpen]);
 
-  const onMenuKeyDown = useCallback(
-    (e: KeyboardEvent<HTMLDivElement>) => {
-      if (e.key !== "ArrowDown" && e.key !== "ArrowUp") return;
-      const menu = menuRef.current;
-      if (!menu) return;
-      const items = Array.from(
-        menu.querySelectorAll<HTMLButtonElement>("[role='menuitem']"),
-      );
-      const idx = items.indexOf(document.activeElement as HTMLButtonElement);
-      e.preventDefault();
-      const step = e.key === "ArrowDown" ? 1 : -1;
-      const next =
-        idx === -1
-          ? 0
-          : (idx + step + items.length) % items.length;
-      items[next]?.focus();
-    },
-    [],
-  );
+  const onMenuKeyDown = useCallback((e: KeyboardEvent<HTMLDivElement>) => {
+    if (e.key !== "ArrowDown" && e.key !== "ArrowUp") return;
+    const menu = menuRef.current;
+    if (!menu) return;
+    const items = Array.from(menu.querySelectorAll<HTMLButtonElement>("[role='menuitem']"));
+    const idx = items.indexOf(document.activeElement as HTMLButtonElement);
+    e.preventDefault();
+    const step = e.key === "ArrowDown" ? 1 : -1;
+    const next = idx === -1 ? 0 : (idx + step + items.length) % items.length;
+    items[next]?.focus();
+  }, []);
 
   const onSearchKey = useCallback(
     (e: KeyboardEvent<HTMLInputElement>) => {
@@ -281,27 +246,22 @@ export function AppShell({
   );
 
   return (
-    <div className="min-h-screen bg-surface-muted">
-      <header
-        role="banner"
-        className="sticky top-0 z-20 h-14 border-b border-line-soft bg-surface"
-      >
+    <div className="bg-surface-muted min-h-screen">
+      <header role="banner" className="border-line-soft bg-surface sticky top-0 z-20 h-14 border-b">
         <div className="mx-auto flex h-full w-full max-w-[1128px] items-center gap-4 px-5">
           {/* Logo — routes home. */}
           <button
             type="button"
             onClick={() => onNavigate("feed")}
             aria-label={labels.logoAlt}
-            className="flex shrink-0 items-center gap-2 rounded-md py-1 text-ink hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+            className="text-ink focus-visible:ring-brand-600 focus-visible:ring-offset-surface flex shrink-0 items-center gap-2 rounded-md py-1 hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
           >
             <Icon name="logo" size={32} />
-            <span className="hidden text-lg font-semibold sm:inline">
-              {labels.logoAlt}
-            </span>
+            <span className="hidden text-lg font-semibold sm:inline">{labels.logoAlt}</span>
           </button>
 
           {/* Search pill. */}
-          <div className="flex min-w-0 flex-1 items-center gap-2 rounded-full bg-surface-subtle px-3.5 py-2 focus-within:ring-2 focus-within:ring-brand-600 sm:max-w-[320px]">
+          <div className="bg-surface-subtle focus-within:ring-brand-600 flex min-w-0 flex-1 items-center gap-2 rounded-full px-3.5 py-2 focus-within:ring-2 sm:max-w-[320px]">
             <span className="text-ink-muted" aria-hidden="true">
               <Icon name="search" size={16} />
             </span>
@@ -313,7 +273,7 @@ export function AppShell({
               onKeyDown={onSearchKey}
               placeholder={labels.searchPlaceholder}
               aria-label={labels.searchLabel}
-              className="min-w-0 flex-1 bg-transparent text-sm text-ink placeholder:text-ink-muted focus:outline-none"
+              className="text-ink placeholder:text-ink-muted min-w-0 flex-1 bg-transparent text-sm focus:outline-none"
             />
           </div>
 
@@ -332,8 +292,7 @@ export function AppShell({
                   : item.key === "notifications"
                     ? notificationsUnread
                     : undefined;
-              const badgeText =
-                typeof count === "number" ? formatBadge(count) : "";
+              const badgeText = typeof count === "number" ? formatBadge(count) : "";
               const srUnread =
                 typeof count === "number" && count > 0
                   ? (labels.unreadTemplate as Record<string, string>)[item.key]?.replace(
@@ -350,10 +309,10 @@ export function AppShell({
                   onClick={() => onNavigate(item.key)}
                   aria-current={active ? "page" : undefined}
                   className={cx(
-                    "relative -mb-px inline-flex min-w-[64px] flex-col items-center gap-0.5 border-b-2 px-3 py-2 text-[11px] font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2 focus-visible:ring-offset-surface",
+                    "focus-visible:ring-brand-600 focus-visible:ring-offset-surface relative -mb-px inline-flex min-w-[64px] flex-col items-center gap-0.5 border-b-2 px-3 py-2 text-[11px] font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
                     active
                       ? "border-brand-600 text-ink"
-                      : "border-transparent text-ink-muted hover:text-ink",
+                      : "text-ink-muted hover:text-ink border-transparent",
                   )}
                 >
                   <span className="relative">
@@ -361,14 +320,12 @@ export function AppShell({
                     {badgeText ? (
                       <span
                         aria-hidden="true"
-                        className="absolute -top-1 -end-1.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-accent-600 px-1 text-[10px] font-bold leading-none text-ink-inverse"
+                        className="bg-accent-600 text-ink-inverse absolute -end-1.5 -top-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-bold leading-none"
                       >
                         {badgeText}
                       </span>
                     ) : null}
-                    {srUnread ? (
-                      <span className="sr-only">{srUnread}</span>
-                    ) : null}
+                    {srUnread ? <span className="sr-only">{srUnread}</span> : null}
                   </span>
                   <span>{labels.nav[item.key]}</span>
                 </button>
@@ -376,10 +333,7 @@ export function AppShell({
             })}
 
             {/* Vertical divider. */}
-            <div
-              aria-hidden="true"
-              className="mx-2 my-2 w-px bg-line-soft"
-            />
+            <div aria-hidden="true" className="bg-line-soft mx-2 my-2 w-px" />
 
             {/* Profile menu. */}
             <div className="relative flex items-stretch">
@@ -393,10 +347,10 @@ export function AppShell({
                 aria-controls={menuId}
                 aria-current={currentRoute === "profile" ? "page" : undefined}
                 className={cx(
-                  "relative -mb-px inline-flex flex-col items-center gap-0.5 border-b-2 px-3 py-1.5 text-[11px] font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2 focus-visible:ring-offset-surface",
+                  "focus-visible:ring-brand-600 focus-visible:ring-offset-surface relative -mb-px inline-flex flex-col items-center gap-0.5 border-b-2 px-3 py-1.5 text-[11px] font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
                   currentRoute === "profile"
                     ? "border-brand-600 text-ink"
-                    : "border-transparent text-ink-muted hover:text-ink",
+                    : "text-ink-muted hover:text-ink border-transparent",
                 )}
               >
                 <Avatar user={me} size="sm" />
@@ -412,7 +366,7 @@ export function AppShell({
                   id={menuId}
                   role="menu"
                   onKeyDown={onMenuKeyDown}
-                  className="absolute end-0 top-full z-30 mt-1 min-w-[200px] rounded-md border border-line-soft bg-surface py-1 shadow-card"
+                  className="border-line-soft bg-surface shadow-card absolute end-0 top-full z-30 mt-1 min-w-[200px] rounded-md border py-1"
                 >
                   {onViewProfile ? (
                     <MenuItem
@@ -446,10 +400,7 @@ export function AppShell({
                   ) : null}
                   {onSignOut ? (
                     <>
-                      <div
-                        role="separator"
-                        className="my-1 h-px bg-line-soft"
-                      />
+                      <div role="separator" className="bg-line-soft my-1 h-px" />
                       <MenuItem
                         onSelect={() => {
                           setMenuOpen(false);
@@ -472,19 +423,13 @@ export function AppShell({
   );
 }
 
-function MenuItem({
-  children,
-  onSelect,
-}: {
-  children: ReactNode;
-  onSelect(): void;
-}): JSX.Element {
+function MenuItem({ children, onSelect }: { children: ReactNode; onSelect(): void }): JSX.Element {
   return (
     <button
       type="button"
       role="menuitem"
       onClick={onSelect}
-      className="block w-full cursor-pointer px-3 py-2 text-start text-sm text-ink hover:bg-surface-subtle focus:bg-surface-subtle focus:outline-none"
+      className="text-ink hover:bg-surface-subtle focus:bg-surface-subtle block w-full cursor-pointer px-3 py-2 text-start text-sm focus:outline-none"
     >
       {children}
     </button>

@@ -158,7 +158,7 @@ jobs:
           key: ws-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @palnet/db db:generate
-      - run: pnpm --filter @palnet/web build
+      - run: pnpm --filter @palnet/web... build
         env:
           NEXT_PUBLIC_API_URL: http://localhost:4000/api/v1
           NEXT_PUBLIC_WS_URL: http://localhost:4000
@@ -195,6 +195,11 @@ jobs:
       - run: pnpm --filter @palnet/db db:generate
       - run: pnpm --filter @palnet/db db:deploy
       - run: pnpm --filter @palnet/db db:seed
+      - run: pnpm --filter @palnet/web... build
+        env:
+          NEXT_PUBLIC_API_URL: http://localhost:4000/api/v1
+          NEXT_PUBLIC_WS_URL: http://localhost:4000
+          NEXT_PUBLIC_DEFAULT_LOCALE: ar-PS
       - run: pnpm --filter @palnet/web exec playwright install --with-deps chromium
       - name: Start API + Web and run authed a11y
         run: pnpm --filter @palnet/web e2e:a11y-authed
@@ -224,7 +229,7 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @palnet/db db:generate
-      - run: pnpm --filter @palnet/web build
+      - run: pnpm --filter @palnet/web... build
         env:
           NEXT_PUBLIC_API_URL: http://localhost:4000/api/v1
           NEXT_PUBLIC_WS_URL: http://localhost:4000
@@ -251,7 +256,7 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @palnet/db db:generate
-      - run: pnpm --filter @palnet/web build
+      - run: pnpm --filter @palnet/web... build
         env:
           NEXT_PUBLIC_API_URL: http://localhost:4000/api/v1
           NEXT_PUBLIC_WS_URL: http://localhost:4000

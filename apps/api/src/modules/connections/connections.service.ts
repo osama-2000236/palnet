@@ -58,11 +58,7 @@ export class ConnectionsService {
 
   async send(requesterId: string, body: SendConnectionBody) {
     if (body.receiverId === requesterId) {
-      throw new DomainException(
-        ErrorCode.VALIDATION_FAILED,
-        "Cannot connect to yourself.",
-        400,
-      );
+      throw new DomainException(ErrorCode.VALIDATION_FAILED, "Cannot connect to yourself.", 400);
     }
 
     const receiver = await this.prisma.user.findUnique({
@@ -70,17 +66,10 @@ export class ConnectionsService {
       select: { id: true },
     });
     if (!receiver) {
-      throw new DomainException(
-        ErrorCode.NOT_FOUND,
-        "Recipient not found.",
-        404,
-      );
+      throw new DomainException(ErrorCode.NOT_FOUND, "Recipient not found.", 404);
     }
 
-    const existing = await this.findExistingBetween(
-      requesterId,
-      body.receiverId,
-    );
+    const existing = await this.findExistingBetween(requesterId, body.receiverId);
     if (existing) {
       // Allow re-send only if the prior row is WITHDRAWN or DECLINED.
       if (
@@ -131,20 +120,12 @@ export class ConnectionsService {
     return created;
   }
 
-  async respond(
-    viewerId: string,
-    connectionId: string,
-    body: RespondConnectionBody,
-  ) {
+  async respond(viewerId: string, connectionId: string, body: RespondConnectionBody) {
     const row = await this.prisma.connection.findUnique({
       where: { id: connectionId },
     });
     if (!row) {
-      throw new DomainException(
-        ErrorCode.NOT_FOUND,
-        "Connection not found.",
-        404,
-      );
+      throw new DomainException(ErrorCode.NOT_FOUND, "Connection not found.", 404);
     }
     if (row.receiverId !== viewerId) {
       throw new DomainException(
@@ -154,11 +135,7 @@ export class ConnectionsService {
       );
     }
     if (row.status !== "PENDING") {
-      throw new DomainException(
-        ErrorCode.CONFLICT,
-        "Connection is not pending.",
-        409,
-      );
+      throw new DomainException(ErrorCode.CONFLICT, "Connection is not pending.", 409);
     }
     const updated = await this.prisma.connection.update({
       where: { id: connectionId },
@@ -183,11 +160,7 @@ export class ConnectionsService {
       where: { id: connectionId },
     });
     if (!row) {
-      throw new DomainException(
-        ErrorCode.NOT_FOUND,
-        "Connection not found.",
-        404,
-      );
+      throw new DomainException(ErrorCode.NOT_FOUND, "Connection not found.", 404);
     }
     if (row.requesterId !== viewerId) {
       throw new DomainException(
@@ -197,11 +170,7 @@ export class ConnectionsService {
       );
     }
     if (row.status !== "PENDING") {
-      throw new DomainException(
-        ErrorCode.CONFLICT,
-        "Connection is not pending.",
-        409,
-      );
+      throw new DomainException(ErrorCode.CONFLICT, "Connection is not pending.", 409);
     }
     return this.prisma.connection.update({
       where: { id: connectionId },
@@ -214,11 +183,7 @@ export class ConnectionsService {
       where: { id: connectionId },
     });
     if (!row) {
-      throw new DomainException(
-        ErrorCode.NOT_FOUND,
-        "Connection not found.",
-        404,
-      );
+      throw new DomainException(ErrorCode.NOT_FOUND, "Connection not found.", 404);
     }
     if (row.requesterId !== viewerId && row.receiverId !== viewerId) {
       throw new DomainException(
@@ -306,10 +271,7 @@ export class ConnectionsService {
    * co-workers) lives behind this same endpoint — upgrade the query without
    * changing the wire shape.
    */
-  async suggestions(
-    viewerId: string,
-    limit: number,
-  ): Promise<PersonSuggestion[]> {
+  async suggestions(viewerId: string, limit: number): Promise<PersonSuggestion[]> {
     // 1. All user ids the viewer already has *any* connection row with.
     const existing = await this.prisma.connection.findMany({
       where: {
@@ -390,10 +352,7 @@ export class ConnectionsService {
   // Mapping
   // ────────────────────────────────────────────────────────────────────
 
-  private toListItem(
-    row: ConnectionWithUsers,
-    viewerId: string,
-  ): ConnectionListItem {
+  private toListItem(row: ConnectionWithUsers, viewerId: string): ConnectionListItem {
     const isOutgoing = row.requesterId === viewerId;
     const other = isOutgoing ? row.receiver : row.requester;
     const direction: Direction = isOutgoing ? "OUTGOING" : "INCOMING";

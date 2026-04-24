@@ -110,11 +110,7 @@ export function Avatar({
       role={label ? "img" : undefined}
     >
       {user.avatarUrl ? (
-        <img
-          src={user.avatarUrl}
-          alt={label}
-          className="h-full w-full object-cover"
-        />
+        <img src={user.avatarUrl} alt={label} className="h-full w-full object-cover" />
       ) : (
         <span aria-hidden="true">{initials}</span>
       )}
@@ -122,7 +118,7 @@ export function Avatar({
         <span
           aria-hidden="true"
           className={cx(
-            "absolute bottom-0 end-0 rounded-full border-2 border-surface bg-success",
+            "border-surface bg-success absolute bottom-0 end-0 rounded-full border-2",
             DOT_CLASSES[size],
           )}
         />

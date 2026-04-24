@@ -5,23 +5,12 @@
 // Delete + password change both revoke refresh tokens server-side, so we
 // locally clear the session + bounce to /login on success.
 
-import {
-  ChangeEmailBody,
-  ChangePasswordBody,
-  DeleteAccountBody,
-} from "@palnet/shared";
+import { ChangeEmailBody, ChangePasswordBody, DeleteAccountBody } from "@palnet/shared";
 import { Button, Surface, nativeTokens } from "@palnet/ui-native";
 import { router } from "expo-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import {
-  Alert,
-  SafeAreaView,
-  ScrollView,
-  Text,
-  TextInput,
-  View,
-} from "react-native";
+import { Alert, SafeAreaView, ScrollView, Text, TextInput, View } from "react-native";
 
 import { apiCall, ApiRequestError } from "@/lib/api";
 import { clearSession, getAccessToken } from "@/lib/session";
@@ -57,9 +46,7 @@ function input(): any {
 
 export default function SettingsAccountScreen(): JSX.Element {
   return (
-    <SafeAreaView
-      style={{ flex: 1, backgroundColor: nativeTokens.color.surfaceMuted }}
-    >
+    <SafeAreaView style={{ flex: 1, backgroundColor: nativeTokens.color.surfaceMuted }}>
       <ScrollView
         contentContainerStyle={{
           padding: nativeTokens.space[4],
@@ -74,10 +61,7 @@ export default function SettingsAccountScreen(): JSX.Element {
   );
 }
 
-function useApi(): (
-  path: string,
-  body: unknown,
-) => Promise<{ ok: boolean; code?: string }> {
+function useApi(): (path: string, body: unknown) => Promise<{ ok: boolean; code?: string }> {
   return async (path, body) => {
     const token = await getAccessToken();
     if (!token) return { ok: false, code: "AUTH_UNAUTHORIZED" };
@@ -148,10 +132,7 @@ function EmailSection(): JSX.Element {
           {...input()}
         />
         {err ? (
-          <Text
-            style={{ color: nativeTokens.color.danger }}
-            accessibilityRole="alert"
-          >
+          <Text style={{ color: nativeTokens.color.danger }} accessibilityRole="alert">
             {err}
           </Text>
         ) : null}
@@ -221,15 +202,8 @@ function PasswordSection(): JSX.Element {
           secureTextEntry
           {...input()}
         />
-        <FieldLabel>
-          {t("settings.newPassword", { defaultValue: "New password" })}
-        </FieldLabel>
-        <TextInput
-          value={newPassword}
-          onChangeText={setNewPassword}
-          secureTextEntry
-          {...input()}
-        />
+        <FieldLabel>{t("settings.newPassword", { defaultValue: "New password" })}</FieldLabel>
+        <TextInput value={newPassword} onChangeText={setNewPassword} secureTextEntry {...input()} />
         {err ? (
           <Text style={{ color: nativeTokens.color.danger }} accessibilityRole="alert">
             {err}

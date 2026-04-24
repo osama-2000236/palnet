@@ -20,10 +20,7 @@ export default function SettingsLayout(): JSX.Element {
         headerRight: () => <HeaderLogoutButton />,
       }}
     >
-      <Stack.Screen
-        name="index"
-        options={{ title: t("settings.title") }}
-      />
+      <Stack.Screen name="index" options={{ title: t("settings.title") }} />
       <Stack.Screen
         name="account"
         options={{

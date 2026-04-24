@@ -44,19 +44,14 @@ export default function EditProfilePage(): JSX.Element {
   }, []);
 
   if (loading || !profile) {
-    return (
-      <main className="mx-auto max-w-[840px] px-6 py-10 text-ink-muted">…</main>
-    );
+    return <main className="text-ink-muted mx-auto max-w-[840px] px-6 py-10">…</main>;
   }
 
   return (
     <main className="mx-auto flex w-full max-w-[840px] flex-col gap-6 px-6 py-8">
       <header className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-ink">{t("editTitle")}</h1>
-        <Link
-          href={`/in/${profile.handle}`}
-          className="text-sm text-ink-muted hover:underline"
-        >
+        <h1 className="text-ink text-3xl font-bold">{t("editTitle")}</h1>
+        <Link href={`/in/${profile.handle}`} className="text-ink-muted text-sm hover:underline">
           {t("viewPublic")}
         </Link>
       </header>
@@ -167,7 +162,7 @@ function BasicsSection({
 
   return (
     <Surface as="section" variant="flat" padding="6">
-      <h2 className="mb-3 text-xl font-semibold text-ink">{t("basics")}</h2>
+      <h2 className="text-ink mb-3 text-xl font-semibold">{t("basics")}</h2>
 
       <div className="mb-4 flex items-center gap-4">
         <Avatar
@@ -180,7 +175,7 @@ function BasicsSection({
           }}
           size="lg"
         />
-        <label className="cursor-pointer rounded-md border border-ink-muted/30 px-3 py-2 text-sm text-ink hover:bg-ink-muted/5">
+        <label className="border-ink-muted/30 text-ink hover:bg-ink-muted/5 cursor-pointer rounded-md border px-3 py-2 text-sm">
           {uploadingAvatar ? t("uploading") : t("changeAvatar")}
           <input
             type="file"
@@ -190,7 +185,7 @@ function BasicsSection({
             className="hidden"
           />
         </label>
-        <label className="cursor-pointer rounded-md border border-ink-muted/30 px-3 py-2 text-sm text-ink hover:bg-ink-muted/5">
+        <label className="border-ink-muted/30 text-ink hover:bg-ink-muted/5 cursor-pointer rounded-md border px-3 py-2 text-sm">
           {uploadingCover ? t("uploading") : t("changeCover")}
           <input
             type="file"
@@ -205,14 +200,14 @@ function BasicsSection({
       <div className="grid gap-3 md:grid-cols-2">
         <Field label={tOn("firstName" as never) as string}>
           <input
-            className="w-full rounded-md border border-ink-muted/30 px-3 py-2"
+            className="border-ink-muted/30 w-full rounded-md border px-3 py-2"
             value={state.firstName}
             onChange={(e) => setState({ ...state, firstName: e.target.value })}
           />
         </Field>
         <Field label={tOn("lastName" as never) as string}>
           <input
-            className="w-full rounded-md border border-ink-muted/30 px-3 py-2"
+            className="border-ink-muted/30 w-full rounded-md border px-3 py-2"
             value={state.lastName}
             onChange={(e) => setState({ ...state, lastName: e.target.value })}
           />
@@ -220,7 +215,7 @@ function BasicsSection({
       </div>
       <Field label={tOn("headline")}>
         <input
-          className="w-full rounded-md border border-ink-muted/30 px-3 py-2"
+          className="border-ink-muted/30 w-full rounded-md border px-3 py-2"
           value={state.headline}
           onChange={(e) => setState({ ...state, headline: e.target.value })}
           maxLength={220}
@@ -228,7 +223,7 @@ function BasicsSection({
       </Field>
       <Field label={t("about")}>
         <textarea
-          className="w-full rounded-md border border-ink-muted/30 px-3 py-2"
+          className="border-ink-muted/30 w-full rounded-md border px-3 py-2"
           rows={4}
           value={state.about}
           onChange={(e) => setState({ ...state, about: e.target.value })}
@@ -237,19 +232,19 @@ function BasicsSection({
       </Field>
       <Field label={tOn("location")}>
         <input
-          className="w-full rounded-md border border-ink-muted/30 px-3 py-2"
+          className="border-ink-muted/30 w-full rounded-md border px-3 py-2"
           value={state.location}
           onChange={(e) => setState({ ...state, location: e.target.value })}
           maxLength={120}
         />
       </Field>
-      {error ? <p className="text-sm text-danger">{error}</p> : null}
+      {error ? <p className="text-danger text-sm">{error}</p> : null}
       <div className="mt-3 flex justify-end">
         <button
           type="button"
           onClick={save}
           disabled={busy}
-          className="rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-ink-inverse disabled:opacity-60"
+          className="bg-brand-600 text-ink-inverse rounded-md px-4 py-2 text-sm font-semibold disabled:opacity-60"
         >
           {t("save")}
         </button>
@@ -309,11 +304,10 @@ function ExperiencesSection({
     if (!token) return;
     setBusy(true);
     try {
-      const next = await apiFetch(
-        `/profiles/me/experiences/${id}`,
-        ProfileSchema,
-        { method: "DELETE", token },
-      );
+      const next = await apiFetch(`/profiles/me/experiences/${id}`, ProfileSchema, {
+        method: "DELETE",
+        token,
+      });
       onChanged(next);
     } finally {
       setBusy(false);
@@ -323,12 +317,12 @@ function ExperiencesSection({
   return (
     <Surface as="section" variant="flat" padding="6">
       <div className="mb-3 flex items-center justify-between">
-        <h2 className="text-xl font-semibold text-ink">{t("experience")}</h2>
+        <h2 className="text-ink text-xl font-semibold">{t("experience")}</h2>
         {!draft ? (
           <button
             type="button"
             onClick={() => setDraft({ ...EMPTY_EXPERIENCE })}
-            className="text-sm text-brand-600 hover:underline"
+            className="text-brand-600 text-sm hover:underline"
           >
             + {t("add")}
           </button>
@@ -339,21 +333,19 @@ function ExperiencesSection({
         {profile.experiences.map((e) => (
           <li
             key={e.id ?? `${e.companyName}-${e.startDate}`}
-            className="flex items-start justify-between gap-4 border-b border-ink-muted/10 pb-3 last:border-b-0"
+            className="border-ink-muted/10 flex items-start justify-between gap-4 border-b pb-3 last:border-b-0"
           >
             <div>
-              <p className="font-semibold text-ink">{e.title}</p>
-              <p className="text-sm text-ink-muted">{e.companyName}</p>
-              {e.description ? (
-                <p className="mt-1 text-sm text-ink">{e.description}</p>
-              ) : null}
+              <p className="text-ink font-semibold">{e.title}</p>
+              <p className="text-ink-muted text-sm">{e.companyName}</p>
+              {e.description ? <p className="text-ink mt-1 text-sm">{e.description}</p> : null}
             </div>
             {e.id ? (
               <button
                 type="button"
                 onClick={() => void remove(e.id as string)}
                 disabled={busy}
-                className="text-xs text-danger hover:underline"
+                className="text-danger text-xs hover:underline"
               >
                 {t("remove")}
               </button>
@@ -363,24 +355,22 @@ function ExperiencesSection({
       </ul>
 
       {draft ? (
-        <div className="mt-3 flex flex-col gap-2 rounded-md border border-brand-600/30 bg-brand-600/5 p-3">
+        <div className="border-brand-600/30 bg-brand-600/5 mt-3 flex flex-col gap-2 rounded-md border p-3">
           <input
-            className="w-full rounded-md border border-ink-muted/30 px-3 py-2"
+            className="border-ink-muted/30 w-full rounded-md border px-3 py-2"
             placeholder={t("expTitle")}
             value={draft.title}
             onChange={(e) => setDraft({ ...draft, title: e.target.value })}
           />
           <input
-            className="w-full rounded-md border border-ink-muted/30 px-3 py-2"
+            className="border-ink-muted/30 w-full rounded-md border px-3 py-2"
             placeholder={t("company")}
             value={draft.companyName}
-            onChange={(e) =>
-              setDraft({ ...draft, companyName: e.target.value })
-            }
+            onChange={(e) => setDraft({ ...draft, companyName: e.target.value })}
           />
           <input
             type="date"
-            className="w-full rounded-md border border-ink-muted/30 px-3 py-2"
+            className="border-ink-muted/30 w-full rounded-md border px-3 py-2"
             value={draft.startDate.slice(0, 10)}
             onChange={(e) =>
               setDraft({
@@ -390,27 +380,21 @@ function ExperiencesSection({
             }
           />
           <textarea
-            className="w-full rounded-md border border-ink-muted/30 px-3 py-2"
+            className="border-ink-muted/30 w-full rounded-md border px-3 py-2"
             rows={3}
             placeholder={t("description")}
             value={draft.description ?? ""}
-            onChange={(e) =>
-              setDraft({ ...draft, description: e.target.value || null })
-            }
+            onChange={(e) => setDraft({ ...draft, description: e.target.value || null })}
           />
           <div className="flex justify-end gap-2">
-            <button
-              type="button"
-              onClick={() => setDraft(null)}
-              className="text-sm text-ink-muted"
-            >
+            <button type="button" onClick={() => setDraft(null)} className="text-ink-muted text-sm">
               {t("cancel")}
             </button>
             <button
               type="button"
               onClick={add}
               disabled={busy}
-              className="rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-ink-inverse disabled:opacity-60"
+              className="bg-brand-600 text-ink-inverse rounded-md px-4 py-2 text-sm font-semibold disabled:opacity-60"
             >
               {t("save")}
             </button>
@@ -470,11 +454,10 @@ function EducationsSection({
     if (!token) return;
     setBusy(true);
     try {
-      const next = await apiFetch(
-        `/profiles/me/educations/${id}`,
-        ProfileSchema,
-        { method: "DELETE", token },
-      );
+      const next = await apiFetch(`/profiles/me/educations/${id}`, ProfileSchema, {
+        method: "DELETE",
+        token,
+      });
       onChanged(next);
     } finally {
       setBusy(false);
@@ -484,12 +467,12 @@ function EducationsSection({
   return (
     <Surface as="section" variant="flat" padding="6">
       <div className="mb-3 flex items-center justify-between">
-        <h2 className="text-xl font-semibold text-ink">{t("education")}</h2>
+        <h2 className="text-ink text-xl font-semibold">{t("education")}</h2>
         {!draft ? (
           <button
             type="button"
             onClick={() => setDraft({ ...EMPTY_EDUCATION })}
-            className="text-sm text-brand-600 hover:underline"
+            className="text-brand-600 text-sm hover:underline"
           >
             + {t("add")}
           </button>
@@ -500,12 +483,12 @@ function EducationsSection({
         {profile.educations.map((e) => (
           <li
             key={e.id ?? e.school}
-            className="flex items-start justify-between gap-4 border-b border-ink-muted/10 pb-3 last:border-b-0"
+            className="border-ink-muted/10 flex items-start justify-between gap-4 border-b pb-3 last:border-b-0"
           >
             <div>
-              <p className="font-semibold text-ink">{e.school}</p>
+              <p className="text-ink font-semibold">{e.school}</p>
               {e.degree ? (
-                <p className="text-sm text-ink-muted">
+                <p className="text-ink-muted text-sm">
                   {e.degree}
                   {e.fieldOfStudy ? ` · ${e.fieldOfStudy}` : ""}
                 </p>
@@ -516,7 +499,7 @@ function EducationsSection({
                 type="button"
                 onClick={() => void remove(e.id as string)}
                 disabled={busy}
-                className="text-xs text-danger hover:underline"
+                className="text-danger text-xs hover:underline"
               >
                 {t("remove")}
               </button>
@@ -526,42 +509,34 @@ function EducationsSection({
       </ul>
 
       {draft ? (
-        <div className="mt-3 flex flex-col gap-2 rounded-md border border-brand-600/30 bg-brand-600/5 p-3">
+        <div className="border-brand-600/30 bg-brand-600/5 mt-3 flex flex-col gap-2 rounded-md border p-3">
           <input
-            className="w-full rounded-md border border-ink-muted/30 px-3 py-2"
+            className="border-ink-muted/30 w-full rounded-md border px-3 py-2"
             placeholder={t("school")}
             value={draft.school}
             onChange={(e) => setDraft({ ...draft, school: e.target.value })}
           />
           <input
-            className="w-full rounded-md border border-ink-muted/30 px-3 py-2"
+            className="border-ink-muted/30 w-full rounded-md border px-3 py-2"
             placeholder={t("degree")}
             value={draft.degree ?? ""}
-            onChange={(e) =>
-              setDraft({ ...draft, degree: e.target.value || null })
-            }
+            onChange={(e) => setDraft({ ...draft, degree: e.target.value || null })}
           />
           <input
-            className="w-full rounded-md border border-ink-muted/30 px-3 py-2"
+            className="border-ink-muted/30 w-full rounded-md border px-3 py-2"
             placeholder={t("fieldOfStudy")}
             value={draft.fieldOfStudy ?? ""}
-            onChange={(e) =>
-              setDraft({ ...draft, fieldOfStudy: e.target.value || null })
-            }
+            onChange={(e) => setDraft({ ...draft, fieldOfStudy: e.target.value || null })}
           />
           <div className="flex justify-end gap-2">
-            <button
-              type="button"
-              onClick={() => setDraft(null)}
-              className="text-sm text-ink-muted"
-            >
+            <button type="button" onClick={() => setDraft(null)} className="text-ink-muted text-sm">
               {t("cancel")}
             </button>
             <button
               type="button"
               onClick={add}
               disabled={busy}
-              className="rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-ink-inverse disabled:opacity-60"
+              className="bg-brand-600 text-ink-inverse rounded-md px-4 py-2 text-sm font-semibold disabled:opacity-60"
             >
               {t("save")}
             </button>
@@ -611,11 +586,10 @@ function SkillsSection({
     if (!token) return;
     setBusy(true);
     try {
-      const next = await apiFetch(
-        `/profiles/me/skills/${s.id}`,
-        ProfileSchema,
-        { method: "DELETE", token },
-      );
+      const next = await apiFetch(`/profiles/me/skills/${s.id}`, ProfileSchema, {
+        method: "DELETE",
+        token,
+      });
       onChanged(next);
     } finally {
       setBusy(false);
@@ -624,12 +598,12 @@ function SkillsSection({
 
   return (
     <Surface as="section" variant="flat" padding="6">
-      <h2 className="mb-3 text-xl font-semibold text-ink">{t("skills")}</h2>
+      <h2 className="text-ink mb-3 text-xl font-semibold">{t("skills")}</h2>
       <ul className="mb-3 flex flex-wrap gap-2">
         {profile.skills.map((s) => (
           <li
             key={s.id}
-            className="flex items-center gap-2 rounded-full border border-ink-muted/30 px-3 py-1 text-sm text-ink"
+            className="border-ink-muted/30 text-ink flex items-center gap-2 rounded-full border px-3 py-1 text-sm"
           >
             <span>{s.name}</span>
             <button
@@ -637,7 +611,7 @@ function SkillsSection({
               onClick={() => void remove(s)}
               disabled={busy}
               aria-label={t("remove")}
-              className="text-xs text-danger hover:underline"
+              className="text-danger text-xs hover:underline"
             >
               ×
             </button>
@@ -653,13 +627,13 @@ function SkillsSection({
           }}
           placeholder={t("addSkillPlaceholder")}
           maxLength={60}
-          className="flex-1 rounded-md border border-ink-muted/30 px-3 py-2"
+          className="border-ink-muted/30 flex-1 rounded-md border px-3 py-2"
         />
         <button
           type="button"
           onClick={add}
           disabled={busy || name.trim().length === 0}
-          className="rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-ink-inverse disabled:opacity-60"
+          className="bg-brand-600 text-ink-inverse rounded-md px-4 py-2 text-sm font-semibold disabled:opacity-60"
         >
           {t("add")}
         </button>
@@ -672,16 +646,10 @@ function SkillsSection({
 // Helpers
 // ──────────────────────────────────────────────────────────────────────────
 
-function Field({
-  label,
-  children,
-}: {
-  label: string;
-  children: React.ReactNode;
-}): JSX.Element {
+function Field({ label, children }: { label: string; children: React.ReactNode }): JSX.Element {
   return (
     <label className="mt-2 flex flex-col gap-1">
-      <span className="text-sm text-ink-muted">{label}</span>
+      <span className="text-ink-muted text-sm">{label}</span>
       {children}
     </label>
   );

@@ -1,13 +1,7 @@
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import {
-  ActivityIndicator,
-  Pressable,
-  SafeAreaView,
-  Text,
-  View,
-} from "react-native";
+import { ActivityIndicator, Pressable, SafeAreaView, Text, View } from "react-native";
 
 import { apiCall } from "@/lib/api";
 
@@ -35,11 +29,9 @@ export default function VerifyEmailScreen(): JSX.Element {
   }, [token]);
 
   return (
-    <SafeAreaView className="flex-1 bg-surface-muted" testID="auth-verify-screen">
+    <SafeAreaView className="bg-surface-muted flex-1" testID="auth-verify-screen">
       <View className="flex-1 gap-4 px-6 pt-12">
-        <Text className="text-3xl font-bold text-ink">
-          {t("verifyEmail.title")}
-        </Text>
+        <Text className="text-ink text-3xl font-bold">{t("verifyEmail.title")}</Text>
 
         {status === "verifying" ? (
           <View className="flex-row items-center gap-3">
@@ -54,21 +46,15 @@ export default function VerifyEmailScreen(): JSX.Element {
             <Pressable
               testID="auth-verify-go-feed"
               onPress={() => router.replace("/(app)/feed")}
-              className="mt-2 rounded-md bg-brand-600 px-6 py-3"
+              className="bg-brand-600 mt-2 rounded-md px-6 py-3"
             >
-              <Text className="text-center text-ink-inverse">
-                {t("verifyEmail.goFeed")}
-              </Text>
+              <Text className="text-ink-inverse text-center">{t("verifyEmail.goFeed")}</Text>
             </Pressable>
           </>
         ) : null}
 
         {status === "error" ? (
-          <Text
-            testID="auth-verify-error"
-            className="text-danger"
-            accessibilityRole="alert"
-          >
+          <Text testID="auth-verify-error" className="text-danger" accessibilityRole="alert">
             {t("verifyEmail.invalid")}
           </Text>
         ) : null}

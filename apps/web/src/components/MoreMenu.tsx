@@ -20,13 +20,7 @@ export interface MoreMenuItem {
   icon?: ReactNode;
 }
 
-export function MoreMenu({
-  label,
-  items,
-}: {
-  label: string;
-  items: MoreMenuItem[];
-}): JSX.Element {
+export function MoreMenu({ label, items }: { label: string; items: MoreMenuItem[] }): JSX.Element {
   const [open, setOpen] = useState(false);
   const menuId = useId();
   const rootRef = useRef<HTMLDivElement>(null);
@@ -56,7 +50,7 @@ export function MoreMenu({
         aria-expanded={open}
         aria-controls={menuId}
         onClick={() => setOpen((v) => !v)}
-        className="inline-flex h-8 w-8 items-center justify-center rounded-md text-ink-muted hover:bg-surface-subtle hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-600"
+        className="text-ink-muted hover:bg-surface-subtle hover:text-ink focus-visible:ring-brand-600 inline-flex h-8 w-8 items-center justify-center rounded-md focus:outline-none focus-visible:ring-2"
       >
         <Icon name="more" size={18} />
       </button>
@@ -65,7 +59,7 @@ export function MoreMenu({
           id={menuId}
           role="menu"
           className={cx(
-            "absolute z-20 mt-1 min-w-[200px] overflow-hidden rounded-md border border-line-soft bg-surface shadow-lg",
+            "border-line-soft bg-surface absolute z-20 mt-1 min-w-[200px] overflow-hidden rounded-md border shadow-lg",
             // Anchor to the inline-end of the button — RTL-safe.
             "end-0 top-full",
           )}
@@ -80,7 +74,7 @@ export function MoreMenu({
                 it.onClick();
               }}
               className={cx(
-                "flex w-full items-center gap-2 px-3 py-2 text-start text-sm hover:bg-surface-subtle focus:outline-none focus-visible:bg-surface-subtle",
+                "hover:bg-surface-subtle focus-visible:bg-surface-subtle flex w-full items-center gap-2 px-3 py-2 text-start text-sm focus:outline-none",
                 it.danger ? "text-danger" : "text-ink",
               )}
             >

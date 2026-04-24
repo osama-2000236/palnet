@@ -31,9 +31,7 @@ interface CommentWithAuthor {
 
 function toCommentDto(row: CommentWithAuthor): CommentDto {
   if (!row.author.profile) {
-    throw new Error(
-      `Comment ${row.id} has an author without a profile; data invariant bug.`,
-    );
+    throw new Error(`Comment ${row.id} has an author without a profile; data invariant bug.`);
   }
   return {
     id: row.id,
@@ -75,11 +73,7 @@ export class CommentsService {
     private readonly notifications: NotificationsService,
   ) {}
 
-  async create(
-    viewerId: string,
-    postId: string,
-    body: CreateCommentBody,
-  ): Promise<CommentDto> {
+  async create(viewerId: string, postId: string, body: CreateCommentBody): Promise<CommentDto> {
     const post = await this.prisma.post.findFirst({
       where: { id: postId, deletedAt: null },
       select: { id: true, authorId: true },
@@ -95,11 +89,7 @@ export class CommentsService {
         select: { id: true, authorId: true },
       });
       if (!parent) {
-        throw new DomainException(
-          ErrorCode.NOT_FOUND,
-          "Parent comment not found.",
-          404,
-        );
+        throw new DomainException(ErrorCode.NOT_FOUND, "Parent comment not found.", 404);
       }
       parentAuthorId = parent.authorId;
     }
@@ -166,11 +156,7 @@ export class CommentsService {
       select: { id: true, authorId: true },
     });
     if (!comment) {
-      throw new DomainException(
-        ErrorCode.NOT_FOUND,
-        "Comment not found.",
-        404,
-      );
+      throw new DomainException(ErrorCode.NOT_FOUND, "Comment not found.", 404);
     }
     if (comment.authorId !== viewerId) {
       throw new DomainException(

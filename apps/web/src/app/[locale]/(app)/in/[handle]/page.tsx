@@ -1,10 +1,6 @@
 "use client";
 
-import {
-  ChatRoom as ChatRoomSchema,
-  Profile as ProfileSchema,
-  type Profile,
-} from "@palnet/shared";
+import { ChatRoom as ChatRoomSchema, Profile as ProfileSchema, type Profile } from "@palnet/shared";
 import { Avatar, Image, ProfilePageSkeleton, Surface } from "@palnet/ui-web";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
@@ -106,22 +102,20 @@ export default function ProfileRoute(): JSX.Element {
               ring
             />
             <div className="flex flex-col">
-              <h1 className="text-3xl font-bold text-ink">
+              <h1 className="text-ink text-3xl font-bold">
                 {profile.firstName} {profile.lastName}
               </h1>
-              {profile.headline ? (
-                <p className="text-ink-muted">{profile.headline}</p>
-              ) : null}
+              {profile.headline ? <p className="text-ink-muted">{profile.headline}</p> : null}
               {profile.location ? (
-                <p className="text-sm text-ink-muted">{profile.location}</p>
+                <p className="text-ink-muted text-sm">{profile.location}</p>
               ) : null}
-              <p className="text-xs text-ink-muted">/in/{profile.handle}</p>
+              <p className="text-ink-muted text-xs">/in/{profile.handle}</p>
             </div>
           </div>
           {profile.viewer?.isSelf ? (
             <Link
               href="/me/edit"
-              className="rounded-md border border-ink-muted/30 px-4 py-2 text-sm text-ink hover:bg-ink-muted/5"
+              className="border-ink-muted/30 text-ink hover:bg-ink-muted/5 rounded-md border px-4 py-2 text-sm"
             >
               {t("edit")}
             </Link>
@@ -152,7 +146,7 @@ export default function ProfileRoute(): JSX.Element {
                     setOpeningDm(false);
                   }
                 }}
-                className="rounded-md border border-ink-muted/30 px-4 py-2 text-sm text-ink hover:bg-ink-muted/5 disabled:opacity-60"
+                className="border-ink-muted/30 text-ink hover:bg-ink-muted/5 rounded-md border px-4 py-2 text-sm disabled:opacity-60"
               >
                 {tMsg("newMessage")}
               </button>
@@ -185,24 +179,20 @@ export default function ProfileRoute(): JSX.Element {
 
       {profile.about ? (
         <Surface as="section" variant="flat" padding="6">
-          <h2 className="mb-2 text-xl font-semibold text-ink">{t("about")}</h2>
-          <p className="whitespace-pre-wrap text-ink">{profile.about}</p>
+          <h2 className="text-ink mb-2 text-xl font-semibold">{t("about")}</h2>
+          <p className="text-ink whitespace-pre-wrap">{profile.about}</p>
         </Surface>
       ) : null}
 
       {profile.experiences.length > 0 ? (
         <Surface as="section" variant="flat" padding="6">
-          <h2 className="mb-3 text-xl font-semibold text-ink">
-            {t("experience")}
-          </h2>
+          <h2 className="text-ink mb-3 text-xl font-semibold">{t("experience")}</h2>
           <ul className="flex flex-col gap-4">
             {profile.experiences.map((e) => (
               <li key={e.id ?? `${e.companyName}-${e.startDate}`}>
-                <p className="font-semibold text-ink">{e.title}</p>
-                <p className="text-sm text-ink-muted">{e.companyName}</p>
-                {e.description ? (
-                  <p className="mt-1 text-sm text-ink">{e.description}</p>
-                ) : null}
+                <p className="text-ink font-semibold">{e.title}</p>
+                <p className="text-ink-muted text-sm">{e.companyName}</p>
+                {e.description ? <p className="text-ink mt-1 text-sm">{e.description}</p> : null}
               </li>
             ))}
           </ul>
@@ -211,15 +201,13 @@ export default function ProfileRoute(): JSX.Element {
 
       {profile.educations.length > 0 ? (
         <Surface as="section" variant="flat" padding="6">
-          <h2 className="mb-3 text-xl font-semibold text-ink">
-            {t("education")}
-          </h2>
+          <h2 className="text-ink mb-3 text-xl font-semibold">{t("education")}</h2>
           <ul className="flex flex-col gap-4">
             {profile.educations.map((e) => (
               <li key={e.id ?? e.school}>
-                <p className="font-semibold text-ink">{e.school}</p>
+                <p className="text-ink font-semibold">{e.school}</p>
                 {e.degree ? (
-                  <p className="text-sm text-ink-muted">
+                  <p className="text-ink-muted text-sm">
                     {e.degree}
                     {e.fieldOfStudy ? ` · ${e.fieldOfStudy}` : ""}
                   </p>
@@ -232,12 +220,12 @@ export default function ProfileRoute(): JSX.Element {
 
       {profile.skills.length > 0 ? (
         <Surface as="section" variant="flat" padding="6">
-          <h2 className="mb-3 text-xl font-semibold text-ink">{t("skills")}</h2>
+          <h2 className="text-ink mb-3 text-xl font-semibold">{t("skills")}</h2>
           <ul className="flex flex-wrap gap-2">
             {profile.skills.map((s) => (
               <li
                 key={s.id}
-                className="rounded-full border border-ink-muted/30 px-3 py-1 text-sm text-ink"
+                className="border-ink-muted/30 text-ink rounded-full border px-3 py-1 text-sm"
               >
                 {s.name}
               </li>

@@ -35,9 +35,7 @@ describe("RolesGuard", () => {
 
   it("allows matching moderator/admin roles", () => {
     const reflector = {
-      getAllAndOverride: jest
-        .fn()
-        .mockReturnValue([UserRole.MODERATOR, UserRole.ADMIN]),
+      getAllAndOverride: jest.fn().mockReturnValue([UserRole.MODERATOR, UserRole.ADMIN]),
     } as unknown as Reflector;
     const guard = new RolesGuard(reflector);
 
@@ -51,9 +49,7 @@ describe("RolesGuard", () => {
     } as unknown as Reflector;
     const guard = new RolesGuard(reflector);
 
-    expect(() => guard.canActivate(contextWithRole(UserRole.USER))).toThrow(
-      ForbiddenException,
-    );
+    expect(() => guard.canActivate(contextWithRole(UserRole.USER))).toThrow(ForbiddenException);
     try {
       guard.canActivate(contextWithRole(UserRole.USER));
     } catch (e) {

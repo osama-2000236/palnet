@@ -41,18 +41,14 @@ export default function LoginPage(): JSX.Element {
 
   return (
     <main className="px-6 py-12">
-      <form
-        onSubmit={onSubmit}
-        className="mx-auto flex w-full max-w-md flex-col gap-4"
-        noValidate
-      >
-        <h1 className="text-3xl font-bold text-ink">{t("login")}</h1>
+      <form onSubmit={onSubmit} className="mx-auto flex w-full max-w-md flex-col gap-4" noValidate>
+        <h1 className="text-ink text-3xl font-bold">{t("login")}</h1>
 
         <label className="flex flex-col gap-1">
-          <span className="text-sm text-ink-muted">{t("email")}</span>
+          <span className="text-ink-muted text-sm">{t("email")}</span>
           <input
             type="email"
-            className="rounded-md border border-ink-muted/30 px-3 py-2"
+            className="border-ink-muted/30 rounded-md border px-3 py-2"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
@@ -63,10 +59,10 @@ export default function LoginPage(): JSX.Element {
         </label>
 
         <label className="flex flex-col gap-1">
-          <span className="text-sm text-ink-muted">{t("password")}</span>
+          <span className="text-ink-muted text-sm">{t("password")}</span>
           <input
             type="password"
-            className="rounded-md border border-ink-muted/30 px-3 py-2"
+            className="border-ink-muted/30 rounded-md border px-3 py-2"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
@@ -76,7 +72,7 @@ export default function LoginPage(): JSX.Element {
         </label>
 
         {error ? (
-          <p role="alert" className="text-sm text-danger">
+          <p role="alert" className="text-danger text-sm">
             {error}
           </p>
         ) : null}
@@ -84,14 +80,14 @@ export default function LoginPage(): JSX.Element {
         <button
           type="submit"
           disabled={busy}
-          className="rounded-md bg-brand-600 px-4 py-2 text-ink-inverse shadow-card hover:bg-brand-700 disabled:opacity-60"
+          className="bg-brand-600 text-ink-inverse shadow-card hover:bg-brand-700 rounded-md px-4 py-2 disabled:opacity-60"
         >
           {t("submitLogin")}
         </button>
 
         <Link
           href="/forgot-password"
-          className="text-center text-sm font-semibold text-brand-700 hover:underline"
+          className="text-brand-700 text-center text-sm font-semibold hover:underline"
         >
           {tForgot("title")}
         </Link>

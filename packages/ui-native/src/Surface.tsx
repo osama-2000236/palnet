@@ -11,17 +11,7 @@ import { nativeTokens } from "./tokens";
 
 export type SurfaceVariant = "flat" | "card" | "hero" | "tinted" | "row";
 
-export type SurfacePadding =
-  | "0"
-  | "1"
-  | "2"
-  | "3"
-  | "4"
-  | "5"
-  | "6"
-  | "8"
-  | "10"
-  | "12";
+export type SurfacePadding = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "8" | "10" | "12";
 
 export interface SurfaceProps extends Omit<ViewProps, "style"> {
   variant?: SurfaceVariant;
@@ -86,10 +76,7 @@ export function Surface({
   ...rest
 }: SurfaceProps): JSX.Element {
   return (
-    <View
-      style={[VARIANT_STYLE[variant], { padding: PAD_TO_SPACE[padding] }, style]}
-      {...rest}
-    >
+    <View style={[VARIANT_STYLE[variant], { padding: PAD_TO_SPACE[padding] }, style]} {...rest}>
       {children}
     </View>
   );

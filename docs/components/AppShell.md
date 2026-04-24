@@ -6,6 +6,7 @@
 ## What it is
 
 The persistent chrome wrapping every authenticated screen.
+
 - **Web**: sticky top bar with logo · search · nav icons · profile menu.
 - **Mobile**: bottom tab bar with 5 items; title bar is per-screen, not global.
 
@@ -13,14 +14,14 @@ The persistent chrome wrapping every authenticated screen.
 
 Height `56px` (`--nav-h`). Max width `--max-w` (1128). Sticky, `z-index: 20`.
 
-| Slot | Width | Content |
-|---|---|---|
-| Logo (start) | 120 | Mark + wordmark "بيدر" |
-| Search | 320 (max 38%) | Pill input, `surface-subtle` bg, magnifier icon |
-| Flex gap | 1fr | — |
-| Nav icons | auto | 5 items: الرئيسية · شبكتي · الوظائف · الرسائل · الإشعارات |
-| Divider | 1 | Vertical `line-soft` |
-| Profile menu | auto | Avatar `sm` + "ملفي ▾" |
+| Slot         | Width         | Content                                                   |
+| ------------ | ------------- | --------------------------------------------------------- |
+| Logo (start) | 120           | Mark + wordmark "بيدر"                                    |
+| Search       | 320 (max 38%) | Pill input, `surface-subtle` bg, magnifier icon           |
+| Flex gap     | 1fr           | —                                                         |
+| Nav icons    | auto          | 5 items: الرئيسية · شبكتي · الوظائف · الرسائل · الإشعارات |
+| Divider      | 1             | Vertical `line-soft`                                      |
+| Profile menu | auto          | Avatar `sm` + "ملفي ▾"                                    |
 
 Each nav item: column layout (icon above label), 11px label, `brand-600` underline when active, `accent-600` dot badge for unread count.
 
@@ -28,13 +29,13 @@ Each nav item: column layout (icon above label), 11px label, `brand-600` underli
 
 Height `64pt` (`--mobile-tab-h`) + safe-area inset. 5 items:
 
-| # | Icon | Label (ar) | Route |
-|---|---|---|---|
-| 1 | home | الرئيسية | Feed |
-| 2 | users | شبكتي | Network |
-| 3 | plus | (elevated, FAB-style) | Composer |
-| 4 | message | الرسائل | Messages |
-| 5 | user | ملفي | Profile |
+| #   | Icon    | Label (ar)            | Route    |
+| --- | ------- | --------------------- | -------- |
+| 1   | home    | الرئيسية              | Feed     |
+| 2   | users   | شبكتي                 | Network  |
+| 3   | plus    | (elevated, FAB-style) | Composer |
+| 4   | message | الرسائل               | Messages |
+| 5   | user    | ملفي                  | Profile  |
 
 - Center item (post composer) is raised 8pt above the bar with `brand-600` bg and white icon — not a plain tab.
 - Active tab: `ink` color + `brand-600` 3px underline; inactive: `ink-muted`.

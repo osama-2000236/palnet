@@ -1,13 +1,4 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  Patch,
-  Post,
-  Query,
-} from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from "@nestjs/common";
 import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 import {
   type ApplicationStatus,
@@ -23,10 +14,7 @@ import {
 import { z } from "zod";
 
 import { ZodValidationPipe } from "../../common/zod-pipe";
-import {
-  CurrentUser,
-  type AuthUser,
-} from "../auth/decorators/current-user.decorator";
+import { CurrentUser, type AuthUser } from "../auth/decorators/current-user.decorator";
 
 import { JobsService } from "./jobs.service";
 
@@ -58,10 +46,7 @@ export class JobsController {
   }
 
   @Get("jobs/:id")
-  async getOne(
-    @CurrentUser() user: AuthUser,
-    @Param("id") id: string,
-  ): Promise<JobDto> {
+  async getOne(@CurrentUser() user: AuthUser, @Param("id") id: string): Promise<JobDto> {
     return this.jobs.getOne(user, id);
   }
 
@@ -86,10 +71,7 @@ export class JobsController {
   }
 
   @Delete("jobs/:id")
-  async remove(
-    @CurrentUser() user: AuthUser,
-    @Param("id") id: string,
-  ): Promise<JobDto> {
+  async remove(@CurrentUser() user: AuthUser, @Param("id") id: string): Promise<JobDto> {
     return this.jobs.remove(user, id);
   }
 

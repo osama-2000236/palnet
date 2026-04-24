@@ -21,31 +21,31 @@ These are locked. Do not reopen without explicit user approval.
 
 ### 2.1 Stack
 
-| Layer | Choice | Version (April 2026) |
-| --- | --- | --- |
-| Node | 20 LTS | `.nvmrc = 20` |
-| Package manager | pnpm | 9.x |
-| Monorepo orchestrator | Turborepo | 2.x |
-| Backend framework | NestJS | 10.x |
-| Backend runtime | Node 20 | — |
-| ORM | Prisma | 5.x |
-| DB | PostgreSQL | 16 |
-| Web framework | Next.js | 15.x (App Router) |
-| Mobile framework | Expo | SDK 52 (RN 0.76) |
-| Styling (web) | Tailwind CSS + shadcn/ui | TW 3.x |
-| Styling (mobile) | NativeWind | 4.x |
-| Validation | Zod | 3.x |
-| Realtime | Authenticated SSE / EventSource | Native browser support, enough for beta DMs + notifications |
-| Auth | Self-managed JWT + bcrypt, OAuth2 Google (Sprint 1.5) | — |
-| Media | Cloudflare R2 via `@aws-sdk/client-s3` | — |
-| Hosting — web | Vercel | — |
-| Hosting — API | Render (Docker) | — |
-| Hosting — DB | Neon | — |
-| Mobile build | EAS | — |
-| CI | GitHub Actions | — |
-| i18n web | `next-intl` | — |
-| i18n mobile | `i18next` + `react-i18next` + `expo-localization` | — |
-| Testing | Jest, React Testing Library, Playwright, Detox | — |
+| Layer                 | Choice                                                | Version (April 2026)                                        |
+| --------------------- | ----------------------------------------------------- | ----------------------------------------------------------- |
+| Node                  | 20 LTS                                                | `.nvmrc = 20`                                               |
+| Package manager       | pnpm                                                  | 9.x                                                         |
+| Monorepo orchestrator | Turborepo                                             | 2.x                                                         |
+| Backend framework     | NestJS                                                | 10.x                                                        |
+| Backend runtime       | Node 20                                               | —                                                           |
+| ORM                   | Prisma                                                | 5.x                                                         |
+| DB                    | PostgreSQL                                            | 16                                                          |
+| Web framework         | Next.js                                               | 15.x (App Router)                                           |
+| Mobile framework      | Expo                                                  | SDK 52 (RN 0.76)                                            |
+| Styling (web)         | Tailwind CSS + shadcn/ui                              | TW 3.x                                                      |
+| Styling (mobile)      | NativeWind                                            | 4.x                                                         |
+| Validation            | Zod                                                   | 3.x                                                         |
+| Realtime              | Authenticated SSE / EventSource                       | Native browser support, enough for beta DMs + notifications |
+| Auth                  | Self-managed JWT + bcrypt, OAuth2 Google (Sprint 1.5) | —                                                           |
+| Media                 | Cloudflare R2 via `@aws-sdk/client-s3`                | —                                                           |
+| Hosting — web         | Vercel                                                | —                                                           |
+| Hosting — API         | Render (Docker)                                       | —                                                           |
+| Hosting — DB          | Neon                                                  | —                                                           |
+| Mobile build          | EAS                                                   | —                                                           |
+| CI                    | GitHub Actions                                        | —                                                           |
+| i18n web              | `next-intl`                                           | —                                                           |
+| i18n mobile           | `i18next` + `react-i18next` + `expo-localization`     | —                                                           |
+| Testing               | Jest, React Testing Library, Playwright, Detox        | —                                                           |
 
 ### 2.2 Architecture
 
@@ -132,6 +132,7 @@ Full schema lives in [`packages/db/prisma/schema.prisma`](packages/db/prisma/sch
 Entities (day-one): `User`, `Profile`, `Experience`, `Education`, `Skill`, `ProfileSkill`, `Connection`, `Post`, `Media`, `Reaction`, `Comment`, `Repost`, `Message`, `ChatRoom`, `ChatRoomMember`, `Notification`, `Job`, `Application`, `Company`, `CompanyMember`, `RefreshToken`, `BlockedUser`, `Report`.
 
 Invariants:
+
 - Every table has `id` (cuid), `createdAt`, `updatedAt`.
 - Soft delete via `deletedAt: DateTime?` on `User`, `Post`, `Comment`, `Message`, `Job`.
 - Cascade deletes: `Profile`, `RefreshToken`, `ProfileSkill`, `Experience`, `Education` cascade on User deletion.

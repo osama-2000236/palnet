@@ -12,11 +12,7 @@ import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 
 import { apiCall } from "@/lib/api";
-import {
-  clearSession,
-  getAccessToken,
-  readSession,
-} from "@/lib/session";
+import { clearSession, getAccessToken, readSession } from "@/lib/session";
 
 export default function AccountSettingsPage(): JSX.Element {
   const t = useTranslations("settings.account");
@@ -38,7 +34,7 @@ export default function AccountSettingsPage(): JSX.Element {
 
   return (
     <div className="flex flex-col gap-6">
-      <h2 className="text-2xl font-bold text-ink md:hidden">{t("title")}</h2>
+      <h2 className="text-ink text-2xl font-bold md:hidden">{t("title")}</h2>
       <ChangeEmailCard email={session.user.email} />
       <ChangePasswordCard />
       <DeleteAccountCard />
@@ -86,8 +82,8 @@ function ChangeEmailCard({ email }: { email: string }): JSX.Element {
 
   return (
     <Surface as="section" variant="flat" padding="6">
-      <h2 className="mb-1 text-lg font-semibold text-ink">{t("email.title")}</h2>
-      <p className="mb-4 text-sm text-ink-muted">
+      <h2 className="text-ink mb-1 text-lg font-semibold">{t("email.title")}</h2>
+      <p className="text-ink-muted mb-4 text-sm">
         {t("email.current")}: <span dir="ltr">{email}</span>
       </p>
       <Field label={t("email.newLabel")}>
@@ -96,7 +92,7 @@ function ChangeEmailCard({ email }: { email: string }): JSX.Element {
           autoComplete="email"
           value={newEmail}
           onChange={(e) => setNewEmail(e.target.value)}
-          className="w-full rounded-md border border-ink-muted/30 px-3 py-2"
+          className="border-ink-muted/30 w-full rounded-md border px-3 py-2"
           dir="ltr"
         />
       </Field>
@@ -106,7 +102,7 @@ function ChangeEmailCard({ email }: { email: string }): JSX.Element {
           autoComplete="current-password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="w-full rounded-md border border-ink-muted/30 px-3 py-2"
+          className="border-ink-muted/30 w-full rounded-md border px-3 py-2"
         />
       </Field>
       <StatusLine status={status} t={t} />
@@ -115,7 +111,7 @@ function ChangeEmailCard({ email }: { email: string }): JSX.Element {
           type="button"
           onClick={submit}
           disabled={busy || !newEmail || !password}
-          className="rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-ink-inverse disabled:opacity-60"
+          className="bg-brand-600 text-ink-inverse rounded-md px-4 py-2 text-sm font-semibold disabled:opacity-60"
         >
           {t("email.submit")}
         </button>
@@ -165,17 +161,15 @@ function ChangePasswordCard(): JSX.Element {
 
   return (
     <Surface as="section" variant="flat" padding="6">
-      <h2 className="mb-1 text-lg font-semibold text-ink">
-        {t("password.title")}
-      </h2>
-      <p className="mb-4 text-sm text-ink-muted">{t("password.hint")}</p>
+      <h2 className="text-ink mb-1 text-lg font-semibold">{t("password.title")}</h2>
+      <p className="text-ink-muted mb-4 text-sm">{t("password.hint")}</p>
       <Field label={t("password.currentLabel")}>
         <input
           type="password"
           autoComplete="current-password"
           value={current}
           onChange={(e) => setCurrent(e.target.value)}
-          className="w-full rounded-md border border-ink-muted/30 px-3 py-2"
+          className="border-ink-muted/30 w-full rounded-md border px-3 py-2"
         />
       </Field>
       <Field label={t("password.newLabel")}>
@@ -184,7 +178,7 @@ function ChangePasswordCard(): JSX.Element {
           autoComplete="new-password"
           value={next}
           onChange={(e) => setNext(e.target.value)}
-          className="w-full rounded-md border border-ink-muted/30 px-3 py-2"
+          className="border-ink-muted/30 w-full rounded-md border px-3 py-2"
         />
       </Field>
       <StatusLine status={status} t={t} />
@@ -193,7 +187,7 @@ function ChangePasswordCard(): JSX.Element {
           type="button"
           onClick={submit}
           disabled={busy || !current || !next}
-          className="rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-ink-inverse disabled:opacity-60"
+          className="bg-brand-600 text-ink-inverse rounded-md px-4 py-2 text-sm font-semibold disabled:opacity-60"
         >
           {t("password.submit")}
         </button>
@@ -242,17 +236,15 @@ function DeleteAccountCard(): JSX.Element {
 
   return (
     <Surface as="section" variant="flat" padding="6">
-      <h2 className="mb-1 text-lg font-semibold text-danger">
-        {t("delete.title")}
-      </h2>
-      <p className="mb-4 text-sm text-ink-muted">{t("delete.hint")}</p>
+      <h2 className="text-danger mb-1 text-lg font-semibold">{t("delete.title")}</h2>
+      <p className="text-ink-muted mb-4 text-sm">{t("delete.hint")}</p>
       <Field label={t("passwordLabel")}>
         <input
           type="password"
           autoComplete="current-password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="w-full rounded-md border border-ink-muted/30 px-3 py-2"
+          className="border-ink-muted/30 w-full rounded-md border px-3 py-2"
         />
       </Field>
       <Field label={t("delete.confirmLabel")}>
@@ -262,11 +254,11 @@ function DeleteAccountCard(): JSX.Element {
           onChange={(e) => setConfirm(e.target.value)}
           dir="ltr"
           placeholder="DELETE"
-          className="w-full rounded-md border border-ink-muted/30 px-3 py-2 font-mono"
+          className="border-ink-muted/30 w-full rounded-md border px-3 py-2 font-mono"
         />
       </Field>
       {status === "error" ? (
-        <p className="mt-2 text-sm text-danger" role="alert">
+        <p className="text-danger mt-2 text-sm" role="alert">
           {t("genericError")}
         </p>
       ) : null}
@@ -275,7 +267,7 @@ function DeleteAccountCard(): JSX.Element {
           type="button"
           onClick={submit}
           disabled={busy || confirm !== "DELETE" || !password}
-          className="rounded-md border border-danger bg-danger/10 px-4 py-2 text-sm font-semibold text-danger hover:bg-danger/20 disabled:opacity-60"
+          className="border-danger bg-danger/10 text-danger hover:bg-danger/20 rounded-md border px-4 py-2 text-sm font-semibold disabled:opacity-60"
         >
           {t("delete.submit")}
         </button>
@@ -286,16 +278,10 @@ function DeleteAccountCard(): JSX.Element {
 
 // ───────── helpers ─────────
 
-function Field({
-  label,
-  children,
-}: {
-  label: string;
-  children: React.ReactNode;
-}): JSX.Element {
+function Field({ label, children }: { label: string; children: React.ReactNode }): JSX.Element {
   return (
     <label className="mt-2 flex flex-col gap-1">
-      <span className="text-sm text-ink-muted">{label}</span>
+      <span className="text-ink-muted text-sm">{label}</span>
       {children}
     </label>
   );
@@ -311,13 +297,13 @@ function StatusLine({
   if (status === "idle") return null;
   if (status === "ok") {
     return (
-      <p role="status" className="mt-2 text-sm text-success">
+      <p role="status" className="text-success mt-2 text-sm">
         {t("savedOk")}
       </p>
     );
   }
   return (
-    <p role="alert" className="mt-2 text-sm text-danger">
+    <p role="alert" className="text-danger mt-2 text-sm">
       {t("genericError")}
     </p>
   );

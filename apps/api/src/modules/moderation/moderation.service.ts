@@ -289,9 +289,7 @@ export class ModerationService {
       appealStatus: row.appealStatus ?? null,
       appealDecisionNote: row.appealDecisionNote ?? null,
       appealReviewedAt: row.appealReviewedAt?.toISOString() ?? null,
-      appealReviewedBy: row.appealReviewedBy
-        ? actorFromUser(row.appealReviewedBy)
-        : null,
+      appealReviewedBy: row.appealReviewedBy ? actorFromUser(row.appealReviewedBy) : null,
     };
   }
 

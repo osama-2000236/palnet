@@ -11,17 +11,17 @@
 
 ### Never use physical properties
 
-| ❌ Do not use | ✅ Use instead |
-|---|---|
-| `margin-left` | `margin-inline-start` |
-| `margin-right` | `margin-inline-end` |
-| `padding-left` | `padding-inline-start` |
-| `padding-right` | `padding-inline-end` |
-| `left: 0` | `inset-inline-start: 0` |
-| `right: 0` | `inset-inline-end: 0` |
-| `border-left` | `border-inline-start` |
-| `text-align: left` | `text-align: start` |
-| `float: left` | (don't float; use flex/grid) |
+| ❌ Do not use      | ✅ Use instead               |
+| ------------------ | ---------------------------- |
+| `margin-left`      | `margin-inline-start`        |
+| `margin-right`     | `margin-inline-end`          |
+| `padding-left`     | `padding-inline-start`       |
+| `padding-right`    | `padding-inline-end`         |
+| `left: 0`          | `inset-inline-start: 0`      |
+| `right: 0`         | `inset-inline-end: 0`        |
+| `border-left`      | `border-inline-start`        |
+| `text-align: left` | `text-align: start`          |
+| `float: left`      | (don't float; use flex/grid) |
 
 Tailwind: use `ms-*` / `me-*` / `ps-*` / `pe-*` / `start-*` / `end-*` / `text-start`. Never `ml-*` / `mr-*` / `pl-*` / `pr-*` / `left-*` / `right-*` / `text-left`.
 
@@ -42,18 +42,18 @@ Most icons are **not mirrored in RTL**. Some are. The rule:
 **Flip if directional** — motion, navigation, sending, progress.
 **Don't flip if iconic** — objects, people, abstract symbols.
 
-| Category | Flip? | Examples |
-|---|---|---|
-| Arrows, chevrons | ✅ yes | back, next, forward, reply, undo |
-| Send (paper plane) | ✅ yes | message send, post submit |
-| Navigation carets | ✅ yes | breadcrumb separator, dropdown arrow |
-| Email, phone, padlock | ❌ no | inbox, call, lock |
-| Magnifying glass | ❌ no | search (logo-like) |
-| Camera, image, video | ❌ no | attach |
-| Clocks, calendars | ❌ no | time, date |
-| Numbers | ❌ no (see below) | any |
-| Thumb, heart | ❌ no | reactions |
-| Logo | ❌ no | always |
+| Category              | Flip?             | Examples                             |
+| --------------------- | ----------------- | ------------------------------------ |
+| Arrows, chevrons      | ✅ yes            | back, next, forward, reply, undo     |
+| Send (paper plane)    | ✅ yes            | message send, post submit            |
+| Navigation carets     | ✅ yes            | breadcrumb separator, dropdown arrow |
+| Email, phone, padlock | ❌ no             | inbox, call, lock                    |
+| Magnifying glass      | ❌ no             | search (logo-like)                   |
+| Camera, image, video  | ❌ no             | attach                               |
+| Clocks, calendars     | ❌ no             | time, date                           |
+| Numbers               | ❌ no (see below) | any                                  |
+| Thumb, heart          | ❌ no             | reactions                            |
+| Logo                  | ❌ no             | always                               |
 
 Implementation: add `rtl-mirror` class (see `tokens.css`) to directional icons. Default: no mirroring.
 
@@ -62,10 +62,17 @@ Implementation: add `rtl-mirror` class (see `tokens.css`) to directional icons. 
 **Always LTR, even inside Arabic text.** `١٢٣ مشاركة` and `123 مشاركة` both render left-to-right for the number itself.
 
 ```jsx
-<span>شارك <span dir="ltr" className="mono">{count}</span> شخصاً</span>
+<span>
+  شارك{" "}
+  <span dir="ltr" className="mono">
+    {count}
+  </span>{" "}
+  شخصاً
+</span>
 ```
 
 For anything typeset with a lot of numbers (stats, timestamps, phone, code):
+
 - Use `font-variant-numeric: tabular-nums` (`.mono` class).
 - Wrap in `dir="ltr"` or `unicode-bidi: isolate`.
 
@@ -74,10 +81,13 @@ For anything typeset with a lot of numbers (stats, timestamps, phone, code):
 When a string contains both Arabic and Latin (code, product names, URLs):
 
 ```css
-.mixed { unicode-bidi: plaintext; } /* or isolate */
+.mixed {
+  unicode-bidi: plaintext;
+} /* or isolate */
 ```
 
 Examples:
+
 - `سأجرّب Next.js هذا الأسبوع` — leave inline, Latin renders LTR inside Arabic naturally.
 - Code blocks — explicit `dir="ltr"` on `<pre>` / `<code>`.
 - URLs / emails / handles — explicit `dir="ltr"`.

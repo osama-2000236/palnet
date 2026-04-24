@@ -35,11 +35,7 @@ export default function FeedScreen(): JSX.Element {
     const token = await getAccessToken();
     if (!token) return;
     try {
-      const out = await apiFetch(
-        "/notifications/unread-count",
-        UnreadCountEnvelope,
-        { token },
-      );
+      const out = await apiFetch("/notifications/unread-count", UnreadCountEnvelope, { token });
       setUnread(out.count);
     } catch {
       /* ignore */
@@ -84,7 +80,7 @@ export default function FeedScreen(): JSX.Element {
   );
 
   return (
-    <SafeAreaView className="flex-1 bg-surface-muted" testID="screen-feed">
+    <SafeAreaView className="bg-surface-muted flex-1" testID="screen-feed">
       <View className="flex-1 px-4 pt-6">
         <View
           style={{
@@ -93,64 +89,64 @@ export default function FeedScreen(): JSX.Element {
             justifyContent: "space-between",
           }}
         >
-        <View className="mb-3 flex-col gap-0.5" style={{ flex: 1 }}>
-          <Text
-            testID="feed-title"
+          <View className="mb-3 flex-col gap-0.5" style={{ flex: 1 }}>
+            <Text
+              testID="feed-title"
+              style={{
+                fontSize: nativeTokens.type.scale.display.size,
+                lineHeight: nativeTokens.type.scale.display.line,
+                fontWeight: "700",
+                color: nativeTokens.color.ink,
+                fontFamily: nativeTokens.type.family.sans,
+              }}
+            >
+              {t("feed.title")}
+            </Text>
+            {name ? (
+              <Text
+                style={{
+                  color: nativeTokens.color.inkMuted,
+                  fontSize: nativeTokens.type.scale.small.size,
+                  lineHeight: nativeTokens.type.scale.small.line,
+                  fontFamily: nativeTokens.type.family.sans,
+                }}
+              >
+                {t("feed.welcome", { name })}
+              </Text>
+            ) : null}
+            {unread > 0 ? (
+              <Text
+                style={{
+                  marginTop: nativeTokens.space[1],
+                  alignSelf: "flex-start",
+                  backgroundColor: nativeTokens.color.accent600,
+                  color: nativeTokens.color.inkInverse,
+                  fontSize: 11,
+                  fontWeight: "700",
+                  paddingHorizontal: nativeTokens.space[2],
+                  paddingVertical: 2,
+                  borderRadius: nativeTokens.radius.full,
+                  fontFamily: nativeTokens.type.family.sans,
+                }}
+                accessibilityLabel={t("nav.unreadNotifications", { count: unread })}
+              >
+                {unread > 99 ? "99+" : String(unread)}
+              </Text>
+            ) : null}
+          </View>
+          <Pressable
+            testID="feed-search"
+            accessibilityRole="button"
+            accessibilityLabel={t("search.title")}
+            onPress={() => router.push("/(app)/search" as never)}
+            hitSlop={8}
             style={{
-              fontSize: nativeTokens.type.scale.display.size,
-              lineHeight: nativeTokens.type.scale.display.line,
-              fontWeight: "700",
-              color: nativeTokens.color.ink,
-              fontFamily: nativeTokens.type.family.sans,
+              padding: nativeTokens.space[2],
+              marginTop: -nativeTokens.space[1],
             }}
           >
-            {t("feed.title")}
-          </Text>
-          {name ? (
-            <Text
-              style={{
-                color: nativeTokens.color.inkMuted,
-                fontSize: nativeTokens.type.scale.small.size,
-                lineHeight: nativeTokens.type.scale.small.line,
-                fontFamily: nativeTokens.type.family.sans,
-              }}
-            >
-              {t("feed.welcome", { name })}
-            </Text>
-          ) : null}
-          {unread > 0 ? (
-            <Text
-              style={{
-                marginTop: nativeTokens.space[1],
-                alignSelf: "flex-start",
-                backgroundColor: nativeTokens.color.accent600,
-                color: nativeTokens.color.inkInverse,
-                fontSize: 11,
-                fontWeight: "700",
-                paddingHorizontal: nativeTokens.space[2],
-                paddingVertical: 2,
-                borderRadius: nativeTokens.radius.full,
-                fontFamily: nativeTokens.type.family.sans,
-              }}
-              accessibilityLabel={t("nav.unreadNotifications", { count: unread })}
-            >
-              {unread > 99 ? "99+" : String(unread)}
-            </Text>
-          ) : null}
-        </View>
-        <Pressable
-          testID="feed-search"
-          accessibilityRole="button"
-          accessibilityLabel={t("search.title")}
-          onPress={() => router.push("/(app)/search" as never)}
-          hitSlop={8}
-          style={{
-            padding: nativeTokens.space[2],
-            marginTop: -nativeTokens.space[1],
-          }}
-        >
-          <Icon name="search" color={nativeTokens.color.inkMuted} size={22} />
-        </Pressable>
+            <Icon name="search" color={nativeTokens.color.inkMuted} size={22} />
+          </Pressable>
         </View>
 
         <Pressable
@@ -180,15 +176,9 @@ export default function FeedScreen(): JSX.Element {
             <PostRow
               post={item}
               onChange={(next) =>
-                setPosts((prev) =>
-                  prev.map((x) => (x.id === next.id ? next : x)),
-                )
+                setPosts((prev) => prev.map((x) => (x.id === next.id ? next : x)))
               }
-              onHide={() =>
-                setPosts((prev) =>
-                  prev.filter((x) => x.author.id !== item.author.id),
-                )
-              }
+              onHide={() => setPosts((prev) => prev.filter((x) => x.author.id !== item.author.id))}
             />
           )}
           ItemSeparatorComponent={() => <View className="h-3" />}
@@ -296,8 +286,7 @@ function PostRow({
   };
 
   const authorName =
-    `${post.author.firstName} ${post.author.lastName}`.trim() ||
-    post.author.handle;
+    `${post.author.firstName} ${post.author.lastName}`.trim() || post.author.handle;
 
   return (
     <Surface variant="card" padding="4">

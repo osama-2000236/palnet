@@ -37,11 +37,7 @@ export class AdminService {
 
   // ── Users ────────────────────────────────────────────────────────────
 
-  async suspendUser(
-    actorId: string,
-    targetUserId: string,
-    body: SuspendUserBody,
-  ): Promise<void> {
+  async suspendUser(actorId: string, targetUserId: string, body: SuspendUserBody): Promise<void> {
     if (actorId === targetUserId) {
       throw new DomainException(
         ErrorCode.VALIDATION_FAILED,
@@ -122,11 +118,7 @@ export class AdminService {
 
   // ── Posts ────────────────────────────────────────────────────────────
 
-  async takedownPost(
-    actorId: string,
-    postId: string,
-    body: TakedownPostBody,
-  ): Promise<void> {
+  async takedownPost(actorId: string, postId: string, body: TakedownPostBody): Promise<void> {
     const post = await this.prisma.post.findFirst({
       where: { id: postId, deletedAt: null },
       select: { id: true, takedownAt: true },
@@ -157,11 +149,7 @@ export class AdminService {
     ]);
   }
 
-  async restorePost(
-    actorId: string,
-    postId: string,
-    body: RestorePostBody,
-  ): Promise<void> {
+  async restorePost(actorId: string, postId: string, body: RestorePostBody): Promise<void> {
     const post = await this.prisma.post.findFirst({
       where: { id: postId, deletedAt: null },
       select: { id: true, takedownAt: true },
@@ -192,11 +180,7 @@ export class AdminService {
 
   // ── Report appeals ───────────────────────────────────────────────────
 
-  async fileAppeal(
-    userId: string,
-    reportId: string,
-    note: string,
-  ): Promise<AppealAck> {
+  async fileAppeal(userId: string, reportId: string, note: string): Promise<AppealAck> {
     const report = await this.prisma.report.findUnique({
       where: { id: reportId },
       select: {
@@ -277,11 +261,7 @@ export class AdminService {
     };
   }
 
-  async reviewAppeal(
-    actorId: string,
-    reportId: string,
-    body: ReviewAppealBody,
-  ): Promise<void> {
+  async reviewAppeal(actorId: string, reportId: string, body: ReviewAppealBody): Promise<void> {
     const report = await this.prisma.report.findUnique({
       where: { id: reportId },
       select: {
@@ -300,11 +280,7 @@ export class AdminService {
       );
     }
     if (report.appealStatus !== "PENDING") {
-      throw new DomainException(
-        ErrorCode.CONFLICT,
-        "This appeal has already been reviewed.",
-        409,
-      );
+      throw new DomainException(ErrorCode.CONFLICT, "This appeal has already been reviewed.", 409);
     }
 
     const ops: Prisma.PrismaPromise<unknown>[] = [
@@ -460,9 +436,7 @@ function actorFromUser(user: AuditRow["actor"]): AuditActor {
   };
 }
 
-function auditWhere(
-  query: AuditLogListQuery | AuditLogExportQuery,
-): Prisma.AuditLogWhereInput {
+function auditWhere(query: AuditLogListQuery | AuditLogExportQuery): Prisma.AuditLogWhereInput {
   const and: Prisma.AuditLogWhereInput[] = [];
   if (query.action) and.push({ action: query.action });
   if (query.targetUserId) and.push({ targetUserId: query.targetUserId });

@@ -54,16 +54,11 @@ export class MediaService {
       this.client = null;
       this.bucket = null;
       this.publicBase = null;
-      this.log.warn(
-        "R2 not configured — POST /media/presign will return MEDIA_NOT_CONFIGURED.",
-      );
+      this.log.warn("R2 not configured — POST /media/presign will return MEDIA_NOT_CONFIGURED.");
     }
   }
 
-  async presign(
-    userId: string,
-    body: PresignUploadBody,
-  ): Promise<PresignedUpload> {
+  async presign(userId: string, body: PresignUploadBody): Promise<PresignedUpload> {
     if (!this.client || !this.bucket || !this.publicBase) {
       throw new DomainException(
         ErrorCode.INTERNAL,
@@ -126,11 +121,7 @@ export class MediaService {
     try {
       parsed = new URL(url);
     } catch {
-      throw new DomainException(
-        ErrorCode.VALIDATION_FAILED,
-        "Invalid URL.",
-        400,
-      );
+      throw new DomainException(ErrorCode.VALIDATION_FAILED, "Invalid URL.", 400);
     }
 
     const base = new URL(this.publicBase);
@@ -146,22 +137,14 @@ export class MediaService {
     try {
       const res = await fetch(url);
       if (!res.ok) {
-        throw new DomainException(
-          ErrorCode.VALIDATION_FAILED,
-          `Fetch failed: ${res.status}`,
-          400,
-        );
+        throw new DomainException(ErrorCode.VALIDATION_FAILED, `Fetch failed: ${res.status}`, 400);
       }
       const ab = await res.arrayBuffer();
       buffer = Buffer.from(ab);
     } catch (err) {
       if (err instanceof DomainException) throw err;
       this.log.warn({ err, url }, "blurhash fetch failed");
-      throw new DomainException(
-        ErrorCode.INTERNAL,
-        "Could not fetch media for hashing.",
-        502,
-      );
+      throw new DomainException(ErrorCode.INTERNAL, "Could not fetch media for hashing.", 502);
     }
 
     // 32×32 is blurhash's recommended downsample size — any larger is wasteful,
@@ -173,13 +156,7 @@ export class MediaService {
       .toBuffer({ resolveWithObject: true });
 
     // 4×3 components = ~30-char hash, good balance of detail vs. payload.
-    const hash = encodeBlurhash(
-      new Uint8ClampedArray(data),
-      info.width,
-      info.height,
-      4,
-      3,
-    );
+    const hash = encodeBlurhash(new Uint8ClampedArray(data), info.width, info.height, 4, 3);
 
     return { blurhash: hash };
   }

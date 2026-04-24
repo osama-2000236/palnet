@@ -101,7 +101,7 @@ export function ReportDialog({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 p-4"
+      className="bg-ink/40 fixed inset-0 z-50 flex items-center justify-center p-4"
       role="dialog"
       aria-modal="true"
       aria-labelledby={titleId}
@@ -110,35 +110,30 @@ export function ReportDialog({
       }}
     >
       <div
-        className={cx(
-          "w-full max-w-md rounded-lg bg-surface p-5 shadow-xl",
-          "flex flex-col gap-4",
-        )}
+        className={cx("bg-surface w-full max-w-md rounded-lg p-5 shadow-xl", "flex flex-col gap-4")}
       >
         <header className="flex flex-col gap-1">
-          <h2 id={titleId} className="text-lg font-bold text-ink">
+          <h2 id={titleId} className="text-ink text-lg font-bold">
             {t("title")}
           </h2>
-          <p className="text-sm text-ink-muted">{t("subtitle")}</p>
+          <p className="text-ink-muted text-sm">{t("subtitle")}</p>
         </header>
 
         {status === "ok" ? (
           <section
             role="status"
-            className="rounded-md border border-brand-200 bg-brand-50 p-3 text-sm text-brand-700"
+            className="border-brand-200 bg-brand-50 text-brand-700 rounded-md border p-3 text-sm"
           >
             <p className="font-semibold">{t("successTitle")}</p>
             <p>{t("successBody")}</p>
           </section>
         ) : (
           <fieldset className="flex flex-col gap-2">
-            <legend className="mb-1 text-sm font-semibold text-ink">
-              {t("reasonLegend")}
-            </legend>
+            <legend className="text-ink mb-1 text-sm font-semibold">{t("reasonLegend")}</legend>
             {ReasonOrder.map((r, i) => (
               <label
                 key={r}
-                className="flex cursor-pointer items-center gap-2 rounded-md border border-transparent px-2 py-1.5 text-sm text-ink hover:bg-surface-subtle has-[:focus-visible]:border-brand-600"
+                className="text-ink hover:bg-surface-subtle has-[:focus-visible]:border-brand-600 flex cursor-pointer items-center gap-2 rounded-md border border-transparent px-2 py-1.5 text-sm"
               >
                 <input
                   ref={i === 0 ? firstFocus : undefined}
@@ -157,20 +152,20 @@ export function ReportDialog({
 
         {status !== "ok" ? (
           <label className="flex flex-col gap-1 text-sm">
-            <span className="font-semibold text-ink">{t("detailsLabel")}</span>
+            <span className="text-ink font-semibold">{t("detailsLabel")}</span>
             <textarea
               value={details}
               onChange={(e) => setDetails(e.target.value)}
               placeholder={t("detailsPlaceholder")}
               rows={3}
               maxLength={1000}
-              className="w-full resize-y rounded-md border border-line-soft bg-surface px-2 py-1.5 text-sm text-ink placeholder:text-ink-muted/60 focus:border-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-600/30"
+              className="border-line-soft bg-surface text-ink placeholder:text-ink-muted/60 focus:border-brand-600 focus:ring-brand-600/30 w-full resize-y rounded-md border px-2 py-1.5 text-sm focus:outline-none focus:ring-2"
             />
           </label>
         ) : null}
 
         {status === "error" ? (
-          <p role="alert" className="text-sm text-danger">
+          <p role="alert" className="text-danger text-sm">
             {t("genericError")}
           </p>
         ) : null}

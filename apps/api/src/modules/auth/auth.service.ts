@@ -50,10 +50,7 @@ export class AuthService {
       );
     }
 
-    const passwordHash = await bcrypt.hash(
-      body.password,
-      getNumberEnv(this.config, "BCRYPT_COST"),
-    );
+    const passwordHash = await bcrypt.hash(body.password, getNumberEnv(this.config, "BCRYPT_COST"));
 
     const user = await this.prisma.user.create({
       data: {
@@ -248,9 +245,7 @@ export class AuthService {
   // diverge cleanly. Keep MOBILE_APP_SCHEME as fallback for older env files.
   private buildMobileLink(target: "verify" | "reset", rawToken: string): string | null {
     const baseKey =
-      target === "verify"
-        ? "EMAIL_VERIFY_MOBILE_URL_BASE"
-        : "PASSWORD_RESET_MOBILE_URL_BASE";
+      target === "verify" ? "EMAIL_VERIFY_MOBILE_URL_BASE" : "PASSWORD_RESET_MOBILE_URL_BASE";
     const configuredBase = this.config.get<string>(baseKey);
     if (configuredBase) {
       return `${configuredBase}?token=${encodeURIComponent(rawToken)}`;

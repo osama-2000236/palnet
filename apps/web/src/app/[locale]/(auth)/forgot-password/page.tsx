@@ -32,15 +32,15 @@ export default function ForgotPasswordPage(): JSX.Element {
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-md items-center px-6 py-12">
       <Surface as="section" variant="flat" padding="6" className="w-full">
-        <h1 className="mb-1 text-xl font-bold text-ink">{t("title")}</h1>
-        <p className="mb-4 text-sm text-ink-muted">{t("subtitle")}</p>
+        <h1 className="text-ink mb-1 text-xl font-bold">{t("title")}</h1>
+        <p className="text-ink-muted mb-4 text-sm">{t("subtitle")}</p>
 
         {sent ? (
           <>
-            <p className="text-sm text-ink">{t("sent")}</p>
+            <p className="text-ink text-sm">{t("sent")}</p>
             <Link
               href="/login"
-              className="mt-4 inline-block text-sm font-semibold text-brand-700 hover:underline"
+              className="text-brand-700 mt-4 inline-block text-sm font-semibold hover:underline"
             >
               {t("backToLogin")}
             </Link>
@@ -48,27 +48,27 @@ export default function ForgotPasswordPage(): JSX.Element {
         ) : (
           <form onSubmit={onSubmit} className="flex flex-col gap-3" noValidate>
             <label className="flex flex-col gap-1">
-              <span className="text-sm text-ink-muted">{t("emailLabel")}</span>
+              <span className="text-ink-muted text-sm">{t("emailLabel")}</span>
               <input
                 type="email"
                 autoComplete="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full rounded-md border border-ink-muted/30 px-3 py-2"
+                className="border-ink-muted/30 w-full rounded-md border px-3 py-2"
                 dir="ltr"
               />
             </label>
             <button
               type="submit"
               disabled={busy || !email}
-              className="mt-1 rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-ink-inverse disabled:opacity-60"
+              className="bg-brand-600 text-ink-inverse mt-1 rounded-md px-4 py-2 text-sm font-semibold disabled:opacity-60"
             >
               {t("submit")}
             </button>
             <Link
               href="/login"
-              className="text-center text-sm font-semibold text-brand-700 hover:underline"
+              className="text-brand-700 text-center text-sm font-semibold hover:underline"
             >
               {t("backToLogin")}
             </Link>

@@ -62,10 +62,9 @@ export function MessageBubble({
 }: MessageBubbleProps): JSX.Element {
   const mine = side === "mine";
 
-  const srPrefix =
-    mine
-      ? labels.ownPrefix(timestamp ?? "")
-      : labels.otherPrefix(authorName ?? "", timestamp ?? "");
+  const srPrefix = mine
+    ? labels.ownPrefix(timestamp ?? "")
+    : labels.otherPrefix(authorName ?? "", timestamp ?? "");
 
   return (
     <li
@@ -77,9 +76,7 @@ export function MessageBubble({
       <div
         className={cx(
           "whitespace-pre-wrap break-words rounded-[14px] border px-3.5 py-2.5 text-sm leading-[1.6]",
-          mine
-            ? "bg-brand-100 border-brand-200 text-ink"
-            : "bg-surface border-line-soft text-ink",
+          mine ? "bg-brand-100 border-brand-200 text-ink" : "bg-surface border-line-soft text-ink",
           // Tail — the only corner that goes tight (4px). Logical so it
           // flips correctly in RTL.
           tail && mine && "rounded-ee-[4px]",
@@ -95,7 +92,7 @@ export function MessageBubble({
         <div
           className={cx(
             "mt-0.5 flex items-center gap-1 text-[11px]",
-            mine ? "self-end text-ink-muted" : "self-start text-ink-muted",
+            mine ? "text-ink-muted self-end" : "text-ink-muted self-start",
           )}
         >
           {timestamp ? (
@@ -117,7 +114,7 @@ export function MessageBubble({
         <button
           type="button"
           onClick={onRetry}
-          className="mt-0.5 text-[11px] text-danger hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-danger"
+          className="text-danger focus-visible:ring-danger mt-0.5 text-[11px] hover:underline focus:outline-none focus-visible:ring-2"
         >
           {labels.failedHint}
         </button>
@@ -138,19 +135,13 @@ function StatusTick({
   switch (status) {
     case "sending":
       return (
-        <span
-          aria-label={labels.statusSending}
-          className="inline-flex items-center text-ink-muted"
-        >
+        <span aria-label={labels.statusSending} className="text-ink-muted inline-flex items-center">
           <Icon name="clock" size={12} />
         </span>
       );
     case "sent":
       return (
-        <span
-          aria-label={labels.statusSent}
-          className="inline-flex items-center text-ink-muted"
-        >
+        <span aria-label={labels.statusSent} className="text-ink-muted inline-flex items-center">
           <Icon name="check" size={14} />
         </span>
       );
@@ -158,17 +149,14 @@ function StatusTick({
       return (
         <span
           aria-label={labels.statusDelivered}
-          className="inline-flex items-center text-ink-muted"
+          className="text-ink-muted inline-flex items-center"
         >
           <Icon name="check-double" size={14} />
         </span>
       );
     case "read":
       return (
-        <span
-          aria-label={labels.statusRead}
-          className="inline-flex items-center text-brand-600"
-        >
+        <span aria-label={labels.statusRead} className="text-brand-600 inline-flex items-center">
           <Icon name="check-double" size={14} />
         </span>
       );
@@ -178,7 +166,7 @@ function StatusTick({
           type="button"
           onClick={onRetry}
           aria-label={labels.statusFailed}
-          className="inline-flex items-center text-danger focus:outline-none focus-visible:ring-2 focus-visible:ring-danger"
+          className="text-danger focus-visible:ring-danger inline-flex items-center focus:outline-none focus-visible:ring-2"
         >
           <Icon name="x" size={14} />
         </button>

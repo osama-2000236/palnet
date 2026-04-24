@@ -48,11 +48,7 @@ function buildQs(filters: Filters, after: string | null): string {
   return qs.toString();
 }
 
-function formatSalary(
-  job: Job,
-  t: (k: string) => string,
-  locale: string,
-): string | null {
+function formatSalary(job: Job, t: (k: string) => string, locale: string): string | null {
   const { salaryMin, salaryMax, salaryCurrency } = job;
   if (!salaryMin && !salaryMax) return null;
   const cur = salaryCurrency ?? "USD";
@@ -95,11 +91,7 @@ export default function JobsPageRoute(): JSX.Element {
       setLoading(true);
       setError(null);
       try {
-        const page = await apiFetchPage(
-          `/jobs?${buildQs(f, after)}`,
-          JobsPage,
-          { token: tk },
-        );
+        const page = await apiFetchPage(`/jobs?${buildQs(f, after)}`, JobsPage, { token: tk });
         setItems((prev) => (after ? [...prev, ...page.data] : page.data));
         setCursor(page.meta.nextCursor);
         setHasMore(page.meta.hasMore);
@@ -124,32 +116,32 @@ export default function JobsPageRoute(): JSX.Element {
     <div className="mx-auto grid w-full max-w-[1128px] grid-cols-1 gap-6 px-4 py-6 lg:grid-cols-[260px_minmax(0,1fr)]">
       <aside className="hidden lg:block" aria-label={t("filters")}>
         <Surface variant="card" padding="4">
-          <div className="mb-3 text-sm font-semibold text-ink">{t("filters")}</div>
+          <div className="text-ink mb-3 text-sm font-semibold">{t("filters")}</div>
 
           <label className="mb-3 block">
-            <span className="mb-1 block text-xs text-ink-muted">{t("search")}</span>
+            <span className="text-ink-muted mb-1 block text-xs">{t("search")}</span>
             <input
               type="search"
               value={filters.q}
               onChange={(e) => setFilters((f) => ({ ...f, q: e.target.value }))}
               placeholder={t("searchPlaceholder")}
-              className="w-full rounded-md border border-line-hard bg-surface px-3 py-1.5 text-sm text-ink placeholder:text-ink-subtle focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
+              className="border-line-hard bg-surface text-ink placeholder:text-ink-subtle focus:border-brand-500 focus:ring-brand-500/20 w-full rounded-md border px-3 py-1.5 text-sm focus:outline-none focus:ring-2"
             />
           </label>
 
           <label className="mb-3 block">
-            <span className="mb-1 block text-xs text-ink-muted">{t("city")}</span>
+            <span className="text-ink-muted mb-1 block text-xs">{t("city")}</span>
             <input
               type="text"
               value={filters.city}
               onChange={(e) => setFilters((f) => ({ ...f, city: e.target.value }))}
               placeholder={t("cityPlaceholder")}
-              className="w-full rounded-md border border-line-hard bg-surface px-3 py-1.5 text-sm text-ink placeholder:text-ink-subtle focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
+              className="border-line-hard bg-surface text-ink placeholder:text-ink-subtle focus:border-brand-500 focus:ring-brand-500/20 w-full rounded-md border px-3 py-1.5 text-sm focus:outline-none focus:ring-2"
             />
           </label>
 
           <fieldset className="mb-3">
-            <legend className="mb-1 block text-xs text-ink-muted">{t("type")}</legend>
+            <legend className="text-ink-muted mb-1 block text-xs">{t("type")}</legend>
             <div className="flex flex-wrap gap-1.5">
               <FilterChip
                 active={filters.type === ""}
@@ -168,13 +160,11 @@ export default function JobsPageRoute(): JSX.Element {
           </fieldset>
 
           <fieldset>
-            <legend className="mb-1 block text-xs text-ink-muted">{t("location")}</legend>
+            <legend className="text-ink-muted mb-1 block text-xs">{t("location")}</legend>
             <div className="flex flex-wrap gap-1.5">
               <FilterChip
                 active={filters.locationMode === ""}
-                onClick={() =>
-                  setFilters((f) => ({ ...f, locationMode: "" }))
-                }
+                onClick={() => setFilters((f) => ({ ...f, locationMode: "" }))}
                 label={t("any")}
               />
               {(Object.values(JobLocationMode) as JobLocationMode[]).map((m) => (
@@ -193,8 +183,8 @@ export default function JobsPageRoute(): JSX.Element {
       <main>
         <div className="mb-4 flex items-center justify-between">
           <div>
-            <h1 className="text-xl font-semibold text-ink">{t("title")}</h1>
-            <span className="text-sm text-ink-muted" aria-live="polite">
+            <h1 className="text-ink text-xl font-semibold">{t("title")}</h1>
+            <span className="text-ink-muted text-sm" aria-live="polite">
               {items.length > 0
                 ? t("countSummary", { count: items.length })
                 : firstLoad
@@ -202,10 +192,7 @@ export default function JobsPageRoute(): JSX.Element {
                   : t("noneSummary")}
             </span>
           </div>
-          <Link
-            href="/me/jobs"
-            className="text-sm font-medium text-brand-700 hover:text-brand-800"
-          >
+          <Link href="/me/jobs" className="text-brand-700 hover:text-brand-800 text-sm font-medium">
             {t("myApplications")}
           </Link>
         </div>
@@ -220,19 +207,19 @@ export default function JobsPageRoute(): JSX.Element {
           </ul>
         ) : error ? (
           <Surface variant="tinted" padding="6">
-            <p className="text-sm text-ink-muted">{error}</p>
+            <p className="text-ink-muted text-sm">{error}</p>
           </Surface>
         ) : items.length === 0 ? (
           <Surface variant="tinted" padding="8">
             <div className="mx-auto max-w-sm text-center">
               <div
                 aria-hidden="true"
-                className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-brand-50 text-lg text-brand-700"
+                className="bg-brand-50 text-brand-700 mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full text-lg"
               >
                 ▦
               </div>
-              <p className="text-sm font-semibold text-ink">{t("emptyTitle")}</p>
-              <p className="mt-1 text-sm text-ink-muted">{t("emptyDesc")}</p>
+              <p className="text-ink text-sm font-semibold">{t("emptyTitle")}</p>
+              <p className="text-ink-muted mt-1 text-sm">{t("emptyDesc")}</p>
             </div>
           </Surface>
         ) : (
@@ -249,7 +236,7 @@ export default function JobsPageRoute(): JSX.Element {
                 <button
                   onClick={() => token && cursor && void load(token, cursor, filters)}
                   disabled={loading}
-                  className="rounded-md border border-line-hard bg-surface px-4 py-1.5 text-sm text-ink hover:bg-surface-subtle disabled:opacity-55"
+                  className="border-line-hard bg-surface text-ink hover:bg-surface-subtle rounded-md border px-4 py-1.5 text-sm disabled:opacity-55"
                 >
                   {loading ? tCommon("loading") : t("loadMore")}
                 </button>
@@ -278,8 +265,8 @@ function FilterChip({
       aria-pressed={active}
       className={
         active
-          ? "rounded-full border border-brand-600 bg-brand-50 px-3 py-1 text-xs font-semibold text-brand-700"
-          : "rounded-full border border-line-hard bg-surface px-3 py-1 text-xs text-ink-muted hover:bg-surface-subtle"
+          ? "border-brand-600 bg-brand-50 text-brand-700 rounded-full border px-3 py-1 text-xs font-semibold"
+          : "border-line-hard bg-surface text-ink-muted hover:bg-surface-subtle rounded-full border px-3 py-1 text-xs"
       }
     >
       {label}
@@ -287,13 +274,7 @@ function FilterChip({
   );
 }
 
-function JobListRow({
-  job,
-  salary,
-}: {
-  job: Job;
-  salary: string | null;
-}): JSX.Element {
+function JobListRow({ job, salary }: { job: Job; salary: string | null }): JSX.Element {
   const t = useTranslations("jobs");
   const metaParts = [
     job.city,
@@ -303,19 +284,15 @@ function JobListRow({
 
   return (
     <Link href={`/jobs/${job.id}`} className="block">
-      <Surface variant="card" padding="4" className="transition-colors hover:border-brand-400">
+      <Surface variant="card" padding="4" className="hover:border-brand-400 transition-colors">
         <div className="flex items-start gap-3">
           <div
-            className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-md bg-surface-sunken text-sm font-semibold text-ink-muted"
+            className="bg-surface-sunken text-ink-muted flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-md text-sm font-semibold"
             aria-hidden="true"
           >
             {job.company.logoUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={job.company.logoUrl}
-                alt=""
-                className="h-full w-full object-cover"
-              />
+              <img src={job.company.logoUrl} alt="" className="h-full w-full object-cover" />
             ) : (
               (job.company.name[0] ?? "?").toUpperCase()
             )}
@@ -323,29 +300,23 @@ function JobListRow({
           <div className="min-w-0 flex-1">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <h2 className="truncate text-base font-semibold text-ink">
-                  {job.title}
-                </h2>
-                <p className="truncate text-sm text-ink-muted">
-                  {job.company.name}
-                </p>
+                <h2 className="text-ink truncate text-base font-semibold">{job.title}</h2>
+                <p className="text-ink-muted truncate text-sm">{job.company.name}</p>
               </div>
               {job.viewer.hasApplied ? (
-                <span className="shrink-0 rounded-full border border-success/30 bg-success/10 px-2 py-0.5 text-[11px] font-semibold text-success">
+                <span className="border-success/30 bg-success/10 text-success shrink-0 rounded-full border px-2 py-0.5 text-[11px] font-semibold">
                   {t("appliedBadge")}
                 </span>
               ) : null}
             </div>
-            <p className="mt-1 text-xs text-ink-muted">{metaParts.join(" · ")}</p>
-            {salary ? (
-              <p className="mt-1 text-xs font-semibold text-ink">{salary}</p>
-            ) : null}
+            <p className="text-ink-muted mt-1 text-xs">{metaParts.join(" · ")}</p>
+            {salary ? <p className="text-ink mt-1 text-xs font-semibold">{salary}</p> : null}
             {job.skillsRequired.length > 0 ? (
               <ul className="mt-2 flex flex-wrap gap-1">
                 {job.skillsRequired.slice(0, 5).map((s) => (
                   <li
                     key={s}
-                    className="rounded-full bg-surface-subtle px-2 py-0.5 text-[11px] text-ink-muted"
+                    className="bg-surface-subtle text-ink-muted rounded-full px-2 py-0.5 text-[11px]"
                   >
                     {s}
                   </li>
@@ -363,11 +334,11 @@ function JobRowSkeleton(): JSX.Element {
   return (
     <Surface variant="card" padding="4" aria-hidden="true">
       <div className="flex items-start gap-3">
-        <div className="h-12 w-12 shrink-0 animate-pulse rounded-md bg-surface-sunken" />
+        <div className="bg-surface-sunken h-12 w-12 shrink-0 animate-pulse rounded-md" />
         <div className="flex-1 space-y-2">
-          <div className="h-4 w-2/3 animate-pulse rounded bg-surface-sunken" />
-          <div className="h-3 w-1/3 animate-pulse rounded bg-surface-sunken" />
-          <div className="h-3 w-1/2 animate-pulse rounded bg-surface-sunken" />
+          <div className="bg-surface-sunken h-4 w-2/3 animate-pulse rounded" />
+          <div className="bg-surface-sunken h-3 w-1/3 animate-pulse rounded" />
+          <div className="bg-surface-sunken h-3 w-1/2 animate-pulse rounded" />
         </div>
       </div>
     </Surface>

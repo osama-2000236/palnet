@@ -58,9 +58,7 @@ async function apiJson<T>(
     const response = await request.fetch(`${API_BASE}${path}`, {
       method,
       data,
-      headers: session
-        ? { Authorization: `Bearer ${session.tokens.accessToken}` }
-        : undefined,
+      headers: session ? { Authorization: `Bearer ${session.tokens.accessToken}` } : undefined,
     });
 
     const text = await response.text();
@@ -91,7 +89,7 @@ export async function loginViaApi(
   request: APIRequestContext,
   email: string,
   password: string,
-) : Promise<Session> {
+): Promise<Session> {
   return apiJson<Session>(request, "/auth/login", {
     method: "POST",
     data: {
@@ -202,11 +200,7 @@ export async function signOutViaUi(page: Page): Promise<void> {
   await expect(page).toHaveURL(/\/en\/login$/);
 }
 
-export async function signInViaUi(
-  page: Page,
-  email: string,
-  password: string,
-): Promise<void> {
+export async function signInViaUi(page: Page, email: string, password: string): Promise<void> {
   await page.goto("/en/login");
   await page.getByLabel(/email/i).fill(email);
   await page.getByLabel(/password/i).fill(password);
@@ -256,11 +250,9 @@ export async function unreadNotifications(
   request: APIRequestContext,
   session: Session,
 ): Promise<number> {
-  const payload = await apiJson<{ count: number }>(
-    request,
-    "/notifications/unread-count",
-    { session },
-  );
+  const payload = await apiJson<{ count: number }>(request, "/notifications/unread-count", {
+    session,
+  });
   return payload.count;
 }
 
@@ -292,9 +284,7 @@ export async function waitForRoomUnread(
   expected: number,
 ): Promise<void> {
   for (let attempt = 0; attempt < 12; attempt += 1) {
-    const room = (await listRooms(request, session)).find(
-      (item) => item.id === roomId,
-    );
+    const room = (await listRooms(request, session)).find((item) => item.id === roomId);
     if (room?.unreadCount === expected) {
       return;
     }
@@ -305,10 +295,7 @@ export async function waitForRoomUnread(
   expect(room?.unreadCount).toBe(expected);
 }
 
-async function waitForProfileViaApi(
-  request: APIRequestContext,
-  handle: string,
-): Promise<void> {
+async function waitForProfileViaApi(request: APIRequestContext, handle: string): Promise<void> {
   for (let attempt = 0; attempt < 12; attempt += 1) {
     try {
       await apiJson(request, `/profiles/${handle}`);

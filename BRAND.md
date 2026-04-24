@@ -7,7 +7,8 @@
 **Baydar** (بيدر) — _baidar_, the **threshing floor**: the shared ground where farmers bring their harvest to be sorted, measured, and traded. It's the village's public commercial surface.
 
 Why this name for a professional network:
-1. **The metaphor does the work.** You bring what you've built. You're seen, sorted, valued, connected. That's what a professional network *is*.
+
+1. **The metaphor does the work.** You bring what you've built. You're seen, sorted, valued, connected. That's what a professional network _is_.
 2. **Regional without being literal.** It's unmistakably Arabic and agrarian, but it doesn't name a place, a group, or a cliché.
 3. **Bilingual-friendly.** One syllable stress (**BAY**-dar). Latin speakers pronounce it correctly on first try. Arabic readers recognize it instantly.
 4. **Not taken in tech.** No Baydar-branded social / professional product as of now.
@@ -72,6 +73,7 @@ See `DESIGN.md §3`. IBM Plex Sans Arabic + Noto Naskh Arabic + IBM Plex Mono.
 ## Domain + handle checklist
 
 Claim before launch:
+
 - [ ] `baydar.app` / `baydar.co` / `baydar.ps`
 - [ ] `@baydar` on Twitter/X, Instagram, Threads
 - [ ] `baydar` on Product Hunt

@@ -151,8 +151,7 @@ export default function BlocksScreen(): JSX.Element {
         {blocks && blocks.length > 0 ? (
           <Surface variant="card" padding="2">
             {blocks.map((b, idx) => {
-              const name =
-                `${b.firstName} ${b.lastName}`.trim() || b.handle;
+              const name = `${b.firstName} ${b.lastName}`.trim() || b.handle;
               return (
                 <View
                   key={b.userId}
@@ -168,9 +167,7 @@ export default function BlocksScreen(): JSX.Element {
                   testID={`blocks-row-${b.userId}`}
                 >
                   <Pressable
-                    onPress={() =>
-                      router.push(`/(app)/in/${b.handle}` as never)
-                    }
+                    onPress={() => router.push(`/(app)/in/${b.handle}` as never)}
                     style={{
                       flex: 1,
                       flexDirection: "row",

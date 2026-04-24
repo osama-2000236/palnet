@@ -15,12 +15,7 @@ import { I18nManager, Pressable, Text, View } from "react-native";
 import { Icon } from "./Icon";
 import { nativeTokens } from "./tokens";
 
-export type MessageStatus =
-  | "sending"
-  | "sent"
-  | "delivered"
-  | "read"
-  | "failed";
+export type MessageStatus = "sending" | "sent" | "delivered" | "read" | "failed";
 
 export interface MessageBubbleLabels {
   ownPrefix(time: string): string;
@@ -65,16 +60,18 @@ export function MessageBubble({
   // Tight corner on the author-side end. Under RTL, "end" physically flips,
   // so we swap start/end corners to keep the tail on the author side.
   const rtl = I18nManager.isRTL;
-  const ownTailCorner = tail && mine
-    ? rtl
-      ? { borderBottomLeftRadius: TAIL_RADIUS }
-      : { borderBottomRightRadius: TAIL_RADIUS }
-    : null;
-  const theirTailCorner = tail && !mine
-    ? rtl
-      ? { borderBottomRightRadius: TAIL_RADIUS }
-      : { borderBottomLeftRadius: TAIL_RADIUS }
-    : null;
+  const ownTailCorner =
+    tail && mine
+      ? rtl
+        ? { borderBottomLeftRadius: TAIL_RADIUS }
+        : { borderBottomRightRadius: TAIL_RADIUS }
+      : null;
+  const theirTailCorner =
+    tail && !mine
+      ? rtl
+        ? { borderBottomRightRadius: TAIL_RADIUS }
+        : { borderBottomLeftRadius: TAIL_RADIUS }
+      : null;
 
   return (
     <View
@@ -92,15 +89,9 @@ export function MessageBubble({
           borderWidth: 1,
           paddingHorizontal: 14,
           paddingVertical: 10,
-          backgroundColor: mine
-            ? nativeTokens.color.brand100
-            : nativeTokens.color.surface,
-          borderColor: mine
-            ? nativeTokens.color.brand200
-            : nativeTokens.color.lineSoft,
-          ...(status === "failed"
-            ? { borderColor: nativeTokens.color.danger }
-            : null),
+          backgroundColor: mine ? nativeTokens.color.brand100 : nativeTokens.color.surface,
+          borderColor: mine ? nativeTokens.color.brand200 : nativeTokens.color.lineSoft,
+          ...(status === "failed" ? { borderColor: nativeTokens.color.danger } : null),
           ...ownTailCorner,
           ...theirTailCorner,
         }}
@@ -200,21 +191,13 @@ function StatusTick({
     case "delivered":
       return (
         <View accessibilityLabel={labels.statusDelivered}>
-          <Icon
-            name="check-double"
-            size={14}
-            color={nativeTokens.color.inkMuted}
-          />
+          <Icon name="check-double" size={14} color={nativeTokens.color.inkMuted} />
         </View>
       );
     case "read":
       return (
         <View accessibilityLabel={labels.statusRead}>
-          <Icon
-            name="check-double"
-            size={14}
-            color={nativeTokens.color.brand600}
-          />
+          <Icon name="check-double" size={14} color={nativeTokens.color.brand600} />
         </View>
       );
     case "failed":

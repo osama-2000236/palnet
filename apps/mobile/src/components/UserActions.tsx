@@ -109,9 +109,7 @@ function ActionRow({
         paddingVertical: nativeTokens.space[3],
         paddingHorizontal: nativeTokens.space[2],
         borderRadius: nativeTokens.radius.md,
-        backgroundColor: pressed
-          ? nativeTokens.color.surfaceSubtle
-          : "transparent",
+        backgroundColor: pressed ? nativeTokens.color.surfaceSubtle : "transparent",
       })}
     >
       <Text

@@ -18,13 +18,7 @@ import {
   Profile,
   cursorPage,
 } from "@palnet/shared";
-import {
-  Avatar,
-  Icon,
-  PostCardSkeleton,
-  Surface,
-  type IconName,
-} from "@palnet/ui-web";
+import { Avatar, Icon, PostCardSkeleton, Surface, type IconName } from "@palnet/ui-web";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -86,11 +80,7 @@ export default function FeedPageRoute(): JSX.Element {
       .then(setMe)
       .catch(() => {});
 
-    void apiFetch(
-      "/connections/suggestions?limit=6",
-      SuggestionsEnvelope,
-      { token },
-    )
+    void apiFetch("/connections/suggestions?limit=6", SuggestionsEnvelope, { token })
       .then((out) => setSuggestions(out.data))
       .catch(() => setSuggestions([]));
 
@@ -109,10 +99,7 @@ export default function FeedPageRoute(): JSX.Element {
       <LeftRail me={me} />
 
       <div className="flex min-w-0 flex-col gap-3">
-        <Composer
-          me={me}
-          onPosted={(p) => setPosts((prev) => [p, ...prev])}
-        />
+        <Composer me={me} onPosted={(p) => setPosts((prev) => [p, ...prev])} />
 
         {firstLoad && loading ? (
           <>
@@ -121,10 +108,7 @@ export default function FeedPageRoute(): JSX.Element {
             <PostCardSkeleton />
           </>
         ) : posts.length === 0 ? (
-          <FeedEmpty
-            title={t("emptyTitle")}
-            desc={t("emptyDesc")}
-          />
+          <FeedEmpty title={t("emptyTitle")} desc={t("emptyDesc")} />
         ) : (
           <ul className="flex flex-col gap-3">
             {posts.map((p) => (
@@ -132,15 +116,9 @@ export default function FeedPageRoute(): JSX.Element {
                 <PostCard
                   post={p}
                   onChange={(next) =>
-                    setPosts((prev) =>
-                      prev.map((x) => (x.id === next.id ? next : x)),
-                    )
+                    setPosts((prev) => prev.map((x) => (x.id === next.id ? next : x)))
                   }
-                  onHide={() =>
-                    setPosts((prev) =>
-                      prev.filter((x) => x.author.id !== p.author.id),
-                    )
-                  }
+                  onHide={() => setPosts((prev) => prev.filter((x) => x.author.id !== p.author.id))}
                 />
               </li>
             ))}
@@ -152,7 +130,7 @@ export default function FeedPageRoute(): JSX.Element {
             type="button"
             onClick={() => void load(cursor)}
             disabled={loading}
-            className="self-center rounded-md border border-line-soft bg-surface px-4 py-2 text-sm text-ink hover:bg-surface-subtle disabled:cursor-not-allowed disabled:opacity-60"
+            className="border-line-soft bg-surface text-ink hover:bg-surface-subtle self-center rounded-md border px-4 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-60"
           >
             {loading ? t("loadingMore") : t("loadMore")}
           </button>
@@ -173,7 +151,7 @@ function LeftRail({ me }: { me: Profile | null }): JSX.Element {
   return (
     <div className="hidden flex-col gap-3 lg:sticky lg:top-20 lg:flex">
       <Surface variant="hero" padding="0" className="flex flex-col">
-        <div className="h-14 bg-gradient-to-br from-brand-500 to-brand-700" />
+        <div className="from-brand-500 to-brand-700 h-14 bg-gradient-to-br" />
         <div className="-mt-7 px-4 pb-4">
           <Avatar
             user={
@@ -190,29 +168,27 @@ function LeftRail({ me }: { me: Profile | null }): JSX.Element {
             size="lg"
             ring
           />
-          <div className="mt-2 text-sm font-semibold text-ink">
+          <div className="text-ink mt-2 text-sm font-semibold">
             {me ? `${me.firstName} ${me.lastName}`.trim() : ""}
           </div>
           {me?.headline ? (
-            <div className="mt-0.5 truncate text-xs text-ink-muted">
-              {me.headline}
-            </div>
+            <div className="text-ink-muted mt-0.5 truncate text-xs">{me.headline}</div>
           ) : null}
         </div>
-        <div className="border-t border-line-soft" />
+        <div className="border-line-soft border-t" />
         {me ? (
           <Link
             href={`/in/${me.handle}`}
-            className="flex items-center justify-between px-4 py-2.5 text-xs text-ink-muted hover:bg-surface-subtle focus:outline-none focus-visible:bg-surface-subtle"
+            className="text-ink-muted hover:bg-surface-subtle focus-visible:bg-surface-subtle flex items-center justify-between px-4 py-2.5 text-xs focus:outline-none"
           >
             <span>{t("connections")}</span>
-            <span className="tabular-nums font-semibold text-brand-700">—</span>
+            <span className="text-brand-700 font-semibold tabular-nums">—</span>
           </Link>
         ) : null}
       </Surface>
 
       <Surface variant="flat" padding="3">
-        <div className="mb-2 text-xs text-ink-muted">{t("quickAccess")}</div>
+        <div className="text-ink-muted mb-2 text-xs">{t("quickAccess")}</div>
         <ul className="flex flex-col">
           <QuickLink icon="bookmark" label={t("saved")} />
           <QuickLink icon="users" label={t("groups")} />
@@ -223,18 +199,12 @@ function LeftRail({ me }: { me: Profile | null }): JSX.Element {
   );
 }
 
-function QuickLink({
-  icon,
-  label,
-}: {
-  icon: IconName;
-  label: string;
-}): JSX.Element {
+function QuickLink({ icon, label }: { icon: IconName; label: string }): JSX.Element {
   return (
     <li>
       <button
         type="button"
-        className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-start text-sm text-ink-muted hover:bg-surface-subtle hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-600"
+        className="text-ink-muted hover:bg-surface-subtle hover:text-ink focus-visible:ring-brand-600 flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-start text-sm focus:outline-none focus-visible:ring-2"
       >
         <Icon name={icon} size={14} />
         {label}
@@ -260,11 +230,8 @@ function RightRail({
     <div className="hidden flex-col gap-3 lg:sticky lg:top-20 lg:flex">
       <Surface variant="card" padding="0">
         <div className="flex items-center justify-between px-4 pt-3">
-          <span className="text-sm font-semibold text-ink">{t("pymk")}</span>
-          <Link
-            href="/network"
-            className="text-xs text-ink-muted hover:text-brand-700"
-          >
+          <span className="text-ink text-sm font-semibold">{t("pymk")}</span>
+          <Link href="/network" className="text-ink-muted hover:text-brand-700 text-xs">
             {t("pymkAll")}
           </Link>
         </div>
@@ -273,7 +240,7 @@ function RightRail({
             {suggestions.slice(0, 4).map((s) => (
               <li
                 key={s.user.userId}
-                className="flex items-start gap-2.5 border-t border-line-soft px-4 py-3 first:border-t-0"
+                className="border-line-soft flex items-start gap-2.5 border-t px-4 py-3 first:border-t-0"
               >
                 <Avatar
                   user={{
@@ -288,22 +255,18 @@ function RightRail({
                 <div className="flex min-w-0 flex-1 flex-col">
                   <Link
                     href={`/in/${s.user.handle}`}
-                    className="truncate text-sm font-semibold text-ink hover:underline"
+                    className="text-ink truncate text-sm font-semibold hover:underline"
                   >
                     {s.user.firstName} {s.user.lastName}
                   </Link>
                   {s.user.headline ? (
-                    <span className="truncate text-xs text-ink-muted">
-                      {s.user.headline}
-                    </span>
+                    <span className="text-ink-muted truncate text-xs">{s.user.headline}</span>
                   ) : null}
-                  <span className="mt-0.5 text-[11px] text-ink-muted">
-                    {t("pymkReason")}
-                  </span>
+                  <span className="text-ink-muted mt-0.5 text-[11px]">{t("pymkReason")}</span>
                 </div>
                 <Link
                   href={`/in/${s.user.handle}`}
-                  className="inline-flex shrink-0 items-center gap-1 rounded-full border border-brand-600 px-2.5 py-1 text-xs font-semibold text-brand-700 hover:bg-brand-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-600"
+                  className="border-brand-600 text-brand-700 hover:bg-brand-50 focus-visible:ring-brand-600 inline-flex shrink-0 items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-semibold focus:outline-none focus-visible:ring-2"
                 >
                   <Icon name="plus" size={12} />
                   {t("connect")}
@@ -312,38 +275,31 @@ function RightRail({
             ))}
           </ul>
         ) : (
-          <div className="px-4 py-3 text-xs text-ink-muted">—</div>
+          <div className="text-ink-muted px-4 py-3 text-xs">—</div>
         )}
       </Surface>
 
       <Surface variant="card" padding="0">
         <div className="flex items-center justify-between px-4 pt-3">
-          <span className="text-sm font-semibold text-ink">{t("jobs")}</span>
-          <Link
-            href="/jobs"
-            className="text-xs text-ink-muted hover:text-brand-700"
-          >
+          <span className="text-ink text-sm font-semibold">{t("jobs")}</span>
+          <Link href="/jobs" className="text-ink-muted hover:text-brand-700 text-xs">
             {t("pymkAll")}
           </Link>
         </div>
         {jobs.length > 0 ? (
           <ul className="flex flex-col">
             {jobs.map((j) => {
-              const metaParts = [
-                j.city,
-                tJobs(`locationLabels.${j.locationMode}`),
-              ].filter(Boolean) as string[];
+              const metaParts = [j.city, tJobs(`locationLabels.${j.locationMode}`)].filter(
+                Boolean,
+              ) as string[];
               return (
-                <li
-                  key={j.id}
-                  className="border-t border-line-soft px-4 py-3 first:border-t-0"
-                >
+                <li key={j.id} className="border-line-soft border-t px-4 py-3 first:border-t-0">
                   <Link
                     href={`/jobs/${j.id}`}
                     className="flex items-start gap-2.5 hover:opacity-90"
                   >
                     <div
-                      className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-md bg-surface-sunken text-xs font-semibold text-ink-muted"
+                      className="bg-surface-sunken text-ink-muted flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-md text-xs font-semibold"
                       aria-hidden="true"
                     >
                       {j.company.logoUrl ? (
@@ -358,14 +314,10 @@ function RightRail({
                       )}
                     </div>
                     <div className="flex min-w-0 flex-1 flex-col">
-                      <span className="truncate text-sm font-semibold text-ink">
-                        {j.title}
-                      </span>
-                      <span className="truncate text-xs text-ink-muted">
-                        {j.company.name}
-                      </span>
+                      <span className="text-ink truncate text-sm font-semibold">{j.title}</span>
+                      <span className="text-ink-muted truncate text-xs">{j.company.name}</span>
                       {metaParts.length > 0 ? (
-                        <span className="mt-0.5 truncate text-[11px] text-ink-muted">
+                        <span className="text-ink-muted mt-0.5 truncate text-[11px]">
                           {metaParts.join(" · ")}
                         </span>
                       ) : null}
@@ -376,11 +328,11 @@ function RightRail({
             })}
           </ul>
         ) : (
-          <div className="px-4 py-3 text-xs text-ink-muted">{t("jobsComingSoon")}</div>
+          <div className="text-ink-muted px-4 py-3 text-xs">{t("jobsComingSoon")}</div>
         )}
       </Surface>
 
-      <p className="text-center text-[11px] text-ink-muted">{t("footer")}</p>
+      <p className="text-ink-muted text-center text-[11px]">{t("footer")}</p>
     </div>
   );
 }
@@ -389,24 +341,14 @@ function RightRail({
 // Empty state — shown when the server returns zero posts.
 // ────────────────────────────────────────────────────────────────────────
 
-function FeedEmpty({
-  title,
-  desc,
-}: {
-  title: string;
-  desc: string;
-}): JSX.Element {
+function FeedEmpty({ title, desc }: { title: string; desc: string }): JSX.Element {
   return (
-    <Surface
-      variant="tinted"
-      padding="6"
-      className="flex flex-col items-center gap-2 text-center"
-    >
-      <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-brand-50 text-brand-700">
+    <Surface variant="tinted" padding="6" className="flex flex-col items-center gap-2 text-center">
+      <span className="bg-brand-50 text-brand-700 inline-flex h-10 w-10 items-center justify-center rounded-full">
         <Icon name="home" size={20} />
       </span>
-      <h2 className="text-base font-semibold text-ink">{title}</h2>
-      <p className="max-w-md text-sm text-ink-muted">{desc}</p>
+      <h2 className="text-ink text-base font-semibold">{title}</h2>
+      <p className="text-ink-muted max-w-md text-sm">{desc}</p>
     </Surface>
   );
 }

@@ -8,10 +8,7 @@
 // room server-side, so reconciling state is "refetch on focus" — the existing
 // useFocusEffect already does that.
 
-import {
-  ChatRoom as ChatRoomSchema,
-  type ChatRoom,
-} from "@palnet/shared";
+import { ChatRoom as ChatRoomSchema, type ChatRoom } from "@palnet/shared";
 import { Avatar, Surface, nativeTokens } from "@palnet/ui-native";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
@@ -120,9 +117,7 @@ export default function MessagesListScreen(): JSX.Element {
               archiveLabel={t("messaging.archive")}
             />
           )}
-          ItemSeparatorComponent={() => (
-            <View style={{ height: nativeTokens.space[2] }} />
-          )}
+          ItemSeparatorComponent={() => <View style={{ height: nativeTokens.space[2] }} />}
           ListEmptyComponent={
             loading ? null : (
               <Surface variant="tinted" padding="6">
@@ -163,9 +158,7 @@ function RoomRow({
   onArchive: () => Promise<void> | void;
   archiveLabel: string;
 }): JSX.Element {
-  const other = viewerId
-    ? room.members.find((m) => m.userId !== viewerId)
-    : null;
+  const other = viewerId ? room.members.find((m) => m.userId !== viewerId) : null;
   const label = other
     ? `${other.firstName} ${other.lastName}`.trim() || other.handle
     : (room.title ?? room.id);
@@ -215,88 +208,83 @@ function RoomRow({
     : { renderRightActions: renderArchiveAction };
 
   return (
-    <Swipeable
-      {...swipeProps}
-      overshootLeft={false}
-      overshootRight={false}
-      friction={1.8}
-    >
-    <Pressable
-      onPress={() =>
-        router.push({
-          pathname: "/(app)/messages/[roomId]",
-          params: { roomId: room.id },
-        })
-      }
-      accessibilityRole="link"
-      accessibilityLabel={label}
-      testID={`message-room-${room.id}`}
-    >
-      <Surface variant="card" padding="3">
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            gap: nativeTokens.space[3],
-          }}
-        >
-          <Avatar user={avatarUser} size="md" />
+    <Swipeable {...swipeProps} overshootLeft={false} overshootRight={false} friction={1.8}>
+      <Pressable
+        onPress={() =>
+          router.push({
+            pathname: "/(app)/messages/[roomId]",
+            params: { roomId: room.id },
+          })
+        }
+        accessibilityRole="link"
+        accessibilityLabel={label}
+        testID={`message-room-${room.id}`}
+      >
+        <Surface variant="card" padding="3">
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              gap: nativeTokens.space[3],
+            }}
+          >
+            <Avatar user={avatarUser} size="md" />
 
-          <View style={{ flex: 1, minWidth: 0 }}>
-            <Text
-              numberOfLines={1}
-              style={{
-                color: nativeTokens.color.ink,
-                fontFamily: nativeTokens.type.family.sans,
-                fontSize: nativeTokens.type.scale.h3.size,
-                lineHeight: nativeTokens.type.scale.h3.line,
-                fontWeight: "600",
-              }}
-            >
-              {label}
-            </Text>
-            {room.lastMessage ? (
+            <View style={{ flex: 1, minWidth: 0 }}>
               <Text
                 numberOfLines={1}
                 style={{
-                  color: nativeTokens.color.inkMuted,
+                  color: nativeTokens.color.ink,
                   fontFamily: nativeTokens.type.family.sans,
-                  fontSize: nativeTokens.type.scale.small.size,
+                  fontSize: nativeTokens.type.scale.h3.size,
+                  lineHeight: nativeTokens.type.scale.h3.line,
+                  fontWeight: "600",
                 }}
               >
-                {room.lastMessage.body}
+                {label}
               </Text>
+              {room.lastMessage ? (
+                <Text
+                  numberOfLines={1}
+                  style={{
+                    color: nativeTokens.color.inkMuted,
+                    fontFamily: nativeTokens.type.family.sans,
+                    fontSize: nativeTokens.type.scale.small.size,
+                  }}
+                >
+                  {room.lastMessage.body}
+                </Text>
+              ) : null}
+            </View>
+
+            {room.unreadCount > 0 ? (
+              <View
+                style={{
+                  marginStart: nativeTokens.space[2],
+                  minWidth: 22,
+                  height: 22,
+                  paddingHorizontal: 7,
+                  borderRadius: nativeTokens.radius.full,
+                  backgroundColor: nativeTokens.color.accent600,
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <Text
+                  style={{
+                    color: nativeTokens.color.inkInverse,
+                    fontFamily: nativeTokens.type.family.sans,
+                    fontSize: 11,
+                    fontWeight: "700",
+                  }}
+                >
+                  {room.unreadCount}
+                </Text>
+              </View>
             ) : null}
           </View>
-
-          {room.unreadCount > 0 ? (
-            <View
-              style={{
-                marginStart: nativeTokens.space[2],
-                minWidth: 22,
-                height: 22,
-                paddingHorizontal: 7,
-                borderRadius: nativeTokens.radius.full,
-                backgroundColor: nativeTokens.color.accent600,
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <Text
-                style={{
-                  color: nativeTokens.color.inkInverse,
-                  fontFamily: nativeTokens.type.family.sans,
-                  fontSize: 11,
-                  fontWeight: "700",
-                }}
-              >
-                {room.unreadCount}
-              </Text>
-            </View>
-          ) : null}
-        </View>
-      </Surface>
-    </Pressable>
+        </Surface>
+      </Pressable>
     </Swipeable>
   );
 }

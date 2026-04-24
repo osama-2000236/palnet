@@ -58,10 +58,7 @@ export class AccountService {
     void this.auth.sendEmailVerification(userId).catch(() => undefined);
   }
 
-  async changePassword(
-    userId: string,
-    body: ChangePasswordBody,
-  ): Promise<void> {
+  async changePassword(userId: string, body: ChangePasswordBody): Promise<void> {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user) {
       throw new DomainException(ErrorCode.NOT_FOUND, "User not found.", 404);
@@ -76,10 +73,7 @@ export class AccountService {
       );
     }
 
-    const newHash = await bcrypt.hash(
-      body.newPassword,
-      getNumberEnv(this.config, "BCRYPT_COST"),
-    );
+    const newHash = await bcrypt.hash(body.newPassword, getNumberEnv(this.config, "BCRYPT_COST"));
     await this.prisma.$transaction([
       this.prisma.user.update({
         where: { id: userId },
@@ -93,10 +87,7 @@ export class AccountService {
     ]);
   }
 
-  async deleteAccount(
-    userId: string,
-    body: DeleteAccountBody,
-  ): Promise<void> {
+  async deleteAccount(userId: string, body: DeleteAccountBody): Promise<void> {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user) {
       throw new DomainException(ErrorCode.NOT_FOUND, "User not found.", 404);
@@ -121,10 +112,7 @@ export class AccountService {
     ]);
   }
 
-  async listSessions(
-    userId: string,
-    currentDeviceId: string | null,
-  ): Promise<SessionInfo[]> {
+  async listSessions(userId: string, currentDeviceId: string | null): Promise<SessionInfo[]> {
     const rows = await this.prisma.refreshToken.findMany({
       where: { userId, revokedAt: null, expiresAt: { gt: new Date() } },
       orderBy: { createdAt: "desc" },
@@ -162,10 +150,7 @@ export class AccountService {
     });
   }
 
-  async revokeAllSessions(
-    userId: string,
-    body: RevokeAllSessionsBody,
-  ): Promise<void> {
+  async revokeAllSessions(userId: string, body: RevokeAllSessionsBody): Promise<void> {
     const keep = body.keepDeviceId ?? null;
     await this.prisma.refreshToken.updateMany({
       where: {
@@ -182,10 +167,7 @@ export class AccountService {
    * OS-initiated events (app reinstall, OS restore) so register must be
    * idempotent and overwrite a stale token without leaving duplicate rows.
    */
-  async registerPushToken(
-    userId: string,
-    body: RegisterPushTokenBody,
-  ): Promise<void> {
+  async registerPushToken(userId: string, body: RegisterPushTokenBody): Promise<void> {
     await this.prisma.pushToken.upsert({
       where: {
         userId_deviceId: { userId, deviceId: body.deviceId },
@@ -214,11 +196,7 @@ export class AccountService {
   private async requirePassword(hash: string, candidate: string): Promise<void> {
     const ok = await bcrypt.compare(candidate, hash);
     if (!ok) {
-      throw new DomainException(
-        ErrorCode.AUTH_UNAUTHORIZED,
-        "Current password is incorrect.",
-        401,
-      );
+      throw new DomainException(ErrorCode.AUTH_UNAUTHORIZED, "Current password is incorrect.", 401);
     }
   }
 }

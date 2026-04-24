@@ -38,17 +38,10 @@ export function Image({
   useEffect(() => {
     if (!blurhash || !canvasRef.current) return;
     try {
-      const pixels = decodeBlurhash(
-        blurhash,
-        blurhashResolution,
-        blurhashResolution,
-      );
+      const pixels = decodeBlurhash(blurhash, blurhashResolution, blurhashResolution);
       const ctx = canvasRef.current.getContext("2d");
       if (!ctx) return;
-      const imageData = ctx.createImageData(
-        blurhashResolution,
-        blurhashResolution,
-      );
+      const imageData = ctx.createImageData(blurhashResolution, blurhashResolution);
       imageData.data.set(pixels);
       ctx.putImageData(imageData, 0, 0);
     } catch {
@@ -57,12 +50,7 @@ export function Image({
   }, [blurhash, blurhashResolution]);
 
   return (
-    <span
-      className={cx(
-        "relative block overflow-hidden bg-surface-sunken",
-        wrapperClassName,
-      )}
-    >
+    <span className={cx("bg-surface-sunken relative block overflow-hidden", wrapperClassName)}>
       {blurhash ? (
         <canvas
           ref={canvasRef}

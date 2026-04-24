@@ -46,16 +46,10 @@ function buildQs(filters: Filters, after: string | null, limit = "50"): string {
   if (filters.targetPostId) qs.set("targetPostId", filters.targetPostId);
   if (filters.targetReportId) qs.set("targetReportId", filters.targetReportId);
   if (filters.createdFrom) {
-    qs.set(
-      "createdFrom",
-      new Date(`${filters.createdFrom}T00:00:00.000Z`).toISOString(),
-    );
+    qs.set("createdFrom", new Date(`${filters.createdFrom}T00:00:00.000Z`).toISOString());
   }
   if (filters.createdTo) {
-    qs.set(
-      "createdTo",
-      new Date(`${filters.createdTo}T23:59:59.999Z`).toISOString(),
-    );
+    qs.set("createdTo", new Date(`${filters.createdTo}T23:59:59.999Z`).toISOString());
   }
   return qs.toString();
 }
@@ -83,29 +77,24 @@ export default function AdminAuditPage(): JSX.Element {
     setToken(session.tokens.accessToken);
   }, [router]);
 
-  const load = useCallback(
-    async (tk: string, after: string | null, nextFilters: Filters) => {
-      setLoading(true);
-      setError(false);
-      setForbidden(false);
-      try {
-        const page = await apiFetchPage(
-          `/admin/audit?${buildQs(nextFilters, after)}`,
-          AuditLogPage,
-          { token: tk },
-        );
-        setItems((prev) => (after ? [...prev, ...page.data] : page.data));
-        setCursor(page.meta.nextCursor);
-        setHasMore(page.meta.hasMore);
-      } catch (e) {
-        if (e instanceof ApiRequestError && e.status === 403) setForbidden(true);
-        else setError(true);
-      } finally {
-        setLoading(false);
-      }
-    },
-    [],
-  );
+  const load = useCallback(async (tk: string, after: string | null, nextFilters: Filters) => {
+    setLoading(true);
+    setError(false);
+    setForbidden(false);
+    try {
+      const page = await apiFetchPage(`/admin/audit?${buildQs(nextFilters, after)}`, AuditLogPage, {
+        token: tk,
+      });
+      setItems((prev) => (after ? [...prev, ...page.data] : page.data));
+      setCursor(page.meta.nextCursor);
+      setHasMore(page.meta.hasMore);
+    } catch (e) {
+      if (e instanceof ApiRequestError && e.status === 403) setForbidden(true);
+      else setError(true);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     if (!token) return;
@@ -202,9 +191,7 @@ export default function AdminAuditPage(): JSX.Element {
           <TextFilter
             label={t("targetReportId")}
             value={filters.targetReportId}
-            onChange={(targetReportId) =>
-              setFilters((f) => ({ ...f, targetReportId }))
-            }
+            onChange={(targetReportId) => setFilters((f) => ({ ...f, targetReportId }))}
           />
           <DateInput
             label={t("createdFrom")}
@@ -283,19 +270,13 @@ export default function AdminAuditPage(): JSX.Element {
                   <td className="px-4 py-2 align-top text-xs font-semibold uppercase tracking-wide">
                     {t(`actions.${row.action}`)}
                   </td>
-                  <td className="text-ink px-4 py-2 align-top">
-                    {actorLabel(row.actor)}
-                  </td>
+                  <td className="text-ink px-4 py-2 align-top">{actorLabel(row.actor)}</td>
                   <td className="px-4 py-2 align-top text-xs">
                     {row.targetUserId ? <div>user: {row.targetUserId}</div> : null}
                     {row.targetPostId ? <div>post: {row.targetPostId}</div> : null}
-                    {row.targetReportId ? (
-                      <div>report: {row.targetReportId}</div>
-                    ) : null}
+                    {row.targetReportId ? <div>report: {row.targetReportId}</div> : null}
                   </td>
-                  <td className="text-ink-muted px-4 py-2 align-top">
-                    {row.note ?? ""}
-                  </td>
+                  <td className="text-ink-muted px-4 py-2 align-top">{row.note ?? ""}</td>
                 </tr>
               ))}
             </tbody>

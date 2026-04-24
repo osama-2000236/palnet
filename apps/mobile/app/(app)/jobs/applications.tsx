@@ -7,14 +7,7 @@ import { Surface, nativeTokens } from "@palnet/ui-native";
 import { router } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import {
-  ActivityIndicator,
-  FlatList,
-  Pressable,
-  SafeAreaView,
-  Text,
-  View,
-} from "react-native";
+import { ActivityIndicator, FlatList, Pressable, SafeAreaView, Text, View } from "react-native";
 
 import { apiFetchPage } from "@/lib/api";
 import { getAccessToken } from "@/lib/session";
@@ -40,11 +33,9 @@ export default function JobApplicationsScreen(): JSX.Element {
     try {
       const qs = new URLSearchParams({ limit: "20" });
       if (after) qs.set("after", after);
-      const page = await apiFetchPage(
-        `/me/applications?${qs.toString()}`,
-        ApplicationsPage,
-        { token },
-      );
+      const page = await apiFetchPage(`/me/applications?${qs.toString()}`, ApplicationsPage, {
+        token,
+      });
       setItems((prev) => (after ? [...prev, ...page.data] : page.data));
       setCursor(page.meta.nextCursor);
       setHasMore(page.meta.hasMore);
@@ -92,10 +83,7 @@ export default function JobApplicationsScreen(): JSX.Element {
           >
             {t("jobs.myApplications")}
           </Text>
-          <Pressable
-            onPress={() => router.back()}
-            accessibilityRole="button"
-          >
+          <Pressable onPress={() => router.back()} accessibilityRole="button">
             <Text
               style={{
                 color: nativeTokens.color.brand700,

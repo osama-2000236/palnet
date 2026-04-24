@@ -132,18 +132,18 @@ export default function OnboardingPage(): JSX.Element {
       noValidate
     >
       <header className="flex flex-col gap-1">
-        <h1 className="text-3xl font-bold text-ink">{t("title")}</h1>
+        <h1 className="text-ink text-3xl font-bold">{t("title")}</h1>
         <p className="text-ink-muted">{t("subtitle")}</p>
       </header>
 
       {!ready ? (
-        <div className="h-28 animate-pulse rounded-2xl bg-sand-100/70" />
+        <div className="bg-sand-100/70 h-28 animate-pulse rounded-2xl" />
       ) : !hasProfileName ? (
         <>
           <label className="flex flex-col gap-1">
-            <span className="text-sm text-ink-muted">{tAuth("firstName")}</span>
+            <span className="text-ink-muted text-sm">{tAuth("firstName")}</span>
             <input
-              className="rounded-md border border-ink-muted/30 px-3 py-2"
+              className="border-ink-muted/30 rounded-md border px-3 py-2"
               value={state.firstName}
               onChange={(e) => setState({ ...state, firstName: e.target.value })}
               required
@@ -151,9 +151,9 @@ export default function OnboardingPage(): JSX.Element {
           </label>
 
           <label className="flex flex-col gap-1">
-            <span className="text-sm text-ink-muted">{tAuth("lastName")}</span>
+            <span className="text-ink-muted text-sm">{tAuth("lastName")}</span>
             <input
-              className="rounded-md border border-ink-muted/30 px-3 py-2"
+              className="border-ink-muted/30 rounded-md border px-3 py-2"
               value={state.lastName}
               onChange={(e) => setState({ ...state, lastName: e.target.value })}
               required
@@ -163,10 +163,10 @@ export default function OnboardingPage(): JSX.Element {
       ) : null}
 
       <label className="flex flex-col gap-1">
-        <span className="text-sm text-ink-muted">{t("handle")}</span>
+        <span className="text-ink-muted text-sm">{t("handle")}</span>
         <input
           dir="ltr"
-          className="rounded-md border border-ink-muted/30 px-3 py-2"
+          className="border-ink-muted/30 rounded-md border px-3 py-2"
           value={state.handle}
           onChange={(e) =>
             setState({
@@ -179,15 +179,15 @@ export default function OnboardingPage(): JSX.Element {
           minLength={3}
           maxLength={30}
         />
-        <span className="text-xs text-ink-muted">
+        <span className="text-ink-muted text-xs">
           {t("handleHint", { handle: state.handle || "your-handle" })}
         </span>
       </label>
 
       <label className="flex flex-col gap-1">
-        <span className="text-sm text-ink-muted">{t("headline")}</span>
+        <span className="text-ink-muted text-sm">{t("headline")}</span>
         <input
-          className="rounded-md border border-ink-muted/30 px-3 py-2"
+          className="border-ink-muted/30 rounded-md border px-3 py-2"
           value={state.headline}
           onChange={(e) => setState({ ...state, headline: e.target.value })}
           maxLength={220}
@@ -195,9 +195,9 @@ export default function OnboardingPage(): JSX.Element {
       </label>
 
       <label className="flex flex-col gap-1">
-        <span className="text-sm text-ink-muted">{t("location")}</span>
+        <span className="text-ink-muted text-sm">{t("location")}</span>
         <input
-          className="rounded-md border border-ink-muted/30 px-3 py-2"
+          className="border-ink-muted/30 rounded-md border px-3 py-2"
           value={state.location}
           onChange={(e) => setState({ ...state, location: e.target.value })}
           maxLength={120}
@@ -205,7 +205,7 @@ export default function OnboardingPage(): JSX.Element {
       </label>
 
       {error ? (
-        <p role="alert" className="text-sm text-danger">
+        <p role="alert" className="text-danger text-sm">
           {error}
         </p>
       ) : null}
@@ -213,7 +213,7 @@ export default function OnboardingPage(): JSX.Element {
       <button
         type="submit"
         disabled={busy || !ready}
-        className="rounded-md bg-brand-600 px-4 py-2 text-ink-inverse shadow-card hover:bg-brand-700 disabled:opacity-60"
+        className="bg-brand-600 text-ink-inverse shadow-card hover:bg-brand-700 rounded-md px-4 py-2 disabled:opacity-60"
       >
         {t("submit")}
       </button>
@@ -221,11 +221,7 @@ export default function OnboardingPage(): JSX.Element {
   );
 }
 
-function resolveHandle(input: {
-  handle: string;
-  firstName: string;
-  lastName: string;
-}): string {
+function resolveHandle(input: { handle: string; firstName: string; lastName: string }): string {
   const existing = normalizeHandleInput(input.handle);
   if (isValidHandle(existing)) return existing;
 

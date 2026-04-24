@@ -8,11 +8,7 @@ import { PrismaService } from "../prisma/prisma.service";
 export class RepostsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(
-    viewerId: string,
-    postId: string,
-    body: CreateRepostBody,
-  ): Promise<void> {
+  async create(viewerId: string, postId: string, body: CreateRepostBody): Promise<void> {
     const post = await this.prisma.post.findFirst({
       where: { id: postId, deletedAt: null },
       select: { id: true },

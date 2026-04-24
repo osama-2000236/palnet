@@ -7,13 +7,7 @@ import {
 import { router } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import {
-  ActivityIndicator,
-  Pressable,
-  Text,
-  TextInput,
-  View,
-} from "react-native";
+import { ActivityIndicator, Pressable, Text, TextInput, View } from "react-native";
 
 import { ReportDialog } from "@/components/ReportDialog";
 import { apiFetch, apiFetchPage } from "@/lib/api";
@@ -70,11 +64,11 @@ export function CommentsList({
     if (!token) return;
     setBusy(true);
     try {
-      const created = await apiFetch(
-        `/posts/${postId}/comments`,
-        CommentSchema,
-        { method: "POST", body: parsed.data, token },
-      );
+      const created = await apiFetch(`/posts/${postId}/comments`, CommentSchema, {
+        method: "POST",
+        body: parsed.data,
+        token,
+      });
       setItems((prev) => [...prev, created]);
       setDraft("");
       onCountChange?.(1);
@@ -84,14 +78,11 @@ export function CommentsList({
   }
 
   return (
-    <View className="mt-3 gap-2 border-t border-ink-muted/10 pt-3">
+    <View className="border-ink-muted/10 mt-3 gap-2 border-t pt-3">
       {items.map((c) => (
-        <View
-          key={c.id}
-          className="rounded-md bg-surface-muted px-3 py-2"
-        >
+        <View key={c.id} className="bg-surface-muted rounded-md px-3 py-2">
           <Pressable onPress={() => router.push(`/(app)/in/${c.author.handle}`)}>
-            <Text className="font-semibold text-ink">
+            <Text className="text-ink font-semibold">
               {c.author.firstName} {c.author.lastName}
             </Text>
           </Pressable>
@@ -101,18 +92,14 @@ export function CommentsList({
             onPress={() => setReportCommentId(c.id)}
             className="mt-1 self-start rounded px-1 py-0.5"
           >
-            <Text className="text-xs text-ink-muted">
-              {t("moderation.reportComment")}
-            </Text>
+            <Text className="text-ink-muted text-xs">{t("moderation.reportComment")}</Text>
           </Pressable>
         </View>
       ))}
 
       {hasMore ? (
         <Pressable onPress={() => void load(cursor)} disabled={loading}>
-          <Text className="text-xs text-ink-muted">
-            {t("post.loadMoreComments")}
-          </Text>
+          <Text className="text-ink-muted text-xs">{t("post.loadMoreComments")}</Text>
         </Pressable>
       ) : null}
 
@@ -124,16 +111,14 @@ export function CommentsList({
           onChangeText={setDraft}
           placeholder={t("post.commentPlaceholder")}
           maxLength={2000}
-          className="flex-1 rounded-md border border-ink-muted/30 bg-surface px-3 py-1.5 text-ink"
+          className="border-ink-muted/30 bg-surface text-ink flex-1 rounded-md border px-3 py-1.5"
         />
         <Pressable
           onPress={submit}
           disabled={busy || draft.trim().length === 0}
-          className="rounded-md bg-brand-600 px-3 py-1.5"
+          className="bg-brand-600 rounded-md px-3 py-1.5"
         >
-          <Text className="text-xs font-semibold text-ink-inverse">
-            {t("post.commentSubmit")}
-          </Text>
+          <Text className="text-ink-inverse text-xs font-semibold">{t("post.commentSubmit")}</Text>
         </Pressable>
       </View>
       <ReportDialog

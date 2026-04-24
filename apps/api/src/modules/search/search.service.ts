@@ -1,9 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import type {
-  CursorPageMeta,
-  PeopleSearchQuery,
-  SearchPersonHit,
-} from "@palnet/shared";
+import type { CursorPageMeta, PeopleSearchQuery, SearchPersonHit } from "@palnet/shared";
 
 import { ModerationService } from "../moderation/moderation.service";
 import { PrismaService } from "../prisma/prisma.service";
@@ -59,9 +55,7 @@ export class SearchService {
       where,
       orderBy: [{ handle: "asc" }, { id: "asc" }],
       take: limit + 1,
-      ...(query.after
-        ? { cursor: { id: query.after }, skip: 1 }
-        : {}),
+      ...(query.after ? { cursor: { id: query.after }, skip: 1 } : {}),
       select: {
         id: true,
         userId: true,

@@ -1,23 +1,12 @@
 // Mobile profile screen. Uses ui-native atoms (Surface, Avatar, Button) +
 // nativeTokens so styling stays in lockstep with the web twin.
 
-import {
-  ChatRoom as ChatRoomSchema,
-  Profile as ProfileSchema,
-  type Profile,
-} from "@palnet/shared";
+import { ChatRoom as ChatRoomSchema, Profile as ProfileSchema, type Profile } from "@palnet/shared";
 import { Avatar, Button, Image, Surface, nativeTokens } from "@palnet/ui-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import {
-  ActivityIndicator,
-  Pressable,
-  SafeAreaView,
-  ScrollView,
-  Text,
-  View,
-} from "react-native";
+import { ActivityIndicator, Pressable, SafeAreaView, ScrollView, Text, View } from "react-native";
 import { z } from "zod";
 
 import { UserActions } from "@/components/UserActions";
@@ -250,11 +239,7 @@ export default function ProfileScreen(): JSX.Element {
                 alignSelf: "flex-start",
               }}
             >
-              <Button
-                variant="secondary"
-                size="md"
-                onPress={() => router.push("/(app)/me/edit")}
-              >
+              <Button variant="secondary" size="md" onPress={() => router.push("/(app)/me/edit")}>
                 {t("profile.edit")}
               </Button>
             </View>
@@ -269,9 +254,7 @@ export default function ProfileScreen(): JSX.Element {
                 gap: nativeTokens.space[2],
               }}
             >
-              {!conn ||
-              conn.status === "WITHDRAWN" ||
-              conn.status === "DECLINED" ? (
+              {!conn || conn.status === "WITHDRAWN" || conn.status === "DECLINED" ? (
                 <Button
                   variant="primary"
                   size="md"
@@ -328,15 +311,11 @@ export default function ProfileScreen(): JSX.Element {
                   if (!token) return;
                   setBusy(true);
                   try {
-                    const room = await apiFetch(
-                      "/messaging/rooms",
-                      ChatRoomSchema,
-                      {
-                        method: "POST",
-                        token,
-                        body: { otherUserId: profile.userId },
-                      },
-                    );
+                    const room = await apiFetch("/messaging/rooms", ChatRoomSchema, {
+                      method: "POST",
+                      token,
+                      body: { otherUserId: profile.userId },
+                    });
                     router.push({
                       pathname: "/(app)/messages/[roomId]",
                       params: { roomId: room.id },
@@ -523,12 +502,7 @@ export default function ProfileScreen(): JSX.Element {
         ) : null}
 
         <View style={{ paddingVertical: nativeTokens.space[3] }}>
-          <Button
-            variant="ghost"
-            size="md"
-            fullWidth
-            onPress={() => router.back()}
-          >
+          <Button variant="ghost" size="md" fullWidth onPress={() => router.back()}>
             {t("common.cancel")}
           </Button>
         </View>
@@ -537,13 +511,7 @@ export default function ProfileScreen(): JSX.Element {
   );
 }
 
-function Section({
-  title,
-  children,
-}: {
-  title: string;
-  children: React.ReactNode;
-}): JSX.Element {
+function Section({ title, children }: { title: string; children: React.ReactNode }): JSX.Element {
   return (
     <Surface variant="card" padding="4">
       <Text

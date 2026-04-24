@@ -44,25 +44,25 @@ function ResetPasswordInner(): JSX.Element {
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-md items-center px-6 py-12">
       <Surface as="section" variant="flat" padding="6" className="w-full">
-        <h1 className="mb-1 text-xl font-bold text-ink">{t("title")}</h1>
+        <h1 className="text-ink mb-1 text-xl font-bold">{t("title")}</h1>
 
         {status === "missing" ? (
-          <p className="text-sm text-ink-muted">{t("missingToken")}</p>
+          <p className="text-ink-muted text-sm">{t("missingToken")}</p>
         ) : status === "ok" ? (
           <>
-            <p className="text-sm text-ink">{t("success")}</p>
+            <p className="text-ink text-sm">{t("success")}</p>
             <Link
               href="/login"
-              className="mt-4 inline-block rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-ink-inverse"
+              className="bg-brand-600 text-ink-inverse mt-4 inline-block rounded-md px-4 py-2 text-sm font-semibold"
             >
               {tAuth("login")}
             </Link>
           </>
         ) : (
           <form onSubmit={onSubmit} className="flex flex-col gap-3" noValidate>
-            <p className="text-sm text-ink-muted">{t("subtitle")}</p>
+            <p className="text-ink-muted text-sm">{t("subtitle")}</p>
             <label className="flex flex-col gap-1">
-              <span className="text-sm text-ink-muted">{t("newLabel")}</span>
+              <span className="text-ink-muted text-sm">{t("newLabel")}</span>
               <input
                 type="password"
                 autoComplete="new-password"
@@ -70,18 +70,18 @@ function ResetPasswordInner(): JSX.Element {
                 minLength={8}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full rounded-md border border-ink-muted/30 px-3 py-2"
+                className="border-ink-muted/30 w-full rounded-md border px-3 py-2"
               />
             </label>
             {status === "error" ? (
-              <p role="alert" className="text-sm text-danger">
+              <p role="alert" className="text-danger text-sm">
                 {t("invalid")}
               </p>
             ) : null}
             <button
               type="submit"
               disabled={status === "busy" || !password}
-              className="mt-1 rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-ink-inverse disabled:opacity-60"
+              className="bg-brand-600 text-ink-inverse mt-1 rounded-md px-4 py-2 text-sm font-semibold disabled:opacity-60"
             >
               {t("submit")}
             </button>

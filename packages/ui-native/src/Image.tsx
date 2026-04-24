@@ -70,20 +70,9 @@ function BlurhashCanvas({ hash }: { hash: string }): JSX.Element | null {
   const cells = useMemo(() => buildGrid(hash), [hash]);
   if (!cells) return null;
   return (
-    <Svg
-      style={StyleSheet.absoluteFill}
-      viewBox={`0 0 ${GRID} ${GRID}`}
-      preserveAspectRatio="none"
-    >
+    <Svg style={StyleSheet.absoluteFill} viewBox={`0 0 ${GRID} ${GRID}`} preserveAspectRatio="none">
       {cells.map((c) => (
-        <Rect
-          key={`${c.x}-${c.y}`}
-          x={c.x}
-          y={c.y}
-          width={1.02}
-          height={1.02}
-          fill={c.fill}
-        />
+        <Rect key={`${c.x}-${c.y}`} x={c.x} y={c.y} width={1.02} height={1.02} fill={c.fill} />
       ))}
     </Svg>
   );

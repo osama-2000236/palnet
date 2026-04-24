@@ -263,14 +263,7 @@ export function Icon({
           {...rest}
         >
           {title ? <title>{title}</title> : null}
-          <rect
-            x="2"
-            y="2"
-            width="20"
-            height="20"
-            rx="5"
-            className="fill-brand-600"
-          />
+          <rect x="2" y="2" width="20" height="20" rx="5" className="fill-brand-600" />
           <path
             d="M7 17V7M7 12c3 0 5-1.5 5-4s-2-3-4-3M12 17l5-10M14 17h3"
             stroke="currentColor"

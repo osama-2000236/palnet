@@ -183,9 +183,7 @@ export function toCompanyJobPreview(
     applicationCount: row.applications.length,
     canManage,
     viewer: {
-      hasApplied: row.applications.some(
-        (application) => application.applicantId === viewerId,
-      ),
+      hasApplied: row.applications.some((application) => application.applicantId === viewerId),
     },
   };
 }

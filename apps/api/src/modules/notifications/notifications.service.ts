@@ -218,19 +218,13 @@ export class NotificationsService {
         ? `${row.actor.profile.firstName} ${row.actor.profile.lastName}`.trim()
         : "Someone";
       if (event && this.isEnabled(prefs, "email", event)) {
-        void this.sendEmail(recipient.email, input.type, actorName).catch(
-          (err) =>
-            this.log.warn(
-              `Notification email failed: ${(err as Error).message}`,
-            ),
+        void this.sendEmail(recipient.email, input.type, actorName).catch((err) =>
+          this.log.warn(`Notification email failed: ${(err as Error).message}`),
         );
       }
       if (event && this.isEnabled(prefs, "push", event)) {
-        void this.sendPush(input.recipientId, input.type, actorName).catch(
-          (err) =>
-            this.log.warn(
-              `Notification push failed: ${(err as Error).message}`,
-            ),
+        void this.sendPush(input.recipientId, input.type, actorName).catch((err) =>
+          this.log.warn(`Notification push failed: ${(err as Error).message}`),
         );
       }
     } catch (err) {
@@ -252,17 +246,11 @@ export class NotificationsService {
     return prefs[channel][event] === true;
   }
 
-  private async sendEmail(
-    to: string,
-    type: NotificationType,
-    actorName: string,
-  ): Promise<void> {
+  private async sendEmail(to: string, type: NotificationType, actorName: string): Promise<void> {
     const copy = TYPE_COPY[type];
     // Notifications always deep-link into the in-app notifications screen —
     // the actual surface (post, thread, profile) is opened from there.
-    const webBase = new URL(
-      this.config.getOrThrow<string>("EMAIL_VERIFY_URL_BASE"),
-    );
+    const webBase = new URL(this.config.getOrThrow<string>("EMAIL_VERIFY_URL_BASE"));
     webBase.pathname = "/notifications";
     webBase.search = "";
     await this.mail.sendNotificationEmail(to, {
@@ -277,11 +265,7 @@ export class NotificationsService {
   // need a single HTTPS POST per notification. Batches of up to 100 are
   // allowed per request; in practice one user rarely has >3 devices so we
   // just send a single batch. Tokens marked invalid by Expo get pruned.
-  private async sendPush(
-    userId: string,
-    type: NotificationType,
-    actorName: string,
-  ): Promise<void> {
+  private async sendPush(userId: string, type: NotificationType, actorName: string): Promise<void> {
     const tokens = await this.prisma.pushToken.findMany({
       where: { userId },
       select: { token: true },
@@ -326,10 +310,7 @@ export class NotificationsService {
     // Prune tokens Expo reports as DeviceNotRegistered — they're dead.
     const dead: string[] = [];
     receipts.forEach((r, i) => {
-      if (
-        r.status === "error" &&
-        r.details?.error === "DeviceNotRegistered"
-      ) {
+      if (r.status === "error" && r.details?.error === "DeviceNotRegistered") {
         const tok = expoTokens[i];
         if (tok) dead.push(tok);
       }
@@ -377,10 +358,7 @@ export class NotificationsService {
     });
   }
 
-  async markRead(
-    viewerId: string,
-    body: MarkNotificationsReadBody,
-  ): Promise<{ count: number }> {
+  async markRead(viewerId: string, body: MarkNotificationsReadBody): Promise<{ count: number }> {
     if (!body.all && (!body.ids || body.ids.length === 0)) {
       throw new DomainException(
         ErrorCode.VALIDATION_FAILED,
@@ -467,20 +445,14 @@ const DEFAULT_PREFS: NotificationPreferences = {
 function mergePrefs(stored: unknown): NotificationPreferences {
   if (!stored || typeof stored !== "object") return DEFAULT_PREFS;
   const s = stored as Record<string, Record<string, unknown>>;
-  const pick = (
-    key: "inApp" | "email" | "push",
-  ): NotificationPreferences["inApp"] => {
+  const pick = (key: "inApp" | "email" | "push"): NotificationPreferences["inApp"] => {
     const row = s[key] ?? {};
     const base = DEFAULT_PREFS[key];
     return {
-      connections:
-        typeof row.connections === "boolean" ? row.connections : base.connections,
-      messages:
-        typeof row.messages === "boolean" ? row.messages : base.messages,
-      reactions:
-        typeof row.reactions === "boolean" ? row.reactions : base.reactions,
-      comments:
-        typeof row.comments === "boolean" ? row.comments : base.comments,
+      connections: typeof row.connections === "boolean" ? row.connections : base.connections,
+      messages: typeof row.messages === "boolean" ? row.messages : base.messages,
+      reactions: typeof row.reactions === "boolean" ? row.reactions : base.reactions,
+      comments: typeof row.comments === "boolean" ? row.comments : base.comments,
       jobs: typeof row.jobs === "boolean" ? row.jobs : base.jobs,
     };
   };

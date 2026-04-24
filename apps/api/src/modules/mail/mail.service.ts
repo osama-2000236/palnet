@@ -19,11 +19,7 @@ export class MailService {
     this.from = this.config.getOrThrow<string>("EMAIL_FROM");
   }
 
-  async sendVerifyEmail(
-    to: string,
-    link: string,
-    mobileLink?: string | null,
-  ): Promise<void> {
+  async sendVerifyEmail(to: string, link: string, mobileLink?: string | null): Promise<void> {
     const subject = "Verify your Baydar email";
     const html = buildHtml(
       "Verify your email",
@@ -109,10 +105,7 @@ function mobileLinkBlock(link: string | null | undefined, label: string): string
 }
 
 function escape(s: string): string {
-  return s
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
 function escapeAttr(s: string): string {

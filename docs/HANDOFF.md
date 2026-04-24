@@ -538,6 +538,41 @@ Closure verification notes:
 
 ---
 
+### Sprint 13 — Release candidate + production launch ops 🚧 IN PROGRESS
+
+**Goal:** turn Sprint 10-12 code into a launch-ready release candidate without adding product behavior.
+
+1. ✅ **GitHub repo/PR unblock** — private repo created at `https://github.com/osama-2000236/palnet`; branch `codex/sprint-12-launch-qa-closure` pushed; draft PR opened: `https://github.com/osama-2000236/palnet/pull/1`.
+2. ✅ **CI dependency order fix** — CI web builds now use `pnpm --filter @palnet/web... build` so `@palnet/shared`, `@palnet/ui-tokens`, and `@palnet/ui-web` are built before Next.js resolves their `dist` entrypoints.
+3. ✅ **Lint dependency order fix** — Turbo lint now depends on upstream package builds, matching the package `main: dist` contract used by ESLint import resolution.
+4. ✅ **Format gate fix** — Prettier now ignores unknown file types and preserves local line endings, so Windows local checks and Linux CI checks use the same formatter contract.
+5. ✅ **Local release checks** — clean on lint, format, API tests, API/web/mobile/shared/db/ui-web type-check, web build, and seeded authed a11y QA harness.
+6. ⏭️ **QA deploy rehearsal** — not executed from this workspace because Render/Vercel/Neon/Redis credentials and preview targets are not available here. Use disposable QA infrastructure only; do not point these steps at dev or prod data.
+7. ⏭️ **Mobile/Maestro** — Maestro CLI is still not installed in this Windows environment. Manual mobile smoke remains required before store submission.
+
+Sprint 13 verification:
+
+- `corepack pnpm lint` clean.
+- `corepack pnpm format:check` clean.
+- `corepack pnpm --filter @palnet/web... build` clean.
+- `corepack pnpm qa:web-authed` clean: 13/13 Chromium authed axe checks.
+- `corepack pnpm --filter @palnet/api test -- --runInBand` clean: 15 suites, 64/64 tests.
+- `corepack pnpm --filter @palnet/api type-check` clean.
+- `corepack pnpm --filter @palnet/web type-check` clean.
+- `corepack pnpm --filter @palnet/mobile type-check` clean.
+- `corepack pnpm --filter @palnet/shared type-check` clean.
+- `corepack pnpm --filter @palnet/db type-check` clean.
+- `corepack pnpm --filter @palnet/ui-web type-check` clean.
+
+#### Sprint 13 remaining launch ops
+
+- Wait for GitHub Actions on PR #1 and fix CI-only issues only.
+- Configure Render API preview, Vercel web preview, Neon QA DB branch, and optional Redis/Key Value outside this repo.
+- Run preview smoke: API `/api/v1/health`, web login/feed/profile/jobs/messages/settings blocks/sessions/notifications, and admin moderation reports as moderator/admin.
+- Keep PR draft until CI is green and the external preview smoke checklist is complete.
+
+---
+
 ## What Claude Code should NOT do
 
 - ❌ Redesign anything. The prototype + DESIGN.md is the design. If you want to change a decision, ask the user — don't unilaterally "improve."

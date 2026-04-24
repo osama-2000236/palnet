@@ -12,16 +12,10 @@ import type { ComponentPropsWithoutRef, ReactNode } from "react";
 
 import { cx } from "./cx";
 
-export type ButtonVariant =
-  | "primary"
-  | "secondary"
-  | "ghost"
-  | "accent"
-  | "danger-ghost";
+export type ButtonVariant = "primary" | "secondary" | "ghost" | "accent" | "danger-ghost";
 export type ButtonSize = "sm" | "md" | "lg";
 
-export interface ButtonProps
-  extends Omit<ComponentPropsWithoutRef<"button">, "className"> {
+export interface ButtonProps extends Omit<ComponentPropsWithoutRef<"button">, "className"> {
   variant?: ButtonVariant;
   size?: ButtonSize;
   leading?: ReactNode;
@@ -35,13 +29,11 @@ export interface ButtonProps
 const VARIANT_CLASSES: Record<ButtonVariant, string> = {
   primary:
     "bg-brand-600 text-ink-inverse border border-brand-600 hover:bg-brand-700 hover:border-brand-700",
-  secondary:
-    "bg-surface text-ink border border-line-hard hover:bg-surface-subtle",
+  secondary: "bg-surface text-ink border border-line-hard hover:bg-surface-subtle",
   ghost: "bg-transparent text-ink border border-transparent hover:bg-surface-subtle",
   accent:
     "bg-accent-600 text-ink-inverse border border-accent-600 hover:bg-accent-700 hover:border-accent-700",
-  "danger-ghost":
-    "bg-transparent text-danger border border-transparent hover:bg-danger/10",
+  "danger-ghost": "bg-transparent text-danger border border-transparent hover:bg-danger/10",
 };
 
 const SIZE_CLASSES: Record<ButtonSize, string> = {
@@ -75,7 +67,7 @@ export function Button({
         "inline-flex select-none items-center justify-center rounded-md font-semibold",
         "transition-colors duration-150 ease-out",
         // focus ring: keyboard-only
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-surface",
+        "focus-visible:ring-brand-500 focus-visible:ring-offset-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
         // active: spec says 1px press on web
         "active:translate-y-px",
         // disabled

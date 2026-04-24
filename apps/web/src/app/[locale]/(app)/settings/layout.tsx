@@ -8,11 +8,7 @@ import { type ReactNode } from "react";
 
 // Settings shell — sidebar nav + outlet. Keeps each /settings/* page focused
 // on its own form.
-export default function SettingsLayout({
-  children,
-}: {
-  children: ReactNode;
-}): JSX.Element {
+export default function SettingsLayout({ children }: { children: ReactNode }): JSX.Element {
   const t = useTranslations("settings");
   const pathname = usePathname() ?? "";
 
@@ -28,11 +24,8 @@ export default function SettingsLayout({
 
   return (
     <main className="mx-auto flex w-full max-w-[960px] gap-6 px-6 py-8">
-      <nav
-        aria-label={t("navLabel")}
-        className="w-52 shrink-0 flex-col gap-1 hidden md:flex"
-      >
-        <h1 className="mb-2 text-lg font-bold text-ink">{t("title")}</h1>
+      <nav aria-label={t("navLabel")} className="hidden w-52 shrink-0 flex-col gap-1 md:flex">
+        <h1 className="text-ink mb-2 text-lg font-bold">{t("title")}</h1>
         {items.map((item) => {
           const active = pathname.includes(item.href);
           return (
@@ -43,7 +36,7 @@ export default function SettingsLayout({
               className={cx(
                 "rounded-md px-3 py-2 text-sm",
                 active
-                  ? "bg-brand-100 font-semibold text-brand-700"
+                  ? "bg-brand-100 text-brand-700 font-semibold"
                   : "text-ink hover:bg-surface-subtle",
               )}
             >

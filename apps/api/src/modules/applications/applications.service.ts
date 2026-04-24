@@ -177,19 +177,12 @@ export class ApplicationsService {
       include: applicationInclude(viewer.id),
     })) as unknown as ApplicationRow | null;
     if (!existing) {
-      throw new DomainException(
-        ErrorCode.NOT_FOUND,
-        "Application not found.",
-        404,
-      );
+      throw new DomainException(ErrorCode.NOT_FOUND, "Application not found.", 404);
     }
 
     const role = existing.job.company.members[0]?.role;
     const canManage =
-      viewer.role === "ADMIN" ||
-      role === "OWNER" ||
-      role === "ADMIN" ||
-      role === "EDITOR";
+      viewer.role === "ADMIN" || role === "OWNER" || role === "ADMIN" || role === "EDITOR";
     if (!canManage) {
       throw new DomainException(
         ErrorCode.AUTH_FORBIDDEN,

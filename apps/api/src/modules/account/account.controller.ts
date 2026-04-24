@@ -20,10 +20,7 @@ import {
 } from "@palnet/shared";
 
 import { ZodValidationPipe } from "../../common/zod-pipe";
-import {
-  CurrentUser,
-  type AuthUser,
-} from "../auth/decorators/current-user.decorator";
+import { CurrentUser, type AuthUser } from "../auth/decorators/current-user.decorator";
 
 import { AccountService } from "./account.service";
 
@@ -68,10 +65,7 @@ export class AccountController {
     @CurrentUser() user: AuthUser,
     @Headers("x-device-id") deviceId: string | undefined,
   ): Promise<{ data: SessionList }> {
-    const sessions = await this.account.listSessions(
-      user.id,
-      deviceId ?? null,
-    );
+    const sessions = await this.account.listSessions(user.id, deviceId ?? null);
     return { data: { sessions } };
   }
 

@@ -13,11 +13,7 @@ import {
 
 import { DomainException } from "../../common/domain-exception";
 import type { AuthUser } from "../auth/decorators/current-user.decorator";
-import {
-  toCompanyDto,
-  toCompanyJobPreview,
-  toCompanyMemberDto,
-} from "../jobs/jobs.mapper";
+import { toCompanyDto, toCompanyJobPreview, toCompanyMemberDto } from "../jobs/jobs.mapper";
 import { PrismaService } from "../prisma/prisma.service";
 
 type CompanyRecord = {
@@ -46,10 +42,7 @@ export class CompaniesService {
 
   async listManaged(viewer: AuthUser): Promise<ManagedCompany[]> {
     const rows = await this.prisma.company.findMany({
-      where:
-        viewer.role === "ADMIN"
-          ? {}
-          : { members: { some: { userId: viewer.id } } },
+      where: viewer.role === "ADMIN" ? {} : { members: { some: { userId: viewer.id } } },
       orderBy: [{ updatedAt: "desc" }, { id: "desc" }],
       select: {
         id: true,
@@ -102,11 +95,7 @@ export class CompaniesService {
       select: { id: true },
     });
     if (existing) {
-      throw new DomainException(
-        ErrorCode.CONFLICT,
-        "Company slug already exists.",
-        409,
-      );
+      throw new DomainException(ErrorCode.CONFLICT, "Company slug already exists.", 409);
     }
 
     const created = await this.prisma.$transaction(async (tx) => {
@@ -241,11 +230,7 @@ export class CompaniesService {
     };
   }
 
-  async update(
-    viewer: AuthUser,
-    companyId: string,
-    body: UpdateCompanyBody,
-  ): Promise<CompanyDto> {
+  async update(viewer: AuthUser, companyId: string, body: UpdateCompanyBody): Promise<CompanyDto> {
     const parsed = body;
     await this.assertCanManage(viewer, companyId, "ANY_EDITOR");
 
@@ -323,11 +308,7 @@ export class CompaniesService {
     return toCompanyMemberDto(member);
   }
 
-  async removeMember(
-    viewer: AuthUser,
-    companyId: string,
-    userId: string,
-  ): Promise<void> {
+  async removeMember(viewer: AuthUser, companyId: string, userId: string): Promise<void> {
     await this.assertCanManage(viewer, companyId);
 
     const member = await this.prisma.companyMember.findUnique({
@@ -381,26 +362,18 @@ export class CompaniesService {
       viewer.role === "ADMIN" ||
       (level === "ANY_EDITOR" ? isEditorOrAbove(role) : isManageRole(role));
     if (!ok) {
-      throw new DomainException(
-        ErrorCode.AUTH_FORBIDDEN,
-        "You cannot manage this company.",
-        403,
-      );
+      throw new DomainException(ErrorCode.AUTH_FORBIDDEN, "You cannot manage this company.", 403);
     }
 
     return { id: company.id, slug: company.slug, name: company.name, role };
   }
 }
 
-function isManageRole(
-  role: CompanyMemberRole | null | undefined,
-): boolean {
+function isManageRole(role: CompanyMemberRole | null | undefined): boolean {
   return role === CompanyMemberRole.OWNER || role === CompanyMemberRole.ADMIN;
 }
 
-function isEditorOrAbove(
-  role: CompanyMemberRole | null | undefined,
-): boolean {
+function isEditorOrAbove(role: CompanyMemberRole | null | undefined): boolean {
   return (
     role === CompanyMemberRole.OWNER ||
     role === CompanyMemberRole.ADMIN ||

@@ -8,23 +8,12 @@
 //     cover letter. Submit POSTs to /jobs/:id/apply with `{ coverLetter }`.
 //     The endpoint is idempotent, so retrying after a network error is safe.
 
-import {
-  ApplyToJobBody,
-  formatSalaryRange,
-  Job as JobSchema,
-  type Job,
-} from "@palnet/shared";
+import { ApplyToJobBody, formatSalaryRange, Job as JobSchema, type Job } from "@palnet/shared";
 import { Button, Surface } from "@palnet/ui-web";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
-import {
-  useCallback,
-  useEffect,
-  useId,
-  useRef,
-  useState,
-} from "react";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
 
 import { apiCall, apiFetch } from "@/lib/api";
 import { readSession } from "@/lib/session";
@@ -63,9 +52,7 @@ export default function JobDetailPage(): JSX.Element {
   }, [token, jobId, tCommon]);
 
   const handleApplied = useCallback(() => {
-    setJob((j) =>
-      j ? { ...j, viewer: { ...j.viewer, hasApplied: true } } : j,
-    );
+    setJob((j) => (j ? { ...j, viewer: { ...j.viewer, hasApplied: true } } : j));
     setApplyOpen(false);
   }, []);
 
@@ -74,16 +61,16 @@ export default function JobDetailPage(): JSX.Element {
       <div className="mx-auto w-full max-w-[820px] px-4 py-6">
         <Surface variant="card" padding="6" aria-hidden="true">
           <div className="mb-4 flex items-start gap-3">
-            <div className="h-14 w-14 animate-pulse rounded-md bg-surface-sunken" />
+            <div className="bg-surface-sunken h-14 w-14 animate-pulse rounded-md" />
             <div className="flex-1 space-y-2">
-              <div className="h-5 w-2/3 animate-pulse rounded bg-surface-sunken" />
-              <div className="h-4 w-1/3 animate-pulse rounded bg-surface-sunken" />
+              <div className="bg-surface-sunken h-5 w-2/3 animate-pulse rounded" />
+              <div className="bg-surface-sunken h-4 w-1/3 animate-pulse rounded" />
             </div>
           </div>
           <div className="space-y-2">
-            <div className="h-3 w-full animate-pulse rounded bg-surface-sunken" />
-            <div className="h-3 w-[95%] animate-pulse rounded bg-surface-sunken" />
-            <div className="h-3 w-[90%] animate-pulse rounded bg-surface-sunken" />
+            <div className="bg-surface-sunken h-3 w-full animate-pulse rounded" />
+            <div className="bg-surface-sunken h-3 w-[95%] animate-pulse rounded" />
+            <div className="bg-surface-sunken h-3 w-[90%] animate-pulse rounded" />
           </div>
         </Surface>
       </div>
@@ -94,11 +81,8 @@ export default function JobDetailPage(): JSX.Element {
     return (
       <div className="mx-auto w-full max-w-[820px] px-4 py-6">
         <Surface variant="tinted" padding="6">
-          <p className="text-sm text-ink-muted">{error ?? t("notFound")}</p>
-          <Link
-            href="/jobs"
-            className="mt-3 inline-block text-sm text-brand-700 hover:underline"
-          >
+          <p className="text-ink-muted text-sm">{error ?? t("notFound")}</p>
+          <Link href="/jobs" className="text-brand-700 mt-3 inline-block text-sm hover:underline">
             ← {t("title")}
           </Link>
         </Surface>
@@ -122,7 +106,7 @@ export default function JobDetailPage(): JSX.Element {
   return (
     <div className="mx-auto w-full max-w-[820px] px-4 py-6">
       <nav className="mb-3">
-        <Link href="/jobs" className="text-sm text-ink-muted hover:text-ink">
+        <Link href="/jobs" className="text-ink-muted hover:text-ink text-sm">
           ← {t("title")}
         </Link>
       </nav>
@@ -130,47 +114,37 @@ export default function JobDetailPage(): JSX.Element {
       <Surface variant="hero" padding="6" as="header">
         <div className="flex items-start gap-4">
           <div
-            className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-md bg-surface-sunken text-base font-semibold text-ink-muted"
+            className="bg-surface-sunken text-ink-muted flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-md text-base font-semibold"
             aria-hidden="true"
           >
             {job.company.logoUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={job.company.logoUrl}
-                alt=""
-                className="h-full w-full object-cover"
-              />
+              <img src={job.company.logoUrl} alt="" className="h-full w-full object-cover" />
             ) : (
               (job.company.name[0] ?? "?").toUpperCase()
             )}
           </div>
           <div className="min-w-0 flex-1">
-            <h1 className="truncate text-xl font-semibold text-ink">{job.title}</h1>
+            <h1 className="text-ink truncate text-xl font-semibold">{job.title}</h1>
             <Link
               href={`/companies/${job.company.slug}`}
-              className="text-sm text-ink-muted hover:text-ink"
+              className="text-ink-muted hover:text-ink text-sm"
             >
               {job.company.name}
             </Link>
-            <p className="mt-1 text-xs text-ink-muted">{metaParts.join(" · ")}</p>
-            {salary ? (
-              <p className="mt-1 text-sm font-semibold text-ink">{salary}</p>
-            ) : null}
+            <p className="text-ink-muted mt-1 text-xs">{metaParts.join(" · ")}</p>
+            {salary ? <p className="text-ink mt-1 text-sm font-semibold">{salary}</p> : null}
           </div>
           <div className="shrink-0">
             {job.viewer.hasApplied ? (
               <span
-                className="inline-flex items-center gap-1 rounded-md border border-success/30 bg-success/10 px-3 py-1.5 text-xs font-semibold text-success"
+                className="border-success/30 bg-success/10 text-success inline-flex items-center gap-1 rounded-md border px-3 py-1.5 text-xs font-semibold"
                 aria-live="polite"
               >
                 ✓ {t("appliedBadge")}
               </span>
             ) : (
-              <Button
-                variant="accent"
-                onClick={() => setApplyOpen(true)}
-                aria-label={t("apply")}
-              >
+              <Button variant="accent" onClick={() => setApplyOpen(true)} aria-label={t("apply")}>
                 {t("apply")}
               </Button>
             )}
@@ -179,21 +153,18 @@ export default function JobDetailPage(): JSX.Element {
       </Surface>
 
       <Surface variant="card" padding="6" className="mt-4">
-        <h2 className="mb-2 text-sm font-semibold text-ink">{t("description")}</h2>
-        <div className="whitespace-pre-wrap text-sm leading-relaxed text-ink">
+        <h2 className="text-ink mb-2 text-sm font-semibold">{t("description")}</h2>
+        <div className="text-ink whitespace-pre-wrap text-sm leading-relaxed">
           {job.description}
         </div>
       </Surface>
 
       {job.skillsRequired.length > 0 ? (
         <Surface variant="card" padding="6" className="mt-4">
-          <h2 className="mb-2 text-sm font-semibold text-ink">{t("skills")}</h2>
+          <h2 className="text-ink mb-2 text-sm font-semibold">{t("skills")}</h2>
           <ul className="flex flex-wrap gap-1.5">
             {job.skillsRequired.map((s) => (
-              <li
-                key={s}
-                className="rounded-full bg-surface-subtle px-2.5 py-1 text-xs text-ink"
-              >
+              <li key={s} className="bg-surface-subtle text-ink rounded-full px-2.5 py-1 text-xs">
                 {s}
               </li>
             ))}
@@ -226,12 +197,7 @@ interface ApplyDialogProps {
   onApplied: () => void;
 }
 
-function ApplyDialog({
-  job,
-  token,
-  onClose,
-  onApplied,
-}: ApplyDialogProps): JSX.Element {
+function ApplyDialog({ job, token, onClose, onApplied }: ApplyDialogProps): JSX.Element {
   const t = useTranslations("jobs");
   const tCommon = useTranslations("common");
   const [coverLetter, setCoverLetter] = useState("");
@@ -266,9 +232,7 @@ function ApplyDialog({
   async function submit(): Promise<void> {
     setSubmitError(null);
     const trimmed = coverLetter.trim();
-    const parsed = ApplyToJobBody.safeParse(
-      trimmed ? { coverLetter: trimmed } : {},
-    );
+    const parsed = ApplyToJobBody.safeParse(trimmed ? { coverLetter: trimmed } : {});
     if (!parsed.success) {
       setSubmitError(tCommon("genericError"));
       return;
@@ -294,29 +258,27 @@ function ApplyDialog({
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 p-4"
+      className="bg-ink/40 fixed inset-0 z-50 flex items-center justify-center p-4"
     >
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
         aria-describedby={hintId}
-        className="w-full max-w-[560px] rounded-lg border border-line-soft bg-surface shadow-pop"
+        className="border-line-soft bg-surface shadow-pop w-full max-w-[560px] rounded-lg border"
       >
-        <div className="border-b border-line-soft px-5 py-4">
-          <h2 id={titleId} className="text-base font-semibold text-ink">
+        <div className="border-line-soft border-b px-5 py-4">
+          <h2 id={titleId} className="text-ink text-base font-semibold">
             {t("applyTitle", { title: job.title })}
           </h2>
-          <p id={hintId} className="mt-1 text-sm text-ink-muted">
+          <p id={hintId} className="text-ink-muted mt-1 text-sm">
             {t("applySubtitle", { company: job.company.name })}
           </p>
         </div>
 
         <div className="px-5 py-4">
           <label className="flex flex-col gap-1">
-            <span className="text-sm font-medium text-ink">
-              {t("coverLetterLabel")}
-            </span>
+            <span className="text-ink text-sm font-medium">{t("coverLetterLabel")}</span>
             <textarea
               ref={textareaRef}
               value={coverLetter}
@@ -324,36 +286,26 @@ function ApplyDialog({
               maxLength={8000}
               rows={6}
               placeholder={t("coverLetterPlaceholder")}
-              className="min-h-[140px] resize-y rounded-md border border-line-hard bg-surface px-3 py-2 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-brand-600"
+              className="border-line-hard bg-surface text-ink focus:ring-brand-600 min-h-[140px] resize-y rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2"
             />
-            <span className="text-xs text-ink-muted">
-              {t("coverLetterHint")}
-            </span>
+            <span className="text-ink-muted text-xs">{t("coverLetterHint")}</span>
           </label>
 
           {submitError ? (
             <p
               role="alert"
-              className="mt-3 rounded-md border border-danger/30 bg-danger/10 px-3 py-2 text-xs text-danger"
+              className="border-danger/30 bg-danger/10 text-danger mt-3 rounded-md border px-3 py-2 text-xs"
             >
               {submitError}
             </p>
           ) : null}
         </div>
 
-        <div className="flex items-center justify-end gap-2 border-t border-line-soft px-5 py-3">
-          <Button
-            variant="ghost"
-            onClick={onClose}
-            disabled={submitting}
-          >
+        <div className="border-line-soft flex items-center justify-end gap-2 border-t px-5 py-3">
+          <Button variant="ghost" onClick={onClose} disabled={submitting}>
             {tCommon("cancel")}
           </Button>
-          <Button
-            variant="accent"
-            onClick={() => void submit()}
-            loading={submitting}
-          >
+          <Button variant="accent" onClick={() => void submit()} loading={submitting}>
             {t("submitApplication")}
           </Button>
         </div>

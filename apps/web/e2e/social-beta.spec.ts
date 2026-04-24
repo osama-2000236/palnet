@@ -1,10 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-import {
-  createUserViaApi,
-  setSession,
-  signOutViaUi,
-} from "./helpers";
+import { createUserViaApi, setSession, signOutViaUi } from "./helpers";
 
 test.describe("Social beta flows", () => {
   test("user can create a text post", async ({ page, request }, testInfo) => {
@@ -22,10 +18,7 @@ test.describe("Social beta flows", () => {
     await expect(page.getByText(body)).toBeVisible();
   });
 
-  test("user can send and accept a connection request", async ({
-    page,
-    request,
-  }, testInfo) => {
+  test("user can send and accept a connection request", async ({ page, request }, testInfo) => {
     test.skip(testInfo.project.name !== "chromium-en");
 
     const sender = await createUserViaApi(request, "sender");
@@ -39,9 +32,7 @@ test.describe("Social beta flows", () => {
     await setSession(page, receiver.session);
     await page.goto("/en/network");
     await page.getByRole("button", { name: /invitations/i }).click();
-    await expect(
-      page.getByText(`${sender.firstName} ${sender.lastName}`),
-    ).toBeVisible();
+    await expect(page.getByText(`${sender.firstName} ${sender.lastName}`)).toBeVisible();
     await page.getByRole("button", { name: /accept/i }).click();
 
     await setSession(page, sender.session);
@@ -72,13 +63,9 @@ test.describe("Social beta flows", () => {
     await setSession(page, recipient.session);
     await page.goto("/en/feed");
     await page.goto("/en/notifications");
-    const senderNotification = page
-      .getByText(`${sender.firstName} ${sender.lastName}`)
-      .first();
+    const senderNotification = page.getByText(`${sender.firstName} ${sender.lastName}`).first();
     await expect(senderNotification).toBeVisible();
-    await expect(
-      page.getByRole("button", { name: /unread notifications/i }),
-    ).toHaveCount(0);
+    await expect(page.getByRole("button", { name: /unread notifications/i })).toHaveCount(0);
     await senderNotification.click();
     await expect(page).toHaveURL(/\/en\/messages\?room=/);
     await expect(page.getByRole("log").getByText(messageBody)).toBeVisible();

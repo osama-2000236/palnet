@@ -52,11 +52,7 @@ export default function RootLayout(): JSX.Element | null {
   // While fonts load, render a blank surface-coloured view so we don't flash
   // the default system font for a single frame.
   if (!fontsLoaded && !fontError) {
-    return (
-      <View
-        style={{ flex: 1, backgroundColor: nativeTokens.color.surfaceMuted }}
-      />
-    );
+    return <View style={{ flex: 1, backgroundColor: nativeTokens.color.surfaceMuted }} />;
   }
 
   return (

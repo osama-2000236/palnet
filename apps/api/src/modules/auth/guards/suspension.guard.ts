@@ -1,8 +1,4 @@
-import {
-  CanActivate,
-  ExecutionContext,
-  Injectable,
-} from "@nestjs/common";
+import { CanActivate, ExecutionContext, Injectable } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
 import { ErrorCode } from "@palnet/shared";
 import type { Request } from "express";
@@ -38,10 +34,10 @@ export class SuspensionGuard implements CanActivate {
     // the UI of a suspended account.
     if (req.method === "GET" || req.method === "HEAD") return true;
 
-    const allow = this.reflector.getAllAndOverride<boolean>(
-      ALLOW_SUSPENDED_KEY,
-      [ctx.getHandler(), ctx.getClass()],
-    );
+    const allow = this.reflector.getAllAndOverride<boolean>(ALLOW_SUSPENDED_KEY, [
+      ctx.getHandler(),
+      ctx.getClass(),
+    ]);
     if (allow) return true;
 
     const row = await this.prisma.user.findUnique({
@@ -52,9 +48,7 @@ export class SuspensionGuard implements CanActivate {
 
     throw new DomainException(
       ErrorCode.USER_SUSPENDED,
-      row.suspendedReason
-        ? `Account suspended: ${row.suspendedReason}`
-        : "Account suspended.",
+      row.suspendedReason ? `Account suspended: ${row.suspendedReason}` : "Account suspended.",
       403,
     );
   }

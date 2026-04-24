@@ -220,11 +220,7 @@ export function ReportDialog({
               <Button variant="ghost" onPress={onClose} disabled={busy}>
                 {t("common.cancel")}
               </Button>
-              <Button
-                onPress={() => void submit()}
-                loading={busy}
-                testID="report-dialog-submit"
-              >
+              <Button onPress={() => void submit()} loading={busy} testID="report-dialog-submit">
                 {t("moderation.reportDialog.submit")}
               </Button>
             </>
@@ -264,9 +260,7 @@ function ReasonRow({
           height: 18,
           borderRadius: 9,
           borderWidth: 2,
-          borderColor: selected
-            ? nativeTokens.color.brand600
-            : nativeTokens.color.lineHard,
+          borderColor: selected ? nativeTokens.color.brand600 : nativeTokens.color.lineHard,
           alignItems: "center",
           justifyContent: "center",
         }}

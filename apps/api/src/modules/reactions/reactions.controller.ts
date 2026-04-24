@@ -1,12 +1,4 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  HttpCode,
-  HttpStatus,
-  Param,
-  Put,
-} from "@nestjs/common";
+import { Body, Controller, Delete, HttpCode, HttpStatus, Param, Put } from "@nestjs/common";
 import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 import { Throttle } from "@nestjs/throttler";
 import { SetReactionBody } from "@palnet/shared";
@@ -38,10 +30,7 @@ export class ReactionsController {
 
   @Delete()
   @HttpCode(HttpStatus.NO_CONTENT)
-  async clear(
-    @CurrentUser() user: AuthUser,
-    @Param("id") id: string,
-  ): Promise<void> {
+  async clear(@CurrentUser() user: AuthUser, @Param("id") id: string): Promise<void> {
     await this.reactions.clear(user.id, id);
   }
 }

@@ -28,10 +28,15 @@ test.describe("Jobs beta flows", () => {
     await setSession(page, session);
     await page.goto("/en/companies/baydar/admin");
     await page.getByLabel(/job title/i).fill(title);
-    await page.getByLabel(/job description/i).fill(
-      "Own QA flows, strengthen release confidence, and expand coverage across core hiring surfaces.",
-    );
-    await page.getByLabel(/^city$/i).nth(1).fill("Ramallah");
+    await page
+      .getByLabel(/job description/i)
+      .fill(
+        "Own QA flows, strengthen release confidence, and expand coverage across core hiring surfaces.",
+      );
+    await page
+      .getByLabel(/^city$/i)
+      .nth(1)
+      .fill("Ramallah");
     await page.getByRole("button", { name: /create job/i }).click();
 
     await expect(page.getByRole("link", { name: title })).toBeVisible();
@@ -82,7 +87,9 @@ test.describe("Jobs beta flows", () => {
     await page.goto("/en/companies/baydar/admin");
     const jobCard = page
       .getByRole("link", { name: /Senior Backend Engineer/i })
-      .locator("xpath=ancestor::div[contains(@class,'rounded-lg') and contains(@class,'border')][1]");
+      .locator(
+        "xpath=ancestor::div[contains(@class,'rounded-lg') and contains(@class,'border')][1]",
+      );
     await jobCard.getByRole("button", { name: "Load applicants" }).click();
     const applicantCard = jobCard
       .locator("li")

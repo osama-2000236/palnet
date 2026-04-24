@@ -76,9 +76,7 @@ export default function OnboardingScreen(): JSX.Element {
   }
 
   return (
-    <SafeAreaView
-      style={{ flex: 1, backgroundColor: nativeTokens.color.surfaceMuted }}
-    >
+    <SafeAreaView style={{ flex: 1, backgroundColor: nativeTokens.color.surfaceMuted }}>
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : undefined}
         style={{ flex: 1 }}
@@ -115,16 +113,8 @@ export default function OnboardingScreen(): JSX.Element {
             {t("onboarding.subtitle")}
           </Text>
 
-          <Field
-            label={t("auth.firstName")}
-            value={firstName}
-            onChangeText={setFirstName}
-          />
-          <Field
-            label={t("auth.lastName")}
-            value={lastName}
-            onChangeText={setLastName}
-          />
+          <Field label={t("auth.firstName")} value={firstName} onChangeText={setFirstName} />
+          <Field label={t("auth.lastName")} value={lastName} onChangeText={setLastName} />
           <Field
             label={t("onboarding.handle")}
             value={handle}
@@ -134,16 +124,8 @@ export default function OnboardingScreen(): JSX.Element {
               handle: handle || "your-handle",
             })}
           />
-          <Field
-            label={t("onboarding.headline")}
-            value={headline}
-            onChangeText={setHeadline}
-          />
-          <Field
-            label={t("onboarding.location")}
-            value={location}
-            onChangeText={setLocation}
-          />
+          <Field label={t("onboarding.headline")} value={headline} onChangeText={setHeadline} />
+          <Field label={t("onboarding.location")} value={location} onChangeText={setLocation} />
 
           {error ? (
             <Text

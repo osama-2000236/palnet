@@ -45,13 +45,7 @@ export const ViewerProfileState = z.object({
   isSelf: z.boolean(),
   connection: z
     .object({
-      status: z.enum([
-        "PENDING",
-        "ACCEPTED",
-        "DECLINED",
-        "WITHDRAWN",
-        "BLOCKED",
-      ]),
+      status: z.enum(["PENDING", "ACCEPTED", "DECLINED", "WITHDRAWN", "BLOCKED"]),
       direction: z.enum(["OUTGOING", "INCOMING"]),
       connectionId: z.string().cuid(),
     })

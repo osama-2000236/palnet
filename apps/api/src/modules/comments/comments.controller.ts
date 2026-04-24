@@ -54,10 +54,7 @@ export class CommentsController {
 
   @Delete("comments/:id")
   @HttpCode(HttpStatus.NO_CONTENT)
-  async delete(
-    @CurrentUser() user: AuthUser,
-    @Param("id") commentId: string,
-  ): Promise<void> {
+  async delete(@CurrentUser() user: AuthUser, @Param("id") commentId: string): Promise<void> {
     await this.comments.delete(user.id, commentId);
   }
 }

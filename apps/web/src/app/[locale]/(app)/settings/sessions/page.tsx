@@ -78,43 +78,39 @@ export default function SessionsSettingsPage(): JSX.Element {
 
   return (
     <div className="flex flex-col gap-6">
-      <h2 className="text-2xl font-bold text-ink md:hidden">{t("title")}</h2>
+      <h2 className="text-ink text-2xl font-bold md:hidden">{t("title")}</h2>
       <Surface as="section" variant="flat" padding="6">
         <header className="mb-4 flex flex-wrap items-start justify-between gap-3">
           <div>
-            <h2 className="text-lg font-semibold text-ink">{t("title")}</h2>
-            <p className="mt-1 text-sm text-ink-muted">{t("description")}</p>
+            <h2 className="text-ink text-lg font-semibold">{t("title")}</h2>
+            <p className="text-ink-muted mt-1 text-sm">{t("description")}</p>
           </div>
           <button
             type="button"
             onClick={() => {
               void revokeAll();
             }}
-            disabled={
-              busyAll || !sessions || sessions.filter((s) => !s.current).length === 0
-            }
-            className="rounded-md border border-ink-muted/30 px-3 py-2 text-sm font-semibold text-ink hover:bg-surface-subtle disabled:opacity-60"
+            disabled={busyAll || !sessions || sessions.filter((s) => !s.current).length === 0}
+            className="border-ink-muted/30 text-ink hover:bg-surface-subtle rounded-md border px-3 py-2 text-sm font-semibold disabled:opacity-60"
           >
             {t("revokeAll")}
           </button>
         </header>
 
-        {sessions === null && !error ? (
-          <p className="text-sm text-ink-muted">…</p>
-        ) : null}
+        {sessions === null && !error ? <p className="text-ink-muted text-sm">…</p> : null}
 
         {error ? (
-          <p role="alert" className="text-sm text-danger">
+          <p role="alert" className="text-danger text-sm">
             {t("genericError")}
           </p>
         ) : null}
 
         {sessions && sessions.length === 0 ? (
-          <p className="text-sm text-ink-muted">{t("empty")}</p>
+          <p className="text-ink-muted text-sm">{t("empty")}</p>
         ) : null}
 
         {sessions && sessions.length > 0 ? (
-          <ul className="flex flex-col divide-y divide-ink-muted/15">
+          <ul className="divide-ink-muted/15 flex flex-col divide-y">
             {sessions.map((s) => (
               <SessionRow
                 key={s.id}
@@ -155,14 +151,14 @@ function SessionRow({
     <li className="flex flex-wrap items-center justify-between gap-3 py-3">
       <div className="min-w-0">
         <div className="flex items-center gap-2">
-          <p className="truncate text-sm font-semibold text-ink">{device}</p>
+          <p className="text-ink truncate text-sm font-semibold">{device}</p>
           {session.current ? (
-            <span className="rounded-full bg-brand-100 px-2 py-0.5 text-xs font-semibold text-brand-700">
+            <span className="bg-brand-100 text-brand-700 rounded-full px-2 py-0.5 text-xs font-semibold">
               {currentLabel}
             </span>
           ) : null}
         </div>
-        <p className="text-xs text-ink-muted" dir="ltr">
+        <p className="text-ink-muted text-xs" dir="ltr">
           {session.ipAddress ?? "—"} · {createdLabel}
         </p>
       </div>
@@ -171,7 +167,7 @@ function SessionRow({
           type="button"
           onClick={onRevoke}
           disabled={busy}
-          className="rounded-md border border-danger/40 px-3 py-1.5 text-sm font-semibold text-danger hover:bg-danger/10 disabled:opacity-60"
+          className="border-danger/40 text-danger hover:bg-danger/10 rounded-md border px-3 py-1.5 text-sm font-semibold disabled:opacity-60"
         >
           {revokeLabel}
         </button>
@@ -185,18 +181,17 @@ function SessionRow({
 function shortUA(ua: string): string {
   if (!ua) return "Unknown device";
   const lower = ua.toLowerCase();
-  const os =
-    lower.includes("windows")
-      ? "Windows"
-      : lower.includes("mac os")
-        ? "macOS"
-        : lower.includes("android")
-          ? "Android"
-          : lower.includes("iphone") || lower.includes("ios")
-            ? "iOS"
-            : lower.includes("linux")
-              ? "Linux"
-              : "Device";
+  const os = lower.includes("windows")
+    ? "Windows"
+    : lower.includes("mac os")
+      ? "macOS"
+      : lower.includes("android")
+        ? "Android"
+        : lower.includes("iphone") || lower.includes("ios")
+          ? "iOS"
+          : lower.includes("linux")
+            ? "Linux"
+            : "Device";
   const browser =
     lower.includes("edg/") || lower.includes("edge/")
       ? "Edge"

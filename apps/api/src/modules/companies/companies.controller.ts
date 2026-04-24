@@ -1,12 +1,4 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  Patch,
-  Post,
-} from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Patch, Post } from "@nestjs/common";
 import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 import {
   type Company,
@@ -19,10 +11,7 @@ import {
 } from "@palnet/shared";
 
 import { ZodValidationPipe } from "../../common/zod-pipe";
-import {
-  CurrentUser,
-  type AuthUser,
-} from "../auth/decorators/current-user.decorator";
+import { CurrentUser, type AuthUser } from "../auth/decorators/current-user.decorator";
 
 import { CompaniesService } from "./companies.service";
 
@@ -33,9 +22,7 @@ export class CompaniesController {
   constructor(private readonly companies: CompaniesService) {}
 
   @Get("mine")
-  async listManaged(
-    @CurrentUser() user: AuthUser,
-  ): Promise<{ data: ManagedCompany[] }> {
+  async listManaged(@CurrentUser() user: AuthUser): Promise<{ data: ManagedCompany[] }> {
     return { data: await this.companies.listManaged(user) };
   }
 

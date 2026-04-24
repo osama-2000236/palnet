@@ -54,10 +54,7 @@ describe("PostsService", () => {
   beforeEach(async () => {
     prisma = buildPrisma();
     const moduleRef = await Test.createTestingModule({
-      providers: [
-        PostsService,
-        { provide: PrismaService, useValue: prisma },
-      ],
+      providers: [PostsService, { provide: PrismaService, useValue: prisma }],
     }).compile();
     service = moduleRef.get(PostsService);
   });

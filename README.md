@@ -19,24 +19,24 @@ A LinkedIn-equivalent professional network built **for Palestine first**: Arabic
 
 ## Stack (Locked)
 
-| Layer | Choice | Reason |
-| --- | --- | --- |
-| Monorepo | Turborepo + pnpm workspaces | Fastest caching, de-facto standard for TS monorepos |
-| Backend | NestJS + TypeScript (modular monolith) | DI, guards, pipes, OpenAPI out of the box; no microservice tax |
-| DB | PostgreSQL 16 | Managed via Neon; heavily trained in AI assistants |
-| ORM | Prisma | Best schema DX, type-safe, AI-friendly |
-| Web | Next.js 15 (App Router) + Tailwind + shadcn/ui | SEO for profiles + app shell; RTL-friendly |
-| Mobile | Expo (React Native) + NativeWind | iOS + Android from one codebase; OTA updates via EAS |
-| Validation | Zod (shared in `packages/shared`) | One schema → DTO on server + form types on clients |
-| Real-time | Authenticated SSE / EventSource | Simple beta transport for DMs and notifications without a separate socket client |
-| Auth | JWT access+refresh, bcrypt, OAuth2 (Google) | No third-party auth dep; migration to Clerk/Auth.js reserved |
-| Media storage | Cloudflare R2 (S3-compatible) | Free egress, cheaper than S3 |
-| Hosting — web | Vercel | Zero-config Next.js, global edge |
-| Hosting — API | Render | Dockerized Nest, zero-devops, cheap |
-| Hosting — DB | Neon | Serverless Postgres, branch-per-PR |
-| Mobile build | EAS (Expo Application Services) | Managed native builds + OTA |
-| CI | GitHub Actions | Standard; runs lint + type-check + Jest + Playwright |
-| i18n | `next-intl` (web), `i18next` + `expo-localization` (mobile) | Arabic default, English secondary |
+| Layer         | Choice                                                      | Reason                                                                           |
+| ------------- | ----------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| Monorepo      | Turborepo + pnpm workspaces                                 | Fastest caching, de-facto standard for TS monorepos                              |
+| Backend       | NestJS + TypeScript (modular monolith)                      | DI, guards, pipes, OpenAPI out of the box; no microservice tax                   |
+| DB            | PostgreSQL 16                                               | Managed via Neon; heavily trained in AI assistants                               |
+| ORM           | Prisma                                                      | Best schema DX, type-safe, AI-friendly                                           |
+| Web           | Next.js 15 (App Router) + Tailwind + shadcn/ui              | SEO for profiles + app shell; RTL-friendly                                       |
+| Mobile        | Expo (React Native) + NativeWind                            | iOS + Android from one codebase; OTA updates via EAS                             |
+| Validation    | Zod (shared in `packages/shared`)                           | One schema → DTO on server + form types on clients                               |
+| Real-time     | Authenticated SSE / EventSource                             | Simple beta transport for DMs and notifications without a separate socket client |
+| Auth          | JWT access+refresh, bcrypt, OAuth2 (Google)                 | No third-party auth dep; migration to Clerk/Auth.js reserved                     |
+| Media storage | Cloudflare R2 (S3-compatible)                               | Free egress, cheaper than S3                                                     |
+| Hosting — web | Vercel                                                      | Zero-config Next.js, global edge                                                 |
+| Hosting — API | Render                                                      | Dockerized Nest, zero-devops, cheap                                              |
+| Hosting — DB  | Neon                                                        | Serverless Postgres, branch-per-PR                                               |
+| Mobile build  | EAS (Expo Application Services)                             | Managed native builds + OTA                                                      |
+| CI            | GitHub Actions                                              | Standard; runs lint + type-check + Jest + Playwright                             |
+| i18n          | `next-intl` (web), `i18next` + `expo-localization` (mobile) | Arabic default, English secondary                                                |
 
 ## Monorepo Layout
 

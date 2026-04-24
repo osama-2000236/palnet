@@ -59,10 +59,7 @@ describe("CompaniesService", () => {
   beforeEach(async () => {
     prisma = buildPrisma();
     const moduleRef = await Test.createTestingModule({
-      providers: [
-        CompaniesService,
-        { provide: PrismaService, useValue: prisma },
-      ],
+      providers: [CompaniesService, { provide: PrismaService, useValue: prisma }],
     }).compile();
     service = moduleRef.get(CompaniesService);
   });
@@ -128,9 +125,7 @@ describe("CompaniesService", () => {
       members: [{ role: CompanyMemberRole.EDITOR }],
     });
 
-    await expect(service.assertCanManage(viewer, "co_1")).rejects.toBeInstanceOf(
-      DomainException,
-    );
+    await expect(service.assertCanManage(viewer, "co_1")).rejects.toBeInstanceOf(DomainException);
     await expect(service.assertCanManage(viewer, "co_1")).rejects.toMatchObject({
       code: ErrorCode.AUTH_FORBIDDEN,
     });

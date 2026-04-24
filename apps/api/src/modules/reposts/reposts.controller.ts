@@ -1,12 +1,4 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  HttpCode,
-  HttpStatus,
-  Param,
-  Post,
-} from "@nestjs/common";
+import { Body, Controller, Delete, HttpCode, HttpStatus, Param, Post } from "@nestjs/common";
 import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 import { Throttle } from "@nestjs/throttler";
 import { CreateRepostBody } from "@palnet/shared";
@@ -36,10 +28,7 @@ export class RepostsController {
 
   @Delete()
   @HttpCode(HttpStatus.NO_CONTENT)
-  async delete(
-    @CurrentUser() user: AuthUser,
-    @Param("id") id: string,
-  ): Promise<void> {
+  async delete(@CurrentUser() user: AuthUser, @Param("id") id: string): Promise<void> {
     await this.reposts.delete(user.id, id);
   }
 }

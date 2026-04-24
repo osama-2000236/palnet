@@ -4,10 +4,7 @@ import type { Env } from "./env";
 
 type NumericEnvKey = "BCRYPT_COST" | "JWT_ACCESS_TTL" | "JWT_REFRESH_TTL";
 
-export function getNumberEnv(
-  config: ConfigService<Env, true>,
-  key: NumericEnvKey,
-): number {
+export function getNumberEnv(config: ConfigService<Env, true>, key: NumericEnvKey): number {
   const value = config.getOrThrow<number | string>(key);
   const parsed = typeof value === "number" ? value : Number(value);
 

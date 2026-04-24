@@ -9,6 +9,7 @@ All sprints follow the Definition of Done in [`project-spec.md §7`](../project-
 ## Sprint 0 — Foundation (1 working session)
 
 **Do:**
+
 - `pnpm install` succeeds across the monorepo.
 - `pnpm db:generate` produces the Prisma client.
 - NestJS skeleton in `apps/api` boots on port 4000 with `/api/v1/health` returning `{ status: "ok" }`.
@@ -19,6 +20,7 @@ All sprints follow the Definition of Done in [`project-spec.md §7`](../project-
 - `.env.local` wired; app reads `DATABASE_URL` without crashing.
 
 **Do NOT:**
+
 - Write any feature code.
 - Add libraries not listed in `project-spec.md §2.1`.
 - Touch deployment yet.
@@ -28,6 +30,7 @@ All sprints follow the Definition of Done in [`project-spec.md §7`](../project-
 ## Sprint 1 — Auth + Onboarding
 
 **Do:**
+
 - API: `POST /auth/register`, `POST /auth/login`, `POST /auth/refresh`, `POST /auth/logout`, `GET /auth/me`.
 - Bcrypt cost 12. Access 15 min, refresh 30 days (hashed in `RefreshToken`).
 - Zod validation pipe at every controller. Zod schemas live only in `@palnet/shared`.
@@ -39,6 +42,7 @@ All sprints follow the Definition of Done in [`project-spec.md §7`](../project-
 - Playwright: one happy-path register→onboard→logout.
 
 **Do NOT:**
+
 - OAuth yet (Sprint 1.5).
 - Email verification flow.
 - Password reset flow (Sprint 2.5).
@@ -49,11 +53,13 @@ All sprints follow the Definition of Done in [`project-spec.md §7`](../project-
 ## Sprint 1.5 — OAuth (Google)
 
 **Do:**
+
 - `GET /auth/google`, `GET /auth/google/callback`.
 - Link to existing `User` by email; create if new.
 - Web + mobile "Continue with Google" button.
 
 **Do NOT:**
+
 - Apple Sign-In yet (required for iOS App Store review — do right before App Store submission).
 - Facebook/LinkedIn-style OAuth (scope creep).
 
@@ -62,6 +68,7 @@ All sprints follow the Definition of Done in [`project-spec.md §7`](../project-
 ## Sprint 2 — Feed & Posting
 
 **Do:**
+
 - API: `POST /posts`, `GET /posts/:id`, `DELETE /posts/:id`, `PATCH /posts/:id`.
 - API: `GET /feed` — cursor-paginated, chronological, union of self + connections + followed companies. Ranking is `ORDER BY createdAt DESC` only.
 - API: `PUT /posts/:id/reaction`, `DELETE /posts/:id/reaction`.
@@ -73,6 +80,7 @@ All sprints follow the Definition of Done in [`project-spec.md §7`](../project-
 - Jest + Playwright + Detox for the composer happy path.
 
 **Do NOT:**
+
 - Algorithmic ranking, trending, hashtags, mentions, polls, articles, newsletters.
 - Video transcoding (accept MP4 URL + thumbnail only).
 - Edit history display.
@@ -82,6 +90,7 @@ All sprints follow the Definition of Done in [`project-spec.md §7`](../project-
 ## Sprint 3 — Profiles & Connections
 
 **Do:**
+
 - API: `GET /profiles/:handle` (public-safe DTO), `PATCH /profiles/me`.
 - API: `POST/PATCH/DELETE /profiles/me/experiences/:id`, same for educations, skills.
 - API: `POST /connections`, `POST /connections/:id/respond` (ACCEPT/DECLINE), `DELETE /connections/:id` (withdraw/remove), `POST /users/:id/block`.
@@ -90,6 +99,7 @@ All sprints follow the Definition of Done in [`project-spec.md §7`](../project-
 - Mobile: profile screen, edit modal, my-network tab.
 
 **Do NOT:**
+
 - "People You May Know" recommendations (Sprint 6+).
 - Mutual-connections display yet (easy add later).
 - Endorsements of specific skills (Sprint 6+).
@@ -99,6 +109,7 @@ All sprints follow the Definition of Done in [`project-spec.md §7`](../project-
 ## Sprint 4 — Messaging & Notifications
 
 **Do:**
+
 - API: `POST /chat/rooms/dm`, `GET /chat/rooms`, `GET /chat/rooms/:id/messages` (cursor back in time), `POST /chat/rooms/:id/messages`, `POST /chat/rooms/:id/read`.
 - WebSocket namespace `/chat`: `message.new`, `message.read`, `typing`.
 - API: `GET /notifications`, `POST /notifications/read`.
@@ -108,6 +119,7 @@ All sprints follow the Definition of Done in [`project-spec.md §7`](../project-
 - Notification triggers: connection request, connection accepted, post reaction, post comment, message received.
 
 **Do NOT:**
+
 - Group chat UI (data model supports it; UI waits).
 - Voice/video calls.
 - Push notifications (Sprint 4.5 — requires APNs/FCM setup).
@@ -118,6 +130,7 @@ All sprints follow the Definition of Done in [`project-spec.md §7`](../project-
 ## Sprint 4.5 — Push Notifications
 
 **Do:**
+
 - Expo push tokens persisted on login.
 - API sends push via Expo's push service for high-signal events only (new message, accepted connection).
 - In-app mute toggle per notification type.
@@ -127,6 +140,7 @@ All sprints follow the Definition of Done in [`project-spec.md §7`](../project-
 ## Sprint 5 — Jobs Board
 
 **Do:**
+
 - API: Company CRUD (`POST/GET/PATCH /companies`, `POST /companies/:id/members`).
 - API: Jobs CRUD (`POST/GET/PATCH/DELETE /companies/:id/jobs`), `GET /jobs` (search + filters from `JobSearchQuery`).
 - API: `POST /jobs/:id/apply`, `GET /me/applications`, `GET /companies/:id/jobs/:jobId/applications` (company admin only), `PATCH /applications/:id/status`.
@@ -134,6 +148,7 @@ All sprints follow the Definition of Done in [`project-spec.md §7`](../project-
 - Mobile: Jobs tab, job detail, apply flow, my applications.
 
 **Do NOT:**
+
 - Paid job promotion, featured slots.
 - Recruiter workspace.
 - Applicant tracking funnel stages beyond `ApplicationStatus` enum.

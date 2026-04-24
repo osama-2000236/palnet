@@ -28,11 +28,7 @@ export class ProfilesService {
       where: { handle: body.handle },
     });
     if (handleOwner && handleOwner.userId !== userId) {
-      throw new DomainException(
-        ErrorCode.CONFLICT,
-        "Handle is already taken.",
-        409,
-      );
+      throw new DomainException(ErrorCode.CONFLICT, "Handle is already taken.", 409);
     }
 
     const data = {
@@ -58,20 +54,13 @@ export class ProfilesService {
     return toProfileDto(profile, { isSelf: true, connection: null });
   }
 
-  async updateMine(
-    userId: string,
-    body: UpdateProfileBody,
-  ): Promise<ProfileDto> {
+  async updateMine(userId: string, body: UpdateProfileBody): Promise<ProfileDto> {
     if (body.handle) {
       const handleOwner = await this.prisma.profile.findUnique({
         where: { handle: body.handle },
       });
       if (handleOwner && handleOwner.userId !== userId) {
-        throw new DomainException(
-          ErrorCode.CONFLICT,
-          "Handle is already taken.",
-          409,
-        );
+        throw new DomainException(ErrorCode.CONFLICT, "Handle is already taken.", 409);
       }
     }
     try {
@@ -86,10 +75,7 @@ export class ProfilesService {
     }
   }
 
-  async getByHandle(
-    handle: string,
-    viewerId?: string,
-  ): Promise<ProfileDto> {
+  async getByHandle(handle: string, viewerId?: string): Promise<ProfileDto> {
     const profile = await this.prisma.profile.findUnique({
       where: { handle },
       include: profileInclude,
@@ -117,10 +103,7 @@ export class ProfilesService {
   // Experiences
   // ────────────────────────────────────────────────────────────────────
 
-  async addExperience(
-    userId: string,
-    body: ExperienceBody,
-  ): Promise<ProfileDto> {
+  async addExperience(userId: string, body: ExperienceBody): Promise<ProfileDto> {
     const profile = await this.requireProfile(userId);
     await this.prisma.experience.create({
       data: {
@@ -148,11 +131,7 @@ export class ProfilesService {
       where: { id: experienceId },
     });
     if (!existing || existing.profileId !== profile.id) {
-      throw new DomainException(
-        ErrorCode.NOT_FOUND,
-        "Experience not found.",
-        404,
-      );
+      throw new DomainException(ErrorCode.NOT_FOUND, "Experience not found.", 404);
     }
     await this.prisma.experience.update({
       where: { id: experienceId },
@@ -170,20 +149,13 @@ export class ProfilesService {
     return this.getMine(userId);
   }
 
-  async deleteExperience(
-    userId: string,
-    experienceId: string,
-  ): Promise<ProfileDto> {
+  async deleteExperience(userId: string, experienceId: string): Promise<ProfileDto> {
     const profile = await this.requireProfile(userId);
     const existing = await this.prisma.experience.findUnique({
       where: { id: experienceId },
     });
     if (!existing || existing.profileId !== profile.id) {
-      throw new DomainException(
-        ErrorCode.NOT_FOUND,
-        "Experience not found.",
-        404,
-      );
+      throw new DomainException(ErrorCode.NOT_FOUND, "Experience not found.", 404);
     }
     await this.prisma.experience.delete({ where: { id: experienceId } });
     return this.getMine(userId);
@@ -193,10 +165,7 @@ export class ProfilesService {
   // Educations
   // ────────────────────────────────────────────────────────────────────
 
-  async addEducation(
-    userId: string,
-    body: EducationBody,
-  ): Promise<ProfileDto> {
+  async addEducation(userId: string, body: EducationBody): Promise<ProfileDto> {
     const profile = await this.requireProfile(userId);
     await this.prisma.education.create({
       data: {
@@ -222,11 +191,7 @@ export class ProfilesService {
       where: { id: educationId },
     });
     if (!existing || existing.profileId !== profile.id) {
-      throw new DomainException(
-        ErrorCode.NOT_FOUND,
-        "Education not found.",
-        404,
-      );
+      throw new DomainException(ErrorCode.NOT_FOUND, "Education not found.", 404);
     }
     await this.prisma.education.update({
       where: { id: educationId },
@@ -242,20 +207,13 @@ export class ProfilesService {
     return this.getMine(userId);
   }
 
-  async deleteEducation(
-    userId: string,
-    educationId: string,
-  ): Promise<ProfileDto> {
+  async deleteEducation(userId: string, educationId: string): Promise<ProfileDto> {
     const profile = await this.requireProfile(userId);
     const existing = await this.prisma.education.findUnique({
       where: { id: educationId },
     });
     if (!existing || existing.profileId !== profile.id) {
-      throw new DomainException(
-        ErrorCode.NOT_FOUND,
-        "Education not found.",
-        404,
-      );
+      throw new DomainException(ErrorCode.NOT_FOUND, "Education not found.", 404);
     }
     await this.prisma.education.delete({ where: { id: educationId } });
     return this.getMine(userId);

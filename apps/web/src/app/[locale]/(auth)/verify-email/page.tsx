@@ -46,28 +46,26 @@ function VerifyEmailInner(): JSX.Element {
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-md items-center px-6 py-12">
       <Surface as="section" variant="flat" padding="6" className="w-full">
-        <h1 className="mb-2 text-xl font-bold text-ink">{t("title")}</h1>
-        {status === "verifying" ? (
-          <p className="text-sm text-ink-muted">{t("verifying")}</p>
-        ) : null}
+        <h1 className="text-ink mb-2 text-xl font-bold">{t("title")}</h1>
+        {status === "verifying" ? <p className="text-ink-muted text-sm">{t("verifying")}</p> : null}
         {status === "ok" ? (
           <>
-            <p className="text-sm text-ink">{t("success")}</p>
+            <p className="text-ink text-sm">{t("success")}</p>
             <Link
               href="/feed"
-              className="mt-4 inline-block rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-ink-inverse"
+              className="bg-brand-600 text-ink-inverse mt-4 inline-block rounded-md px-4 py-2 text-sm font-semibold"
             >
               {t("goFeed")}
             </Link>
           </>
         ) : null}
         {status === "error" ? (
-          <p role="alert" className="text-sm text-danger">
+          <p role="alert" className="text-danger text-sm">
             {t("invalid")}
           </p>
         ) : null}
         {status === "missing" ? (
-          <p className="text-sm text-ink-muted">{t("missingToken")}</p>
+          <p className="text-ink-muted text-sm">{t("missingToken")}</p>
         ) : null}
       </Surface>
     </main>

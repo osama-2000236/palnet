@@ -17,13 +17,7 @@ import { getAccessToken } from "@/lib/session";
 const PreferencesEnvelope = z.object({ preferences: NotificationPreferences });
 
 const CHANNELS: NotificationChannel[] = ["inApp", "email", "push"];
-const EVENTS: NotificationEvent[] = [
-  "connections",
-  "messages",
-  "reactions",
-  "comments",
-  "jobs",
-];
+const EVENTS: NotificationEvent[] = ["connections", "messages", "reactions", "comments", "jobs"];
 
 export default function NotificationsSettingsPage(): JSX.Element {
   const t = useTranslations("settings.notifications");
@@ -41,11 +35,7 @@ export default function NotificationsSettingsPage(): JSX.Element {
     }
     void (async () => {
       try {
-        const data = await apiFetch(
-          "/notifications/preferences",
-          PreferencesEnvelope,
-          { token },
-        );
+        const data = await apiFetch("/notifications/preferences", PreferencesEnvelope, { token });
         setPrefs(data.preferences);
       } catch {
         setStatus("error");
@@ -72,11 +62,11 @@ export default function NotificationsSettingsPage(): JSX.Element {
     setBusy(true);
     setStatus("idle");
     try {
-      const data = await apiFetch(
-        "/notifications/preferences",
-        PreferencesEnvelope,
-        { method: "POST", body: prefs, token },
-      );
+      const data = await apiFetch("/notifications/preferences", PreferencesEnvelope, {
+        method: "POST",
+        body: prefs,
+        token,
+      });
       setPrefs(data.preferences);
       setStatus("ok");
     } catch {
@@ -88,35 +78,35 @@ export default function NotificationsSettingsPage(): JSX.Element {
 
   return (
     <div className="flex flex-col gap-6">
-      <h2 className="text-2xl font-bold text-ink md:hidden">{t("title")}</h2>
+      <h2 className="text-ink text-2xl font-bold md:hidden">{t("title")}</h2>
       <Surface as="section" variant="flat" padding="6">
         <header className="mb-4">
-          <h2 className="text-lg font-semibold text-ink">{t("title")}</h2>
-          <p className="mt-1 text-sm text-ink-muted">{t("description")}</p>
+          <h2 className="text-ink text-lg font-semibold">{t("title")}</h2>
+          <p className="text-ink-muted mt-1 text-sm">{t("description")}</p>
         </header>
 
         {prefs === null ? (
           status === "error" ? (
-            <p role="alert" className="text-sm text-danger">
+            <p role="alert" className="text-danger text-sm">
               {t("genericError")}
             </p>
           ) : (
-            <p className="text-sm text-ink-muted">…</p>
+            <p className="text-ink-muted text-sm">…</p>
           )
         ) : (
           <>
             <div className="overflow-x-auto">
               <table className="w-full border-collapse text-sm">
                 <thead>
-                  <tr className="border-b border-ink-muted/20">
-                    <th className="py-2 text-start font-semibold text-ink-muted">
+                  <tr className="border-ink-muted/20 border-b">
+                    <th className="text-ink-muted py-2 text-start font-semibold">
                       <span className="sr-only">{t("eventColumn")}</span>
                     </th>
                     {CHANNELS.map((ch) => (
                       <th
                         key={ch}
                         scope="col"
-                        className="px-2 py-2 text-center font-semibold text-ink-muted"
+                        className="text-ink-muted px-2 py-2 text-center font-semibold"
                       >
                         {t(`channels.${ch}`)}
                       </th>
@@ -125,14 +115,8 @@ export default function NotificationsSettingsPage(): JSX.Element {
                 </thead>
                 <tbody>
                   {EVENTS.map((ev) => (
-                    <tr
-                      key={ev}
-                      className="border-b border-ink-muted/10 last:border-0"
-                    >
-                      <th
-                        scope="row"
-                        className="py-3 text-start font-medium text-ink"
-                      >
+                    <tr key={ev} className="border-ink-muted/10 border-b last:border-0">
+                      <th scope="row" className="text-ink py-3 text-start font-medium">
                         {t(`events.${ev}`)}
                       </th>
                       {CHANNELS.map((ch) => {
@@ -149,7 +133,7 @@ export default function NotificationsSettingsPage(): JSX.Element {
                                 onChange={() => {
                                   toggle(ch, ev);
                                 }}
-                                className="h-5 w-5 cursor-pointer accent-brand-600"
+                                className="accent-brand-600 h-5 w-5 cursor-pointer"
                               />
                             </label>
                           </td>
@@ -162,12 +146,12 @@ export default function NotificationsSettingsPage(): JSX.Element {
             </div>
 
             {status === "ok" ? (
-              <p role="status" className="mt-3 text-sm text-success">
+              <p role="status" className="text-success mt-3 text-sm">
                 {t("saveOk")}
               </p>
             ) : null}
             {status === "error" ? (
-              <p role="alert" className="mt-3 text-sm text-danger">
+              <p role="alert" className="text-danger mt-3 text-sm">
                 {t("genericError")}
               </p>
             ) : null}
@@ -179,7 +163,7 @@ export default function NotificationsSettingsPage(): JSX.Element {
                   void save();
                 }}
                 disabled={busy}
-                className="rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-ink-inverse disabled:opacity-60"
+                className="bg-brand-600 text-ink-inverse rounded-md px-4 py-2 text-sm font-semibold disabled:opacity-60"
               >
                 {tCommon("save")}
               </button>

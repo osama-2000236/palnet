@@ -8,9 +8,7 @@ import type { AuthUser } from "./current-user.decorator";
 // request was anonymous. Pair with @OptionalAuth() on the route.
 export const OptionalUser = createParamDecorator(
   (_data: unknown, ctx: ExecutionContext): AuthUser | null => {
-    const req = ctx
-      .switchToHttp()
-      .getRequest<Request & { user?: AuthUser }>();
+    const req = ctx.switchToHttp().getRequest<Request & { user?: AuthUser }>();
     return req.user ?? null;
   },
 );
