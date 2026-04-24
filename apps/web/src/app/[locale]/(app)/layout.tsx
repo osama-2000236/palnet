@@ -138,7 +138,7 @@ export default function AppLayout({ children }: { children: ReactNode }): JSX.El
       .catch(() => {});
     const url = `${API_BASE}/notifications/stream?access_token=${encodeURIComponent(token)}`;
     const es = new EventSource(url);
-    es.onmessage = (evt): void => {
+    const handleNotificationEvent = (evt: MessageEvent): void => {
       try {
         const parsed = WsNotificationEvent.safeParse(JSON.parse(evt.data));
         if (!parsed.success) return;
@@ -152,10 +152,22 @@ export default function AppLayout({ children }: { children: ReactNode }): JSX.El
         // ignore
       }
     };
+    es.onmessage = handleNotificationEvent;
+    es.addEventListener("notification.new", handleNotificationEvent);
+    es.addEventListener("notification.unread-count", handleNotificationEvent);
     return (): void => {
       es.close();
     };
   }, [token]);
+
+  // Navigation can race with notification read events; refresh the aggregate
+  // count on route changes so the shell badge never stays stale.
+  useEffect(() => {
+    if (!token) return;
+    void apiFetch("/notifications/unread-count", UnreadCount, { token })
+      .then((out) => setNotificationsUnread(out.count))
+      .catch(() => {});
+  }, [pathname, token]);
 
   // Messages unread — sum of per-room counts. Refetch on any chat event to
   // keep the badge honest; the rooms list is small.

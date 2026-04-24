@@ -76,7 +76,7 @@ export default function NotificationsPageRoute(): JSX.Element {
     const es = new EventSource(url);
     es.onopen = (): void => setSseLive(true);
     es.onerror = (): void => setSseLive(false);
-    es.onmessage = (evt): void => {
+    const handleNotificationEvent = (evt: MessageEvent): void => {
       try {
         const parsed = WsNotificationEvent.safeParse(JSON.parse(evt.data));
         if (!parsed.success) return;
@@ -107,6 +107,9 @@ export default function NotificationsPageRoute(): JSX.Element {
         /* ignore */
       }
     };
+    es.onmessage = handleNotificationEvent;
+    es.addEventListener("notification.new", handleNotificationEvent);
+    es.addEventListener("notification.read", handleNotificationEvent);
     return (): void => {
       es.close();
       setSseLive(false);

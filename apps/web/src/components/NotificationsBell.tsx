@@ -42,7 +42,7 @@ export function NotificationsBell(): JSX.Element | null {
     if (!token) return;
     const url = `${API_BASE}/notifications/stream?access_token=${encodeURIComponent(token)}`;
     const es = new EventSource(url);
-    es.onmessage = (evt): void => {
+    const handleNotificationEvent = (evt: MessageEvent): void => {
       try {
         const parsed = WsNotificationEvent.safeParse(JSON.parse(evt.data));
         if (!parsed.success) return;
@@ -56,6 +56,9 @@ export function NotificationsBell(): JSX.Element | null {
         /* ignore */
       }
     };
+    es.onmessage = handleNotificationEvent;
+    es.addEventListener("notification.new", handleNotificationEvent);
+    es.addEventListener("notification.unread-count", handleNotificationEvent);
     return (): void => {
       es.close();
     };

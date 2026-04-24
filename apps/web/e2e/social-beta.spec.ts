@@ -13,7 +13,7 @@ test.describe("Social beta flows", () => {
     await page.goto("/en/feed");
     await page.getByRole("button", { name: /start a post/i }).click();
     await page.getByPlaceholder(/start a post/i).fill(body);
-    await page.getByRole("button", { name: /post/i }).click();
+    await page.getByRole("button", { name: "Post", exact: true }).click();
 
     await expect(page.getByText(body)).toBeVisible();
   });
@@ -56,7 +56,7 @@ test.describe("Social beta flows", () => {
     await expect(page).toHaveURL(/\/en\/messages\?room=/);
     await expect(page.locator("textarea")).toBeVisible();
     await page.locator("textarea").fill(messageBody);
-    await page.getByRole("button", { name: /send/i }).click();
+    await page.getByRole("button", { name: "Send", exact: true }).click();
     await expect(page.getByText(messageBody)).toBeVisible();
 
     await signOutViaUi(page);
@@ -65,9 +65,9 @@ test.describe("Social beta flows", () => {
     await page.goto("/en/notifications");
     const senderNotification = page.getByText(`${sender.firstName} ${sender.lastName}`).first();
     await expect(senderNotification).toBeVisible();
-    await expect(page.getByRole("button", { name: /unread notifications/i })).toHaveCount(0);
     await senderNotification.click();
     await expect(page).toHaveURL(/\/en\/messages\?room=/);
+    await expect(page.getByRole("button", { name: /unread notifications/i })).toHaveCount(0);
     await expect(page.getByRole("log").getByText(messageBody)).toBeVisible();
   });
 });
