@@ -1,0 +1,40 @@
+# Mobile compose smoke — login, open composer, publish text-only post,
+# return to feed.
+#
+# Prereqs: DB seeded (demo@palnet.ps / Password123), API at :4000,
+# Expo dev client installed on the active simulator/emulator.
+
+appId: ps.palnet.app
+---
+- launchApp:
+    clearState: true
+
+- tapOn:
+    id: "login-email"
+- inputText: "demo@palnet.ps"
+
+- tapOn:
+    id: "login-password"
+- inputText: "Password123"
+
+- tapOn:
+    id: "login-submit"
+
+- assertVisible:
+    id: "screen-feed"
+
+- tapOn:
+    id: "feed-composer"
+
+- assertVisible:
+    id: "composer-screen"
+
+- tapOn:
+    id: "composer-body"
+- inputText: "Maestro smoke post"
+
+- tapOn:
+    id: "composer-submit"
+
+- assertVisible:
+    id: "screen-feed"

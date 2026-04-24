@@ -1,4 +1,12 @@
+import { existsSync, readFileSync } from "node:fs";
+import { dirname, resolve } from "node:path";
+
 import { z } from "zod";
+
+const OptionalUrl = z.preprocess(
+  (value) => (value === "" ? undefined : value),
+  z.string().url().optional(),
+);
 
 // Boot-time env validation. The process exits on failure — never degrade silently.
 const EnvSchema = z.object({
@@ -22,11 +30,26 @@ const EnvSchema = z.object({
   GOOGLE_CLIENT_ID: z.string().optional(),
   GOOGLE_CLIENT_SECRET: z.string().optional(),
   GOOGLE_REDIRECT_URI: z.string().url().optional(),
+  // Transactional email — Resend (Sprint 7 accounts).
+  RESEND_API_KEY: z.string().optional(),
+  EMAIL_FROM: z.string().email().default("noreply@baydar.app"),
+  EMAIL_VERIFY_URL_BASE: z.string().url().default("http://localhost:3000/verify-email"),
+  PASSWORD_RESET_URL_BASE: z.string().url().default("http://localhost:3000/reset-password"),
+  EMAIL_VERIFY_MOBILE_URL_BASE: z.string().url().default("baydar://auth/verify"),
+  PASSWORD_RESET_MOBILE_URL_BASE: z.string().url().default("baydar://auth/reset"),
+  // Deprecated fallback. Keep until old envs are rotated.
+  MOBILE_APP_SCHEME: z
+    .string()
+    .regex(/^[a-z][a-z0-9+.-]*$/)
+    .optional(),
+  // Optional persistent throttling. Local/dev stays in-memory when absent.
+  REDIS_URL: OptionalUrl,
 });
 
 export type Env = z.infer<typeof EnvSchema>;
 
 export function loadEnv(): Env {
+  loadRootEnvLocal();
   const parsed = EnvSchema.safeParse(process.env);
   if (!parsed.success) {
     // eslint-disable-next-line no-console
@@ -34,4 +57,56 @@ export function loadEnv(): Env {
     process.exit(1);
   }
   return parsed.data;
+}
+
+function loadRootEnvLocal(): void {
+  const path = findRootEnvLocal();
+  if (!path) return;
+
+  for (const line of readFileSync(path, "utf8").split(/\r?\n/)) {
+    const parsed = parseEnvLine(line);
+    if (!parsed) continue;
+    const [key, value] = parsed;
+    if (process.env[key] === undefined) process.env[key] = value;
+  }
+}
+
+function findRootEnvLocal(): string | null {
+  let dir = process.cwd();
+  for (let i = 0; i < 6; i += 1) {
+    const envPath = resolve(dir, ".env.local");
+    if (existsSync(resolve(dir, "pnpm-workspace.yaml")) && existsSync(envPath)) {
+      return envPath;
+    }
+    const parent = dirname(dir);
+    if (parent === dir) break;
+    dir = parent;
+  }
+
+  const fallbacks = [
+    resolve(process.cwd(), ".env.local"),
+    resolve(process.cwd(), "..", ".env.local"),
+    resolve(process.cwd(), "..", "..", ".env.local"),
+  ];
+
+  return fallbacks.find((path) => existsSync(path)) ?? null;
+}
+
+function parseEnvLine(line: string): [string, string] | null {
+  const trimmed = line.trim();
+  if (!trimmed || trimmed.startsWith("#")) return null;
+
+  const match = /^([A-Za-z_][A-Za-z0-9_]*)=(.*)$/.exec(trimmed);
+  if (!match) return null;
+
+  const key = match[1]!;
+  let value = match[2]!.trim();
+  if (
+    (value.startsWith('"') && value.endsWith('"')) ||
+    (value.startsWith("'") && value.endsWith("'"))
+  ) {
+    value = value.slice(1, -1);
+  }
+
+  return [key, value.replace(/\\n/g, "\n")];
 }

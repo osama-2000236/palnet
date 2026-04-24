@@ -1,0 +1,29 @@
+# Auth happy path — the core smoke: login with seeded user, land on feed,
+# confirm header rendered. Targets testIDs so copy changes (EN↔AR) don't
+# break us.
+#
+# Prereqs: DB seeded (demo@palnet.ps / Password123), API at :4000,
+# Expo dev client installed on the active simulator/emulator.
+
+appId: ps.palnet.app
+---
+- launchApp:
+    clearState: true
+
+# Login screen — driven entirely by testID for stability.
+- tapOn:
+    id: "login-email"
+- inputText: "demo@palnet.ps"
+
+- tapOn:
+    id: "login-password"
+- inputText: "Password123"
+
+- tapOn:
+    id: "login-submit"
+
+# Feed renders after router.replace.
+- assertVisible:
+    id: "screen-feed"
+- assertVisible:
+    id: "feed-title"

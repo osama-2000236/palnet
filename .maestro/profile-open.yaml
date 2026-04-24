@@ -1,0 +1,48 @@
+# Mobile profile smoke — login, search seeded owner profile, open it.
+#
+# Prereqs: DB seeded (demo@palnet.ps / Password123), API at :4000,
+# Expo dev client installed on the active simulator/emulator.
+
+appId: ps.palnet.app
+---
+- launchApp:
+    clearState: true
+
+- tapOn:
+    id: "login-email"
+- inputText: "demo@palnet.ps"
+
+- tapOn:
+    id: "login-password"
+- inputText: "Password123"
+
+- tapOn:
+    id: "login-submit"
+
+- assertVisible:
+    id: "screen-feed"
+
+- tapOn:
+    id: "feed-search"
+
+- assertVisible:
+    id: "search-screen"
+
+- tapOn:
+    id: "search-input"
+- inputText: "owner"
+
+- tapOn:
+    id: "search-submit"
+
+- assertVisible:
+    id: "search-result-owner-baydar"
+
+- tapOn:
+    id: "search-result-owner-baydar"
+
+- assertVisible:
+    id: "profile-screen"
+
+- assertVisible:
+    id: "profile-handle"

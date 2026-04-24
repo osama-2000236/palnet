@@ -1,0 +1,45 @@
+# Mobile settings smoke — login, enter Settings, open notification prefs,
+# flip one switch, save, confirm success banner renders.
+#
+# Prereqs: DB seeded (demo@palnet.ps / Password123), API at :4000,
+# Expo dev client installed on the active simulator/emulator.
+
+appId: ps.palnet.app
+---
+- launchApp:
+    clearState: true
+
+- tapOn:
+    id: "login-email"
+- inputText: "demo@palnet.ps"
+
+- tapOn:
+    id: "login-password"
+- inputText: "Password123"
+
+- tapOn:
+    id: "login-submit"
+
+- assertVisible:
+    id: "screen-feed"
+
+- tapOn:
+    id: "tab-me"
+
+- assertVisible:
+    id: "settings-screen"
+
+- tapOn:
+    id: "settings-row-notifications"
+
+- assertVisible:
+    id: "settings-notifications-screen"
+
+- tapOn:
+    id: "settings-notification-connections-email"
+
+- tapOn:
+    id: "settings-notifications-save"
+
+- assertVisible:
+    id: "settings-notifications-status-ok"

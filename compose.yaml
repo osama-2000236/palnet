@@ -1,0 +1,10 @@
+services:
+  palnetuiweb:
+    image: palnetuiweb
+    build:
+      context: packages/ui-web
+      dockerfile: ./Dockerfile
+    environment:
+      NODE_ENV: production
+    ports:
+      - 3000:3000

@@ -1,0 +1,39 @@
+# Mobile settings smoke — login, enter Settings, open Sessions, confirm the
+# current-device badge renders from the server-backed session list.
+#
+# Prereqs: DB seeded (demo@palnet.ps / Password123), API at :4000,
+# Expo dev client installed on the active simulator/emulator.
+
+appId: ps.palnet.app
+---
+- launchApp:
+    clearState: true
+
+- tapOn:
+    id: "login-email"
+- inputText: "demo@palnet.ps"
+
+- tapOn:
+    id: "login-password"
+- inputText: "Password123"
+
+- tapOn:
+    id: "login-submit"
+
+- assertVisible:
+    id: "screen-feed"
+
+- tapOn:
+    id: "tab-me"
+
+- assertVisible:
+    id: "settings-screen"
+
+- tapOn:
+    id: "settings-row-sessions"
+
+- assertVisible:
+    id: "settings-sessions-screen"
+
+- assertVisible:
+    id: "settings-session-current-badge"
