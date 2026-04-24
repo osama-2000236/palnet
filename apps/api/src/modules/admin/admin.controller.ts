@@ -11,6 +11,7 @@ import {
 } from "@nestjs/common";
 import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 import {
+  type AdminPostDetail,
   AuditLogExportQuery,
   type AuditLogPage,
   AuditLogListQuery,
@@ -67,6 +68,11 @@ export class AdminController {
     @Body(new ZodValidationPipe(TakedownPostBody)) body: TakedownPostBody,
   ): Promise<void> {
     await this.admin.takedownPost(actor.id, postId, body);
+  }
+
+  @Get("posts/:id")
+  async getPostDetail(@Param("id") postId: string): Promise<AdminPostDetail> {
+    return this.admin.getPostDetail(postId);
   }
 
   @Post("posts/:id/restore")

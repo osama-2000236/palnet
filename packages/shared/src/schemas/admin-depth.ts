@@ -130,3 +130,42 @@ export type AuditLogExportQuery = z.infer<typeof AuditLogExportQuery>;
 
 export const AuditLogPage = cursorPage(AuditLogItem);
 export type AuditLogPage = z.infer<typeof AuditLogPage>;
+
+// ──────────────────────────────────────────────────────────────────────────
+// Admin post detail — read-only view of a post that may be taken-down or
+// soft-deleted. The regular post read endpoints filter `takedownAt: null`,
+// which is correct for users but leaves moderators unable to audit the
+// body they removed. This surface ignores the takedown filter and includes
+// the takedown metadata so the console can render the full history.
+// ──────────────────────────────────────────────────────────────────────────
+
+export const AdminPostMedia = z.object({
+  id: z.string().cuid(),
+  url: z.string().url(),
+  kind: z.enum(["IMAGE", "VIDEO"]),
+  mimeType: z.string(),
+  width: z.number().int().nullable(),
+  height: z.number().int().nullable(),
+});
+export type AdminPostMedia = z.infer<typeof AdminPostMedia>;
+
+export const AdminPostDetail = z.object({
+  id: z.string().cuid(),
+  author: AuditActor,
+  body: z.string(),
+  language: z.string(),
+  createdAt: z.string().datetime(),
+  updatedAt: z.string().datetime(),
+  deletedAt: z.string().datetime().nullable(),
+  takedownAt: z.string().datetime().nullable(),
+  takedownReason: z.string().nullable(),
+  takedownBy: AuditActor.nullable(),
+  media: z.array(AdminPostMedia),
+  counts: z.object({
+    reactions: z.number().int().nonnegative(),
+    comments: z.number().int().nonnegative(),
+    reposts: z.number().int().nonnegative(),
+    reports: z.number().int().nonnegative(),
+  }),
+});
+export type AdminPostDetail = z.infer<typeof AdminPostDetail>;

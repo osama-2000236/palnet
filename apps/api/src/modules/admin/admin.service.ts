@@ -1,6 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { Prisma } from "@palnet/db";
 import {
+  type AdminPostDetail,
   type AppealAck,
   type AuditActor,
   type AuditLogExportQuery,
@@ -10,6 +11,7 @@ import {
   AuditAction,
   type CursorPageMeta,
   ErrorCode,
+  NotificationType,
   type ReviewAppealBody,
   type RestorePostBody,
   type SuspendUserBody,
@@ -18,6 +20,7 @@ import {
 } from "@palnet/shared";
 
 import { DomainException } from "../../common/domain-exception";
+import { NotificationsService } from "../notifications/notifications.service";
 import { PrismaService } from "../prisma/prisma.service";
 
 // Admin depth — operator actions on users, posts, and report appeals plus
@@ -33,7 +36,10 @@ import { PrismaService } from "../prisma/prisma.service";
 //   the originating action (unsuspend user / restore post).
 @Injectable()
 export class AdminService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notifications: NotificationsService,
+  ) {}
 
   // ── Users ────────────────────────────────────────────────────────────
 
@@ -81,6 +87,15 @@ export class AdminService {
         data: { revokedAt: new Date() },
       }),
     ]);
+
+    // Tell the user why they're locked out. `notify` already swallows its
+    // own errors, so a notifications failure can't unwind the suspension.
+    await this.notifications.notify({
+      type: NotificationType.MODERATION_USER_SUSPENDED,
+      recipientId: targetUserId,
+      actorId,
+      data: { reason: body.reason },
+    });
   }
 
   async unsuspendUser(
@@ -114,6 +129,13 @@ export class AdminService {
         },
       }),
     ]);
+
+    await this.notifications.notify({
+      type: NotificationType.MODERATION_USER_UNSUSPENDED,
+      recipientId: targetUserId,
+      actorId,
+      data: body.note ? { note: body.note } : null,
+    });
   }
 
   // ── Posts ────────────────────────────────────────────────────────────
@@ -121,7 +143,7 @@ export class AdminService {
   async takedownPost(actorId: string, postId: string, body: TakedownPostBody): Promise<void> {
     const post = await this.prisma.post.findFirst({
       where: { id: postId, deletedAt: null },
-      select: { id: true, takedownAt: true },
+      select: { id: true, takedownAt: true, authorId: true },
     });
     if (!post) throw notFound("Post");
     if (post.takedownAt) {
@@ -147,12 +169,20 @@ export class AdminService {
         },
       }),
     ]);
+
+    await this.notifications.notify({
+      type: NotificationType.MODERATION_POST_TAKEDOWN,
+      recipientId: post.authorId,
+      actorId,
+      postId,
+      data: { postId, reason: body.reason },
+    });
   }
 
   async restorePost(actorId: string, postId: string, body: RestorePostBody): Promise<void> {
     const post = await this.prisma.post.findFirst({
       where: { id: postId, deletedAt: null },
-      select: { id: true, takedownAt: true },
+      select: { id: true, takedownAt: true, authorId: true },
     });
     if (!post) throw notFound("Post");
     if (!post.takedownAt) return;
@@ -176,6 +206,14 @@ export class AdminService {
         },
       }),
     ]);
+
+    await this.notifications.notify({
+      type: NotificationType.MODERATION_POST_RESTORED,
+      recipientId: post.authorId,
+      actorId,
+      postId,
+      data: body.note ? { postId, note: body.note } : { postId },
+    });
   }
 
   // ── Report appeals ───────────────────────────────────────────────────
@@ -269,6 +307,8 @@ export class AdminService {
         appealStatus: true,
         targetUserId: true,
         targetPostId: true,
+        targetCommentId: true,
+        targetMessageId: true,
       },
     });
     if (!report) throw notFound("Report");
@@ -337,6 +377,123 @@ export class AdminService {
     }
 
     await this.prisma.$transaction(ops);
+
+    // Resolve the appellant: the reported user, or the author of the
+    // reported post/comment/message. Report stores only IDs for content
+    // targets so look up authors separately — same shape as fileAppeal().
+    const recipientId = await this.resolveAppealRecipient(report);
+    if (recipientId) {
+      await this.notifications.notify({
+        type: NotificationType.MODERATION_APPEAL_REVIEWED,
+        recipientId,
+        actorId,
+        data: {
+          reportId,
+          decision: body.decision,
+          ...(body.note ? { note: body.note } : {}),
+        },
+      });
+    }
+  }
+
+  private async resolveAppealRecipient(report: {
+    targetUserId: string | null;
+    targetPostId: string | null;
+    targetCommentId: string | null;
+    targetMessageId: string | null;
+  }): Promise<string | null> {
+    if (report.targetUserId) return report.targetUserId;
+    if (report.targetPostId) {
+      const p = await this.prisma.post.findUnique({
+        where: { id: report.targetPostId },
+        select: { authorId: true },
+      });
+      return p?.authorId ?? null;
+    }
+    if (report.targetCommentId) {
+      const c = await this.prisma.comment.findUnique({
+        where: { id: report.targetCommentId },
+        select: { authorId: true },
+      });
+      return c?.authorId ?? null;
+    }
+    if (report.targetMessageId) {
+      const m = await this.prisma.message.findUnique({
+        where: { id: report.targetMessageId },
+        select: { authorId: true },
+      });
+      return m?.authorId ?? null;
+    }
+    return null;
+  }
+
+  // ── Admin post detail ────────────────────────────────────────────────
+
+  // Read-only post fetch that ignores the `takedownAt: null` filter that
+  // regular feed/post reads enforce. Moderators need to see the body they
+  // took down; soft-deleted rows (`deletedAt != null`) are included too
+  // so a deletion-after-takedown workflow still yields an audit-able view.
+  async getPostDetail(postId: string): Promise<AdminPostDetail> {
+    const post = await this.prisma.post.findUnique({
+      where: { id: postId },
+      include: {
+        author: { select: userSummarySelect },
+        takedownBy: { select: userSummarySelect },
+        media: {
+          select: {
+            id: true,
+            url: true,
+            kind: true,
+            mimeType: true,
+            width: true,
+            height: true,
+          },
+        },
+        _count: {
+          select: {
+            reactions: true,
+            comments: true,
+            reposts: true,
+          },
+        },
+      },
+    });
+    if (!post) throw notFound("Post");
+
+    // Report count is not part of Post's relation graph (Report stores
+    // `targetPostId` as a loose FK), so fetch it separately.
+    const reports = await this.prisma.report.count({
+      where: { targetPostId: postId },
+    });
+
+    return {
+      id: post.id,
+      author: actorFromUser(post.author),
+      body: post.body,
+      language: post.language,
+      createdAt: post.createdAt.toISOString(),
+      updatedAt: post.updatedAt.toISOString(),
+      deletedAt: post.deletedAt?.toISOString() ?? null,
+      takedownAt: post.takedownAt?.toISOString() ?? null,
+      takedownReason: post.takedownReason,
+      takedownBy: post.takedownBy ? actorFromUser(post.takedownBy) : null,
+      media: post.media
+        .filter((m) => m.kind === "IMAGE" || m.kind === "VIDEO")
+        .map((m) => ({
+          id: m.id,
+          url: m.url,
+          kind: m.kind as "IMAGE" | "VIDEO",
+          mimeType: m.mimeType,
+          width: m.width,
+          height: m.height,
+        })),
+      counts: {
+        reactions: post._count.reactions,
+        comments: post._count.comments,
+        reposts: post._count.reposts,
+        reports,
+      },
+    };
   }
 
   // ── Audit log ────────────────────────────────────────────────────────
