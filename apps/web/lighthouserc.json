@@ -1,7 +1,7 @@
 {
   "ci": {
     "collect": {
-      "startServerCommand": "pnpm --filter @palnet/web start",
+      "startServerCommand": "corepack pnpm --filter @palnet/web start",
       "url": [
         "http://localhost:3000/ar-PS",
         "http://localhost:3000/en",

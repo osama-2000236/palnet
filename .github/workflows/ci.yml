@@ -195,6 +195,7 @@ jobs:
       - run: pnpm --filter @palnet/db db:generate
       - run: pnpm --filter @palnet/db db:deploy
       - run: pnpm --filter @palnet/db db:seed
+      - run: pnpm --filter @palnet/api... build
       - run: pnpm --filter @palnet/web... build
         env:
           NEXT_PUBLIC_API_URL: http://localhost:4000/api/v1

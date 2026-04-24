@@ -1,5 +1,7 @@
 import { defineConfig, devices } from "@playwright/test";
 
+const isCi = !!process.env.CI;
+
 export default defineConfig({
   testDir: "./e2e",
   fullyParallel: false,
@@ -19,13 +21,17 @@ export default defineConfig({
   ],
   webServer: [
     {
-      command: "corepack pnpm --filter @palnet/api dev",
+      command: isCi
+        ? "corepack pnpm --filter @palnet/api start"
+        : "corepack pnpm --filter @palnet/api dev",
       url: "http://localhost:4000/api/docs",
       reuseExistingServer: !process.env.CI,
       timeout: 120_000,
     },
     {
-      command: "corepack pnpm --filter @palnet/web dev",
+      command: isCi
+        ? "corepack pnpm --filter @palnet/web start"
+        : "corepack pnpm --filter @palnet/web dev",
       url: "http://localhost:3000/en/login",
       reuseExistingServer: !process.env.CI,
       timeout: 120_000,
