@@ -89,3 +89,27 @@ samp {
   direction: ltr;
   unicode-bidi: embed;
 }
+
+.legal-copy {
+  @apply text-ink leading-8;
+}
+
+.legal-copy h2 {
+  @apply mt-8 text-2xl font-bold;
+}
+
+.legal-copy h3 {
+  @apply mt-6 text-xl font-semibold;
+}
+
+.legal-copy p {
+  @apply mt-4;
+}
+
+.legal-copy ul {
+  @apply mt-4 list-disc ps-6;
+}
+
+.legal-copy li {
+  @apply mt-2;
+}

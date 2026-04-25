@@ -62,6 +62,16 @@ export class MailService {
     await this.send(to, subject, html);
   }
 
+  async sendAccountExportEmail(to: string, json: string): Promise<void> {
+    const subject = "Your Baydar account export";
+    const html = buildHtml(
+      "Your account export",
+      `<p>Here is the JSON export for your Baydar account.</p>
+       <pre style="white-space:pre-wrap;word-break:break-word;background:#F6F6F0;border:1px solid #E5E5E5;border-radius:6px;padding:12px;font-size:12px;line-height:1.5">${escape(json)}</pre>`,
+    );
+    await this.send(to, subject, html);
+  }
+
   private async send(to: string, subject: string, html: string): Promise<void> {
     if (!this.client) {
       this.log.warn(

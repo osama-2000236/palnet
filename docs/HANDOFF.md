@@ -630,11 +630,80 @@ Verification notes:
 
 #### Sprint 15 follow-ups
 
-- **Admin post surface** — still the top Sprint 14 leftover. `/admin/posts/:id` should render the taken-down body read-only so moderators can audit their own decisions without 404s.
-- **AuditLog retention** — unchanged; still needs a policy decision (1-year rolling + cold-storage export is the obvious default).
-- **Mobile appeals UI** — web has `/me/appeals`; mobile still relies on the banner alone. Mirror the page in `apps/mobile` once `ui-native` has a textarea primitive.
+- **Admin post surface** — ✅ shipped in Sprint 16 (`GET /admin/posts/:id` + `/admin/posts/[id]` web page).
+- **AuditLog retention** — ✅ shipped in Sprint 16 (`pruneAuditLogs(days = 365)` + `POST /admin/audit/prune`; operator wires platform cron daily).
+- **Mobile appeals UI** — ✅ shipped in Sprint 16 (`apps/mobile/app/(app)/me/appeals.tsx`).
 - **Email / push for moderation notifications** — currently in-app only (`TYPE_TO_EVENT: null`). If policy shifts to "moderated users always get emailed," lift the types into real `NotificationEvent` values and wire copy.
 - **Ownership resolution on `/reports/mine`** — scales by the viewer's post/comment/message count. Fine at MVP; revisit with a denormalized `targetAuthorId` column on `Report` if it becomes a hotspot.
+
+---
+
+### Sprint 16 — Sprint 15 follow-ups (admin post surface, mobile appeals, audit retention) ✅ IMPLEMENTED
+
+**Goal:** close the three concrete Sprint 15 follow-ups so moderation surfaces are complete on both platforms and the AuditLog table has a defined retention path.
+
+1. ✅ **API — `GET /admin/posts/:id`** — new `AdminService.getPostDetail(postId)` returns a read-only post view that bypasses the `takedownAt: null` filter regular reads enforce. Includes author, takedown metadata (timestamp + reason + actor), media (images + videos), and reaction/comment/repost/report counts. Soft-deleted posts (`deletedAt != null`) are included so a deletion-after-takedown workflow still yields an auditable view. Controller route `@Get("posts/:id")` is moderator+admin only via the existing `@Roles` decorator on the controller. New shared schema `AdminPostDetail` (with `AdminPostMedia`) exported from `@palnet/shared`.
+2. ✅ **Web — `/admin/posts/[id]` page** — `apps/web/src/app/[locale]/(app)/admin/posts/[id]/page.tsx` renders the moderator's read-only view: status banner (warning-tinted) when `takedownAt` or `deletedAt` is set, author header via `<Avatar user={…}>`, full body with `whitespace-pre-wrap`, media grid (img / video tags), counts grid, takedown details block with reason + actor + timestamp, and create/update timestamps. Test IDs: `admin-post-detail`, `admin-post-status-banner`, `admin-post-body`. Audit log rows that carry a `targetPostId` now link to this page (`<a href="/admin/posts/{id}">`) so moderators can drill from action history straight into the post body.
+3. ✅ **Mobile — `/(app)/me/appeals` screen** — `apps/mobile/app/(app)/me/appeals.tsx` mirrors the web `/me/appeals` page: fetches `/reports/mine`, lists each report with reason / target kind / moderator note / status badge / decision note, and renders an inline file-appeal `<TextInput>` for un-appealed resolved reports with the same 10-char minimum. Submission maps `APPEAL_ALREADY_FILED` to a friendly Arabic / English error and otherwise shows a generic message. Registered in the tab layout as `href: null` (pushable but not a tab). Test IDs: `appeals-screen`, `my-appeal-{id}`, `my-appeal-note-{id}`, `my-appeal-submit-{id}`.
+4. ✅ **Mobile — suspension banner CTA** — the banner in `apps/mobile/app/(app)/_layout.tsx` is now a `<Pressable>` that pushes `/(app)/me/appeals`, with a "File an appeal" subtext styled in `brand-700` underline. Test ID: `suspension-appeal-cta`.
+5. ✅ **API — AuditLog retention** — `AdminService.pruneAuditLogs(days = 365)` deletes rows older than the cutoff and returns `{ deleted, cutoff }`. Endpoint `POST /admin/audit/prune?days=N` is moderator+admin gated. Day count is floored + clamped to ≥ 1 so a misconfigured cron can never wipe the whole table. We deliberately don't ship our own scheduler — the operator wires this via Render cron / Vercel cron / OS crontab on a daily cadence (recommended `?days=365`).
+6. ✅ **Copy** — `apps/web/messages/{en,ar,ar-PS}.json` add `admin.posts.*` (title, status, counts, takedown details, timestamps, forbidden/notFound/loading/error). `apps/mobile/src/i18n/{en,ar}.json` add `appeals.*` (title, description, empty, status, targetKind, reasons, form labels, error messages) and `suspension.appealCta`.
+7. ✅ **Tests** — `admin.service.spec.ts` extended with three `pruneAuditLogs` cases: deletes rows + returns count, defaults to 365 days, floors / clamps zero & negative day counts. Spec total: 25/25 passing under `jest --runInBand`.
+
+Verification notes:
+
+- `corepack pnpm --filter @palnet/api exec jest --runInBand admin.service.spec suspension.guard.spec` — 25/25 passing.
+- `corepack pnpm -r run --if-present type-check` — clean across all 8 typed workspaces.
+- New endpoints / pages added but no new dependencies. The mobile screen reuses `Button`, `Surface`, `nativeTokens` from `@palnet/ui-native` and uses RN's built-in `<TextInput>` (no new textarea primitive needed).
+
+#### Sprint 16 follow-ups
+
+- **Audit-of-prune** — `pruneAuditLogs` doesn't write its own AuditLog row; the operator's cron logs the count externally. If forensic visibility for the prune itself is wanted, add an `AUDIT_PRUNE` action and a system-actor row.
+- ✅ **Admin post — restore-from-detail** — shipped in Sprint 17.
+- **Email / push for moderation notifications** — still in-app only (`TYPE_TO_EVENT: null`). Moved from Sprint 15 follow-ups; reconsider once policy is settled.
+- **Ownership resolution on `/reports/mine`** — still scales by the viewer's post/comment/message count. Same disposition as before.
+
+---
+
+### Sprint 17 — Admin user surface + restore-from-detail (Sprint 16 follow-ups + new ground) ✅ IMPLEMENTED
+
+**Goal:** finish the moderator console's read surfaces by mirroring the post-detail page for users, wire mutating CTAs (restore + suspend/unsuspend) on detail pages so action no longer requires bouncing back to the moderation list, and cross-link the audit log so `targetUserId` rows drill straight into the new user page.
+
+1. ✅ **Web — restore-from-detail CTA on `/admin/posts/[id]`** — the page now renders an action `<Surface variant="tinted">` with a shared reason / note `<textarea>` and a single primary button: **Take down** when the post is active (uses the textarea as the required reason) or **Restore** when the post has `takedownAt` (textarea optional note). On 403 the page flips to forbidden; other errors show an inline `actionError`. Re-fetches detail on success so the status banner flips immediately. Test IDs: `admin-post-action-reason`, `admin-post-takedown`, `admin-post-restore`, `admin-post-action-error`.
+2. ✅ **Shared — `AdminUserDetail` schema** — added to `packages/shared/src/schemas/admin-depth.ts`. Fields: id, email, role, locale, isActive, createdAt, updatedAt, lastSeenAt, deletedAt, suspendedAt, suspendedReason, suspendedBy (`AuditActor | null`), profile (handle / firstName / lastName / headline / about / location / country / avatarUrl, or `null` if no profile), counts (posts / comments / reportsAgainst / reportsFiled / takedowns).
+3. ✅ **API — `GET /admin/users/:id`** — `AdminService.getUserDetail(userId)` returns the user with profile + suspension metadata + counts in one round trip. `reportsAgainst` aggregates two queries: `Report.targetUserId = userId` plus reports targeting any post authored by the user (loose `targetPostId` FK, no Prisma relation). `takedowns` is `Post.count({ authorId: userId, takedownAt: { not: null } })`. Soft-deleted users still resolve so a closed account remains auditable. Controller route `@Get("users/:id")` is moderator+admin via the existing controller-level `@Roles` decorator.
+4. ✅ **Web — `/admin/users/[id]` page** — `apps/web/src/app/[locale]/(app)/admin/users/[id]/page.tsx` mirrors the post detail layout: status banner (suspended / deleted), identity (Avatar + display name + handle + email), profile fields (headline / location / about), account meta grid (role / locale / active / lastSeen), counts grid (posts / comments / reportsAgainst / reportsFiled / takedowns), suspension details block, timestamps, and the same shared-textarea action surface — **Suspend** when active or **Unsuspend** when locked. Test IDs: `admin-user-detail`, `admin-user-status-banner`, `admin-user-headline`, `admin-user-about`, `admin-user-action-reason`, `admin-user-suspend`, `admin-user-unsuspend`, `admin-user-action-error`.
+5. ✅ **Web — audit log cross-link** — audit table rows that carry a `targetUserId` now render an `<a href="/admin/users/{id}">` underline link (matches the `targetPostId` treatment from Sprint 16) so moderators can drill from any audit entry straight into the actor / target user page.
+6. ✅ **Copy** — `apps/web/messages/{en,ar,ar-PS}.json` add `admin.posts.actions.*` (reasonLabel, takedown, restore, reasonRequired, error) and the full `admin.users.*` block (title, description, loading, error, notFoundTitle/Body, forbiddenTitle/Body, status.suspended/deleted, meta.role/locale/active/activeYes/activeNo/lastSeen, counts.posts/comments/reportsAgainst/reportsFiled/takedowns, suspensionDetails.title/at/by/reason, timestamps.createdAt/updatedAt, actions.reasonLabel/suspend/unsuspend/reasonRequired/error). All three locales JSON-validated.
+7. ✅ **Tests** — `admin.service.spec.ts` extended with three `getUserDetail` cases: 404 on missing user, full happy path with profile + suspension + aggregate counts (verifies `reportsAgainst` sums both query results), and a no-profile / no-posts user (verifies `report.count` is only called once when there are no authored posts to scope by). Stubs added: `prisma.post.findMany`, `prisma.post.count`, `prisma.report.count`. Spec total: 21/21 passing.
+
+Verification notes:
+
+- `corepack pnpm --filter @palnet/api exec jest --runInBand admin.service.spec` — 21/21 passing (3 new `getUserDetail` cases).
+- `corepack pnpm -r run --if-present type-check` — clean across all 8 typed workspaces.
+- No new dependencies. The user-detail page reuses `Avatar`, `Surface` from `@palnet/ui-web` and the same plain-button pattern as the post-detail action surface.
+
+#### Sprint 17 follow-ups
+
+- **Audit-of-prune** — still deferred (would need `AUDIT_PRUNE` enum migration for marginal value).
+- **Email / push for moderation notifications** — still in-app only.
+- **Ownership resolution on `/reports/mine`** — still O(viewer's content). Same disposition.
+- **Admin user — recent activity feed** — the user-detail page shows aggregate counts but doesn't list the user's recent posts or recent reports. Could be a future enhancement once moderators ask for it.
+- **Audit-log cursor on user page** — the audit log already supports filtering by `targetUserId` via the existing list endpoint; a cross-link from the user-detail page back to "audit history for this user" would close the loop.
+
+### Sprints 18–22 — final-push deploy plan ✅ IMPLEMENTED (Codex hand-off)
+
+Codex 5.5 x-high executed the bulk of the 5-sprint plan at `~/.claude/plans/flickering-weaving-porcupine.md`. Closing tasks completed in this session:
+
+- **S20 unit specs** — added `account.service.spec.ts` (17 cases), `comments.service.spec.ts` (11), `feed.service.spec.ts` (7), `reactions.service.spec.ts` (5), `reposts.service.spec.ts` (5). All green under `pnpm --filter @palnet/api exec jest`.
+- **S18 admin spec drift** — re-stubbed `prisma.$queryRaw` and `prisma.report.findMany` after Codex's pruneAuditLogs / takedownPost rewrites; admin spec back to 22/22.
+- **S18 cron-or-admin guard spec** — switched assertions to read the structured payload off `HttpException.getResponse()` so the message survives Nest's class-name `toString`.
+- **S19 user-delete cascade audit** — every `User`-referencing `@relation` column already carries an explicit `onDelete` (Cascade for owned content, SetNull for actor/audit references). Loose FKs (`Report.targetUserId/targetPostId`) remain intentional per CLAUDE.md note 11; soft-delete in `AccountService.deleteAccount` keeps the user row, so loose FKs never orphan in the live path. **No migration emitted.**
+- **`AccountService.exportAccountData`** — leak-fixed: cleartimeout the loser `setTimeout` once `Promise.race` settles so the 30s deadline timer doesn't pin the event loop in tests / shutdown.
+
+Outstanding (user action required):
+
+- **S18 #7 — EAS project ID.** Still `REPLACE_WITH_EAS_PROJECT_ID` at `apps/mobile/app.json:35`. Needs `eas init --id` against the Baydar Expo account; the placeholder-check script is already wired into `apps/mobile/package.json prebuild`.
 
 ---
 

@@ -77,7 +77,7 @@ jobs:
       - run: pnpm format:check
 
   type-check:
-    needs: install
+    needs: i18n-parity
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -98,6 +98,28 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @palnet/db db:generate
       - run: pnpm type-check
+
+  i18n-parity:
+    needs: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - uses: actions/cache/restore@v4
+        with:
+          path: |
+            node_modules
+            **/node_modules
+            .turbo
+          key: ws-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm i18n:parity
 
   test:
     needs: install

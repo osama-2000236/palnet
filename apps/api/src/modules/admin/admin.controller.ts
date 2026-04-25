@@ -8,10 +8,12 @@ import {
   Param,
   Post,
   Query,
+  UseGuards,
 } from "@nestjs/common";
 import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 import {
   type AdminPostDetail,
+  type AdminUserDetail,
   AuditLogExportQuery,
   type AuditLogPage,
   AuditLogListQuery,
@@ -23,8 +25,10 @@ import {
   UserRole,
 } from "@palnet/shared";
 
+import { CronOrAdminGuard } from "../../common/cron-or-admin.guard";
 import { ZodValidationPipe } from "../../common/zod-pipe";
 import { CurrentUser, type AuthUser } from "../auth/decorators/current-user.decorator";
+import { OptionalAuth } from "../auth/decorators/optional-auth.decorator";
 import { Roles } from "../auth/decorators/roles.decorator";
 
 import { AdminService } from "./admin.service";
@@ -46,6 +50,11 @@ export class AdminController {
     @Body(new ZodValidationPipe(SuspendUserBody)) body: SuspendUserBody,
   ): Promise<void> {
     await this.admin.suspendUser(actor.id, userId, body);
+  }
+
+  @Get("users/:id")
+  async getUserDetail(@Param("id") userId: string): Promise<AdminUserDetail> {
+    return this.admin.getUserDetail(userId);
   }
 
   @Post("users/:id/unsuspend")
@@ -105,6 +114,21 @@ export class AdminController {
     query: AuditLogListQuery,
   ): Promise<AuditLogPage> {
     return this.admin.listAudit(query);
+  }
+
+  @Post("audit/prune")
+  @HttpCode(HttpStatus.OK)
+  @OptionalAuth()
+  @Roles()
+  @UseGuards(CronOrAdminGuard)
+  async pruneAudit(
+    @Query("days") days?: string,
+  ): Promise<{ deleted: number; cutoff: string }> {
+    // `days` is optional — defaults to 1 year inside the service. The
+    // endpoint is gated by either an admin JWT or the Render cron secret.
+    // Run it on a daily or weekly cadence.
+    const parsed = days ? Number.parseInt(days, 10) : undefined;
+    return this.admin.pruneAuditLogs(Number.isFinite(parsed) ? parsed : undefined);
   }
 
   @Get("audit/export.csv")

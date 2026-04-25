@@ -44,6 +44,12 @@
       "VALIDATION_FAILED": "تحقق من الحقول ثم حاول مرة أخرى.",
       "RATE_LIMITED": "تم تجاوز الحد. حاول لاحقًا.",
       "INTERNAL": "حدث خطأ غير متوقع."
+    },
+    "registerTerms": {
+      "accept": "أوافق على",
+      "linkTerms": "الشروط",
+      "linkPrivacy": "الخصوصية",
+      "linkCommunity": "إرشادات المجتمع"
     }
   },
   "onboarding": {
@@ -60,7 +66,24 @@
     "empty": "ابدأ بنشر أول منشور لك.",
     "welcome": "أهلًا {name} — حسابك جاهز.",
     "loadMore": "تحميل المزيد",
-    "loadingMore": "جارٍ التحميل…"
+    "loadingMore": "جارٍ التحميل…",
+    "emptyTitle": "خلاصتك هادية…",
+    "emptyDesc": "ابدأ منشورًا، أو تواصل مع زملاء جدد لتظهر منشوراتهم هنا.",
+    "rail": {
+      "followers": "المتابعون للملف",
+      "connections": "الاتصالات",
+      "quickAccess": "وصول سريع",
+      "saved": "المحفوظات",
+      "groups": "مجموعاتي",
+      "events": "الفعاليات",
+      "pymk": "أشخاص قد تعرفهم",
+      "pymkAll": "عرض الكل",
+      "pymkReason": "قد تعرفه",
+      "jobs": "وظائف مقترحة",
+      "jobsComingSoon": "قريبًا — سنقترح وظائف تناسب خبرتك.",
+      "connect": "تواصل",
+      "footer": "بيدر · 2026"
+    }
   },
   "composer": {
     "title": "ماذا يدور في بالك؟",
@@ -68,7 +91,11 @@
     "submit": "انشر",
     "addImage": "إضافة صورة",
     "uploading": "جارٍ الرفع…",
-    "uploadFailed": "تعذّر رفع الصورة."
+    "uploadFailed": "تعذّر رفع الصورة.",
+    "audienceHint": "ينشر للعموم",
+    "addVideo": "فيديو",
+    "addEvent": "مناسبة",
+    "removeMedia": "إزالة"
   },
   "post": {
     "like": "أعجبني",
@@ -78,7 +105,15 @@
     "commentPlaceholder": "أضف تعليقًا…",
     "commentSubmit": "رد",
     "commentError": "تعذّر نشر التعليق.",
-    "loadMoreComments": "عرض المزيد من التعليقات"
+    "loadMoreComments": "عرض المزيد من التعليقات",
+    "comment": "تعليق",
+    "repost": "إعادة نشر",
+    "send": "إرسال",
+    "commentsCount": "{count} تعليق",
+    "repostsCount": "{count} إعادة نشر",
+    "publicAudience": "منشور عام",
+    "moreOptions": "خيارات",
+    "authorLabel": "عرض الملف الشخصي"
   },
   "search": {
     "title": "بحث",
@@ -141,7 +176,22 @@
     "selectPrompt": "اختر محادثة لبدء القراءة.",
     "loadOlder": "تحميل الرسائل الأقدم",
     "you": "أنت",
-    "online": "مباشر"
+    "online": "مباشر",
+    "searchPlaceholder": "ابحث في الرسائل",
+    "searchNoResults": "لا توجد محادثات مطابقة.",
+    "onlineNow": "متصل الآن",
+    "lastSeen": "آخر ظهور",
+    "typing": "{name} يكتب…",
+    "today": "اليوم",
+    "yesterday": "أمس",
+    "ownPrefix": "أنت، الساعة {time}:",
+    "otherPrefix": "{name}، الساعة {time}:",
+    "statusSending": "قيد الإرسال",
+    "statusSent": "تم الإرسال",
+    "statusDelivered": "تم التسليم",
+    "statusRead": "قُرئت",
+    "statusFailed": "فشل الإرسال",
+    "failedHint": "تعذّر الإرسال، انقر لإعادة المحاولة"
   },
   "notifications": {
     "title": "الإشعارات",
@@ -485,6 +535,89 @@
         "REPORT_RESOLVE": "حل بلاغ",
         "REPORT_APPEAL_REVIEW": "مراجعة طعن"
       }
+    },
+    "posts": {
+      "title": "تفاصيل المنشور",
+      "description": "عرض للقراءة فقط للمشرفين. يشمل المنشورات المخفية عن المستخدمين بسبب الإزالة أو الحذف.",
+      "loading": "جارٍ التحميل…",
+      "error": "تعذّر تحميل المنشور. حاول مجددًا.",
+      "notFoundTitle": "المنشور غير موجود",
+      "notFoundBody": "لا يوجد منشور بهذا المعرّف.",
+      "forbiddenTitle": "الوصول مرفوض",
+      "forbiddenBody": "تفاصيل المنشور متاحة للمشرفين والمدراء فقط.",
+      "status": {
+        "takendown": "تمت إزالة هذا المنشور.",
+        "deleted": "حذف الكاتب هذا المنشور."
+      },
+      "counts": {
+        "reactions": "التفاعلات",
+        "comments": "التعليقات",
+        "reposts": "إعادات النشر",
+        "reports": "البلاغات"
+      },
+      "takedownDetails": {
+        "title": "الإزالة",
+        "at": "وقت الإزالة",
+        "by": "نفّذها",
+        "reason": "السبب"
+      },
+      "timestamps": {
+        "createdAt": "أُنشئ",
+        "updatedAt": "حُدّث"
+      },
+      "actions": {
+        "reasonLabel": "السبب / ملاحظة",
+        "takedown": "إزالة المنشور",
+        "restore": "استعادة",
+        "reasonRequired": "السبب مطلوب لإزالة المنشور.",
+        "error": "فشل تنفيذ الإجراء. حاول مجددًا."
+      }
+    },
+    "users": {
+      "title": "تفاصيل المستخدم",
+      "description": "عرض للقراءة فقط مع أدوات الإيقاف.",
+      "loading": "جارٍ التحميل…",
+      "error": "تعذّر تحميل المستخدم. حاول مجددًا.",
+      "notFoundTitle": "المستخدم غير موجود",
+      "notFoundBody": "لا يوجد مستخدم بهذا المعرّف.",
+      "forbiddenTitle": "وصول مرفوض",
+      "forbiddenBody": "تفاصيل المستخدم متاحة للمشرفين والمسؤولين فقط.",
+      "status": {
+        "suspended": "هذا الحساب موقوف.",
+        "deleted": "تم حذف هذا الحساب."
+      },
+      "meta": {
+        "role": "الدور",
+        "locale": "اللغة",
+        "active": "نشط",
+        "activeYes": "نعم",
+        "activeNo": "لا",
+        "lastSeen": "آخر ظهور"
+      },
+      "counts": {
+        "posts": "المنشورات",
+        "comments": "التعليقات",
+        "reportsAgainst": "بلاغات ضدّه",
+        "reportsFiled": "بلاغات قدّمها",
+        "takedowns": "إزالات"
+      },
+      "suspensionDetails": {
+        "title": "الإيقاف",
+        "at": "وقت الإيقاف",
+        "by": "نفّذه",
+        "reason": "السبب"
+      },
+      "timestamps": {
+        "createdAt": "أُنشئ",
+        "updatedAt": "حُدّث"
+      },
+      "actions": {
+        "reasonLabel": "السبب / ملاحظة",
+        "suspend": "إيقاف",
+        "unsuspend": "رفع الإيقاف",
+        "reasonRequired": "السبب مطلوب لإيقاف المستخدم.",
+        "error": "فشل تنفيذ الإجراء. حاول مجددًا."
+      }
     }
   },
   "suspension": {
@@ -578,7 +711,24 @@
         "ADULT_CONTENT": "محتوى جنسي أو غير لائق",
         "IMPERSONATION": "انتحال شخصية",
         "OTHER": "سبب آخر"
-      }
+      },
+      "guidelinesLink": "راجع إرشادات المجتمع"
+    }
+  },
+  "legal": {
+    "brand": "بيدر",
+    "eyebrow": "القانونية",
+    "lastUpdated": "آخر تحديث: 25 نيسان 2026",
+    "footerLabel": "روابط قانونية",
+    "copyright": "© 2026 بيدر",
+    "terms": {
+      "title": "الشروط"
+    },
+    "privacy": {
+      "title": "الخصوصية"
+    },
+    "community": {
+      "title": "إرشادات المجتمع"
     }
   }
 }

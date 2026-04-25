@@ -236,7 +236,7 @@ function AppealBadge({ status }: { status: MyReportItem["appealStatus"] }): JSX.
   }
   const tone =
     status === "PENDING"
-      ? "bg-amber-100 text-amber-900"
+      ? "bg-warning/15 text-warning"
       : status === "UPHELD"
         ? "bg-success/10 text-success"
         : "bg-danger/10 text-danger";

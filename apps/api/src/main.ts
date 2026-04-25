@@ -1,6 +1,7 @@
 import { NestFactory } from "@nestjs/core";
 import type { NestExpressApplication } from "@nestjs/platform-express";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
+import * as Sentry from "@sentry/node";
 import helmet from "helmet";
 import { Logger } from "nestjs-pino";
 
@@ -9,6 +10,14 @@ import { loadEnv } from "./config/env";
 
 async function bootstrap(): Promise<void> {
   const env = loadEnv();
+  if (env.SENTRY_DSN) {
+    Sentry.init({
+      dsn: env.SENTRY_DSN,
+      environment: env.NODE_ENV,
+      release: process.env.npm_package_version ?? undefined,
+      tracesSampleRate: 0,
+    });
+  }
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     bufferLogs: true,
   });

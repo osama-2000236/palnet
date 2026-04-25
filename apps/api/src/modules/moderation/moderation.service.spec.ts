@@ -1,6 +1,6 @@
 import { ReportReason } from "@palnet/shared";
 
-import { PrismaService } from "../prisma/prisma.service";
+import type { PrismaService } from "../prisma/prisma.service";
 
 import { ModerationService } from "./moderation.service";
 

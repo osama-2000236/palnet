@@ -1,4 +1,5 @@
 import { Injectable } from "@nestjs/common";
+import { Prisma } from "@palnet/db";
 import type { CursorPageMeta, PeopleSearchQuery, SearchPersonHit } from "@palnet/shared";
 
 import { ModerationService } from "../moderation/moderation.service";
@@ -13,6 +14,7 @@ interface ProfileSearchRow {
   headline: string | null;
   location: string | null;
   avatarUrl: string | null;
+  rank: number;
 }
 
 @Injectable()
@@ -34,39 +36,45 @@ export class SearchService {
     // exists in the authed context anyway.
     const blocked = viewerId ? await this.moderation.blockedIds(viewerId) : [];
 
-    // Substring match across handle/firstName/lastName/headline. Postgres
-    // `mode: "insensitive"` keeps us case-insensitive without needing
-    // trigram/fts indexes yet; we'll layer GIN FTS in a later sprint.
-    const where = {
-      AND: [
-        {
-          OR: [
-            { handle: { contains: q, mode: "insensitive" as const } },
-            { firstName: { contains: q, mode: "insensitive" as const } },
-            { lastName: { contains: q, mode: "insensitive" as const } },
-            { headline: { contains: q, mode: "insensitive" as const } },
-          ],
-        },
-        ...(blocked.length > 0 ? [{ userId: { notIn: blocked } }] : []),
-      ],
-    };
+    const blockedClause =
+      blocked.length > 0
+        ? Prisma.sql`AND p."userId" NOT IN (${Prisma.join(blocked)})`
+        : Prisma.empty;
+    const cursorClause = query.after
+      ? Prisma.sql`
+        WHERE (
+          "rank" < (SELECT "rank" FROM hits WHERE "id" = ${query.after})
+          OR (
+            "rank" = (SELECT "rank" FROM hits WHERE "id" = ${query.after})
+            AND "id" > ${query.after}
+          )
+        )
+      `
+      : Prisma.empty;
 
-    const rows = (await this.prisma.profile.findMany({
-      where,
-      orderBy: [{ handle: "asc" }, { id: "asc" }],
-      take: limit + 1,
-      ...(query.after ? { cursor: { id: query.after }, skip: 1 } : {}),
-      select: {
-        id: true,
-        userId: true,
-        handle: true,
-        firstName: true,
-        lastName: true,
-        headline: true,
-        location: true,
-        avatarUrl: true,
-      },
-    })) as unknown as ProfileSearchRow[];
+    const rows = await this.prisma.$queryRaw<ProfileSearchRow[]>`
+      WITH search AS (
+        SELECT plainto_tsquery('simple', ${q}) AS query
+      ), hits AS (
+        SELECT
+          p."id",
+          p."userId",
+          p."handle",
+          p."firstName",
+          p."lastName",
+          p."headline",
+          p."location",
+          p."avatarUrl",
+          ts_rank_cd(p."searchVector", search.query) AS "rank"
+        FROM "Profile" p, search
+        WHERE p."searchVector" @@ search.query
+        ${blockedClause}
+      )
+      SELECT * FROM hits
+      ${cursorClause}
+      ORDER BY "rank" DESC, "id" ASC
+      LIMIT ${limit + 1}
+    `;
 
     const hasMore = rows.length > limit;
     const trimmed = hasMore ? rows.slice(0, limit) : rows;

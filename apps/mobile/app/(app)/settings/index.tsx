@@ -68,6 +68,15 @@ export default function SettingsIndexScreen(): JSX.Element {
       }),
       onPress: () => router.push("/(app)/settings/blocks" as never),
     },
+    {
+      key: "legal",
+      icon: "settings",
+      title: t("settings.legal", { defaultValue: "Legal" }),
+      subtitle: t("settings.legalSubtitle", {
+        defaultValue: "Terms, privacy, and community guidelines",
+      }),
+      onPress: () => router.push("/(app)/settings/legal" as never),
+    },
   ];
 
   const emailHandle = email?.split("@")[0] ?? "me";

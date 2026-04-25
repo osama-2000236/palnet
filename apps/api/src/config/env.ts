@@ -37,6 +37,18 @@ const EnvSchema = z.object({
   PASSWORD_RESET_URL_BASE: z.string().url().default("http://localhost:3000/reset-password"),
   EMAIL_VERIFY_MOBILE_URL_BASE: z.string().url().default("baydar://auth/verify"),
   PASSWORD_RESET_MOBILE_URL_BASE: z.string().url().default("baydar://auth/reset"),
+  SENTRY_DSN: z.preprocess(
+    (value) => (value === "" ? undefined : value),
+    z.string().url().optional(),
+  ),
+  CRON_SECRET: z.preprocess(
+    (value) => (value === "" ? undefined : value),
+    z.string().min(32).optional(),
+  ),
+  EXPO_ACCESS_TOKEN: z.preprocess(
+    (value) => (value === "" ? undefined : value),
+    z.string().min(1).optional(),
+  ),
   // Deprecated fallback. Keep until old envs are rotated.
   MOBILE_APP_SCHEME: z
     .string()
@@ -44,6 +56,27 @@ const EnvSchema = z.object({
     .optional(),
   // Optional persistent throttling. Local/dev stays in-memory when absent.
   REDIS_URL: OptionalUrl,
+}).superRefine((env, ctx) => {
+  if (env.NODE_ENV !== "production") return;
+
+  const required: Array<keyof typeof env> = [
+    "RESEND_API_KEY",
+    "R2_ACCOUNT_ID",
+    "R2_BUCKET",
+    "R2_PUBLIC_URL",
+    "CRON_SECRET",
+    "SENTRY_DSN",
+  ];
+
+  for (const key of required) {
+    if (!env[key]) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: [key],
+        message: `${key} is required in production.`,
+      });
+    }
+  }
 });
 
 export type Env = z.infer<typeof EnvSchema>;

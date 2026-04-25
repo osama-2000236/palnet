@@ -2,6 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { Prisma } from "@palnet/db";
 import {
   type AdminPostDetail,
+  type AdminUserDetail,
   type AppealAck,
   type AuditActor,
   type AuditLogExportQuery,
@@ -177,6 +178,20 @@ export class AdminService {
       postId,
       data: { postId, reason: body.reason },
     });
+
+    const reporters = await this.prisma.report.findMany({
+      where: { targetPostId: postId },
+      select: { reporterId: true },
+    });
+    for (const reporter of new Set(reporters.map((row) => row.reporterId))) {
+      await this.notifications.notify({
+        type: NotificationType.MODERATION_POST_TAKEDOWN,
+        recipientId: reporter,
+        actorId,
+        postId,
+        data: { postId, reason: body.reason },
+      });
+    }
   }
 
   async restorePost(actorId: string, postId: string, body: RestorePostBody): Promise<void> {
@@ -496,6 +511,92 @@ export class AdminService {
     };
   }
 
+  // ── Admin user detail ────────────────────────────────────────────────
+
+  // Read surface for the moderator console. Includes suspension metadata,
+  // profile fields, and a few counts (posts authored, comments authored,
+  // reports filed by + against, takedowns recorded). Soft-deleted users
+  // are still returned — moderators may need to inspect a closed account.
+  async getUserDetail(userId: string): Promise<AdminUserDetail> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: {
+        profile: {
+          select: {
+            handle: true,
+            firstName: true,
+            lastName: true,
+            headline: true,
+            about: true,
+            location: true,
+            country: true,
+            avatarUrl: true,
+          },
+        },
+        suspendedBy: { select: userSummarySelect },
+        _count: {
+          select: {
+            posts: true,
+            comments: true,
+            reportsFiled: true,
+          },
+        },
+      },
+    });
+    if (!user) throw notFound("User");
+
+    // Reports against this user are loose — they can target the user row
+    // directly (`targetUserId`) or a post they authored. `targetPostId` is
+    // a loose FK on Report (no Prisma relation), so a per-post lookup is
+    // the cleanest way to scope by author. Takedowns is the count of this
+    // user's posts that have a `takedownAt` set.
+    const [reportsAgainstUser, postIds, takedowns] = await Promise.all([
+      this.prisma.report.count({ where: { targetUserId: userId } }),
+      this.prisma.post.findMany({ where: { authorId: userId }, select: { id: true } }),
+      this.prisma.post.count({ where: { authorId: userId, takedownAt: { not: null } } }),
+    ]);
+    const reportsAgainstPosts =
+      postIds.length > 0
+        ? await this.prisma.report.count({
+            where: { targetPostId: { in: postIds.map((p) => p.id) } },
+          })
+        : 0;
+
+    return {
+      id: user.id,
+      email: user.email,
+      role: user.role,
+      locale: user.locale,
+      isActive: user.isActive,
+      createdAt: user.createdAt.toISOString(),
+      updatedAt: user.updatedAt.toISOString(),
+      lastSeenAt: user.lastSeenAt?.toISOString() ?? null,
+      deletedAt: user.deletedAt?.toISOString() ?? null,
+      suspendedAt: user.suspendedAt?.toISOString() ?? null,
+      suspendedReason: user.suspendedReason,
+      suspendedBy: user.suspendedBy ? actorFromUser(user.suspendedBy) : null,
+      profile: user.profile
+        ? {
+            handle: user.profile.handle,
+            firstName: user.profile.firstName,
+            lastName: user.profile.lastName,
+            headline: user.profile.headline,
+            about: user.profile.about,
+            location: user.profile.location,
+            country: user.profile.country,
+            avatarUrl: user.profile.avatarUrl,
+          }
+        : null,
+      counts: {
+        posts: user._count.posts,
+        comments: user._count.comments,
+        reportsAgainst: reportsAgainstUser + reportsAgainstPosts,
+        reportsFiled: user._count.reportsFiled,
+        takedowns,
+      },
+    };
+  }
+
   // ── Audit log ────────────────────────────────────────────────────────
 
   async listAudit(query: AuditLogListQuery): Promise<AuditLogPage> {
@@ -528,6 +629,31 @@ export class AdminService {
       include: auditIncludes,
     });
     return auditToCsv(rows.map(toAuditItem));
+  }
+
+  // Audit-log retention. The table is append-only and unbounded — without
+  // pruning it grows to gigabytes inside a year of moderation activity.
+  // Policy: 1 year by default (override via the `days` argument). The
+  // operator triggers this via `POST /admin/audit/prune` on a schedule
+  // (Render cron / Vercel cron / external cronjob — we don't ship our own
+  // scheduler so the runtime stays single-process). Returns the number of
+  // rows deleted so the cron job can log + alert on it.
+  async pruneAuditLogs(maxAgeDays = 365): Promise<{ deleted: number; cutoff: string }> {
+    const days = Math.max(1, Math.floor(maxAgeDays));
+    const cutoff = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+    const rows = await this.prisma.$queryRaw<Array<{ id: string }>>`
+      SELECT "id"
+      FROM "AuditLog"
+      WHERE "createdAt" < ${cutoff}
+      ORDER BY "createdAt" ASC, "id" ASC
+      LIMIT 10000
+    `;
+    if (rows.length === 0) return { deleted: 0, cutoff: cutoff.toISOString() };
+
+    const result = await this.prisma.auditLog.deleteMany({
+      where: { id: { in: rows.map((row) => row.id) } },
+    });
+    return { deleted: result.count, cutoff: cutoff.toISOString() };
   }
 }
 

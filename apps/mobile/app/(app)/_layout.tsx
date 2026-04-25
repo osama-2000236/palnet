@@ -10,7 +10,7 @@
 import { Tabs, router } from "expo-router";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Platform, StyleSheet, Text, View } from "react-native";
+import { Platform, Pressable, StyleSheet, Text, View } from "react-native";
 import { z } from "zod";
 
 import { Icon, type IconName, nativeTokens } from "@palnet/ui-native";
@@ -61,13 +61,23 @@ export default function AppTabsLayout(): JSX.Element {
   return (
     <View style={styles.root}>
       {suspendedAt ? (
-        <View style={styles.banner} testID="suspension-banner" accessibilityRole="alert">
-          <Text style={styles.bannerText}>
-            {suspendedReason
-              ? t("suspension.bannerWithReason", { reason: suspendedReason })
-              : t("suspension.banner")}
-          </Text>
-        </View>
+        <Pressable
+          onPress={() => router.push("/(app)/me/appeals" as never)}
+          accessibilityRole="link"
+          accessibilityLabel={t("suspension.appealCta")}
+          testID="suspension-banner"
+        >
+          <View style={styles.banner} accessibilityRole="alert">
+            <Text style={styles.bannerText}>
+              {suspendedReason
+                ? t("suspension.bannerWithReason", { reason: suspendedReason })
+                : t("suspension.banner")}
+            </Text>
+            <Text style={styles.bannerCta} testID="suspension-appeal-cta">
+              {t("suspension.appealCta")}
+            </Text>
+          </View>
+        </Pressable>
       ) : null}
       <View style={styles.tabsWrap}>
         <Tabs
@@ -151,6 +161,7 @@ export default function AppTabsLayout(): JSX.Element {
           <Tabs.Screen name="composer" options={{ href: null }} />
           <Tabs.Screen name="onboarding" options={{ href: null }} />
           <Tabs.Screen name="me/edit" options={{ href: null }} />
+          <Tabs.Screen name="me/appeals" options={{ href: null }} />
           <Tabs.Screen name="in/[handle]" options={{ href: null }} />
           <Tabs.Screen name="jobs/applications" options={{ href: null }} />
           <Tabs.Screen name="jobs/[id]" options={{ href: null }} />
@@ -180,6 +191,14 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "600",
     fontFamily: nativeTokens.type.family.sans,
+  },
+  bannerCta: {
+    marginTop: 4,
+    color: nativeTokens.color.brand700,
+    fontSize: 13,
+    fontWeight: "600",
+    fontFamily: nativeTokens.type.family.sans,
+    textDecorationLine: "underline",
   },
 });
 

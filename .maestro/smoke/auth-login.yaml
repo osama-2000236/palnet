@@ -1,0 +1,14 @@
+appId: ps.palnet.app
+---
+- launchApp:
+    clearState: true
+- tapOn:
+    id: "login-email"
+- inputText: "${APP_EMAIL}"
+- tapOn:
+    id: "login-password"
+- inputText: "${APP_PASSWORD}"
+- tapOn:
+    id: "login-submit"
+- assertVisible:
+    id: "screen-feed"

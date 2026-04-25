@@ -23,17 +23,15 @@ import {
   type ChatRoom,
   type Profile,
 } from "@palnet/shared";
-import { AppShell, type AppShellLabels, type AppShellRoute } from "@palnet/ui-web";
+import { AppShell, LegalFooter, type AppShellLabels, type AppShellRoute } from "@palnet/ui-web";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { z } from "zod";
 
-import { apiCall, apiFetch, apiFetchPage } from "@/lib/api";
+import { WS_BASE, apiCall, apiFetch, apiFetchPage } from "@/lib/api";
 import { clearSession, readSession } from "@/lib/session";
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000/api/v1";
 
 const UnreadCount = z.object({ count: z.number().int().nonnegative() });
 const RoomsEnvelope = z.object({ data: z.array(ChatRoomSchema) });
@@ -53,7 +51,7 @@ const AuthMeUser = z.object({
  */
 function routeOf(pathname: string, myHandle: string | null): AppShellRoute | null {
   // Strip the locale prefix if present (e.g. /ar-PS/feed -> /feed).
-  const path = pathname.replace(/^\/(?:ar-PS|en)(?=\/|$)/, "") || "/";
+  const path = pathname.replace(/^\/(?:ar-PS|ar|en)(?=\/|$)/, "") || "/";
   if (path === "/" || path.startsWith("/feed")) return "feed";
   if (path.startsWith("/network")) return "network";
   if (path.startsWith("/jobs")) return "jobs";
@@ -67,7 +65,7 @@ function routeOf(pathname: string, myHandle: string | null): AppShellRoute | nul
 
 function isBareAppRoute(pathname: string): boolean {
   // Some /(app)/* routes intentionally render without the shell.
-  const path = pathname.replace(/^\/(?:ar-PS|en)(?=\/|$)/, "") || "/";
+  const path = pathname.replace(/^\/(?:ar-PS|ar|en)(?=\/|$)/, "") || "/";
   return path.startsWith("/onboarding");
 }
 
@@ -88,6 +86,7 @@ export default function AppLayout({ children }: { children: ReactNode }): JSX.El
   const tNotif = useTranslations("notifications");
   const tProfile = useTranslations("profile");
   const tAuth = useTranslations("auth");
+  const tLegal = useTranslations("legal");
 
   const [token, setToken] = useState<string | null>(null);
   const [me, setMe] = useState<Profile | null>(null);
@@ -143,7 +142,7 @@ export default function AppLayout({ children }: { children: ReactNode }): JSX.El
     void apiFetch("/notifications/unread-count", UnreadCount, { token })
       .then((out) => setNotificationsUnread(out.count))
       .catch(() => {});
-    const url = `${API_BASE}/notifications/stream?access_token=${encodeURIComponent(token)}`;
+    const url = `${WS_BASE}/notifications/stream?access_token=${encodeURIComponent(token)}`;
     const es = new EventSource(url);
     const handleNotificationEvent = (evt: MessageEvent): void => {
       try {
@@ -193,7 +192,7 @@ export default function AppLayout({ children }: { children: ReactNode }): JSX.El
   useEffect(() => {
     if (!token) return;
     void refetchRooms(token);
-    const url = `${API_BASE}/messaging/stream?access_token=${encodeURIComponent(token)}`;
+    const url = `${WS_BASE}/messaging/stream?access_token=${encodeURIComponent(token)}`;
     const es = new EventSource(url);
     es.onmessage = (evt): void => {
       try {
@@ -314,6 +313,7 @@ export default function AppLayout({ children }: { children: ReactNode }): JSX.El
   }, [router]);
 
   const canModerate = role === "MODERATOR" || role === "ADMIN";
+  const locale = pathname?.match(/^\/(ar-PS|ar|en)(?=\/|$)/)?.[1] ?? "ar-PS";
 
   const labels: AppShellLabels = useMemo(
     () => ({
@@ -374,6 +374,15 @@ export default function AppLayout({ children }: { children: ReactNode }): JSX.El
       {suspendedAt ? <SuspensionBanner reason={suspendedReason} /> : null}
       {!emailVerified && token ? <VerifyEmailBanner token={token} /> : null}
       {children}
+      <LegalFooter
+        label={tLegal("footerLabel")}
+        links={[
+          { href: `/${locale}/terms`, label: tLegal("terms.title") },
+          { href: `/${locale}/privacy`, label: tLegal("privacy.title") },
+          { href: `/${locale}/community-guidelines`, label: tLegal("community.title") },
+        ]}
+        copyright={tLegal("copyright")}
+      />
     </AppShell>
   );
 }
@@ -423,7 +432,7 @@ function VerifyEmailBanner({ token }: { token: string }): JSX.Element | null {
     <div
       role="region"
       aria-label={t("bannerLabel")}
-      className="text-ink mx-auto mb-4 flex w-full max-w-[1128px] flex-wrap items-center justify-between gap-3 rounded-md border border-amber-500/40 bg-amber-50 px-4 py-3 text-sm"
+      className="text-ink mx-auto mb-4 flex w-full max-w-[1128px] flex-wrap items-center justify-between gap-3 rounded-md border border-warning/40 bg-warning/10 px-4 py-3 text-sm"
     >
       <p className="min-w-0">{sent ? t("sentBody") : t("body")}</p>
       {sent ? null : (

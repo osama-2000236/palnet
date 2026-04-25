@@ -15,20 +15,26 @@ type PrismaStub = {
   post: {
     findFirst: jest.Mock;
     findUnique: jest.Mock;
+    findMany: jest.Mock;
     update: jest.Mock;
+    count: jest.Mock;
   };
   comment: { findUnique: jest.Mock };
   message: { findUnique: jest.Mock };
   report: {
     findUnique: jest.Mock;
+    findMany: jest.Mock;
     update: jest.Mock;
+    count: jest.Mock;
   };
   auditLog: {
     create: jest.Mock;
     findMany: jest.Mock;
+    deleteMany: jest.Mock;
   };
   refreshToken: { updateMany: jest.Mock };
   $transaction: jest.Mock;
+  $queryRaw: jest.Mock;
 };
 
 function buildPrisma(): PrismaStub {
@@ -40,23 +46,33 @@ function buildPrisma(): PrismaStub {
     post: {
       findFirst: jest.fn(),
       findUnique: jest.fn(),
+      findMany: jest.fn().mockResolvedValue([]),
       update: jest.fn(),
+      count: jest.fn().mockResolvedValue(0),
     },
     comment: { findUnique: jest.fn() },
     message: { findUnique: jest.fn() },
     report: {
       findUnique: jest.fn(),
+      findMany: jest.fn().mockResolvedValue([]),
       update: jest.fn(),
+      count: jest.fn().mockResolvedValue(0),
     },
     auditLog: {
       create: jest.fn(),
       findMany: jest.fn(),
+      deleteMany: jest.fn().mockResolvedValue({ count: 0 }),
     },
     refreshToken: { updateMany: jest.fn() },
     // `$transaction(ops)` in the service is always called with an array of
     // prepared Prisma promises. The real client awaits them; in tests we
     // resolve to an empty array since the callers don't use the result.
     $transaction: jest.fn().mockResolvedValue([]),
+    // `$queryRaw` is the tagged-template form. The service uses it in
+    // pruneAuditLogs to batch row IDs for deletion. Default to an empty
+    // batch; individual tests override when they want to assert the
+    // delete-many path is exercised.
+    $queryRaw: jest.fn().mockResolvedValue([]),
   };
 }
 
@@ -345,5 +361,145 @@ describe("AdminService", () => {
     await expect(
       service.reviewAppeal("u_mod", "r_1", { decision: "UPHELD" }),
     ).rejects.toMatchObject({ code: ErrorCode.CONFLICT });
+  });
+
+  // ── pruneAuditLogs ─────────────────────────────────────────────────────
+
+  it("prune audit logs: deletes rows older than the cutoff and returns the count", async () => {
+    // Service first selects a batch of stale ids via $queryRaw, then issues
+    // deleteMany scoped to that id list. Mirror that contract here.
+    const ids = Array.from({ length: 17 }, (_, i) => ({ id: `audit_${i}` }));
+    prisma.$queryRaw.mockResolvedValue(ids);
+    prisma.auditLog.deleteMany.mockResolvedValue({ count: 17 });
+
+    const before = Date.now();
+    const result = await service.pruneAuditLogs(30);
+    const after = Date.now();
+
+    expect(result.deleted).toBe(17);
+    // The cutoff lives ~30 days in the past. Allow a few ms of clock drift.
+    const cutoff = new Date(result.cutoff).getTime();
+    expect(cutoff).toBeGreaterThanOrEqual(before - 30 * 24 * 60 * 60 * 1000 - 100);
+    expect(cutoff).toBeLessThanOrEqual(after - 30 * 24 * 60 * 60 * 1000 + 100);
+
+    expect(prisma.auditLog.deleteMany).toHaveBeenCalledWith({
+      where: { id: { in: ids.map((row) => row.id) } },
+    });
+  });
+
+  it("prune audit logs: short-circuits when the batch query returns no rows", async () => {
+    // Default $queryRaw mock returns []; the service must skip the
+    // deleteMany call entirely so an empty batch never issues SQL.
+    const result = await service.pruneAuditLogs(30);
+    expect(result.deleted).toBe(0);
+    expect(prisma.auditLog.deleteMany).not.toHaveBeenCalled();
+  });
+
+  it("prune audit logs: defaults to 365 days when no argument is supplied", async () => {
+    prisma.auditLog.deleteMany.mockResolvedValue({ count: 0 });
+
+    const result = await service.pruneAuditLogs();
+    const cutoff = new Date(result.cutoff).getTime();
+    const expected = Date.now() - 365 * 24 * 60 * 60 * 1000;
+    expect(Math.abs(cutoff - expected)).toBeLessThan(1000);
+  });
+
+  it("prune audit logs: floors fractional and clamps non-positive day counts", async () => {
+    prisma.auditLog.deleteMany.mockResolvedValue({ count: 0 });
+
+    // Negative / zero collapse to 1 day so a misconfigured cron never wipes
+    // the whole table.
+    const result = await service.pruneAuditLogs(0);
+    const cutoff = new Date(result.cutoff).getTime();
+    const expected = Date.now() - 1 * 24 * 60 * 60 * 1000;
+    expect(Math.abs(cutoff - expected)).toBeLessThan(1000);
+  });
+
+  // ── getUserDetail ──────────────────────────────────────────────────────
+
+  it("user detail: 404s when the user does not exist", async () => {
+    prisma.user.findUnique.mockResolvedValue(null);
+    await expect(service.getUserDetail("u_missing")).rejects.toMatchObject({
+      code: ErrorCode.NOT_FOUND,
+    });
+  });
+
+  it("user detail: returns profile, suspension metadata, and aggregate counts", async () => {
+    prisma.user.findUnique.mockResolvedValue({
+      id: "u_target",
+      email: "user@example.com",
+      role: "USER",
+      locale: "ar-PS",
+      isActive: true,
+      createdAt: new Date("2026-01-01T00:00:00.000Z"),
+      updatedAt: new Date("2026-04-01T00:00:00.000Z"),
+      lastSeenAt: new Date("2026-04-20T00:00:00.000Z"),
+      deletedAt: null,
+      suspendedAt: new Date("2026-03-01T00:00:00.000Z"),
+      suspendedReason: "spam",
+      suspendedBy: {
+        id: "u_mod",
+        profile: { handle: "mod", firstName: "Mona", lastName: "M", avatarUrl: null },
+      },
+      profile: {
+        handle: "target",
+        firstName: "Tara",
+        lastName: "T",
+        headline: "h",
+        about: null,
+        location: "Ramallah",
+        country: "PS",
+        avatarUrl: null,
+      },
+      _count: { posts: 4, comments: 7, reportsFiled: 2 },
+    });
+    prisma.report.count.mockResolvedValueOnce(3); // reports against user
+    prisma.post.findMany.mockResolvedValue([{ id: "p_1" }, { id: "p_2" }]);
+    prisma.report.count.mockResolvedValueOnce(5); // reports against their posts
+    prisma.post.count.mockResolvedValue(1); // takedowns on their posts
+
+    const detail = await service.getUserDetail("u_target");
+
+    expect(detail.id).toBe("u_target");
+    expect(detail.suspendedAt).toBe("2026-03-01T00:00:00.000Z");
+    expect(detail.suspendedBy?.userId).toBe("u_mod");
+    expect(detail.profile?.handle).toBe("target");
+    expect(detail.counts).toEqual({
+      posts: 4,
+      comments: 7,
+      reportsAgainst: 8, // 3 against user + 5 against their posts
+      reportsFiled: 2,
+      takedowns: 1,
+    });
+  });
+
+  it("user detail: handles a user with no profile and no posts", async () => {
+    prisma.user.findUnique.mockResolvedValue({
+      id: "u_bare",
+      email: "bare@example.com",
+      role: "USER",
+      locale: "en",
+      isActive: true,
+      createdAt: new Date("2026-01-01T00:00:00.000Z"),
+      updatedAt: new Date("2026-01-01T00:00:00.000Z"),
+      lastSeenAt: null,
+      deletedAt: null,
+      suspendedAt: null,
+      suspendedReason: null,
+      suspendedBy: null,
+      profile: null,
+      _count: { posts: 0, comments: 0, reportsFiled: 0 },
+    });
+    prisma.report.count.mockResolvedValue(0);
+    prisma.post.findMany.mockResolvedValue([]);
+    prisma.post.count.mockResolvedValue(0);
+
+    const detail = await service.getUserDetail("u_bare");
+
+    expect(detail.profile).toBeNull();
+    expect(detail.suspendedBy).toBeNull();
+    expect(detail.counts.reportsAgainst).toBe(0);
+    // post.findMany returned empty → no second report.count call needed
+    expect(prisma.report.count).toHaveBeenCalledTimes(1);
   });
 });

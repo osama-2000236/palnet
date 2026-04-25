@@ -149,6 +149,48 @@ export const AdminPostMedia = z.object({
 });
 export type AdminPostMedia = z.infer<typeof AdminPostMedia>;
 
+// ──────────────────────────────────────────────────────────────────────────
+// Admin user detail — read surface for moderators. Includes suspension
+// metadata, profile fields, and content/report counts so the console can
+// show "user X has 3 prior takedowns and 2 outstanding reports" without a
+// second round-trip. Linked from audit log `targetUserId`.
+// ──────────────────────────────────────────────────────────────────────────
+
+export const AdminUserDetail = z.object({
+  id: z.string().cuid(),
+  email: z.string().email(),
+  role: z.string(),
+  locale: z.string(),
+  isActive: z.boolean(),
+  createdAt: z.string().datetime(),
+  updatedAt: z.string().datetime(),
+  lastSeenAt: z.string().datetime().nullable(),
+  deletedAt: z.string().datetime().nullable(),
+  suspendedAt: z.string().datetime().nullable(),
+  suspendedReason: z.string().nullable(),
+  suspendedBy: AuditActor.nullable(),
+  profile: z
+    .object({
+      handle: z.string(),
+      firstName: z.string(),
+      lastName: z.string(),
+      headline: z.string().nullable(),
+      about: z.string().nullable(),
+      location: z.string().nullable(),
+      country: z.string(),
+      avatarUrl: z.string().url().nullable(),
+    })
+    .nullable(),
+  counts: z.object({
+    posts: z.number().int().nonnegative(),
+    comments: z.number().int().nonnegative(),
+    reportsAgainst: z.number().int().nonnegative(),
+    reportsFiled: z.number().int().nonnegative(),
+    takedowns: z.number().int().nonnegative(),
+  }),
+});
+export type AdminUserDetail = z.infer<typeof AdminUserDetail>;
+
 export const AdminPostDetail = z.object({
   id: z.string().cuid(),
   author: AuditActor,

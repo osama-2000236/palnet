@@ -5,6 +5,7 @@
 
 import { ReportReason, type ReportTargetKind } from "@palnet/shared";
 import { Button, Sheet, nativeTokens } from "@palnet/ui-native";
+import * as WebBrowser from "expo-web-browser";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, Text, TextInput, View } from "react-native";
@@ -26,6 +27,14 @@ const ReasonOrder: Reason[] = [
 ];
 
 const AckSchema = z.object({ id: z.string(), createdAt: z.string() });
+const WEB_BASE = (() => {
+  const url = process.env.EXPO_PUBLIC_WEB_URL;
+  if (!url) {
+    if (process.env.NODE_ENV === "production") throw new Error("EXPO_PUBLIC_WEB_URL missing");
+    return "http://localhost:3000";
+  }
+  return url.replace(/\/$/, "");
+})();
 
 export function ReportDialog({
   open,
@@ -38,7 +47,8 @@ export function ReportDialog({
   targetKind: ReportTargetKind;
   targetId: string;
 }): JSX.Element {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const locale = i18n.language.startsWith("en") ? "en" : "ar-PS";
   const [reason, setReason] = useState<Reason>(ReportReason.SPAM);
   const [details, setDetails] = useState("");
   const [busy, setBusy] = useState(false);
@@ -151,6 +161,24 @@ export function ReportDialog({
                 onPress={() => setReason(r)}
               />
             ))}
+            <Pressable
+              accessibilityRole="link"
+              onPress={() => {
+                void WebBrowser.openBrowserAsync(`${WEB_BASE}/${locale}/community-guidelines`);
+              }}
+              hitSlop={8}
+            >
+              <Text
+                style={{
+                  color: nativeTokens.color.brand700,
+                  fontFamily: nativeTokens.type.family.sans,
+                  fontWeight: "700",
+                  fontSize: nativeTokens.type.scale.small.size,
+                }}
+              >
+                {t("moderation.reportDialog.guidelinesLink")}
+              </Text>
+            </Pressable>
           </View>
         )}
 

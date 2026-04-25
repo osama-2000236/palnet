@@ -8,6 +8,8 @@
 
 import { ReportReason, type ReportTargetKind } from "@palnet/shared";
 import { Button, cx } from "@palnet/ui-web";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useEffect, useId, useRef, useState } from "react";
 
@@ -43,6 +45,8 @@ export function ReportDialog({
   targetId,
 }: ReportDialogProps): JSX.Element | null {
   const t = useTranslations("moderation.reportDialog");
+  const pathname = usePathname();
+  const locale = pathname?.match(/^\/(ar-PS|ar|en)(?=\/|$)/)?.[1] ?? "ar-PS";
   const [reason, setReason] = useState<Reason>(ReportReason.SPAM);
   const [details, setDetails] = useState("");
   const [busy, setBusy] = useState(false);
@@ -147,6 +151,12 @@ export function ReportDialog({
                 <span>{t(`reasons.${r}`)}</span>
               </label>
             ))}
+            <Link
+              href={`/${locale}/community-guidelines`}
+              className="text-brand-700 mt-1 text-sm font-semibold hover:underline"
+            >
+              {t("guidelinesLink")}
+            </Link>
           </fieldset>
         )}
 

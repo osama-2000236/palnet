@@ -45,6 +45,12 @@ export default function SettingsLayout(): JSX.Element {
           title: t("settings.blocks"),
         }}
       />
+      <Stack.Screen
+        name="legal"
+        options={{
+          title: t("settings.legal"),
+        }}
+      />
     </Stack>
   );
 }

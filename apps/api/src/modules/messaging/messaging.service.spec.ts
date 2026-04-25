@@ -1,8 +1,8 @@
 import { Test } from "@nestjs/testing";
 import { ErrorCode } from "@palnet/shared";
 
-import { NotificationsService } from "../notifications/notifications.service";
 import { ModerationService } from "../moderation/moderation.service";
+import { NotificationsService } from "../notifications/notifications.service";
 import { PrismaService } from "../prisma/prisma.service";
 
 import { MessagingBus } from "./messaging.bus";

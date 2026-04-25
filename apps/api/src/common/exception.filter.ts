@@ -7,6 +7,7 @@ import {
   Logger,
 } from "@nestjs/common";
 import { ErrorCode } from "@palnet/shared";
+import { captureException } from "@sentry/node";
 import type { Request, Response } from "express";
 
 type NestErrorBody = { error?: { code?: string; message?: string; details?: unknown } } & Record<
@@ -43,6 +44,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
       `Unhandled error on ${req.method} ${req.url}`,
       exception instanceof Error ? exception.stack : String(exception),
     );
+    captureException(exception);
 
     res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
       error: {

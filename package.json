@@ -12,6 +12,7 @@
     "build": "node scripts/run-turbo.mjs build",
     "dev": "node scripts/run-turbo.mjs dev --parallel",
     "lint": "node scripts/run-turbo.mjs lint",
+    "i18n:parity": "node scripts/i18n-parity.mjs",
     "lint:tokens": "node scripts/lint-tokens.mjs",
     "tokens:icons": "node scripts/build-brand-icons.mjs",
     "test": "node scripts/run-turbo.mjs test",

@@ -1,0 +1,24 @@
+{
+  "framework": "nextjs",
+  "installCommand": "pnpm install --frozen-lockfile && pnpm --filter @palnet/db run db:generate && pnpm --filter @palnet/shared run build",
+  "buildCommand": "pnpm --filter @palnet/web... run build",
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Strict-Transport-Security",
+          "value": "max-age=63072000; includeSubDomains; preload"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        }
+      ]
+    }
+  ]
+}

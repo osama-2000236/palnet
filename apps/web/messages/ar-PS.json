@@ -44,6 +44,12 @@
       "VALIDATION_FAILED": "تحقق من الحقول ثم حاول مرة أخرى.",
       "RATE_LIMITED": "تم تجاوز الحد. حاول لاحقًا.",
       "INTERNAL": "حدث خطأ غير متوقع."
+    },
+    "registerTerms": {
+      "accept": "أوافق على",
+      "linkTerms": "الشروط",
+      "linkPrivacy": "الخصوصية",
+      "linkCommunity": "إرشادات المجتمع"
     }
   },
   "onboarding": {
@@ -529,6 +535,89 @@
         "REPORT_RESOLVE": "حل بلاغ",
         "REPORT_APPEAL_REVIEW": "مراجعة طعن"
       }
+    },
+    "posts": {
+      "title": "تفاصيل المنشور",
+      "description": "عرض للقراءة فقط للمشرفين. بشمل منشورات مخفية عن المستخدمين بسبب الإزالة أو الحذف.",
+      "loading": "عم يحمّل…",
+      "error": "ما قدرنا نحمّل المنشور. جرّب كمان مرة.",
+      "notFoundTitle": "المنشور مش موجود",
+      "notFoundBody": "ما في منشور بهالمعرّف.",
+      "forbiddenTitle": "الدخول ممنوع",
+      "forbiddenBody": "تفاصيل المنشور للمشرفين والمدراء بس.",
+      "status": {
+        "takendown": "هاد المنشور تم إزالته.",
+        "deleted": "الكاتب حذف هاد المنشور."
+      },
+      "counts": {
+        "reactions": "التفاعلات",
+        "comments": "التعليقات",
+        "reposts": "إعادات النشر",
+        "reports": "البلاغات"
+      },
+      "takedownDetails": {
+        "title": "الإزالة",
+        "at": "وقت الإزالة",
+        "by": "اللي عمل الإزالة",
+        "reason": "السبب"
+      },
+      "timestamps": {
+        "createdAt": "أُنشئ",
+        "updatedAt": "تحدّث"
+      },
+      "actions": {
+        "reasonLabel": "السبب / ملاحظة",
+        "takedown": "شيل المنشور",
+        "restore": "رجّع المنشور",
+        "reasonRequired": "لازم تكتب سبب لإزالة المنشور.",
+        "error": "ما زبط الإجراء. جرّب كمان مرة."
+      }
+    },
+    "users": {
+      "title": "تفاصيل المستخدم",
+      "description": "عرض للقراءة بس مع أدوات الإيقاف.",
+      "loading": "جاري التحميل…",
+      "error": "ما قدرنا نحمّل المستخدم. جرّب كمان مرة.",
+      "notFoundTitle": "المستخدم مش موجود",
+      "notFoundBody": "ما في مستخدم بهالـ ID.",
+      "forbiddenTitle": "ما إلك صلاحية",
+      "forbiddenBody": "تفاصيل المستخدم بس للمشرفين والإداريين.",
+      "status": {
+        "suspended": "هالحساب موقوف.",
+        "deleted": "هالحساب تم حذفه."
+      },
+      "meta": {
+        "role": "الدور",
+        "locale": "اللغة",
+        "active": "فعّال",
+        "activeYes": "نعم",
+        "activeNo": "لا",
+        "lastSeen": "آخر ظهور"
+      },
+      "counts": {
+        "posts": "المنشورات",
+        "comments": "التعليقات",
+        "reportsAgainst": "بلاغات ضدّه",
+        "reportsFiled": "بلاغات قدّمها",
+        "takedowns": "إزالات"
+      },
+      "suspensionDetails": {
+        "title": "الإيقاف",
+        "at": "وقت الإيقاف",
+        "by": "اللي عمله",
+        "reason": "السبب"
+      },
+      "timestamps": {
+        "createdAt": "أُنشئ",
+        "updatedAt": "تحدّث"
+      },
+      "actions": {
+        "reasonLabel": "السبب / ملاحظة",
+        "suspend": "إيقاف",
+        "unsuspend": "ارفع الإيقاف",
+        "reasonRequired": "لازم تكتب سبب لإيقاف المستخدم.",
+        "error": "ما زبط الإجراء. جرّب كمان مرة."
+      }
     }
   },
   "suspension": {
@@ -622,7 +711,24 @@
         "ADULT_CONTENT": "محتوى جنسي أو غير لائق",
         "IMPERSONATION": "انتحال شخصية",
         "OTHER": "سبب آخر"
-      }
+      },
+      "guidelinesLink": "راجع إرشادات المجتمع"
+    }
+  },
+  "legal": {
+    "brand": "بيدر",
+    "eyebrow": "القانونية",
+    "lastUpdated": "آخر تحديث: 25 نيسان 2026",
+    "footerLabel": "روابط قانونية",
+    "copyright": "© 2026 بيدر",
+    "terms": {
+      "title": "الشروط"
+    },
+    "privacy": {
+      "title": "الخصوصية"
+    },
+    "community": {
+      "title": "إرشادات المجتمع"
     }
   }
 }

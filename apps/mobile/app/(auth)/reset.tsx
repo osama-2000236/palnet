@@ -2,6 +2,7 @@ import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ActivityIndicator, Pressable, SafeAreaView, Text, TextInput, View } from "react-native";
+import { nativeTokens } from "@palnet/ui-native";
 
 import { ApiRequestError, apiCall } from "@/lib/api";
 
@@ -90,7 +91,7 @@ export default function ResetPasswordScreen(): JSX.Element {
               className="bg-brand-600 rounded-md px-6 py-3"
             >
               {status === "submitting" ? (
-                <ActivityIndicator color="#fff" />
+                <ActivityIndicator color={nativeTokens.color.inkInverse} />
               ) : (
                 <Text className="text-ink-inverse text-center">{t("resetPassword.submit")}</Text>
               )}

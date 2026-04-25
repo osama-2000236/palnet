@@ -272,8 +272,28 @@ export default function AdminAuditPage(): JSX.Element {
                   </td>
                   <td className="text-ink px-4 py-2 align-top">{actorLabel(row.actor)}</td>
                   <td className="px-4 py-2 align-top text-xs">
-                    {row.targetUserId ? <div>user: {row.targetUserId}</div> : null}
-                    {row.targetPostId ? <div>post: {row.targetPostId}</div> : null}
+                    {row.targetUserId ? (
+                      <div>
+                        user:{" "}
+                        <a
+                          className="text-brand-700 underline"
+                          href={`/admin/users/${row.targetUserId}`}
+                        >
+                          {row.targetUserId}
+                        </a>
+                      </div>
+                    ) : null}
+                    {row.targetPostId ? (
+                      <div>
+                        post:{" "}
+                        <a
+                          className="text-brand-700 underline"
+                          href={`/admin/posts/${row.targetPostId}`}
+                        >
+                          {row.targetPostId}
+                        </a>
+                      </div>
+                    ) : null}
                     {row.targetReportId ? <div>report: {row.targetReportId}</div> : null}
                   </td>
                   <td className="text-ink-muted px-4 py-2 align-top">{row.note ?? ""}</td>

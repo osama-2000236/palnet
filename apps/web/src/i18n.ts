@@ -1,12 +1,13 @@
 import { getRequestConfig } from "next-intl/server";
 import { notFound } from "next/navigation";
 
-export const locales = ["ar-PS", "en"] as const;
+export const locales = ["ar-PS", "ar", "en"] as const;
 export type Locale = (typeof locales)[number];
 export const defaultLocale: Locale = "ar-PS";
 
 export const localeDir: Record<Locale, "rtl" | "ltr"> = {
   "ar-PS": "rtl",
+  ar: "rtl",
   en: "ltr",
 };
 

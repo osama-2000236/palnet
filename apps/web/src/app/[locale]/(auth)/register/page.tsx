@@ -1,7 +1,8 @@
 "use client";
 
 import { RegisterBody } from "@palnet/shared";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 
@@ -10,6 +11,8 @@ import { ApiRequestError, registerAction } from "@/lib/auth-actions";
 export default function RegisterPage(): JSX.Element {
   const t = useTranslations("auth");
   const router = useRouter();
+  const pathname = usePathname();
+  const locale = pathname?.match(/^\/(ar-PS|ar|en)(?=\/|$)/)?.[1] ?? "ar-PS";
   const [state, setState] = useState({
     firstName: "",
     lastName: "",
@@ -118,7 +121,21 @@ export default function RegisterPage(): JSX.Element {
             onChange={(e) => setState({ ...state, acceptTerms: e.target.checked })}
             required
           />
-          {t("acceptTerms")}
+          <span className="flex flex-wrap gap-x-1">
+            {t("registerTerms.accept")}{" "}
+            <Link href={`/${locale}/terms`} className="text-brand-700 font-semibold hover:underline">
+              {t("registerTerms.linkTerms")}
+            </Link>
+            <Link href={`/${locale}/privacy`} className="text-brand-700 font-semibold hover:underline">
+              {t("registerTerms.linkPrivacy")}
+            </Link>
+            <Link
+              href={`/${locale}/community-guidelines`}
+              className="text-brand-700 font-semibold hover:underline"
+            >
+              {t("registerTerms.linkCommunity")}
+            </Link>
+          </span>
         </label>
 
         {error ? (

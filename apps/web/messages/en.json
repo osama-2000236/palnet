@@ -44,6 +44,12 @@
       "VALIDATION_FAILED": "Please check the fields and try again.",
       "RATE_LIMITED": "Too many attempts. Try again later.",
       "INTERNAL": "An unexpected error occurred."
+    },
+    "registerTerms": {
+      "accept": "I agree to",
+      "linkTerms": "Terms",
+      "linkPrivacy": "Privacy",
+      "linkCommunity": "Community guidelines"
     }
   },
   "onboarding": {
@@ -529,6 +535,89 @@
         "REPORT_RESOLVE": "Report resolved",
         "REPORT_APPEAL_REVIEW": "Appeal reviewed"
       }
+    },
+    "posts": {
+      "title": "Post detail",
+      "description": "Read-only moderator view. Includes posts hidden from users by takedown or deletion.",
+      "loading": "Loading…",
+      "error": "Could not load post. Try again.",
+      "notFoundTitle": "Post not found",
+      "notFoundBody": "No post exists with this ID.",
+      "forbiddenTitle": "Access denied",
+      "forbiddenBody": "Only moderators and admins can view post detail.",
+      "status": {
+        "takendown": "This post has been taken down.",
+        "deleted": "This post has been deleted by the author."
+      },
+      "counts": {
+        "reactions": "Reactions",
+        "comments": "Comments",
+        "reposts": "Reposts",
+        "reports": "Reports"
+      },
+      "takedownDetails": {
+        "title": "Takedown",
+        "at": "Taken down at",
+        "by": "Taken down by",
+        "reason": "Reason"
+      },
+      "timestamps": {
+        "createdAt": "Created",
+        "updatedAt": "Updated"
+      },
+      "actions": {
+        "reasonLabel": "Reason / note",
+        "takedown": "Take down",
+        "restore": "Restore",
+        "reasonRequired": "Reason is required to take a post down.",
+        "error": "Action failed. Try again."
+      }
+    },
+    "users": {
+      "title": "User detail",
+      "description": "Read-only moderator view with suspension controls.",
+      "loading": "Loading…",
+      "error": "Could not load user. Try again.",
+      "notFoundTitle": "User not found",
+      "notFoundBody": "No user exists with this ID.",
+      "forbiddenTitle": "Access denied",
+      "forbiddenBody": "Only moderators and admins can view user detail.",
+      "status": {
+        "suspended": "This account is suspended.",
+        "deleted": "This account has been deleted."
+      },
+      "meta": {
+        "role": "Role",
+        "locale": "Locale",
+        "active": "Active",
+        "activeYes": "Yes",
+        "activeNo": "No",
+        "lastSeen": "Last seen"
+      },
+      "counts": {
+        "posts": "Posts",
+        "comments": "Comments",
+        "reportsAgainst": "Reports against",
+        "reportsFiled": "Reports filed",
+        "takedowns": "Takedowns"
+      },
+      "suspensionDetails": {
+        "title": "Suspension",
+        "at": "Suspended at",
+        "by": "Suspended by",
+        "reason": "Reason"
+      },
+      "timestamps": {
+        "createdAt": "Created",
+        "updatedAt": "Updated"
+      },
+      "actions": {
+        "reasonLabel": "Reason / note",
+        "suspend": "Suspend",
+        "unsuspend": "Unsuspend",
+        "reasonRequired": "Reason is required to suspend a user.",
+        "error": "Action failed. Try again."
+      }
     }
   },
   "suspension": {
@@ -622,7 +711,24 @@
         "ADULT_CONTENT": "Adult or sexual content",
         "IMPERSONATION": "Impersonation",
         "OTHER": "Something else"
-      }
+      },
+      "guidelinesLink": "See our community guidelines"
+    }
+  },
+  "legal": {
+    "brand": "Baydar",
+    "eyebrow": "Legal",
+    "lastUpdated": "Last updated: April 25, 2026",
+    "footerLabel": "Legal links",
+    "copyright": "© 2026 Baydar",
+    "terms": {
+      "title": "Terms"
+    },
+    "privacy": {
+      "title": "Privacy"
+    },
+    "community": {
+      "title": "Community guidelines"
     }
   }
 }

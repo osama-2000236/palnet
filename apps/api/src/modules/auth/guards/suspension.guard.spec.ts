@@ -1,9 +1,9 @@
-import { ExecutionContext } from "@nestjs/common";
-import { Reflector } from "@nestjs/core";
+import type { ExecutionContext } from "@nestjs/common";
+import type { Reflector } from "@nestjs/core";
 import { ErrorCode } from "@palnet/shared";
 
 import { DomainException } from "../../../common/domain-exception";
-import { PrismaService } from "../../prisma/prisma.service";
+import type { PrismaService } from "../../prisma/prisma.service";
 
 import { SuspensionGuard } from "./suspension.guard";
 

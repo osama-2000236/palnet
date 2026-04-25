@@ -17,6 +17,7 @@
     "db:deploy": "prisma migrate deploy",
     "db:studio": "prisma studio",
     "db:seed": "tsx prisma/seed.ts",
+    "db:seed:prod": "tsx prisma/seed.prod.ts",
     "lint": "eslint \"src/**/*.ts\" \"prisma/**/*.ts\"",
     "type-check": "tsc --noEmit"
   },

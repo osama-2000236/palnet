@@ -10,13 +10,16 @@ import {
   Post,
 } from "@nestjs/common";
 import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
+import { Throttle } from "@nestjs/throttler";
 import {
+  AccountExportResponse,
   ChangeEmailBody,
   ChangePasswordBody,
   DeleteAccountBody,
   RegisterPushTokenBody,
   RevokeAllSessionsBody,
   type SessionList,
+  type AccountExportResponse as AccountExportResponseType,
 } from "@palnet/shared";
 
 import { ZodValidationPipe } from "../../common/zod-pipe";
@@ -105,5 +108,14 @@ export class AccountController {
     @Param("deviceId") deviceId: string,
   ): Promise<void> {
     await this.account.revokePushToken(user.id, deviceId);
+  }
+
+  @Post("export")
+  @Throttle({ default: { limit: 1, ttl: 86_400_000 } })
+  async exportAccount(
+    @CurrentUser() user: AuthUser,
+  ): Promise<{ data: AccountExportResponseType }> {
+    const data = await this.account.exportAccountData(user.id);
+    return { data: AccountExportResponse.parse(data) };
   }
 }

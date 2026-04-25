@@ -27,6 +27,7 @@
     "@nestjs/websockets": "^10.4.6",
     "@palnet/db": "workspace:*",
     "@palnet/shared": "workspace:*",
+    "@sentry/node": "^10.50.0",
     "bcrypt": "^5.1.1",
     "blurhash": "^2.0.5",
     "class-transformer": "^0.5.1",

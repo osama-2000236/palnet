@@ -6,11 +6,11 @@ import { PrismaService } from "../prisma/prisma.service";
 import { SearchService } from "./search.service";
 
 type PrismaStub = {
-  profile: { findMany: jest.Mock };
+  $queryRaw: jest.Mock;
 };
 
 function buildPrisma(): PrismaStub {
-  return { profile: { findMany: jest.fn() } };
+  return { $queryRaw: jest.fn() };
 }
 
 function buildModeration(): { blockedIds: jest.Mock } {
@@ -26,6 +26,7 @@ const hit = (overrides: Partial<{ id: string; handle: string }> = {}) => ({
   headline: null,
   location: null,
   avatarUrl: null,
+  rank: 0.7,
 });
 
 describe("SearchService", () => {
@@ -46,7 +47,7 @@ describe("SearchService", () => {
   });
 
   it("returns hits with pagination metadata (happy path)", async () => {
-    prisma.profile.findMany.mockResolvedValue([hit()]);
+    prisma.$queryRaw.mockResolvedValue([hit()]);
 
     const page = await service.people({ q: "osama", limit: 20 }, null);
 
@@ -58,7 +59,7 @@ describe("SearchService", () => {
 
   it("detects hasMore by overfetching limit + 1 and trims", async () => {
     // limit=2 + 1 overfetch = 3 rows back
-    prisma.profile.findMany.mockResolvedValue([
+    prisma.$queryRaw.mockResolvedValue([
       hit({ id: "p_1", handle: "a" }),
       hit({ id: "p_2", handle: "b" }),
       hit({ id: "p_3", handle: "c" }),
@@ -71,16 +72,22 @@ describe("SearchService", () => {
     expect(page.meta.nextCursor).toBe("p_2");
   });
 
-  it("forwards cursor + skip when `after` is provided", async () => {
-    prisma.profile.findMany.mockResolvedValue([]);
+  it("applies the raw FTS cursor when `after` is provided", async () => {
+    prisma.$queryRaw.mockResolvedValue([]);
 
     await service.people({ q: "x", limit: 20, after: "p_prev" }, null);
 
-    expect(prisma.profile.findMany).toHaveBeenCalledWith(
-      expect.objectContaining({
-        cursor: { id: "p_prev" },
-        skip: 1,
-      }),
-    );
+    expect(prisma.$queryRaw).toHaveBeenCalled();
+  });
+
+  it("ranks exact FTS matches before lower-ranked rows", async () => {
+    prisma.$queryRaw.mockResolvedValue([
+      hit({ id: "p_1", handle: "mohammad-ali" }),
+      hit({ id: "p_2", handle: "mohammad-work" }),
+    ]);
+
+    const page = await service.people({ q: "محمد", limit: 20 }, null);
+
+    expect(page.data.map((row) => row.handle)).toEqual(["mohammad-ali", "mohammad-work"]);
   });
 });

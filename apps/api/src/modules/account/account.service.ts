@@ -8,6 +8,7 @@ import {
   type ChangePasswordBody,
   type DeleteAccountBody,
   ErrorCode,
+  type AccountExportResponse,
   type RegisterPushTokenBody,
   type RevokeAllSessionsBody,
   type SessionInfo,
@@ -18,6 +19,7 @@ import { DomainException } from "../../common/domain-exception";
 import type { Env } from "../../config/env";
 import { getNumberEnv } from "../../config/get-number-env";
 import { AuthService } from "../auth/auth.service";
+import { MailService } from "../mail/mail.service";
 import { PrismaService } from "../prisma/prisma.service";
 
 @Injectable()
@@ -26,6 +28,7 @@ export class AccountService {
     private readonly prisma: PrismaService,
     private readonly config: ConfigService<Env, true>,
     private readonly auth: AuthService,
+    private readonly mail: MailService,
   ) {}
 
   async changeEmail(userId: string, body: ChangeEmailBody): Promise<void> {
@@ -191,6 +194,100 @@ export class AccountService {
     await this.prisma.pushToken.deleteMany({
       where: { userId, deviceId },
     });
+  }
+
+  async exportAccountData(userId: string): Promise<AccountExportResponse> {
+    const task = this.buildAndSendAccountExport(userId);
+    let timer: NodeJS.Timeout | undefined;
+    const status = await Promise.race([
+      task.then(() => "sent" as const),
+      new Promise<"queued">((resolve) => {
+        timer = setTimeout(() => resolve("queued"), 30_000);
+      }),
+    ]);
+    // Always release the loser timer so it doesn't hold the event loop
+    // open after the request finishes (matters in tests + graceful shutdown).
+    if (timer) clearTimeout(timer);
+    if (status === "queued") task.catch(() => undefined);
+    return { status };
+  }
+
+  private async buildAndSendAccountExport(userId: string): Promise<void> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        email: true,
+        emailVerified: true,
+        phone: true,
+        role: true,
+        locale: true,
+        isActive: true,
+        lastSeenAt: true,
+        createdAt: true,
+        updatedAt: true,
+        deletedAt: true,
+        notificationPrefs: true,
+        profile: {
+          include: {
+            experiences: true,
+            educations: true,
+            skills: { include: { skill: true } },
+          },
+        },
+      },
+    });
+    if (!user) {
+      throw new DomainException(ErrorCode.NOT_FOUND, "User not found.", 404);
+    }
+
+    const [posts, comments, reactions, reposts, connections, reports] = await Promise.all([
+      this.prisma.post.findMany({
+        where: { authorId: userId },
+        include: { media: true },
+        orderBy: { createdAt: "desc" },
+      }),
+      this.prisma.comment.findMany({
+        where: { authorId: userId },
+        orderBy: { createdAt: "desc" },
+      }),
+      this.prisma.reaction.findMany({
+        where: { userId },
+        orderBy: { createdAt: "desc" },
+      }),
+      this.prisma.repost.findMany({
+        where: { userId },
+        orderBy: { createdAt: "desc" },
+      }),
+      this.prisma.connection.findMany({
+        where: { OR: [{ requesterId: userId }, { receiverId: userId }] },
+        orderBy: { createdAt: "desc" },
+      }),
+      this.prisma.report.findMany({
+        where: {
+          OR: [
+            { reporterId: userId },
+            { targetUserId: userId },
+            { resolvedById: userId },
+            { appealReviewedById: userId },
+          ],
+        },
+        orderBy: { createdAt: "desc" },
+      }),
+    ]);
+
+    const payload = {
+      exportedAt: new Date().toISOString(),
+      user,
+      posts,
+      comments,
+      reactions,
+      reposts,
+      connections,
+      reports,
+    };
+
+    await this.mail.sendAccountExportEmail(user.email, JSON.stringify(payload, null, 2));
   }
 
   private async requirePassword(hash: string, candidate: string): Promise<void> {

@@ -52,7 +52,43 @@
   },
   "suspension": {
     "banner": "Your account is suspended. You can view Baydar but cannot post, message, or react until the suspension is lifted.",
-    "bannerWithReason": "Your account is suspended: {{reason}}"
+    "bannerWithReason": "Your account is suspended: {{reason}}",
+    "appealCta": "File an appeal"
+  },
+  "appeals": {
+    "title": "My appeals",
+    "description": "Reports filed against your content. File an appeal to ask a moderator to take a second look.",
+    "empty": "No actioned reports yet. Nothing to appeal.",
+    "moderatorNote": "Moderator note",
+    "decisionNote": "Decision note",
+    "formLabel": "Why should this decision be reversed?",
+    "formPlaceholder": "Minimum {{min}} characters.",
+    "submit": "Submit appeal",
+    "submitting": "Submitting…",
+    "loadMore": "Load more",
+    "errorGeneric": "Could not load your appeals. Try again.",
+    "errorAlreadyFiled": "An appeal has already been filed for this report.",
+    "errorNoteTooShort": "Add at least {{min}} characters to your appeal.",
+    "status": {
+      "PENDING": "Appeal pending review",
+      "UPHELD": "Appeal upheld",
+      "DENIED": "Appeal denied"
+    },
+    "targetKind": {
+      "USER": "Account",
+      "POST": "Post",
+      "COMMENT": "Comment",
+      "MESSAGE": "Message"
+    },
+    "reasons": {
+      "SPAM": "Spam",
+      "HARASSMENT": "Harassment",
+      "HATE": "Hate speech",
+      "VIOLENCE": "Violence",
+      "ILLEGAL": "Illegal content",
+      "MISINFO": "Misinformation",
+      "OTHER": "Other"
+    }
   },
   "resetPassword": {
     "title": "Reset password",
@@ -248,7 +284,9 @@
       },
       "saveOk": "Preferences saved.",
       "genericError": "Could not save preferences."
-    }
+    },
+    "legal": "Legal",
+    "legalSubtitle": "Terms, privacy, and community guidelines"
   },
   "moderation": {
     "more": "More options",
@@ -279,7 +317,8 @@
         "ADULT_CONTENT": "Adult or sexual content",
         "IMPERSONATION": "Impersonation",
         "OTHER": "Something else"
-      }
+      },
+      "guidelinesLink": "See our community guidelines"
     }
   },
   "jobs": {
@@ -334,5 +373,12 @@
   "company": {
     "about": "About",
     "jobs": "Jobs"
+  },
+  "legal": {
+    "title": "Legal",
+    "terms": "Terms",
+    "privacy": "Privacy",
+    "community": "Community guidelines",
+    "copyright": "© 2026 Baydar"
   }
 }

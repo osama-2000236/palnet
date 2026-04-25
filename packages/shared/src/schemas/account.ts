@@ -62,3 +62,8 @@ export const RegisterPushTokenBody = z.object({
   platform: z.enum(["ios", "android", "web"]),
 });
 export type RegisterPushTokenBody = z.infer<typeof RegisterPushTokenBody>;
+
+export const AccountExportResponse = z.object({
+  status: z.enum(["sent", "queued"]),
+});
+export type AccountExportResponse = z.infer<typeof AccountExportResponse>;

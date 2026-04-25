@@ -5,8 +5,8 @@ import type { Request } from "express";
 
 import { DomainException } from "../../../common/domain-exception";
 import { PrismaService } from "../../prisma/prisma.service";
-import type { AuthUser } from "../decorators/current-user.decorator";
 import { ALLOW_SUSPENDED_KEY } from "../decorators/allow-suspended.decorator";
+import type { AuthUser } from "../decorators/current-user.decorator";
 
 // Blocks any mutating request from a suspended user.
 //
