@@ -1,5 +1,5 @@
-import { Animated, StyleSheet, Text, View } from "react-native";
 import { useEffect, useRef } from "react";
+import { Animated, StyleSheet, Text, View } from "react-native";
 
 import { nativeTokens } from "./tokens";
 

@@ -1,8 +1,9 @@
+import { useEffect, useRef } from "react";
+import { Animated, StyleSheet, View } from "react-native";
+
 import { PostCardSkeleton } from "./PostCardSkeleton";
 import { Surface } from "./Surface";
 import { nativeTokens } from "./tokens";
-import { Animated, StyleSheet, View } from "react-native";
-import { useEffect, useRef } from "react";
 
 export function ProfilePageSkeleton(): JSX.Element {
   const opacity = usePulse();
@@ -39,8 +40,27 @@ function usePulse(): Animated.Value {
 const styles = StyleSheet.create({
   stack: { gap: nativeTokens.space[4] },
   hero: { gap: nativeTokens.space[3] },
-  cover: { height: 96, borderRadius: nativeTokens.radius.md, backgroundColor: nativeTokens.color.surfaceSubtle },
-  avatar: { width: 72, height: 72, borderRadius: 36, backgroundColor: nativeTokens.color.surfaceSubtle },
-  lineWide: { height: 14, width: "65%", borderRadius: 7, backgroundColor: nativeTokens.color.surfaceSubtle },
-  lineShort: { height: 14, width: "40%", borderRadius: 7, backgroundColor: nativeTokens.color.surfaceSubtle },
+  cover: {
+    height: 96,
+    borderRadius: nativeTokens.radius.md,
+    backgroundColor: nativeTokens.color.surfaceSubtle,
+  },
+  avatar: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    backgroundColor: nativeTokens.color.surfaceSubtle,
+  },
+  lineWide: {
+    height: 14,
+    width: "65%",
+    borderRadius: 7,
+    backgroundColor: nativeTokens.color.surfaceSubtle,
+  },
+  lineShort: {
+    height: 14,
+    width: "40%",
+    borderRadius: 7,
+    backgroundColor: nativeTokens.color.surfaceSubtle,
+  },
 });

@@ -97,11 +97,7 @@ export async function apiFetchPage<T extends z.ZodTypeAny>(
   return envelope.parse(json) as z.infer<T>;
 }
 
-function resolveRequiredBase(
-  value: string | undefined,
-  name: string,
-  fallback: string,
-): string {
+function resolveRequiredBase(value: string | undefined, name: string, fallback: string): string {
   if (value) return value;
   if (process.env.NODE_ENV === "production") {
     throw new Error(`${name} missing`);

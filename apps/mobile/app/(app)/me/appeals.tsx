@@ -6,24 +6,12 @@
 // Reachable from the SuspensionBanner CTA in (app)/_layout.tsx as well as
 // from any moderation notification that links here.
 
-import {
-  AppealAck,
-  AppealReportBody,
-  MyReportsPage,
-  type MyReportItem,
-} from "@palnet/shared";
+import { AppealAck, AppealReportBody, MyReportsPage, type MyReportItem } from "@palnet/shared";
 import { Button, Surface, nativeTokens } from "@palnet/ui-native";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
-import {
-  ActivityIndicator,
-  SafeAreaView,
-  ScrollView,
-  Text,
-  TextInput,
-  View,
-} from "react-native";
+import { ActivityIndicator, SafeAreaView, ScrollView, Text, TextInput, View } from "react-native";
 
 import { apiFetch, apiFetchPage } from "@/lib/api";
 import { getAccessToken } from "@/lib/session";
@@ -181,12 +169,7 @@ export default function AppealsScreen(): JSX.Element {
           const form = forms[report.id] ?? EMPTY_FORM;
           const canAppeal = !report.appealStatus;
           return (
-            <Surface
-              key={report.id}
-              variant="card"
-              padding="4"
-              testID={`my-appeal-${report.id}`}
-            >
+            <Surface key={report.id} variant="card" padding="4" testID={`my-appeal-${report.id}`}>
               {/* Reason + target excerpt */}
               <Text
                 style={{

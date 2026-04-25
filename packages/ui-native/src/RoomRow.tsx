@@ -70,10 +70,24 @@ const styles = StyleSheet.create({
     borderStartColor: nativeTokens.color.brand600,
   },
   body: { flex: 1, gap: nativeTokens.space[1] },
-  top: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: nativeTokens.space[2] },
-  name: { flex: 1, color: nativeTokens.color.ink, fontFamily: nativeTokens.type.family.sans, fontWeight: "700" },
+  top: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: nativeTokens.space[2],
+  },
+  name: {
+    flex: 1,
+    color: nativeTokens.color.ink,
+    fontFamily: nativeTokens.type.family.sans,
+    fontWeight: "700",
+  },
   time: { color: nativeTokens.color.inkMuted, fontSize: nativeTokens.type.scale.small.size },
-  preview: { flex: 1, color: nativeTokens.color.inkMuted, fontSize: nativeTokens.type.scale.small.size },
+  preview: {
+    flex: 1,
+    color: nativeTokens.color.inkMuted,
+    fontSize: nativeTokens.type.scale.small.size,
+  },
   unread: { color: nativeTokens.color.ink, fontWeight: "700" },
   badge: {
     minWidth: 20,

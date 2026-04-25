@@ -27,7 +27,9 @@ export default function LegalSettingsScreen(): JSX.Element {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: nativeTokens.color.surfaceMuted }}>
-      <ScrollView contentContainerStyle={{ padding: nativeTokens.space[4], gap: nativeTokens.space[3] }}>
+      <ScrollView
+        contentContainerStyle={{ padding: nativeTokens.space[4], gap: nativeTokens.space[3] }}
+      >
         <Surface variant="hero" padding="5">
           <Text
             style={{

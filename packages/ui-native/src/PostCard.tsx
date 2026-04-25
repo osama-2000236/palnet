@@ -160,7 +160,11 @@ const styles = StyleSheet.create({
     padding: nativeTokens.space[4],
   },
   authorBlock: { flex: 1, gap: nativeTokens.space[1] },
-  name: { color: nativeTokens.color.ink, fontFamily: nativeTokens.type.family.sans, fontWeight: "700" },
+  name: {
+    color: nativeTokens.color.ink,
+    fontFamily: nativeTokens.type.family.sans,
+    fontWeight: "700",
+  },
   muted: { color: nativeTokens.color.inkMuted, fontSize: nativeTokens.type.scale.small.size },
   body: {
     color: nativeTokens.color.ink,
@@ -185,5 +189,9 @@ const styles = StyleSheet.create({
     borderBottomColor: nativeTokens.color.lineSoft,
   },
   actions: { flexDirection: "row", flexWrap: "wrap", padding: nativeTokens.space[2] },
-  comments: { borderTopWidth: 1, borderTopColor: nativeTokens.color.lineSoft, padding: nativeTokens.space[4] },
+  comments: {
+    borderTopWidth: 1,
+    borderTopColor: nativeTokens.color.lineSoft,
+    padding: nativeTokens.space[4],
+  },
 });

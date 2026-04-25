@@ -432,7 +432,7 @@ function VerifyEmailBanner({ token }: { token: string }): JSX.Element | null {
     <div
       role="region"
       aria-label={t("bannerLabel")}
-      className="text-ink mx-auto mb-4 flex w-full max-w-[1128px] flex-wrap items-center justify-between gap-3 rounded-md border border-warning/40 bg-warning/10 px-4 py-3 text-sm"
+      className="text-ink border-warning/40 bg-warning/10 mx-auto mb-4 flex w-full max-w-[1128px] flex-wrap items-center justify-between gap-3 rounded-md border px-4 py-3 text-sm"
     >
       <p className="min-w-0">{sent ? t("sentBody") : t("body")}</p>
       {sent ? null : (

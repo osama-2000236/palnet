@@ -1,5 +1,5 @@
-import { Animated, StyleSheet, View } from "react-native";
 import { useEffect, useRef } from "react";
+import { Animated, StyleSheet, View } from "react-native";
 
 import { Surface } from "./Surface";
 import { nativeTokens } from "./tokens";
@@ -36,9 +36,33 @@ function usePulse(): Animated.Value {
 
 const styles = StyleSheet.create({
   stack: { gap: nativeTokens.space[3] },
-  cover: { height: 96, borderRadius: nativeTokens.radius.md, backgroundColor: nativeTokens.color.surfaceSubtle },
-  logo: { width: 64, height: 64, borderRadius: nativeTokens.radius.md, backgroundColor: nativeTokens.color.surfaceSubtle },
-  lineWide: { height: 14, width: "70%", borderRadius: 7, backgroundColor: nativeTokens.color.surfaceSubtle },
-  lineShort: { height: 14, width: "45%", borderRadius: 7, backgroundColor: nativeTokens.color.surfaceSubtle },
-  lineFull: { height: 12, width: "100%", borderRadius: 6, backgroundColor: nativeTokens.color.surfaceSubtle },
+  cover: {
+    height: 96,
+    borderRadius: nativeTokens.radius.md,
+    backgroundColor: nativeTokens.color.surfaceSubtle,
+  },
+  logo: {
+    width: 64,
+    height: 64,
+    borderRadius: nativeTokens.radius.md,
+    backgroundColor: nativeTokens.color.surfaceSubtle,
+  },
+  lineWide: {
+    height: 14,
+    width: "70%",
+    borderRadius: 7,
+    backgroundColor: nativeTokens.color.surfaceSubtle,
+  },
+  lineShort: {
+    height: 14,
+    width: "45%",
+    borderRadius: 7,
+    backgroundColor: nativeTokens.color.surfaceSubtle,
+  },
+  lineFull: {
+    height: 12,
+    width: "100%",
+    borderRadius: 6,
+    backgroundColor: nativeTokens.color.surfaceSubtle,
+  },
 });

@@ -38,7 +38,9 @@ const baseAuthor = {
   },
 };
 
-function makeRow(over: Partial<{ id: string; postId: string; parentId: string | null; body: string }> = {}) {
+function makeRow(
+  over: Partial<{ id: string; postId: string; parentId: string | null; body: string }> = {},
+) {
   const now = new Date();
   return {
     id: over.id ?? "c1",

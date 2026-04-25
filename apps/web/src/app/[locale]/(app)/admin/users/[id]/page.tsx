@@ -185,30 +185,31 @@ export default function AdminUserDetailPage(): JSX.Element {
           </div>
 
           {/* Profile fields */}
-          {user.profile && (user.profile.headline || user.profile.about || user.profile.location) && (
-            <div className="space-y-1">
-              {user.profile.headline && (
-                <p className="text-ink text-sm" data-testid="admin-user-headline">
-                  {user.profile.headline}
-                </p>
-              )}
-              {user.profile.location && (
-                <p className="text-ink-muted text-xs">
-                  {user.profile.location}
-                  {user.profile.country ? `, ${user.profile.country}` : ""}
-                </p>
-              )}
-              {user.profile.about && (
-                <p
-                  dir="auto"
-                  className="text-ink whitespace-pre-wrap text-sm"
-                  data-testid="admin-user-about"
-                >
-                  {user.profile.about}
-                </p>
-              )}
-            </div>
-          )}
+          {user.profile &&
+            (user.profile.headline || user.profile.about || user.profile.location) && (
+              <div className="space-y-1">
+                {user.profile.headline && (
+                  <p className="text-ink text-sm" data-testid="admin-user-headline">
+                    {user.profile.headline}
+                  </p>
+                )}
+                {user.profile.location && (
+                  <p className="text-ink-muted text-xs">
+                    {user.profile.location}
+                    {user.profile.country ? `, ${user.profile.country}` : ""}
+                  </p>
+                )}
+                {user.profile.about && (
+                  <p
+                    dir="auto"
+                    className="text-ink whitespace-pre-wrap text-sm"
+                    data-testid="admin-user-about"
+                  >
+                    {user.profile.about}
+                  </p>
+                )}
+              </div>
+            )}
 
           {/* Account meta */}
           <dl className="text-ink-muted grid grid-cols-2 gap-2 text-xs sm:grid-cols-4">

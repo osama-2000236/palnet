@@ -38,25 +38,22 @@ export default function AdminPostDetailPage(): JSX.Element {
     setToken(session.tokens.accessToken);
   }, [router]);
 
-  const load = useCallback(
-    async (tk: string, id: string) => {
-      setLoading(true);
-      setForbidden(false);
-      setNotFound(false);
-      setError(false);
-      try {
-        const detail = await apiFetch(`/admin/posts/${id}`, AdminPostDetail, { token: tk });
-        setPost(detail);
-      } catch (e) {
-        if (e instanceof ApiRequestError && e.status === 403) setForbidden(true);
-        else if (e instanceof ApiRequestError && e.status === 404) setNotFound(true);
-        else setError(true);
-      } finally {
-        setLoading(false);
-      }
-    },
-    [],
-  );
+  const load = useCallback(async (tk: string, id: string) => {
+    setLoading(true);
+    setForbidden(false);
+    setNotFound(false);
+    setError(false);
+    try {
+      const detail = await apiFetch(`/admin/posts/${id}`, AdminPostDetail, { token: tk });
+      setPost(detail);
+    } catch (e) {
+      if (e instanceof ApiRequestError && e.status === 403) setForbidden(true);
+      else if (e instanceof ApiRequestError && e.status === 404) setNotFound(true);
+      else setError(true);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     if (!token || !postId) return;
@@ -243,7 +240,9 @@ export default function AdminPostDetailPage(): JSX.Element {
               {post.takedownBy && (
                 <p className="text-ink-muted text-xs">
                   {t("takedownDetails.by")}:{" "}
-                  {[post.takedownBy.firstName, post.takedownBy.lastName].filter(Boolean).join(" ") ||
+                  {[post.takedownBy.firstName, post.takedownBy.lastName]
+                    .filter(Boolean)
+                    .join(" ") ||
                     post.takedownBy.handle ||
                     post.takedownBy.userId}
                 </p>

@@ -121,9 +121,7 @@ export class AdminController {
   @OptionalAuth()
   @Roles()
   @UseGuards(CronOrAdminGuard)
-  async pruneAudit(
-    @Query("days") days?: string,
-  ): Promise<{ deleted: number; cutoff: string }> {
+  async pruneAudit(@Query("days") days?: string): Promise<{ deleted: number; cutoff: string }> {
     // `days` is optional — defaults to 1 year inside the service. The
     // endpoint is gated by either an admin JWT or the Render cron secret.
     // Run it on a daily or weekly cadence.

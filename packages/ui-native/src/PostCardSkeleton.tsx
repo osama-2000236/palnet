@@ -1,5 +1,5 @@
-import { Animated, StyleSheet, View } from "react-native";
 import { useEffect, useRef } from "react";
+import { Animated, StyleSheet, View } from "react-native";
 
 import { Surface } from "./Surface";
 import { nativeTokens } from "./tokens";
@@ -48,7 +48,22 @@ const styles = StyleSheet.create({
     backgroundColor: nativeTokens.color.surfaceSubtle,
   },
   lines: { flex: 1, gap: nativeTokens.space[2] },
-  lineWide: { height: 12, borderRadius: 6, width: "70%", backgroundColor: nativeTokens.color.surfaceSubtle },
-  lineShort: { height: 12, borderRadius: 6, width: "42%", backgroundColor: nativeTokens.color.surfaceSubtle },
-  lineFull: { height: 12, borderRadius: 6, width: "100%", backgroundColor: nativeTokens.color.surfaceSubtle },
+  lineWide: {
+    height: 12,
+    borderRadius: 6,
+    width: "70%",
+    backgroundColor: nativeTokens.color.surfaceSubtle,
+  },
+  lineShort: {
+    height: 12,
+    borderRadius: 6,
+    width: "42%",
+    backgroundColor: nativeTokens.color.surfaceSubtle,
+  },
+  lineFull: {
+    height: 12,
+    borderRadius: 6,
+    width: "100%",
+    backgroundColor: nativeTokens.color.surfaceSubtle,
+  },
 });

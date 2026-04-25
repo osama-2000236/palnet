@@ -173,5 +173,9 @@ const styles = StyleSheet.create({
   mediaText: { color: nativeTokens.color.inkMuted, fontSize: nativeTokens.type.scale.small.size },
   error: { color: nativeTokens.color.danger, fontFamily: nativeTokens.type.family.sans },
   actions: { flexDirection: "row", alignItems: "center", gap: nativeTokens.space[2] },
-  count: { flex: 1, color: nativeTokens.color.inkMuted, fontSize: nativeTokens.type.scale.small.size },
+  count: {
+    flex: 1,
+    color: nativeTokens.color.inkMuted,
+    fontSize: nativeTokens.type.scale.small.size,
+  },
 });

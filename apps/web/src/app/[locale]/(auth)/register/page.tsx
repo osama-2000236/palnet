@@ -123,10 +123,16 @@ export default function RegisterPage(): JSX.Element {
           />
           <span className="flex flex-wrap gap-x-1">
             {t("registerTerms.accept")}{" "}
-            <Link href={`/${locale}/terms`} className="text-brand-700 font-semibold hover:underline">
+            <Link
+              href={`/${locale}/terms`}
+              className="text-brand-700 font-semibold hover:underline"
+            >
               {t("registerTerms.linkTerms")}
             </Link>
-            <Link href={`/${locale}/privacy`} className="text-brand-700 font-semibold hover:underline">
+            <Link
+              href={`/${locale}/privacy`}
+              className="text-brand-700 font-semibold hover:underline"
+            >
               {t("registerTerms.linkPrivacy")}
             </Link>
             <Link

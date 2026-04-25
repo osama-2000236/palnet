@@ -112,9 +112,7 @@ export class AccountController {
 
   @Post("export")
   @Throttle({ default: { limit: 1, ttl: 86_400_000 } })
-  async exportAccount(
-    @CurrentUser() user: AuthUser,
-  ): Promise<{ data: AccountExportResponseType }> {
+  async exportAccount(@CurrentUser() user: AuthUser): Promise<{ data: AccountExportResponseType }> {
     const data = await this.account.exportAccountData(user.id);
     return { data: AccountExportResponse.parse(data) };
   }
