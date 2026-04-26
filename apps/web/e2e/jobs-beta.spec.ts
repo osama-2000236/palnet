@@ -11,7 +11,7 @@ import {
 let ownerSessionPromise: ReturnType<typeof loginViaApi> | null = null;
 
 function getOwnerSession(request: Parameters<typeof loginViaApi>[0]) {
-  ownerSessionPromise ??= loginViaApi(request, "owner@palnet.ps", "Password123");
+  ownerSessionPromise ??= loginViaApi(request, "owner@baydar.ps", "Password123");
   return ownerSessionPromise;
 }
 

@@ -1,6 +1,6 @@
 import { expect, type APIRequestContext, type Page } from "@playwright/test";
 
-const SESSION_KEY = "palnet.session.v1";
+const SESSION_KEY = "baydar.session.v1";
 const API_BASE = "http://localhost:4000/api/v1";
 const DEFAULT_PASSWORD = "Password123";
 

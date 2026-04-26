@@ -65,10 +65,10 @@ async function main() {
   });
 
   const ownerUser = await prisma.user.upsert({
-    where: { email: "owner@palnet.ps" },
+    where: { email: "owner@baydar.ps" },
     update: { role: "COMPANY_ADMIN" },
     create: {
-      email: "owner@palnet.ps",
+      email: "owner@baydar.ps",
       passwordHash,
       role: "COMPANY_ADMIN",
       locale: "en",
