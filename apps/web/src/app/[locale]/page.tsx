@@ -12,7 +12,7 @@ export default async function LandingPage({
   setRequestLocale(locale);
   const t = await getTranslations("landing");
   return (
-    <main className="mx-auto flex min-h-screen max-w-[1128px] flex-col items-center justify-center gap-6 px-6 text-center">
+    <main className="max-w-chrome mx-auto flex min-h-screen flex-col items-center justify-center gap-6 px-6 text-center">
       <h1 className="text-ink font-sans text-4xl font-bold">{t("title")}</h1>
       <p className="text-ink-muted max-w-xl">{t("subtitle")}</p>
       <Link

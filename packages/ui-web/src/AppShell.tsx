@@ -106,7 +106,7 @@ const NAV_ITEMS: ReadonlyArray<{
   { key: "notifications", icon: "bell" },
 ];
 
-/** 99+ cap so badges never break the 20px target. */
+/** 99+ cap so badges keep the compact token target. */
 function formatBadge(count: number): string {
   if (count <= 0) return "";
   if (count > 99) return "99+";
@@ -181,9 +181,7 @@ export function AppShell({
   }, [menuOpen]);
 
   // Arrow-key roving between nav items (per AppShell.md accessibility rules).
-  // Keys follow visual direction: ArrowRight always moves one step to the
-  // physical right — which is "previous" in RTL and "next" in LTR. Home/End
-  // jump to the first/last visible item.
+  // Keys follow visual direction: forward/backward map through document dir.
   const onNavKeyDown = useCallback((e: KeyboardEvent<HTMLElement>) => {
     if (e.key !== "ArrowLeft" && e.key !== "ArrowRight" && e.key !== "Home" && e.key !== "End") {
       return;
@@ -248,7 +246,7 @@ export function AppShell({
   return (
     <div className="bg-surface-muted min-h-screen">
       <header role="banner" className="border-line-soft bg-surface sticky top-0 z-20 h-14 border-b">
-        <div className="mx-auto flex h-full w-full max-w-[1128px] items-center gap-4 px-5">
+        <div className="max-w-chrome mx-auto flex h-full w-full items-center gap-4 px-5">
           {/* Logo — routes home. */}
           <button
             type="button"
@@ -261,7 +259,7 @@ export function AppShell({
           </button>
 
           {/* Search pill. */}
-          <div className="bg-surface-subtle focus-within:ring-brand-600 flex min-w-0 flex-1 items-center gap-2 rounded-full px-3.5 py-2 focus-within:ring-2 sm:max-w-[320px]">
+          <div className="bg-surface-subtle focus-within:ring-brand-600 sm:max-w-search flex min-w-0 flex-1 items-center gap-2 rounded-full px-3.5 py-2 focus-within:ring-2">
             <span className="text-ink-muted" aria-hidden="true">
               <Icon name="search" size={16} />
             </span>
@@ -277,7 +275,7 @@ export function AppShell({
             />
           </div>
 
-          {/* Right cluster: nav + divider + profile. */}
+          {/* Header action cluster: nav + divider + profile. */}
           <nav
             ref={navRef}
             onKeyDown={onNavKeyDown}
@@ -309,7 +307,7 @@ export function AppShell({
                   onClick={() => onNavigate(item.key)}
                   aria-current={active ? "page" : undefined}
                   className={cx(
-                    "focus-visible:ring-brand-600 focus-visible:ring-offset-surface relative -mb-px inline-flex min-w-[64px] flex-col items-center gap-0.5 border-b-2 px-3 py-2 text-[11px] font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
+                    "focus-visible:ring-brand-600 focus-visible:ring-offset-surface min-w-navItem text-nav relative -mb-px inline-flex flex-col items-center gap-0.5 border-b-2 px-3 py-2 font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
                     active
                       ? "border-brand-600 text-ink"
                       : "text-ink-muted hover:text-ink border-transparent",
@@ -320,7 +318,7 @@ export function AppShell({
                     {badgeText ? (
                       <span
                         aria-hidden="true"
-                        className="bg-accent-600 text-ink-inverse absolute -end-1.5 -top-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-bold leading-none"
+                        className="bg-accent-600 text-ink-inverse h-badge min-w-badge text-micro absolute -end-1.5 -top-1 inline-flex items-center justify-center rounded-full px-1 font-bold leading-none"
                       >
                         {badgeText}
                       </span>
@@ -347,7 +345,7 @@ export function AppShell({
                 aria-controls={menuId}
                 aria-current={currentRoute === "profile" ? "page" : undefined}
                 className={cx(
-                  "focus-visible:ring-brand-600 focus-visible:ring-offset-surface relative -mb-px inline-flex flex-col items-center gap-0.5 border-b-2 px-3 py-1.5 text-[11px] font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
+                  "focus-visible:ring-brand-600 focus-visible:ring-offset-surface text-nav relative -mb-px inline-flex flex-col items-center gap-0.5 border-b-2 px-3 py-1.5 font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
                   currentRoute === "profile"
                     ? "border-brand-600 text-ink"
                     : "text-ink-muted hover:text-ink border-transparent",
@@ -366,7 +364,7 @@ export function AppShell({
                   id={menuId}
                   role="menu"
                   onKeyDown={onMenuKeyDown}
-                  className="border-line-soft bg-surface shadow-card absolute end-0 top-full z-30 mt-1 min-w-[200px] rounded-md border py-1"
+                  className="border-line-soft bg-surface shadow-card min-w-menu absolute end-0 top-full z-30 mt-1 rounded-md border py-1"
                 >
                   {onViewProfile ? (
                     <MenuItem

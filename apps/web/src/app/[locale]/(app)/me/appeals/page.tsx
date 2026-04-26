@@ -95,7 +95,7 @@ export default function MyAppealsPage(): JSX.Element {
   }
 
   return (
-    <main className="mx-auto w-full max-w-[720px] px-4 py-6">
+    <main className="max-w-dialog mx-auto w-full px-4 py-6">
       <header className="mb-4">
         <h1 className="text-ink text-xl font-semibold">{t("title")}</h1>
         <p className="text-ink-muted text-sm">{t("description")}</p>

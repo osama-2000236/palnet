@@ -10,3 +10,5 @@ if (dsn) {
     tracesSampleRate: 0,
   });
 }
+
+export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;

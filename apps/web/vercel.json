@@ -1,7 +1,7 @@
 {
   "framework": "nextjs",
-  "installCommand": "pnpm install --frozen-lockfile && pnpm --filter @palnet/db run db:generate && pnpm --filter @palnet/shared run build",
-  "buildCommand": "pnpm --filter @palnet/web... run build",
+  "installCommand": "pnpm install --frozen-lockfile",
+  "buildCommand": "pnpm --filter @palnet/db run db:generate && pnpm --filter @palnet/shared run build && pnpm --filter @palnet/web... run build",
   "headers": [
     {
       "source": "/(.*)",
@@ -17,6 +17,10 @@
         {
           "key": "Referrer-Policy",
           "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "Content-Security-Policy-Report-Only",
+          "value": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' http://localhost:4000 https://palnet-api.onrender.com https://*.r2.cloudflarestorage.com https://*.r2.dev https://*.sentry.io https://*.ingest.sentry.io"
         }
       ]
     }

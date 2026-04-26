@@ -44,11 +44,11 @@ export default function EditProfilePage(): JSX.Element {
   }, []);
 
   if (loading || !profile) {
-    return <main className="text-ink-muted mx-auto max-w-[840px] px-6 py-10">…</main>;
+    return <main className="text-ink-muted max-w-profile mx-auto px-6 py-10">…</main>;
   }
 
   return (
-    <main className="mx-auto flex w-full max-w-[840px] flex-col gap-6 px-6 py-8">
+    <main className="max-w-profile mx-auto flex w-full flex-col gap-6 px-6 py-8">
       <header className="flex items-center justify-between">
         <h1 className="text-ink text-3xl font-bold">{t("editTitle")}</h1>
         <Link href={`/in/${profile.handle}`} className="text-ink-muted text-sm hover:underline">

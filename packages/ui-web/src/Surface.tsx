@@ -16,7 +16,7 @@ import { cx } from "./cx";
  */
 export type SurfaceVariant = "flat" | "card" | "hero" | "tinted" | "row";
 
-/** Token-scale padding keys. Numeric values correspond to `space` tokens (4px unit). */
+/** Token-scale padding keys. Numeric values correspond to the shared space scale. */
 export type SurfacePadding = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "8" | "10" | "12";
 
 const VARIANT_CLASSES: Record<SurfaceVariant, string> = {

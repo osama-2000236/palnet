@@ -494,12 +494,12 @@ function MessagesPageContent(): JSX.Element {
 
   // ───────── Render ─────────
   return (
-    <main className="mx-auto w-full max-w-[1128px] px-4 py-6 lg:px-6">
+    <main className="max-w-chrome mx-auto w-full px-4 py-6 lg:px-6">
       <Surface
         as="section"
         variant="card"
         padding="0"
-        className="grid min-h-[calc(100vh-8rem)] grid-cols-1 overflow-hidden md:grid-cols-[320px_minmax(0,1fr)]"
+        className="md:grid-cols-messages grid min-h-[calc(100vh-var(--nav-h)-var(--mobile-tab-h))] grid-cols-1 overflow-hidden"
       >
         {/* Rooms list */}
         <div className="border-line-soft flex min-h-0 flex-col md:border-e">
@@ -598,7 +598,7 @@ function MessagesPageContent(): JSX.Element {
                         {`${otherMember.firstName} ${otherMember.lastName}`.trim() ||
                           otherMember.handle}
                       </Link>
-                      <span className="text-ink-muted text-[11px]">
+                      <span className="text-ink-muted text-nav">
                         {otherOnline
                           ? t("onlineNow")
                           : otherMember.lastSeenAt
@@ -643,7 +643,7 @@ function MessagesPageContent(): JSX.Element {
                     onClick={() =>
                       activeRoomId && nextCursor && void loadMessages(activeRoomId, nextCursor)
                     }
-                    className="border-line-soft bg-surface text-ink-muted hover:bg-surface-muted mb-3 self-center rounded-full border px-3 py-1 text-[11px]"
+                    className="border-line-soft bg-surface text-ink-muted hover:bg-surface-muted text-nav mb-3 self-center rounded-full border px-3 py-1"
                   >
                     {t("loadOlder")}
                   </button>
@@ -693,7 +693,7 @@ function MessagesPageContent(): JSX.Element {
                               <button
                                 type="button"
                                 onClick={() => setReportMessageId(m.id)}
-                                className="text-ink-muted hover:bg-surface hover:text-ink rounded px-2 py-0.5 text-[11px]"
+                                className="text-ink-muted hover:bg-surface hover:text-ink text-nav rounded px-2 py-0.5"
                               >
                                 {tModeration("reportMessage")}
                               </button>
@@ -773,8 +773,13 @@ function MessagesPageContent(): JSX.Element {
 
 function MessagesPageFallback(): JSX.Element {
   return (
-    <main className="mx-auto w-full max-w-[1128px] px-4 py-6 lg:px-6">
-      <Surface as="section" variant="card" padding="6" className="min-h-[calc(100vh-8rem)]">
+    <main className="max-w-chrome mx-auto w-full px-4 py-6 lg:px-6">
+      <Surface
+        as="section"
+        variant="card"
+        padding="6"
+        className="min-h-[calc(100vh-var(--nav-h)-var(--mobile-tab-h))]"
+      >
         <p className="text-ink-muted text-sm">Loading messages…</p>
       </Surface>
     </main>

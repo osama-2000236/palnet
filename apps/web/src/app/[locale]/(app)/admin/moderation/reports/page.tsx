@@ -267,7 +267,7 @@ export default function AdminReportsPage(): JSX.Element {
 
   if (forbidden) {
     return (
-      <main className="mx-auto w-full max-w-[1128px] px-4 py-6">
+      <main className="max-w-chrome mx-auto w-full px-4 py-6">
         <Surface variant="tinted" padding="8">
           <h1 className="text-ink text-lg font-semibold">{t("forbiddenTitle")}</h1>
           <p className="text-ink-muted mt-1 text-sm">{t("forbiddenBody")}</p>
@@ -277,7 +277,7 @@ export default function AdminReportsPage(): JSX.Element {
   }
 
   return (
-    <main className="mx-auto grid w-full max-w-[1128px] grid-cols-1 gap-6 px-4 py-6 lg:grid-cols-[minmax(0,1fr)_360px]">
+    <main className="max-w-chrome mx-auto grid w-full grid-cols-1 gap-6 px-4 py-6 lg:grid-cols-[minmax(0,1fr)_360px]">
       <section className="min-w-0">
         <header className="mb-4">
           <h1 className="text-ink text-xl font-semibold">{t("title")}</h1>

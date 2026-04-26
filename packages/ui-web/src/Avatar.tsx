@@ -31,19 +31,19 @@ export interface AvatarProps {
 }
 
 const BOX_CLASSES: Record<AvatarSize, string> = {
-  xs: "h-6 w-6 text-[10px]",
+  xs: "h-6 w-6 text-micro",
   sm: "h-8 w-8 text-xs",
   md: "h-10 w-10 text-sm",
   lg: "h-14 w-14 text-lg",
-  xl: "h-24 w-24 text-3xl border-[3px] border-surface",
+  xl: "h-24 w-24 text-3xl border-3 border-surface",
 };
 
 const DOT_CLASSES: Record<AvatarSize, string> = {
-  xs: "h-[7px] w-[7px]",
-  sm: "h-[9px] w-[9px]",
-  md: "h-[11px] w-[11px]",
-  lg: "h-[13px] w-[13px]",
-  xl: "h-[15px] w-[15px]",
+  xs: "h-avatar-dot-xs w-avatar-dot-xs",
+  sm: "h-avatar-dot-sm w-avatar-dot-sm",
+  md: "h-avatar-dot-md w-avatar-dot-md",
+  lg: "h-avatar-dot-lg w-avatar-dot-lg",
+  xl: "h-avatar-dot-xl w-avatar-dot-xl",
 };
 
 // Three token-backed palettes. Chosen deterministically from user id/handle so

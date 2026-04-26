@@ -19,7 +19,7 @@ export default async function LegalLayout({
   return (
     <div className="bg-canvas min-h-screen pb-8">
       <header className="border-line-soft bg-surface border-b">
-        <div className="mx-auto flex max-w-[1128px] items-center justify-between px-6 py-4">
+        <div className="max-w-chrome mx-auto flex items-center justify-between px-6 py-4">
           <a href={prefix} className="text-ink text-lg font-bold">
             {t("brand")}
           </a>

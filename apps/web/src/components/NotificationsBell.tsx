@@ -92,7 +92,7 @@ export function NotificationsBell(): JSX.Element | null {
       {count > 0 ? (
         <span
           aria-hidden="true"
-          className="bg-accent-600 text-ink-inverse absolute -end-1 -top-1 min-w-[18px] rounded-full px-1 text-center text-[10px] font-semibold leading-[18px]"
+          className="bg-accent-600 text-ink-inverse h-badge min-w-badge text-micro absolute -end-1 -top-1 inline-flex items-center justify-center rounded-full px-1 text-center font-semibold leading-none"
         >
           {display}
         </span>

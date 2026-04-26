@@ -1,11 +1,10 @@
-import * as SecureStore from "expo-secure-store";
 import type { AuthSession } from "@palnet/shared";
 
 const KEY = "palnet.session.v1";
 const DEVICE_KEY = "palnet.deviceId";
 
 export async function readSession(): Promise<AuthSession | null> {
-  const raw = await SecureStore.getItemAsync(KEY);
+  const raw = globalThis.localStorage?.getItem(KEY) ?? null;
   if (!raw) return null;
   try {
     return JSON.parse(raw) as AuthSession;
@@ -15,11 +14,11 @@ export async function readSession(): Promise<AuthSession | null> {
 }
 
 export async function writeSession(session: AuthSession): Promise<void> {
-  await SecureStore.setItemAsync(KEY, JSON.stringify(session));
+  globalThis.localStorage?.setItem(KEY, JSON.stringify(session));
 }
 
 export async function clearSession(): Promise<void> {
-  await SecureStore.deleteItemAsync(KEY);
+  globalThis.localStorage?.removeItem(KEY);
 }
 
 export async function getAccessToken(): Promise<string | null> {
@@ -27,10 +26,10 @@ export async function getAccessToken(): Promise<string | null> {
 }
 
 export async function getDeviceId(): Promise<string> {
-  const existing = await SecureStore.getItemAsync(DEVICE_KEY);
+  const existing = globalThis.localStorage?.getItem(DEVICE_KEY);
   if (existing) return existing;
   // SecureStore disallows "-" in some platforms? It's safe. Use timestamp + random.
   const id = `mobile-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
-  await SecureStore.setItemAsync(DEVICE_KEY, id);
+  globalThis.localStorage?.setItem(DEVICE_KEY, id);
   return id;
 }

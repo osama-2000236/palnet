@@ -14,7 +14,7 @@ export interface LegalFooterProps {
   label?: string;
 }
 
-export function LegalFooter({ links, copyright, label = "Legal links" }: LegalFooterProps) {
+export function LegalFooter({ links, copyright, label = "روابط قانونية" }: LegalFooterProps) {
   return (
     <Surface variant="flat" padding="4" accessibilityRole="summary" accessibilityLabel={label}>
       <View style={styles.links}>

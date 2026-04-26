@@ -1,5 +1,5 @@
 // Messages list — room roster. Uses ui-native Surface + Avatar so rows look
-// like the web `/messages` left rail instead of the raw-RN cards.
+// like the web `/messages` room list instead of plain native cards.
 //
 // Rows support swipe-to-archive (Sprint 9 A3). The Swipeable wrapper from
 // react-native-gesture-handler reveals an archive action from the trailing
@@ -172,9 +172,8 @@ function RoomRow({
       }
     : null;
 
-  // Swipe direction: in an RTL layout the natural "end edge" is on the
-  // visual left, but Swipeable's rightActions/leftActions are named in
-  // absolute terms. Use `renderRightActions` for LTR and the mirror for
+  // Swipe direction: use the trailing edge for each locale. Swipeable action
+  // names are absolute, so use `renderRightActions` for LTR and the mirror for
   // RTL so the gesture always reveals from the trailing edge.
   const renderArchiveAction = (): JSX.Element => (
     <Pressable

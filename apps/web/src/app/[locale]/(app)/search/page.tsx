@@ -72,7 +72,7 @@ function SearchInner(): JSX.Element {
   }
 
   return (
-    <main className="mx-auto flex w-full max-w-[840px] flex-col gap-4 px-6 py-8">
+    <main className="max-w-profile mx-auto flex w-full flex-col gap-4 px-6 py-8">
       <h1 className="text-ink text-3xl font-bold">{t("title")}</h1>
 
       <form onSubmit={submit} className="flex gap-2">

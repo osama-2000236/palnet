@@ -156,7 +156,7 @@ export default function MyJobsPage(): JSX.Element {
   }
 
   return (
-    <main className="mx-auto flex w-full max-w-[1128px] flex-col gap-6 px-4 py-6">
+    <main className="max-w-chrome mx-auto flex w-full flex-col gap-6 px-4 py-6">
       <header className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
         <div>
           <h1 className="text-ink text-2xl font-semibold">{tJobs("myApplications")}</h1>

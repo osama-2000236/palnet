@@ -37,10 +37,10 @@ const VARIANT_CLASSES: Record<ButtonVariant, string> = {
 };
 
 const SIZE_CLASSES: Record<ButtonSize, string> = {
-  // Heights come from the spec table: 28 / 36 / 44 px.
-  sm: "h-7 px-2.5 text-[13px] gap-1.5",
+  // Heights come from the spec table.
+  sm: "h-7 px-2.5 text-small gap-1.5",
   md: "h-9 px-4 text-sm gap-2",
-  lg: "h-11 px-5 text-[15px] gap-2",
+  lg: "h-11 px-5 text-body gap-2",
 };
 
 export function Button({
@@ -68,7 +68,7 @@ export function Button({
         "transition-colors duration-150 ease-out",
         // focus ring: keyboard-only
         "focus-visible:ring-brand-500 focus-visible:ring-offset-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
-        // active: spec says 1px press on web
+        // active: spec press offset on web
         "active:translate-y-px",
         // disabled
         isDisabled && "cursor-not-allowed opacity-55 hover:bg-[inherit]",

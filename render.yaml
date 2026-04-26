@@ -19,7 +19,7 @@ services:
       - key: DIRECT_URL
         fromDatabase:
           name: palnet-postgres
-          property: connectionString
+          property: directConnectionString
       - key: JWT_ACCESS_SECRET
         generateValue: true
       - key: JWT_REFRESH_SECRET
@@ -54,9 +54,11 @@ services:
     dockerContext: .
     dockerfilePath: apps/api/Dockerfile
     dockerCommand: >
-      sh -c 'curl -fsS -X POST
+      sh -c 'code=$(curl -sS -o /dev/null -w "%{http_code}"
+      -X POST
       -H "Authorization: Bearer $CRON_SECRET"
-      "$API_URL/api/v1/admin/audit/prune"'
+      "$API_URL/api/v1/admin/audit/prune") &&
+      [ "$code" = "200" ] || (echo "prune failed: $code" && exit 1)'
     envVars:
       - key: CRON_SECRET
         fromService:

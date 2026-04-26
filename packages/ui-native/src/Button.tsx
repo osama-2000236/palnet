@@ -118,7 +118,7 @@ export function Button({
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
       accessibilityState={{ disabled: isDisabled, busy: loading, ...accessibilityState }}
-      hitSlop={hitSlop ?? { top: extraHit, bottom: extraHit, left: extraHit, right: extraHit }}
+      hitSlop={hitSlop ?? extraHit}
       style={({ pressed }) => [
         base,
         // Spec: mobile active → opacity 0.85.

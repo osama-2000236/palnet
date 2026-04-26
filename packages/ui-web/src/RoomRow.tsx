@@ -1,9 +1,9 @@
-// RoomRow — one entry in the Messages left-rail list.
+// RoomRow — one entry in the Messages room list.
 // Spec: prototype MessagesPage.jsx (room list). Mobile twin: Sprint 5.
 //
 // Visual: avatar with online dot, name, truncated last-message preview,
 // relative timestamp, optional unread badge. Active row has `brand-50`
-// background + a 3px `brand-600` indicator on the start edge.
+// background + a brand indicator on the start edge.
 //
 // Tokens only. RTL-safe via `border-s-*`.
 
@@ -42,7 +42,7 @@ export function RoomRow({
       aria-label={ariaLabel}
       className={cx(
         "border-line-soft flex w-full items-center gap-3 border-b px-4 py-3 text-start transition-colors",
-        "border-s-[3px]",
+        "border-s-3",
         active ? "border-s-brand-600 bg-brand-50" : "hover:bg-surface-subtle border-s-transparent",
         "focus-visible:ring-brand-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset",
       )}
@@ -53,7 +53,7 @@ export function RoomRow({
           <span className="text-ink truncate text-sm font-semibold">
             {`${user.firstName ?? ""} ${user.lastName ?? ""}`.trim() || user.handle || ""}
           </span>
-          <span className="text-ink-muted shrink-0 text-[11px] tabular-nums">{timestamp}</span>
+          <span className="text-ink-muted text-nav shrink-0 tabular-nums">{timestamp}</span>
         </div>
         <div className="flex items-center justify-between gap-2">
           <span
@@ -65,7 +65,7 @@ export function RoomRow({
             {preview}
           </span>
           {unreadCount > 0 ? (
-            <span className="bg-accent-600 text-ink-inverse inline-flex h-5 min-w-[20px] items-center justify-center rounded-full px-1.5 text-[11px] font-semibold">
+            <span className="bg-accent-600 text-ink-inverse min-w-unread text-nav inline-flex h-5 items-center justify-center rounded-full px-1.5 font-semibold">
               {unreadCount > 99 ? "99+" : unreadCount}
             </span>
           ) : null}

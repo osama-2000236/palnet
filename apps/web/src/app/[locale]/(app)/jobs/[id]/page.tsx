@@ -58,7 +58,7 @@ export default function JobDetailPage(): JSX.Element {
 
   if (loading) {
     return (
-      <div className="mx-auto w-full max-w-[820px] px-4 py-6">
+      <div className="max-w-detail mx-auto w-full px-4 py-6">
         <Surface variant="card" padding="6" aria-hidden="true">
           <div className="mb-4 flex items-start gap-3">
             <div className="bg-surface-sunken h-14 w-14 animate-pulse rounded-md" />
@@ -79,7 +79,7 @@ export default function JobDetailPage(): JSX.Element {
 
   if (error || !job) {
     return (
-      <div className="mx-auto w-full max-w-[820px] px-4 py-6">
+      <div className="max-w-detail mx-auto w-full px-4 py-6">
         <Surface variant="tinted" padding="6">
           <p className="text-ink-muted text-sm">{error ?? t("notFound")}</p>
           <Link href="/jobs" className="text-brand-700 mt-3 inline-block text-sm hover:underline">
@@ -104,7 +104,7 @@ export default function JobDetailPage(): JSX.Element {
   );
 
   return (
-    <div className="mx-auto w-full max-w-[820px] px-4 py-6">
+    <div className="max-w-detail mx-auto w-full px-4 py-6">
       <nav className="mb-3">
         <Link href="/jobs" className="text-ink-muted hover:text-ink text-sm">
           ← {t("title")}
@@ -265,7 +265,7 @@ function ApplyDialog({ job, token, onClose, onApplied }: ApplyDialogProps): JSX.
         aria-modal="true"
         aria-labelledby={titleId}
         aria-describedby={hintId}
-        className="border-line-soft bg-surface shadow-pop w-full max-w-[560px] rounded-lg border"
+        className="border-line-soft bg-surface shadow-pop max-w-sheet w-full rounded-lg border"
       >
         <div className="border-line-soft border-b px-5 py-4">
           <h2 id={titleId} className="text-ink text-base font-semibold">
@@ -286,7 +286,7 @@ function ApplyDialog({ job, token, onClose, onApplied }: ApplyDialogProps): JSX.
               maxLength={8000}
               rows={6}
               placeholder={t("coverLetterPlaceholder")}
-              className="border-line-hard bg-surface text-ink focus:ring-brand-600 min-h-[140px] resize-y rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2"
+              className="border-line-hard bg-surface text-ink focus:ring-brand-600 min-h-coverLetter resize-y rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2"
             />
             <span className="text-ink-muted text-xs">{t("coverLetterHint")}</span>
           </label>

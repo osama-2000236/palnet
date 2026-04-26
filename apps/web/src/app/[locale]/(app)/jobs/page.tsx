@@ -113,7 +113,7 @@ export default function JobsPageRoute(): JSX.Element {
   }, [token, filters, load]);
 
   return (
-    <div className="mx-auto grid w-full max-w-[1128px] grid-cols-1 gap-6 px-4 py-6 lg:grid-cols-[260px_minmax(0,1fr)]">
+    <div className="max-w-chrome mx-auto grid w-full grid-cols-1 gap-6 px-4 py-6 lg:grid-cols-[260px_minmax(0,1fr)]">
       <aside className="hidden lg:block" aria-label={t("filters")}>
         <Surface variant="card" padding="4">
           <div className="text-ink mb-3 text-sm font-semibold">{t("filters")}</div>
@@ -304,7 +304,7 @@ function JobListRow({ job, salary }: { job: Job; salary: string | null }): JSX.E
                 <p className="text-ink-muted truncate text-sm">{job.company.name}</p>
               </div>
               {job.viewer.hasApplied ? (
-                <span className="border-success/30 bg-success/10 text-success shrink-0 rounded-full border px-2 py-0.5 text-[11px] font-semibold">
+                <span className="border-success/30 bg-success/10 text-success text-nav shrink-0 rounded-full border px-2 py-0.5 font-semibold">
                   {t("appliedBadge")}
                 </span>
               ) : null}
@@ -316,7 +316,7 @@ function JobListRow({ job, salary }: { job: Job; salary: string | null }): JSX.E
                 {job.skillsRequired.slice(0, 5).map((s) => (
                   <li
                     key={s}
-                    className="bg-surface-subtle text-ink-muted rounded-full px-2 py-0.5 text-[11px]"
+                    className="bg-surface-subtle text-ink-muted text-nav rounded-full px-2 py-0.5"
                   >
                     {s}
                   </li>

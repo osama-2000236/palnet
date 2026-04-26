@@ -1,6 +1,11 @@
-import { Injectable } from "@nestjs/common";
+import { BadRequestException, Injectable } from "@nestjs/common";
 import { Prisma } from "@palnet/db";
-import type { CursorPageMeta, PeopleSearchQuery, SearchPersonHit } from "@palnet/shared";
+import {
+  ErrorCode,
+  type CursorPageMeta,
+  type PeopleSearchQuery,
+  type SearchPersonHit,
+} from "@palnet/shared";
 
 import { ModerationService } from "../moderation/moderation.service";
 import { PrismaService } from "../prisma/prisma.service";
@@ -17,6 +22,11 @@ interface ProfileSearchRow {
   rank: number;
 }
 
+interface SearchCursor {
+  rank: number;
+  id: string;
+}
+
 @Injectable()
 export class SearchService {
   constructor(
@@ -28,8 +38,9 @@ export class SearchService {
     query: PeopleSearchQuery,
     viewerId: string | null,
   ): Promise<{ data: SearchPersonHit[]; meta: CursorPageMeta }> {
-    const q = query.q.trim();
+    const q = normalizeSearchQuery(query.q);
     const limit = query.limit;
+    const cursor = query.after ? decodeCursor(query.after) : null;
 
     // Anyone on either side of a block with the viewer is dropped from the
     // results. Anonymous search skips this — the blocked relationship only
@@ -40,13 +51,13 @@ export class SearchService {
       blocked.length > 0
         ? Prisma.sql`AND p."userId" NOT IN (${Prisma.join(blocked)})`
         : Prisma.empty;
-    const cursorClause = query.after
+    const cursorClause = cursor
       ? Prisma.sql`
-        WHERE (
-          "rank" < (SELECT "rank" FROM hits WHERE "id" = ${query.after})
+        AND (
+          ts_rank_cd(p."searchVector", search.query) < ${cursor.rank}
           OR (
-            "rank" = (SELECT "rank" FROM hits WHERE "id" = ${query.after})
-            AND "id" > ${query.after}
+            ts_rank_cd(p."searchVector", search.query) = ${cursor.rank}
+            AND p."id" > ${cursor.id}
           )
         )
       `
@@ -55,24 +66,22 @@ export class SearchService {
     const rows = await this.prisma.$queryRaw<ProfileSearchRow[]>`
       WITH search AS (
         SELECT plainto_tsquery('simple', ${q}) AS query
-      ), hits AS (
-        SELECT
-          p."id",
-          p."userId",
-          p."handle",
-          p."firstName",
-          p."lastName",
-          p."headline",
-          p."location",
-          p."avatarUrl",
-          ts_rank_cd(p."searchVector", search.query) AS "rank"
-        FROM "Profile" p, search
-        WHERE p."searchVector" @@ search.query
-        ${blockedClause}
       )
-      SELECT * FROM hits
+      SELECT
+        p."id",
+        p."userId",
+        p."handle",
+        p."firstName",
+        p."lastName",
+        p."headline",
+        p."location",
+        p."avatarUrl",
+        ts_rank_cd(p."searchVector", search.query) AS "rank"
+      FROM "Profile" p, search
+      WHERE p."searchVector" @@ search.query
+      ${blockedClause}
       ${cursorClause}
-      ORDER BY "rank" DESC, "id" ASC
+      ORDER BY "rank" DESC, p."id" ASC
       LIMIT ${limit + 1}
     `;
 
@@ -90,10 +99,57 @@ export class SearchService {
         avatarUrl: p.avatarUrl,
       })),
       meta: {
-        nextCursor: hasMore ? trimmed[trimmed.length - 1]!.id : null,
+        nextCursor: hasMore
+          ? encodeCursor({
+              rank: trimmed[trimmed.length - 1]!.rank,
+              id: trimmed[trimmed.length - 1]!.id,
+            })
+          : null,
         hasMore,
         limit,
       },
     };
   }
+}
+
+function normalizeSearchQuery(value: string): string {
+  return value
+    .trim()
+    .normalize("NFC")
+    .split("")
+    .filter((char) => {
+      const codePoint = char.codePointAt(0) ?? 0;
+      return (
+        codePoint !== 0x0640 && codePoint !== 0x0670 && (codePoint < 0x064b || codePoint > 0x065f)
+      );
+    })
+    .join("")
+    .replace(/[إأآٱ]/g, "ا");
+}
+
+function encodeCursor(cursor: SearchCursor): string {
+  return Buffer.from(JSON.stringify(cursor), "utf8").toString("base64url");
+}
+
+function decodeCursor(value: string): SearchCursor {
+  try {
+    const parsed = JSON.parse(
+      Buffer.from(value, "base64url").toString("utf8"),
+    ) as Partial<SearchCursor>;
+    if (
+      typeof parsed.id === "string" &&
+      typeof parsed.rank === "number" &&
+      Number.isFinite(parsed.rank)
+    ) {
+      return { id: parsed.id, rank: parsed.rank };
+    }
+  } catch {
+    // Fall through to a shaped validation error.
+  }
+  throw new BadRequestException({
+    error: {
+      code: ErrorCode.VALIDATION_FAILED,
+      message: "Invalid search cursor.",
+    },
+  });
 }

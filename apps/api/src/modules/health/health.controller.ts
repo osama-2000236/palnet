@@ -1,4 +1,5 @@
 import { Controller, Get, ServiceUnavailableException } from "@nestjs/common";
+import type { OnModuleDestroy } from "@nestjs/common";
 import { ApiOkResponse, ApiTags } from "@nestjs/swagger";
 import Redis from "ioredis";
 
@@ -6,10 +7,16 @@ import { PrismaService } from "../prisma/prisma.service";
 
 @ApiTags("health")
 @Controller("health")
-export class HealthController {
+export class HealthController implements OnModuleDestroy {
   private readonly startedAt = Date.now();
+  private redis: Redis | null = null;
 
   constructor(private readonly prisma: PrismaService) {}
+
+  onModuleDestroy(): void {
+    this.redis?.disconnect();
+    this.redis = null;
+  }
 
   @Get()
   @ApiOkResponse({
@@ -57,18 +64,8 @@ export class HealthController {
     try {
       await withTimeout(this.prisma.$queryRaw`SELECT 1`, 1000);
 
-      const redisUrl = process.env.REDIS_URL;
-      if (redisUrl) {
-        const redis = new Redis(redisUrl, {
-          lazyConnect: true,
-          maxRetriesPerRequest: 1,
-        });
-        try {
-          await withTimeout(redis.ping(), 1000);
-        } finally {
-          redis.disconnect();
-        }
-      }
+      const redis = this.getRedis();
+      if (redis) await withTimeout(redis.ping(), 1000);
 
       return { data: { status: "ready" } };
     } catch {
@@ -79,6 +76,16 @@ export class HealthController {
         },
       });
     }
+  }
+
+  private getRedis(): Redis | null {
+    const redisUrl = process.env.REDIS_URL;
+    if (!redisUrl) return null;
+    this.redis ??= new Redis(redisUrl, {
+      lazyConnect: true,
+      maxRetriesPerRequest: 1,
+    });
+    return this.redis;
   }
 }
 

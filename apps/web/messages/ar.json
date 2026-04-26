@@ -129,6 +129,10 @@
     "experience": "الخبرات",
     "education": "التعليم",
     "skills": "المهارات",
+    "posts": "المنشورات",
+    "postsEmpty": "لا توجد منشورات بعد.",
+    "loadMorePosts": "تحميل المزيد من المنشورات",
+    "loadingPosts": "جارٍ التحميل…",
     "notFound": "الملف الشخصي غير موجود.",
     "edit": "تعديل الملف",
     "editTitle": "تعديل الملف الشخصي",
@@ -207,7 +211,12 @@
       "POST_MENTION": "أشار إليك {actor} في منشور.",
       "MESSAGE_RECEIVED": "أرسل لك {actor} رسالة.",
       "JOB_APPLICATION_UPDATE": "طرأ تحديث على طلبك الوظيفي.",
-      "PROFILE_VIEW": "شاهد {actor} ملفك الشخصي."
+      "PROFILE_VIEW": "شاهد {actor} ملفك الشخصي.",
+      "MODERATION_USER_SUSPENDED": "تم إيقاف حسابك.",
+      "MODERATION_USER_UNSUSPENDED": "تم رفع الإيقاف عن حسابك.",
+      "MODERATION_POST_TAKEDOWN": "تمت إزالة منشور لك بواسطة المشرفين.",
+      "MODERATION_POST_RESTORED": "تمت استعادة منشور لك.",
+      "MODERATION_APPEAL_REVIEWED": "تمت مراجعة طعنك."
     }
   },
   "jobs": {

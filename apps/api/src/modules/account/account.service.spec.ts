@@ -1,6 +1,7 @@
 import { ConfigService } from "@nestjs/config";
 import { Test } from "@nestjs/testing";
 import { ErrorCode, NotificationType } from "@palnet/shared";
+import * as Sentry from "@sentry/node";
 import * as bcrypt from "bcrypt";
 
 import { AuthService } from "../auth/auth.service";
@@ -8,6 +9,10 @@ import { MailService } from "../mail/mail.service";
 import { PrismaService } from "../prisma/prisma.service";
 
 import { AccountService } from "./account.service";
+
+jest.mock("@sentry/node", () => ({
+  captureException: jest.fn(),
+}));
 
 // `bcrypt.hash` at the production cost (12) takes ~150 ms — across the
 // 10ish password-touching tests in this suite the wall-clock is enough
@@ -91,6 +96,11 @@ describe("AccountService", () => {
       ],
     }).compile();
     service = moduleRef.get(AccountService);
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+    jest.restoreAllMocks();
   });
 
   // ── changeEmail ────────────────────────────────────────────────────────
@@ -292,6 +302,36 @@ describe("AccountService", () => {
     // applies when the work is genuinely slow, not when it errors early.
     await expect(service.exportAccountData("u_missing")).rejects.toMatchObject({
       code: ErrorCode.NOT_FOUND,
+    });
+  });
+
+  it("exportAccountData: captures queued async export failures", async () => {
+    jest.useFakeTimers();
+    const capture = Sentry.captureException as jest.Mock;
+    capture.mockReturnValue("event-id");
+    prisma.user.findUnique.mockResolvedValue({
+      id: "u1",
+      email: "me@e.com",
+      profile: null,
+    });
+    mail.sendAccountExportEmail.mockImplementation(
+      () =>
+        new Promise((_resolve, reject) => {
+          setTimeout(() => reject(new Error("resend down")), 31_000);
+        }),
+    );
+
+    const result = service.exportAccountData("u1");
+
+    await jest.advanceTimersByTimeAsync(30_000);
+    await expect(result).resolves.toEqual({ status: "queued" });
+
+    await jest.advanceTimersByTimeAsync(1_000);
+    await Promise.resolve();
+
+    expect(capture).toHaveBeenCalledWith(expect.any(Error), {
+      tags: { feature: "account-export" },
+      user: { id: "u1" },
     });
   });
 

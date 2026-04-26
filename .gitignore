@@ -25,6 +25,8 @@ yarn-error.log*
 pnpm-debug.log*
 
 # Editor
+.claude/
+.codex-run/
 .vscode/*
 !.vscode/extensions.json
 !.vscode/settings.json.shared
@@ -61,3 +63,4 @@ packages/db/prisma/*.db-journal
 # Misc
 *.tsbuildinfo
 .cache/
+docs.rar

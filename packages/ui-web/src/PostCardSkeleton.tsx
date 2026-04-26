@@ -28,7 +28,7 @@ export function PostCardSkeleton(): JSX.Element {
 
       {/* Stats row */}
       <div className="flex items-center gap-2 px-4 py-2.5">
-        <div className="bg-surface-subtle h-[18px] w-[18px] animate-pulse rounded-full" />
+        <div className="bg-surface-subtle h-badge w-badge animate-pulse rounded-full" />
         <div className="bg-surface-subtle h-3 w-8 animate-pulse rounded" />
         <div className="flex-1" />
         <div className="bg-surface-subtle h-3 w-28 animate-pulse rounded" />

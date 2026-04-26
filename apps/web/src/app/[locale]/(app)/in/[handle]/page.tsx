@@ -1,17 +1,27 @@
 "use client";
 
-import { ChatRoom as ChatRoomSchema, Profile as ProfileSchema, type Profile } from "@palnet/shared";
-import { Avatar, Image, ProfilePageSkeleton, Surface } from "@palnet/ui-web";
+import {
+  ChatRoom as ChatRoomSchema,
+  Post as PostSchema,
+  Profile as ProfileSchema,
+  cursorPage,
+  type Post,
+  type Profile,
+} from "@palnet/shared";
+import { Avatar, Image, PostCardSkeleton, ProfilePageSkeleton, Surface } from "@palnet/ui-web";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { ConnectButton } from "@/components/ConnectButton";
 import { MoreMenu } from "@/components/MoreMenu";
+import { PostCard } from "@/components/PostCard";
 import { ReportDialog } from "@/components/ReportDialog";
-import { apiCall, apiFetch } from "@/lib/api";
+import { apiCall, apiFetch, apiFetchPage } from "@/lib/api";
 import { getAccessToken } from "@/lib/session";
+
+const ProfilePostsPage = cursorPage(PostSchema);
 
 export default function ProfileRoute(): JSX.Element {
   const params = useParams<{ handle: string }>();
@@ -26,17 +36,49 @@ export default function ProfileRoute(): JSX.Element {
   const [openingDm, setOpeningDm] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
   const [blocking, setBlocking] = useState(false);
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [postsCursor, setPostsCursor] = useState<string | null>(null);
+  const [postsHasMore, setPostsHasMore] = useState(false);
+  const [postsLoading, setPostsLoading] = useState(false);
+
+  const loadPosts = useCallback(async (profileHandle: string, after: string | null) => {
+    const token = getAccessToken() ?? undefined;
+    setPostsLoading(true);
+    try {
+      const qs = new URLSearchParams({ limit: "10" });
+      if (after) qs.set("after", after);
+      const page = await apiFetchPage(
+        `/profiles/${profileHandle}/posts?${qs.toString()}`,
+        ProfilePostsPage,
+        { token },
+      );
+      setPosts((prev) => (after ? [...prev, ...page.data] : page.data));
+      setPostsCursor(page.meta.nextCursor);
+      setPostsHasMore(page.meta.hasMore);
+    } catch {
+      if (!after) setPosts([]);
+      setPostsHasMore(false);
+    } finally {
+      setPostsLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     if (!handle) return;
     const token = getAccessToken() ?? undefined;
     setLoading(true);
     setError(null);
+    setPosts([]);
+    setPostsCursor(null);
+    setPostsHasMore(false);
     apiFetch(`/profiles/${handle}`, ProfileSchema, { token })
-      .then((p) => setProfile(p))
+      .then((p) => {
+        setProfile(p);
+        void loadPosts(handle, null);
+      })
       .catch(() => setError(t("notFound")))
       .finally(() => setLoading(false));
-  }, [handle, t]);
+  }, [handle, loadPosts, t]);
 
   if (loading) {
     return <ProfilePageSkeleton />;
@@ -44,7 +86,7 @@ export default function ProfileRoute(): JSX.Element {
 
   if (error || !profile) {
     return (
-      <main className="mx-auto max-w-[840px] px-6 py-10">
+      <main className="max-w-profile mx-auto px-6 py-10">
         <p className="text-ink-muted">{error ?? t("notFound")}</p>
       </main>
     );
@@ -78,7 +120,7 @@ export default function ProfileRoute(): JSX.Element {
   }
 
   return (
-    <main className="mx-auto flex w-full max-w-[840px] flex-col gap-6 px-6 py-8">
+    <main className="max-w-profile mx-auto flex w-full flex-col gap-6 px-6 py-8">
       {profile.coverUrl ? (
         <Image
           src={profile.coverUrl}
@@ -176,6 +218,50 @@ export default function ProfileRoute(): JSX.Element {
         targetId={profile.userId}
         onClose={() => setReportOpen(false)}
       />
+
+      <Surface as="section" variant="flat" padding="6">
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <h2 className="text-ink text-xl font-semibold">{t("posts")}</h2>
+        </div>
+        {postsLoading && posts.length === 0 ? (
+          <div className="flex flex-col gap-3" aria-hidden="true">
+            <PostCardSkeleton />
+            <PostCardSkeleton />
+          </div>
+        ) : posts.length === 0 ? (
+          <p className="text-ink-muted text-sm">{t("postsEmpty")}</p>
+        ) : (
+          <div className="flex flex-col gap-3">
+            <ul className="flex flex-col gap-3">
+              {posts.map((post) => (
+                <li key={post.id}>
+                  <PostCard
+                    post={post}
+                    onChange={(next) =>
+                      setPosts((prev) => prev.map((item) => (item.id === next.id ? next : item)))
+                    }
+                    onHide={() =>
+                      setPosts((prev) => prev.filter((item) => item.author.id !== post.author.id))
+                    }
+                  />
+                </li>
+              ))}
+            </ul>
+            {postsHasMore ? (
+              <button
+                type="button"
+                onClick={() => {
+                  if (handle) void loadPosts(handle, postsCursor);
+                }}
+                disabled={postsLoading}
+                className="border-line-soft bg-surface text-ink hover:bg-surface-subtle self-center rounded-md border px-4 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {postsLoading ? t("loadingPosts") : t("loadMorePosts")}
+              </button>
+            ) : null}
+          </div>
+        )}
+      </Surface>
 
       {profile.about ? (
         <Surface as="section" variant="flat" padding="6">

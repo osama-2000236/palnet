@@ -35,9 +35,7 @@ const AUTHED_ROUTES: ReadonlyArray<AuthedRoute> = [
 async function scan(page: Page): Promise<void> {
   await page.locator("main").first().waitFor({ timeout: 15_000 });
   await page.locator("h1").first().waitFor({ timeout: 15_000 });
-  await page.getByRole("button", { name: /demo|ديمو/i }).waitFor({
-    timeout: 15_000,
-  });
+  await expect(page.getByRole("banner")).toBeVisible();
 
   const results = await new AxeBuilder({ page })
     .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "best-practice"])

@@ -97,7 +97,7 @@ export default function AdminUserDetailPage(): JSX.Element {
 
   if (forbidden) {
     return (
-      <main className="mx-auto w-full max-w-[860px] px-4 py-6">
+      <main className="max-w-admin mx-auto w-full px-4 py-6">
         <Surface variant="tinted" padding="8">
           <h1 className="text-ink text-lg font-semibold">{t("forbiddenTitle")}</h1>
           <p className="text-ink-muted mt-1 text-sm">{t("forbiddenBody")}</p>
@@ -108,7 +108,7 @@ export default function AdminUserDetailPage(): JSX.Element {
 
   if (notFound) {
     return (
-      <main className="mx-auto w-full max-w-[860px] px-4 py-6">
+      <main className="max-w-admin mx-auto w-full px-4 py-6">
         <Surface variant="tinted" padding="8">
           <h1 className="text-ink text-lg font-semibold">{t("notFoundTitle")}</h1>
           <p className="text-ink-muted mt-1 text-sm">{t("notFoundBody")}</p>
@@ -118,7 +118,7 @@ export default function AdminUserDetailPage(): JSX.Element {
   }
 
   return (
-    <main className="mx-auto w-full max-w-[860px] px-4 py-6" data-testid="admin-user-detail">
+    <main className="max-w-admin mx-auto w-full px-4 py-6" data-testid="admin-user-detail">
       <header className="mb-4">
         <h1 className="text-ink text-xl font-semibold">{t("title")}</h1>
         <p className="text-ink-muted mt-1 text-sm">{t("description")}</p>

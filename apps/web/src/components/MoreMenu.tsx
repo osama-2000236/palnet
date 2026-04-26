@@ -59,7 +59,7 @@ export function MoreMenu({ label, items }: { label: string; items: MoreMenuItem[
           id={menuId}
           role="menu"
           className={cx(
-            "border-line-soft bg-surface absolute z-20 mt-1 min-w-[200px] overflow-hidden rounded-md border shadow-lg",
+            "border-line-soft bg-surface shadow-pop min-w-menu absolute z-20 mt-1 overflow-hidden rounded-md border",
             // Anchor to the inline-end of the button — RTL-safe.
             "end-0 top-full",
           )}

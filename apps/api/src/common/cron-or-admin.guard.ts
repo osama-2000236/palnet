@@ -1,3 +1,5 @@
+import { timingSafeEqual } from "node:crypto";
+
 import {
   type CanActivate,
   type ExecutionContext,
@@ -24,7 +26,12 @@ export class CronOrAdminGuard implements CanActivate {
     const secret = this.config.get<string>("CRON_SECRET");
     const header = req.headers.authorization ?? "";
     const match = /^Bearer\s+(.+)$/.exec(header);
-    if (secret && match?.[1] === secret) return true;
+    const presented = match?.[1];
+    if (secret && presented) {
+      const expected = Buffer.from(secret);
+      const actual = Buffer.from(presented);
+      if (actual.length === expected.length && timingSafeEqual(actual, expected)) return true;
+    }
 
     if (user) {
       throw new ForbiddenException({

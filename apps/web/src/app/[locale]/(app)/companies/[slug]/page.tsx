@@ -48,7 +48,7 @@ export default function CompanyPage(): JSX.Element {
 
   if (error || !company) {
     return (
-      <main className="mx-auto max-w-[960px] px-4 py-6">
+      <main className="max-w-content mx-auto px-4 py-6">
         <Surface variant="tinted" padding="6">
           <p className="text-ink-muted text-sm">{error ?? tCompany("notFound")}</p>
         </Surface>
@@ -57,7 +57,7 @@ export default function CompanyPage(): JSX.Element {
   }
 
   return (
-    <main className="mx-auto flex w-full max-w-[960px] flex-col gap-4 px-4 py-6">
+    <main className="max-w-content mx-auto flex w-full flex-col gap-4 px-4 py-6">
       {company.coverUrl ? (
         <Image
           src={company.coverUrl}
@@ -160,12 +160,12 @@ export default function CompanyPage(): JSX.Element {
                       </div>
                       <div className="flex flex-col items-end gap-2">
                         {job.viewer.hasApplied ? (
-                          <span className="border-success/30 bg-success/10 text-success rounded-full border px-2 py-1 text-[11px] font-semibold">
+                          <span className="border-success/30 bg-success/10 text-success text-nav rounded-full border px-2 py-1 font-semibold">
                             {tJobs("appliedBadge")}
                           </span>
                         ) : null}
                         {!job.isActive ? (
-                          <span className="border-line-hard bg-surface text-ink-muted rounded-full border px-2 py-1 text-[11px]">
+                          <span className="border-line-hard bg-surface text-ink-muted text-nav rounded-full border px-2 py-1">
                             {tCompany("closedJob")}
                           </span>
                         ) : null}

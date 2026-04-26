@@ -1,5 +1,7 @@
 import { Test } from "@nestjs/testing";
+import { ErrorCode, PeopleSearchQuery } from "@palnet/shared";
 
+import { ZodValidationPipe } from "../../common/zod-pipe";
 import { ModerationService } from "../moderation/moderation.service";
 import { PrismaService } from "../prisma/prisma.service";
 
@@ -28,6 +30,22 @@ const hit = (overrides: Partial<{ id: string; handle: string }> = {}) => ({
   avatarUrl: null,
   rank: 0.7,
 });
+
+function cursor(rank: number, id: string): string {
+  return Buffer.from(JSON.stringify({ rank, id }), "utf8").toString("base64url");
+}
+
+function queryText(call: unknown[]): string {
+  return call
+    .flatMap((part) => {
+      if (Array.isArray(part)) return part;
+      if (part && typeof part === "object" && "strings" in part) {
+        return (part as { strings: string[] }).strings;
+      }
+      return [String(part)];
+    })
+    .join(" ");
+}
 
 describe("SearchService", () => {
   let service: SearchService;
@@ -69,15 +87,17 @@ describe("SearchService", () => {
 
     expect(page.data).toHaveLength(2);
     expect(page.meta.hasMore).toBe(true);
-    expect(page.meta.nextCursor).toBe("p_2");
+    expect(page.meta.nextCursor).toBe(cursor(0.7, "p_2"));
   });
 
-  it("applies the raw FTS cursor when `after` is provided", async () => {
+  it("applies the (rank,id) cursor without a hits CTE lookup", async () => {
     prisma.$queryRaw.mockResolvedValue([]);
 
-    await service.people({ q: "x", limit: 20, after: "p_prev" }, null);
+    await service.people({ q: "x", limit: 20, after: cursor(0.65, "p_prev") }, null);
 
-    expect(prisma.$queryRaw).toHaveBeenCalled();
+    const sql = queryText(prisma.$queryRaw.mock.calls[0]!);
+    expect(sql).toContain('p."id" >');
+    expect(sql).not.toContain('SELECT "rank" FROM hits');
   });
 
   it("ranks exact FTS matches before lower-ranked rows", async () => {
@@ -89,5 +109,28 @@ describe("SearchService", () => {
     const page = await service.people({ q: "محمد", limit: 20 }, null);
 
     expect(page.data.map((row) => row.handle)).toEqual(["mohammad-ali", "mohammad-work"]);
+  });
+
+  it("normalizes Arabic tashkeel and alef variants before querying", async () => {
+    prisma.$queryRaw.mockResolvedValue([]);
+
+    await service.people({ q: "أحم\u0651د", limit: 20 }, null);
+
+    const call = prisma.$queryRaw.mock.calls[0]!;
+    expect(call).toContain("احمد");
+  });
+
+  it("rejects punctuation-only queries through API validation", () => {
+    const pipe = new ZodValidationPipe(PeopleSearchQuery);
+
+    try {
+      pipe.transform({ q: "!", limit: "20" }, {} as never);
+      throw new Error("pipe did not throw");
+    } catch (err) {
+      const payload = (err as { getResponse?: () => unknown }).getResponse?.();
+      expect(payload).toMatchObject({
+        error: { code: ErrorCode.VALIDATION_FAILED },
+      });
+    }
   });
 });

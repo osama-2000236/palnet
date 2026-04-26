@@ -8,7 +8,7 @@ import { Surface } from "./Surface";
 
 export function CompanyPageSkeleton(): JSX.Element {
   return (
-    <main className="mx-auto flex w-full max-w-[960px] flex-col gap-4 px-4 py-6" aria-hidden="true">
+    <main className="max-w-content mx-auto flex w-full flex-col gap-4 px-4 py-6" aria-hidden="true">
       {/* Cover */}
       <div className="border-line-soft bg-surface-subtle h-44 w-full animate-pulse rounded-xl border md:h-56" />
 

@@ -36,4 +36,4 @@ Placeholder rotation: primary engineer, backup engineer, product owner.
 - Render logs: filter `palnet-api` for 5xx responses, readiness failures, cron failures, and Prisma errors.
 - Sentry API dashboard: top non-domain errors and p95 route latency by release.
 - Sentry web dashboard: route-level LCP, CLS, and client errors by release.
-- Search FTS tradeoff: PostgreSQL `simple` config avoids new infrastructure but does not stem Arabic. Re-evaluate `pg_trgm` or managed search after launch.
+- Search FTS tradeoff: PostgreSQL `simple` config avoids new infrastructure. Baydar normalizes FTS text with `unaccent`, Arabic tashkeel/tatweel stripping, and alef variant folding because core PostgreSQL does not ship an Arabic stemmer. Re-evaluate `pg_trgm` or managed search after launch.

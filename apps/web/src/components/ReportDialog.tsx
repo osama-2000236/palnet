@@ -114,7 +114,10 @@ export function ReportDialog({
       }}
     >
       <div
-        className={cx("bg-surface w-full max-w-md rounded-lg p-5 shadow-xl", "flex flex-col gap-4")}
+        className={cx(
+          "bg-surface shadow-pop w-full max-w-md rounded-lg p-5",
+          "flex flex-col gap-4",
+        )}
       >
         <header className="flex flex-col gap-1">
           <h2 id={titleId} className="text-ink text-lg font-bold">

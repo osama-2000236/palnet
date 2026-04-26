@@ -137,9 +137,9 @@ export function Avatar({
   const dot: ViewStyle = {
     position: "absolute",
     bottom: 0,
-    // Logical end: in an RTL layout the caller's parent will handle mirroring.
+    // Logical end follows the locale direction.
     // We inset by ~6% of the box so the dot sits on the bottom-end curve.
-    right: 0,
+    end: 0,
     width: DOT_SIZE[size],
     height: DOT_SIZE[size],
     borderRadius: DOT_SIZE[size] / 2,

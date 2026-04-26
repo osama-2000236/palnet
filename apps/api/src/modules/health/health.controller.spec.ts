@@ -5,9 +5,18 @@ import { PrismaService } from "../prisma/prisma.service";
 
 import { HealthController } from "./health.controller";
 
+jest.mock("ioredis", () => ({
+  __esModule: true,
+  default: jest.fn().mockImplementation(() => ({
+    ping: jest.fn().mockResolvedValue("PONG"),
+    disconnect: jest.fn(),
+  })),
+}));
+
 describe("HealthController", () => {
   let controller: HealthController;
   let prisma: { $queryRaw: jest.Mock };
+  const RedisMock = Redis as unknown as jest.Mock;
 
   beforeEach(async () => {
     prisma = { $queryRaw: jest.fn().mockResolvedValue([{ "?column?": 1 }]) };
@@ -20,7 +29,7 @@ describe("HealthController", () => {
   });
 
   afterEach(() => {
-    jest.restoreAllMocks();
+    jest.clearAllMocks();
     delete process.env.REDIS_URL;
   });
 
@@ -32,14 +41,32 @@ describe("HealthController", () => {
   });
 
   it("returns ready when the database and redis respond", async () => {
-    const ping = jest.spyOn(Redis.prototype, "ping").mockResolvedValue("PONG");
-    const disconnect = jest.spyOn(Redis.prototype, "disconnect").mockReturnValue(undefined);
     process.env.REDIS_URL = "redis://localhost:6379";
 
     await expect(controller.ready()).resolves.toEqual({ data: { status: "ready" } });
+    const redis = RedisMock.mock.results[0]?.value as {
+      ping: jest.Mock;
+      disconnect: jest.Mock;
+    };
     expect(prisma.$queryRaw).toHaveBeenCalled();
-    expect(ping).toHaveBeenCalled();
-    expect(disconnect).toHaveBeenCalled();
+    expect(RedisMock).toHaveBeenCalledTimes(1);
+    expect(redis.ping).toHaveBeenCalledTimes(1);
+    expect(redis.disconnect).not.toHaveBeenCalled();
+
+    controller.onModuleDestroy();
+    expect(redis.disconnect).toHaveBeenCalledTimes(1);
+  });
+
+  it("reuses one Redis client across readiness checks", async () => {
+    process.env.REDIS_URL = "redis://localhost:6379";
+
+    for (let i = 0; i < 5; i += 1) {
+      await expect(controller.ready()).resolves.toEqual({ data: { status: "ready" } });
+    }
+
+    const redis = RedisMock.mock.results[0]?.value as { ping: jest.Mock };
+    expect(RedisMock).toHaveBeenCalledTimes(1);
+    expect(redis.ping).toHaveBeenCalledTimes(5);
   });
 
   it("returns 503 when the database check fails", async () => {

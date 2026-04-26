@@ -49,6 +49,11 @@ const preset: Partial<Config> = {
         mono: [tokens.type.family.mono],
       },
       fontSize: {
+        micro: [
+          `${tokens.type.scale.micro.size}px`,
+          { lineHeight: `${tokens.type.scale.micro.line}` },
+        ],
+        nav: [`${tokens.type.scale.nav.size}px`, { lineHeight: `${tokens.type.scale.nav.line}` }],
         display: [
           `${tokens.type.scale.display.size}px`,
           {
@@ -78,7 +83,41 @@ const preset: Partial<Config> = {
           },
         ],
       },
-      spacing: Object.fromEntries(Object.entries(tokens.space).map(([k, v]) => [k, `${v}px`])),
+      spacing: {
+        ...Object.fromEntries(Object.entries(tokens.space).map(([k, v]) => [k, `${v}px`])),
+        badge: `${tokens.component.badge.compact}px`,
+        composer: `${tokens.layout.composerMinHeight}px`,
+        coverLetter: `${tokens.layout.coverLetterMinHeight}px`,
+        media: `${tokens.layout.mediaMaxHeight}px`,
+        "avatar-dot-xs": `${tokens.component.avatarDot.xs}px`,
+        "avatar-dot-sm": `${tokens.component.avatarDot.sm}px`,
+        "avatar-dot-md": `${tokens.component.avatarDot.md}px`,
+        "avatar-dot-lg": `${tokens.component.avatarDot.lg}px`,
+        "avatar-dot-xl": `${tokens.component.avatarDot.xl}px`,
+      },
+      maxWidth: {
+        chrome: `${tokens.chrome.maxContentWidth}px`,
+        content: `${tokens.layout.contentWidth}px`,
+        admin: `${tokens.layout.adminWidth}px`,
+        dialog: `${tokens.layout.dialogWidth}px`,
+        detail: `${tokens.layout.detailWidth}px`,
+        legal: `${tokens.layout.legalWidth}px`,
+        profile: `${tokens.layout.profileWidth}px`,
+        search: `${tokens.layout.searchWidth}px`,
+        sheet: `${tokens.layout.sheetWidth}px`,
+      },
+      minWidth: {
+        badge: `${tokens.component.badge.compact}px`,
+        menu: `${tokens.layout.menuMinWidth}px`,
+        navItem: `${tokens.layout.navItemMinWidth}px`,
+        unread: `${tokens.component.badge.unreadMinWidth}px`,
+      },
+      borderWidth: {
+        3: `${tokens.component.border.emphasized}px`,
+      },
+      gridTemplateColumns: {
+        messages: `${tokens.layout.searchWidth}px minmax(0, 1fr)`,
+      },
     },
   },
 };

@@ -9,7 +9,7 @@ import { Surface } from "./Surface";
 
 export function ProfilePageSkeleton(): JSX.Element {
   return (
-    <main className="mx-auto flex w-full max-w-[840px] flex-col gap-6 px-6 py-8" aria-hidden="true">
+    <main className="max-w-profile mx-auto flex w-full flex-col gap-6 px-6 py-8" aria-hidden="true">
       {/* Cover */}
       <div className="bg-surface-subtle h-40 w-full animate-pulse rounded-lg sm:h-52" />
 

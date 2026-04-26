@@ -7,18 +7,26 @@ import { PrismaService } from "../prisma/prisma.service";
 import { PostsService } from "./posts.service";
 
 type PrismaStub = {
+  profile: {
+    findUnique: jest.Mock;
+  };
   post: {
     create: jest.Mock;
     findFirst: jest.Mock;
+    findMany: jest.Mock;
     update: jest.Mock;
   };
 };
 
 function buildPrisma(): PrismaStub {
   return {
+    profile: {
+      findUnique: jest.fn(),
+    },
     post: {
       create: jest.fn(),
       findFirst: jest.fn(),
+      findMany: jest.fn(),
       update: jest.fn(),
     },
   };
@@ -74,6 +82,29 @@ describe("PostsService", () => {
       expect(dto.counts.reactions).toBe(0);
       expect(dto.viewer.reaction).toBeNull();
       expect(prisma.post.create).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe("listByAuthorHandle", () => {
+    it("returns visible author posts in newest order", async () => {
+      prisma.profile.findUnique.mockResolvedValue({ userId: "user_1" });
+      prisma.post.findMany.mockResolvedValue([hydrated(), hydrated({ id: "post_2" })]);
+
+      const page = await service.listByAuthorHandle("viewer_1", "osama", null, 1);
+
+      expect(prisma.post.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            authorId: "user_1",
+            deletedAt: null,
+            takedownAt: null,
+          }),
+          take: 2,
+        }),
+      );
+      expect(page.data).toHaveLength(1);
+      expect(page.meta.hasMore).toBe(true);
+      expect(page.meta.nextCursor).toBe("post_1");
     });
   });
 

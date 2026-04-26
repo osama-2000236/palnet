@@ -276,7 +276,7 @@ export function Icon({
       );
     case "settings":
       // Gear: eight-tooth silhouette + center dot. Kept simple to read at
-      // 18px alongside other header glyphs.
+      // Compact alongside other header glyphs.
       return (
         <svg {...common}>
           {title ? <title>{title}</title> : null}

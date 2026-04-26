@@ -13,6 +13,9 @@ config.resolver.nodeModulesPaths = [
   path.resolve(projectRoot, "node_modules"),
   path.resolve(workspaceRoot, "node_modules"),
 ];
-config.resolver.disableHierarchicalLookup = true;
+// pnpm stores package-owned dependencies under each package's real path in
+// node_modules/.pnpm. Keep hierarchical lookup on so Metro can resolve nested
+// deps such as @sentry/react-native -> @sentry/core.
+config.resolver.disableHierarchicalLookup = false;
 
 module.exports = withNativeWind(config, { input: "./global.css" });

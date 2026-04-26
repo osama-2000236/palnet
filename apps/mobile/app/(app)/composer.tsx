@@ -108,7 +108,7 @@ export default function ComposerScreen(): JSX.Element {
           placeholder={t("composer.placeholder")}
           multiline
           maxLength={3000}
-          className="border-ink-muted/30 bg-surface text-ink min-h-[160px] rounded-md border p-3"
+          className="border-ink-muted/30 bg-surface text-ink min-h-composer rounded-md border p-3"
           textAlignVertical="top"
           testID="composer-body"
         />

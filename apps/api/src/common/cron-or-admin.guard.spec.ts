@@ -39,6 +39,22 @@ describe("CronOrAdminGuard", () => {
     ).toBe(true);
   });
 
+  it("rejects wrong-length cron bearer secrets", () => {
+    try {
+      guard("s".repeat(32)).canActivate(
+        ctx({
+          headers: { authorization: "Bearer short" },
+        }),
+      );
+      throw new Error("guard did not throw");
+    } catch (err) {
+      const payload = (err as { getResponse?: () => unknown }).getResponse?.();
+      expect(payload).toMatchObject({
+        error: { message: "Missing cron secret." },
+      });
+    }
+  });
+
   it("rejects unauthenticated calls without the cron secret", () => {
     // NestJS HttpException stringifies to its class name, not the
     // structured payload. Read the response body off the thrown error

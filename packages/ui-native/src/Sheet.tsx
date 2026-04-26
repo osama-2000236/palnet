@@ -41,7 +41,7 @@ export interface SheetProps {
   scroll?: boolean;
   /** Props forwarded to the inner ScrollView. */
   scrollProps?: ScrollViewProps;
-  /** Accessibility label for the close button. Defaults to "Close". */
+  /** Accessibility label for the close button. Defaults to Arabic copy. */
   closeLabel?: string;
 }
 
@@ -52,7 +52,7 @@ export function Sheet({
   children,
   scroll = true,
   scrollProps,
-  closeLabel = "Close",
+  closeLabel = "إغلاق",
 }: SheetProps): JSX.Element {
   return (
     <Modal
@@ -117,13 +117,18 @@ export function Sheet({
 
 const styles = StyleSheet.create({
   backdrop: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(0, 0, 0, 0.35)",
+    position: "absolute",
+    top: 0,
+    bottom: 0,
+    start: 0,
+    end: 0,
+    backgroundColor: nativeTokens.color.ink,
+    opacity: 0.35,
   },
   card: {
     position: "absolute",
-    left: 0,
-    right: 0,
+    start: 0,
+    end: 0,
     bottom: 0,
     backgroundColor: nativeTokens.color.surface,
     borderTopLeftRadius: nativeTokens.radius.xl,

@@ -23,7 +23,7 @@ export default function SettingsLayout({ children }: { children: ReactNode }): J
   ];
 
   return (
-    <main className="mx-auto flex w-full max-w-[960px] gap-6 px-6 py-8">
+    <main className="max-w-content mx-auto flex w-full gap-6 px-6 py-8">
       <nav aria-label={t("navLabel")} className="hidden w-52 shrink-0 flex-col gap-1 md:flex">
         <h1 className="text-ink mb-2 text-lg font-bold">{t("title")}</h1>
         {items.map((item) => {

@@ -172,9 +172,7 @@ export function PostCard({
 
       {/* Body */}
       {body ? (
-        <div className="text-ink whitespace-pre-wrap px-4 pb-3 text-[15px] leading-[1.7]">
-          {body}
-        </div>
+        <div className="text-ink text-body whitespace-pre-wrap px-4 pb-3 leading-[1.7]">{body}</div>
       ) : null}
 
       {/* Media */}
@@ -187,8 +185,8 @@ export function PostCard({
                   src={m.url}
                   alt=""
                   blurhash={m.blurhash ?? null}
-                  wrapperClassName="max-h-[420px] w-full"
-                  className="max-h-[420px] w-full object-cover"
+                  wrapperClassName="max-h-media w-full"
+                  className="max-h-media w-full object-cover"
                 />
               ) : (
                 <div className="bg-surface-subtle text-ink-muted flex aspect-video w-full items-center justify-center">
@@ -204,7 +202,7 @@ export function PostCard({
       <div className="flex items-center gap-2 px-4 py-2.5">
         <span
           aria-hidden="true"
-          className="bg-brand-600 text-ink-inverse inline-flex h-[18px] w-[18px] items-center justify-center rounded-full"
+          className="bg-brand-600 text-ink-inverse h-badge w-badge inline-flex items-center justify-center rounded-full"
         >
           <Icon name="thumb" size={10} strokeWidth={2.4} />
         </span>

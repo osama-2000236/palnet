@@ -19,7 +19,7 @@ export function TypingIndicator({ label }: TypingIndicatorProps): JSX.Element {
       <div
         aria-hidden="true"
         className={cx(
-          "border-line-soft bg-surface inline-flex items-center gap-1 rounded-[14px] rounded-es-[4px] border px-3.5 py-2.5",
+          "border-line-soft bg-surface rounded-es-xs inline-flex items-center gap-1 rounded-lg border px-3.5 py-2.5",
         )}
       >
         <Dot delayMs={0} />

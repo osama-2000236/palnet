@@ -1,4 +1,4 @@
-{/* LEGAL COPY PENDING REVIEW */}
+{/_ LEGAL COPY PENDING REVIEW _/}
 
 ## Community Guidelines
 

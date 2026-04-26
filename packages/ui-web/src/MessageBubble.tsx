@@ -75,12 +75,12 @@ export function MessageBubble({
     >
       <div
         className={cx(
-          "whitespace-pre-wrap break-words rounded-[14px] border px-3.5 py-2.5 text-sm leading-[1.6]",
+          "whitespace-pre-wrap break-words rounded-lg border px-3.5 py-2.5 text-sm leading-[1.6]",
           mine ? "bg-brand-100 border-brand-200 text-ink" : "bg-surface border-line-soft text-ink",
-          // Tail — the only corner that goes tight (4px). Logical so it
+          // Tail — the only corner that goes tight. Logical so it
           // flips correctly in RTL.
-          tail && mine && "rounded-ee-[4px]",
-          tail && !mine && "rounded-es-[4px]",
+          tail && mine && "rounded-ee-xs",
+          tail && !mine && "rounded-es-xs",
           status === "failed" && "border-danger/60",
         )}
       >
@@ -91,7 +91,7 @@ export function MessageBubble({
       {timestamp || (mine && status) ? (
         <div
           className={cx(
-            "mt-0.5 flex items-center gap-1 text-[11px]",
+            "text-nav mt-0.5 flex items-center gap-1",
             mine ? "text-ink-muted self-end" : "text-ink-muted self-start",
           )}
         >
@@ -114,7 +114,7 @@ export function MessageBubble({
         <button
           type="button"
           onClick={onRetry}
-          className="text-danger focus-visible:ring-danger mt-0.5 text-[11px] hover:underline focus:outline-none focus-visible:ring-2"
+          className="text-danger focus-visible:ring-danger text-nav mt-0.5 hover:underline focus:outline-none focus-visible:ring-2"
         >
           {labels.failedHint}
         </button>

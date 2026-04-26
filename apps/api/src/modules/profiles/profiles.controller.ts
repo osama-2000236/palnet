@@ -1,10 +1,13 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Put } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query } from "@nestjs/common";
 import { ApiBearerAuth, ApiOkResponse, ApiTags } from "@nestjs/swagger";
 import {
   AddSkillBody,
+  CursorPageQuery,
+  type CursorPageMeta,
   EducationBody,
   ExperienceBody,
   OnboardProfileBody,
+  type Post as PostDto,
   UpdateProfileBody,
   type Profile as ProfileDto,
 } from "@palnet/shared";
@@ -13,13 +16,17 @@ import { ZodValidationPipe } from "../../common/zod-pipe";
 import { CurrentUser, type AuthUser } from "../auth/decorators/current-user.decorator";
 import { OptionalAuth } from "../auth/decorators/optional-auth.decorator";
 import { OptionalUser } from "../auth/decorators/optional-user.decorator";
+import { PostsService } from "../posts/posts.service";
 
 import { ProfilesService } from "./profiles.service";
 
 @ApiTags("profiles")
 @Controller("profiles")
 export class ProfilesController {
-  constructor(private readonly profiles: ProfilesService) {}
+  constructor(
+    private readonly profiles: ProfilesService,
+    private readonly posts: PostsService,
+  ) {}
 
   @Post("onboard")
   @ApiBearerAuth()
@@ -142,6 +149,24 @@ export class ProfilesController {
   ): Promise<{ data: ProfileDto }> {
     const data = await this.profiles.removeSkill(user.id, skillId);
     return { data };
+  }
+
+  // Public: anyone can view a profile, but we attach viewer state when a
+  // token is supplied.
+  @OptionalAuth()
+  @Get(":handle/posts")
+  async postsByHandle(
+    @Param("handle") handle: string,
+    @OptionalUser() viewer: AuthUser | null,
+    @Query(new ZodValidationPipe(CursorPageQuery))
+    query: CursorPageQuery,
+  ): Promise<{ data: PostDto[]; meta: CursorPageMeta }> {
+    return this.posts.listByAuthorHandle(
+      viewer?.id ?? null,
+      handle,
+      query.after ?? null,
+      query.limit,
+    );
   }
 
   // Public: anyone can view a profile, but we attach viewer state when a

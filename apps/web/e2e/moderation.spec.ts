@@ -12,12 +12,8 @@ test.describe("Moderation flow", () => {
   });
 
   test("report, takedown, and notify", async ({ page, request }, testInfo) => {
-    test.skip(testInfo.project.name !== "chromium-en");
-    // FIXME: selectors need to be aligned with the actual rendered DOM in CI.
-    // The flow runs locally but the locators ("start a post" button,
-    // "more options" button on the profile post card) don't resolve in CI.
-    // Re-enable after auditing the moderation surfaces against the spec.
-    test.fixme(true, "Selectors require alignment with rendered DOM in CI.");
+    test.skip(testInfo.project.name !== "chromium-en", "EN-only project gate");
+    test.fixme(true, "Selectors require alignment with rendered DOM in CI - see issue #9.");
 
     const author = await createUserViaApi(request, "report-target");
     const reporter = await createUserViaApi(request, "reporter");
@@ -57,8 +53,9 @@ test.describe("Moderation flow", () => {
 
     await setSession(page, reporter.session);
     await page.goto(`/en/in/${author.handle}`);
-    await expect(page.getByText(postBody)).toBeVisible();
-    await page.getByRole("button", { name: /more options/i }).click();
+    const reportedPost = page.locator("article").filter({ hasText: postBody });
+    await expect(reportedPost).toBeVisible();
+    await reportedPost.getByRole("button", { name: /more options/i }).click();
     await page.getByRole("menuitem", { name: /report this post/i }).click();
     await page.getByRole("radio", { name: /spam or scam/i }).check();
     await page.getByRole("button", { name: /submit report/i }).click();

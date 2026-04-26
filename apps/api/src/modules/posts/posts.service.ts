@@ -1,5 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import {
+  type CursorPageMeta,
   type CreatePostBody,
   ErrorCode,
   type Post as PostDto,
@@ -14,6 +15,45 @@ import { postInclude, toPostDto, type PostWithIncludes } from "./posts.mapper";
 @Injectable()
 export class PostsService {
   constructor(private readonly prisma: PrismaService) {}
+
+  async listByAuthorHandle(
+    viewerId: string | null,
+    handle: string,
+    cursor: string | null,
+    limit: number,
+  ): Promise<{ data: PostDto[]; meta: CursorPageMeta }> {
+    const author = await this.prisma.profile.findUnique({
+      where: { handle },
+      select: { userId: true },
+    });
+    if (!author) {
+      throw new DomainException(ErrorCode.NOT_FOUND, "Profile not found.", 404);
+    }
+
+    const rows = await this.prisma.post.findMany({
+      where: {
+        authorId: author.userId,
+        deletedAt: null,
+        takedownAt: null,
+      },
+      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+      take: limit + 1,
+      ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
+      include: postInclude(viewerId ?? "__anonymous__"),
+    });
+
+    const hasMore = rows.length > limit;
+    const trimmed = hasMore ? rows.slice(0, limit) : rows;
+
+    return {
+      data: trimmed.map((post) => toPostDto(post as unknown as PostWithIncludes)),
+      meta: {
+        nextCursor: hasMore ? (trimmed[trimmed.length - 1]?.id ?? null) : null,
+        hasMore,
+        limit,
+      },
+    };
+  }
 
   async create(authorId: string, body: CreatePostBody): Promise<PostDto> {
     const post = await this.prisma.post.create({

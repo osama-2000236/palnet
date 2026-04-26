@@ -66,6 +66,8 @@ export const tokens = {
       mono: `"IBM Plex Mono", ui-monospace, monospace`,
     },
     scale: {
+      micro: { size: 10, weight: 600, line: 1.2, track: "0" },
+      nav: { size: 11, weight: 500, line: 1.4, track: "0" },
       display: { size: 36, weight: 700, line: 1.15, track: "-0.01em" },
       h1: { size: 26, weight: 600, line: 1.25, track: "-0.005em" },
       h2: { size: 19, weight: 600, line: 1.35, track: "0" },
@@ -109,6 +111,26 @@ export const tokens = {
     navHeight: 56,
     maxContentWidth: 1128,
     mobileTabHeight: 64,
+  },
+  layout: {
+    dialogWidth: 720,
+    contentWidth: 960,
+    profileWidth: 840,
+    adminWidth: 860,
+    detailWidth: 820,
+    legalWidth: 900,
+    sheetWidth: 560,
+    searchWidth: 320,
+    menuMinWidth: 200,
+    navItemMinWidth: 64,
+    mediaMaxHeight: 420,
+    coverLetterMinHeight: 140,
+    composerMinHeight: 160,
+  },
+  component: {
+    avatarDot: { xs: 7, sm: 9, md: 11, lg: 13, xl: 15 },
+    badge: { compact: 18, unreadMinWidth: 20 },
+    border: { emphasized: 3 },
   },
 } as const;
 

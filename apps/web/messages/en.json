@@ -129,6 +129,10 @@
     "experience": "Experience",
     "education": "Education",
     "skills": "Skills",
+    "posts": "Posts",
+    "postsEmpty": "No posts yet.",
+    "loadMorePosts": "Load more posts",
+    "loadingPosts": "Loading…",
     "notFound": "Profile not found.",
     "edit": "Edit profile",
     "editTitle": "Edit profile",
@@ -207,7 +211,12 @@
       "POST_MENTION": "{actor} mentioned you in a post.",
       "MESSAGE_RECEIVED": "{actor} sent you a message.",
       "JOB_APPLICATION_UPDATE": "Your application has an update.",
-      "PROFILE_VIEW": "{actor} viewed your profile."
+      "PROFILE_VIEW": "{actor} viewed your profile.",
+      "MODERATION_USER_SUSPENDED": "Your account was suspended.",
+      "MODERATION_USER_UNSUSPENDED": "Your suspension has been lifted.",
+      "MODERATION_POST_TAKEDOWN": "A post of yours was removed by moderators.",
+      "MODERATION_POST_RESTORED": "A post of yours was restored.",
+      "MODERATION_APPEAL_REVIEWED": "Your appeal has been reviewed."
     }
   },
   "jobs": {

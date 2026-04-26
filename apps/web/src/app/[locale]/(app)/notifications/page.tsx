@@ -117,7 +117,7 @@ export default function NotificationsPageRoute(): JSX.Element {
   }, [token]);
 
   return (
-    <main className="mx-auto flex w-full max-w-[720px] flex-col gap-4 px-6 py-8">
+    <main className="max-w-dialog mx-auto flex w-full flex-col gap-4 px-6 py-8">
       <header className="flex items-center justify-between gap-3">
         <h1 className="text-ink text-2xl font-bold">{t("title")}</h1>
         {sseLive ? (

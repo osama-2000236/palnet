@@ -13,6 +13,7 @@ import {
   type RevokeAllSessionsBody,
   type SessionInfo,
 } from "@palnet/shared";
+import * as Sentry from "@sentry/node";
 import * as bcrypt from "bcrypt";
 
 import { DomainException } from "../../common/domain-exception";
@@ -199,16 +200,27 @@ export class AccountService {
   async exportAccountData(userId: string): Promise<AccountExportResponse> {
     const task = this.buildAndSendAccountExport(userId);
     let timer: NodeJS.Timeout | undefined;
-    const status = await Promise.race([
-      task.then(() => "sent" as const),
-      new Promise<"queued">((resolve) => {
-        timer = setTimeout(() => resolve("queued"), 30_000);
-      }),
-    ]);
-    // Always release the loser timer so it doesn't hold the event loop
-    // open after the request finishes (matters in tests + graceful shutdown).
-    if (timer) clearTimeout(timer);
-    if (status === "queued") task.catch(() => undefined);
+    let status: "sent" | "queued";
+    try {
+      status = await Promise.race([
+        task.then(() => "sent" as const),
+        new Promise<"queued">((resolve) => {
+          timer = setTimeout(() => resolve("queued"), 30_000);
+        }),
+      ]);
+    } finally {
+      // Always release the loser timer so it doesn't hold the event loop
+      // open after the request finishes (matters in tests + graceful shutdown).
+      if (timer) clearTimeout(timer);
+    }
+    if (status === "queued") {
+      task.catch((err: unknown) => {
+        Sentry.captureException(err, {
+          tags: { feature: "account-export" },
+          user: { id: userId },
+        });
+      });
+    }
     return { status };
   }
 

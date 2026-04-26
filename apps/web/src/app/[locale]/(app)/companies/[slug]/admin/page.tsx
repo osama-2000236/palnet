@@ -330,7 +330,7 @@ export default function CompanyAdminPage(): JSX.Element {
 
   if (loading) {
     return (
-      <main className="mx-auto max-w-[1128px] px-4 py-6">
+      <main className="max-w-chrome mx-auto px-4 py-6">
         <Surface variant="card" padding="6">
           <p className="text-ink-muted text-sm">{tCommon("loading")}</p>
         </Surface>
@@ -340,7 +340,7 @@ export default function CompanyAdminPage(): JSX.Element {
 
   if (error || !company || !companyForm) {
     return (
-      <main className="mx-auto max-w-[1128px] px-4 py-6">
+      <main className="max-w-chrome mx-auto px-4 py-6">
         <Surface variant="tinted" padding="6">
           <p className="text-ink-muted text-sm">{error ?? tCompany("notFound")}</p>
         </Surface>
@@ -350,7 +350,7 @@ export default function CompanyAdminPage(): JSX.Element {
 
   if (!company.viewer.canEdit) {
     return (
-      <main className="mx-auto max-w-[1128px] px-4 py-6">
+      <main className="max-w-chrome mx-auto px-4 py-6">
         <Surface variant="tinted" padding="6">
           <p className="text-ink-muted text-sm">{tCompany("forbidden")}</p>
         </Surface>
@@ -359,7 +359,7 @@ export default function CompanyAdminPage(): JSX.Element {
   }
 
   return (
-    <main className="mx-auto flex w-full max-w-[1128px] flex-col gap-6 px-4 py-6">
+    <main className="max-w-chrome mx-auto flex w-full flex-col gap-6 px-4 py-6">
       <header className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
         <div>
           <Link
@@ -798,7 +798,7 @@ export default function CompanyAdminPage(): JSX.Element {
                                         status as JobApplication["status"],
                                       )
                                     }
-                                    className="border-line-hard bg-surface text-ink hover:bg-surface-muted rounded-md border px-2.5 py-1 text-[11px] font-medium"
+                                    className="border-line-hard bg-surface text-ink hover:bg-surface-muted text-nav rounded-md border px-2.5 py-1 font-medium"
                                   >
                                     {tJobs(`applicationStatusLabels.${status}`)}
                                   </button>
