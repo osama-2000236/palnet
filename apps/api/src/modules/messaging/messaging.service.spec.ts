@@ -1,8 +1,9 @@
+import { ErrorCode } from "@baydar/shared";
 import { Test } from "@nestjs/testing";
-import { ErrorCode } from "@palnet/shared";
 
 import { NotificationsService } from "../notifications/notifications.service";
 import { PrismaService } from "../prisma/prisma.service";
+
 import { MessagingBus } from "./messaging.bus";
 import { MessagingService } from "./messaging.service";
 
@@ -150,19 +151,16 @@ describe("MessagingService", () => {
 
     it("404s when the other user does not exist", async () => {
       prisma.user.findUnique.mockResolvedValue(null);
-      await expect(
-        service.findOrCreateDm("u_me", "u_ghost"),
-      ).rejects.toMatchObject({ code: ErrorCode.NOT_FOUND });
+      await expect(service.findOrCreateDm("u_me", "u_ghost")).rejects.toMatchObject({
+        code: ErrorCode.NOT_FOUND,
+      });
     });
   });
 
   describe("sendMessage", () => {
     beforeEach(() => {
       prisma.chatRoomMember.findFirst.mockResolvedValue({ id: "m_1" });
-      prisma.chatRoomMember.findMany.mockResolvedValue([
-        { userId: "u_me" },
-        { userId: "u_them" },
-      ]);
+      prisma.chatRoomMember.findMany.mockResolvedValue([{ userId: "u_me" }, { userId: "u_them" }]);
     });
 
     it("returns the existing message when the same clientMessageId is re-sent", async () => {
@@ -209,8 +207,14 @@ describe("MessagingService", () => {
       });
       expect(out.id).toBe("msg_2");
       expect(bus.publish).toHaveBeenCalledTimes(2);
-      expect(bus.publish).toHaveBeenCalledWith("u_me", expect.objectContaining({ type: "message.new" }));
-      expect(bus.publish).toHaveBeenCalledWith("u_them", expect.objectContaining({ type: "message.new" }));
+      expect(bus.publish).toHaveBeenCalledWith(
+        "u_me",
+        expect.objectContaining({ type: "message.new" }),
+      );
+      expect(bus.publish).toHaveBeenCalledWith(
+        "u_them",
+        expect.objectContaining({ type: "message.new" }),
+      );
     });
 
     it("404s when the viewer is not a member", async () => {
@@ -266,10 +270,7 @@ describe("MessagingService", () => {
     it("updates lastReadAt and publishes a read event to every member", async () => {
       prisma.chatRoomMember.findFirst.mockResolvedValue({ id: "m_1" });
       prisma.chatRoomMember.updateMany.mockResolvedValue({ count: 1 });
-      prisma.chatRoomMember.findMany.mockResolvedValue([
-        { userId: "u_me" },
-        { userId: "u_them" },
-      ]);
+      prisma.chatRoomMember.findMany.mockResolvedValue([{ userId: "u_me" }, { userId: "u_them" }]);
 
       await service.markRead("u_me", "room_1");
       expect(prisma.chatRoomMember.updateMany).toHaveBeenCalledWith({

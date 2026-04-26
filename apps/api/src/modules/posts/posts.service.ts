@@ -1,23 +1,21 @@
-import { Injectable } from "@nestjs/common";
 import {
   type CreatePostBody,
   ErrorCode,
   type Post as PostDto,
   type UpdatePostBody,
-} from "@palnet/shared";
+} from "@baydar/shared";
+import { Injectable } from "@nestjs/common";
 
 import { DomainException } from "../../common/domain-exception";
 import { PrismaService } from "../prisma/prisma.service";
+
 import { postInclude, toPostDto, type PostWithIncludes } from "./posts.mapper";
 
 @Injectable()
 export class PostsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(
-    authorId: string,
-    body: CreatePostBody,
-  ): Promise<PostDto> {
+  async create(authorId: string, body: CreatePostBody): Promise<PostDto> {
     const post = await this.prisma.post.create({
       data: {
         authorId,
@@ -53,11 +51,7 @@ export class PostsService {
     return toPostDto(post as unknown as PostWithIncludes);
   }
 
-  async update(
-    viewerId: string,
-    postId: string,
-    body: UpdatePostBody,
-  ): Promise<PostDto> {
+  async update(viewerId: string, postId: string, body: UpdatePostBody): Promise<PostDto> {
     const existing = await this.prisma.post.findFirst({
       where: { id: postId, deletedAt: null },
     });

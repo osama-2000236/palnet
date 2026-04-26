@@ -26,21 +26,21 @@ type ButtonProps = {
 
 ## Variants
 
-| Variant | Use | Visual |
-|---|---|---|
-| `primary` | Main CTA, one per screen | `brand-600` bg, white text |
-| `secondary` | Neutral action | White bg, `line-hard` border, `ink` text |
-| `ghost` | Tertiary, low visual weight | Transparent, `ink` text, subtle hover bg |
-| `accent` | Single rare emphasis (e.g. "Connect" on suggestion rows) | `accent-600` bg, white text |
-| `danger-ghost` | Destructive tertiary (e.g. "Remove") | Transparent, `danger` text |
+| Variant        | Use                                                      | Visual                                   |
+| -------------- | -------------------------------------------------------- | ---------------------------------------- |
+| `primary`      | Main CTA, one per screen                                 | `brand-600` bg, white text               |
+| `secondary`    | Neutral action                                           | White bg, `line-hard` border, `ink` text |
+| `ghost`        | Tertiary, low visual weight                              | Transparent, `ink` text, subtle hover bg |
+| `accent`       | Single rare emphasis (e.g. "Connect" on suggestion rows) | `accent-600` bg, white text              |
+| `danger-ghost` | Destructive tertiary (e.g. "Remove")                     | Transparent, `danger` text               |
 
 ## Sizes
 
-| Size | Height (web) | Padding | Font | Mobile hit area |
-|---|---|---|---|---|
-| `sm` | 28 | 6 × 10 | 13 | 44 (padded hitSlop) |
-| `md` | 36 | 9 × 16 | 14 | 44 |
-| `lg` | 44 | 12 × 22 | 15 | 48 |
+| Size | Height (web) | Padding | Font | Mobile hit area     |
+| ---- | ------------ | ------- | ---- | ------------------- |
+| `sm` | 28           | 6 × 10  | 13   | 44 (padded hitSlop) |
+| `md` | 36           | 9 × 16  | 14   | 44                  |
+| `lg` | 44           | 12 × 22 | 15   | 48                  |
 
 ## States
 

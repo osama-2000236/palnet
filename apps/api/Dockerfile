@@ -17,9 +17,9 @@ RUN pnpm install --frozen-lockfile
 # ─── build ───────────────────────────────────────────
 FROM deps AS build
 COPY . .
-RUN pnpm --filter @palnet/db db:generate \
- && pnpm --filter @palnet/shared build || true \
- && pnpm --filter @palnet/api build
+RUN pnpm --filter @baydar/db db:generate \
+ && pnpm --filter @baydar/shared build || true \
+ && pnpm --filter @baydar/api build
 
 # ─── runtime ─────────────────────────────────────────
 FROM node:20-alpine AS runtime

@@ -1,5 +1,5 @@
-import { cursorPage, Post as PostSchema, type Post } from "@palnet/shared";
-import { Avatar, Button, Surface, nativeTokens } from "@palnet/ui-native";
+import { cursorPage, Post as PostSchema, type Post } from "@baydar/shared";
+import { Avatar, Surface, nativeTokens } from "@baydar/ui-native";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { z } from "zod";
@@ -10,6 +10,7 @@ import {
   Image,
   Pressable,
   SafeAreaView,
+  StyleSheet,
   Text,
   View,
 } from "react-native";
@@ -34,11 +35,7 @@ export default function FeedScreen(): JSX.Element {
     const token = await getAccessToken();
     if (!token) return;
     try {
-      const out = await apiFetch(
-        "/notifications/unread-count",
-        UnreadCountEnvelope,
-        { token },
-      );
+      const out = await apiFetch("/notifications/unread-count", UnreadCountEnvelope, { token });
       setUnread(out.count);
     } catch {
       /* ignore */
@@ -83,46 +80,14 @@ export default function FeedScreen(): JSX.Element {
   );
 
   return (
-    <SafeAreaView className="flex-1 bg-surface-muted">
+    <SafeAreaView className="bg-surface-muted flex-1">
       <View className="flex-1 px-4 pt-6">
         <View className="mb-3 flex-col gap-0.5">
-          <Text
-            style={{
-              fontSize: nativeTokens.type.scale.display.size,
-              lineHeight: nativeTokens.type.scale.display.line,
-              fontWeight: "700",
-              color: nativeTokens.color.ink,
-              fontFamily: nativeTokens.type.family.sans,
-            }}
-          >
-            {t("feed.title")}
-          </Text>
-          {name ? (
-            <Text
-              style={{
-                color: nativeTokens.color.inkMuted,
-                fontSize: nativeTokens.type.scale.small.size,
-                lineHeight: nativeTokens.type.scale.small.line,
-                fontFamily: nativeTokens.type.family.sans,
-              }}
-            >
-              {t("feed.welcome", { name })}
-            </Text>
-          ) : null}
+          <Text style={feedStyles.title}>{t("feed.title")}</Text>
+          {name ? <Text style={feedStyles.welcome}>{t("feed.welcome", { name })}</Text> : null}
           {unread > 0 ? (
             <Text
-              style={{
-                marginTop: nativeTokens.space[1],
-                alignSelf: "flex-start",
-                backgroundColor: nativeTokens.color.accent600,
-                color: nativeTokens.color.inkInverse,
-                fontSize: 11,
-                fontWeight: "700",
-                paddingHorizontal: nativeTokens.space[2],
-                paddingVertical: 2,
-                borderRadius: nativeTokens.radius.full,
-                fontFamily: nativeTokens.type.family.sans,
-              }}
+              style={feedStyles.unreadBadge}
               accessibilityLabel={t("nav.unreadNotifications", { count: unread })}
             >
               {unread > 99 ? "99+" : String(unread)}
@@ -132,20 +97,12 @@ export default function FeedScreen(): JSX.Element {
 
         <Pressable
           onPress={() => router.push("/(app)/composer")}
-          style={{ marginBottom: nativeTokens.space[3] }}
+          style={feedStyles.composerWrap}
           accessibilityRole="button"
           accessibilityLabel={t("composer.placeholder")}
         >
           <Surface variant="card" padding="4">
-            <Text
-              style={{
-                color: nativeTokens.color.inkMuted,
-                fontSize: nativeTokens.type.scale.body.size,
-                fontFamily: nativeTokens.type.family.sans,
-              }}
-            >
-              {t("composer.placeholder")}
-            </Text>
+            <Text style={feedStyles.composerPlaceholder}>{t("composer.placeholder")}</Text>
           </Surface>
         </Pressable>
 
@@ -156,9 +113,7 @@ export default function FeedScreen(): JSX.Element {
             <PostRow
               post={item}
               onChange={(next) =>
-                setPosts((prev) =>
-                  prev.map((x) => (x.id === next.id ? next : x)),
-                )
+                setPosts((prev) => prev.map((x) => (x.id === next.id ? next : x)))
               }
             />
           )}
@@ -170,15 +125,7 @@ export default function FeedScreen(): JSX.Element {
           ListEmptyComponent={
             loading ? null : (
               <Surface variant="tinted" padding="6">
-                <Text
-                  style={{
-                    color: nativeTokens.color.inkMuted,
-                    fontSize: nativeTokens.type.scale.body.size,
-                    fontFamily: nativeTokens.type.family.sans,
-                  }}
-                >
-                  {t("feed.empty")}
-                </Text>
+                <Text style={feedStyles.emptyText}>{t("feed.empty")}</Text>
               </Surface>
             )
           }
@@ -195,13 +142,7 @@ export default function FeedScreen(): JSX.Element {
   );
 }
 
-function PostRow({
-  post,
-  onChange,
-}: {
-  post: Post;
-  onChange?: (next: Post) => void;
-}): JSX.Element {
+function PostRow({ post, onChange }: { post: Post; onChange?: (next: Post) => void }): JSX.Element {
   const { t } = useTranslation();
   const [showComments, setShowComments] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -242,32 +183,13 @@ function PostRow({
   }
 
   const liked = post.viewer.reaction !== null;
-  const nameStyle = {
-    color: nativeTokens.color.ink,
-    fontSize: nativeTokens.type.scale.h3.size,
-    lineHeight: nativeTokens.type.scale.h3.line,
-    fontWeight: "600" as const,
-    fontFamily: nativeTokens.type.family.sans,
-  };
-  const mutedStyle = {
-    color: nativeTokens.color.inkMuted,
-    fontSize: nativeTokens.type.scale.small.size,
-    lineHeight: nativeTokens.type.scale.small.line,
-    fontFamily: nativeTokens.type.family.sans,
-  };
-  const bodyStyle = {
-    color: nativeTokens.color.ink,
-    fontSize: nativeTokens.type.scale.body.size,
-    lineHeight: nativeTokens.type.scale.body.line,
-    fontFamily: nativeTokens.type.family.body,
-    marginTop: nativeTokens.space[2],
-  };
+  const singleMedia = post.media.length === 1;
 
   return (
     <Surface variant="card" padding="4">
       <Pressable
         onPress={() => router.push(`/(app)/in/${post.author.handle}`)}
-        style={{ flexDirection: "row", alignItems: "center", gap: nativeTokens.space[3] }}
+        style={postStyles.headerRow}
         accessibilityRole="link"
         accessibilityLabel={`${post.author.firstName} ${post.author.lastName}`}
       >
@@ -281,53 +203,36 @@ function PostRow({
           }}
           size="md"
         />
-        <View style={{ flex: 1 }}>
-          <Text style={nameStyle}>
+        <View style={postStyles.headerText}>
+          <Text style={postStyles.name}>
             {post.author.firstName} {post.author.lastName}
           </Text>
           {post.author.headline ? (
-            <Text style={mutedStyle} numberOfLines={1}>
+            <Text style={postStyles.muted} numberOfLines={1}>
               {post.author.headline}
             </Text>
           ) : null}
         </View>
       </Pressable>
-      <Text style={bodyStyle}>{post.body}</Text>
+      <Text style={postStyles.body}>{post.body}</Text>
       {post.media.length > 0 ? (
-        <View
-          style={{
-            marginTop: nativeTokens.space[2],
-            flexDirection: "row",
-            flexWrap: "wrap",
-            gap: nativeTokens.space[1],
-          }}
-        >
+        <View style={postStyles.mediaRow}>
           {post.media.map((m) =>
             m.kind === "IMAGE" ? (
               <Image
                 key={m.id ?? m.url}
                 source={{ uri: m.url }}
-                style={{
-                  width: post.media.length === 1 ? "100%" : "49%",
-                  height: 180,
-                  borderRadius: nativeTokens.radius.sm,
-                }}
+                style={[
+                  postStyles.mediaImage,
+                  singleMedia ? postStyles.mediaSingle : postStyles.mediaPair,
+                ]}
                 resizeMode="cover"
               />
             ) : null,
           )}
         </View>
       ) : null}
-      <View
-        style={{
-          marginTop: nativeTokens.space[3],
-          paddingTop: nativeTokens.space[2],
-          borderTopWidth: 1,
-          borderTopColor: nativeTokens.color.lineSoft,
-          flexDirection: "row",
-          gap: nativeTokens.space[4],
-        }}
-      >
+      <View style={postStyles.footer}>
         <Pressable
           onPress={toggleReaction}
           disabled={busy}
@@ -335,15 +240,7 @@ function PostRow({
           accessibilityState={{ disabled: busy, selected: liked }}
           hitSlop={8}
         >
-          <Text
-            style={[
-              mutedStyle,
-              liked && {
-                color: nativeTokens.color.brand700,
-                fontWeight: "600",
-              },
-            ]}
-          >
+          <Text style={[postStyles.muted, liked ? postStyles.likedLabel : null]}>
             {liked ? t("post.liked") : t("post.like")} ({post.counts.reactions})
           </Text>
         </Pressable>
@@ -352,11 +249,11 @@ function PostRow({
           accessibilityRole="button"
           hitSlop={8}
         >
-          <Text style={mutedStyle}>
+          <Text style={postStyles.muted}>
             {t("post.comments")} ({post.counts.comments})
           </Text>
         </Pressable>
-        <Text style={mutedStyle}>
+        <Text style={postStyles.muted}>
           {t("post.reposts")}: {post.counts.reposts}
         </Text>
       </View>
@@ -378,3 +275,95 @@ function PostRow({
     </Surface>
   );
 }
+
+const feedStyles = StyleSheet.create({
+  title: {
+    fontSize: nativeTokens.type.scale.display.size,
+    lineHeight: nativeTokens.type.scale.display.line,
+    fontWeight: "700",
+    color: nativeTokens.color.ink,
+    fontFamily: nativeTokens.type.family.sans,
+  },
+  welcome: {
+    color: nativeTokens.color.inkMuted,
+    fontSize: nativeTokens.type.scale.small.size,
+    lineHeight: nativeTokens.type.scale.small.line,
+    fontFamily: nativeTokens.type.family.sans,
+  },
+  unreadBadge: {
+    marginTop: nativeTokens.space[1],
+    alignSelf: "flex-start",
+    backgroundColor: nativeTokens.color.accent600,
+    color: nativeTokens.color.inkInverse,
+    fontSize: 11,
+    fontWeight: "700",
+    paddingHorizontal: nativeTokens.space[2],
+    paddingVertical: 2,
+    borderRadius: nativeTokens.radius.full,
+    fontFamily: nativeTokens.type.family.sans,
+  },
+  composerWrap: { marginBottom: nativeTokens.space[3] },
+  composerPlaceholder: {
+    color: nativeTokens.color.inkMuted,
+    fontSize: nativeTokens.type.scale.body.size,
+    fontFamily: nativeTokens.type.family.sans,
+  },
+  emptyText: {
+    color: nativeTokens.color.inkMuted,
+    fontSize: nativeTokens.type.scale.body.size,
+    fontFamily: nativeTokens.type.family.sans,
+  },
+});
+
+const postStyles = StyleSheet.create({
+  headerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: nativeTokens.space[3],
+  },
+  headerText: { flex: 1 },
+  name: {
+    color: nativeTokens.color.ink,
+    fontSize: nativeTokens.type.scale.h3.size,
+    lineHeight: nativeTokens.type.scale.h3.line,
+    fontWeight: "600",
+    fontFamily: nativeTokens.type.family.sans,
+  },
+  muted: {
+    color: nativeTokens.color.inkMuted,
+    fontSize: nativeTokens.type.scale.small.size,
+    lineHeight: nativeTokens.type.scale.small.line,
+    fontFamily: nativeTokens.type.family.sans,
+  },
+  body: {
+    color: nativeTokens.color.ink,
+    fontSize: nativeTokens.type.scale.body.size,
+    lineHeight: nativeTokens.type.scale.body.line,
+    fontFamily: nativeTokens.type.family.body,
+    marginTop: nativeTokens.space[2],
+  },
+  mediaRow: {
+    marginTop: nativeTokens.space[2],
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: nativeTokens.space[1],
+  },
+  mediaImage: {
+    height: 180,
+    borderRadius: nativeTokens.radius.sm,
+  },
+  mediaSingle: { width: "100%" },
+  mediaPair: { width: "49%" },
+  footer: {
+    marginTop: nativeTokens.space[3],
+    paddingTop: nativeTokens.space[2],
+    borderTopWidth: 1,
+    borderTopColor: nativeTokens.color.lineSoft,
+    flexDirection: "row",
+    gap: nativeTokens.space[4],
+  },
+  likedLabel: {
+    color: nativeTokens.color.brand700,
+    fontWeight: "600",
+  },
+});

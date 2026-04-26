@@ -1,3 +1,4 @@
+import { ErrorCode } from "@baydar/shared";
 import {
   ArgumentsHost,
   Catch,
@@ -6,7 +7,6 @@ import {
   HttpStatus,
   Logger,
 } from "@nestjs/common";
-import { ErrorCode } from "@palnet/shared";
 import type { Request, Response } from "express";
 
 type NestErrorBody = { error?: { code?: string; message?: string; details?: unknown } } & Record<

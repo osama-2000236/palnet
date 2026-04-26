@@ -1,12 +1,7 @@
-import {
-  CanActivate,
-  ExecutionContext,
-  Injectable,
-  UnauthorizedException,
-} from "@nestjs/common";
+import { ErrorCode } from "@baydar/shared";
+import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { Reflector } from "@nestjs/core";
-import { ErrorCode } from "@palnet/shared";
 import type { Request } from "express";
 import * as jwt from "jsonwebtoken";
 
@@ -36,10 +31,10 @@ export class JwtAuthGuard implements CanActivate {
     ]);
     if (isPublic) return true;
 
-    const isOptional = this.reflector.getAllAndOverride<boolean>(
-      IS_OPTIONAL_AUTH_KEY,
-      [ctx.getHandler(), ctx.getClass()],
-    );
+    const isOptional = this.reflector.getAllAndOverride<boolean>(IS_OPTIONAL_AUTH_KEY, [
+      ctx.getHandler(),
+      ctx.getClass(),
+    ]);
 
     const req = ctx.switchToHttp().getRequest<Request & { user?: AuthUser }>();
     const header = req.headers.authorization ?? "";
@@ -48,9 +43,7 @@ export class JwtAuthGuard implements CanActivate {
     // accept `?access_token=` as a fallback. Safe because the token is still
     // signed and short-lived.
     const queryToken =
-      typeof req.query?.access_token === "string"
-        ? req.query.access_token
-        : undefined;
+      typeof req.query?.access_token === "string" ? req.query.access_token : undefined;
     const token = match?.[1] ?? queryToken;
 
     if (!token) {

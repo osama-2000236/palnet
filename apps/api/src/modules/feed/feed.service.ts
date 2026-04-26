@@ -1,12 +1,8 @@
+import type { CursorPageMeta, Post as PostDto } from "@baydar/shared";
 import { Injectable } from "@nestjs/common";
-import type { CursorPageMeta, Post as PostDto } from "@palnet/shared";
 
+import { postInclude, toPostDto, type PostWithIncludes } from "../posts/posts.mapper";
 import { PrismaService } from "../prisma/prisma.service";
-import {
-  postInclude,
-  toPostDto,
-  type PostWithIncludes,
-} from "../posts/posts.mapper";
 
 @Injectable()
 export class FeedService {

@@ -1,8 +1,8 @@
 {
-  "name": "palnet",
+  "name": "baydar",
   "version": "0.0.1",
   "private": true,
-  "description": "Palestine-first professional network. LinkedIn-equivalent scope, day-one pragmatic stack.",
+  "description": "Baydar — Arabic-first professional network. RTL by default, day-one pragmatic stack.",
   "packageManager": "pnpm@9.12.0",
   "engines": {
     "node": ">=20",
@@ -16,18 +16,21 @@
     "test": "turbo run test",
     "type-check": "turbo run type-check",
     "clean": "turbo run clean && rimraf node_modules",
-    "format": "prettier --write \"**/*.{ts,tsx,js,json,md,prisma}\"",
-    "format:check": "prettier --check \"**/*.{ts,tsx,js,json,md,prisma}\"",
-    "db:generate": "pnpm --filter @palnet/db db:generate",
-    "db:migrate": "pnpm --filter @palnet/db db:migrate",
-    "db:deploy": "pnpm --filter @palnet/db db:deploy",
-    "db:studio": "pnpm --filter @palnet/db db:studio",
-    "db:seed": "pnpm --filter @palnet/db db:seed"
+    "format": "prettier --write \"**/*.{ts,tsx,js,json,md}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,json,md}\"",
+    "db:generate": "pnpm --filter @baydar/db db:generate",
+    "db:migrate": "pnpm --filter @baydar/db db:migrate",
+    "db:deploy": "pnpm --filter @baydar/db db:deploy",
+    "db:studio": "pnpm --filter @baydar/db db:studio",
+    "db:seed": "pnpm --filter @baydar/db db:seed",
+    "tokens:icons": "node scripts/build-brand-icons.mjs"
   },
   "devDependencies": {
+    "eslint-config-prettier": "9.1.0",
     "prettier": "^3.3.3",
     "prettier-plugin-tailwindcss": "^0.6.8",
     "rimraf": "^6.0.1",
+    "sharp": "^0.34.5",
     "turbo": "^2.2.0",
     "typescript": "^5.6.0"
   }

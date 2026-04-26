@@ -1,6 +1,6 @@
 # AI Prompt Cheatsheet
 
-Copy-paste these into Codex, Gemini, or Claude. Every prompt starts with the prefix from [`project-spec.md §6`](../project-spec.md). The blocks below are the *rest* of the prompt.
+Copy-paste these into Codex, Gemini, or Claude. Every prompt starts with the prefix from [`project-spec.md §6`](../project-spec.md). The blocks below are the _rest_ of the prompt.
 
 ---
 
@@ -15,10 +15,10 @@ Add a Nest module at apps/api/src/modules/<name>/ with:
 - <name>.spec.ts (Jest) with happy path + two failure cases
 
 Rules:
-- Import DTO types from @palnet/shared.
+- Import DTO types from @baydar/shared.
 - Use ZodValidationPipe from packages/api/src/common/zod-pipe.ts.
 - Use @ApiTags / @ApiOperation / @ApiResponse on every route.
-- DB access via @palnet/db singleton only.
+- DB access via @baydar/db singleton only.
 - Return { data, meta? } or throw a DomainException with an ErrorCode.
 ```
 
@@ -40,7 +40,7 @@ Add model <Name> to packages/db/prisma/schema.prisma.
 - Add indexes on every FK and any compound (ownerId, createdAt) list key.
 - Specify onDelete explicitly (Cascade / SetNull / NoAction).
 - Update docs/erd.md with the new table and cascade rules.
-- Generate a migration: `pnpm --filter @palnet/db db:migrate --name <slug>`.
+- Generate a migration: `pnpm --filter @baydar/db db:migrate --name <slug>`.
 ```
 
 ## New Next.js route
@@ -49,7 +49,7 @@ Add model <Name> to packages/db/prisma/schema.prisma.
 Add route at apps/web/src/app/<segment>/page.tsx.
 - Use next-intl t() for every string.
 - Server component by default; mark "use client" only where needed.
-- Load data via @palnet/shared + typed fetch helper in apps/web/src/lib/api.ts.
+- Load data via @baydar/shared + typed fetch helper in apps/web/src/lib/api.ts.
 - Render <Skeleton/> during suspense, <ErrorState/> on error.
 - Respect RTL — no left/right CSS; use start/end.
 ```

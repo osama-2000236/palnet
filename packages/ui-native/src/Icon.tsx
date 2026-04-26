@@ -10,7 +10,7 @@
 //   • Same 24×24 viewBox, same stroke-width default as web so glyph weight
 //     matches across platforms.
 
-import Svg, { Circle, Path, Rect } from "react-native-svg";
+import Svg, { Circle, Ellipse, Path, Rect } from "react-native-svg";
 
 import { nativeTokens } from "./tokens";
 
@@ -214,18 +214,83 @@ export function Icon({
         </Svg>
       );
     case "logo":
-      // Placeholder Baydar mark — rounded brand-600 square with a simple
-      // outlined glyph. Replace with the final wheat mark before launch.
+      // Baydar mark — wheat head on olive circle.
+      // RN can't use Tailwind classes on SVG primitives — read hex from nativeTokens.
       return (
-        <Svg width={size} height={size} viewBox="0 0 24 24">
-          <Rect x={2} y={2} width={20} height={20} rx={5} fill={nativeTokens.color.brand600} />
-          <Path
-            d="M7 17V7M7 12c3 0 5-1.5 5-4s-2-3-4-3M12 17l5-10M14 17h3"
-            stroke={nativeTokens.color.inkInverse}
-            strokeWidth={1.8}
-            fill="none"
-            strokeLinecap="round"
-            strokeLinejoin="round"
+        <Svg width={size} height={size} viewBox="0 0 64 64">
+          <Circle cx={32} cy={32} r={30} fill={nativeTokens.color.brand600} />
+          <Rect x={31} y={14} width={2} height={37} rx={1} fill={nativeTokens.color.brand50} />
+          <Ellipse
+            cx={27}
+            cy={19}
+            rx={2.6}
+            ry={4.6}
+            origin="27,19"
+            rotation={-28}
+            fill={nativeTokens.color.brand50}
+          />
+          <Ellipse
+            cx={37}
+            cy={19}
+            rx={2.6}
+            ry={4.6}
+            origin="37,19"
+            rotation={28}
+            fill={nativeTokens.color.brand50}
+          />
+          <Ellipse
+            cx={26}
+            cy={27}
+            rx={2.8}
+            ry={4.8}
+            origin="26,27"
+            rotation={-28}
+            fill={nativeTokens.color.brand50}
+          />
+          <Ellipse
+            cx={38}
+            cy={27}
+            rx={2.8}
+            ry={4.8}
+            origin="38,27"
+            rotation={28}
+            fill={nativeTokens.color.brand50}
+          />
+          <Ellipse
+            cx={25}
+            cy={35}
+            rx={2.8}
+            ry={4.8}
+            origin="25,35"
+            rotation={-28}
+            fill={nativeTokens.color.brand50}
+          />
+          <Ellipse
+            cx={39}
+            cy={35}
+            rx={2.8}
+            ry={4.8}
+            origin="39,35"
+            rotation={28}
+            fill={nativeTokens.color.brand50}
+          />
+          <Ellipse
+            cx={24}
+            cy={43}
+            rx={2.8}
+            ry={4.8}
+            origin="24,43"
+            rotation={-28}
+            fill={nativeTokens.color.brand50}
+          />
+          <Ellipse
+            cx={40}
+            cy={43}
+            rx={2.8}
+            ry={4.8}
+            origin="40,43"
+            rotation={28}
+            fill={nativeTokens.color.brand50}
           />
         </Svg>
       );

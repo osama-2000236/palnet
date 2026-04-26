@@ -14,7 +14,9 @@ export const CreateCompanyBody = z.object({
   about: z.string().max(8000).optional(),
   website: z.string().url().optional(),
   industry: z.string().max(120).optional(),
-  sizeBucket: z.enum(["1-10", "11-50", "51-200", "201-500", "501-1000", "1001-5000", "5001+"]).optional(),
+  sizeBucket: z
+    .enum(["1-10", "11-50", "51-200", "201-500", "501-1000", "1001-5000", "5001+"])
+    .optional(),
   logoUrl: z.string().url().optional(),
   coverUrl: z.string().url().optional(),
   country: z.string().length(2).default("PS"),

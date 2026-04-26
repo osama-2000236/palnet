@@ -122,12 +122,12 @@ export function PostCard({
   return (
     <Surface as="article" variant="card" padding="0" className="overflow-hidden">
       {/* Header */}
-      <header className="flex items-start gap-3 px-4 pt-3.5 pb-2.5">
+      <header className="flex items-start gap-3 px-4 pb-2.5 pt-3.5">
         <button
           type="button"
           onClick={() => author.id && onOpenProfile?.(author.id)}
           aria-label={labels.authorLabel}
-          className="shrink-0 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+          className="focus-visible:ring-brand-600 focus-visible:ring-offset-surface shrink-0 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
         >
           <Avatar user={author} size="md" />
         </button>
@@ -135,16 +135,14 @@ export function PostCard({
           <button
             type="button"
             onClick={() => author.id && onOpenProfile?.(author.id)}
-            className="truncate text-start text-sm font-semibold text-ink hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-600"
+            className="text-ink focus-visible:ring-brand-600 truncate text-start text-sm font-semibold hover:underline focus:outline-none focus-visible:ring-2"
           >
             {name}
           </button>
           {author.headline ? (
-            <span className="truncate text-xs text-ink-muted">
-              {author.headline}
-            </span>
+            <span className="text-ink-muted truncate text-xs">{author.headline}</span>
           ) : null}
-          <span className="text-xs text-ink-muted">
+          <span className="text-ink-muted text-xs">
             <span dir="ltr" className="tabular-nums">
               {timestamp}
             </span>
@@ -155,7 +153,7 @@ export function PostCard({
         <button
           type="button"
           aria-label={labels.moreOptions}
-          className="inline-flex h-8 w-8 items-center justify-center rounded-md text-ink-muted hover:bg-surface-subtle hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-600"
+          className="text-ink-muted hover:bg-surface-subtle hover:text-ink focus-visible:ring-brand-600 inline-flex h-8 w-8 items-center justify-center rounded-md focus:outline-none focus-visible:ring-2"
         >
           <Icon name="more" size={18} />
         </button>
@@ -163,29 +161,20 @@ export function PostCard({
 
       {/* Body */}
       {body ? (
-        <div className="whitespace-pre-wrap px-4 pb-3 text-[15px] leading-[1.7] text-ink">
+        <div className="text-ink whitespace-pre-wrap px-4 pb-3 text-[15px] leading-[1.7]">
           {body}
         </div>
       ) : null}
 
       {/* Media */}
       {media.length > 0 ? (
-        <ul
-          className={cx(
-            "grid gap-0.5",
-            media.length === 1 ? "grid-cols-1" : "grid-cols-2",
-          )}
-        >
+        <ul className={cx("grid gap-0.5", media.length === 1 ? "grid-cols-1" : "grid-cols-2")}>
           {media.map((m, i) => (
             <li key={m.id ?? m.url ?? i} className="relative">
               {m.kind === "IMAGE" ? (
-                <img
-                  src={m.url}
-                  alt=""
-                  className="max-h-[420px] w-full object-cover"
-                />
+                <img src={m.url} alt="" className="max-h-[420px] w-full object-cover" />
               ) : (
-                <div className="flex aspect-video w-full items-center justify-center bg-surface-subtle text-ink-muted">
+                <div className="bg-surface-subtle text-ink-muted flex aspect-video w-full items-center justify-center">
                   <Icon name="video" size={32} />
                 </div>
               )}
@@ -198,25 +187,22 @@ export function PostCard({
       <div className="flex items-center gap-2 px-4 py-2.5">
         <span
           aria-hidden="true"
-          className="inline-flex h-[18px] w-[18px] items-center justify-center rounded-full bg-brand-600 text-ink-inverse"
+          className="bg-brand-600 text-ink-inverse inline-flex h-[18px] w-[18px] items-center justify-center rounded-full"
         >
           <Icon name="thumb" size={10} strokeWidth={2.4} />
         </span>
-        <span
-          aria-live="polite"
-          className="text-xs tabular-nums text-ink-muted"
-        >
+        <span aria-live="polite" className="text-ink-muted text-xs tabular-nums">
           {counts.reactions}
         </span>
         <div className="flex-1" />
-        <span className="text-xs text-ink-muted">
+        <span className="text-ink-muted text-xs">
           {labels.commentsCount(counts.comments)}
           {" · "}
           {labels.repostsCount(counts.reposts)}
         </span>
       </div>
 
-      <div className="border-t border-line-soft" />
+      <div className="border-line-soft border-t" />
 
       {/* Action bar */}
       <div className="flex items-stretch p-1">
@@ -241,7 +227,7 @@ export function PostCard({
         <div
           role="region"
           aria-label={labels.comment}
-          className="border-t border-line-soft bg-surface-subtle px-4 pb-3.5 pt-1"
+          className="border-line-soft bg-surface-subtle border-t px-4 pb-3.5 pt-1"
         >
           {commentsSlot}
         </div>
@@ -271,9 +257,9 @@ function ActionButton({
       aria-pressed={active}
       className={cx(
         "inline-flex flex-1 items-center justify-center gap-2 rounded-md px-2 py-2.5 text-sm font-medium transition-colors",
-        "hover:bg-surface-subtle focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2 focus-visible:ring-offset-surface",
+        "hover:bg-surface-subtle focus-visible:ring-brand-600 focus-visible:ring-offset-surface focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
         "disabled:cursor-not-allowed disabled:opacity-60",
-        active ? "font-semibold text-brand-700" : "text-ink-muted hover:text-ink",
+        active ? "text-brand-700 font-semibold" : "text-ink-muted hover:text-ink",
       )}
     >
       <Icon name={icon} size={18} />

@@ -28,8 +28,8 @@ const preset: Partial<Config> = {
         line: tokens.color.line,
         success: tokens.color.semantic.success,
         warning: tokens.color.semantic.warning,
-        danger:  tokens.color.semantic.danger,
-        info:    tokens.color.semantic.info,
+        danger: tokens.color.semantic.danger,
+        info: tokens.color.semantic.info,
       },
       borderRadius: {
         xs: `${tokens.radius.xs}px`,
@@ -40,7 +40,7 @@ const preset: Partial<Config> = {
       },
       boxShadow: {
         card: tokens.shadow.card,
-        pop:  tokens.shadow.pop,
+        pop: tokens.shadow.pop,
       },
       fontFamily: {
         sans: [tokens.type.family.sans],
@@ -48,17 +48,36 @@ const preset: Partial<Config> = {
         mono: [tokens.type.family.mono],
       },
       fontSize: {
-        display: [`${tokens.type.scale.display.size}px`, { lineHeight: `${tokens.type.scale.display.line}`, letterSpacing: tokens.type.scale.display.track }],
-        h1:      [`${tokens.type.scale.h1.size}px`,      { lineHeight: `${tokens.type.scale.h1.line}`,      letterSpacing: tokens.type.scale.h1.track }],
-        h2:      [`${tokens.type.scale.h2.size}px`,      { lineHeight: `${tokens.type.scale.h2.line}` }],
-        h3:      [`${tokens.type.scale.h3.size}px`,      { lineHeight: `${tokens.type.scale.h3.line}` }],
-        body:    [`${tokens.type.scale.body.size}px`,    { lineHeight: `${tokens.type.scale.body.line}` }],
-        small:   [`${tokens.type.scale.small.size}px`,   { lineHeight: `${tokens.type.scale.small.line}` }],
-        caption: [`${tokens.type.scale.caption.size}px`, { lineHeight: `${tokens.type.scale.caption.line}`, letterSpacing: tokens.type.scale.caption.track }],
+        display: [
+          `${tokens.type.scale.display.size}px`,
+          {
+            lineHeight: `${tokens.type.scale.display.line}`,
+            letterSpacing: tokens.type.scale.display.track,
+          },
+        ],
+        h1: [
+          `${tokens.type.scale.h1.size}px`,
+          { lineHeight: `${tokens.type.scale.h1.line}`, letterSpacing: tokens.type.scale.h1.track },
+        ],
+        h2: [`${tokens.type.scale.h2.size}px`, { lineHeight: `${tokens.type.scale.h2.line}` }],
+        h3: [`${tokens.type.scale.h3.size}px`, { lineHeight: `${tokens.type.scale.h3.line}` }],
+        body: [
+          `${tokens.type.scale.body.size}px`,
+          { lineHeight: `${tokens.type.scale.body.line}` },
+        ],
+        small: [
+          `${tokens.type.scale.small.size}px`,
+          { lineHeight: `${tokens.type.scale.small.line}` },
+        ],
+        caption: [
+          `${tokens.type.scale.caption.size}px`,
+          {
+            lineHeight: `${tokens.type.scale.caption.line}`,
+            letterSpacing: tokens.type.scale.caption.track,
+          },
+        ],
       },
-      spacing: Object.fromEntries(
-        Object.entries(tokens.space).map(([k, v]) => [k, `${v}px`])
-      ),
+      spacing: Object.fromEntries(Object.entries(tokens.space).map(([k, v]) => [k, `${v}px`])),
     },
   },
 };

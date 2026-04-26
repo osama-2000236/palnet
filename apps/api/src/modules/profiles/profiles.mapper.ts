@@ -1,4 +1,4 @@
-import type { Profile as ProfileDto } from "@palnet/shared";
+import type { Profile as ProfileDto } from "@baydar/shared";
 
 // Shape returned by `prisma.profile.findUnique({ include: profileInclude })`.
 // Hand-rolled so the api package doesn't need @prisma/client's generated types
@@ -51,10 +51,7 @@ export const profileInclude = {
   skills: { include: { skill: true } },
 } as const;
 
-export function toProfileDto(
-  row: ProfileWithIncludes,
-  viewer?: ProfileDto["viewer"],
-): ProfileDto {
+export function toProfileDto(row: ProfileWithIncludes, viewer?: ProfileDto["viewer"]): ProfileDto {
   return {
     id: row.id,
     userId: row.userId,

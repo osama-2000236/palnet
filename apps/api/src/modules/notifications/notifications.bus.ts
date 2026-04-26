@@ -1,7 +1,7 @@
 import { EventEmitter } from "node:events";
 
+import type { Notification } from "@baydar/shared";
 import { Injectable } from "@nestjs/common";
-import type { Notification } from "@palnet/shared";
 
 // In-memory fanout for notifications, keyed by recipient userId. Same pattern
 // as MessagingBus — swap for Redis pub/sub when we scale horizontally.
@@ -22,10 +22,7 @@ export class NotificationsBus {
     this.emitter.emit(userId, event);
   }
 
-  subscribe(
-    userId: string,
-    handler: (event: NotificationEvent) => void,
-  ): () => void {
+  subscribe(userId: string, handler: (event: NotificationEvent) => void): () => void {
     this.emitter.on(userId, handler);
     return () => {
       this.emitter.off(userId, handler);

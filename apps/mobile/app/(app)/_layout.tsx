@@ -12,7 +12,7 @@ import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Platform } from "react-native";
 
-import { Icon, type IconName, nativeTokens } from "@palnet/ui-native";
+import { Icon, type IconName, nativeTokens } from "@baydar/ui-native";
 import { readSession } from "@/lib/session";
 
 export default function AppTabsLayout(): JSX.Element {

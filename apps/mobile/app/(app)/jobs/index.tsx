@@ -10,14 +10,8 @@
 // for q / city (text) and type / locationMode (chips). Changes refetch
 // with a 250 ms debounce, matching the web behavior.
 
-import {
-  cursorPage,
-  Job as JobSchema,
-  JobLocationMode,
-  JobType,
-  type Job,
-} from "@palnet/shared";
-import { Button, Sheet, Surface, nativeTokens } from "@palnet/ui-native";
+import { cursorPage, Job as JobSchema, JobLocationMode, JobType, type Job } from "@baydar/shared";
+import { Button, Sheet, Surface, nativeTokens } from "@baydar/ui-native";
 import { router } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -90,27 +84,20 @@ export default function JobsScreen(): JSX.Element {
   const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS);
   const [sheetOpen, setSheetOpen] = useState(false);
 
-  const load = useCallback(
-    async (after: string | null, f: Filters): Promise<void> => {
-      const token = await getAccessToken();
-      if (!token) return;
-      setLoading(true);
-      try {
-        const page = await apiFetchPage(
-          `/jobs?${buildQs(f, after)}`,
-          JobsPage,
-          { token },
-        );
-        setItems((prev) => (after ? [...prev, ...page.data] : page.data));
-        setCursor(page.meta.nextCursor);
-        setHasMore(page.meta.hasMore);
-      } finally {
-        setLoading(false);
-        setFirstLoad(false);
-      }
-    },
-    [],
-  );
+  const load = useCallback(async (after: string | null, f: Filters): Promise<void> => {
+    const token = await getAccessToken();
+    if (!token) return;
+    setLoading(true);
+    try {
+      const page = await apiFetchPage(`/jobs?${buildQs(f, after)}`, JobsPage, { token });
+      setItems((prev) => (after ? [...prev, ...page.data] : page.data));
+      setCursor(page.meta.nextCursor);
+      setHasMore(page.meta.hasMore);
+    } finally {
+      setLoading(false);
+      setFirstLoad(false);
+    }
+  }, []);
 
   // Debounced refetch when filters change. Reset cursor on every filter edit.
   useEffect(() => {
@@ -165,9 +152,7 @@ export default function JobsScreen(): JSX.Element {
               borderWidth: 1,
               borderColor: nativeTokens.color.lineHard,
               backgroundColor:
-                activeCount > 0
-                  ? nativeTokens.color.brand50
-                  : nativeTokens.color.surface,
+                activeCount > 0 ? nativeTokens.color.brand50 : nativeTokens.color.surface,
             }}
           >
             <Text
@@ -316,9 +301,7 @@ function FilterSheet({
         <ChipRow
           values={LOCATION_VALUES}
           selected={filters.locationMode}
-          onSelect={(v) =>
-            set("locationMode", filters.locationMode === v ? "" : v)
-          }
+          onSelect={(v) => set("locationMode", filters.locationMode === v ? "" : v)}
           labelFor={(v) => t(`jobs.locationLabels.${v}`)}
         />
       </Field>
@@ -331,12 +314,7 @@ function FilterSheet({
         }}
       >
         <View style={{ flex: 1 }}>
-          <Button
-            variant="secondary"
-            size="md"
-            fullWidth
-            onPress={() => onChange(EMPTY_FILTERS)}
-          >
+          <Button variant="secondary" size="md" fullWidth onPress={() => onChange(EMPTY_FILTERS)}>
             {t("common.clear")}
           </Button>
         </View>
@@ -350,13 +328,7 @@ function FilterSheet({
   );
 }
 
-function Field({
-  label,
-  children,
-}: {
-  label: string;
-  children: React.ReactNode;
-}): JSX.Element {
+function Field({ label, children }: { label: string; children: React.ReactNode }): JSX.Element {
   return (
     <View style={{ gap: nativeTokens.space[1] }}>
       <Text
@@ -406,19 +378,13 @@ function ChipRow<T extends string>({
               paddingVertical: nativeTokens.space[2],
               borderRadius: nativeTokens.radius.full,
               borderWidth: 1,
-              borderColor: active
-                ? nativeTokens.color.brand600
-                : nativeTokens.color.lineHard,
-              backgroundColor: active
-                ? nativeTokens.color.brand50
-                : nativeTokens.color.surface,
+              borderColor: active ? nativeTokens.color.brand600 : nativeTokens.color.lineHard,
+              backgroundColor: active ? nativeTokens.color.brand50 : nativeTokens.color.surface,
             }}
           >
             <Text
               style={{
-                color: active
-                  ? nativeTokens.color.brand700
-                  : nativeTokens.color.ink,
+                color: active ? nativeTokens.color.brand700 : nativeTokens.color.ink,
                 fontFamily: nativeTokens.type.family.sans,
                 fontSize: nativeTokens.type.scale.small.size,
                 fontWeight: active ? "700" : "500",
@@ -471,9 +437,7 @@ function JobRow({ job }: { job: Job }): JSX.Element {
 
   return (
     <Pressable
-      onPress={() =>
-        router.push({ pathname: "/(app)/jobs/[id]", params: { id: job.id } })
-      }
+      onPress={() => router.push({ pathname: "/(app)/jobs/[id]", params: { id: job.id } })}
       accessibilityRole="link"
       accessibilityLabel={`${job.title} — ${job.company.name}`}
     >

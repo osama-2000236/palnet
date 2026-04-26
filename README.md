@@ -1,6 +1,6 @@
-# PalNet — Palestine's Professional Network
+# Baydar — Palestine's Professional Network
 
-> Working codename `palnet`. The product brand will be locked before public launch.
+> Brand: **Baydar (بيدر)**. Pre-launch.
 
 A LinkedIn-equivalent professional network built **for Palestine first**: Arabic-first, RTL-native, mobile-forward, shippable by a solo builder with AI pair-programmers (Codex + Gemini) orchestrated by Claude as architect/reviewer.
 
@@ -19,24 +19,24 @@ A LinkedIn-equivalent professional network built **for Palestine first**: Arabic
 
 ## Stack (Locked)
 
-| Layer | Choice | Reason |
-| --- | --- | --- |
-| Monorepo | Turborepo + pnpm workspaces | Fastest caching, de-facto standard for TS monorepos |
-| Backend | NestJS + TypeScript (modular monolith) | DI, guards, pipes, OpenAPI out of the box; no microservice tax |
-| DB | PostgreSQL 16 | Managed via Neon; heavily trained in AI assistants |
-| ORM | Prisma | Best schema DX, type-safe, AI-friendly |
-| Web | Next.js 15 (App Router) + Tailwind + shadcn/ui | SEO for profiles + app shell; RTL-friendly |
-| Mobile | Expo (React Native) + NativeWind | iOS + Android from one codebase; OTA updates via EAS |
-| Validation | Zod (shared in `packages/shared`) | One schema → DTO on server + form types on clients |
-| Real-time | Socket.io | Battle-tested, simple rooms for DMs and notifications |
-| Auth | JWT access+refresh, bcrypt, OAuth2 (Google) | No third-party auth dep; migration to Clerk/Auth.js reserved |
-| Media storage | Cloudflare R2 (S3-compatible) | Free egress, cheaper than S3 |
-| Hosting — web | Vercel | Zero-config Next.js, global edge |
-| Hosting — API | Render | Dockerized Nest, zero-devops, cheap |
-| Hosting — DB | Neon | Serverless Postgres, branch-per-PR |
-| Mobile build | EAS (Expo Application Services) | Managed native builds + OTA |
-| CI | GitHub Actions | Standard; runs lint + type-check + Jest + Playwright |
-| i18n | `next-intl` (web), `i18next` + `expo-localization` (mobile) | Arabic default, English secondary |
+| Layer         | Choice                                                      | Reason                                                         |
+| ------------- | ----------------------------------------------------------- | -------------------------------------------------------------- |
+| Monorepo      | Turborepo + pnpm workspaces                                 | Fastest caching, de-facto standard for TS monorepos            |
+| Backend       | NestJS + TypeScript (modular monolith)                      | DI, guards, pipes, OpenAPI out of the box; no microservice tax |
+| DB            | PostgreSQL 16                                               | Managed via Neon; heavily trained in AI assistants             |
+| ORM           | Prisma                                                      | Best schema DX, type-safe, AI-friendly                         |
+| Web           | Next.js 15 (App Router) + Tailwind + shadcn/ui              | SEO for profiles + app shell; RTL-friendly                     |
+| Mobile        | Expo (React Native) + NativeWind                            | iOS + Android from one codebase; OTA updates via EAS           |
+| Validation    | Zod (shared in `packages/shared`)                           | One schema → DTO on server + form types on clients             |
+| Real-time     | Socket.io                                                   | Battle-tested, simple rooms for DMs and notifications          |
+| Auth          | JWT access+refresh, bcrypt, OAuth2 (Google)                 | No third-party auth dep; migration to Clerk/Auth.js reserved   |
+| Media storage | Cloudflare R2 (S3-compatible)                               | Free egress, cheaper than S3                                   |
+| Hosting — web | Vercel                                                      | Zero-config Next.js, global edge                               |
+| Hosting — API | Render                                                      | Dockerized Nest, zero-devops, cheap                            |
+| Hosting — DB  | Neon                                                        | Serverless Postgres, branch-per-PR                             |
+| Mobile build  | EAS (Expo Application Services)                             | Managed native builds + OTA                                    |
+| CI            | GitHub Actions                                              | Standard; runs lint + type-check + Jest + Playwright           |
+| i18n          | `next-intl` (web), `i18next` + `expo-localization` (mobile) | Arabic default, English secondary                              |
 
 ## Monorepo Layout
 
@@ -88,12 +88,22 @@ See [`docs/sprint-plan.md`](docs/sprint-plan.md) for the exact "do / do not" per
 Every prompt to Codex or Gemini must start with:
 
 ```
-You are contributing to palnet, a Turborepo + NestJS + Next.js + Expo
+You are contributing to Baydar, a Turborepo + NestJS + Next.js + Expo
 monorepo. The authoritative contract is in project-spec.md at the repo
 root — obey it. Do not introduce new dependencies, patterns, or
 services unless the spec allows it. Types come from packages/shared.
-DB access goes through @palnet/db. All UI copy must be i18n-keyed
+DB access goes through @baydar/db. All UI copy must be i18n-keyed
 (default locale ar-PS, RTL).
 ```
 
 The rest of the prompt is the feature ask. That single prefix is what keeps AI output converging.
+
+## Status (as of 2026-04-26)
+
+- System renamed to **Baydar** end-to-end (packages, bundle ids, storage keys, log prefixes, R2 bucket, fixtures, deploy domains, CI DB)
+- Tokens locked (`packages/ui-tokens/src/index.ts`)
+- Brand mark unified (wheat on olive circle) across web + native + favicons + Expo
+- Web + mobile profile use tabbed sections
+- Mobile feed uses StyleSheet (no inline objects)
+- PWA manifest live at `/manifest.webmanifest`
+- Original prototype archived at `docs/_archive/prototype-2025/`

@@ -1,5 +1,5 @@
 // Icon — the single source of SVG glyphs used across Baydar's web UI.
-// Lifted from docs/design/prototype/components/primitives.jsx (Icon).
+// Lifted from docs/_archive/prototype-2025/components/primitives.jsx (Icon).
 //
 // Rules:
 //   • One shape per name — variants (filled/outline, sizes) are applied via
@@ -8,8 +8,8 @@
 //     `stroke="currentColor"`, so set `text-*` on the wrapper instead.
 //   • `aria-hidden="true"` by default — icons are decorative. Pair with a
 //     visible label or `aria-label` on the interactive parent.
-//   • The `logo` glyph is intentionally a placeholder mark. Replace with the
-//     final Baydar wheat mark before launch (HANDOFF.md).
+//   • The `logo` glyph is the Baydar wheat-on-olive mark. Source SVG lives
+//     at packages/ui-tokens/assets/logo-mark.svg.
 //
 // Adding an icon: drop a new `case` that returns an <svg> on the shared 24×24
 // viewBox with a 1.8-width stroke. Keep the file alphabetical within sections.
@@ -243,38 +243,31 @@ export function Icon({
         </svg>
       );
     case "logo":
-      // Placeholder Baydar mark — rounded brand-600 square with an outlined
-      // "بي" shape. Replace with the final wheat mark before launch.
-      // Colors come from tokens: the wrapper sets `text-ink-inverse` so the
-      // inner strokes inherit via `currentColor`; the rect fills via
-      // `fill-brand-600`. Never hardcode hex here.
+      // Baydar mark — wheat head on olive circle.
+      // Source: packages/ui-tokens/assets/logo-mark.svg.
+      // Colors come from Tailwind tokens — never hardcode hex here.
       return (
         <svg
           width={size}
           height={size}
-          viewBox="0 0 24 24"
-          aria-hidden={title ? undefined : true}
+          viewBox="0 0 64 64"
           role={title ? "img" : undefined}
-          className="text-ink-inverse"
+          aria-hidden={title ? undefined : true}
           {...rest}
         >
           {title ? <title>{title}</title> : null}
-          <rect
-            x="2"
-            y="2"
-            width="20"
-            height="20"
-            rx="5"
-            className="fill-brand-600"
-          />
-          <path
-            d="M7 17V7M7 12c3 0 5-1.5 5-4s-2-3-4-3M12 17l5-10M14 17h3"
-            stroke="currentColor"
-            strokeWidth="1.8"
-            fill="none"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
+          <circle cx="32" cy="32" r="30" className="fill-brand-600" />
+          <g className="fill-brand-50">
+            <rect x="31" y="14" width="2" height="37" rx="1" />
+            <ellipse cx="27" cy="19" rx="2.6" ry="4.6" transform="rotate(-28 27 19)" />
+            <ellipse cx="37" cy="19" rx="2.6" ry="4.6" transform="rotate(28 37 19)" />
+            <ellipse cx="26" cy="27" rx="2.8" ry="4.8" transform="rotate(-28 26 27)" />
+            <ellipse cx="38" cy="27" rx="2.8" ry="4.8" transform="rotate(28 38 27)" />
+            <ellipse cx="25" cy="35" rx="2.8" ry="4.8" transform="rotate(-28 25 35)" />
+            <ellipse cx="39" cy="35" rx="2.8" ry="4.8" transform="rotate(28 39 35)" />
+            <ellipse cx="24" cy="43" rx="2.8" ry="4.8" transform="rotate(-28 24 43)" />
+            <ellipse cx="40" cy="43" rx="2.8" ry="4.8" transform="rotate(28 40 43)" />
+          </g>
         </svg>
       );
     default:

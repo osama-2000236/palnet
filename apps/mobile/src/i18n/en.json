@@ -101,7 +101,11 @@
     "fieldOfStudy": "Field of study",
     "addSkillPlaceholder": "Add a skill…",
     "changeAvatar": "Change photo",
-    "uploading": "Uploading…"
+    "uploading": "Uploading…",
+    "aboutEmpty": "No about section added yet.",
+    "expEmpty": "No experiences added.",
+    "eduEmpty": "No education added.",
+    "skillsEmpty": "No skills added yet."
   },
   "network": {
     "title": "My network",

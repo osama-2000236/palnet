@@ -1,7 +1,8 @@
+import { NotificationType } from "@baydar/shared";
 import { Test } from "@nestjs/testing";
-import { NotificationType } from "@palnet/shared";
 
 import { PrismaService } from "../prisma/prisma.service";
+
 import { NotificationsBus } from "./notifications.bus";
 import { NotificationsService } from "./notifications.service";
 

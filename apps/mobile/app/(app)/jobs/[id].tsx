@@ -1,8 +1,8 @@
 // Mobile job detail. Hero with company logo + title + meta + apply button.
 // Applied badge flips optimistically on press, rolls back on failure.
 
-import { ApplyToJobBody, Job as JobSchema, type Job } from "@palnet/shared";
-import { Button, Sheet, Surface, nativeTokens } from "@palnet/ui-native";
+import { ApplyToJobBody, Job as JobSchema, type Job } from "@baydar/shared";
+import { Button, Sheet, Surface, nativeTokens } from "@baydar/ui-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -68,9 +68,7 @@ export default function JobDetailScreen(): JSX.Element {
     if (!token) return;
     setSubmitError(null);
     const trimmed = coverLetter.trim();
-    const parsed = ApplyToJobBody.safeParse(
-      trimmed ? { coverLetter: trimmed } : {},
-    );
+    const parsed = ApplyToJobBody.safeParse(trimmed ? { coverLetter: trimmed } : {});
     if (!parsed.success) {
       setSubmitError(t("common.genericError"));
       return;
@@ -82,9 +80,7 @@ export default function JobDetailScreen(): JSX.Element {
         token,
         body: parsed.data,
       });
-      setJob((j) =>
-        j ? { ...j, viewer: { ...j.viewer, hasApplied: true } } : j,
-      );
+      setJob((j) => (j ? { ...j, viewer: { ...j.viewer, hasApplied: true } } : j));
       setApplyOpen(false);
     } catch (e) {
       setSubmitError((e as Error).message || t("common.genericError"));
@@ -114,7 +110,12 @@ export default function JobDetailScreen(): JSX.Element {
               style={{ marginTop: nativeTokens.space[2] }}
               accessibilityRole="button"
             >
-              <Text style={{ color: nativeTokens.color.brand700, fontFamily: nativeTokens.type.family.sans }}>
+              <Text
+                style={{
+                  color: nativeTokens.color.brand700,
+                  fontFamily: nativeTokens.type.family.sans,
+                }}
+              >
                 ← {t("jobs.title")}
               </Text>
             </Pressable>
@@ -132,7 +133,9 @@ export default function JobDetailScreen(): JSX.Element {
 
   return (
     <SafeAreaView style={styles.screen}>
-      <ScrollView contentContainerStyle={{ padding: nativeTokens.space[4], gap: nativeTokens.space[3] }}>
+      <ScrollView
+        contentContainerStyle={{ padding: nativeTokens.space[4], gap: nativeTokens.space[3] }}
+      >
         <Pressable onPress={() => router.back()} accessibilityRole="button">
           <Text style={styles.muted}>← {t("jobs.title")}</Text>
         </Pressable>
@@ -168,11 +171,7 @@ export default function JobDetailScreen(): JSX.Element {
                 <Text style={styles.appliedBadgeText}>✓ {t("jobs.appliedBadge")}</Text>
               </View>
             ) : (
-              <Button
-                variant="accent"
-                onPress={openApply}
-                accessibilityLabel={t("jobs.apply")}
-              >
+              <Button variant="accent" onPress={openApply} accessibilityLabel={t("jobs.apply")}>
                 {t("jobs.apply")}
               </Button>
             )}
@@ -294,18 +293,10 @@ export default function JobDetailScreen(): JSX.Element {
               marginTop: nativeTokens.space[2],
             }}
           >
-            <Button
-              variant="ghost"
-              onPress={() => setApplyOpen(false)}
-              disabled={submitting}
-            >
+            <Button variant="ghost" onPress={() => setApplyOpen(false)} disabled={submitting}>
               {t("common.cancel")}
             </Button>
-            <Button
-              variant="accent"
-              onPress={() => void submitApply()}
-              loading={submitting}
-            >
+            <Button variant="accent" onPress={() => void submitApply()} loading={submitting}>
               {t("jobs.submitApplication")}
             </Button>
           </View>

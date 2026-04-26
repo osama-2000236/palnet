@@ -19,13 +19,13 @@ type SurfaceProps = {
 
 ## Variants
 
-| Variant | Visual | When to use |
-|---|---|---|
-| `flat`   | bg `surface`, `line-soft` border, radius `md`, no shadow | List containers, sidebar cards, nested sections |
-| `card`   | bg `surface`, `line-soft` border, radius `lg`, `shadow-card` | Feed posts, main content blocks |
-| `hero`   | bg `surface`, `line-soft` border, radius `xl`, `shadow-card`, overflow hidden | Profile header, mini-profile, splash |
-| `tinted` | bg `surface-subtle`, no border, radius `md` | Inputs, own-message bubbles, quiet highlights |
-| `row`    | transparent bg, bottom border `line-soft` | List items inside a flat container |
+| Variant  | Visual                                                                        | When to use                                     |
+| -------- | ----------------------------------------------------------------------------- | ----------------------------------------------- |
+| `flat`   | bg `surface`, `line-soft` border, radius `md`, no shadow                      | List containers, sidebar cards, nested sections |
+| `card`   | bg `surface`, `line-soft` border, radius `lg`, `shadow-card`                  | Feed posts, main content blocks                 |
+| `hero`   | bg `surface`, `line-soft` border, radius `xl`, `shadow-card`, overflow hidden | Profile header, mini-profile, splash            |
+| `tinted` | bg `surface-subtle`, no border, radius `md`                                   | Inputs, own-message bubbles, quiet highlights   |
+| `row`    | transparent bg, bottom border `line-soft`                                     | List items inside a flat container              |
 
 ## Rules
 

@@ -1,11 +1,11 @@
-import { Injectable } from "@nestjs/common";
 import {
   ApplicationStatus,
   type ApplyToJobBody,
   type CursorPageMeta,
   ErrorCode,
   type Job as JobDto,
-} from "@palnet/shared";
+} from "@baydar/shared";
+import { Injectable } from "@nestjs/common";
 
 import { DomainException } from "../../common/domain-exception";
 import { PrismaService } from "../prisma/prisma.service";
@@ -73,9 +73,7 @@ export class JobsService {
               ],
             }
           : {}),
-        ...(filters.city
-          ? { city: { contains: filters.city, mode: "insensitive" } }
-          : {}),
+        ...(filters.city ? { city: { contains: filters.city, mode: "insensitive" } } : {}),
         ...(filters.type ? { type: filters.type } : {}),
         ...(filters.locationMode ? { locationMode: filters.locationMode } : {}),
       },

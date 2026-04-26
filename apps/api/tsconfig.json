@@ -1,5 +1,5 @@
 {
-  "extends": "@palnet/config/tsconfig.nest.json",
+  "extends": "@baydar/config/tsconfig.nest.json",
   "compilerOptions": {
     "outDir": "./dist",
     "baseUrl": "./",

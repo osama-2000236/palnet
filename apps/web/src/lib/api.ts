@@ -1,4 +1,4 @@
-import { ApiError } from "@palnet/shared";
+import { ApiError } from "@baydar/shared";
 import type { z } from "zod";
 
 const BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000/api/v1";
@@ -47,10 +47,7 @@ export async function apiFetch<T extends z.ZodTypeAny>(
 }
 
 // For mutation endpoints returning 204 No Content (or where the response body is not needed).
-export async function apiCall(
-  path: string,
-  opts: ApiFetchOptions = {},
-): Promise<void> {
+export async function apiCall(path: string, opts: ApiFetchOptions = {}): Promise<void> {
   const headers = new Headers(opts.headers);
   if (opts.body !== undefined) headers.set("Content-Type", "application/json");
   if (opts.token) headers.set("Authorization", `Bearer ${opts.token}`);

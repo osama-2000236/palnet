@@ -1,22 +1,12 @@
 // Messages list — room roster. Uses ui-native Surface + Avatar so rows look
 // like the web `/messages` left rail instead of the raw-RN cards.
 
-import {
-  ChatRoom as ChatRoomSchema,
-  type ChatRoom,
-} from "@palnet/shared";
-import { Avatar, Surface, nativeTokens } from "@palnet/ui-native";
+import { ChatRoom as ChatRoomSchema, type ChatRoom } from "@baydar/shared";
+import { Avatar, Surface, nativeTokens } from "@baydar/ui-native";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import {
-  ActivityIndicator,
-  FlatList,
-  Pressable,
-  SafeAreaView,
-  Text,
-  View,
-} from "react-native";
+import { ActivityIndicator, FlatList, Pressable, SafeAreaView, Text, View } from "react-native";
 import { z } from "zod";
 
 import { apiFetchPage } from "@/lib/api";
@@ -63,9 +53,7 @@ export default function MessagesListScreen(): JSX.Element {
   );
 
   return (
-    <SafeAreaView
-      style={{ flex: 1, backgroundColor: nativeTokens.color.surfaceMuted }}
-    >
+    <SafeAreaView style={{ flex: 1, backgroundColor: nativeTokens.color.surfaceMuted }}>
       <View
         style={{
           flex: 1,
@@ -89,12 +77,8 @@ export default function MessagesListScreen(): JSX.Element {
         <FlatList
           data={rooms}
           keyExtractor={(r) => r.id}
-          renderItem={({ item }) => (
-            <RoomRow room={item} viewerId={viewerId} />
-          )}
-          ItemSeparatorComponent={() => (
-            <View style={{ height: nativeTokens.space[2] }} />
-          )}
+          renderItem={({ item }) => <RoomRow room={item} viewerId={viewerId} />}
+          ItemSeparatorComponent={() => <View style={{ height: nativeTokens.space[2] }} />}
           ListEmptyComponent={
             loading ? null : (
               <Surface variant="tinted" padding="6">
@@ -124,16 +108,8 @@ export default function MessagesListScreen(): JSX.Element {
   );
 }
 
-function RoomRow({
-  room,
-  viewerId,
-}: {
-  room: ChatRoom;
-  viewerId: string | null;
-}): JSX.Element {
-  const other = viewerId
-    ? room.members.find((m) => m.userId !== viewerId)
-    : null;
+function RoomRow({ room, viewerId }: { room: ChatRoom; viewerId: string | null }): JSX.Element {
+  const other = viewerId ? room.members.find((m) => m.userId !== viewerId) : null;
   const label = other
     ? `${other.firstName} ${other.lastName}`.trim() || other.handle
     : (room.title ?? room.id);

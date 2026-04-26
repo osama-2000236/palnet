@@ -2,22 +2,10 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "api",
-      "runtimeExecutable": "C:\\Users\\osama\\AppData\\Roaming\\npm\\pnpm.cmd",
-      "runtimeArgs": ["--filter", "@palnet/api", "dev"],
-      "port": 4000
-    },
-    {
       "name": "web",
-      "runtimeExecutable": "C:\\Users\\osama\\AppData\\Roaming\\npm\\pnpm.cmd",
-      "runtimeArgs": ["--filter", "@palnet/web", "dev"],
+      "runtimeExecutable": ".claude\\dev-web.cmd",
+      "runtimeArgs": [],
       "port": 3000
-    },
-    {
-      "name": "mobile",
-      "runtimeExecutable": "C:\\Users\\osama\\AppData\\Roaming\\npm\\pnpm.cmd",
-      "runtimeArgs": ["--filter", "@palnet/mobile", "start"],
-      "port": 8081
     }
   ]
 }

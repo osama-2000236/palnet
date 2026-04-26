@@ -1,6 +1,6 @@
 "use client";
 
-import { WsNotificationEvent } from "@palnet/shared";
+import { WsNotificationEvent } from "@baydar/shared";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
@@ -9,8 +9,7 @@ import { z } from "zod";
 import { apiFetch } from "@/lib/api";
 import { getAccessToken } from "@/lib/session";
 
-const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000/api/v1";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000/api/v1";
 
 const CountEnvelope = z.object({ count: z.number().int().nonnegative() });
 
@@ -71,7 +70,7 @@ export function NotificationsBell(): JSX.Element | null {
       href="/notifications"
       aria-label={t("title")}
       title={t("title")}
-      className="relative inline-flex h-9 w-9 items-center justify-center rounded-md border border-ink-muted/30 text-ink hover:bg-ink-muted/5"
+      className="border-ink-muted/30 text-ink hover:bg-ink-muted/5 relative inline-flex h-9 w-9 items-center justify-center rounded-md border"
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -90,7 +89,7 @@ export function NotificationsBell(): JSX.Element | null {
       {count > 0 ? (
         <span
           aria-hidden="true"
-          className="absolute -top-1 -end-1 min-w-[18px] rounded-full bg-accent-600 px-1 text-center text-[10px] font-semibold leading-[18px] text-ink-inverse"
+          className="bg-accent-600 text-ink-inverse absolute -end-1 -top-1 min-w-[18px] rounded-full px-1 text-center text-[10px] font-semibold leading-[18px]"
         >
           {display}
         </span>

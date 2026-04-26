@@ -21,36 +21,37 @@
 
 ### Color
 
-| Role | Token | Value | Use |
-|---|---|---|---|
-| Brand primary | `--brand-600` | `#526030` | CTAs, active nav, logo |
-| Brand dark | `--brand-700` | `#3f4a26` | Hover state on primary |
-| Brand tint | `--brand-50` / `--brand-100` | `#f4f6ef` / `#e6ebd6` | Own-message bubbles, subtle highlights |
-| Accent | `--accent-600` | `#a8482c` | Unread badges, notification dots, **at most one CTA per screen** |
-| Ink | `--ink` | `#1a1a17` | Body text |
-| Ink muted | `--ink-muted` | `#5c5a52` | Secondary text |
-| Ink subtle | `--ink-subtle` | `#8a8880` | Captions, timestamps |
-| Surface | `--surface` | `#ffffff` | Primary card bg |
-| Surface muted | `--surface-muted` | `#faf9f5` | Page background |
-| Surface subtle | `--surface-subtle` | `#f1efe7` | Input bg, hovered rows |
-| Line soft | `rgba(26,26,23,0.08)` | — | Internal dividers |
-| Line hard | `rgba(26,26,23,0.16)` | — | Input borders, outlined buttons |
+| Role           | Token                        | Value                 | Use                                                              |
+| -------------- | ---------------------------- | --------------------- | ---------------------------------------------------------------- |
+| Brand primary  | `--brand-600`                | `#526030`             | CTAs, active nav, logo                                           |
+| Brand dark     | `--brand-700`                | `#3f4a26`             | Hover state on primary                                           |
+| Brand tint     | `--brand-50` / `--brand-100` | `#f4f6ef` / `#e6ebd6` | Own-message bubbles, subtle highlights                           |
+| Accent         | `--accent-600`               | `#a8482c`             | Unread badges, notification dots, **at most one CTA per screen** |
+| Ink            | `--ink`                      | `#1a1a17`             | Body text                                                        |
+| Ink muted      | `--ink-muted`                | `#5c5a52`             | Secondary text                                                   |
+| Ink subtle     | `--ink-subtle`               | `#8a8880`             | Captions, timestamps                                             |
+| Surface        | `--surface`                  | `#ffffff`             | Primary card bg                                                  |
+| Surface muted  | `--surface-muted`            | `#faf9f5`             | Page background                                                  |
+| Surface subtle | `--surface-subtle`           | `#f1efe7`             | Input bg, hovered rows                                           |
+| Line soft      | `rgba(26,26,23,0.08)`        | —                     | Internal dividers                                                |
+| Line hard      | `rgba(26,26,23,0.16)`        | —                     | Input borders, outlined buttons                                  |
 
 **Forbidden:** pure `#000`, pure `#fff` shadows, Tailwind default blues/slates. Dark mode is not yet designed — do not add it.
 
 ### Typography
 
-| Step | Size | Weight | Line | Use |
-|---|---|---|---|---|
-| `display` | 36 | 700 | 1.15 | Landing hero, empty states |
-| `h1` | 26 | 600 | 1.25 | Page title |
-| `h2` | 19 | 600 | 1.35 | Section header |
-| `h3` | 16 | 600 | 1.40 | Card header, name in post |
-| `body` | 15 | 400 | 1.60 | Post body, messages |
-| `small` | 13 | 400 | 1.50 | Headline, meta |
-| `caption` | 12 | 500 | 1.40 | Timestamps, counts |
+| Step      | Size | Weight | Line | Use                        |
+| --------- | ---- | ------ | ---- | -------------------------- |
+| `display` | 36   | 700    | 1.15 | Landing hero, empty states |
+| `h1`      | 26   | 600    | 1.25 | Page title                 |
+| `h2`      | 19   | 600    | 1.35 | Section header             |
+| `h3`      | 16   | 600    | 1.40 | Card header, name in post  |
+| `body`    | 15   | 400    | 1.60 | Post body, messages        |
+| `small`   | 13   | 400    | 1.50 | Headline, meta             |
+| `caption` | 12   | 500    | 1.40 | Timestamps, counts         |
 
 **Families:**
+
 - Headings & UI: **IBM Plex Sans Arabic** (+ Latin fallback)
 - Body: **Noto Naskh Arabic** (+ Latin fallback)
 - Numerals/code: **IBM Plex Mono**
@@ -73,13 +74,13 @@ Two only: `card` (quiet, resting elevation) and `pop` (modals, dropdowns). Don't
 
 Five variants. Use them deliberately:
 
-| Variant | Visual | When |
-|---|---|---|
-| `flat` | border only, no shadow | List containers, sidebar cards |
-| `card` | border + soft shadow, radius `lg` | Feed posts, content cards |
-| `hero` | border + shadow, radius `xl`, overflow hidden | Profile header, mini profile rail |
-| `tinted` | `surface-subtle` bg, no border | Inputs, own-message bubbles |
-| `row` | transparent bg, bottom border only | List item inside a flat container |
+| Variant  | Visual                                        | When                              |
+| -------- | --------------------------------------------- | --------------------------------- |
+| `flat`   | border only, no shadow                        | List containers, sidebar cards    |
+| `card`   | border + soft shadow, radius `lg`             | Feed posts, content cards         |
+| `hero`   | border + shadow, radius `xl`, overflow hidden | Profile header, mini profile rail |
+| `tinted` | `surface-subtle` bg, no border                | Inputs, own-message bubbles       |
+| `row`    | transparent bg, bottom border only            | List item inside a flat container |
 
 **Anti-pattern:** every section on a page using `card`. The eye needs hierarchy.
 
@@ -89,61 +90,65 @@ Status key: ✅ spec'd & prototyped · 🟡 prototyped only · ⏳ not started
 
 ### Atoms (in `packages/ui-web` + `packages/ui-native`)
 
-| Component | Status | Spec |
-|---|---|---|
-| `Button` | ✅ | `docs/components/Button.md` |
-| `Input` / `Textarea` | 🟡 | — |
-| `Avatar` | ✅ | `docs/components/Avatar.md` |
-| `Badge` | 🟡 | — |
-| `Icon` | 🟡 | Wraps lucide-react (web) / lucide-react-native (mobile) |
-| `Surface` | ✅ | `docs/components/Surface.md` |
-| `Chip` | 🟡 | — |
+| Component            | Status | Spec                                                    |
+| -------------------- | ------ | ------------------------------------------------------- |
+| `Button`             | ✅     | `docs/components/Button.md`                             |
+| `Input` / `Textarea` | 🟡     | —                                                       |
+| `Avatar`             | ✅     | `docs/components/Avatar.md`                             |
+| `Badge`              | 🟡     | —                                                       |
+| `Icon`               | 🟡     | Wraps lucide-react (web) / lucide-react-native (mobile) |
+| `Surface`            | ✅     | `docs/components/Surface.md`                            |
+| `Chip`               | 🟡     | —                                                       |
 
 ### Molecules
 
-| Component | Status | Spec |
-|---|---|---|
-| `PostCard` | ✅ | `docs/components/PostCard.md` |
-| `ConnectionRow` | 🟡 | — |
-| `MessageBubble` | ✅ | `docs/components/MessageBubble.md` |
-| `RoomListItem` | 🟡 | — |
-| `EmptyState` | ⏳ | — |
-| `Skeleton` | ⏳ | — |
+| Component       | Status | Spec                               |
+| --------------- | ------ | ---------------------------------- |
+| `PostCard`      | ✅     | `docs/components/PostCard.md`      |
+| `ConnectionRow` | 🟡     | —                                  |
+| `MessageBubble` | ✅     | `docs/components/MessageBubble.md` |
+| `RoomListItem`  | 🟡     | —                                  |
+| `EmptyState`    | ⏳     | —                                  |
+| `Skeleton`      | ⏳     | —                                  |
 
 ### Organisms
 
-| Component | Status | Spec |
-|---|---|---|
-| `AppShell` | ✅ | `docs/components/AppShell.md` |
-| `Composer` | 🟡 | — |
-| `ProfileHeader` | 🟡 | — |
-| `Thread` | 🟡 | — |
-| `RightRail` | 🟡 | — |
+| Component       | Status | Spec                          |
+| --------------- | ------ | ----------------------------- |
+| `AppShell`      | ✅     | `docs/components/AppShell.md` |
+| `Composer`      | 🟡     | —                             |
+| `ProfileHeader` | 🟡     | —                             |
+| `Thread`        | 🟡     | —                             |
+| `RightRail`     | 🟡     | —                             |
 
 ### Screens → routes
 
-| Screen | Route (web) | Screen (mobile) | Prototype | Status |
-|---|---|---|---|---|
-| Feed | `/[locale]/(app)/feed` | `FeedScreen` | §Feed | 🟡 |
-| Profile | `/[locale]/(app)/u/[handle]` | `ProfileScreen` | §Profile | 🟡 |
-| Network | `/[locale]/(app)/network` | `NetworkScreen` | §Network | 🟡 |
-| Messages | `/[locale]/(app)/messages` | `MessagesScreen` | §Messages | 🟡 |
-| Search | `/[locale]/(app)/search` | `SearchScreen` | §Search | 🟡 |
-| Jobs | `/[locale]/(app)/jobs` | `JobsScreen` | — | ⏳ |
-| Notifications | `/[locale]/(app)/notifications` | `NotificationsScreen` | — | ⏳ |
+| Screen        | Route (web)                     | Screen (mobile)       | Prototype | Status |
+| ------------- | ------------------------------- | --------------------- | --------- | ------ |
+| Feed          | `/[locale]/(app)/feed`          | `FeedScreen`          | §Feed     | 🟡     |
+| Profile       | `/[locale]/(app)/u/[handle]`    | `ProfileScreen`       | §Profile  | 🟡     |
+| Network       | `/[locale]/(app)/network`       | `NetworkScreen`       | §Network  | 🟡     |
+| Messages      | `/[locale]/(app)/messages`      | `MessagesScreen`      | §Messages | 🟡     |
+| Search        | `/[locale]/(app)/search`        | `SearchScreen`        | §Search   | 🟡     |
+| Jobs          | `/[locale]/(app)/jobs`          | `JobsScreen`          | —         | ⏳     |
+| Notifications | `/[locale]/(app)/notifications` | `NotificationsScreen` | —         | ⏳     |
 
 ## 5. Layout patterns
 
 ### Web — 3-column grid (Feed, 1128 max)
+
 `225px | 1fr | 300px` with 24px gutter. Left rail sticky below nav (56px). Right rail sticky, ads + suggestions.
 
 ### Web — 2-column (Network, Search)
+
 `220px | 1fr` with 24px gutter. 900 max width. Left rail = filters.
 
 ### Web — single column (Messages)
+
 1100 max width, full card holds 320px room list + flexible thread pane.
 
 ### Mobile
+
 Single column, edge-to-edge cards with 16px horizontal padding, bottom tab bar 64pt high with 5 items.
 
 ## 6. Interaction patterns
@@ -158,7 +163,7 @@ Single column, edge-to-edge cards with 16px horizontal padding, bottom tab bar 6
 ## 7. What NOT to do
 
 - ❌ Tailwind blue anywhere.
-- ❌ Gradients anywhere *except* the profile cover strip (and that's a single specific linear olive gradient — do not reuse).
+- ❌ Gradients anywhere _except_ the profile cover strip (and that's a single specific linear olive gradient — do not reuse).
 - ❌ Emoji in product chrome. In user-generated content only.
 - ❌ Hand-drawn complex SVGs. Use placeholders with a monospace label for imagery we don't have yet.
 - ❌ Inventing new font sizes outside the 7-step scale.
@@ -181,4 +186,4 @@ Component usage stays the same (`bg-brand-600`). Only token values change. One c
 
 ## 9. The prototype
 
-`docs/design/prototype/PalNet Prototype.html` is the visual ground truth. Open it, navigate the five screens, and match what you build to what's rendered. When this document and the prototype disagree, **the prototype wins** — and open a PR updating this document.
+`docs/_archive/prototype-2025/Baydar Prototype.html` is the visual ground truth. Open it, navigate the five screens, and match what you build to what's rendered. When this document and the prototype disagree, **the prototype wins** — and open a PR updating this document.

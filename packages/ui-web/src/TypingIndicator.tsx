@@ -14,16 +14,12 @@ export interface TypingIndicatorProps {
 
 export function TypingIndicator({ label }: TypingIndicatorProps): JSX.Element {
   return (
-    <li
-      className="flex items-center self-start"
-      role="status"
-      aria-live="polite"
-    >
+    <li className="flex items-center self-start" role="status" aria-live="polite">
       <span className="sr-only">{label}</span>
       <div
         aria-hidden="true"
         className={cx(
-          "inline-flex items-center gap-1 rounded-[14px] rounded-es-[4px] border border-line-soft bg-surface px-3.5 py-2.5",
+          "border-line-soft bg-surface inline-flex items-center gap-1 rounded-[14px] rounded-es-[4px] border px-3.5 py-2.5",
         )}
       >
         <Dot delayMs={0} />
@@ -37,7 +33,7 @@ export function TypingIndicator({ label }: TypingIndicatorProps): JSX.Element {
 function Dot({ delayMs }: { delayMs: number }): JSX.Element {
   return (
     <span
-      className="inline-block h-1.5 w-1.5 animate-bounce rounded-full bg-ink-muted"
+      className="bg-ink-muted inline-block h-1.5 w-1.5 animate-bounce rounded-full"
       style={{ animationDelay: `${delayMs}ms` }}
     />
   );

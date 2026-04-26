@@ -24,10 +24,7 @@ function isArabicLocale(locale: string | undefined | null): boolean {
  * would render "1,234" in otherwise-Arabic output. Force "arab" so
  * numerals match the surrounding script.
  */
-function withDigits(
-  locale: string,
-  options?: Intl.NumberFormatOptions,
-): Intl.NumberFormatOptions {
+function withDigits(locale: string, options?: Intl.NumberFormatOptions): Intl.NumberFormatOptions {
   if (isArabicLocale(locale)) {
     return { numberingSystem: "arab", ...options };
   }
@@ -44,10 +41,7 @@ export function formatNumber(
   options?: Intl.NumberFormatOptions,
 ): string {
   if (!Number.isFinite(value)) return "";
-  return new Intl.NumberFormat(
-    resolveLocale(locale),
-    withDigits(locale, options),
-  ).format(value);
+  return new Intl.NumberFormat(resolveLocale(locale), withDigits(locale, options)).format(value);
 }
 
 /**
@@ -114,16 +108,11 @@ export function formatRelativeTime(
   // BCP-47 unicode extension `-u-nu-arab` forces Arabic-Indic digits
   // for Intl formatters that don't expose `numberingSystem` in TS types
   // (RelativeTimeFormat, DateTimeFormat — both accept it at runtime).
-  const tag = isArabicLocale(locale)
-    ? `${resolveLocale(locale)}-u-nu-arab`
-    : resolveLocale(locale);
+  const tag = isArabicLocale(locale) ? `${resolveLocale(locale)}-u-nu-arab` : resolveLocale(locale);
 
   if (absSecs < 60) {
     // "now" / "الآن" — RelativeTimeFormat's "0 seconds" reads awkwardly.
-    return new Intl.RelativeTimeFormat(tag, { numeric: "auto" }).format(
-      0,
-      "second",
-    );
+    return new Intl.RelativeTimeFormat(tag, { numeric: "auto" }).format(0, "second");
   }
 
   // Fall back to absolute date for anything older than 30 days.
@@ -154,11 +143,14 @@ export function formatSalaryRange(
   currency: string,
   locale: string,
 ): string | null {
-  if (min == null && max == null) return null;
-  if (min != null && max != null) {
+  const hasMin = min !== null && min !== undefined;
+  const hasMax = max !== null && max !== undefined;
+
+  if (!hasMin && !hasMax) return null;
+  if (hasMin && hasMax) {
     return `${formatCurrency(min, currency, locale)} – ${formatCurrency(max, currency, locale)}`;
   }
-  if (min != null) return formatCurrency(min, currency, locale);
-  if (max != null) return formatCurrency(max, currency, locale);
+  if (hasMin) return formatCurrency(min, currency, locale);
+  if (hasMax) return formatCurrency(max, currency, locale);
   return null;
 }

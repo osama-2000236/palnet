@@ -53,9 +53,7 @@ export type ConnectionListItem = z.infer<typeof ConnectionListItem>;
 export const PersonSuggestion = z.object({
   user: ConnectionUser,
   /** Short token-backed reason string, e.g. "SHARED_CONNECTIONS". */
-  reasonCode: z
-    .enum(["SHARED_CONNECTIONS", "SAME_LOCATION", "SUGGESTED"])
-    .default("SUGGESTED"),
+  reasonCode: z.enum(["SHARED_CONNECTIONS", "SAME_LOCATION", "SUGGESTED"]).default("SUGGESTED"),
   /** Optional numeric hint shown next to the reason (e.g. shared-count). */
   reasonCount: z.number().int().nonnegative().nullish(),
 });

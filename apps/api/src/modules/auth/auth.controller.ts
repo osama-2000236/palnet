@@ -1,3 +1,4 @@
+import { type AuthSession, LoginBody, RefreshBody, RegisterBody } from "@baydar/shared";
 import {
   Body,
   Controller,
@@ -8,21 +9,11 @@ import {
   UseGuards,
   UsePipes,
 } from "@nestjs/common";
-import {
-  ApiBearerAuth,
-  ApiCreatedResponse,
-  ApiOkResponse,
-  ApiTags,
-} from "@nestjs/swagger";
+import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiTags } from "@nestjs/swagger";
 import { Throttle } from "@nestjs/throttler";
-import {
-  type AuthSession,
-  LoginBody,
-  RefreshBody,
-  RegisterBody,
-} from "@palnet/shared";
 
 import { ZodValidationPipe } from "../../common/zod-pipe";
+
 import { AuthService } from "./auth.service";
 import { CurrentUser, type AuthUser } from "./decorators/current-user.decorator";
 import { Public } from "./decorators/public.decorator";
@@ -72,19 +63,14 @@ export class AuthController {
   @Post("logout")
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiBearerAuth()
-  async logout(
-    @CurrentUser() user: AuthUser,
-    @Body() body: { deviceId: string },
-  ): Promise<void> {
+  async logout(@CurrentUser() user: AuthUser, @Body() body: { deviceId: string }): Promise<void> {
     await this.auth.logout(user.id, body.deviceId);
   }
 
   @Get("me")
   @ApiBearerAuth()
   @ApiOkResponse({ description: "Current authenticated user summary." })
-  async me(
-    @CurrentUser() user: AuthUser,
-  ): Promise<{ data: AuthSession["user"] }> {
+  async me(@CurrentUser() user: AuthUser): Promise<{ data: AuthSession["user"] }> {
     const data = await this.auth.me(user.id);
     return { data };
   }

@@ -25,10 +25,12 @@ export const Notification = z.object({
 });
 export type Notification = z.infer<typeof Notification>;
 
-export const MarkNotificationsReadBody = z.object({
-  ids: z.array(z.string().cuid()).min(1).max(200).optional(),
-  all: z.boolean().optional(),
-}).refine((v) => !!v.ids || v.all === true, { message: "IDS_OR_ALL_REQUIRED" });
+export const MarkNotificationsReadBody = z
+  .object({
+    ids: z.array(z.string().cuid()).min(1).max(200).optional(),
+    all: z.boolean().optional(),
+  })
+  .refine((v) => !!v.ids || v.all === true, { message: "IDS_OR_ALL_REQUIRED" });
 export type MarkNotificationsReadBody = z.infer<typeof MarkNotificationsReadBody>;
 
 // Server-sent event shapes for the /notifications/stream endpoint.

@@ -57,7 +57,7 @@ Each sprint = ~1 week of focused work. Order matters; don't skip ahead.
 
 #### Sprint 1 QA gap list (observed vs. prototype)
 
-Things that *look* wrong today but are on the roadmap — not Sprint 1 fixes:
+Things that _look_ wrong today but are on the roadmap — not Sprint 1 fixes:
 
 - **No AppShell.** Every `(app)` route has its own inline header with hand-rolled
   link buttons + a bell. Prototype has a sticky top nav with logo, rounded search
@@ -83,7 +83,7 @@ Things that *look* wrong today but are on the roadmap — not Sprint 1 fixes:
 - **NotificationsBell icon is a custom inline SVG.** Once AppShell lands it will
   consume the shared `Icon` atom (not yet built). → Sprint 2.
 
-Cosmetic-but-cheap items that *did* land in Sprint 1:
+Cosmetic-but-cheap items that _did_ land in Sprint 1:
 
 - Every surface routes through the 5-variant `<Surface>` atom (flat/card/hero/tinted/row).
 - Every person uses `<Avatar>` (xs/sm/md/lg/xl, ring, online dot) on a deterministic
@@ -106,7 +106,7 @@ Cosmetic-but-cheap items that *did* land in Sprint 1:
 
 **Landed in Sprint 2:**
 
-- New atom `<Icon>` (exported from `@palnet/ui-web`) consolidates every inline
+- New atom `<Icon>` (exported from `@baydar/ui-web`) consolidates every inline
   SVG glyph — home / users / briefcase / message / bell / search / chevron-down /
   thumb / repost / send / check / x / more / plus / bookmark / logo. Always
   inherits `currentColor`, never ships a hex.
@@ -247,8 +247,8 @@ Things scoped for later sprints so Sprint 3 stays "feed-only":
 7. ✅ **Notifications polish** — first-load skeleton (4 rows) + friendly tinted empty state with brand checkmark. Stops the "empty card flash" on open.
 8. ✅ **Feed right-rail jobs** — replaces the `قريبًا` placeholder with a live mini-list backed by `/jobs?limit=3`. Falls back to the placeholder copy when the endpoint returns empty.
 9. ✅ **Search skeleton** — four pulsing person rows while the first query is in flight. Prevents the empty-state copy flashing between submit and first response.
-10. ✅ **Mobile profile ported** to `Surface` / `Avatar` / `Button` from `@palnet/ui-native`. Same connection matrix, same optimistic updates; styling now flows through `nativeTokens` instead of nativewind class strings.
-11. ✅ **Shared i18n formatters** in `@palnet/shared` — `formatNumber`, `formatCurrency`, `formatCompact`, `formatRelativeTime`, `formatSalaryRange`. Force `numberingSystem: "arab"` (via `-u-nu-arab` BCP-47 extension on the RelativeTimeFormat path where the TS lib drops the option) for every ar-* locale so Arabic surfaces render Arabic-Indic numerals consistently. Web jobs list / job detail / notifications / PostCard / messages and mobile notifications all swapped over.
+10. ✅ **Mobile profile ported** to `Surface` / `Avatar` / `Button` from `@baydar/ui-native`. Same connection matrix, same optimistic updates; styling now flows through `nativeTokens` instead of nativewind class strings.
+11. ✅ **Shared i18n formatters** in `@baydar/shared` — `formatNumber`, `formatCurrency`, `formatCompact`, `formatRelativeTime`, `formatSalaryRange`. Force `numberingSystem: "arab"` (via `-u-nu-arab` BCP-47 extension on the RelativeTimeFormat path where the TS lib drops the option) for every ar-\* locale so Arabic surfaces render Arabic-Indic numerals consistently. Web jobs list / job detail / notifications / PostCard / messages and mobile notifications all swapped over.
 12. ✅ **ui-native `Sheet` primitive** — Modal-based bottom sheet (no gesture-handler dep yet; public API is a subset of `@gorhom/bottom-sheet` so a later swap is a render-shape change only). Used by the mobile jobs filter sheet + cover-letter sheet.
 13. ✅ **ui-native `MessageBubble` atom + mobile messages port** — own bubbles now use `brand100 + brand200` border (matching web) instead of the deprecated `brand600` CTA-color anti-pattern; status ticks share the same `computeStatus` rules as web (`pending-` id → sending, failed set → failed, `otherLastReadAt` → read, else sent). Room list ported to `Surface` + `Avatar`.
 14. ✅ **Mobile onboarding ported** to `nativeTokens` + `Button`. Form is wrapped in a `KeyboardAvoidingView` + `ScrollView` so the CTA stays reachable when the Arabic keyboard is up.
@@ -280,21 +280,21 @@ Things scoped for later sprints so Sprint 3 stays "feed-only":
 
 Copy these files from `handoff/` to these repo paths:
 
-| From | To |
-|---|---|
-| `handoff/CLAUDE.md` | `CLAUDE.md` |
-| `handoff/DESIGN.md` | `DESIGN.md` |
-| `handoff/BRAND.md` | `BRAND.md` |
-| `handoff/HANDOFF.md` | `docs/HANDOFF.md` |
-| `handoff/packages/ui-tokens/src/index.ts` | `packages/ui-tokens/src/index.ts` |
-| `handoff/packages/ui-tokens/src/tokens.css` | `packages/ui-tokens/src/tokens.css` |
+| From                                              | To                                        |
+| ------------------------------------------------- | ----------------------------------------- |
+| `handoff/CLAUDE.md`                               | `CLAUDE.md`                               |
+| `handoff/DESIGN.md`                               | `DESIGN.md`                               |
+| `handoff/BRAND.md`                                | `BRAND.md`                                |
+| `handoff/HANDOFF.md`                              | `docs/HANDOFF.md`                         |
+| `handoff/packages/ui-tokens/src/index.ts`         | `packages/ui-tokens/src/index.ts`         |
+| `handoff/packages/ui-tokens/src/tokens.css`       | `packages/ui-tokens/src/tokens.css`       |
 | `handoff/packages/ui-tokens/src/tokens.native.ts` | `packages/ui-tokens/src/tokens.native.ts` |
-| `handoff/packages/ui-tokens/tailwind-preset.ts` | `packages/ui-tokens/tailwind-preset.ts` |
-| `handoff/docs/components/*.md` | `docs/components/*.md` |
-| `handoff/docs/design/RTL.md` | `docs/design/RTL.md` |
-| `handoff/docs/design/MOBILE.md` | `docs/design/MOBILE.md` |
-| `handoff/docs/design/TESTING.md` | `docs/design/TESTING.md` |
-| `handoff/docs/design/prototype/*` | `docs/design/prototype/*` |
+| `handoff/packages/ui-tokens/tailwind-preset.ts`   | `packages/ui-tokens/tailwind-preset.ts`   |
+| `handoff/docs/components/*.md`                    | `docs/components/*.md`                    |
+| `handoff/docs/design/RTL.md`                      | `docs/design/RTL.md`                      |
+| `handoff/docs/design/MOBILE.md`                   | `docs/design/MOBILE.md`                   |
+| `handoff/docs/design/TESTING.md`                  | `docs/design/TESTING.md`                  |
+| `handoff/docs/_archive/prototype-2025/*`          | `docs/_archive/prototype-2025/*`          |
 
 After copying, delete the `handoff/` folder from this design project — it lives in the repo now.
 
@@ -306,7 +306,7 @@ Run these commands. All must succeed:
 pnpm install
 pnpm tokens:build          # regenerates tokens.css + tokens.native.ts
 pnpm --filter apps/web dev  # renders in olive palette, RTL, Arabic fonts loaded
-open docs/design/prototype/PalNet\ Prototype.html  # visual reference still works
+open docs/_archive/prototype-2025/Baydar\ Prototype.html  # archived visual reference
 ```
 
 If any of those fail, fix them before writing a single new component.

@@ -4,7 +4,7 @@ import {
   Notification as NotificationSchema,
   NotificationType,
   type Notification,
-} from "@palnet/shared";
+} from "@baydar/shared";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -37,11 +37,9 @@ export default function NotificationsScreen(): JSX.Element {
     try {
       const qs = new URLSearchParams({ limit: "30" });
       if (after) qs.set("after", after);
-      const page = await apiFetchPage(
-        `/notifications?${qs.toString()}`,
-        NotificationsPage,
-        { token },
-      );
+      const page = await apiFetchPage(`/notifications?${qs.toString()}`, NotificationsPage, {
+        token,
+      });
       setItems((prev) => (after ? [...prev, ...page.data] : page.data));
       setCursor(page.meta.nextCursor);
       setHasMore(page.meta.hasMore);
@@ -83,11 +81,9 @@ export default function NotificationsScreen(): JSX.Element {
   );
 
   return (
-    <SafeAreaView className="flex-1 bg-surface-muted">
+    <SafeAreaView className="bg-surface-muted flex-1">
       <View className="flex-1 px-4 pt-8">
-        <Text className="mb-3 text-3xl font-bold text-ink">
-          {t("notifications.title")}
-        </Text>
+        <Text className="text-ink mb-3 text-3xl font-bold">{t("notifications.title")}</Text>
 
         <FlatList
           data={items}
@@ -100,7 +96,7 @@ export default function NotificationsScreen(): JSX.Element {
           }}
           ListEmptyComponent={
             loading ? null : (
-              <View className="rounded-md border border-ink-muted/20 bg-surface p-6">
+              <View className="border-ink-muted/20 bg-surface rounded-md border p-6">
                 <Text className="text-ink-muted">{t("notifications.empty")}</Text>
               </View>
             )
@@ -121,9 +117,7 @@ export default function NotificationsScreen(): JSX.Element {
 function NotificationRow({ item }: { item: Notification }): JSX.Element {
   const { t, i18n } = useTranslation();
   const actor = item.actor;
-  const actorName = actor
-    ? `${actor.firstName} ${actor.lastName}`.trim() || actor.handle
-    : "";
+  const actorName = actor ? `${actor.firstName} ${actor.lastName}`.trim() || actor.handle : "";
   const body = t(`notifications.templates.${item.type}`, { actor: actorName });
   const unread = item.readAt === null;
 
@@ -132,9 +126,7 @@ function NotificationRow({ item }: { item: Notification }): JSX.Element {
   const content = (
     <View
       className={`flex-row items-start gap-3 rounded-md border p-3 ${
-        unread
-          ? "border-brand-500/30 bg-brand-50"
-          : "border-ink-muted/20 bg-surface"
+        unread ? "border-brand-500/30 bg-brand-50" : "border-ink-muted/20 bg-surface"
       }`}
     >
       {actor?.avatarUrl ? (
@@ -143,30 +135,22 @@ function NotificationRow({ item }: { item: Notification }): JSX.Element {
           style={{ width: 40, height: 40, borderRadius: 20 }}
         />
       ) : (
-        <View className="h-10 w-10 items-center justify-center rounded-full bg-ink-muted/10">
-          <Text className="text-sm font-semibold text-ink">
-            {initialsOf(actorName) || "?"}
-          </Text>
+        <View className="bg-ink-muted/10 h-10 w-10 items-center justify-center rounded-full">
+          <Text className="text-ink text-sm font-semibold">{initialsOf(actorName) || "?"}</Text>
         </View>
       )}
       <View className="flex-1">
-        <Text className="text-sm text-ink">{body}</Text>
-        <Text className="text-xs text-ink-muted">
+        <Text className="text-ink text-sm">{body}</Text>
+        <Text className="text-ink-muted text-xs">
           {formatRelativeTime(item.createdAt, i18n.language)}
         </Text>
       </View>
-      {unread ? (
-        <View className="mt-1 h-2 w-2 rounded-full bg-accent-600" />
-      ) : null}
+      {unread ? <View className="bg-accent-600 mt-1 h-2 w-2 rounded-full" /> : null}
     </View>
   );
 
   if (!destination) return content;
-  return (
-    <Pressable onPress={() => router.push(destination as never)}>
-      {content}
-    </Pressable>
-  );
+  return <Pressable onPress={() => router.push(destination as never)}>{content}</Pressable>;
 }
 
 function hrefFor(n: Notification): string | null {

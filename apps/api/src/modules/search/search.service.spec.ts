@@ -1,6 +1,7 @@
 import { Test } from "@nestjs/testing";
 
 import { PrismaService } from "../prisma/prisma.service";
+
 import { SearchService } from "./search.service";
 
 type PrismaStub = {
@@ -29,10 +30,7 @@ describe("SearchService", () => {
   beforeEach(async () => {
     prisma = buildPrisma();
     const moduleRef = await Test.createTestingModule({
-      providers: [
-        SearchService,
-        { provide: PrismaService, useValue: prisma },
-      ],
+      providers: [SearchService, { provide: PrismaService, useValue: prisma }],
     }).compile();
     service = moduleRef.get(SearchService);
   });

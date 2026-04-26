@@ -20,12 +20,7 @@ import {
 
 import { nativeTokens } from "./tokens";
 
-export type ButtonVariant =
-  | "primary"
-  | "secondary"
-  | "ghost"
-  | "accent"
-  | "danger-ghost";
+export type ButtonVariant = "primary" | "secondary" | "ghost" | "accent" | "danger-ghost";
 export type ButtonSize = "sm" | "md" | "lg";
 
 export interface ButtonProps extends Omit<PressableProps, "style" | "children"> {

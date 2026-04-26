@@ -1,5 +1,5 @@
+import type { ErrorCode } from "@baydar/shared";
 import { HttpException, HttpStatus } from "@nestjs/common";
-import type { ErrorCode } from "@palnet/shared";
 
 export class DomainException extends HttpException {
   constructor(

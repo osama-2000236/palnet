@@ -1,4 +1,4 @@
-const preset = require("@palnet/config/eslint-preset");
+const preset = require("@baydar/config/eslint-preset");
 
 module.exports = {
   ...preset,

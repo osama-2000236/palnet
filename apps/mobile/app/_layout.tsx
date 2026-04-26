@@ -4,7 +4,7 @@ import {
   IBMPlexSansArabic_700Bold,
 } from "@expo-google-fonts/ibm-plex-sans-arabic";
 import { NotoNaskhArabic_400Regular } from "@expo-google-fonts/noto-naskh-arabic";
-import { nativeTokens } from "@palnet/ui-native";
+import { nativeTokens } from "@baydar/ui-native";
 import { useFonts } from "expo-font";
 import { Stack, SplashScreen } from "expo-router";
 import { StatusBar } from "expo-status-bar";
@@ -47,11 +47,7 @@ export default function RootLayout(): JSX.Element | null {
   // While fonts load, render a blank surface-coloured view so we don't flash
   // the default system font for a single frame.
   if (!fontsLoaded && !fontError) {
-    return (
-      <View
-        style={{ flex: 1, backgroundColor: nativeTokens.color.surfaceMuted }}
-      />
-    );
+    return <View style={{ flex: 1, backgroundColor: nativeTokens.color.surfaceMuted }} />;
   }
 
   return (

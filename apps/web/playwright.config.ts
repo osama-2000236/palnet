@@ -16,7 +16,7 @@ export default defineConfig({
     { name: "chromium-en", use: { ...devices["Desktop Chrome"], locale: "en" } },
   ],
   webServer: {
-    command: "pnpm --filter @palnet/web dev",
+    command: "pnpm --filter @baydar/web dev",
     url: "http://localhost:3000",
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,

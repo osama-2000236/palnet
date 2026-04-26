@@ -4,8 +4,8 @@ import {
   cursorPage,
   SearchPersonHit as SearchPersonHitSchema,
   type SearchPersonHit,
-} from "@palnet/shared";
-import { Avatar, Surface } from "@palnet/ui-web";
+} from "@baydar/shared";
+import { Avatar, Surface } from "@baydar/ui-web";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -37,33 +37,26 @@ function SearchInner(): JSX.Element {
   const [hasMore, setHasMore] = useState(false);
   const [cursor, setCursor] = useState<string | null>(null);
 
-  const run = useCallback(
-    async (term: string, after: string | null): Promise<void> => {
-      if (!term.trim()) {
-        setHits([]);
-        setHasMore(false);
-        setCursor(null);
-        return;
-      }
-      setLoading(true);
-      try {
-        const token = getAccessToken() ?? undefined;
-        const qs = new URLSearchParams({ q: term, limit: "20" });
-        if (after) qs.set("after", after);
-        const page = await apiFetchPage(
-          `/search/people?${qs.toString()}`,
-          PeoplePage,
-          { token },
-        );
-        setHits((prev) => (after ? [...prev, ...page.data] : page.data));
-        setHasMore(page.meta.hasMore);
-        setCursor(page.meta.nextCursor);
-      } finally {
-        setLoading(false);
-      }
-    },
-    [],
-  );
+  const run = useCallback(async (term: string, after: string | null): Promise<void> => {
+    if (!term.trim()) {
+      setHits([]);
+      setHasMore(false);
+      setCursor(null);
+      return;
+    }
+    setLoading(true);
+    try {
+      const token = getAccessToken() ?? undefined;
+      const qs = new URLSearchParams({ q: term, limit: "20" });
+      if (after) qs.set("after", after);
+      const page = await apiFetchPage(`/search/people?${qs.toString()}`, PeoplePage, { token });
+      setHits((prev) => (after ? [...prev, ...page.data] : page.data));
+      setHasMore(page.meta.hasMore);
+      setCursor(page.meta.nextCursor);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     if (initialQ) void run(initialQ, null);
@@ -80,18 +73,18 @@ function SearchInner(): JSX.Element {
 
   return (
     <main className="mx-auto flex w-full max-w-[840px] flex-col gap-4 px-6 py-8">
-      <h1 className="text-3xl font-bold text-ink">{t("title")}</h1>
+      <h1 className="text-ink text-3xl font-bold">{t("title")}</h1>
 
       <form onSubmit={submit} className="flex gap-2">
         <input
           value={q}
           onChange={(e) => setQ(e.target.value)}
           placeholder={t("placeholder")}
-          className="flex-1 rounded-md border border-ink-muted/30 bg-surface px-3 py-2 text-ink"
+          className="border-ink-muted/30 bg-surface text-ink flex-1 rounded-md border px-3 py-2"
         />
         <button
           type="submit"
-          className="rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-ink-inverse"
+          className="bg-brand-600 text-ink-inverse rounded-md px-4 py-2 text-sm font-semibold"
         >
           {t("submit")}
         </button>
@@ -125,18 +118,14 @@ function SearchInner(): JSX.Element {
                   size="lg"
                 />
                 <div className="flex min-w-0 flex-col">
-                  <span className="font-semibold text-ink">
+                  <span className="text-ink font-semibold">
                     {p.firstName} {p.lastName}
                   </span>
-                  <span className="text-xs text-ink-muted">/in/{p.handle}</span>
+                  <span className="text-ink-muted text-xs">/in/{p.handle}</span>
                   {p.headline ? (
-                    <span className="mt-1 text-sm text-ink-muted">
-                      {p.headline}
-                    </span>
+                    <span className="text-ink-muted mt-1 text-sm">{p.headline}</span>
                   ) : null}
-                  {p.location ? (
-                    <span className="text-xs text-ink-muted">{p.location}</span>
-                  ) : null}
+                  {p.location ? <span className="text-ink-muted text-xs">{p.location}</span> : null}
                 </div>
               </Link>
             </Surface>
@@ -149,7 +138,7 @@ function SearchInner(): JSX.Element {
           type="button"
           onClick={() => void run(q, cursor)}
           disabled={loading}
-          className="self-center rounded-md border border-ink-muted/30 px-4 py-2 text-sm text-ink hover:bg-ink-muted/5 disabled:opacity-60"
+          className="border-ink-muted/30 text-ink hover:bg-ink-muted/5 self-center rounded-md border px-4 py-2 text-sm disabled:opacity-60"
         >
           {loading ? t("loadingMore") : t("loadMore")}
         </button>
@@ -160,12 +149,12 @@ function SearchInner(): JSX.Element {
 
 function PersonHitSkeleton(): JSX.Element {
   return (
-    <div className="flex items-start gap-3 rounded-md border border-ink-muted/20 bg-surface p-4">
-      <div className="h-14 w-14 animate-pulse rounded-full bg-surface-sunken" />
+    <div className="border-ink-muted/20 bg-surface flex items-start gap-3 rounded-md border p-4">
+      <div className="bg-surface-sunken h-14 w-14 animate-pulse rounded-full" />
       <div className="flex flex-1 flex-col gap-2">
-        <div className="h-4 w-1/3 animate-pulse rounded bg-surface-sunken" />
-        <div className="h-3 w-1/5 animate-pulse rounded bg-surface-sunken" />
-        <div className="h-3 w-2/3 animate-pulse rounded bg-surface-sunken" />
+        <div className="bg-surface-sunken h-4 w-1/3 animate-pulse rounded" />
+        <div className="bg-surface-sunken h-3 w-1/5 animate-pulse rounded" />
+        <div className="bg-surface-sunken h-3 w-2/3 animate-pulse rounded" />
       </div>
     </div>
   );

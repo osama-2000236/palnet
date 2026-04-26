@@ -1,13 +1,10 @@
+import { type CursorPageMeta, PeopleSearchQuery, type SearchPersonHit } from "@baydar/shared";
 import { Controller, Get, Query } from "@nestjs/common";
 import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
-import {
-  type CursorPageMeta,
-  PeopleSearchQuery,
-  type SearchPersonHit,
-} from "@palnet/shared";
 
 import { ZodValidationPipe } from "../../common/zod-pipe";
 import { OptionalAuth } from "../auth/decorators/optional-auth.decorator";
+
 import { SearchService } from "./search.service";
 
 @ApiTags("search")

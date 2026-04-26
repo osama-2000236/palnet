@@ -1,30 +1,17 @@
 import {
-  Body,
-  Controller,
-  Get,
-  Post,
-  Query,
-  Sse,
-  UsePipes,
-} from "@nestjs/common";
-import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
-import {
   CursorPageQuery,
   type CursorPageMeta,
   MarkNotificationsReadBody,
   type Notification,
-} from "@palnet/shared";
+} from "@baydar/shared";
+import { Body, Controller, Get, Post, Query, Sse, UsePipes } from "@nestjs/common";
+import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 import { Observable } from "rxjs";
 
 import { ZodValidationPipe } from "../../common/zod-pipe";
-import {
-  CurrentUser,
-  type AuthUser,
-} from "../auth/decorators/current-user.decorator";
-import {
-  NotificationsBus,
-  type NotificationEvent,
-} from "./notifications.bus";
+import { CurrentUser, type AuthUser } from "../auth/decorators/current-user.decorator";
+
+import { NotificationsBus, type NotificationEvent } from "./notifications.bus";
 import { NotificationsService } from "./notifications.service";
 
 interface SseMessage {
@@ -50,17 +37,11 @@ export class NotificationsController {
       after: query.after,
       limit: query.limit,
     });
-    return this.notifications.list(
-      user.id,
-      parsed.after ?? null,
-      parsed.limit,
-    );
+    return this.notifications.list(user.id, parsed.after ?? null, parsed.limit);
   }
 
   @Get("unread-count")
-  async unreadCount(
-    @CurrentUser() user: AuthUser,
-  ): Promise<{ count: number }> {
+  async unreadCount(@CurrentUser() user: AuthUser): Promise<{ count: number }> {
     const count = await this.notifications.countUnread(user.id);
     return { count };
   }

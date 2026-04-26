@@ -13,15 +13,15 @@
 
 ## Type scale — tighter than web
 
-| Step | Web | Mobile |
-|---|---|---|
-| display | 36 | 28 |
-| h1 | 26 | 22 |
-| h2 | 19 | 18 |
-| h3 | 16 | 16 |
-| body | 15 | 15 |
-| small | 13 | 13 |
-| caption | 12 | 12 |
+| Step    | Web | Mobile |
+| ------- | --- | ------ |
+| display | 36  | 28     |
+| h1      | 26  | 22     |
+| h2      | 19  | 18     |
+| h3      | 16  | 16     |
+| body    | 15  | 15     |
+| small   | 13  | 13     |
+| caption | 12  | 12     |
 
 See `packages/ui-tokens/src/tokens.native.ts`.
 

@@ -2,14 +2,14 @@ import { randomUUID } from "node:crypto";
 
 import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import { Injectable, Logger } from "@nestjs/common";
-import { ConfigService } from "@nestjs/config";
 import {
   ErrorCode,
   type PresignUploadBody,
   type PresignedUpload,
   type MediaPurpose,
-} from "@palnet/shared";
+} from "@baydar/shared";
+import { Injectable, Logger } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
 
 import { DomainException } from "../../common/domain-exception";
 import type { Env } from "../../config/env";
@@ -49,16 +49,11 @@ export class MediaService {
       this.client = null;
       this.bucket = null;
       this.publicBase = null;
-      this.log.warn(
-        "R2 not configured — POST /media/presign will return MEDIA_NOT_CONFIGURED.",
-      );
+      this.log.warn("R2 not configured — POST /media/presign will return MEDIA_NOT_CONFIGURED.");
     }
   }
 
-  async presign(
-    userId: string,
-    body: PresignUploadBody,
-  ): Promise<PresignedUpload> {
+  async presign(userId: string, body: PresignUploadBody): Promise<PresignedUpload> {
     if (!this.client || !this.bucket || !this.publicBase) {
       throw new DomainException(
         ErrorCode.INTERNAL,

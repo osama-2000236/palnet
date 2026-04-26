@@ -1,8 +1,9 @@
+import { ErrorCode } from "@baydar/shared";
 import { Test } from "@nestjs/testing";
-import { ErrorCode } from "@palnet/shared";
 
 import { DomainException } from "../../common/domain-exception";
 import { PrismaService } from "../prisma/prisma.service";
+
 import { PostsService } from "./posts.service";
 
 type PrismaStub = {
@@ -53,10 +54,7 @@ describe("PostsService", () => {
   beforeEach(async () => {
     prisma = buildPrisma();
     const moduleRef = await Test.createTestingModule({
-      providers: [
-        PostsService,
-        { provide: PrismaService, useValue: prisma },
-      ],
+      providers: [PostsService, { provide: PrismaService, useValue: prisma }],
     }).compile();
     service = moduleRef.get(PostsService);
   });

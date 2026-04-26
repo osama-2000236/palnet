@@ -1,15 +1,16 @@
-import { Injectable } from "@nestjs/common";
 import {
   type ChatRoom as ChatRoomDto,
   ErrorCode,
   type Message as MessageDto,
   NotificationType,
   type SendMessageBody,
-} from "@palnet/shared";
+} from "@baydar/shared";
+import { Injectable } from "@nestjs/common";
 
 import { DomainException } from "../../common/domain-exception";
 import { NotificationsService } from "../notifications/notifications.service";
 import { PrismaService } from "../prisma/prisma.service";
+
 import { MessagingBus } from "./messaging.bus";
 
 interface MessageRow {
@@ -47,8 +48,6 @@ interface RoomRow {
   messages: MessageRow[];
 }
 
-const PAGE_LIMIT = 30;
-
 @Injectable()
 export class MessagingService {
   constructor(
@@ -61,10 +60,7 @@ export class MessagingService {
   // Rooms
   // ─────────────────────────────────────────────────────────────────────
 
-  async findOrCreateDm(
-    viewerId: string,
-    otherUserId: string,
-  ): Promise<ChatRoomDto> {
+  async findOrCreateDm(viewerId: string, otherUserId: string): Promise<ChatRoomDto> {
     if (otherUserId === viewerId) {
       throw new DomainException(
         ErrorCode.VALIDATION_FAILED,
@@ -140,9 +136,7 @@ export class MessagingService {
       },
     })) as unknown as RoomRow[];
 
-    return Promise.all(
-      rooms.map((row) => this.toChatRoomDto(row, viewerId)),
-    );
+    return Promise.all(rooms.map((row) => this.toChatRoomDto(row, viewerId)));
   }
 
   async getRoomDto(roomId: string, viewerId: string): Promise<ChatRoomDto> {
@@ -210,11 +204,7 @@ export class MessagingService {
     };
   }
 
-  async sendMessage(
-    viewerId: string,
-    roomId: string,
-    body: SendMessageBody,
-  ): Promise<MessageDto> {
+  async sendMessage(viewerId: string, roomId: string, body: SendMessageBody): Promise<MessageDto> {
     await this.requireMembership(viewerId, roomId);
 
     // Idempotency via (roomId, authorId, clientMessageId) unique.
@@ -319,10 +309,7 @@ export class MessagingService {
   // Helpers
   // ─────────────────────────────────────────────────────────────────────
 
-  private async requireMembership(
-    userId: string,
-    roomId: string,
-  ): Promise<void> {
+  private async requireMembership(userId: string, roomId: string): Promise<void> {
     const m = await this.prisma.chatRoomMember.findFirst({
       where: { roomId, userId },
       select: { id: true },
@@ -332,13 +319,8 @@ export class MessagingService {
     }
   }
 
-  private async toChatRoomDto(
-    row: RoomRow,
-    viewerId: string,
-  ): Promise<ChatRoomDto> {
-    const lastMessage = row.messages[0]
-      ? toMessageDto(row.messages[0])
-      : null;
+  private async toChatRoomDto(row: RoomRow, viewerId: string): Promise<ChatRoomDto> {
+    const lastMessage = row.messages[0] ? toMessageDto(row.messages[0]) : null;
 
     // Unread count = messages authored by others after this member's lastReadAt.
     const me = row.members.find((m) => m.userId === viewerId);

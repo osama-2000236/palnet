@@ -60,7 +60,11 @@ const SKIP_FILE = (p) =>
   p.includes(`${sep}node_modules${sep}`) ||
   p.includes(`${sep}.next${sep}`) ||
   p.includes(`${sep}dist${sep}`) ||
-  p.includes(`${sep}.turbo${sep}`);
+  p.includes(`${sep}.turbo${sep}`) ||
+  p.includes(`${sep}ui-tokens${sep}assets${sep}`) ||
+  // PWA manifest cannot reference Tailwind classes — brand_color / theme_color
+  // must be raw hex by spec. Treat as a sanctioned token consumer.
+  p.endsWith(`${sep}app${sep}manifest.ts`);
 
 // ───────────────────────────────────────────────────────────────────────────
 

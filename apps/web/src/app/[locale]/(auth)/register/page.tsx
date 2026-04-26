@@ -1,6 +1,6 @@
 "use client";
 
-import { RegisterBody } from "@palnet/shared";
+import { RegisterBody } from "@baydar/shared";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
@@ -57,88 +57,84 @@ export default function RegisterPage(): JSX.Element {
   }
 
   return (
-    <form
-      onSubmit={onSubmit}
-      className="mx-auto flex w-full max-w-md flex-col gap-4 px-6 py-12"
-      noValidate
-    >
-      <h1 className="text-3xl font-bold text-ink">{t("register")}</h1>
+    <main className="mx-auto w-full max-w-md px-6 py-12">
+      <form onSubmit={onSubmit} className="flex flex-col gap-4" noValidate>
+        <h1 className="text-ink text-3xl font-bold">{t("register")}</h1>
 
-      <label className="flex flex-col gap-1">
-        <span className="text-sm text-ink-muted">{t("firstName")}</span>
-        <input
-          className="rounded-md border border-ink-muted/30 px-3 py-2"
-          value={state.firstName}
-          onChange={(e) => setState({ ...state, firstName: e.target.value })}
-          required
-          autoComplete="given-name"
-        />
-      </label>
+        <label className="flex flex-col gap-1">
+          <span className="text-ink-muted text-sm">{t("firstName")}</span>
+          <input
+            className="border-ink-muted/30 rounded-md border px-3 py-2"
+            value={state.firstName}
+            onChange={(e) => setState({ ...state, firstName: e.target.value })}
+            required
+            autoComplete="given-name"
+          />
+        </label>
 
-      <label className="flex flex-col gap-1">
-        <span className="text-sm text-ink-muted">{t("lastName")}</span>
-        <input
-          className="rounded-md border border-ink-muted/30 px-3 py-2"
-          value={state.lastName}
-          onChange={(e) => setState({ ...state, lastName: e.target.value })}
-          required
-          autoComplete="family-name"
-        />
-      </label>
+        <label className="flex flex-col gap-1">
+          <span className="text-ink-muted text-sm">{t("lastName")}</span>
+          <input
+            className="border-ink-muted/30 rounded-md border px-3 py-2"
+            value={state.lastName}
+            onChange={(e) => setState({ ...state, lastName: e.target.value })}
+            required
+            autoComplete="family-name"
+          />
+        </label>
 
-      <label className="flex flex-col gap-1">
-        <span className="text-sm text-ink-muted">{t("email")}</span>
-        <input
-          type="email"
-          className="rounded-md border border-ink-muted/30 px-3 py-2"
-          value={state.email}
-          onChange={(e) => setState({ ...state, email: e.target.value })}
-          required
-          autoComplete="email"
-          inputMode="email"
-          dir="ltr"
-        />
-      </label>
+        <label className="flex flex-col gap-1">
+          <span className="text-ink-muted text-sm">{t("email")}</span>
+          <input
+            type="email"
+            className="border-ink-muted/30 rounded-md border px-3 py-2"
+            value={state.email}
+            onChange={(e) => setState({ ...state, email: e.target.value })}
+            required
+            autoComplete="email"
+            inputMode="email"
+            dir="ltr"
+          />
+        </label>
 
-      <label className="flex flex-col gap-1">
-        <span className="text-sm text-ink-muted">{t("password")}</span>
-        <input
-          type="password"
-          className="rounded-md border border-ink-muted/30 px-3 py-2"
-          value={state.password}
-          onChange={(e) => setState({ ...state, password: e.target.value })}
-          required
-          autoComplete="new-password"
-          minLength={8}
-          dir="ltr"
-        />
-      </label>
+        <label className="flex flex-col gap-1">
+          <span className="text-ink-muted text-sm">{t("password")}</span>
+          <input
+            type="password"
+            className="border-ink-muted/30 rounded-md border px-3 py-2"
+            value={state.password}
+            onChange={(e) => setState({ ...state, password: e.target.value })}
+            required
+            autoComplete="new-password"
+            minLength={8}
+            dir="ltr"
+          />
+        </label>
 
-      <label className="flex items-center gap-2 text-sm">
-        <input
-          type="checkbox"
-          checked={state.acceptTerms}
-          onChange={(e) =>
-            setState({ ...state, acceptTerms: e.target.checked })
-          }
-          required
-        />
-        {t("acceptTerms")}
-      </label>
+        <label className="flex items-center gap-2 text-sm">
+          <input
+            type="checkbox"
+            checked={state.acceptTerms}
+            onChange={(e) => setState({ ...state, acceptTerms: e.target.checked })}
+            required
+          />
+          {t("acceptTerms")}
+        </label>
 
-      {error ? (
-        <p role="alert" className="text-sm text-danger">
-          {error}
-        </p>
-      ) : null}
+        {error ? (
+          <p role="alert" className="text-danger text-sm">
+            {error}
+          </p>
+        ) : null}
 
-      <button
-        type="submit"
-        disabled={busy}
-        className="rounded-md bg-brand-600 px-4 py-2 text-ink-inverse shadow-card hover:bg-brand-700 disabled:opacity-60"
-      >
-        {t("submitRegister")}
-      </button>
-    </form>
+        <button
+          type="submit"
+          disabled={busy}
+          className="bg-brand-600 text-ink-inverse shadow-card hover:bg-brand-700 rounded-md px-4 py-2 disabled:opacity-60"
+        >
+          {t("submitRegister")}
+        </button>
+      </form>
+    </main>
   );
 }

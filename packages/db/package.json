@@ -1,10 +1,12 @@
 {
-  "name": "@palnet/db",
+  "name": "@baydar/db",
   "version": "0.0.1",
   "private": true,
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "files": ["dist"],
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "dev": "tsc -p tsconfig.json --watch",
@@ -21,7 +23,7 @@
     "@prisma/client": "^5.22.0"
   },
   "devDependencies": {
-    "@palnet/config": "workspace:*",
+    "@baydar/config": "workspace:*",
     "@types/bcrypt": "^5.0.2",
     "@types/node": "^22.7.5",
     "bcrypt": "^5.1.1",

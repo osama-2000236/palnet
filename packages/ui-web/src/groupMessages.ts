@@ -45,14 +45,11 @@ export function groupMessages<M>(
     const prevAuthor = i > 0 ? authors[i - 1] : null;
     const nextAuthor = i < messages.length - 1 ? authors[i + 1] : null;
     const prevTime = i > 0 ? times[i - 1]! : -Infinity;
-    const nextTime =
-      i < messages.length - 1 ? times[i + 1]! : Number.POSITIVE_INFINITY;
+    const nextTime = i < messages.length - 1 ? times[i + 1]! : Number.POSITIVE_INFINITY;
     const thisTime = times[i]!;
 
-    const continuesPrev =
-      prevAuthor === authors[i] && thisTime - prevTime < windowMs;
-    const continuedByNext =
-      nextAuthor === authors[i] && nextTime - thisTime < windowMs;
+    const continuesPrev = prevAuthor === authors[i] && thisTime - prevTime < windowMs;
+    const continuedByNext = nextAuthor === authors[i] && nextTime - thisTime < windowMs;
 
     const startsRun = !continuesPrev;
     const tail = !continuedByNext;

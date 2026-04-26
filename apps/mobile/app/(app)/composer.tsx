@@ -1,10 +1,5 @@
-import {
-  CreatePostBody,
-  MediaKind,
-  type MediaRef,
-  Post,
-} from "@palnet/shared";
-import { tokens } from "@palnet/ui-tokens";
+import { CreatePostBody, MediaKind, type MediaRef, Post } from "@baydar/shared";
+import { tokens } from "@baydar/ui-tokens";
 import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
 import { useState } from "react";
@@ -94,9 +89,7 @@ export default function ComposerScreen(): JSX.Element {
       router.replace("/(app)/feed");
     } catch (e) {
       if (e instanceof ApiRequestError) {
-        setError(
-          t(`auth.errors.${e.code}`, { defaultValue: t("auth.errors.INTERNAL") }),
-        );
+        setError(t(`auth.errors.${e.code}`, { defaultValue: t("auth.errors.INTERNAL") }));
       } else {
         setError(t("auth.errors.INTERNAL"));
       }
@@ -106,33 +99,28 @@ export default function ComposerScreen(): JSX.Element {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-surface-muted">
+    <SafeAreaView className="bg-surface-muted flex-1">
       <View className="flex-1 gap-3 px-6 pt-8">
-        <Text className="text-3xl font-bold text-ink">{t("composer.title")}</Text>
+        <Text className="text-ink text-3xl font-bold">{t("composer.title")}</Text>
         <TextInput
           value={body}
           onChangeText={setBody}
           placeholder={t("composer.placeholder")}
           multiline
           maxLength={3000}
-          className="min-h-[160px] rounded-md border border-ink-muted/30 bg-surface p-3 text-ink"
+          className="border-ink-muted/30 bg-surface text-ink min-h-[160px] rounded-md border p-3"
           textAlignVertical="top"
         />
-        <Text className="self-end text-xs text-ink-muted">{body.length} / 3000</Text>
+        <Text className="text-ink-muted self-end text-xs">{body.length} / 3000</Text>
 
         {media.length > 0 ? (
           <View className="flex-row flex-wrap gap-2">
             {media.map((m, i) => (
               <Pressable
                 key={m.url}
-                onPress={() =>
-                  setMedia((prev) => prev.filter((_, j) => j !== i))
-                }
+                onPress={() => setMedia((prev) => prev.filter((_, j) => j !== i))}
               >
-                <Image
-                  source={{ uri: m.url }}
-                  style={{ width: 80, height: 80, borderRadius: 6 }}
-                />
+                <Image source={{ uri: m.url }} style={{ width: 80, height: 80, borderRadius: 6 }} />
               </Pressable>
             ))}
           </View>
@@ -141,15 +129,15 @@ export default function ComposerScreen(): JSX.Element {
         <Pressable
           onPress={pickImage}
           disabled={uploading || media.length >= 8}
-          className="self-start rounded-md border border-ink-muted/30 px-3 py-2"
+          className="border-ink-muted/30 self-start rounded-md border px-3 py-2"
         >
-          <Text className="text-sm text-ink">
+          <Text className="text-ink text-sm">
             {uploading ? t("composer.uploading") : `+ ${t("composer.addImage")}`}
           </Text>
         </Pressable>
 
         {error ? (
-          <Text className="text-sm text-danger" accessibilityRole="alert">
+          <Text className="text-danger text-sm" accessibilityRole="alert">
             {error}
           </Text>
         ) : null}
@@ -157,17 +145,17 @@ export default function ComposerScreen(): JSX.Element {
         <Pressable
           onPress={submit}
           disabled={busy || body.trim().length === 0}
-          className="rounded-md bg-brand-600 px-6 py-3 shadow-card"
+          className="bg-brand-600 shadow-card rounded-md px-6 py-3"
         >
           {busy ? (
             <ActivityIndicator color={tokens.color.ink.inverse} />
           ) : (
-            <Text className="text-center text-ink-inverse">{t("composer.submit")}</Text>
+            <Text className="text-ink-inverse text-center">{t("composer.submit")}</Text>
           )}
         </Pressable>
 
         <Pressable onPress={() => router.back()}>
-          <Text className="text-center text-ink-muted">{t("common.cancel")}</Text>
+          <Text className="text-ink-muted text-center">{t("common.cancel")}</Text>
         </Pressable>
       </View>
     </SafeAreaView>

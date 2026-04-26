@@ -1,5 +1,5 @@
+import { ErrorCode, NotificationType, type ReactionType } from "@baydar/shared";
 import { Injectable } from "@nestjs/common";
-import { ErrorCode, NotificationType, type ReactionType } from "@palnet/shared";
 
 import { DomainException } from "../../common/domain-exception";
 import { NotificationsService } from "../notifications/notifications.service";

@@ -38,53 +38,51 @@ export default function LoginPage(): JSX.Element {
   }
 
   return (
-    <form
-      onSubmit={onSubmit}
-      className="mx-auto flex w-full max-w-md flex-col gap-4 px-6 py-12"
-      noValidate
-    >
-      <h1 className="text-3xl font-bold text-ink">{t("login")}</h1>
+    <main className="mx-auto w-full max-w-md px-6 py-12">
+      <form onSubmit={onSubmit} className="flex flex-col gap-4" noValidate>
+        <h1 className="text-ink text-3xl font-bold">{t("login")}</h1>
 
-      <label className="flex flex-col gap-1">
-        <span className="text-sm text-ink-muted">{t("email")}</span>
-        <input
-          type="email"
-          className="rounded-md border border-ink-muted/30 px-3 py-2"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-          autoComplete="email"
-          inputMode="email"
-          dir="ltr"
-        />
-      </label>
+        <label className="flex flex-col gap-1">
+          <span className="text-ink-muted text-sm">{t("email")}</span>
+          <input
+            type="email"
+            className="border-ink-muted/30 rounded-md border px-3 py-2"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            autoComplete="email"
+            inputMode="email"
+            dir="ltr"
+          />
+        </label>
 
-      <label className="flex flex-col gap-1">
-        <span className="text-sm text-ink-muted">{t("password")}</span>
-        <input
-          type="password"
-          className="rounded-md border border-ink-muted/30 px-3 py-2"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          autoComplete="current-password"
-          dir="ltr"
-        />
-      </label>
+        <label className="flex flex-col gap-1">
+          <span className="text-ink-muted text-sm">{t("password")}</span>
+          <input
+            type="password"
+            className="border-ink-muted/30 rounded-md border px-3 py-2"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            autoComplete="current-password"
+            dir="ltr"
+          />
+        </label>
 
-      {error ? (
-        <p role="alert" className="text-sm text-danger">
-          {error}
-        </p>
-      ) : null}
+        {error ? (
+          <p role="alert" className="text-danger text-sm">
+            {error}
+          </p>
+        ) : null}
 
-      <button
-        type="submit"
-        disabled={busy}
-        className="rounded-md bg-brand-600 px-4 py-2 text-ink-inverse shadow-card hover:bg-brand-700 disabled:opacity-60"
-      >
-        {t("submitLogin")}
-      </button>
-    </form>
+        <button
+          type="submit"
+          disabled={busy}
+          className="bg-brand-600 text-ink-inverse shadow-card hover:bg-brand-700 rounded-md px-4 py-2 disabled:opacity-60"
+        >
+          {t("submitLogin")}
+        </button>
+      </form>
+    </main>
   );
 }

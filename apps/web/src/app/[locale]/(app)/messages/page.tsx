@@ -1,10 +1,10 @@
 "use client";
 
 // Messages page — room list on the start side, active thread on the other.
-// Spec: docs/design/prototype/components/MessagesPage.jsx.
+// Spec: docs/_archive/prototype-2025/components/MessagesPage.jsx.
 //
 // Owns the network concerns (REST + SSE); delegates all visuals to
-// @palnet/ui-web shells (MessageBubble, RoomRow, TypingIndicator, Avatar,
+// @baydar/ui-web shells (MessageBubble, RoomRow, TypingIndicator, Avatar,
 // Surface, Icon). Grouping logic lives in the shared `groupMessages` helper.
 
 import {
@@ -14,7 +14,7 @@ import {
   WsChatEvent,
   type ChatRoom,
   type Message,
-} from "@palnet/shared";
+} from "@baydar/shared";
 import {
   Avatar,
   Icon,
@@ -24,17 +24,11 @@ import {
   TypingIndicator,
   groupMessages,
   type MessageStatus,
-} from "@palnet/ui-web";
+} from "@baydar/ui-web";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { z } from "zod";
 
 import { apiCall, apiFetch, ApiRequestError, apiFetchPage } from "@/lib/api";
@@ -46,8 +40,7 @@ const MessagesPageEnvelope = z.object({
   meta: CursorPageMeta,
 });
 
-const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000/api/v1";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000/api/v1";
 
 // Presence threshold — considered "online" if lastSeenAt is within this window.
 const ONLINE_WINDOW_MS = 2 * 60 * 1000;
@@ -73,9 +66,7 @@ export default function MessagesPage(): JSX.Element {
   const [typingUserByRoom, setTypingUserByRoom] = useState<
     Record<string, { userId: string; expiresAt: number }>
   >({});
-  const [failedClientIds, setFailedClientIds] = useState<Set<string>>(
-    () => new Set(),
-  );
+  const [failedClientIds, setFailedClientIds] = useState<Set<string>>(() => new Set());
   const [error, setError] = useState<string | null>(null);
   const threadRef = useRef<HTMLDivElement | null>(null);
   const lastTypingPostRef = useRef<{ roomId: string | null; at: number }>({
@@ -198,10 +189,7 @@ export default function MessagesPage(): JSX.Element {
               return {
                 ...r,
                 lastMessage: m,
-                unreadCount:
-                  isActive || m.authorId === viewerId
-                    ? 0
-                    : r.unreadCount + 1,
+                unreadCount: isActive || m.authorId === viewerId ? 0 : r.unreadCount + 1,
                 updatedAt: m.createdAt,
               };
             })
@@ -294,9 +282,7 @@ export default function MessagesPage(): JSX.Element {
     if (!activeRoomId || !token || draft.trim().length === 0) return;
     setSending(true);
     setError(null);
-    const clientMessageId = `web-${Date.now()}-${Math.random()
-      .toString(36)
-      .slice(2, 8)}`;
+    const clientMessageId = `web-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     const optimistic: Message = {
       id: `pending-${clientMessageId}`,
       roomId: activeRoomId,
@@ -315,15 +301,11 @@ export default function MessagesPage(): JSX.Element {
       }
     });
     try {
-      const saved = await apiFetch(
-        `/messaging/rooms/${activeRoomId}/messages`,
-        MessageSchema,
-        {
-          method: "POST",
-          token,
-          body: { body: optimistic.body, clientMessageId },
-        },
-      );
+      const saved = await apiFetch(`/messaging/rooms/${activeRoomId}/messages`, MessageSchema, {
+        method: "POST",
+        token,
+        body: { body: optimistic.body, clientMessageId },
+      });
       setMessages((prev) => {
         const idx = prev.findIndex((x) => x.clientMessageId === clientMessageId);
         if (idx < 0) return prev;
@@ -353,15 +335,11 @@ export default function MessagesPage(): JSX.Element {
       return next;
     });
     try {
-      const saved = await apiFetch(
-        `/messaging/rooms/${activeRoomId}/messages`,
-        MessageSchema,
-        {
-          method: "POST",
-          token,
-          body: { body: target.body, clientMessageId },
-        },
-      );
+      const saved = await apiFetch(`/messaging/rooms/${activeRoomId}/messages`, MessageSchema, {
+        method: "POST",
+        token,
+        body: { body: target.body, clientMessageId },
+      });
       setMessages((prev) => {
         const idx = prev.findIndex((x) => x.clientMessageId === clientMessageId);
         if (idx < 0) return prev;
@@ -405,9 +383,7 @@ export default function MessagesPage(): JSX.Element {
     const q = searchTerm.trim().toLocaleLowerCase();
     if (!q) return rooms;
     return rooms.filter((r) => {
-      const other = viewerId
-        ? r.members.find((m) => m.userId !== viewerId)
-        : null;
+      const other = viewerId ? r.members.find((m) => m.userId !== viewerId) : null;
       const haystack = [
         other?.firstName,
         other?.lastName,
@@ -432,9 +408,7 @@ export default function MessagesPage(): JSX.Element {
   );
 
   const activeTyping =
-    activeRoomId && typingUserByRoom[activeRoomId]
-      ? typingUserByRoom[activeRoomId]
-      : null;
+    activeRoomId && typingUserByRoom[activeRoomId] ? typingUserByRoom[activeRoomId] : null;
 
   // ───────── Render ─────────
   return (
@@ -446,39 +420,37 @@ export default function MessagesPage(): JSX.Element {
         className="grid min-h-[calc(100vh-8rem)] grid-cols-1 overflow-hidden md:grid-cols-[320px_minmax(0,1fr)]"
       >
         {/* Rooms list */}
-        <aside className="flex min-h-0 flex-col border-line-soft md:border-e">
-          <div className="flex items-center justify-between gap-2 border-b border-line-soft px-4 py-3">
-            <h1 className="text-base font-semibold text-ink">{t("title")}</h1>
+        <aside className="border-line-soft flex min-h-0 flex-col md:border-e">
+          <div className="border-line-soft flex items-center justify-between gap-2 border-b px-4 py-3">
+            <h1 className="text-ink text-base font-semibold">{t("title")}</h1>
             <button
               type="button"
               aria-label={t("newMessage")}
-              className="inline-flex h-8 w-8 items-center justify-center rounded-md text-ink-muted hover:bg-surface-subtle hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-600"
+              className="text-ink-muted hover:bg-surface-subtle hover:text-ink focus-visible:ring-brand-600 inline-flex h-8 w-8 items-center justify-center rounded-md focus:outline-none focus-visible:ring-2"
             >
               <Icon name="plus" size={18} />
             </button>
           </div>
           <div className="px-3 py-2">
-            <label className="flex items-center gap-2 rounded-full bg-surface-subtle px-3 py-1.5">
+            <label className="bg-surface-subtle flex items-center gap-2 rounded-full px-3 py-1.5">
               <Icon name="search" size={14} />
               <input
                 type="search"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder={t("searchPlaceholder")}
-                className="w-full bg-transparent text-sm text-ink placeholder:text-ink-muted focus:outline-none"
+                className="text-ink placeholder:text-ink-muted w-full bg-transparent text-sm focus:outline-none"
               />
             </label>
           </div>
           <div className="flex-1 overflow-y-auto">
             {filteredRooms.length === 0 ? (
-              <p className="p-4 text-sm text-ink-muted">
+              <p className="text-ink-muted p-4 text-sm">
                 {searchTerm ? t("searchNoResults") : t("emptyList")}
               </p>
             ) : (
               filteredRooms.map((room) => {
-                const other = viewerId
-                  ? room.members.find((m) => m.userId !== viewerId)
-                  : null;
+                const other = viewerId ? room.members.find((m) => m.userId !== viewerId) : null;
                 const online =
                   other?.lastSeenAt != null &&
                   Date.now() - Date.parse(other.lastSeenAt) < ONLINE_WINDOW_MS;
@@ -512,12 +484,12 @@ export default function MessagesPage(): JSX.Element {
         {/* Active thread */}
         <section className="flex min-h-0 flex-col">
           {!activeRoomId ? (
-            <div className="flex flex-1 items-center justify-center p-8 text-sm text-ink-muted">
+            <div className="text-ink-muted flex flex-1 items-center justify-center p-8 text-sm">
               {t("selectPrompt")}
             </div>
           ) : (
             <>
-              <header className="flex items-center gap-3 border-b border-line-soft px-5 py-3">
+              <header className="border-line-soft flex items-center gap-3 border-b px-5 py-3">
                 {otherMember ? (
                   <>
                     <Link
@@ -539,12 +511,12 @@ export default function MessagesPage(): JSX.Element {
                     <div className="flex min-w-0 flex-col">
                       <Link
                         href={`/in/${otherMember.handle}`}
-                        className="truncate text-sm font-semibold text-ink hover:underline"
+                        className="text-ink truncate text-sm font-semibold hover:underline"
                       >
                         {`${otherMember.firstName} ${otherMember.lastName}`.trim() ||
                           otherMember.handle}
                       </Link>
-                      <span className="text-[11px] text-ink-muted">
+                      <span className="text-ink-muted text-[11px]">
                         {otherOnline
                           ? t("onlineNow")
                           : otherMember.lastSeenAt
@@ -554,7 +526,7 @@ export default function MessagesPage(): JSX.Element {
                     </div>
                   </>
                 ) : (
-                  <span className="text-sm font-semibold text-ink">
+                  <span className="text-ink text-sm font-semibold">
                     {activeRoom?.title ?? activeRoomId}
                   </span>
                 )}
@@ -562,52 +534,35 @@ export default function MessagesPage(): JSX.Element {
 
               <div
                 ref={threadRef}
-                className="flex flex-1 flex-col overflow-y-auto bg-surface-subtle px-5 py-4"
+                className="bg-surface-subtle flex flex-1 flex-col overflow-y-auto px-5 py-4"
               >
                 {hasMore ? (
                   <button
                     type="button"
                     onClick={() =>
-                      activeRoomId &&
-                      nextCursor &&
-                      void loadMessages(activeRoomId, nextCursor)
+                      activeRoomId && nextCursor && void loadMessages(activeRoomId, nextCursor)
                     }
-                    className="mb-3 self-center rounded-full border border-line-soft bg-surface px-3 py-1 text-[11px] text-ink-muted hover:bg-surface-muted"
+                    className="border-line-soft bg-surface text-ink-muted hover:bg-surface-muted mb-3 self-center rounded-full border px-3 py-1 text-[11px]"
                   >
                     {t("loadOlder")}
                   </button>
                 ) : null}
 
                 {messages.length === 0 && !activeTyping ? (
-                  <p className="py-6 text-center text-sm text-ink-muted">
-                    {t("emptyThread")}
-                  </p>
+                  <p className="text-ink-muted py-6 text-center text-sm">{t("emptyThread")}</p>
                 ) : (
-                  <ul
-                    role="log"
-                    aria-live="polite"
-                    className="flex flex-col gap-0.5"
-                  >
+                  <ul role="log" aria-live="polite" className="flex flex-col gap-0.5">
                     {grouped.map(({ message: m, tail, showTimestamp, startsRun }) => {
                       const mine = m.authorId === viewerId;
                       const status: MessageStatus | undefined = mine
-                        ? computeStatus(
-                            m,
-                            failedClientIds,
-                            otherLastReadAtMs,
-                          )
+                        ? computeStatus(m, failedClientIds, otherLastReadAtMs)
                         : undefined;
                       return (
-                        <div
-                          key={m.id}
-                          className={startsRun ? "mt-2 first:mt-0" : ""}
-                        >
+                        <div key={m.id} className={startsRun ? "mt-2 first:mt-0" : ""}>
                           <MessageBubble
                             side={mine ? "mine" : "theirs"}
                             tail={tail}
-                            timestamp={
-                              showTimestamp ? shortTime(m.createdAt, locale) : null
-                            }
+                            timestamp={showTimestamp ? shortTime(m.createdAt, locale) : null}
                             status={status}
                             authorName={
                               !mine && otherMember
@@ -616,15 +571,12 @@ export default function MessagesPage(): JSX.Element {
                             }
                             onRetry={
                               m.clientMessageId
-                                ? () =>
-                                    void retryFailed(m.clientMessageId as string)
+                                ? () => void retryFailed(m.clientMessageId as string)
                                 : undefined
                             }
                             labels={{
-                              ownPrefix: (time) =>
-                                t("ownPrefix", { time }),
-                              otherPrefix: (name, time) =>
-                                t("otherPrefix", { name, time }),
+                              ownPrefix: (time) => t("ownPrefix", { time }),
+                              otherPrefix: (name, time) => t("otherPrefix", { name, time }),
                               failedHint: t("failedHint"),
                               statusSending: t("statusSending"),
                               statusSent: t("statusSent"),
@@ -641,7 +593,8 @@ export default function MessagesPage(): JSX.Element {
                     {activeTyping && otherMember ? (
                       <TypingIndicator
                         label={t("typing", {
-                          name: `${otherMember.firstName} ${otherMember.lastName}`.trim() ||
+                          name:
+                            `${otherMember.firstName} ${otherMember.lastName}`.trim() ||
                             otherMember.handle,
                         })}
                       />
@@ -653,7 +606,7 @@ export default function MessagesPage(): JSX.Element {
               {error ? (
                 <p
                   role="alert"
-                  className="border-t border-danger/20 bg-danger/10 px-4 py-2 text-sm text-danger"
+                  className="border-danger/20 bg-danger/10 text-danger border-t px-4 py-2 text-sm"
                 >
                   {error}
                 </p>
@@ -664,7 +617,7 @@ export default function MessagesPage(): JSX.Element {
                   e.preventDefault();
                   void submit();
                 }}
-                className="flex items-end gap-2 border-t border-line-soft bg-surface p-3"
+                className="border-line-soft bg-surface flex items-end gap-2 border-t p-3"
               >
                 <textarea
                   value={draft}
@@ -675,7 +628,7 @@ export default function MessagesPage(): JSX.Element {
                   placeholder={t("composePlaceholder")}
                   rows={1}
                   maxLength={5000}
-                  className="min-h-10 flex-1 resize-none rounded-full border border-line-soft bg-surface px-4 py-2.5 text-sm text-ink placeholder:text-ink-muted focus:outline-none focus-visible:border-brand-600 focus-visible:ring-2 focus-visible:ring-brand-600/30"
+                  className="border-line-soft bg-surface text-ink placeholder:text-ink-muted focus-visible:border-brand-600 focus-visible:ring-brand-600/30 min-h-10 flex-1 resize-none rounded-full border px-4 py-2.5 text-sm focus:outline-none focus-visible:ring-2"
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && !e.shiftKey) {
                       e.preventDefault();
@@ -686,7 +639,7 @@ export default function MessagesPage(): JSX.Element {
                 <button
                   type="submit"
                   disabled={sending || draft.trim().length === 0}
-                  className="inline-flex items-center gap-1.5 rounded-full bg-brand-600 px-4 py-2 text-sm font-semibold text-ink-inverse shadow-card hover:bg-brand-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:cursor-not-allowed disabled:opacity-60"
+                  className="bg-brand-600 text-ink-inverse shadow-card hover:bg-brand-700 focus-visible:ring-brand-600 focus-visible:ring-offset-surface inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   <Icon name="send-paper" size={14} />
                   {t("send")}
@@ -722,9 +675,7 @@ function computeStatus(
 // ────────────────────────────────────────────────────────────────────────
 function shortTime(iso: string, locale: string): string {
   try {
-    const tag = locale.toLowerCase().startsWith("ar")
-      ? `${locale}-u-nu-arab`
-      : locale;
+    const tag = locale.toLowerCase().startsWith("ar") ? `${locale}-u-nu-arab` : locale;
     return new Date(iso).toLocaleTimeString(tag, {
       hour: "numeric",
       minute: "2-digit",
@@ -736,9 +687,7 @@ function shortTime(iso: string, locale: string): string {
 
 function shortDate(iso: string, locale: string): string {
   try {
-    const tag = locale.toLowerCase().startsWith("ar")
-      ? `${locale}-u-nu-arab`
-      : locale;
+    const tag = locale.toLowerCase().startsWith("ar") ? `${locale}-u-nu-arab` : locale;
     return new Date(iso).toLocaleString(tag, {
       month: "short",
       day: "numeric",

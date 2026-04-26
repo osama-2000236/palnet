@@ -1,4 +1,4 @@
-import type { Post as PostDto } from "@palnet/shared";
+import type { Post as PostDto } from "@baydar/shared";
 
 // Prisma post with includes we count on everywhere.
 export interface PostWithIncludes {

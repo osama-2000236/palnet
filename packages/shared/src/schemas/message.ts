@@ -52,7 +52,17 @@ export type ChatRoom = z.infer<typeof ChatRoom>;
 // WebSocket event shapes. Namespaces: /chat, /notifications.
 export const WsChatEvent = z.discriminatedUnion("type", [
   z.object({ type: z.literal("message.new"), payload: Message }),
-  z.object({ type: z.literal("message.read"), payload: z.object({ roomId: z.string().cuid(), userId: z.string().cuid(), at: z.string().datetime() }) }),
-  z.object({ type: z.literal("typing"), payload: z.object({ roomId: z.string().cuid(), userId: z.string().cuid() }) }),
+  z.object({
+    type: z.literal("message.read"),
+    payload: z.object({
+      roomId: z.string().cuid(),
+      userId: z.string().cuid(),
+      at: z.string().datetime(),
+    }),
+  }),
+  z.object({
+    type: z.literal("typing"),
+    payload: z.object({ roomId: z.string().cuid(), userId: z.string().cuid() }),
+  }),
 ]);
 export type WsChatEvent = z.infer<typeof WsChatEvent>;
