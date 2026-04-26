@@ -60,11 +60,11 @@ test.describe("a11y (authed)", () => {
   let user: TestUser;
 
   test.beforeAll(async ({ request }) => {
-    const session = await loginViaApi(request, "demo@palnet.ps", "Password123");
+    const session = await loginViaApi(request, "demo@baydar.ps", "Password123");
     user = {
       firstName: "Demo",
       lastName: "User",
-      email: "demo@palnet.ps",
+      email: "demo@baydar.ps",
       password: "Password123",
       handle: "demo",
       session,
