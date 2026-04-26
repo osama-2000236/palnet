@@ -1,6 +1,6 @@
 # AI Prompt Cheatsheet
 
-Copy-paste these into Codex, Gemini, or Claude. Every prompt starts with the prefix from [`project-spec.md §6`](../project-spec.md). The blocks below are the *rest* of the prompt.
+Copy-paste these into Codex, Gemini, or Claude. Every prompt starts with the prefix from [`project-spec.md §6`](../project-spec.md). The blocks below are the _rest_ of the prompt.
 
 ---
 

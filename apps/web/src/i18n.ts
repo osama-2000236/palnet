@@ -12,9 +12,7 @@ export const localeDir: Record<Locale, "rtl" | "ltr"> = {
 
 export default getRequestConfig(async ({ requestLocale }) => {
   const requested = await requestLocale;
-  const locale = locales.includes(requested as Locale)
-    ? (requested as Locale)
-    : undefined;
+  const locale = locales.includes(requested as Locale) ? (requested as Locale) : undefined;
   if (!locale) notFound();
   return {
     locale,

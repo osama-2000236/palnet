@@ -84,10 +84,7 @@ describe("ProfilesService (edit)", () => {
       return null;
     });
     const moduleRef = await Test.createTestingModule({
-      providers: [
-        ProfilesService,
-        { provide: PrismaService, useValue: prisma },
-      ],
+      providers: [ProfilesService, { provide: PrismaService, useValue: prisma }],
     }).compile();
     service = moduleRef.get(ProfilesService);
   });

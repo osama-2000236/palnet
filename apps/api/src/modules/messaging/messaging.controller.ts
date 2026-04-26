@@ -22,10 +22,7 @@ import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 import { Observable } from "rxjs";
 
 import { ZodValidationPipe } from "../../common/zod-pipe";
-import {
-  CurrentUser,
-  type AuthUser,
-} from "../auth/decorators/current-user.decorator";
+import { CurrentUser, type AuthUser } from "../auth/decorators/current-user.decorator";
 
 import { MessagingBus } from "./messaging.bus";
 import { MessagingService } from "./messaging.service";
@@ -60,10 +57,7 @@ export class MessagingController {
   }
 
   @Get("rooms/:id")
-  async getRoom(
-    @CurrentUser() user: AuthUser,
-    @Param("id") id: string,
-  ): Promise<ChatRoom> {
+  async getRoom(@CurrentUser() user: AuthUser, @Param("id") id: string): Promise<ChatRoom> {
     return this.messaging.getRoomDto(id, user.id);
   }
 
@@ -80,12 +74,7 @@ export class MessagingController {
       after: query.after,
       limit: query.limit,
     });
-    const page = await this.messaging.listMessages(
-      user.id,
-      id,
-      parsed.after ?? null,
-      parsed.limit,
-    );
+    const page = await this.messaging.listMessages(user.id, id, parsed.after ?? null, parsed.limit);
     return {
       data: page.data,
       meta: {
@@ -108,19 +97,13 @@ export class MessagingController {
 
   @Post("rooms/:id/read")
   @HttpCode(HttpStatus.NO_CONTENT)
-  async markRead(
-    @CurrentUser() user: AuthUser,
-    @Param("id") id: string,
-  ): Promise<void> {
+  async markRead(@CurrentUser() user: AuthUser, @Param("id") id: string): Promise<void> {
     await this.messaging.markRead(user.id, id);
   }
 
   @Post("rooms/:id/typing")
   @HttpCode(HttpStatus.NO_CONTENT)
-  async typing(
-    @CurrentUser() user: AuthUser,
-    @Param("id") id: string,
-  ): Promise<void> {
+  async typing(@CurrentUser() user: AuthUser, @Param("id") id: string): Promise<void> {
     await this.messaging.publishTyping(user.id, id);
   }
 

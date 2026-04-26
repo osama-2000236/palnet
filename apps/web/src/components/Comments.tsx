@@ -67,11 +67,11 @@ export function Comments({
     if (!token) return;
     setBusy(true);
     try {
-      const created = await apiFetch(
-        `/posts/${postId}/comments`,
-        CommentSchema,
-        { method: "POST", body: parsed.data, token },
-      );
+      const created = await apiFetch(`/posts/${postId}/comments`, CommentSchema, {
+        method: "POST",
+        body: parsed.data,
+        token,
+      });
       setItems((prev) => [...prev, created]);
       setDraft("");
       onCountChange?.(1);
@@ -83,13 +83,13 @@ export function Comments({
   }
 
   return (
-    <div className="mt-3 flex flex-col gap-3 border-t border-ink-muted/10 pt-3">
+    <div className="border-ink-muted/10 mt-3 flex flex-col gap-3 border-t pt-3">
       {items.length === 0 && !loading ? null : (
         <ul className="flex flex-col gap-2">
           {items.map((c) => (
             <li
               key={c.id}
-              className="flex items-start gap-2 rounded-md bg-surface-muted px-3 py-2 text-sm"
+              className="bg-surface-muted flex items-start gap-2 rounded-md px-3 py-2 text-sm"
             >
               <Link
                 href={`/in/${c.author.handle}`}
@@ -100,11 +100,11 @@ export function Comments({
               <div className="flex min-w-0 flex-1 flex-col">
                 <Link
                   href={`/in/${c.author.handle}`}
-                  className="font-semibold text-ink hover:underline"
+                  className="text-ink font-semibold hover:underline"
                 >
                   {c.author.firstName} {c.author.lastName}
                 </Link>
-                <p className="whitespace-pre-wrap text-ink">{c.body}</p>
+                <p className="text-ink whitespace-pre-wrap">{c.body}</p>
               </div>
             </li>
           ))}
@@ -116,7 +116,7 @@ export function Comments({
           type="button"
           onClick={() => void load(cursor)}
           disabled={loading}
-          className="self-start text-xs text-ink-muted hover:underline"
+          className="text-ink-muted self-start text-xs hover:underline"
         >
           {t("loadMoreComments")}
         </button>
@@ -128,18 +128,18 @@ export function Comments({
           onChange={(e) => setDraft(e.target.value)}
           placeholder={t("commentPlaceholder")}
           maxLength={2000}
-          className="flex-1 rounded-md border border-ink-muted/30 bg-surface px-3 py-1.5 text-sm text-ink"
+          className="border-ink-muted/30 bg-surface text-ink flex-1 rounded-md border px-3 py-1.5 text-sm"
         />
         <button
           type="submit"
           disabled={busy || draft.trim().length === 0}
-          className="rounded-md bg-brand-600 px-3 py-1.5 text-sm font-semibold text-ink-inverse disabled:opacity-60"
+          className="bg-brand-600 text-ink-inverse rounded-md px-3 py-1.5 text-sm font-semibold disabled:opacity-60"
         >
           {t("commentSubmit")}
         </button>
       </form>
       {error ? (
-        <span className="text-xs text-danger" role="alert">
+        <span className="text-danger text-xs" role="alert">
           {error}
         </span>
       ) : null}

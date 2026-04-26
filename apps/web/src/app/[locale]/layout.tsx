@@ -45,11 +45,7 @@ export default async function RootLayout(props: {
   const dir = localeDir[locale];
 
   return (
-    <html
-      lang={locale}
-      dir={dir}
-      className={`${sansArabic.variable} ${bodyArabic.variable}`}
-    >
+    <html lang={locale} dir={dir} className={`${sansArabic.variable} ${bodyArabic.variable}`}>
       <body>
         <NextIntlClientProvider messages={messages} locale={locale}>
           {props.children}

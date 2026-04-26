@@ -41,37 +41,31 @@ export function RoomRow({
       aria-current={active ? "true" : undefined}
       aria-label={ariaLabel}
       className={cx(
-        "flex w-full items-center gap-3 border-b border-line-soft px-4 py-3 text-start transition-colors",
+        "border-line-soft flex w-full items-center gap-3 border-b px-4 py-3 text-start transition-colors",
         "border-s-[3px]",
-        active
-          ? "border-s-brand-600 bg-brand-50"
-          : "border-s-transparent hover:bg-surface-subtle",
-        "focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-inset",
+        active ? "border-s-brand-600 bg-brand-50" : "hover:bg-surface-subtle border-s-transparent",
+        "focus-visible:ring-brand-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset",
       )}
     >
       <Avatar user={user} size="md" online={online} />
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
         <div className="flex items-center justify-between gap-2">
-          <span className="truncate text-sm font-semibold text-ink">
-            {`${user.firstName ?? ""} ${user.lastName ?? ""}`.trim() ||
-              user.handle ||
-              ""}
+          <span className="text-ink truncate text-sm font-semibold">
+            {`${user.firstName ?? ""} ${user.lastName ?? ""}`.trim() || user.handle || ""}
           </span>
-          <span className="shrink-0 text-[11px] text-ink-muted tabular-nums">
-            {timestamp}
-          </span>
+          <span className="text-ink-muted shrink-0 text-[11px] tabular-nums">{timestamp}</span>
         </div>
         <div className="flex items-center justify-between gap-2">
           <span
             className={cx(
               "truncate text-xs",
-              unreadCount > 0 ? "font-semibold text-ink" : "text-ink-muted",
+              unreadCount > 0 ? "text-ink font-semibold" : "text-ink-muted",
             )}
           >
             {preview}
           </span>
           {unreadCount > 0 ? (
-            <span className="inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-accent-600 px-1.5 text-[11px] font-semibold text-ink-inverse">
+            <span className="bg-accent-600 text-ink-inverse inline-flex h-5 min-w-[20px] items-center justify-center rounded-full px-1.5 text-[11px] font-semibold">
               {unreadCount > 99 ? "99+" : unreadCount}
             </span>
           ) : null}

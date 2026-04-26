@@ -27,10 +27,7 @@ const FULL_ENV = {
 describe("MediaService", () => {
   it("throws MEDIA_NOT_CONFIGURED (503) when R2 env is missing", async () => {
     const moduleRef = await Test.createTestingModule({
-      providers: [
-        MediaService,
-        { provide: ConfigService, useValue: makeConfig({}) },
-      ],
+      providers: [MediaService, { provide: ConfigService, useValue: makeConfig({}) }],
     }).compile();
     const svc = moduleRef.get(MediaService);
 
@@ -49,10 +46,7 @@ describe("MediaService", () => {
 
   it("rejects a kind not allowed for the purpose", async () => {
     const moduleRef = await Test.createTestingModule({
-      providers: [
-        MediaService,
-        { provide: ConfigService, useValue: makeConfig(FULL_ENV) },
-      ],
+      providers: [MediaService, { provide: ConfigService, useValue: makeConfig(FULL_ENV) }],
     }).compile();
     const svc = moduleRef.get(MediaService);
 
@@ -70,10 +64,7 @@ describe("MediaService", () => {
 
   it("rejects files over the purpose size cap", async () => {
     const moduleRef = await Test.createTestingModule({
-      providers: [
-        MediaService,
-        { provide: ConfigService, useValue: makeConfig(FULL_ENV) },
-      ],
+      providers: [MediaService, { provide: ConfigService, useValue: makeConfig(FULL_ENV) }],
     }).compile();
     const svc = moduleRef.get(MediaService);
 
@@ -91,10 +82,7 @@ describe("MediaService", () => {
 
   it("returns a signed upload URL + deterministic key + public URL on happy path", async () => {
     const moduleRef = await Test.createTestingModule({
-      providers: [
-        MediaService,
-        { provide: ConfigService, useValue: makeConfig(FULL_ENV) },
-      ],
+      providers: [MediaService, { provide: ConfigService, useValue: makeConfig(FULL_ENV) }],
     }).compile();
     const svc = moduleRef.get(MediaService);
 

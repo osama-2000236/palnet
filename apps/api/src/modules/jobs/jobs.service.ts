@@ -73,9 +73,7 @@ export class JobsService {
               ],
             }
           : {}),
-        ...(filters.city
-          ? { city: { contains: filters.city, mode: "insensitive" } }
-          : {}),
+        ...(filters.city ? { city: { contains: filters.city, mode: "insensitive" } } : {}),
         ...(filters.type ? { type: filters.type } : {}),
         ...(filters.locationMode ? { locationMode: filters.locationMode } : {}),
       },

@@ -174,10 +174,7 @@ export class NotificationsService {
     });
   }
 
-  async markRead(
-    viewerId: string,
-    body: MarkNotificationsReadBody,
-  ): Promise<{ count: number }> {
+  async markRead(viewerId: string, body: MarkNotificationsReadBody): Promise<{ count: number }> {
     if (!body.all && (!body.ids || body.ids.length === 0)) {
       throw new DomainException(
         ErrorCode.VALIDATION_FAILED,

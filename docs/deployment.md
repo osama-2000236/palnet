@@ -18,26 +18,29 @@ All clients → api.baydar.ps (Render) ←→ Neon (Postgres)
 
 ## Environments
 
-| Env | API | Web | DB | Notes |
-| --- | --- | --- | --- | --- |
-| `dev` | localhost:4000 | localhost:3000 | Neon dev branch | per-developer Neon branch |
-| `preview` | Render preview env | Vercel preview | Neon branch per PR | automatic on PR open |
-| `prod` | Render service | Vercel prod | Neon main branch | manual promote |
+| Env       | API                | Web            | DB                 | Notes                     |
+| --------- | ------------------ | -------------- | ------------------ | ------------------------- |
+| `dev`     | localhost:4000     | localhost:3000 | Neon dev branch    | per-developer Neon branch |
+| `preview` | Render preview env | Vercel preview | Neon branch per PR | automatic on PR open      |
+| `prod`    | Render service     | Vercel prod    | Neon main branch   | manual promote            |
 
 ## First-time Setup (runbook)
 
 ### 1. Secrets
+
 - Render: `DATABASE_URL`, `DIRECT_URL`, `JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET`, `CORS_ORIGINS`, `R2_*`, `GOOGLE_*`.
 - Vercel: `NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_WS_URL`, `NEXT_PUBLIC_DEFAULT_LOCALE`.
 - EAS: `EXPO_PUBLIC_API_URL`, `EXPO_PUBLIC_WS_URL`, `EXPO_PUBLIC_DEFAULT_LOCALE`.
 - Never commit `.env.local`.
 
 ### 2. Neon
+
 - Create project `baydar`.
 - Branch `main` = prod. Enable "branch per PR" integration with GitHub.
 - Daily backups on by default — verify in the project settings.
 
 ### 3. Render (API)
+
 - Create Web Service from GitHub repo, root `apps/api`, Dockerfile based build.
 - Build command: `pnpm install --frozen-lockfile && pnpm --filter @baydar/db db:generate && pnpm --filter @baydar/api build`.
 - Start command: `node dist/main.js`.
@@ -46,6 +49,7 @@ All clients → api.baydar.ps (Render) ←→ Neon (Postgres)
 - Add a **pre-deploy job** that runs `pnpm --filter @baydar/db db:deploy` (Prisma migrate deploy).
 
 ### 4. Vercel (Web)
+
 - Import repo. Root directory `apps/web`. Framework preset Next.js.
 - Build command: `pnpm --filter @baydar/web build` with `TURBO_TEAM`/`TURBO_TOKEN` env if using remote cache.
 - Install command: `pnpm install --frozen-lockfile` at repo root.
@@ -53,12 +57,14 @@ All clients → api.baydar.ps (Render) ←→ Neon (Postgres)
 - Custom domain `baydar.ps` + `www.baydar.ps` (redirect apex → www or vice versa — pick one).
 
 ### 5. EAS (Mobile)
+
 - `npx eas-cli init` inside `apps/mobile`.
 - `eas build --profile production --platform all` after signing credentials set up.
 - `eas submit` when store listings are ready.
 - OTA: `eas update --branch production` for JS-only hotfixes.
 
 ### 6. Cloudflare R2
+
 - Create bucket `baydar-media-prod` (private) and `baydar-media-dev`.
 - Public media served via custom domain `media.baydar.ps` mapped to R2 via a CNAME.
 - Signed PUT URLs minted by the API only; uploads clamp to:
@@ -67,6 +73,7 @@ All clients → api.baydar.ps (Render) ←→ Neon (Postgres)
   - Documents: 20 MB, `application/pdf`.
 
 ### 7. DNS
+
 - `baydar.ps` → Vercel
 - `api.baydar.ps` → Render
 - `media.baydar.ps` → R2 public

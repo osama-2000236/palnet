@@ -11,7 +11,12 @@ Represents a person. Required everywhere a person appears. No exceptions.
 
 ```ts
 type AvatarProps = {
-  user: { firstName: string; lastName?: string; avatarUrl?: string; avatar?: { initials?: string; palette?: AvatarPalette } };
+  user: {
+    firstName: string;
+    lastName?: string;
+    avatarUrl?: string;
+    avatar?: { initials?: string; palette?: AvatarPalette };
+  };
   size?: "xs" | "sm" | "md" | "lg" | "xl";
   online?: boolean;
   ring?: boolean; // brand ring — for the logged-in user's own avatar in the profile rail
@@ -22,13 +27,13 @@ type AvatarPalette = "palette-1" | "palette-2" | "palette-3" | "palette-4" | "pa
 
 ## Sizes
 
-| Size | Px | Font | Use |
-|---|---|---|---|
-| `xs` | 24 | 10 | Chips, dense lists |
-| `sm` | 32 | 12 | Comments, compact rows |
-| `md` | 40 | 14 | Default — post headers, rooms list, connection rows |
-| `lg` | 56 | 18 | Profile rail, search results |
-| `xl` | 96 | 30 | Profile header (with 3px surface ring) |
+| Size | Px  | Font | Use                                                 |
+| ---- | --- | ---- | --------------------------------------------------- |
+| `xs` | 24  | 10   | Chips, dense lists                                  |
+| `sm` | 32  | 12   | Comments, compact rows                              |
+| `md` | 40  | 14   | Default — post headers, rooms list, connection rows |
+| `lg` | 56  | 18   | Profile rail, search results                        |
+| `xl` | 96  | 30   | Profile header (with 3px surface ring)              |
 
 ## Behavior
 

@@ -4,10 +4,10 @@ The product is Arabic-first. Every default behavior assumes `ar-PS` + RTL. Engli
 
 ## Locale Codes & Direction
 
-| Code | Direction | Use |
-| --- | --- | --- |
-| `ar-PS` | rtl | **Default.** Arabic (Palestine). |
-| `en` | ltr | Secondary. Used when user explicitly picks it or when no Arabic translation exists. |
+| Code    | Direction | Use                                                                                 |
+| ------- | --------- | ----------------------------------------------------------------------------------- |
+| `ar-PS` | rtl       | **Default.** Arabic (Palestine).                                                    |
+| `en`    | ltr       | Secondary. Used when user explicitly picks it or when no Arabic translation exists. |
 
 Locale is stored on `User.locale` (Prisma default `"ar-PS"`) and echoed in `Content-Language`. Clients pick locale in this order: user setting → `Accept-Language` → `ar-PS`.
 

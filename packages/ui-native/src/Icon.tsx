@@ -220,14 +220,78 @@ export function Icon({
         <Svg width={size} height={size} viewBox="0 0 64 64">
           <Circle cx={32} cy={32} r={30} fill={nativeTokens.color.brand600} />
           <Rect x={31} y={14} width={2} height={37} rx={1} fill={nativeTokens.color.brand50} />
-          <Ellipse cx={27} cy={19} rx={2.6} ry={4.6} origin="27,19" rotation={-28} fill={nativeTokens.color.brand50} />
-          <Ellipse cx={37} cy={19} rx={2.6} ry={4.6} origin="37,19" rotation={28}  fill={nativeTokens.color.brand50} />
-          <Ellipse cx={26} cy={27} rx={2.8} ry={4.8} origin="26,27" rotation={-28} fill={nativeTokens.color.brand50} />
-          <Ellipse cx={38} cy={27} rx={2.8} ry={4.8} origin="38,27" rotation={28}  fill={nativeTokens.color.brand50} />
-          <Ellipse cx={25} cy={35} rx={2.8} ry={4.8} origin="25,35" rotation={-28} fill={nativeTokens.color.brand50} />
-          <Ellipse cx={39} cy={35} rx={2.8} ry={4.8} origin="39,35" rotation={28}  fill={nativeTokens.color.brand50} />
-          <Ellipse cx={24} cy={43} rx={2.8} ry={4.8} origin="24,43" rotation={-28} fill={nativeTokens.color.brand50} />
-          <Ellipse cx={40} cy={43} rx={2.8} ry={4.8} origin="40,43" rotation={28}  fill={nativeTokens.color.brand50} />
+          <Ellipse
+            cx={27}
+            cy={19}
+            rx={2.6}
+            ry={4.6}
+            origin="27,19"
+            rotation={-28}
+            fill={nativeTokens.color.brand50}
+          />
+          <Ellipse
+            cx={37}
+            cy={19}
+            rx={2.6}
+            ry={4.6}
+            origin="37,19"
+            rotation={28}
+            fill={nativeTokens.color.brand50}
+          />
+          <Ellipse
+            cx={26}
+            cy={27}
+            rx={2.8}
+            ry={4.8}
+            origin="26,27"
+            rotation={-28}
+            fill={nativeTokens.color.brand50}
+          />
+          <Ellipse
+            cx={38}
+            cy={27}
+            rx={2.8}
+            ry={4.8}
+            origin="38,27"
+            rotation={28}
+            fill={nativeTokens.color.brand50}
+          />
+          <Ellipse
+            cx={25}
+            cy={35}
+            rx={2.8}
+            ry={4.8}
+            origin="25,35"
+            rotation={-28}
+            fill={nativeTokens.color.brand50}
+          />
+          <Ellipse
+            cx={39}
+            cy={35}
+            rx={2.8}
+            ry={4.8}
+            origin="39,35"
+            rotation={28}
+            fill={nativeTokens.color.brand50}
+          />
+          <Ellipse
+            cx={24}
+            cy={43}
+            rx={2.8}
+            ry={4.8}
+            origin="24,43"
+            rotation={-28}
+            fill={nativeTokens.color.brand50}
+          />
+          <Ellipse
+            cx={40}
+            cy={43}
+            rx={2.8}
+            ry={4.8}
+            origin="40,43"
+            rotation={28}
+            fill={nativeTokens.color.brand50}
+          />
         </Svg>
       );
     default:

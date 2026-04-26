@@ -37,10 +37,7 @@ export class PostsController {
   }
 
   @Get(":id")
-  async get(
-    @CurrentUser() user: AuthUser,
-    @Param("id") id: string,
-  ): Promise<{ data: PostDto }> {
+  async get(@CurrentUser() user: AuthUser, @Param("id") id: string): Promise<{ data: PostDto }> {
     const data = await this.posts.getById(user.id, id);
     return { data };
   }
@@ -58,10 +55,7 @@ export class PostsController {
 
   @Delete(":id")
   @HttpCode(HttpStatus.NO_CONTENT)
-  async delete(
-    @CurrentUser() user: AuthUser,
-    @Param("id") id: string,
-  ): Promise<void> {
+  async delete(@CurrentUser() user: AuthUser, @Param("id") id: string): Promise<void> {
     await this.posts.delete(user.id, id);
   }
 }

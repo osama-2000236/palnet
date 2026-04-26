@@ -4,13 +4,7 @@
 // network concerns: profile fetch (for the avatar), media upload, post
 // creation. The shared component owns the UI, state machine, and i18n.
 
-import {
-  CreatePostBody,
-  MediaKind,
-  type MediaRef,
-  Post,
-  Profile,
-} from "@baydar/shared";
+import { CreatePostBody, MediaKind, type MediaRef, Post, Profile } from "@baydar/shared";
 import { Composer as ComposerShell, type ComposerMedia } from "@baydar/ui-web";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
@@ -43,10 +37,7 @@ export function Composer({
     if (busy) setError(null);
   }, [busy]);
 
-  async function onPickMedia(
-    file: File,
-    kind: "IMAGE" | "VIDEO",
-  ): Promise<void> {
+  async function onPickMedia(file: File, kind: "IMAGE" | "VIDEO"): Promise<void> {
     const token = getAccessToken();
     if (!token) return;
     setError(null);

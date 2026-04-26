@@ -5,14 +5,7 @@ import {
 import { router } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import {
-  ActivityIndicator,
-  FlatList,
-  Pressable,
-  SafeAreaView,
-  Text,
-  View,
-} from "react-native";
+import { ActivityIndicator, FlatList, Pressable, SafeAreaView, Text, View } from "react-native";
 import { z } from "zod";
 
 import { apiFetch } from "@/lib/api";
@@ -85,29 +78,18 @@ export default function NetworkScreen(): JSX.Element {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-surface-muted">
+    <SafeAreaView className="bg-surface-muted flex-1">
       <View className="flex-1 px-4 pt-8">
-        <Text className="mb-3 text-3xl font-bold text-ink">
-          {t("network.title")}
-        </Text>
+        <Text className="text-ink mb-3 text-3xl font-bold">{t("network.title")}</Text>
 
         <View className="mb-3 flex-row gap-2">
-          <FilterTab
-            active={filter === "ACCEPTED"}
-            onPress={() => setFilter("ACCEPTED")}
-          >
+          <FilterTab active={filter === "ACCEPTED"} onPress={() => setFilter("ACCEPTED")}>
             {t("network.myConnections")}
           </FilterTab>
-          <FilterTab
-            active={filter === "INCOMING"}
-            onPress={() => setFilter("INCOMING")}
-          >
+          <FilterTab active={filter === "INCOMING"} onPress={() => setFilter("INCOMING")}>
             {t("network.invitations")}
           </FilterTab>
-          <FilterTab
-            active={filter === "OUTGOING"}
-            onPress={() => setFilter("OUTGOING")}
-          >
+          <FilterTab active={filter === "OUTGOING"} onPress={() => setFilter("OUTGOING")}>
             {t("network.sent")}
           </FilterTab>
         </View>
@@ -122,24 +104,22 @@ export default function NetworkScreen(): JSX.Element {
                 <ActivityIndicator />
               </View>
             ) : (
-              <View className="rounded-md border border-ink-muted/20 bg-surface p-6">
+              <View className="border-ink-muted/20 bg-surface rounded-md border p-6">
                 <Text className="text-ink-muted">{t("network.empty")}</Text>
               </View>
             )
           }
           renderItem={({ item: c }) => (
-            <View className="flex-row items-center justify-between rounded-md border border-ink-muted/20 bg-surface p-3">
+            <View className="border-ink-muted/20 bg-surface flex-row items-center justify-between rounded-md border p-3">
               <Pressable
                 onPress={() => router.push(`/(app)/in/${c.user.handle}`)}
                 className="flex-1"
               >
-                <Text className="font-semibold text-ink">
+                <Text className="text-ink font-semibold">
                   {c.user.firstName} {c.user.lastName}
                 </Text>
                 {c.user.headline ? (
-                  <Text className="text-sm text-ink-muted">
-                    {c.user.headline}
-                  </Text>
+                  <Text className="text-ink-muted text-sm">{c.user.headline}</Text>
                 ) : null}
               </Pressable>
 
@@ -147,38 +127,30 @@ export default function NetworkScreen(): JSX.Element {
                 <View className="flex-row gap-2">
                   <Pressable
                     onPress={() => void respond(c.connectionId, "ACCEPT")}
-                    className="rounded-md bg-brand-600 px-3 py-1.5"
+                    className="bg-brand-600 rounded-md px-3 py-1.5"
                   >
-                    <Text className="text-xs text-ink-inverse">
-                      {t("network.accept")}
-                    </Text>
+                    <Text className="text-ink-inverse text-xs">{t("network.accept")}</Text>
                   </Pressable>
                   <Pressable
                     onPress={() => void respond(c.connectionId, "DECLINE")}
-                    className="rounded-md border border-ink-muted/30 px-3 py-1.5"
+                    className="border-ink-muted/30 rounded-md border px-3 py-1.5"
                   >
-                    <Text className="text-xs text-ink">
-                      {t("network.decline")}
-                    </Text>
+                    <Text className="text-ink text-xs">{t("network.decline")}</Text>
                   </Pressable>
                 </View>
               ) : filter === "OUTGOING" ? (
                 <Pressable
                   onPress={() => void withdraw(c.connectionId)}
-                  className="rounded-md border border-ink-muted/30 px-3 py-1.5"
+                  className="border-ink-muted/30 rounded-md border px-3 py-1.5"
                 >
-                  <Text className="text-xs text-ink">
-                    {t("network.withdraw")}
-                  </Text>
+                  <Text className="text-ink text-xs">{t("network.withdraw")}</Text>
                 </Pressable>
               ) : (
                 <Pressable
                   onPress={() => void remove(c.connectionId)}
-                  className="rounded-md border border-ink-muted/30 px-3 py-1.5"
+                  className="border-ink-muted/30 rounded-md border px-3 py-1.5"
                 >
-                  <Text className="text-xs text-ink">
-                    {t("network.removeConnection")}
-                  </Text>
+                  <Text className="text-ink text-xs">{t("network.removeConnection")}</Text>
                 </Pressable>
               )}
             </View>
@@ -203,13 +175,11 @@ function FilterTab({
       onPress={onPress}
       className={
         active
-          ? "rounded-md bg-brand-600 px-3 py-1.5"
-          : "rounded-md border border-ink-muted/30 px-3 py-1.5"
+          ? "bg-brand-600 rounded-md px-3 py-1.5"
+          : "border-ink-muted/30 rounded-md border px-3 py-1.5"
       }
     >
-      <Text
-        className={active ? "text-xs font-semibold text-ink-inverse" : "text-xs text-ink"}
-      >
+      <Text className={active ? "text-ink-inverse text-xs font-semibold" : "text-ink text-xs"}>
         {children}
       </Text>
     </Pressable>

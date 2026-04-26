@@ -22,10 +22,7 @@ export class NotificationsBus {
     this.emitter.emit(userId, event);
   }
 
-  subscribe(
-    userId: string,
-    handler: (event: NotificationEvent) => void,
-  ): () => void {
+  subscribe(userId: string, handler: (event: NotificationEvent) => void): () => void {
     this.emitter.on(userId, handler);
     return () => {
       this.emitter.off(userId, handler);

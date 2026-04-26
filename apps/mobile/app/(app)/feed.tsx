@@ -35,11 +35,7 @@ export default function FeedScreen(): JSX.Element {
     const token = await getAccessToken();
     if (!token) return;
     try {
-      const out = await apiFetch(
-        "/notifications/unread-count",
-        UnreadCountEnvelope,
-        { token },
-      );
+      const out = await apiFetch("/notifications/unread-count", UnreadCountEnvelope, { token });
       setUnread(out.count);
     } catch {
       /* ignore */
@@ -84,15 +80,11 @@ export default function FeedScreen(): JSX.Element {
   );
 
   return (
-    <SafeAreaView className="flex-1 bg-surface-muted">
+    <SafeAreaView className="bg-surface-muted flex-1">
       <View className="flex-1 px-4 pt-6">
         <View className="mb-3 flex-col gap-0.5">
           <Text style={feedStyles.title}>{t("feed.title")}</Text>
-          {name ? (
-            <Text style={feedStyles.welcome}>
-              {t("feed.welcome", { name })}
-            </Text>
-          ) : null}
+          {name ? <Text style={feedStyles.welcome}>{t("feed.welcome", { name })}</Text> : null}
           {unread > 0 ? (
             <Text
               style={feedStyles.unreadBadge}
@@ -110,9 +102,7 @@ export default function FeedScreen(): JSX.Element {
           accessibilityLabel={t("composer.placeholder")}
         >
           <Surface variant="card" padding="4">
-            <Text style={feedStyles.composerPlaceholder}>
-              {t("composer.placeholder")}
-            </Text>
+            <Text style={feedStyles.composerPlaceholder}>{t("composer.placeholder")}</Text>
           </Surface>
         </Pressable>
 
@@ -123,9 +113,7 @@ export default function FeedScreen(): JSX.Element {
             <PostRow
               post={item}
               onChange={(next) =>
-                setPosts((prev) =>
-                  prev.map((x) => (x.id === next.id ? next : x)),
-                )
+                setPosts((prev) => prev.map((x) => (x.id === next.id ? next : x)))
               }
             />
           )}
@@ -154,13 +142,7 @@ export default function FeedScreen(): JSX.Element {
   );
 }
 
-function PostRow({
-  post,
-  onChange,
-}: {
-  post: Post;
-  onChange?: (next: Post) => void;
-}): JSX.Element {
+function PostRow({ post, onChange }: { post: Post; onChange?: (next: Post) => void }): JSX.Element {
   const { t } = useTranslation();
   const [showComments, setShowComments] = useState(false);
   const [busy, setBusy] = useState(false);

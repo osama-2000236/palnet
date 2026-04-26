@@ -21,6 +21,7 @@ Runs in CI on every PR.
 Each component in `packages/ui-web/src/*` has a co-located `*.test.tsx` using Vitest + React Testing Library.
 
 Minimum tests per component:
+
 - Renders all variants without throwing.
 - Fires `onClick` / `onPress`.
 - Respects `disabled`.
@@ -37,40 +38,49 @@ One story = one screenshot baseline. PRs that change pixels require explicit rev
 For each of Feed / Profile / Network / Messages / Search, walk through this checklist:
 
 **Layout**
+
 - [ ] Renders correctly at `375` (mobile), `768` (tablet), `1024`, `1440` widths.
 - [ ] No horizontal scroll at any width.
 - [ ] Sticky elements stick; scrolling content scrolls.
 
 **RTL**
+
 - [ ] With `<html dir="rtl">`, all icons on correct side, text starts at right.
 - [ ] Toggle to `dir="ltr"` — layout still structurally sound even if copy is Arabic.
 - [ ] No `left:` / `right:` / `ml-` / `mr-` / `pl-` / `pr-` found in `grep`.
 
 **State — loading**
+
 - [ ] Skeleton renders while data loads. Not a spinner.
 - [ ] Skeleton structure matches real content shape.
 
 **State — empty**
+
 - [ ] Empty state has title + description + primary action. Not "No results."
 
 **State — error**
+
 - [ ] Network error toast is dismissible.
 - [ ] Retry button works and doesn't double-fire.
 
 **State — offline**
+
 - [ ] Throttle network to Offline in devtools; no crashes, banner appears.
 
 **Forms**
+
 - [ ] Enter submits; Escape cancels modals.
 - [ ] Client validation errors inline, not in a toast.
 - [ ] Submit button disables while pending.
 
 **Interactions**
+
 - [ ] Every button has visible hover state.
 - [ ] Every button has visible `:focus-visible` ring.
 - [ ] Tabbing order matches visual reading order (right-to-left for RTL).
 
 **Typography**
+
 - [ ] No text smaller than 12px anywhere.
 - [ ] No text truncated without `title` / tooltip.
 - [ ] Line-height never tighter than 1.4 on Arabic body text.

@@ -54,9 +54,9 @@ export default function RegisterScreen(): JSX.Element {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-surface-muted">
+    <SafeAreaView className="bg-surface-muted flex-1">
       <View className="flex-1 gap-4 px-6 pt-12">
-        <Text className="text-3xl font-bold text-ink">{t("auth.register")}</Text>
+        <Text className="text-ink text-3xl font-bold">{t("auth.register")}</Text>
 
         <Field
           label={t("auth.firstName")}
@@ -88,11 +88,11 @@ export default function RegisterScreen(): JSX.Element {
 
         <View className="flex-row items-center gap-3">
           <Switch value={accept} onValueChange={setAccept} />
-          <Text className="flex-1 text-ink">{t("auth.acceptTerms")}</Text>
+          <Text className="text-ink flex-1">{t("auth.acceptTerms")}</Text>
         </View>
 
         {error ? (
-          <Text className="text-sm text-danger" accessibilityRole="alert">
+          <Text className="text-danger text-sm" accessibilityRole="alert">
             {error}
           </Text>
         ) : null}
@@ -100,17 +100,17 @@ export default function RegisterScreen(): JSX.Element {
         <Pressable
           onPress={onSubmit}
           disabled={busy}
-          className="rounded-md bg-brand-600 px-6 py-3 shadow-card"
+          className="bg-brand-600 shadow-card rounded-md px-6 py-3"
         >
           {busy ? (
             <ActivityIndicator color={tokens.color.ink.inverse} />
           ) : (
-            <Text className="text-center text-ink-inverse">{t("auth.submitRegister")}</Text>
+            <Text className="text-ink-inverse text-center">{t("auth.submitRegister")}</Text>
           )}
         </Pressable>
 
         <Pressable onPress={() => router.replace("/(auth)/login")}>
-          <Text className="text-center text-brand-600">{t("auth.toLogin")}</Text>
+          <Text className="text-brand-600 text-center">{t("auth.toLogin")}</Text>
         </Pressable>
       </View>
     </SafeAreaView>
@@ -128,7 +128,7 @@ function Field(props: {
 }): JSX.Element {
   return (
     <View className="flex-col gap-1">
-      <Text className="text-sm text-ink-muted">{props.label}</Text>
+      <Text className="text-ink-muted text-sm">{props.label}</Text>
       <TextInput
         value={props.value}
         onChangeText={props.onChangeText}
@@ -136,7 +136,7 @@ function Field(props: {
         autoComplete={props.autoComplete}
         keyboardType={props.keyboardType}
         autoCapitalize={props.autoCapitalize}
-        className="rounded-md border border-ink-muted/30 bg-surface px-3 py-2 text-ink"
+        className="border-ink-muted/30 bg-surface text-ink rounded-md border px-3 py-2"
       />
     </View>
   );

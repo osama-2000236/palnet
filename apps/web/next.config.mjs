@@ -5,7 +5,7 @@ const withNextIntl = createNextIntlPlugin("./src/i18n.ts");
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  transpilePackages: ["@baydar/shared", "@baydar/ui-tokens"],
+  transpilePackages: ["@baydar/shared", "@baydar/ui-tokens", "@baydar/ui-web"],
   experimental: {
     typedRoutes: true,
   },

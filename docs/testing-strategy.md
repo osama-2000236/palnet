@@ -4,13 +4,13 @@ Testing is not optional — it is how we keep AI-generated code from silently br
 
 ## Layers
 
-| Layer | Tool | Lives in | Runs on |
-| --- | --- | --- | --- |
-| Unit | Jest + ts-jest | `apps/api/src/**/*.spec.ts`, `packages/*/src/**/*.spec.ts` | Every PR |
-| Integration (API) | Jest + Supertest | `apps/api/test/**` | Every PR |
-| E2E web | Playwright | `apps/web/e2e/**` | Every PR |
-| E2E mobile | Detox | `apps/mobile/e2e/**` | Nightly + pre-release |
-| Contract | `zod` schemas imported into both api + clients | N/A — type system does this | Build time |
+| Layer             | Tool                                           | Lives in                                                   | Runs on               |
+| ----------------- | ---------------------------------------------- | ---------------------------------------------------------- | --------------------- |
+| Unit              | Jest + ts-jest                                 | `apps/api/src/**/*.spec.ts`, `packages/*/src/**/*.spec.ts` | Every PR              |
+| Integration (API) | Jest + Supertest                               | `apps/api/test/**`                                         | Every PR              |
+| E2E web           | Playwright                                     | `apps/web/e2e/**`                                          | Every PR              |
+| E2E mobile        | Detox                                          | `apps/mobile/e2e/**`                                       | Nightly + pre-release |
+| Contract          | `zod` schemas imported into both api + clients | N/A — type system does this                                | Build time            |
 
 ## Mandatory Coverage Rules
 
@@ -44,7 +44,7 @@ Testing is not optional — it is how we keep AI-generated code from silently br
 ## What Not to Test
 
 - Do not test Prisma's own behavior.
-- Do not test Zod's own behavior — assume `z.string().email()` works; test *that your schema composition is right*.
+- Do not test Zod's own behavior — assume `z.string().email()` works; test _that your schema composition is right_.
 - Do not write tests that only assert "did this render without throwing" — that's what type-check + build already does.
 
 ## CI Gates

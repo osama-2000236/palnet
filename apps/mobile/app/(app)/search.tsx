@@ -30,40 +30,31 @@ export default function SearchScreen(): JSX.Element {
   const [loading, setLoading] = useState(false);
   const [touched, setTouched] = useState(false);
 
-  const run = useCallback(
-    async (term: string, after: string | null): Promise<void> => {
-      if (!term.trim()) {
-        setHits([]);
-        setHasMore(false);
-        setCursor(null);
-        return;
-      }
-      setLoading(true);
-      try {
-        const token = (await getAccessToken()) ?? undefined;
-        const qs = new URLSearchParams({ q: term, limit: "20" });
-        if (after) qs.set("after", after);
-        const page = await apiFetchPage(
-          `/search/people?${qs.toString()}`,
-          PeoplePage,
-          { token },
-        );
-        setHits((prev) => (after ? [...prev, ...page.data] : page.data));
-        setCursor(page.meta.nextCursor);
-        setHasMore(page.meta.hasMore);
-      } finally {
-        setLoading(false);
-      }
-    },
-    [],
-  );
+  const run = useCallback(async (term: string, after: string | null): Promise<void> => {
+    if (!term.trim()) {
+      setHits([]);
+      setHasMore(false);
+      setCursor(null);
+      return;
+    }
+    setLoading(true);
+    try {
+      const token = (await getAccessToken()) ?? undefined;
+      const qs = new URLSearchParams({ q: term, limit: "20" });
+      if (after) qs.set("after", after);
+      const page = await apiFetchPage(`/search/people?${qs.toString()}`, PeoplePage, { token });
+      setHits((prev) => (after ? [...prev, ...page.data] : page.data));
+      setCursor(page.meta.nextCursor);
+      setHasMore(page.meta.hasMore);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   return (
-    <SafeAreaView className="flex-1 bg-surface-muted">
+    <SafeAreaView className="bg-surface-muted flex-1">
       <View className="flex-1 px-4 pt-8">
-        <Text className="mb-3 text-3xl font-bold text-ink">
-          {t("search.title")}
-        </Text>
+        <Text className="text-ink mb-3 text-3xl font-bold">{t("search.title")}</Text>
 
         <View className="mb-3 flex-row gap-2">
           <TextInput
@@ -75,18 +66,16 @@ export default function SearchScreen(): JSX.Element {
               setTouched(true);
               void run(q, null);
             }}
-            className="flex-1 rounded-md border border-ink-muted/30 bg-surface px-3 py-2 text-ink"
+            className="border-ink-muted/30 bg-surface text-ink flex-1 rounded-md border px-3 py-2"
           />
           <Pressable
             onPress={() => {
               setTouched(true);
               void run(q, null);
             }}
-            className="rounded-md bg-brand-600 px-4 py-2"
+            className="bg-brand-600 rounded-md px-4 py-2"
           >
-            <Text className="text-sm font-semibold text-ink-inverse">
-              {t("search.submit")}
-            </Text>
+            <Text className="text-ink-inverse text-sm font-semibold">{t("search.submit")}</Text>
           </Pressable>
         </View>
 
@@ -97,16 +86,14 @@ export default function SearchScreen(): JSX.Element {
           renderItem={({ item }) => (
             <Pressable
               onPress={() => router.push(`/(app)/in/${item.handle}`)}
-              className="rounded-md border border-ink-muted/20 bg-surface p-3"
+              className="border-ink-muted/20 bg-surface rounded-md border p-3"
             >
-              <Text className="font-semibold text-ink">
+              <Text className="text-ink font-semibold">
                 {item.firstName} {item.lastName}
               </Text>
-              <Text className="text-xs text-ink-muted">/in/{item.handle}</Text>
+              <Text className="text-ink-muted text-xs">/in/{item.handle}</Text>
               {item.headline ? (
-                <Text className="mt-1 text-sm text-ink-muted">
-                  {item.headline}
-                </Text>
+                <Text className="text-ink-muted mt-1 text-sm">{item.headline}</Text>
               ) : null}
             </Pressable>
           )}
@@ -116,7 +103,7 @@ export default function SearchScreen(): JSX.Element {
           }}
           ListEmptyComponent={
             loading ? null : (
-              <View className="rounded-md border border-ink-muted/20 bg-surface p-6">
+              <View className="border-ink-muted/20 bg-surface rounded-md border p-6">
                 <Text className="text-ink-muted">
                   {touched ? t("search.noResults") : t("search.prompt")}
                 </Text>

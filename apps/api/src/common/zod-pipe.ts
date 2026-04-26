@@ -1,10 +1,5 @@
 import { ErrorCode } from "@baydar/shared";
-import {
-  ArgumentMetadata,
-  BadRequestException,
-  Injectable,
-  PipeTransform,
-} from "@nestjs/common";
+import { ArgumentMetadata, BadRequestException, Injectable, PipeTransform } from "@nestjs/common";
 import type { ZodTypeAny } from "zod";
 
 // Apply with @UsePipes(new ZodValidationPipe(MySchema)) or per-param via a decorator factory.

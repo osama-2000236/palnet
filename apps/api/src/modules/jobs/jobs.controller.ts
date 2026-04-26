@@ -7,23 +7,12 @@ import {
   JobLocationMode,
   JobType,
 } from "@baydar/shared";
-import {
-  Body,
-  Controller,
-  Get,
-  Param,
-  Post,
-  Query,
-  UsePipes,
-} from "@nestjs/common";
+import { Body, Controller, Get, Param, Post, Query, UsePipes } from "@nestjs/common";
 import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 import { z } from "zod";
 
 import { ZodValidationPipe } from "../../common/zod-pipe";
-import {
-  CurrentUser,
-  type AuthUser,
-} from "../auth/decorators/current-user.decorator";
+import { CurrentUser, type AuthUser } from "../auth/decorators/current-user.decorator";
 
 import { JobsService } from "./jobs.service";
 
@@ -55,10 +44,7 @@ export class JobsController {
   }
 
   @Get(":id")
-  async getOne(
-    @CurrentUser() user: AuthUser,
-    @Param("id") id: string,
-  ): Promise<JobDto> {
+  async getOne(@CurrentUser() user: AuthUser, @Param("id") id: string): Promise<JobDto> {
     return this.jobs.getOne(user.id, id);
   }
 

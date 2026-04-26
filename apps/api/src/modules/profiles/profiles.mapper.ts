@@ -51,10 +51,7 @@ export const profileInclude = {
   skills: { include: { skill: true } },
 } as const;
 
-export function toProfileDto(
-  row: ProfileWithIncludes,
-  viewer?: ProfileDto["viewer"],
-): ProfileDto {
+export function toProfileDto(row: ProfileWithIncludes, viewer?: ProfileDto["viewer"]): ProfileDto {
   return {
     id: row.id,
     userId: row.userId,

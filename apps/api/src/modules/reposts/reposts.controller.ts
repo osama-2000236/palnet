@@ -35,10 +35,7 @@ export class RepostsController {
 
   @Delete()
   @HttpCode(HttpStatus.NO_CONTENT)
-  async delete(
-    @CurrentUser() user: AuthUser,
-    @Param("id") id: string,
-  ): Promise<void> {
+  async delete(@CurrentUser() user: AuthUser, @Param("id") id: string): Promise<void> {
     await this.reposts.delete(user.id, id);
   }
 }

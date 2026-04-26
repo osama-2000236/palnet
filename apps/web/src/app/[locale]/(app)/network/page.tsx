@@ -81,25 +81,16 @@ export default function NetworkRoute(): JSX.Element {
 
   return (
     <main className="mx-auto flex w-full max-w-[840px] flex-col gap-4 px-6 py-8">
-      <h1 className="text-3xl font-bold text-ink">{t("title")}</h1>
+      <h1 className="text-ink text-3xl font-bold">{t("title")}</h1>
 
       <nav className="flex gap-2">
-        <FilterTab
-          active={filter === "ACCEPTED"}
-          onClick={() => setFilter("ACCEPTED")}
-        >
+        <FilterTab active={filter === "ACCEPTED"} onClick={() => setFilter("ACCEPTED")}>
           {t("myConnections")}
         </FilterTab>
-        <FilterTab
-          active={filter === "INCOMING"}
-          onClick={() => setFilter("INCOMING")}
-        >
+        <FilterTab active={filter === "INCOMING"} onClick={() => setFilter("INCOMING")}>
           {t("invitations")}
         </FilterTab>
-        <FilterTab
-          active={filter === "OUTGOING"}
-          onClick={() => setFilter("OUTGOING")}
-        >
+        <FilterTab active={filter === "OUTGOING"} onClick={() => setFilter("OUTGOING")}>
           {t("sent")}
         </FilterTab>
       </nav>
@@ -120,10 +111,7 @@ export default function NetworkRoute(): JSX.Element {
               padding="4"
               className="flex flex-wrap items-center justify-between gap-3"
             >
-              <Link
-                href={`/in/${c.user.handle}`}
-                className="flex min-w-0 items-center gap-3"
-              >
+              <Link href={`/in/${c.user.handle}`} className="flex min-w-0 items-center gap-3">
                 <Avatar
                   user={{
                     id: c.user.userId,
@@ -135,13 +123,11 @@ export default function NetworkRoute(): JSX.Element {
                   size="md"
                 />
                 <div className="flex min-w-0 flex-col">
-                  <span className="font-semibold text-ink">
+                  <span className="text-ink font-semibold">
                     {c.user.firstName} {c.user.lastName}
                   </span>
                   {c.user.headline ? (
-                    <span className="text-sm text-ink-muted">
-                      {c.user.headline}
-                    </span>
+                    <span className="text-ink-muted text-sm">{c.user.headline}</span>
                   ) : null}
                 </div>
               </Link>
@@ -151,14 +137,14 @@ export default function NetworkRoute(): JSX.Element {
                   <button
                     type="button"
                     onClick={() => void respond(c.connectionId, "ACCEPT")}
-                    className="rounded-md bg-brand-600 px-3 py-1.5 text-sm font-semibold text-ink-inverse"
+                    className="bg-brand-600 text-ink-inverse rounded-md px-3 py-1.5 text-sm font-semibold"
                   >
                     {t("accept")}
                   </button>
                   <button
                     type="button"
                     onClick={() => void respond(c.connectionId, "DECLINE")}
-                    className="rounded-md border border-ink-muted/30 px-3 py-1.5 text-sm text-ink"
+                    className="border-ink-muted/30 text-ink rounded-md border px-3 py-1.5 text-sm"
                   >
                     {t("decline")}
                   </button>
@@ -167,7 +153,7 @@ export default function NetworkRoute(): JSX.Element {
                 <button
                   type="button"
                   onClick={() => void withdraw(c.connectionId)}
-                  className="rounded-md border border-ink-muted/30 px-3 py-1.5 text-sm text-ink"
+                  className="border-ink-muted/30 text-ink rounded-md border px-3 py-1.5 text-sm"
                 >
                   {t("withdraw")}
                 </button>
@@ -175,7 +161,7 @@ export default function NetworkRoute(): JSX.Element {
                 <button
                   type="button"
                   onClick={() => void remove(c.connectionId)}
-                  className="rounded-md border border-ink-muted/30 px-3 py-1.5 text-sm text-ink"
+                  className="border-ink-muted/30 text-ink rounded-md border px-3 py-1.5 text-sm"
                 >
                   {t("removeConnection")}
                 </button>
@@ -203,8 +189,8 @@ function FilterTab({
       onClick={onClick}
       className={
         active
-          ? "rounded-md bg-brand-600 px-4 py-1.5 text-sm font-semibold text-ink-inverse"
-          : "rounded-md border border-ink-muted/30 px-4 py-1.5 text-sm text-ink hover:bg-ink-muted/5"
+          ? "bg-brand-600 text-ink-inverse rounded-md px-4 py-1.5 text-sm font-semibold"
+          : "border-ink-muted/30 text-ink hover:bg-ink-muted/5 rounded-md border px-4 py-1.5 text-sm"
       }
     >
       {children}

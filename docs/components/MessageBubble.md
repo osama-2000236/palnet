@@ -20,22 +20,23 @@ type MessageBubbleProps = {
 
 ## Visual
 
-| | Mine | Theirs |
-|---|---|---|
-| Background | `brand-100` (#e6ebd6) | `surface` (#ffffff) |
-| Border | 1px `brand-200` | 1px `line-soft` |
-| Text color | `ink` | `ink` |
-| Alignment | `flex-end` | `flex-start` |
-| Tail | End-bottom corner `radius-xs` (4px) | Start-bottom corner `radius-xs` |
-| Max width | 70% of container | 70% |
-| Padding | 10 × 14 | 10 × 14 |
-| Radius | `lg` default, tail corner `xs` | same |
+|            | Mine                                | Theirs                          |
+| ---------- | ----------------------------------- | ------------------------------- |
+| Background | `brand-100` (#e6ebd6)               | `surface` (#ffffff)             |
+| Border     | 1px `brand-200`                     | 1px `line-soft`                 |
+| Text color | `ink`                               | `ink`                           |
+| Alignment  | `flex-end`                          | `flex-start`                    |
+| Tail       | End-bottom corner `radius-xs` (4px) | Start-bottom corner `radius-xs` |
+| Max width  | 70% of container                    | 70%                             |
+| Padding    | 10 × 14                             | 10 × 14                         |
+| Radius     | `lg` default, tail corner `xs`      | same                            |
 
 **Critical decision, documented:** we do **NOT** fill own messages with `brand-600` (the CTA color). A chat thread filled with CTA-colored bubbles reads as a wall of buttons. `brand-100` keeps the thread calm and preserves CTA recognition.
 
 ## Grouping
 
 Consecutive messages from the same author within 2 minutes = a "run":
+
 - Only the **last** bubble in a run shows the tail corner.
 - Middle bubbles have uniform `lg` corners.
 - 2px spacing within a run, 12px between runs.

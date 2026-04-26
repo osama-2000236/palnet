@@ -35,10 +35,7 @@ export class ReactionsController {
 
   @Delete()
   @HttpCode(HttpStatus.NO_CONTENT)
-  async clear(
-    @CurrentUser() user: AuthUser,
-    @Param("id") id: string,
-  ): Promise<void> {
+  async clear(@CurrentUser() user: AuthUser, @Param("id") id: string): Promise<void> {
     await this.reactions.clear(user.id, id);
   }
 }

@@ -1,8 +1,4 @@
-import {
-  type CursorPageMeta,
-  PeopleSearchQuery,
-  type SearchPersonHit,
-} from "@baydar/shared";
+import { type CursorPageMeta, PeopleSearchQuery, type SearchPersonHit } from "@baydar/shared";
 import { Controller, Get, Query } from "@nestjs/common";
 import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 

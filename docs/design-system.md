@@ -5,6 +5,7 @@ Shared tokens live in [`packages/ui-tokens`](../packages/ui-tokens) and the Tail
 ## Component Inventory
 
 ### Atoms
+
 - `Button` — variants: `primary`, `secondary`, `ghost`, `danger`; sizes: `sm`, `md`, `lg`; RTL-safe with leading/trailing icon slots.
 - `IconButton` — square, accessible label required.
 - `Input` — text input with label, hint, error state; supports RTL numerals.
@@ -22,6 +23,7 @@ Shared tokens live in [`packages/ui-tokens`](../packages/ui-tokens) and the Tail
 - `ReactionIcon` — six variants matching `ReactionType` enum.
 
 ### Molecules
+
 - `FormField` — wraps `Input`/`Textarea`/`Checkbox` with label, hint, error.
 - `SearchBar` — top nav search with suggestions.
 - `PostComposerField` — rich(ish) text area with media picker button, character counter.
@@ -37,6 +39,7 @@ Shared tokens live in [`packages/ui-tokens`](../packages/ui-tokens) and the Tail
 - `ProfileHeader` — avatar, name, headline, location, primary CTA.
 
 ### Organisms
+
 - `AppShell` — top nav (web) / tab bar (mobile). Must be RTL-flipped.
 - `Feed` — infinite-scroll list of `PostCard`s with composer at the top.
 - `PostCard` — author row, body, media grid, reaction bar, comment drawer toggle.

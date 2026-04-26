@@ -17,15 +17,13 @@ export default function Landing(): JSX.Element {
   }, []);
 
   return (
-    <SafeAreaView className="flex-1 bg-surface-muted">
+    <SafeAreaView className="bg-surface-muted flex-1">
       <View className="flex-1 items-center justify-center gap-4 px-6">
-        <Text className="text-center text-3xl font-bold text-ink">
-          {t("landing.title")}
-        </Text>
-        <Text className="text-center text-ink-muted">{t("landing.subtitle")}</Text>
+        <Text className="text-ink text-center text-3xl font-bold">{t("landing.title")}</Text>
+        <Text className="text-ink-muted text-center">{t("landing.subtitle")}</Text>
         <Pressable
           onPress={() => router.push("/(auth)/register")}
-          className="mt-4 rounded-md bg-brand-600 px-6 py-3 shadow-card"
+          className="bg-brand-600 shadow-card mt-4 rounded-md px-6 py-3"
         >
           <Text className="text-ink-inverse">{t("landing.cta")}</Text>
         </Pressable>

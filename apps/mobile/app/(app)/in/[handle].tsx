@@ -1,11 +1,7 @@
 // Mobile profile screen. Uses ui-native atoms (Surface, Avatar, Button) +
 // nativeTokens so styling stays in lockstep with the web twin.
 
-import {
-  ChatRoom as ChatRoomSchema,
-  Profile as ProfileSchema,
-  type Profile,
-} from "@baydar/shared";
+import { ChatRoom as ChatRoomSchema, Profile as ProfileSchema, type Profile } from "@baydar/shared";
 import { Avatar, Button, Surface, nativeTokens } from "@baydar/ui-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
@@ -139,9 +135,7 @@ export default function ProfileScreen(): JSX.Element {
     return (
       <SafeAreaView style={profileStyles.errorScreen}>
         <Surface variant="tinted" padding="6">
-          <Text style={profileStyles.errorText}>
-            {error ?? t("profile.notFound")}
-          </Text>
+          <Text style={profileStyles.errorText}>{error ?? t("profile.notFound")}</Text>
         </Surface>
       </SafeAreaView>
     );
@@ -166,21 +160,13 @@ export default function ProfileScreen(): JSX.Element {
           <Text style={profileStyles.name}>
             {profile.firstName} {profile.lastName}
           </Text>
-          {profile.headline ? (
-            <Text style={profileStyles.headline}>{profile.headline}</Text>
-          ) : null}
-          {profile.location ? (
-            <Text style={profileStyles.location}>{profile.location}</Text>
-          ) : null}
+          {profile.headline ? <Text style={profileStyles.headline}>{profile.headline}</Text> : null}
+          {profile.location ? <Text style={profileStyles.location}>{profile.location}</Text> : null}
           <Text style={profileStyles.handle}>/in/{profile.handle}</Text>
 
           {profile.viewer?.isSelf ? (
             <View style={profileStyles.editWrap}>
-              <Button
-                variant="secondary"
-                size="md"
-                onPress={() => router.push("/(app)/me/edit")}
-              >
+              <Button variant="secondary" size="md" onPress={() => router.push("/(app)/me/edit")}>
                 {t("profile.edit")}
               </Button>
             </View>
@@ -188,9 +174,7 @@ export default function ProfileScreen(): JSX.Element {
 
           {profile.viewer && !profile.viewer.isSelf ? (
             <View style={profileStyles.actionsRow}>
-              {!conn ||
-              conn.status === "WITHDRAWN" ||
-              conn.status === "DECLINED" ? (
+              {!conn || conn.status === "WITHDRAWN" || conn.status === "DECLINED" ? (
                 <Button
                   variant="primary"
                   size="md"
@@ -246,15 +230,11 @@ export default function ProfileScreen(): JSX.Element {
                   if (!token) return;
                   setBusy(true);
                   try {
-                    const room = await apiFetch(
-                      "/messaging/rooms",
-                      ChatRoomSchema,
-                      {
-                        method: "POST",
-                        token,
-                        body: { otherUserId: profile.userId },
-                      },
-                    );
+                    const room = await apiFetch("/messaging/rooms", ChatRoomSchema, {
+                      method: "POST",
+                      token,
+                      body: { otherUserId: profile.userId },
+                    });
                     router.push({
                       pathname: "/(app)/messages/[roomId]",
                       params: { roomId: room.id },
@@ -293,9 +273,7 @@ export default function ProfileScreen(): JSX.Element {
                 <Text
                   style={[
                     profileStyles.tabLabel,
-                    active
-                      ? profileStyles.tabLabelActive
-                      : profileStyles.tabLabelInactive,
+                    active ? profileStyles.tabLabelActive : profileStyles.tabLabelInactive,
                   ]}
                 >
                   {t(tab.i18n)}
@@ -305,44 +283,32 @@ export default function ProfileScreen(): JSX.Element {
           })}
         </ScrollView>
 
-        {activeTab === "about"
-          ? profile.about
-            ? (
-              <Section title={t("profile.about")}>
-                <Text style={profileStyles.bodyText}>{profile.about}</Text>
-              </Section>
-            )
-            : (
-              <Surface variant="tinted" padding="6">
-                <Text style={profileStyles.emptyText}>
-                  {t("profile.aboutEmpty")}
-                </Text>
-              </Surface>
-            )
-          : null}
+        {activeTab === "about" ? (
+          profile.about ? (
+            <Section title={t("profile.about")}>
+              <Text style={profileStyles.bodyText}>{profile.about}</Text>
+            </Section>
+          ) : (
+            <Surface variant="tinted" padding="6">
+              <Text style={profileStyles.emptyText}>{t("profile.aboutEmpty")}</Text>
+            </Surface>
+          )
+        ) : null}
 
         {activeTab === "exp" ? (
           <Section title={t("profile.experience")}>
             {profile.experiences.length === 0 ? (
-              <Text style={profileStyles.emptyText}>
-                {t("profile.expEmpty")}
-              </Text>
+              <Text style={profileStyles.emptyText}>{t("profile.expEmpty")}</Text>
             ) : (
               profile.experiences.map((e, idx) => (
                 <View
                   key={e.id ?? `${e.companyName}-${e.startDate}`}
-                  style={
-                    idx === 0 ? undefined : profileStyles.experienceItemSpacing
-                  }
+                  style={idx === 0 ? undefined : profileStyles.experienceItemSpacing}
                 >
                   <Text style={profileStyles.itemTitle}>{e.title}</Text>
-                  <Text style={profileStyles.itemSubtitle}>
-                    {e.companyName}
-                  </Text>
+                  <Text style={profileStyles.itemSubtitle}>{e.companyName}</Text>
                   {e.description ? (
-                    <Text style={profileStyles.itemDescription}>
-                      {e.description}
-                    </Text>
+                    <Text style={profileStyles.itemDescription}>{e.description}</Text>
                   ) : null}
                 </View>
               ))
@@ -353,16 +319,12 @@ export default function ProfileScreen(): JSX.Element {
         {activeTab === "edu" ? (
           <Section title={t("profile.education")}>
             {profile.educations.length === 0 ? (
-              <Text style={profileStyles.emptyText}>
-                {t("profile.eduEmpty")}
-              </Text>
+              <Text style={profileStyles.emptyText}>{t("profile.eduEmpty")}</Text>
             ) : (
               profile.educations.map((e, idx) => (
                 <View
                   key={e.id ?? e.school}
-                  style={
-                    idx === 0 ? undefined : profileStyles.experienceItemSpacing
-                  }
+                  style={idx === 0 ? undefined : profileStyles.experienceItemSpacing}
                 >
                   <Text style={profileStyles.itemTitle}>{e.school}</Text>
                   {e.degree ? (
@@ -380,9 +342,7 @@ export default function ProfileScreen(): JSX.Element {
         {activeTab === "skills" ? (
           <Section title={t("profile.skills")}>
             {profile.skills.length === 0 ? (
-              <Text style={profileStyles.emptyText}>
-                {t("profile.skillsEmpty")}
-              </Text>
+              <Text style={profileStyles.emptyText}>{t("profile.skillsEmpty")}</Text>
             ) : (
               <View style={profileStyles.skillsRow}>
                 {profile.skills.map((s) => (
@@ -396,12 +356,7 @@ export default function ProfileScreen(): JSX.Element {
         ) : null}
 
         <View style={profileStyles.footer}>
-          <Button
-            variant="ghost"
-            size="md"
-            fullWidth
-            onPress={() => router.back()}
-          >
+          <Button variant="ghost" size="md" fullWidth onPress={() => router.back()}>
             {t("common.cancel")}
           </Button>
         </View>
@@ -410,13 +365,7 @@ export default function ProfileScreen(): JSX.Element {
   );
 }
 
-function Section({
-  title,
-  children,
-}: {
-  title: string;
-  children: React.ReactNode;
-}): JSX.Element {
+function Section({ title, children }: { title: string; children: React.ReactNode }): JSX.Element {
   return (
     <Surface variant="card" padding="4">
       <Text style={profileStyles.sectionTitle}>{title}</Text>

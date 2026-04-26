@@ -49,16 +49,11 @@ export class MediaService {
       this.client = null;
       this.bucket = null;
       this.publicBase = null;
-      this.log.warn(
-        "R2 not configured — POST /media/presign will return MEDIA_NOT_CONFIGURED.",
-      );
+      this.log.warn("R2 not configured — POST /media/presign will return MEDIA_NOT_CONFIGURED.");
     }
   }
 
-  async presign(
-    userId: string,
-    body: PresignUploadBody,
-  ): Promise<PresignedUpload> {
+  async presign(userId: string, body: PresignUploadBody): Promise<PresignedUpload> {
     if (!this.client || !this.bucket || !this.publicBase) {
       throw new DomainException(
         ErrorCode.INTERNAL,

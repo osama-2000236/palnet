@@ -118,15 +118,10 @@ export function ConnectButton({
   if (!conn || conn.status === "WITHDRAWN" || conn.status === "DECLINED") {
     return (
       <div className="flex flex-col gap-1">
-        <button
-          type="button"
-          onClick={send}
-          disabled={busy}
-          className={buttonClasses}
-        >
+        <button type="button" onClick={send} disabled={busy} className={buttonClasses}>
           {t("connect")}
         </button>
-        {error ? <span className="text-xs text-danger">{error}</span> : null}
+        {error ? <span className="text-danger text-xs">{error}</span> : null}
       </div>
     );
   }
