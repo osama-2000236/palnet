@@ -22,8 +22,8 @@ import {
   WsNotificationEvent,
   type ChatRoom,
   type Profile,
-} from "@palnet/shared";
-import { AppShell, type AppShellLabels, type AppShellRoute } from "@palnet/ui-web";
+} from "@baydar/shared";
+import { AppShell, type AppShellLabels, type AppShellRoute } from "@baydar/ui-web";
 import { usePathname, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import {
@@ -253,8 +253,6 @@ export default function AppLayout({
           router.push("/network");
           return;
         case "jobs":
-          // Jobs listing doesn't exist yet (Sprint 6). Route to a placeholder
-          // so the link isn't dead; fall back to feed until the screen lands.
           router.push("/jobs");
           return;
         case "messages":

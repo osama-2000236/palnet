@@ -73,7 +73,7 @@ When asking Codex/Gemini for a component, use this template:
 ```
 Create <ComponentName> in apps/<web|mobile>/src/components/<category>/<ComponentName>.tsx.
 - Props: typed from packages/shared if it consumes a domain object.
-- Imports tokens from @palnet/ui-tokens when Tailwind classes aren't enough.
+- Imports tokens from @baydar/ui-tokens when Tailwind classes aren't enough.
 - All copy uses t('namespace.key'); add keys to ar.json and en.json.
 - RTL-safe (no left/right, no unconditionally mirrored icons).
 - Handles loading via <Skeleton> and error via <ErrorState>.

@@ -1,3 +1,10 @@
+/*
+  ARCHIVED — DO NOT EDIT.
+  Production code is at:
+    Components → packages/ui-web/src/   (@baydar/ui-web)
+    Pages      → apps/web/src/app/
+  Historical reference only. Internal token names (palnet.*) are stale.
+*/
 /* global React, AppShell, FeedPage, ProfilePage, NetworkPage, MessagesPage, SearchPage */
 function App() {
   const [screen, setScreen] = React.useState(() => localStorage.getItem("palnet.screen") || "feed");

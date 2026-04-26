@@ -1,5 +1,5 @@
 // Avatar — the default representation of a person on Baydar.
-// Lifted from docs/design/prototype/components/primitives.jsx (Avatar).
+// Lifted from docs/_archive/prototype-2025/components/primitives.jsx (Avatar).
 //
 // Rules:
 //   • Shows `avatarUrl` if provided; otherwise initials on a token-backed

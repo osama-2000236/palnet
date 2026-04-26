@@ -4,8 +4,8 @@
 import {
   ChatRoom as ChatRoomSchema,
   type ChatRoom,
-} from "@palnet/shared";
-import { Avatar, Surface, nativeTokens } from "@palnet/ui-native";
+} from "@baydar/shared";
+import { Avatar, Surface, nativeTokens } from "@baydar/ui-native";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";

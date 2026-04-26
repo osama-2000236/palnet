@@ -1,11 +1,11 @@
-import { Injectable } from "@nestjs/common";
 import {
   ApplicationStatus,
   type ApplyToJobBody,
   type CursorPageMeta,
   ErrorCode,
   type Job as JobDto,
-} from "@palnet/shared";
+} from "@baydar/shared";
+import { Injectable } from "@nestjs/common";
 
 import { DomainException } from "../../common/domain-exception";
 import { PrismaService } from "../prisma/prisma.service";

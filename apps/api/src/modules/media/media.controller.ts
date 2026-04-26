@@ -1,15 +1,16 @@
-import { Body, Controller, Post, UsePipes } from "@nestjs/common";
-import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 import {
   PresignUploadBody,
   type PresignedUpload,
-} from "@palnet/shared";
+} from "@baydar/shared";
+import { Body, Controller, Post, UsePipes } from "@nestjs/common";
+import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 
 import { ZodValidationPipe } from "../../common/zod-pipe";
 import {
   CurrentUser,
   type AuthUser,
 } from "../auth/decorators/current-user.decorator";
+
 import { MediaService } from "./media.service";
 
 @ApiTags("media")

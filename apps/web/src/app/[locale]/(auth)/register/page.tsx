@@ -1,6 +1,6 @@
 "use client";
 
-import { RegisterBody } from "@palnet/shared";
+import { RegisterBody } from "@baydar/shared";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState } from "react";

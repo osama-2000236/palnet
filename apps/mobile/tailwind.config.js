@@ -1,4 +1,4 @@
-const preset = require("@palnet/config/tailwind-preset");
+const preset = require("@baydar/config/tailwind-preset");
 const nativewindPreset = require("nativewind/preset");
 
 /** @type {import('tailwindcss').Config} */

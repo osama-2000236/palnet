@@ -1,5 +1,5 @@
-import { Injectable, UnauthorizedException } from "@nestjs/common";
-import { ConfigService } from "@nestjs/config";
+import * as crypto from "node:crypto";
+
 import {
   type AuthSession,
   type AuthTokens,
@@ -7,14 +7,16 @@ import {
   type LoginBody,
   type RefreshBody,
   type RegisterBody,
-} from "@palnet/shared";
+} from "@baydar/shared";
+import { Injectable, UnauthorizedException } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
 import * as bcrypt from "bcrypt";
-import * as crypto from "node:crypto";
 import * as jwt from "jsonwebtoken";
 
 import { DomainException } from "../../common/domain-exception";
 import type { Env } from "../../config/env";
 import { PrismaService } from "../prisma/prisma.service";
+
 import type { AuthUser } from "./decorators/current-user.decorator";
 
 interface AccessTokenPayload {

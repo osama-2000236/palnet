@@ -4,7 +4,7 @@ import {
   Notification as NotificationSchema,
   NotificationType,
   type Notification,
-} from "@palnet/shared";
+} from "@baydar/shared";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";

@@ -3,8 +3,8 @@
 // CTA. Uses Button for the submit so the loading/disabled pattern matches
 // every other screen.
 
-import { OnboardProfileBody, Profile } from "@palnet/shared";
-import { Button, nativeTokens } from "@palnet/ui-native";
+import { OnboardProfileBody, Profile } from "@baydar/shared";
+import { Button, nativeTokens } from "@baydar/ui-native";
 import { router } from "expo-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";

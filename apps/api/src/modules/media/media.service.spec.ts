@@ -1,12 +1,13 @@
+import { ErrorCode, MediaKind } from "@baydar/shared";
 import { ConfigService } from "@nestjs/config";
 import { Test } from "@nestjs/testing";
-import { ErrorCode, MediaKind } from "@palnet/shared";
 
 jest.mock("@aws-sdk/s3-request-presigner", () => ({
   getSignedUrl: jest.fn(async () => "https://signed.example/put"),
 }));
 
-import { DomainException } from "../../common/domain-exception";
+import type { DomainException } from "../../common/domain-exception";
+
 import { MediaService } from "./media.service";
 
 function makeConfig(env: Record<string, string | undefined>): ConfigService {
@@ -19,7 +20,7 @@ const FULL_ENV = {
   R2_ACCOUNT_ID: "acc",
   R2_ACCESS_KEY_ID: "ak",
   R2_SECRET_ACCESS_KEY: "sk",
-  R2_BUCKET: "palnet-media",
+  R2_BUCKET: "baydar-media",
   R2_PUBLIC_URL: "https://cdn.example.com",
 };
 

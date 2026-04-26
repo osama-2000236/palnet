@@ -1,11 +1,11 @@
-import { Injectable } from "@nestjs/common";
 import {
   type Comment as CommentDto,
   type CreateCommentBody,
   type CursorPageMeta,
   ErrorCode,
   NotificationType,
-} from "@palnet/shared";
+} from "@baydar/shared";
+import { Injectable } from "@nestjs/common";
 
 import { DomainException } from "../../common/domain-exception";
 import { NotificationsService } from "../notifications/notifications.service";

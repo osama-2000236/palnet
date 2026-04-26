@@ -1,5 +1,5 @@
 {
-  "name": "@palnet/mobile",
+  "name": "@baydar/mobile",
   "version": "0.0.1",
   "private": true,
   "main": "index.ts",
@@ -14,11 +14,11 @@
     "test": "jest --passWithNoTests"
   },
   "dependencies": {
-    "@palnet/shared": "workspace:*",
+    "@baydar/shared": "workspace:*",
     "@expo-google-fonts/ibm-plex-sans-arabic": "^0.2.3",
     "@expo-google-fonts/noto-naskh-arabic": "^0.2.3",
-    "@palnet/ui-native": "workspace:*",
-    "@palnet/ui-tokens": "workspace:*",
+    "@baydar/ui-native": "workspace:*",
+    "@baydar/ui-tokens": "workspace:*",
     "expo-font": "~13.0.0",
     "@react-navigation/bottom-tabs": "^7.0.0",
     "@react-navigation/native": "^7.0.0",
@@ -45,7 +45,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.25.9",
-    "@palnet/config": "workspace:*",
+    "@baydar/config": "workspace:*",
     "@types/react": "~18.3.12",
     "eslint": "^8.57.1",
     "eslint-config-expo": "^8.0.1",

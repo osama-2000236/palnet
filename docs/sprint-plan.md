@@ -30,7 +30,7 @@ All sprints follow the Definition of Done in [`project-spec.md §7`](../project-
 **Do:**
 - API: `POST /auth/register`, `POST /auth/login`, `POST /auth/refresh`, `POST /auth/logout`, `GET /auth/me`.
 - Bcrypt cost 12. Access 15 min, refresh 30 days (hashed in `RefreshToken`).
-- Zod validation pipe at every controller. Zod schemas live only in `@palnet/shared`.
+- Zod validation pipe at every controller. Zod schemas live only in `@baydar/shared`.
 - Guard: `JwtAuthGuard` for protected routes.
 - `POST /profiles/onboard` — create `Profile` with handle, name, headline, country.
 - Web: `/login`, `/register`, `/onboarding` pages with RTL + Arabic copy.

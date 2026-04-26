@@ -1,14 +1,15 @@
-import { Injectable, Logger } from "@nestjs/common";
 import {
   type CursorPageMeta,
   ErrorCode,
   type MarkNotificationsReadBody,
   type Notification as NotificationDto,
   type NotificationType,
-} from "@palnet/shared";
+} from "@baydar/shared";
+import { Injectable, Logger } from "@nestjs/common";
 
 import { DomainException } from "../../common/domain-exception";
 import { PrismaService } from "../prisma/prisma.service";
+
 import { NotificationsBus } from "./notifications.bus";
 
 interface NotificationRow {

@@ -1,3 +1,4 @@
+import { CreateRepostBody } from "@baydar/shared";
 import {
   Body,
   Controller,
@@ -9,10 +10,10 @@ import {
   UsePipes,
 } from "@nestjs/common";
 import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
-import { CreateRepostBody } from "@palnet/shared";
 
 import { ZodValidationPipe } from "../../common/zod-pipe";
 import { CurrentUser, type AuthUser } from "../auth/decorators/current-user.decorator";
+
 import { RepostsService } from "./reposts.service";
 
 @ApiTags("reposts")

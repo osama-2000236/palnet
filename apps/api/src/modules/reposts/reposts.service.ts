@@ -1,5 +1,5 @@
+import { type CreateRepostBody, ErrorCode } from "@baydar/shared";
 import { Injectable } from "@nestjs/common";
-import { type CreateRepostBody, ErrorCode } from "@palnet/shared";
 
 import { DomainException } from "../../common/domain-exception";
 import { PrismaService } from "../prisma/prisma.service";

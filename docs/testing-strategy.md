@@ -22,7 +22,7 @@ Testing is not optional — it is how we keep AI-generated code from silently br
 
 ## Jest Setup
 
-- Strict TS via `ts-jest` in `@palnet/config` preset.
+- Strict TS via `ts-jest` in `@baydar/config` preset.
 - `testEnvironment: "node"` for api + shared; `jsdom` for web utility tests; Detox-provided env for mobile.
 - No snapshot testing for logic — only for component visual output.
 - Database tests use a **separate test schema** on the Neon dev branch; reset between runs via `prisma migrate reset --skip-seed --force`. Do not mock Prisma.
@@ -54,8 +54,8 @@ A PR merges only when:
 1. `pnpm lint` — zero errors.
 2. `pnpm type-check` — zero errors.
 3. `pnpm test` — all unit + integration green.
-4. `pnpm --filter @palnet/web e2e` — Playwright green (Chromium).
-5. Build succeeds for `@palnet/api`, `@palnet/web`.
+4. `pnpm --filter @baydar/web e2e` — Playwright green (Chromium).
+5. Build succeeds for `@baydar/api`, `@baydar/web`.
 
 Mobile E2E (Detox) is a nightly job, not a PR gate, because simulator time is expensive. Manual smoke required before shipping mobile releases.
 
@@ -68,5 +68,5 @@ Write tests alongside the implementation:
 - One Jest service spec: happy path + two failure cases.
 - One Supertest integration spec: controller HTTP contract.
 - If user-facing: one Playwright (web) or Detox (mobile) flow.
-All tests must import Zod schemas from @palnet/shared for shape assertions, not re-declare them.
+All tests must import Zod schemas from @baydar/shared for shape assertions, not re-declare them.
 ```

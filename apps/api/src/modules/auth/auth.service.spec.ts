@@ -1,10 +1,11 @@
+import { ErrorCode } from "@baydar/shared";
 import { ConfigService } from "@nestjs/config";
 import { Test } from "@nestjs/testing";
-import { ErrorCode } from "@palnet/shared";
 import * as bcrypt from "bcrypt";
 
 import { DomainException } from "../../common/domain-exception";
 import { PrismaService } from "../prisma/prisma.service";
+
 import { AuthService } from "./auth.service";
 
 type PrismaStub = {

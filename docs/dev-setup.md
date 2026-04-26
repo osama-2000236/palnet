@@ -30,29 +30,29 @@ Edit `.env.local` and fill in:
 scoop install postgresql
 
 # Start service, then create DB:
-psql -U postgres -c "CREATE DATABASE palnet;"
+psql -U postgres -c "CREATE DATABASE baydar;"
 ```
 
 ### Option B — Neon (free)
-1. https://neon.tech → create project `palnet-dev`
+1. https://neon.tech → create project `baydar-dev`
 2. Paste the pooled connection string into `DATABASE_URL` and the direct one into `DIRECT_URL`
 
 ## 4. First migration + seed
 ```bash
-pnpm --filter @palnet/db db:generate
-pnpm --filter @palnet/db db:migrate --name init
-pnpm --filter @palnet/db db:seed
+pnpm --filter @baydar/db db:generate
+pnpm --filter @baydar/db db:migrate --name init
+pnpm --filter @baydar/db db:seed
 ```
 
 Expected seed output:
 ```
-[seed] ready — demo user demo@palnet.ps (password: Password123)
+[seed] ready — demo user demo@baydar.ps (password: Password123)
 ```
 
 ## 5. Build shared packages
 ```bash
-pnpm --filter @palnet/shared build
-pnpm --filter @palnet/db build
+pnpm --filter @baydar/shared build
+pnpm --filter @baydar/db build
 ```
 
 ## 6. Run the stack
@@ -60,13 +60,13 @@ In three terminals:
 
 ```bash
 # API — http://localhost:4000 (Swagger at /api/docs)
-pnpm --filter @palnet/api dev
+pnpm --filter @baydar/api dev
 
 # Web — http://localhost:3000 (redirects to /ar-PS)
-pnpm --filter @palnet/web dev
+pnpm --filter @baydar/web dev
 
 # Mobile — Expo Dev Tools
-pnpm --filter @palnet/mobile start
+pnpm --filter @baydar/mobile start
 ```
 
 ## 7. Sanity check
@@ -76,20 +76,20 @@ curl http://localhost:4000/api/v1/health
 ```
 
 Sign in on web with:
-- email: `demo@palnet.ps`
+- email: `demo@baydar.ps`
 - password: `Password123`
 
 ## Troubleshooting
 
-**`Cannot find module '@palnet/db'` in API:**
+**`Cannot find module '@baydar/db'` in API:**
 The shared TS packages emit to `dist/`. Rebuild them:
 ```bash
-pnpm --filter @palnet/shared build && pnpm --filter @palnet/db build
+pnpm --filter @baydar/shared build && pnpm --filter @baydar/db build
 ```
 
 **Prisma Client not regenerated after schema change:**
 ```bash
-pnpm --filter @palnet/db db:generate
+pnpm --filter @baydar/db db:generate
 ```
 
 **Migration conflicts:**

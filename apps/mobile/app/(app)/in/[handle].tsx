@@ -5,15 +5,17 @@ import {
   ChatRoom as ChatRoomSchema,
   Profile as ProfileSchema,
   type Profile,
-} from "@palnet/shared";
-import { Avatar, Button, Surface, nativeTokens } from "@palnet/ui-native";
+} from "@baydar/shared";
+import { Avatar, Button, Surface, nativeTokens } from "@baydar/ui-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
+  Pressable,
   SafeAreaView,
   ScrollView,
+  StyleSheet,
   Text,
   View,
 } from "react-native";
@@ -24,6 +26,15 @@ import { getAccessToken } from "@/lib/session";
 
 const Raw = z.object({}).passthrough();
 
+type ProfileTab = "about" | "exp" | "edu" | "skills";
+
+const TABS: { key: ProfileTab; i18n: string }[] = [
+  { key: "about", i18n: "profile.about" },
+  { key: "exp", i18n: "profile.experience" },
+  { key: "edu", i18n: "profile.education" },
+  { key: "skills", i18n: "profile.skills" },
+];
+
 export default function ProfileScreen(): JSX.Element {
   const { handle } = useLocalSearchParams<{ handle: string }>();
   const { t } = useTranslation();
@@ -31,6 +42,7 @@ export default function ProfileScreen(): JSX.Element {
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<ProfileTab>("about");
 
   useEffect(() => {
     if (!handle) return;
@@ -117,14 +129,7 @@ export default function ProfileScreen(): JSX.Element {
 
   if (loading) {
     return (
-      <SafeAreaView
-        style={{
-          flex: 1,
-          alignItems: "center",
-          justifyContent: "center",
-          backgroundColor: nativeTokens.color.surfaceMuted,
-        }}
-      >
+      <SafeAreaView style={profileStyles.center}>
         <ActivityIndicator />
       </SafeAreaView>
     );
@@ -132,22 +137,9 @@ export default function ProfileScreen(): JSX.Element {
 
   if (error || !profile) {
     return (
-      <SafeAreaView
-        style={{
-          flex: 1,
-          backgroundColor: nativeTokens.color.surfaceMuted,
-          padding: nativeTokens.space[4],
-        }}
-      >
+      <SafeAreaView style={profileStyles.errorScreen}>
         <Surface variant="tinted" padding="6">
-          <Text
-            style={{
-              color: nativeTokens.color.inkMuted,
-              fontFamily: nativeTokens.type.family.sans,
-              fontSize: nativeTokens.type.scale.body.size,
-              textAlign: "center",
-            }}
-          >
+          <Text style={profileStyles.errorText}>
             {error ?? t("profile.notFound")}
           </Text>
         </Surface>
@@ -158,15 +150,8 @@ export default function ProfileScreen(): JSX.Element {
   const conn = profile.viewer?.connection;
 
   return (
-    <SafeAreaView
-      style={{ flex: 1, backgroundColor: nativeTokens.color.surfaceMuted }}
-    >
-      <ScrollView
-        contentContainerStyle={{
-          padding: nativeTokens.space[4],
-          gap: nativeTokens.space[4],
-        }}
-      >
+    <SafeAreaView style={profileStyles.screen}>
+      <ScrollView contentContainerStyle={profileStyles.scrollBody}>
         <Surface variant="card" padding="4">
           <Avatar
             user={{
@@ -178,60 +163,19 @@ export default function ProfileScreen(): JSX.Element {
             }}
             size="xl"
           />
-          <Text
-            style={{
-              marginTop: nativeTokens.space[3],
-              color: nativeTokens.color.ink,
-              fontFamily: nativeTokens.type.family.sans,
-              fontSize: nativeTokens.type.scale.display.size,
-              lineHeight: nativeTokens.type.scale.display.line,
-              fontWeight: "700",
-            }}
-          >
+          <Text style={profileStyles.name}>
             {profile.firstName} {profile.lastName}
           </Text>
           {profile.headline ? (
-            <Text
-              style={{
-                color: nativeTokens.color.inkMuted,
-                fontFamily: nativeTokens.type.family.sans,
-                fontSize: nativeTokens.type.scale.body.size,
-                marginTop: 2,
-              }}
-            >
-              {profile.headline}
-            </Text>
+            <Text style={profileStyles.headline}>{profile.headline}</Text>
           ) : null}
           {profile.location ? (
-            <Text
-              style={{
-                color: nativeTokens.color.inkMuted,
-                fontFamily: nativeTokens.type.family.sans,
-                fontSize: nativeTokens.type.scale.small.size,
-                marginTop: 2,
-              }}
-            >
-              {profile.location}
-            </Text>
+            <Text style={profileStyles.location}>{profile.location}</Text>
           ) : null}
-          <Text
-            style={{
-              color: nativeTokens.color.inkMuted,
-              fontFamily: nativeTokens.type.family.sans,
-              fontSize: nativeTokens.type.scale.small.size,
-              marginTop: nativeTokens.space[1],
-            }}
-          >
-            /in/{profile.handle}
-          </Text>
+          <Text style={profileStyles.handle}>/in/{profile.handle}</Text>
 
           {profile.viewer?.isSelf ? (
-            <View
-              style={{
-                marginTop: nativeTokens.space[3],
-                alignSelf: "flex-start",
-              }}
-            >
+            <View style={profileStyles.editWrap}>
               <Button
                 variant="secondary"
                 size="md"
@@ -243,14 +187,7 @@ export default function ProfileScreen(): JSX.Element {
           ) : null}
 
           {profile.viewer && !profile.viewer.isSelf ? (
-            <View
-              style={{
-                marginTop: nativeTokens.space[3],
-                flexDirection: "row",
-                flexWrap: "wrap",
-                gap: nativeTokens.space[2],
-              }}
-            >
+            <View style={profileStyles.actionsRow}>
               {!conn ||
               conn.status === "WITHDRAWN" ||
               conn.status === "DECLINED" ? (
@@ -335,141 +272,130 @@ export default function ProfileScreen(): JSX.Element {
           ) : null}
         </Surface>
 
-        {profile.about ? (
-          <Section title={t("profile.about")}>
-            <Text
-              style={{
-                color: nativeTokens.color.ink,
-                fontFamily: nativeTokens.type.family.sans,
-                fontSize: nativeTokens.type.scale.body.size,
-                lineHeight: nativeTokens.type.scale.body.line,
-              }}
-            >
-              {profile.about}
-            </Text>
-          </Section>
-        ) : null}
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={profileStyles.tabsRow}
+        >
+          {TABS.map((tab) => {
+            const active = tab.key === activeTab;
+            return (
+              <Pressable
+                key={tab.key}
+                accessibilityRole="tab"
+                accessibilityState={{ selected: active }}
+                onPress={() => setActiveTab(tab.key)}
+                style={[
+                  profileStyles.tab,
+                  active ? profileStyles.tabActive : profileStyles.tabInactive,
+                ]}
+              >
+                <Text
+                  style={[
+                    profileStyles.tabLabel,
+                    active
+                      ? profileStyles.tabLabelActive
+                      : profileStyles.tabLabelInactive,
+                  ]}
+                >
+                  {t(tab.i18n)}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </ScrollView>
 
-        {profile.experiences.length > 0 ? (
+        {activeTab === "about"
+          ? profile.about
+            ? (
+              <Section title={t("profile.about")}>
+                <Text style={profileStyles.bodyText}>{profile.about}</Text>
+              </Section>
+            )
+            : (
+              <Surface variant="tinted" padding="6">
+                <Text style={profileStyles.emptyText}>
+                  {t("profile.aboutEmpty")}
+                </Text>
+              </Surface>
+            )
+          : null}
+
+        {activeTab === "exp" ? (
           <Section title={t("profile.experience")}>
-            {profile.experiences.map((e, idx) => (
-              <View
-                key={e.id ?? `${e.companyName}-${e.startDate}`}
-                style={{
-                  marginTop: idx === 0 ? 0 : nativeTokens.space[3],
-                }}
-              >
-                <Text
-                  style={{
-                    color: nativeTokens.color.ink,
-                    fontFamily: nativeTokens.type.family.sans,
-                    fontSize: nativeTokens.type.scale.h3.size,
-                    lineHeight: nativeTokens.type.scale.h3.line,
-                    fontWeight: "600",
-                  }}
-                >
-                  {e.title}
-                </Text>
-                <Text
-                  style={{
-                    color: nativeTokens.color.inkMuted,
-                    fontFamily: nativeTokens.type.family.sans,
-                    fontSize: nativeTokens.type.scale.small.size,
-                  }}
-                >
-                  {e.companyName}
-                </Text>
-                {e.description ? (
-                  <Text
-                    style={{
-                      marginTop: nativeTokens.space[1],
-                      color: nativeTokens.color.ink,
-                      fontFamily: nativeTokens.type.family.sans,
-                      fontSize: nativeTokens.type.scale.body.size,
-                      lineHeight: nativeTokens.type.scale.body.line,
-                    }}
-                  >
-                    {e.description}
-                  </Text>
-                ) : null}
-              </View>
-            ))}
-          </Section>
-        ) : null}
-
-        {profile.educations.length > 0 ? (
-          <Section title={t("profile.education")}>
-            {profile.educations.map((e, idx) => (
-              <View
-                key={e.id ?? e.school}
-                style={{
-                  marginTop: idx === 0 ? 0 : nativeTokens.space[3],
-                }}
-              >
-                <Text
-                  style={{
-                    color: nativeTokens.color.ink,
-                    fontFamily: nativeTokens.type.family.sans,
-                    fontSize: nativeTokens.type.scale.h3.size,
-                    lineHeight: nativeTokens.type.scale.h3.line,
-                    fontWeight: "600",
-                  }}
-                >
-                  {e.school}
-                </Text>
-                {e.degree ? (
-                  <Text
-                    style={{
-                      color: nativeTokens.color.inkMuted,
-                      fontFamily: nativeTokens.type.family.sans,
-                      fontSize: nativeTokens.type.scale.small.size,
-                    }}
-                  >
-                    {e.degree}
-                    {e.fieldOfStudy ? ` · ${e.fieldOfStudy}` : ""}
-                  </Text>
-                ) : null}
-              </View>
-            ))}
-          </Section>
-        ) : null}
-
-        {profile.skills.length > 0 ? (
-          <Section title={t("profile.skills")}>
-            <View
-              style={{
-                flexDirection: "row",
-                flexWrap: "wrap",
-                gap: nativeTokens.space[2],
-              }}
-            >
-              {profile.skills.map((s) => (
+            {profile.experiences.length === 0 ? (
+              <Text style={profileStyles.emptyText}>
+                {t("profile.expEmpty")}
+              </Text>
+            ) : (
+              profile.experiences.map((e, idx) => (
                 <View
-                  key={s.id}
-                  style={{
-                    borderWidth: 1,
-                    borderColor: nativeTokens.color.lineHard,
-                    borderRadius: nativeTokens.radius.full,
-                    paddingHorizontal: nativeTokens.space[3],
-                    paddingVertical: nativeTokens.space[1],
-                  }}
+                  key={e.id ?? `${e.companyName}-${e.startDate}`}
+                  style={
+                    idx === 0 ? undefined : profileStyles.experienceItemSpacing
+                  }
                 >
-                  <Text
-                    style={{
-                      color: nativeTokens.color.ink,
-                      fontFamily: nativeTokens.type.family.sans,
-                      fontSize: nativeTokens.type.scale.small.size,
-                    }}
-                  >
-                    {s.name}
+                  <Text style={profileStyles.itemTitle}>{e.title}</Text>
+                  <Text style={profileStyles.itemSubtitle}>
+                    {e.companyName}
                   </Text>
+                  {e.description ? (
+                    <Text style={profileStyles.itemDescription}>
+                      {e.description}
+                    </Text>
+                  ) : null}
                 </View>
-              ))}
-            </View>
+              ))
+            )}
           </Section>
         ) : null}
 
-        <View style={{ paddingVertical: nativeTokens.space[3] }}>
+        {activeTab === "edu" ? (
+          <Section title={t("profile.education")}>
+            {profile.educations.length === 0 ? (
+              <Text style={profileStyles.emptyText}>
+                {t("profile.eduEmpty")}
+              </Text>
+            ) : (
+              profile.educations.map((e, idx) => (
+                <View
+                  key={e.id ?? e.school}
+                  style={
+                    idx === 0 ? undefined : profileStyles.experienceItemSpacing
+                  }
+                >
+                  <Text style={profileStyles.itemTitle}>{e.school}</Text>
+                  {e.degree ? (
+                    <Text style={profileStyles.itemSubtitle}>
+                      {e.degree}
+                      {e.fieldOfStudy ? ` · ${e.fieldOfStudy}` : ""}
+                    </Text>
+                  ) : null}
+                </View>
+              ))
+            )}
+          </Section>
+        ) : null}
+
+        {activeTab === "skills" ? (
+          <Section title={t("profile.skills")}>
+            {profile.skills.length === 0 ? (
+              <Text style={profileStyles.emptyText}>
+                {t("profile.skillsEmpty")}
+              </Text>
+            ) : (
+              <View style={profileStyles.skillsRow}>
+                {profile.skills.map((s) => (
+                  <View key={s.id} style={profileStyles.skillChip}>
+                    <Text style={profileStyles.skillLabel}>{s.name}</Text>
+                  </View>
+                ))}
+              </View>
+            )}
+          </Section>
+        ) : null}
+
+        <View style={profileStyles.footer}>
           <Button
             variant="ghost"
             size="md"
@@ -493,19 +419,145 @@ function Section({
 }): JSX.Element {
   return (
     <Surface variant="card" padding="4">
-      <Text
-        style={{
-          marginBottom: nativeTokens.space[2],
-          color: nativeTokens.color.ink,
-          fontFamily: nativeTokens.type.family.sans,
-          fontSize: nativeTokens.type.scale.h2.size,
-          lineHeight: nativeTokens.type.scale.h2.line,
-          fontWeight: "600",
-        }}
-      >
-        {title}
-      </Text>
+      <Text style={profileStyles.sectionTitle}>{title}</Text>
       {children}
     </Surface>
   );
 }
+
+const profileStyles = StyleSheet.create({
+  screen: { flex: 1, backgroundColor: nativeTokens.color.surfaceMuted },
+  center: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: nativeTokens.color.surfaceMuted,
+  },
+  errorScreen: {
+    flex: 1,
+    backgroundColor: nativeTokens.color.surfaceMuted,
+    padding: nativeTokens.space[4],
+  },
+  errorText: {
+    color: nativeTokens.color.inkMuted,
+    fontFamily: nativeTokens.type.family.sans,
+    fontSize: nativeTokens.type.scale.body.size,
+    textAlign: "center",
+  },
+  scrollBody: {
+    padding: nativeTokens.space[4],
+    gap: nativeTokens.space[4],
+  },
+  name: {
+    marginTop: nativeTokens.space[3],
+    color: nativeTokens.color.ink,
+    fontFamily: nativeTokens.type.family.sans,
+    fontSize: nativeTokens.type.scale.display.size,
+    lineHeight: nativeTokens.type.scale.display.line,
+    fontWeight: "700",
+  },
+  headline: {
+    color: nativeTokens.color.inkMuted,
+    fontFamily: nativeTokens.type.family.sans,
+    fontSize: nativeTokens.type.scale.body.size,
+    marginTop: 2,
+  },
+  location: {
+    color: nativeTokens.color.inkMuted,
+    fontFamily: nativeTokens.type.family.sans,
+    fontSize: nativeTokens.type.scale.small.size,
+    marginTop: 2,
+  },
+  handle: {
+    color: nativeTokens.color.inkMuted,
+    fontFamily: nativeTokens.type.family.sans,
+    fontSize: nativeTokens.type.scale.small.size,
+    marginTop: nativeTokens.space[1],
+  },
+  editWrap: {
+    marginTop: nativeTokens.space[3],
+    alignSelf: "flex-start",
+  },
+  actionsRow: {
+    marginTop: nativeTokens.space[3],
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: nativeTokens.space[2],
+  },
+  tabsRow: {
+    flexDirection: "row",
+    gap: nativeTokens.space[2],
+    paddingHorizontal: nativeTokens.space[1],
+  },
+  tab: {
+    paddingVertical: nativeTokens.space[2],
+    paddingHorizontal: nativeTokens.space[3],
+    borderBottomWidth: 2,
+  },
+  tabActive: { borderBottomColor: nativeTokens.color.brand600 },
+  tabInactive: { borderBottomColor: "transparent" },
+  tabLabel: {
+    fontFamily: nativeTokens.type.family.sans,
+    fontSize: nativeTokens.type.scale.body.size,
+    fontWeight: "500",
+  },
+  tabLabelActive: { color: nativeTokens.color.ink },
+  tabLabelInactive: { color: nativeTokens.color.inkMuted },
+  bodyText: {
+    color: nativeTokens.color.ink,
+    fontFamily: nativeTokens.type.family.sans,
+    fontSize: nativeTokens.type.scale.body.size,
+    lineHeight: nativeTokens.type.scale.body.line,
+  },
+  emptyText: {
+    color: nativeTokens.color.inkMuted,
+    fontFamily: nativeTokens.type.family.sans,
+    fontSize: nativeTokens.type.scale.small.size,
+  },
+  experienceItemSpacing: { marginTop: nativeTokens.space[3] },
+  itemTitle: {
+    color: nativeTokens.color.ink,
+    fontFamily: nativeTokens.type.family.sans,
+    fontSize: nativeTokens.type.scale.h3.size,
+    lineHeight: nativeTokens.type.scale.h3.line,
+    fontWeight: "600",
+  },
+  itemSubtitle: {
+    color: nativeTokens.color.inkMuted,
+    fontFamily: nativeTokens.type.family.sans,
+    fontSize: nativeTokens.type.scale.small.size,
+  },
+  itemDescription: {
+    marginTop: nativeTokens.space[1],
+    color: nativeTokens.color.ink,
+    fontFamily: nativeTokens.type.family.sans,
+    fontSize: nativeTokens.type.scale.body.size,
+    lineHeight: nativeTokens.type.scale.body.line,
+  },
+  skillsRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: nativeTokens.space[2],
+  },
+  skillChip: {
+    borderWidth: 1,
+    borderColor: nativeTokens.color.lineHard,
+    borderRadius: nativeTokens.radius.full,
+    paddingHorizontal: nativeTokens.space[3],
+    paddingVertical: nativeTokens.space[1],
+  },
+  skillLabel: {
+    color: nativeTokens.color.ink,
+    fontFamily: nativeTokens.type.family.sans,
+    fontSize: nativeTokens.type.scale.small.size,
+  },
+  sectionTitle: {
+    marginBottom: nativeTokens.space[2],
+    color: nativeTokens.color.ink,
+    fontFamily: nativeTokens.type.family.sans,
+    fontSize: nativeTokens.type.scale.h2.size,
+    lineHeight: nativeTokens.type.scale.h2.line,
+    fontWeight: "600",
+  },
+  footer: { paddingVertical: nativeTokens.space[3] },
+});

@@ -1,4 +1,10 @@
 import {
+  type AuthSession,
+  LoginBody,
+  RefreshBody,
+  RegisterBody,
+} from "@baydar/shared";
+import {
   Body,
   Controller,
   Get,
@@ -15,14 +21,9 @@ import {
   ApiTags,
 } from "@nestjs/swagger";
 import { Throttle } from "@nestjs/throttler";
-import {
-  type AuthSession,
-  LoginBody,
-  RefreshBody,
-  RegisterBody,
-} from "@palnet/shared";
 
 import { ZodValidationPipe } from "../../common/zod-pipe";
+
 import { AuthService } from "./auth.service";
 import { CurrentUser, type AuthUser } from "./decorators/current-user.decorator";
 import { Public } from "./decorators/public.decorator";

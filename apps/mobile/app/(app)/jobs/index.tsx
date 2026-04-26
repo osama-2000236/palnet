@@ -16,8 +16,8 @@ import {
   JobLocationMode,
   JobType,
   type Job,
-} from "@palnet/shared";
-import { Button, Sheet, Surface, nativeTokens } from "@palnet/ui-native";
+} from "@baydar/shared";
+import { Button, Sheet, Surface, nativeTokens } from "@baydar/ui-native";
 import { router } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";

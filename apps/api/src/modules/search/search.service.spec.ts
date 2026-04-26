@@ -1,6 +1,7 @@
 import { Test } from "@nestjs/testing";
 
 import { PrismaService } from "../prisma/prisma.service";
+
 import { SearchService } from "./search.service";
 
 type PrismaStub = {

@@ -2,7 +2,7 @@ import {
   cursorPage,
   SearchPersonHit as SearchPersonHitSchema,
   type SearchPersonHit,
-} from "@palnet/shared";
+} from "@baydar/shared";
 import { router } from "expo-router";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";

@@ -102,7 +102,7 @@ export type Tokens = typeof tokens;
 export default tokens;
 
 // Re-export the RN-shaped tokens so consumers can do:
-//   import { nativeTokens } from "@palnet/ui-tokens";
+//   import { nativeTokens } from "@baydar/ui-tokens";
 // without needing a subpath export.
 export { nativeTokens } from "./tokens.native";
 export type { NativeTokens } from "./tokens.native";

@@ -7,11 +7,11 @@ Zero-devops path. Every hosted piece is a managed service with a generous free t
 ```
 Users
   │
-  ├── Web         → Vercel (Next.js)           custom domain: palnet.ps
+  ├── Web         → Vercel (Next.js)           custom domain: baydar.ps
   ├── iOS/Android → App Store / Play Store     built by EAS
   └── (admin)     → Vercel (same Next.js app, /admin route, RBAC)
 
-All clients → api.palnet.ps (Render) ←→ Neon (Postgres)
+All clients → api.baydar.ps (Render) ←→ Neon (Postgres)
                                     ←→ Cloudflare R2 (media)
                                     ←→ self-hosted Socket.io on Render
 ```
@@ -33,24 +33,24 @@ All clients → api.palnet.ps (Render) ←→ Neon (Postgres)
 - Never commit `.env.local`.
 
 ### 2. Neon
-- Create project `palnet`.
+- Create project `baydar`.
 - Branch `main` = prod. Enable "branch per PR" integration with GitHub.
 - Daily backups on by default — verify in the project settings.
 
 ### 3. Render (API)
 - Create Web Service from GitHub repo, root `apps/api`, Dockerfile based build.
-- Build command: `pnpm install --frozen-lockfile && pnpm --filter @palnet/db db:generate && pnpm --filter @palnet/api build`.
+- Build command: `pnpm install --frozen-lockfile && pnpm --filter @baydar/db db:generate && pnpm --filter @baydar/api build`.
 - Start command: `node dist/main.js`.
 - Health check path: `/api/v1/health`.
 - Autoscale off day one; one instance. Turn on later only if needed.
-- Add a **pre-deploy job** that runs `pnpm --filter @palnet/db db:deploy` (Prisma migrate deploy).
+- Add a **pre-deploy job** that runs `pnpm --filter @baydar/db db:deploy` (Prisma migrate deploy).
 
 ### 4. Vercel (Web)
 - Import repo. Root directory `apps/web`. Framework preset Next.js.
-- Build command: `pnpm --filter @palnet/web build` with `TURBO_TEAM`/`TURBO_TOKEN` env if using remote cache.
+- Build command: `pnpm --filter @baydar/web build` with `TURBO_TEAM`/`TURBO_TOKEN` env if using remote cache.
 - Install command: `pnpm install --frozen-lockfile` at repo root.
 - `NEXT_PUBLIC_*` vars set per environment.
-- Custom domain `palnet.ps` + `www.palnet.ps` (redirect apex → www or vice versa — pick one).
+- Custom domain `baydar.ps` + `www.baydar.ps` (redirect apex → www or vice versa — pick one).
 
 ### 5. EAS (Mobile)
 - `npx eas-cli init` inside `apps/mobile`.
@@ -59,29 +59,29 @@ All clients → api.palnet.ps (Render) ←→ Neon (Postgres)
 - OTA: `eas update --branch production` for JS-only hotfixes.
 
 ### 6. Cloudflare R2
-- Create bucket `palnet-media-prod` (private) and `palnet-media-dev`.
-- Public media served via custom domain `media.palnet.ps` mapped to R2 via a CNAME.
+- Create bucket `baydar-media-prod` (private) and `baydar-media-dev`.
+- Public media served via custom domain `media.baydar.ps` mapped to R2 via a CNAME.
 - Signed PUT URLs minted by the API only; uploads clamp to:
   - Images: 10 MB, `image/jpeg|png|webp`.
   - Video: 200 MB, `video/mp4`. No transcoding on day one.
   - Documents: 20 MB, `application/pdf`.
 
 ### 7. DNS
-- `palnet.ps` → Vercel
-- `api.palnet.ps` → Render
-- `media.palnet.ps` → R2 public
-- `status.palnet.ps` (optional) → Better Stack / UptimeRobot public page
+- `baydar.ps` → Vercel
+- `api.baydar.ps` → Render
+- `media.baydar.ps` → R2 public
+- `status.baydar.ps` (optional) → Better Stack / UptimeRobot public page
 
 ## CI/CD
 
 `.github/workflows/ci.yml` runs on every PR:
 
 1. `pnpm install --frozen-lockfile`
-2. `pnpm --filter @palnet/db db:generate`
+2. `pnpm --filter @baydar/db db:generate`
 3. `pnpm lint`
 4. `pnpm type-check`
 5. `pnpm test`
-6. `pnpm --filter @palnet/web build` (sanity)
+6. `pnpm --filter @baydar/web build` (sanity)
 7. Playwright against a spun-up local stack (Chromium).
 
 Deploy is handled by Vercel + Render's own GitHub integrations — no manual deploy step. Main-branch merge triggers prod. PR triggers preview.
@@ -91,7 +91,7 @@ Deploy is handled by Vercel + Render's own GitHub integrations — no manual dep
 - Nest: `pino` logger with request id, user id, route, status.
 - Render exposes logs + metrics out of the box. Pipe to Better Stack or Logtail if needed.
 - Sentry (free tier) for both web, mobile, and api — same DSN project split by environment tag.
-- UptimeRobot on `api.palnet.ps/api/v1/health` and `palnet.ps/`.
+- UptimeRobot on `api.baydar.ps/api/v1/health` and `baydar.ps/`.
 - Error budget and SLO dashboards deferred to post-PMF.
 
 ## Backups & Recovery

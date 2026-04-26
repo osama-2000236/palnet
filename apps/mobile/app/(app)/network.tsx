@@ -1,7 +1,7 @@
 import {
   ConnectionListItem as ConnectionListItemSchema,
   type ConnectionListItem,
-} from "@palnet/shared";
+} from "@baydar/shared";
 import { router } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";

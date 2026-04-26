@@ -1,12 +1,12 @@
 "use client";
 
-// Thin web wrapper around @palnet/ui-web's <PostCard>. The shared component
+// Thin web wrapper around @baydar/ui-web's <PostCard>. The shared component
 // owns the visual shell and state machine; this file owns the network (reaction
 // API call + optimistic reconcile) and mounts our existing Comments region
 // into the shared card via `commentsSlot`.
 
-import { formatRelativeTime, type Post } from "@palnet/shared";
-import { PostCard as PostCardShell } from "@palnet/ui-web";
+import { formatRelativeTime, type Post } from "@baydar/shared";
+import { PostCard as PostCardShell } from "@baydar/ui-web";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState } from "react";

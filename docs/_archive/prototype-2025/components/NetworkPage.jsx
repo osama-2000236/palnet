@@ -1,3 +1,10 @@
+/*
+  ARCHIVED — DO NOT EDIT.
+  Production code is at:
+    Components → packages/ui-web/src/   (@baydar/ui-web)
+    Pages      → apps/web/src/app/
+  Historical reference only.
+*/
 /* global React, Icon, Avatar, Badge, Surface */
 function NetworkPage({ onOpenProfile }) {
   const data = window.PALNET_DATA;

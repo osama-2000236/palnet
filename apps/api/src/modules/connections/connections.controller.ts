@@ -1,4 +1,10 @@
 import {
+  RespondConnectionBody,
+  SendConnectionBody,
+  type ConnectionListItem,
+  type PersonSuggestion,
+} from "@baydar/shared";
+import {
   Body,
   Controller,
   Delete,
@@ -11,12 +17,6 @@ import {
   UsePipes,
 } from "@nestjs/common";
 import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
-import {
-  RespondConnectionBody,
-  SendConnectionBody,
-  type ConnectionListItem,
-  type PersonSuggestion,
-} from "@palnet/shared";
 import { z } from "zod";
 
 import { ZodValidationPipe } from "../../common/zod-pipe";
@@ -24,6 +24,7 @@ import {
   CurrentUser,
   type AuthUser,
 } from "../auth/decorators/current-user.decorator";
+
 import { ConnectionsService } from "./connections.service";
 
 const ListQuery = z.object({

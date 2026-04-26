@@ -1,6 +1,6 @@
-# PalNet — Palestine's Professional Network
+# Baydar — Palestine's Professional Network
 
-> Working codename `palnet`. The product brand will be locked before public launch.
+> Brand: **Baydar (بيدر)**. Pre-launch.
 
 A LinkedIn-equivalent professional network built **for Palestine first**: Arabic-first, RTL-native, mobile-forward, shippable by a solo builder with AI pair-programmers (Codex + Gemini) orchestrated by Claude as architect/reviewer.
 
@@ -88,12 +88,22 @@ See [`docs/sprint-plan.md`](docs/sprint-plan.md) for the exact "do / do not" per
 Every prompt to Codex or Gemini must start with:
 
 ```
-You are contributing to palnet, a Turborepo + NestJS + Next.js + Expo
+You are contributing to Baydar, a Turborepo + NestJS + Next.js + Expo
 monorepo. The authoritative contract is in project-spec.md at the repo
 root — obey it. Do not introduce new dependencies, patterns, or
 services unless the spec allows it. Types come from packages/shared.
-DB access goes through @palnet/db. All UI copy must be i18n-keyed
+DB access goes through @baydar/db. All UI copy must be i18n-keyed
 (default locale ar-PS, RTL).
 ```
 
 The rest of the prompt is the feature ask. That single prefix is what keeps AI output converging.
+
+## Status (as of 2026-04-26)
+
+- System renamed to **Baydar** end-to-end (packages, bundle ids, storage keys, log prefixes, R2 bucket, fixtures, deploy domains, CI DB)
+- Tokens locked (`packages/ui-tokens/src/index.ts`)
+- Brand mark unified (wheat on olive circle) across web + native + favicons + Expo
+- Web + mobile profile use tabbed sections
+- Mobile feed uses StyleSheet (no inline objects)
+- PWA manifest live at `/manifest.webmanifest`
+- Original prototype archived at `docs/_archive/prototype-2025/`

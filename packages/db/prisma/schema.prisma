@@ -1,4 +1,4 @@
-// PalNet — Prisma schema
+// Baydar — Prisma schema
 // Authoritative data model. Any change here must:
 //   1. Ship a migration in the same PR.
 //   2. Update packages/shared/src/schemas/* if the shape is exposed to clients.

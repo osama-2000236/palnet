@@ -13,14 +13,14 @@ import {
   Message as MessageSchema,
   type ChatRoom,
   type Message,
-} from "@palnet/shared";
+} from "@baydar/shared";
 import {
   MessageBubble,
   Surface,
   nativeTokens,
   type MessageBubbleLabels,
   type MessageStatus,
-} from "@palnet/ui-native";
+} from "@baydar/ui-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";

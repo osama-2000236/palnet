@@ -1,8 +1,9 @@
+import { ErrorCode } from "@baydar/shared";
 import { Test } from "@nestjs/testing";
-import { ErrorCode } from "@palnet/shared";
 
 import { NotificationsService } from "../notifications/notifications.service";
 import { PrismaService } from "../prisma/prisma.service";
+
 import { MessagingBus } from "./messaging.bus";
 import { MessagingService } from "./messaging.service";
 

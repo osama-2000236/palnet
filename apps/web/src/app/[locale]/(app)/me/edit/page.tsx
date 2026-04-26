@@ -11,8 +11,8 @@ import {
   type Experience,
   type Profile,
   type Skill,
-} from "@palnet/shared";
-import { Avatar, Surface } from "@palnet/ui-web";
+} from "@baydar/shared";
+import { Avatar, Surface } from "@baydar/ui-web";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";

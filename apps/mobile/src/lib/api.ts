@@ -1,4 +1,4 @@
-import { ApiError } from "@palnet/shared";
+import { ApiError } from "@baydar/shared";
 import type { z } from "zod";
 
 const BASE = process.env.EXPO_PUBLIC_API_URL ?? "http://localhost:4000/api/v1";

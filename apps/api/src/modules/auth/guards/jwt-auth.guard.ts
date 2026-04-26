@@ -1,3 +1,4 @@
+import { ErrorCode } from "@baydar/shared";
 import {
   CanActivate,
   ExecutionContext,
@@ -6,7 +7,6 @@ import {
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { Reflector } from "@nestjs/core";
-import { ErrorCode } from "@palnet/shared";
 import type { Request } from "express";
 import * as jwt from "jsonwebtoken";
 

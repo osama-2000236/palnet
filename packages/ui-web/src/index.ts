@@ -40,3 +40,5 @@ export { groupMessages } from "./groupMessages";
 export type { GroupedMessage, GroupMessagesOptions } from "./groupMessages";
 export { Button } from "./Button";
 export type { ButtonProps, ButtonVariant, ButtonSize } from "./Button";
+export { Tabs, Tab } from "./Tabs";
+export type { TabsProps, TabProps } from "./Tabs";

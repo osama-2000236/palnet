@@ -1,5 +1,5 @@
 {
-  "name": "@palnet/ui-web",
+  "name": "@baydar/ui-web",
   "version": "0.0.1",
   "private": true,
   "main": "./dist/index.js",
@@ -13,7 +13,7 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@palnet/ui-tokens": "workspace:*",
+    "@baydar/ui-tokens": "workspace:*",
     "clsx": "^2.1.1",
     "tailwind-merge": "^2.5.4"
   },
@@ -21,7 +21,7 @@
     "react": "^18.3.0"
   },
   "devDependencies": {
-    "@palnet/config": "workspace:*",
+    "@baydar/config": "workspace:*",
     "@types/react": "^18.3.12",
     "react": "18.3.1",
     "rimraf": "^6.0.1",

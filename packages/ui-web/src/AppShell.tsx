@@ -1,6 +1,6 @@
 // AppShell — the sticky chrome wrapping every authenticated web route.
 // Spec: docs/components/AppShell.md.
-// Lifted from docs/design/prototype/components/AppShell.jsx.
+// Lifted from docs/_archive/prototype-2025/components/AppShell.jsx.
 //
 // Shape:
 //   [Logo] [Search-pill] [flex] [nav items] [divider] [profile menu]

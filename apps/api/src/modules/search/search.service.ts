@@ -1,9 +1,9 @@
-import { Injectable } from "@nestjs/common";
 import type {
   CursorPageMeta,
   PeopleSearchQuery,
   SearchPersonHit,
-} from "@palnet/shared";
+} from "@baydar/shared";
+import { Injectable } from "@nestjs/common";
 
 import { PrismaService } from "../prisma/prisma.service";
 

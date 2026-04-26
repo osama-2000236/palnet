@@ -3,7 +3,7 @@ import {
   PresignedUpload,
   type MediaPurpose,
   type PresignUploadBody,
-} from "@palnet/shared";
+} from "@baydar/shared";
 
 import { apiFetch } from "./api";
 

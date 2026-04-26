@@ -1,4 +1,12 @@
 import {
+  AddSkillBody,
+  EducationBody,
+  ExperienceBody,
+  OnboardProfileBody,
+  UpdateProfileBody,
+  type Profile as ProfileDto,
+} from "@baydar/shared";
+import {
   Body,
   Controller,
   Delete,
@@ -10,14 +18,6 @@ import {
   UsePipes,
 } from "@nestjs/common";
 import { ApiBearerAuth, ApiOkResponse, ApiTags } from "@nestjs/swagger";
-import {
-  AddSkillBody,
-  EducationBody,
-  ExperienceBody,
-  OnboardProfileBody,
-  UpdateProfileBody,
-  type Profile as ProfileDto,
-} from "@palnet/shared";
 
 import { ZodValidationPipe } from "../../common/zod-pipe";
 import {
@@ -26,6 +26,7 @@ import {
 } from "../auth/decorators/current-user.decorator";
 import { OptionalAuth } from "../auth/decorators/optional-auth.decorator";
 import { OptionalUser } from "../auth/decorators/optional-user.decorator";
+
 import { ProfilesService } from "./profiles.service";
 
 @ApiTags("profiles")

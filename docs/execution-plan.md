@@ -30,7 +30,7 @@ Files:
 - `src/middleware.ts` — next-intl locale routing
 - `src/i18n.ts` — next-intl config
 - `messages/ar.json`, `messages/en.json`
-- `src/lib/api.ts` — typed fetch wrapper (uses `@palnet/shared`)
+- `src/lib/api.ts` — typed fetch wrapper (uses `@baydar/shared`)
 
 ## Phase 3 — `apps/mobile` (Expo SDK 52 + NativeWind + i18next)
 Files:
@@ -43,9 +43,9 @@ Files:
 ## Phase 4 — Boot verification (manual)
 - `pnpm install`
 - `pnpm db:generate`
-- `pnpm --filter @palnet/api dev` → hit `http://localhost:4000/api/v1/health`
-- `pnpm --filter @palnet/web dev` → hit `http://localhost:3000` (RTL renders)
-- `pnpm --filter @palnet/mobile start` → Expo loads, RTL enabled
+- `pnpm --filter @baydar/api dev` → hit `http://localhost:4000/api/v1/health`
+- `pnpm --filter @baydar/web dev` → hit `http://localhost:3000` (RTL renders)
+- `pnpm --filter @baydar/mobile start` → Expo loads, RTL enabled
 
 ## Phase 5 — Commit 2
 - `chore: app scaffolds (api, web, mobile) — Sprint 0 complete`

@@ -13,8 +13,8 @@ import {
   formatSalaryRange,
   Job as JobSchema,
   type Job,
-} from "@palnet/shared";
-import { Button, Surface } from "@palnet/ui-web";
+} from "@baydar/shared";
+import { Button, Surface } from "@baydar/ui-web";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";

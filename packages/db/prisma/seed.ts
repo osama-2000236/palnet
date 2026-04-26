@@ -44,10 +44,10 @@ async function main() {
   // Must use bcrypt to match AuthService.login.
   const passwordHash = await bcrypt.hash("Password123", 12);
   const demoUser = await prisma.user.upsert({
-    where: { email: "demo@palnet.ps" },
+    where: { email: "demo@baydar.ps" },
     update: {},
     create: {
-      email: "demo@palnet.ps",
+      email: "demo@baydar.ps",
       passwordHash,
       locale: "ar-PS",
       emailVerified: new Date(),

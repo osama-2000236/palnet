@@ -1,8 +1,9 @@
 import * as SecureStore from "expo-secure-store";
-import type { AuthSession } from "@palnet/shared";
+import type { AuthSession } from "@baydar/shared";
 
-const KEY = "palnet.session.v1";
-const DEVICE_KEY = "palnet.deviceId";
+// Bumped to baydar.* on rename from palnet.* (pre-launch, no migration).
+const KEY = "baydar.session.v1";
+const DEVICE_KEY = "baydar.deviceId";
 
 export async function readSession(): Promise<AuthSession | null> {
   const raw = await SecureStore.getItemAsync(KEY);

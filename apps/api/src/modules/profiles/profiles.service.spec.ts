@@ -1,8 +1,9 @@
+import { ErrorCode, JobLocationMode } from "@baydar/shared";
 import { Test } from "@nestjs/testing";
-import { ErrorCode, JobLocationMode } from "@palnet/shared";
 
-import { DomainException } from "../../common/domain-exception";
+import type { DomainException } from "../../common/domain-exception";
 import { PrismaService } from "../prisma/prisma.service";
+
 import { ProfilesService } from "./profiles.service";
 
 type PrismaStub = {
@@ -97,7 +98,7 @@ describe("ProfilesService (edit)", () => {
 
       await service.addExperience("u_1", {
         title: "Engineer",
-        companyName: "PalNet",
+        companyName: "Baydar",
         companyId: null,
         location: null,
         locationMode: JobLocationMode.ONSITE,
@@ -111,7 +112,7 @@ describe("ProfilesService (edit)", () => {
           data: expect.objectContaining({
             profileId: "p_1",
             title: "Engineer",
-            companyName: "PalNet",
+            companyName: "Baydar",
           }),
         }),
       );

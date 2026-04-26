@@ -1,10 +1,10 @@
 "use client";
 
 // Messages page — room list on the start side, active thread on the other.
-// Spec: docs/design/prototype/components/MessagesPage.jsx.
+// Spec: docs/_archive/prototype-2025/components/MessagesPage.jsx.
 //
 // Owns the network concerns (REST + SSE); delegates all visuals to
-// @palnet/ui-web shells (MessageBubble, RoomRow, TypingIndicator, Avatar,
+// @baydar/ui-web shells (MessageBubble, RoomRow, TypingIndicator, Avatar,
 // Surface, Icon). Grouping logic lives in the shared `groupMessages` helper.
 
 import {
@@ -14,7 +14,7 @@ import {
   WsChatEvent,
   type ChatRoom,
   type Message,
-} from "@palnet/shared";
+} from "@baydar/shared";
 import {
   Avatar,
   Icon,
@@ -24,7 +24,7 @@ import {
   TypingIndicator,
   groupMessages,
   type MessageStatus,
-} from "@palnet/ui-web";
+} from "@baydar/ui-web";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
