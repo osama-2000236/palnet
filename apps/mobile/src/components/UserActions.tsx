@@ -1,4 +1,4 @@
-import { Sheet, nativeTokens } from "@palnet/ui-native";
+import { Sheet, nativeTokens } from "@baydar/ui-native";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Alert, Pressable, Text, View } from "react-native";

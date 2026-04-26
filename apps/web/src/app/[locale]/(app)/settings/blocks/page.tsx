@@ -1,7 +1,7 @@
 "use client";
 
-import { BlockedUserList, type BlockedUserItem } from "@palnet/shared";
-import { Avatar, Surface } from "@palnet/ui-web";
+import { BlockedUserList, type BlockedUserItem } from "@baydar/shared";
+import { Avatar, Surface } from "@baydar/ui-web";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";

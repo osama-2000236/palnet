@@ -6,7 +6,7 @@ import {
   HttpStatus,
   Logger,
 } from "@nestjs/common";
-import { ErrorCode } from "@palnet/shared";
+import { ErrorCode } from "@baydar/shared";
 import { captureException } from "@sentry/node";
 import type { Request, Response } from "express";
 

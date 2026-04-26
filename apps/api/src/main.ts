@@ -43,11 +43,11 @@ async function bootstrap(): Promise<void> {
 
   await app.listen(env.API_PORT, "0.0.0.0");
   // eslint-disable-next-line no-console
-  console.warn(`[palnet/api] ready on :${env.API_PORT} (${env.NODE_ENV})`);
+  console.warn(`[baydar/api] ready on :${env.API_PORT} (${env.NODE_ENV})`);
 }
 
 bootstrap().catch((err) => {
   // eslint-disable-next-line no-console
-  console.error("[palnet/api] bootstrap failed:", err);
+  console.error("[baydar/api] bootstrap failed:", err);
   process.exit(1);
 });

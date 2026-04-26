@@ -1,7 +1,7 @@
 import { EventEmitter } from "node:events";
 
+import type { WsChatEvent } from "@baydar/shared";
 import { Injectable, Logger } from "@nestjs/common";
-import type { WsChatEvent } from "@palnet/shared";
 
 // In-memory fanout keyed by userId. Good enough for single-node deploys and for
 // dev. For horizontal scaling, swap this with a Redis pub/sub adapter that

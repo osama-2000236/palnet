@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import type { CursorPageMeta, Post as PostDto } from "@palnet/shared";
+import type { CursorPageMeta, Post as PostDto } from "@baydar/shared";
 
 import { ModerationService } from "../moderation/moderation.service";
 import { postInclude, toPostDto, type PostWithIncludes } from "../posts/posts.mapper";

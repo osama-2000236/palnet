@@ -9,7 +9,7 @@
 // in a Radix popover — the menu is small and the positioning story is
 // trivial (below-end). Escape + click-outside close.
 
-import { Icon, cx } from "@palnet/ui-web";
+import { Icon, cx } from "@baydar/ui-web";
 import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 
 export interface MoreMenuItem {

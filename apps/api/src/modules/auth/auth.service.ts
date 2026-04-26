@@ -11,7 +11,7 @@ import {
   type RegisterBody,
   type ResetPasswordBody,
   type VerifyEmailBody,
-} from "@palnet/shared";
+} from "@baydar/shared";
 import * as bcrypt from "bcrypt";
 import * as jwt from "jsonwebtoken";
 

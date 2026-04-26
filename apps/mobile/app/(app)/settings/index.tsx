@@ -1,4 +1,4 @@
-import { Avatar, Button, Icon, Surface, nativeTokens } from "@palnet/ui-native";
+import { Avatar, Button, Icon, Surface, nativeTokens } from "@baydar/ui-native";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";

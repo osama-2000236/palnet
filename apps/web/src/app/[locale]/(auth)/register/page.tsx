@@ -1,6 +1,6 @@
 "use client";
 
-import { RegisterBody } from "@palnet/shared";
+import { RegisterBody } from "@baydar/shared";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";

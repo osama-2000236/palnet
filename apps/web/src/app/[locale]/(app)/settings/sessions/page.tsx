@@ -1,7 +1,7 @@
 "use client";
 
-import { SessionList, type SessionInfo } from "@palnet/shared";
-import { Surface } from "@palnet/ui-web";
+import { SessionList, type SessionInfo } from "@baydar/shared";
+import { Surface } from "@baydar/ui-web";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";

@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ActivityIndicator, Alert, Pressable } from "react-native";
 
-import { Icon, nativeTokens } from "@palnet/ui-native";
+import { Icon, nativeTokens } from "@baydar/ui-native";
 
 import { logoutAction } from "@/lib/auth-actions";
 

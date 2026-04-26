@@ -1,11 +1,11 @@
 "use client";
 
-// Thin web wrapper around @palnet/ui-web's <Composer>. This file owns the
+// Thin web wrapper around @baydar/ui-web's <Composer>. This file owns the
 // network concerns: profile fetch (for the avatar), media upload, post
 // creation. The shared component owns the UI, state machine, and i18n.
 
-import { CreatePostBody, MediaKind, type MediaRef, Post, Profile } from "@palnet/shared";
-import { Composer as ComposerShell, type ComposerMedia } from "@palnet/ui-web";
+import { CreatePostBody, MediaKind, type MediaRef, Post, Profile } from "@baydar/shared";
+import { Composer as ComposerShell, type ComposerMedia } from "@baydar/ui-web";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 

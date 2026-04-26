@@ -23,7 +23,7 @@ import {
   TakedownPostBody,
   UnsuspendUserBody,
   UserRole,
-} from "@palnet/shared";
+} from "@baydar/shared";
 
 import { CronOrAdminGuard } from "../../common/cron-or-admin.guard";
 import { ZodValidationPipe } from "../../common/zod-pipe";

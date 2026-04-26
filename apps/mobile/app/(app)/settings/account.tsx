@@ -5,8 +5,8 @@
 // Delete + password change both revoke refresh tokens server-side, so we
 // locally clear the session + bounce to /login on success.
 
-import { ChangeEmailBody, ChangePasswordBody, DeleteAccountBody } from "@palnet/shared";
-import { Button, Surface, nativeTokens } from "@palnet/ui-native";
+import { ChangeEmailBody, ChangePasswordBody, DeleteAccountBody } from "@baydar/shared";
+import { Button, Surface, nativeTokens } from "@baydar/ui-native";
 import { router } from "expo-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";

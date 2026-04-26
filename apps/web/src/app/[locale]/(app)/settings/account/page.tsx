@@ -5,8 +5,8 @@ import {
   ChangePasswordBody,
   DeleteAccountBody,
   type AuthSession,
-} from "@palnet/shared";
-import { Surface } from "@palnet/ui-web";
+} from "@baydar/shared";
+import { Surface } from "@baydar/ui-web";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";

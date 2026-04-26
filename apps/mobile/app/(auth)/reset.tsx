@@ -2,7 +2,7 @@ import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ActivityIndicator, Pressable, SafeAreaView, Text, TextInput, View } from "react-native";
-import { nativeTokens } from "@palnet/ui-native";
+import { nativeTokens } from "@baydar/ui-native";
 
 import { ApiRequestError, apiCall } from "@/lib/api";
 

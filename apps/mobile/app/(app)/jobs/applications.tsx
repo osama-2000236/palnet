@@ -2,8 +2,8 @@ import {
   type Application as JobApplication,
   Application as ApplicationSchema,
   cursorPage,
-} from "@palnet/shared";
-import { Surface, nativeTokens } from "@palnet/ui-native";
+} from "@baydar/shared";
+import { Surface, nativeTokens } from "@baydar/ui-native";
 import { router } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";

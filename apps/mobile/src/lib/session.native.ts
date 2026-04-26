@@ -1,4 +1,4 @@
-import type { AuthSession } from "@palnet/shared";
+import type { AuthSession } from "@baydar/shared";
 import * as SecureStore from "expo-secure-store";
 
 const KEY = "palnet.session.v1";

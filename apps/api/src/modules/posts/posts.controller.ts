@@ -11,7 +11,7 @@ import {
 } from "@nestjs/common";
 import { ApiBearerAuth, ApiOkResponse, ApiTags } from "@nestjs/swagger";
 import { Throttle } from "@nestjs/throttler";
-import { CreatePostBody, type Post as PostDto, UpdatePostBody } from "@palnet/shared";
+import { CreatePostBody, type Post as PostDto, UpdatePostBody } from "@baydar/shared";
 
 import { ZodValidationPipe } from "../../common/zod-pipe";
 import { CurrentUser, type AuthUser } from "../auth/decorators/current-user.decorator";

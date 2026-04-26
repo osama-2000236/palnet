@@ -9,7 +9,7 @@ import {
   RequestPasswordResetBody,
   ResetPasswordBody,
   VerifyEmailBody,
-} from "@palnet/shared";
+} from "@baydar/shared";
 
 import { ZodValidationPipe } from "../../common/zod-pipe";
 

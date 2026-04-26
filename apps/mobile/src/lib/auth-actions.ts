@@ -1,4 +1,4 @@
-import { AuthSession, type LoginBody, type RegisterBody } from "@palnet/shared";
+import { AuthSession, type LoginBody, type RegisterBody } from "@baydar/shared";
 
 import { apiCall, apiFetch, ApiRequestError } from "./api";
 import { registerForPush, unregisterForPush } from "./push";

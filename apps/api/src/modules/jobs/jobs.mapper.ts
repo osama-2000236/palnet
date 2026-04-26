@@ -6,7 +6,7 @@ import {
   type CompanySummary,
   type Job as JobDto,
   type UserPreview,
-} from "@palnet/shared";
+} from "@baydar/shared";
 
 type UserPreviewSource = {
   id: string;

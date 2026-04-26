@@ -1,7 +1,7 @@
 "use client";
 
-import { AdminPostDetail, type AdminPostDetail as AdminPostDetailValue } from "@palnet/shared";
-import { Avatar, Surface } from "@palnet/ui-web";
+import { AdminPostDetail, type AdminPostDetail as AdminPostDetailValue } from "@baydar/shared";
+import { Avatar, Surface } from "@baydar/ui-web";
 import { useParams, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";

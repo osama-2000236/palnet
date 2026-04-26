@@ -186,4 +186,4 @@ Component usage stays the same (`bg-brand-600`). Only token values change. One c
 
 ## 9. The prototype
 
-`docs/design/prototype/PalNet Prototype.html` is the visual ground truth. Open it, navigate the five screens, and match what you build to what's rendered. When this document and the prototype disagree, **the prototype wins** — and open a PR updating this document.
+`docs/_archive/prototype-2025/Baydar Prototype.html` is the visual ground truth. Open it, navigate the five screens, and match what you build to what's rendered. When this document and the prototype disagree, **the prototype wins** — and open a PR updating this document.

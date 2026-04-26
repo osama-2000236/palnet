@@ -1,6 +1,6 @@
 import { Controller, Get, Query } from "@nestjs/common";
 import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
-import { type CursorPageMeta, PeopleSearchQuery, type SearchPersonHit } from "@palnet/shared";
+import { type CursorPageMeta, PeopleSearchQuery, type SearchPersonHit } from "@baydar/shared";
 
 import { ZodValidationPipe } from "../../common/zod-pipe";
 import { type AuthUser } from "../auth/decorators/current-user.decorator";

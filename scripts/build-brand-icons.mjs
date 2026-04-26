@@ -1,104 +1,74 @@
-#!/usr/bin/env node
-// Rasterize packages/ui-tokens/assets/*.svg into the PNG sizes Expo needs.
+// build-brand-icons.mjs — rasterize the canonical brand mark
+// (packages/ui-tokens/assets/logo-mark.svg) into the PNGs that Expo and
+// the web manifest require.
 //
-// Expo refuses to build without the raster icon/adaptive-icon/splash PNGs
-// declared in apps/mobile/app.json. This script regenerates them from the
-// source SVG so the SVG stays the single source of truth; PNGs are build
-// artefacts that can be regenerated on demand.
+// Outputs:
+//   apps/mobile/assets/icon.png            (1024, transparent)
+//   apps/mobile/assets/adaptive-icon.png   (1024, brand-50 bg, 22% pad)
+//   apps/mobile/assets/favicon.png         (48,   transparent)
+//   apps/mobile/assets/splash.png          (2048, brand-50 bg, 45% pad)
+//   apps/web/public/icon-192.png           (192,  transparent)
+//   apps/web/public/icon-512.png           (512,  transparent)
 //
-// Run once after cloning (and any time the mark changes):
-//   pnpm run tokens:icons
-//
-// Deps: `sharp` (dev, workspace root). If sharp isn't installed, this fails
-// with a clear error message rather than a cryptic stack trace.
+// Run:  pnpm tokens:icons
+// Re-run any time logo-mark.svg changes.
 
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import sharp from "sharp";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(__dirname, "..");
+const SRC_MARK = resolve(repoRoot, "packages/ui-tokens/assets/logo-mark.svg");
+const MOBILE_ASSETS = resolve(repoRoot, "apps/mobile/assets");
 
-const SRC_MARK = join(repoRoot, "packages/ui-tokens/assets/logo-mark.svg");
-const SRC_MARK_TRANSPARENT = join(
-  repoRoot,
-  "packages/ui-tokens/assets/logo-mark-mono.svg",
-);
-const MOBILE_ASSETS = join(repoRoot, "apps/mobile/assets");
-
-// Expo expected paths. Keep in sync with apps/mobile/app.json.
 const OUTPUTS = [
-  { file: "icon.png", size: 1024, src: SRC_MARK, background: null },
-  // Adaptive icon foreground needs padding because Android masks it; oversize
-  // the canvas and center-scale so the system mask doesn't clip the circle.
-  {
-    file: "adaptive-icon.png",
-    size: 1024,
-    src: SRC_MARK,
-    background: { r: 244, g: 246, b: 239, alpha: 1 },
-    pad: 0.22,
-  },
-  { file: "favicon.png", size: 48, src: SRC_MARK, background: null },
-  // Splash = mark on brand-50 field so the first paint feels branded rather
-  // than a white flash.
-  {
-    file: "splash.png",
-    size: 2048,
-    src: SRC_MARK,
-    background: { r: 244, g: 246, b: 239, alpha: 1 },
-    pad: 0.45,
-  },
+  { file: "icon.png",          size: 1024, src: SRC_MARK, background: null },
+  { file: "adaptive-icon.png", size: 1024, src: SRC_MARK,
+    background: { r: 244, g: 246, b: 239, alpha: 1 }, pad: 0.22 },
+  { file: "favicon.png",       size: 48,   src: SRC_MARK, background: null },
+  { file: "splash.png",        size: 2048, src: SRC_MARK,
+    background: { r: 244, g: 246, b: 239, alpha: 1 }, pad: 0.45 },
+  { file: "icon-192.png",      size: 192,  src: SRC_MARK, background: null,
+    dest: resolve(repoRoot, "apps/web/public/icon-192.png") },
+  { file: "icon-512.png",      size: 512,  src: SRC_MARK, background: null,
+    dest: resolve(repoRoot, "apps/web/public/icon-512.png") },
 ];
 
-async function main() {
-  let sharp;
-  try {
-    sharp = (await import("sharp")).default;
-  } catch {
-    console.error(
-      "sharp is not installed. Run `pnpm add -Dw sharp` at the repo root first.",
-    );
-    process.exit(1);
-  }
-
-  mkdirSync(MOBILE_ASSETS, { recursive: true });
-
+async function build() {
+  const svgBuf = readFileSync(SRC_MARK);
   for (const out of OUTPUTS) {
-    const svg = readFileSync(out.src);
-    const dest = join(MOBILE_ASSETS, out.file);
+    const dest = out.dest ?? join(MOBILE_ASSETS, out.file);
+    mkdirSync(dirname(dest), { recursive: true });
 
-    if (out.pad && out.background) {
-      // Render the mark at a reduced size inside a padded canvas.
-      const inner = Math.round(out.size * (1 - out.pad));
-      const margin = Math.floor((out.size - inner) / 2);
-      const buffer = await sharp(svg, { density: 600 })
-        .resize(inner, inner)
+    if (out.background) {
+      // Render the mark inset by `pad`, composited onto the brand-50 bg.
+      const innerSize = Math.round(out.size * (1 - out.pad * 2));
+      const inner = await sharp(svgBuf, { density: 384 })
+        .resize(innerSize, innerSize, { fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } })
         .png()
         .toBuffer();
       await sharp({
-        create: {
-          width: out.size,
-          height: out.size,
-          channels: 4,
-          background: out.background,
-        },
+        create: { width: out.size, height: out.size, channels: 4, background: out.background },
       })
-        .composite([{ input: buffer, top: margin, left: margin }])
+        .composite([{ input: inner, gravity: "center" }])
         .png()
         .toFile(dest);
     } else {
-      await sharp(svg, { density: 600 }).resize(out.size, out.size).png().toFile(dest);
+      await sharp(svgBuf, { density: 384 })
+        .resize(out.size, out.size, { fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } })
+        .png()
+        .toFile(dest);
     }
 
-    console.log(`wrote ${dest}`);
+    // eslint-disable-next-line no-console
+    console.warn(`✓ ${dest}`);
   }
-
-  // .gitkeep so the directory stays tracked even if PNGs are gitignored
-  // later. (They're committed today; this is future-proofing.)
-  writeFileSync(join(MOBILE_ASSETS, ".gitkeep"), "");
 }
 
-main().catch((err) => {
-  console.error(err);
+build().catch((err) => {
+  // eslint-disable-next-line no-console
+  console.error("brand icons build failed:", err);
   process.exit(1);
 });

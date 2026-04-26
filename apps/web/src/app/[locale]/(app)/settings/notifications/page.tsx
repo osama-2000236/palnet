@@ -4,8 +4,8 @@ import {
   NotificationPreferences,
   type NotificationChannel,
   type NotificationEvent,
-} from "@palnet/shared";
-import { Surface } from "@palnet/ui-web";
+} from "@baydar/shared";
+import { Surface } from "@baydar/ui-web";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";

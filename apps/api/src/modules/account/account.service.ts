@@ -12,7 +12,7 @@ import {
   type RegisterPushTokenBody,
   type RevokeAllSessionsBody,
   type SessionInfo,
-} from "@palnet/shared";
+} from "@baydar/shared";
 import * as Sentry from "@sentry/node";
 import * as bcrypt from "bcrypt";
 

@@ -1,4 +1,3 @@
-import { Injectable } from "@nestjs/common";
 import {
   type AddSkillBody,
   type EducationBody,
@@ -7,7 +6,8 @@ import {
   type OnboardProfileBody,
   type Profile as ProfileDto,
   type UpdateProfileBody,
-} from "@palnet/shared";
+} from "@baydar/shared";
+import { Injectable } from "@nestjs/common";
 
 import { DomainException } from "../../common/domain-exception";
 import { PrismaService } from "../prisma/prisma.service";

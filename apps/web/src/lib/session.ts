@@ -1,8 +1,9 @@
 "use client";
 
-import type { AuthSession } from "@palnet/shared";
+import type { AuthSession } from "@baydar/shared";
 
-const KEY = "palnet.session.v1";
+// Bumped to baydar.* on rename from palnet.* (pre-launch, no migration).
+const KEY = "baydar.session.v1";
 
 export function readSession(): AuthSession | null {
   if (typeof window === "undefined") return null;
@@ -32,9 +33,9 @@ export function getAccessToken(): string | null {
 // Stable device identifier so the API can track sessions per device.
 export function getDeviceId(): string {
   if (typeof window === "undefined") return "ssr";
-  const existing = window.localStorage.getItem("palnet.deviceId");
+  const existing = window.localStorage.getItem("baydar.deviceId");
   if (existing) return existing;
   const id = `web-${crypto.randomUUID()}`;
-  window.localStorage.setItem("palnet.deviceId", id);
+  window.localStorage.setItem("baydar.deviceId", id);
   return id;
 }

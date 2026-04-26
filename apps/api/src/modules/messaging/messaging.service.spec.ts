@@ -1,5 +1,5 @@
 import { Test } from "@nestjs/testing";
-import { ErrorCode } from "@palnet/shared";
+import { ErrorCode } from "@baydar/shared";
 
 import { ModerationService } from "../moderation/moderation.service";
 import { NotificationsService } from "../notifications/notifications.service";

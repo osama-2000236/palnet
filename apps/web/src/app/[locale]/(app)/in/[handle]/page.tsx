@@ -7,8 +7,8 @@ import {
   cursorPage,
   type Post,
   type Profile,
-} from "@palnet/shared";
-import { Avatar, Image, PostCardSkeleton, ProfilePageSkeleton, Surface } from "@palnet/ui-web";
+} from "@baydar/shared";
+import { Avatar, Image, PostCardSkeleton, ProfilePageSkeleton, Surface } from "@baydar/ui-web";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";

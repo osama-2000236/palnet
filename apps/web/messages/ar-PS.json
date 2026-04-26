@@ -154,7 +154,14 @@
     "changeAvatar": "تغيير الصورة",
     "changeCover": "تغيير الغلاف",
     "uploading": "جارٍ الرفع…",
-    "uploadFailed": "تعذّر رفع الصورة."
+    "uploadFailed": "تعذّر رفع الصورة.",
+    "sectionsLabel": "أقسام الملف",
+    "aboutEmpty": "لم تُضف نبذة بعد.",
+    "expEmpty": "لا توجد خبرات مضافة.",
+    "eduEmpty": "لا يوجد تعليم مضاف.",
+    "skillsEmpty": "لم تُضف مهارات بعد.",
+    "posts": "النشاط",
+    "postsEmpty": "لا توجد منشورات."
   },
   "network": {
     "title": "شبكتي",

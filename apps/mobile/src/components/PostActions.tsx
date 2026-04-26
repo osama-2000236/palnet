@@ -4,8 +4,8 @@
 // callback; this component owns only presentation and the two network
 // side effects.
 
-import type { ReportTargetKind } from "@palnet/shared";
-import { Sheet, nativeTokens } from "@palnet/ui-native";
+import type { ReportTargetKind } from "@baydar/shared";
+import { Sheet, nativeTokens } from "@baydar/ui-native";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Alert, Pressable, Text, View } from "react-native";

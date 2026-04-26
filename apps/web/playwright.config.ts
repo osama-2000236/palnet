@@ -22,16 +22,16 @@ export default defineConfig({
   webServer: [
     {
       command: isCi
-        ? "corepack pnpm --filter @palnet/api start"
-        : "corepack pnpm --filter @palnet/api dev",
+        ? "corepack pnpm --filter @baydar/api start"
+        : "corepack pnpm --filter @baydar/api dev",
       url: "http://localhost:4000/api/docs",
       reuseExistingServer: !process.env.CI,
       timeout: 120_000,
     },
     {
       command: isCi
-        ? "corepack pnpm --filter @palnet/web start"
-        : "corepack pnpm --filter @palnet/web dev",
+        ? "corepack pnpm --filter @baydar/web start"
+        : "corepack pnpm --filter @baydar/web dev",
       url: "http://localhost:3000/en/login",
       reuseExistingServer: !process.env.CI,
       timeout: 120_000,

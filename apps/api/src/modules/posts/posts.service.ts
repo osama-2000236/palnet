@@ -5,7 +5,7 @@ import {
   ErrorCode,
   type Post as PostDto,
   type UpdatePostBody,
-} from "@palnet/shared";
+} from "@baydar/shared";
 
 import { DomainException } from "../../common/domain-exception";
 import { PrismaService } from "../prisma/prisma.service";

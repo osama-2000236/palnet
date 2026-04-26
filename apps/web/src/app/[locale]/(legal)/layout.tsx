@@ -1,4 +1,4 @@
-import { LegalFooter } from "@palnet/ui-web";
+import { LegalFooter } from "@baydar/ui-web";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import type { ReactNode } from "react";
 

@@ -1,5 +1,5 @@
 import { Test } from "@nestjs/testing";
-import { CompanyMemberRole, ErrorCode } from "@palnet/shared";
+import { CompanyMemberRole, ErrorCode } from "@baydar/shared";
 
 import { DomainException } from "../../common/domain-exception";
 import type { AuthUser } from "../auth/decorators/current-user.decorator";

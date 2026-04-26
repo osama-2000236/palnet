@@ -1,6 +1,6 @@
+import { ErrorCode } from "@baydar/shared";
 import { ConfigService } from "@nestjs/config";
 import { Test } from "@nestjs/testing";
-import { ErrorCode } from "@palnet/shared";
 import * as bcrypt from "bcrypt";
 import * as jwt from "jsonwebtoken";
 

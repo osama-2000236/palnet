@@ -5,8 +5,8 @@ import {
   CreateCommentBody,
   cursorPage,
   type Comment,
-} from "@palnet/shared";
-import { Avatar } from "@palnet/ui-web";
+} from "@baydar/shared";
+import { Avatar } from "@baydar/ui-web";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";

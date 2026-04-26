@@ -161,7 +161,11 @@
     "fieldOfStudy": "التخصص",
     "addSkillPlaceholder": "أضف مهارة…",
     "changeAvatar": "تغيير الصورة",
-    "uploading": "جارٍ الرفع…"
+    "uploading": "جارٍ الرفع…",
+    "aboutEmpty": "لم تُضف نبذة بعد.",
+    "expEmpty": "لا توجد خبرات مضافة.",
+    "eduEmpty": "لا يوجد تعليم مضاف.",
+    "skillsEmpty": "لم تُضف مهارات بعد."
   },
   "network": {
     "title": "شبكتي",

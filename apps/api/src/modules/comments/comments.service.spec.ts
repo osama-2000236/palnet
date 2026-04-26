@@ -1,5 +1,5 @@
 import { Test } from "@nestjs/testing";
-import { ErrorCode, NotificationType } from "@palnet/shared";
+import { ErrorCode, NotificationType } from "@baydar/shared";
 
 import { NotificationsService } from "../notifications/notifications.service";
 import { PrismaService } from "../prisma/prisma.service";

@@ -1,5 +1,5 @@
 {
-  "name": "@palnet/web",
+  "name": "@baydar/web",
   "version": "0.0.1",
   "private": true,
   "scripts": {
@@ -14,9 +14,9 @@
     "lhci": "lhci autorun --config=./lighthouserc.json"
   },
   "dependencies": {
-    "@palnet/shared": "workspace:*",
-    "@palnet/ui-tokens": "workspace:*",
-    "@palnet/ui-web": "workspace:*",
+    "@baydar/shared": "workspace:*",
+    "@baydar/ui-tokens": "workspace:*",
+    "@baydar/ui-web": "workspace:*",
     "@sentry/nextjs": "^10.50.0",
     "@tanstack/react-query": "^5.59.15",
     "clsx": "^2.1.1",
@@ -31,7 +31,7 @@
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.11.2",
-    "@palnet/config": "workspace:*",
+    "@baydar/config": "workspace:*",
     "@playwright/test": "^1.48.1",
     "@types/node": "^22.7.5",
     "@types/react": "^18.3.12",

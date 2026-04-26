@@ -16,7 +16,7 @@ import {
   SendConnectionBody,
   type ConnectionListItem,
   type PersonSuggestion,
-} from "@palnet/shared";
+} from "@baydar/shared";
 import { z } from "zod";
 
 import { ZodValidationPipe } from "../../common/zod-pipe";

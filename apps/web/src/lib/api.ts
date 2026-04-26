@@ -1,4 +1,4 @@
-import { ApiError } from "@palnet/shared";
+import { ApiError } from "@baydar/shared";
 import type { z } from "zod";
 
 export const API_BASE = resolveRequiredBase(

@@ -4,7 +4,7 @@ import {
   IBMPlexSansArabic_700Bold,
 } from "@expo-google-fonts/ibm-plex-sans-arabic";
 import { NotoNaskhArabic_400Regular } from "@expo-google-fonts/noto-naskh-arabic";
-import { nativeTokens } from "@palnet/ui-native";
+import { nativeTokens } from "@baydar/ui-native";
 import { useFonts } from "expo-font";
 import { Stack, SplashScreen } from "expo-router";
 import { StatusBar } from "expo-status-bar";

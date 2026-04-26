@@ -16,7 +16,7 @@ import {
   CreateCommentBody,
   CursorPageQuery,
   type CursorPageMeta,
-} from "@palnet/shared";
+} from "@baydar/shared";
 
 import { ZodValidationPipe } from "../../common/zod-pipe";
 import { CurrentUser, type AuthUser } from "../auth/decorators/current-user.decorator";

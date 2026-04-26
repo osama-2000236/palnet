@@ -7,8 +7,8 @@ import {
   NotificationType,
   WsNotificationEvent,
   type Notification,
-} from "@palnet/shared";
-import { Avatar, Surface } from "@palnet/ui-web";
+} from "@baydar/shared";
+import { Avatar, Surface } from "@baydar/ui-web";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";

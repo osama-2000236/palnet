@@ -1,5 +1,5 @@
-import { RegisterBody } from "@palnet/shared";
-import { tokens } from "@palnet/ui-tokens";
+import { RegisterBody } from "@baydar/shared";
+import { tokens } from "@baydar/ui-tokens";
 import { router } from "expo-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";

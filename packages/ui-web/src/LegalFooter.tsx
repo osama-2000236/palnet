@@ -1,4 +1,4 @@
-// `@palnet/ui-web` is framework-agnostic so we render plain anchors here.
+// `@baydar/ui-web` is framework-agnostic so we render plain anchors here.
 // Next.js consumers still get correct routing — App Router intercepts
 // same-origin anchors when they target a prefetched route. For legal pages
 // (rare nav target) a full-page transition is the better tradeoff over

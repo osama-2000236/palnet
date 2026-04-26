@@ -1,3 +1,10 @@
+/*
+  ARCHIVED — DO NOT EDIT.
+  Production code is at:
+    Components → packages/ui-web/src/   (@baydar/ui-web)
+    Pages      → apps/web/src/app/
+  Historical reference only.
+*/
 /* global React */
 // Shared presentation primitives for the PalNet prototype.
 // Export to window so other babel scripts can consume them.

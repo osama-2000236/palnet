@@ -9,7 +9,7 @@ import {
   type NotificationEvent,
   NotificationPreferences,
   type NotificationType,
-} from "@palnet/shared";
+} from "@baydar/shared";
 
 import { DomainException } from "../../common/domain-exception";
 import type { Env } from "../../config/env";

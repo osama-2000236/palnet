@@ -8,8 +8,8 @@
 //     cover letter. Submit POSTs to /jobs/:id/apply with `{ coverLetter }`.
 //     The endpoint is idempotent, so retrying after a network error is safe.
 
-import { ApplyToJobBody, formatSalaryRange, Job as JobSchema, type Job } from "@palnet/shared";
-import { Button, Surface } from "@palnet/ui-web";
+import { ApplyToJobBody, formatSalaryRange, Job as JobSchema, type Job } from "@baydar/shared";
+import { Button, Surface } from "@baydar/ui-web";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";

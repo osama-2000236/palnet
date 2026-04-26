@@ -8,8 +8,8 @@
 // room server-side, so reconciling state is "refetch on focus" — the existing
 // useFocusEffect already does that.
 
-import { ChatRoom as ChatRoomSchema, type ChatRoom } from "@palnet/shared";
-import { Avatar, Surface, nativeTokens } from "@palnet/ui-native";
+import { ChatRoom as ChatRoomSchema, type ChatRoom } from "@baydar/shared";
+import { Avatar, Surface, nativeTokens } from "@baydar/ui-native";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";

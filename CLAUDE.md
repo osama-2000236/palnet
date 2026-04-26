@@ -11,7 +11,7 @@ You are resuming development of **Baydar** (بيدر) — an Arabic-first profes
 2. **`BRAND.md`** — product name, voice, do/don't.
 3. **`docs/design/RTL.md`** — RTL rules. Non-negotiable.
 4. **`docs/design/MOBILE.md`** — mobile-specific overrides to the web design.
-5. **`docs/design/prototype/PalNet Prototype.html`** — the working visual ground truth. Open it in a browser when unsure what something should look like. This is the reference, not any old screenshot or LinkedIn mock.
+5. **`docs/_archive/prototype-2025/Baydar Prototype.html`** — the working visual ground truth. Open it in a browser when unsure what something should look like. This is the reference, not any old screenshot or LinkedIn mock.
 
 ## Hard rules
 
@@ -37,7 +37,7 @@ Read `HANDOFF.md` for the current state of the work and the prioritized next tas
 ## When in doubt
 
 1. Check `DESIGN.md` for the decision.
-2. If not there, check the prototype (`docs/design/prototype/PalNet Prototype.html`).
+2. If not there, check the prototype (`docs/_archive/prototype-2025/Baydar Prototype.html`).
 3. If still ambiguous, ask the user — don't guess. A one-line question saves a day of rework.
 
 Do not recreate LinkedIn's UI. Baydar is inspired by the category, not the product. If a design decision would make Baydar look like LinkedIn, pick the different one.

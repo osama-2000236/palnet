@@ -1,5 +1,5 @@
 {
-  "name": "@palnet/ui-native",
+  "name": "@baydar/ui-native",
   "version": "0.0.1",
   "private": true,
   "main": "./src/index.ts",
@@ -10,7 +10,7 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@palnet/ui-tokens": "workspace:*",
+    "@baydar/ui-tokens": "workspace:*",
     "blurhash": "^2.0.5"
   },
   "peerDependencies": {
@@ -20,7 +20,7 @@
     "react-native-svg": ">=15.0.0"
   },
   "devDependencies": {
-    "@palnet/config": "workspace:*",
+    "@baydar/config": "workspace:*",
     "@types/react": "^18.3.12",
     "react": "18.3.1",
     "react-native": "0.76.1",

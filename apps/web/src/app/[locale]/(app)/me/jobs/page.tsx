@@ -9,8 +9,8 @@ import {
   type ManagedCompany,
   ManagedCompany as ManagedCompanySchema,
   cursorPage,
-} from "@palnet/shared";
-import { Button, Surface } from "@palnet/ui-web";
+} from "@baydar/shared";
+import { Button, Surface } from "@baydar/ui-web";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";

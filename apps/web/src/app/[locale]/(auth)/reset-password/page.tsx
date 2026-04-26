@@ -1,6 +1,6 @@
 "use client";
 
-import { Surface } from "@palnet/ui-web";
+import { Surface } from "@baydar/ui-web";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";

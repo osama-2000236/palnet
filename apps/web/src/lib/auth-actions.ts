@@ -1,6 +1,6 @@
 "use client";
 
-import { AuthSession, type LoginBody, type RegisterBody } from "@palnet/shared";
+import { AuthSession, type LoginBody, type RegisterBody } from "@baydar/shared";
 
 import { apiFetch, ApiRequestError } from "./api";
 import { getDeviceId, writeSession } from "./session";

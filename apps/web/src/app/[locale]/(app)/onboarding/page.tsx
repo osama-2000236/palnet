@@ -1,6 +1,6 @@
 "use client";
 
-import { OnboardProfileBody, Profile } from "@palnet/shared";
+import { OnboardProfileBody, Profile } from "@baydar/shared";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";

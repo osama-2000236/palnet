@@ -1,6 +1,6 @@
 import { ConfigService } from "@nestjs/config";
 import { Test } from "@nestjs/testing";
-import { ErrorCode, NotificationType } from "@palnet/shared";
+import { ErrorCode, NotificationType } from "@baydar/shared";
 import * as Sentry from "@sentry/node";
 import * as bcrypt from "bcrypt";
 

@@ -1,5 +1,5 @@
-import { CreatePostBody, MediaKind, type MediaRef, Post } from "@palnet/shared";
-import { tokens } from "@palnet/ui-tokens";
+import { CreatePostBody, MediaKind, type MediaRef, Post } from "@baydar/shared";
+import { tokens } from "@baydar/ui-tokens";
 import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
 import { useState } from "react";

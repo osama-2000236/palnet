@@ -5,7 +5,7 @@ import {
   type UpdateApplicationStatusBody,
   ErrorCode,
   NotificationType,
-} from "@palnet/shared";
+} from "@baydar/shared";
 
 import { DomainException } from "../../common/domain-exception";
 import type { AuthUser } from "../auth/decorators/current-user.decorator";

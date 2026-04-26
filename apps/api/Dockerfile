@@ -11,10 +11,10 @@ RUN pnpm install --frozen-lockfile
 
 # build
 FROM deps AS build
-RUN pnpm --filter @palnet/db db:generate \
- && pnpm --filter @palnet/shared build \
- && pnpm --filter @palnet/api build \
- && pnpm deploy --filter @palnet/api --prod /pruned
+RUN pnpm --filter @baydar/db db:generate \
+ && pnpm --filter @baydar/shared build \
+ && pnpm --filter @baydar/api build \
+ && pnpm deploy --filter @baydar/api --prod /pruned
 
 # runtime
 FROM node:20-alpine AS runtime

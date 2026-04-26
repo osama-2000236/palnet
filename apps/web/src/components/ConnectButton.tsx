@@ -1,6 +1,6 @@
 "use client";
 
-import type { Profile } from "@palnet/shared";
+import type { Profile } from "@baydar/shared";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 

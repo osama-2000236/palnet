@@ -6,8 +6,8 @@
 // caller owns, and a submit path that only talks to the backend. No
 // toasts or routing here — the caller decides what to do on success.
 
-import { ReportReason, type ReportTargetKind } from "@palnet/shared";
-import { Button, cx } from "@palnet/ui-web";
+import { ReportReason, type ReportTargetKind } from "@baydar/shared";
+import { Button, cx } from "@baydar/ui-web";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";

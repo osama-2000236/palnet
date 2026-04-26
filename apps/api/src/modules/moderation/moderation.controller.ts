@@ -27,7 +27,7 @@ import {
   type ReportAck,
   ResolveReportBody,
   UserRole,
-} from "@palnet/shared";
+} from "@baydar/shared";
 
 import { ZodValidationPipe } from "../../common/zod-pipe";
 import { AdminService } from "../admin/admin.service";

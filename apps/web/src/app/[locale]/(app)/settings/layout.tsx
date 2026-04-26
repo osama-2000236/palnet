@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { cx } from "@palnet/ui-web";
+import { cx } from "@baydar/ui-web";
 import { useTranslations } from "next-intl";
 import { type ReactNode } from "react";
 

@@ -1,4 +1,4 @@
-import { ReportReason } from "@palnet/shared";
+import { ReportReason } from "@baydar/shared";
 
 import type { PrismaService } from "../prisma/prisma.service";
 

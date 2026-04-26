@@ -6,8 +6,8 @@
 // page because the route is whitelisted in SuspensionGuard via
 // @AllowSuspended() on GET /reports/mine and POST /reports/:id/appeal.
 
-import { MyReportsPage, type MyReportItem } from "@palnet/shared";
-import { Surface } from "@palnet/ui-web";
+import { MyReportsPage, type MyReportItem } from "@baydar/shared";
+import { Surface } from "@baydar/ui-web";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";

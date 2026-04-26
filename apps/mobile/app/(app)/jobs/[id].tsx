@@ -1,8 +1,8 @@
 // Mobile job detail. Hero with company logo + title + meta + apply button.
 // Applied badge flips optimistically on press, rolls back on failure.
 
-import { ApplyToJobBody, Job as JobSchema, type Job } from "@palnet/shared";
-import { Button, Sheet, Surface, nativeTokens } from "@palnet/ui-native";
+import { ApplyToJobBody, Job as JobSchema, type Job } from "@baydar/shared";
+import { Button, Sheet, Surface, nativeTokens } from "@baydar/ui-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";

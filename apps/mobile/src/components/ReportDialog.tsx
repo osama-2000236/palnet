@@ -3,8 +3,8 @@
 // open/onClose, caller owns the target (kind + id), no routing or toasts
 // here.
 
-import { ReportReason, type ReportTargetKind } from "@palnet/shared";
-import { Button, Sheet, nativeTokens } from "@palnet/ui-native";
+import { ReportReason, type ReportTargetKind } from "@baydar/shared";
+import { Button, Sheet, nativeTokens } from "@baydar/ui-native";
 import * as WebBrowser from "expo-web-browser";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";

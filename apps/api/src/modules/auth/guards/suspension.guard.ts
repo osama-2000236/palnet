@@ -1,6 +1,6 @@
 import { CanActivate, ExecutionContext, Injectable } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
-import { ErrorCode } from "@palnet/shared";
+import { ErrorCode } from "@baydar/shared";
 import type { Request } from "express";
 
 import { DomainException } from "../../../common/domain-exception";

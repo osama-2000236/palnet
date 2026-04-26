@@ -6,8 +6,8 @@
 // Reachable from the SuspensionBanner CTA in (app)/_layout.tsx as well as
 // from any moderation notification that links here.
 
-import { AppealAck, AppealReportBody, MyReportsPage, type MyReportItem } from "@palnet/shared";
-import { Button, Surface, nativeTokens } from "@palnet/ui-native";
+import { AppealAck, AppealReportBody, MyReportsPage, type MyReportItem } from "@baydar/shared";
+import { Button, Surface, nativeTokens } from "@baydar/ui-native";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";

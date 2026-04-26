@@ -1,4 +1,4 @@
-import type { AuthSession } from "@palnet/shared";
+import type { AuthSession } from "@baydar/shared";
 
 const KEY = "palnet.session.v1";
 const DEVICE_KEY = "palnet.deviceId";

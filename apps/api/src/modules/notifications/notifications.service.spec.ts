@@ -1,6 +1,6 @@
 import { ConfigService } from "@nestjs/config";
 import { Test } from "@nestjs/testing";
-import { NotificationType } from "@palnet/shared";
+import { NotificationType } from "@baydar/shared";
 
 import { MailService } from "../mail/mail.service";
 import { PrismaService } from "../prisma/prisma.service";

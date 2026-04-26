@@ -7,7 +7,7 @@ import {
   type CreateJobBody,
   type UpdateJobBody,
   ErrorCode,
-} from "@palnet/shared";
+} from "@baydar/shared";
 
 import { DomainException } from "../../common/domain-exception";
 import type { AuthUser } from "../auth/decorators/current-user.decorator";

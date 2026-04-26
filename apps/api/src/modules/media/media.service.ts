@@ -10,7 +10,7 @@ import {
   type PresignUploadBody,
   type PresignedUpload,
   type MediaPurpose,
-} from "@palnet/shared";
+} from "@baydar/shared";
 import { encode as encodeBlurhash } from "blurhash";
 import sharp from "sharp";
 

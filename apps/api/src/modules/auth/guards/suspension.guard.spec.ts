@@ -1,6 +1,6 @@
 import type { ExecutionContext } from "@nestjs/common";
 import type { Reflector } from "@nestjs/core";
-import { ErrorCode } from "@palnet/shared";
+import { ErrorCode } from "@baydar/shared";
 
 import { DomainException } from "../../../common/domain-exception";
 import type { PrismaService } from "../../prisma/prisma.service";

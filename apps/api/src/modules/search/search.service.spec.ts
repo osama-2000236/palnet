@@ -1,5 +1,5 @@
 import { Test } from "@nestjs/testing";
-import { ErrorCode, PeopleSearchQuery } from "@palnet/shared";
+import { ErrorCode, PeopleSearchQuery } from "@baydar/shared";
 
 import { ZodValidationPipe } from "../../common/zod-pipe";
 import { ModerationService } from "../moderation/moderation.service";

@@ -1,6 +1,6 @@
 import { ForbiddenException, type ExecutionContext } from "@nestjs/common";
 import type { Reflector } from "@nestjs/core";
-import { ErrorCode, UserRole } from "@palnet/shared";
+import { ErrorCode, UserRole } from "@baydar/shared";
 
 import { RolesGuard } from "./roles.guard";
 

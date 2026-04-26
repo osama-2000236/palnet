@@ -1,8 +1,8 @@
 // Mobile profile screen. Uses ui-native atoms (Surface, Avatar, Button) +
 // nativeTokens so styling stays in lockstep with the web twin.
 
-import { ChatRoom as ChatRoomSchema, Profile as ProfileSchema, type Profile } from "@palnet/shared";
-import { Avatar, Button, Image, Surface, nativeTokens } from "@palnet/ui-native";
+import { ChatRoom as ChatRoomSchema, Profile as ProfileSchema, type Profile } from "@baydar/shared";
+import { Avatar, Button, Image, Surface, nativeTokens } from "@baydar/ui-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";

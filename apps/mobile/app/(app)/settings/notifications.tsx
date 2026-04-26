@@ -2,8 +2,8 @@ import {
   NotificationPreferences,
   type NotificationChannel,
   type NotificationEvent,
-} from "@palnet/shared";
-import { Button, Surface, Switch, nativeTokens } from "@palnet/ui-native";
+} from "@baydar/shared";
+import { Button, Surface, Switch, nativeTokens } from "@baydar/ui-native";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";

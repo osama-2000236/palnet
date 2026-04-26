@@ -17,8 +17,8 @@ import {
   JobLocationMode,
   JobType,
   type Job,
-} from "@palnet/shared";
-import { Surface } from "@palnet/ui-web";
+} from "@baydar/shared";
+import { Surface } from "@baydar/ui-web";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";

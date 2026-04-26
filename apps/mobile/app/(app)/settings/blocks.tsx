@@ -3,8 +3,8 @@
 // Filtering out blocked users on the feed/search/messaging side is done
 // by the API, so this screen only needs to maintain the list.
 
-import { BlockedUserList, type BlockedUserItem } from "@palnet/shared";
-import { Avatar, Button, Surface, nativeTokens } from "@palnet/ui-native";
+import { BlockedUserList, type BlockedUserItem } from "@baydar/shared";
+import { Avatar, Button, Surface, nativeTokens } from "@baydar/ui-native";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";

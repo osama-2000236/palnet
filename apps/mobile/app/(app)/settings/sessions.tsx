@@ -1,5 +1,5 @@
-import { SessionList, type SessionInfo } from "@palnet/shared";
-import { Button, Surface, nativeTokens } from "@palnet/ui-native";
+import { SessionList, type SessionInfo } from "@baydar/shared";
+import { Button, Surface, nativeTokens } from "@baydar/ui-native";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";

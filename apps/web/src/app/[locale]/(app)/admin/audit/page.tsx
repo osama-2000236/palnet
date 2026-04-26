@@ -5,8 +5,8 @@ import {
   AuditLogPage,
   type AuditAction as AuditActionValue,
   type AuditLogItem,
-} from "@palnet/shared";
-import { Surface } from "@palnet/ui-web";
+} from "@baydar/shared";
+import { Surface } from "@baydar/ui-web";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";

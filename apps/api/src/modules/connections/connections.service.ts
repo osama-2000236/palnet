@@ -1,4 +1,3 @@
-import { Injectable } from "@nestjs/common";
 import {
   ErrorCode,
   NotificationType,
@@ -6,7 +5,8 @@ import {
   type PersonSuggestion,
   type RespondConnectionBody,
   type SendConnectionBody,
-} from "@palnet/shared";
+} from "@baydar/shared";
+import { Injectable } from "@nestjs/common";
 
 import { DomainException } from "../../common/domain-exception";
 import { NotificationsService } from "../notifications/notifications.service";

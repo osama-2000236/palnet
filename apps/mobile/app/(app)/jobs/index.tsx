@@ -10,8 +10,8 @@
 // for q / city (text) and type / locationMode (chips). Changes refetch
 // with a 250 ms debounce, matching the web behavior.
 
-import { cursorPage, Job as JobSchema, JobLocationMode, JobType, type Job } from "@palnet/shared";
-import { Button, Sheet, Surface, nativeTokens } from "@palnet/ui-native";
+import { cursorPage, Job as JobSchema, JobLocationMode, JobType, type Job } from "@baydar/shared";
+import { Button, Sheet, Surface, nativeTokens } from "@baydar/ui-native";
 import { router } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";

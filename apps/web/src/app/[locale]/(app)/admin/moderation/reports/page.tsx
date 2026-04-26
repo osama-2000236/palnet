@@ -7,8 +7,8 @@ import {
   type AdminReportItem as AdminReport,
   type AdminReportStatus,
   type ReportReason as ReportReasonValue,
-} from "@palnet/shared";
-import { Avatar, Surface } from "@palnet/ui-web";
+} from "@baydar/shared";
+import { Avatar, Surface } from "@baydar/ui-web";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useMemo, useState } from "react";

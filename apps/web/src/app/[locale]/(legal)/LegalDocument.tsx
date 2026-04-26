@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 
-import { Surface } from "@palnet/ui-web";
+import { Surface } from "@baydar/ui-web";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import type { Locale } from "@/i18n";

@@ -5,7 +5,7 @@ import {
   Injectable,
 } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
-import { ErrorCode, type UserRole } from "@palnet/shared";
+import { ErrorCode, type UserRole } from "@baydar/shared";
 
 import type { AuthUser } from "../decorators/current-user.decorator";
 import { ROLES_KEY } from "../decorators/roles.decorator";

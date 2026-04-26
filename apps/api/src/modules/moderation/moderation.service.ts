@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { Prisma } from "@palnet/db";
+import { Prisma } from "@baydar/db";
 import {
   type AdminReportActor,
   type AdminReportExportQuery,
@@ -16,7 +16,7 @@ import {
   type ReportAck,
   type ReportTargetKind,
   type ResolveReportBody,
-} from "@palnet/shared";
+} from "@baydar/shared";
 
 import { DomainException } from "../../common/domain-exception";
 import { PrismaService } from "../prisma/prisma.service";

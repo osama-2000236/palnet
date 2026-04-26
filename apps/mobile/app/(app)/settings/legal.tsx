@@ -1,4 +1,4 @@
-import { Icon, Surface, nativeTokens } from "@palnet/ui-native";
+import { Icon, Surface, nativeTokens } from "@baydar/ui-native";
 import * as WebBrowser from "expo-web-browser";
 import { useTranslation } from "react-i18next";
 import { Pressable, SafeAreaView, ScrollView, Text, View } from "react-native";

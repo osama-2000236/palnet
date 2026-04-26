@@ -29,7 +29,7 @@ const steps = [
     "psql",
     ["--set", "ON_ERROR_STOP=1", databaseUrlForPsql(env.DATABASE_URL), "--command", "select 1;"],
   ],
-  ["corepack", ["pnpm", "--filter", "@palnet/db", "db:status"], { allowFailure: true }],
+  ["corepack", ["pnpm", "--filter", "@baydar/db", "db:status"], { allowFailure: true }],
   [
     "corepack",
     ["pnpm", "db:deploy"],
@@ -37,10 +37,10 @@ const steps = [
   ],
   ["corepack", ["pnpm", "db:generate"]],
   ["corepack", ["pnpm", "db:seed"]],
-  ["corepack", ["pnpm", "--filter", "@palnet/ui-tokens", "build"]],
-  ["corepack", ["pnpm", "--filter", "@palnet/shared", "build"]],
-  ["corepack", ["pnpm", "--filter", "@palnet/ui-web", "build"]],
-  ["corepack", ["pnpm", "--filter", "@palnet/web", "e2e:a11y-authed"]],
+  ["corepack", ["pnpm", "--filter", "@baydar/ui-tokens", "build"]],
+  ["corepack", ["pnpm", "--filter", "@baydar/shared", "build"]],
+  ["corepack", ["pnpm", "--filter", "@baydar/ui-web", "build"]],
+  ["corepack", ["pnpm", "--filter", "@baydar/web", "e2e:a11y-authed"]],
 ];
 
 for (const [cmd, args, options] of steps) {

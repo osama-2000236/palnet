@@ -13,7 +13,7 @@ import { useTranslation } from "react-i18next";
 import { Platform, Pressable, StyleSheet, Text, View } from "react-native";
 import { z } from "zod";
 
-import { Icon, type IconName, nativeTokens } from "@palnet/ui-native";
+import { Icon, type IconName, nativeTokens } from "@baydar/ui-native";
 import { apiFetch } from "@/lib/api";
 import { readSession } from "@/lib/session";
 

@@ -18,7 +18,7 @@ import {
   type Message,
   SendMessageBody,
   type WsChatEvent,
-} from "@palnet/shared";
+} from "@baydar/shared";
 import { Observable } from "rxjs";
 
 import { ZodValidationPipe } from "../../common/zod-pipe";

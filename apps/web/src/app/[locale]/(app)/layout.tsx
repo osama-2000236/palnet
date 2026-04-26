@@ -22,8 +22,8 @@ import {
   WsNotificationEvent,
   type ChatRoom,
   type Profile,
-} from "@palnet/shared";
-import { AppShell, LegalFooter, type AppShellLabels, type AppShellRoute } from "@palnet/ui-web";
+} from "@baydar/shared";
+import { AppShell, LegalFooter, type AppShellLabels, type AppShellRoute } from "@baydar/ui-web";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";

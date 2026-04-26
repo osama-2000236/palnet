@@ -1,11 +1,11 @@
-import { Injectable } from "@nestjs/common";
 import {
   type ChatRoom as ChatRoomDto,
   ErrorCode,
   type Message as MessageDto,
   NotificationType,
   type SendMessageBody,
-} from "@palnet/shared";
+} from "@baydar/shared";
+import { Injectable } from "@nestjs/common";
 
 import { DomainException } from "../../common/domain-exception";
 import { ModerationService } from "../moderation/moderation.service";

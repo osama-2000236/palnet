@@ -1,5 +1,5 @@
-import { cursorPage, Post as PostSchema, type Post } from "@palnet/shared";
-import { Avatar, Button, Icon, Surface, nativeTokens } from "@palnet/ui-native";
+import { cursorPage, Post as PostSchema, type Post } from "@baydar/shared";
+import { Avatar, Button, Icon, Surface, nativeTokens } from "@baydar/ui-native";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { z } from "zod";

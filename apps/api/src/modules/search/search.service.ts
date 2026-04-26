@@ -1,11 +1,11 @@
 import { BadRequestException, Injectable } from "@nestjs/common";
-import { Prisma } from "@palnet/db";
+import { Prisma } from "@baydar/db";
 import {
   ErrorCode,
   type CursorPageMeta,
   type PeopleSearchQuery,
   type SearchPersonHit,
-} from "@palnet/shared";
+} from "@baydar/shared";
 
 import { ModerationService } from "../moderation/moderation.service";
 import { PrismaService } from "../prisma/prisma.service";

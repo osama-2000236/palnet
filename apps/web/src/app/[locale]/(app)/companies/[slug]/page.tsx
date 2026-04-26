@@ -1,7 +1,7 @@
 "use client";
 
-import { type CompanyDetail, CompanyDetail as CompanyDetailSchema } from "@palnet/shared";
-import { CompanyPageSkeleton, Image, Surface } from "@palnet/ui-web";
+import { type CompanyDetail, CompanyDetail as CompanyDetailSchema } from "@baydar/shared";
+import { CompanyPageSkeleton, Image, Surface } from "@baydar/ui-web";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";

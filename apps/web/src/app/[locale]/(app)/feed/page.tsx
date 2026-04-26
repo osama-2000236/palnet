@@ -6,7 +6,7 @@
 //
 // This file is the host: fetches the viewer's profile (for the mini-profile
 // hero), paginates `/feed`, loads `/connections/suggestions` for the right
-// rail, and delegates everything visual to @palnet/ui-web shells.
+// rail, and delegates everything visual to @baydar/ui-web shells.
 
 import {
   Job as JobSchema,
@@ -17,8 +17,8 @@ import {
   Post as PostSchema,
   Profile,
   cursorPage,
-} from "@palnet/shared";
-import { Avatar, Icon, PostCardSkeleton, Surface, type IconName } from "@palnet/ui-web";
+} from "@baydar/shared";
+import { Avatar, Icon, PostCardSkeleton, Surface, type IconName } from "@baydar/ui-web";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";

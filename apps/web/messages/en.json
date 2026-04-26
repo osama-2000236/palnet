@@ -154,7 +154,14 @@
     "changeAvatar": "Change photo",
     "changeCover": "Change cover",
     "uploading": "Uploading…",
-    "uploadFailed": "Could not upload photo."
+    "uploadFailed": "Could not upload photo.",
+    "sectionsLabel": "Profile sections",
+    "aboutEmpty": "No about section added yet.",
+    "expEmpty": "No experiences added.",
+    "eduEmpty": "No education added.",
+    "skillsEmpty": "No skills added yet.",
+    "posts": "Activity",
+    "postsEmpty": "No posts yet."
   },
   "network": {
     "title": "My network",

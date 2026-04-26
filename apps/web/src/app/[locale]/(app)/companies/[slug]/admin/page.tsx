@@ -20,8 +20,8 @@ import {
   CreateJobBody,
   UpdateApplicationStatusBody,
   cursorPage,
-} from "@palnet/shared";
-import { Button, Surface } from "@palnet/ui-web";
+} from "@baydar/shared";
+import { Button, Surface } from "@baydar/ui-web";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";

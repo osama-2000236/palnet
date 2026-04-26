@@ -8,7 +8,7 @@ import {
   ForbiddenException,
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
-import { ErrorCode, type UserRole } from "@palnet/shared";
+import { ErrorCode, type UserRole } from "@baydar/shared";
 import type { Request } from "express";
 
 import type { Env } from "../config/env";

@@ -1,5 +1,5 @@
 import { Test } from "@nestjs/testing";
-import { ErrorCode } from "@palnet/shared";
+import { ErrorCode } from "@baydar/shared";
 
 import type { AuthUser } from "../auth/decorators/current-user.decorator";
 import { CompaniesService } from "../companies/companies.service";

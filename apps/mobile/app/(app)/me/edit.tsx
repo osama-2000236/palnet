@@ -6,7 +6,7 @@ import {
   Profile as ProfileSchema,
   UpdateProfileBody,
   type Profile,
-} from "@palnet/shared";
+} from "@baydar/shared";
 import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
