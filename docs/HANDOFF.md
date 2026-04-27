@@ -304,6 +304,7 @@ Things scoped for later sprints so Sprint 3 stays "feed-only":
 - `58ea23c` — added Baydar deep-link routing for `baydar://u/{handle}`, `baydar://post/{id}`, `baydar://messages/{roomId}`, `baydar://jobs/{id}`, HTTPS universal-link mappings, app config intent filters/associated domains, and draft `.well-known` files.
 - `58ea23c` — added Expo push registration/tap routing on mobile plus API `POST /notifications/devices`, best-effort Expo Push fanout from notification creation, shared request schema, `expo-notifications` / `expo-device` / `expo-server-sdk` deps, and DeviceToken persistence.
 - `58ea23c` — added `202604260001_init` baseline plus `202604280001_device_token`, so `prisma migrate dev` applies cleanly from an empty verification database before Sprint 8 and Sprint 9 additive migrations.
+- `3e93617` — fixed live API boot by making Node runtime resolve workspace packages through built `dist`, adding API prebuild/predev/prestart/pretest build hooks for `@baydar/shared` + `@baydar/db`, and marking `/health` public for liveness monitoring.
 
 #### Sprint 9 QA gap list
 
