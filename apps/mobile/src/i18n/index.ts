@@ -6,8 +6,7 @@ import { initReactI18next } from "react-i18next";
 import ar from "./ar.json";
 import en from "./en.json";
 
-const SUPPORTED = ["ar-PS", "en"] as const;
-type Supported = (typeof SUPPORTED)[number];
+type Supported = "ar-PS" | "en";
 
 function pickLocale(): Supported {
   const tag = Localization.getLocales()[0]?.languageTag ?? "ar-PS";
