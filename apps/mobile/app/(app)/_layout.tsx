@@ -16,6 +16,7 @@ import { z } from "zod";
 
 import { Icon, type IconName, nativeTokens } from "@baydar/ui-native";
 import { apiFetch } from "@/lib/api";
+import { registerForPushAsync } from "@/lib/push";
 import { getAccessToken, readSession } from "@/lib/session";
 import { subscribeSse } from "@/lib/sse";
 
@@ -30,19 +31,26 @@ export default function AppTabsLayout(): JSX.Element {
   useEffect(() => {
     void (async () => {
       const session = await readSession();
-      if (!session) router.replace("/(auth)/login");
+      if (!session) {
+        router.replace("/(auth)/login");
+        return;
+      }
+      void registerForPushAsync().catch(() => undefined);
     })();
   }, []);
 
   useEffect(() => {
     let unsubscribe: (() => void) | undefined;
     void (async () => {
-      const token = await getAccessToken();
+      let token = await getAccessToken();
       if (!token) return;
       try {
         const out = await apiFetch("/notifications/unread-count", UnreadCountEnvelope, { token });
         setNotificationBadge(out.count);
+        token = (await getAccessToken()) ?? token;
       } catch {
+        token = await getAccessToken();
+        if (!token) return;
         /* keep tab shell usable */
       }
       unsubscribe = subscribeSse({

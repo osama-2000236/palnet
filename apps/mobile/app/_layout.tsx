@@ -6,11 +6,14 @@ import {
 import { NotoNaskhArabic_400Regular } from "@expo-google-fonts/noto-naskh-arabic";
 import { nativeTokens } from "@baydar/ui-native";
 import { useFonts } from "expo-font";
-import { Stack, SplashScreen } from "expo-router";
+import { router, Stack, SplashScreen } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
-import { I18nManager, View } from "react-native";
+import { I18nManager, Linking, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+
+import { routeFromUrl } from "@/lib/linking";
+import { installNotificationHandlers } from "@/lib/push";
 
 import "../global.css";
 import "../src/i18n";
@@ -44,6 +47,30 @@ export default function RootLayout(): JSX.Element | null {
       });
     }
   }, [fontsLoaded, fontError]);
+
+  useEffect(() => {
+    let mounted = true;
+    const openUrl = (url: string | null): void => {
+      if (!url) return;
+      const route = routeFromUrl(url);
+      if (route) router.push(route as never);
+    };
+
+    void Linking.getInitialURL().then((url) => {
+      if (mounted) openUrl(url);
+    });
+
+    const subscription = Linking.addEventListener("url", (event) => {
+      openUrl(event.url);
+    });
+
+    return (): void => {
+      mounted = false;
+      subscription.remove();
+    };
+  }, []);
+
+  useEffect(() => installNotificationHandlers(), []);
 
   // While fonts load, render a blank surface-coloured view so we don't flash
   // the default system font for a single frame.

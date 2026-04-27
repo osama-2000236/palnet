@@ -1,0 +1,16 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appIDs": ["TEAMID.ps.baydar.app"],
+        "components": [
+          { "/": "/u/*", "comment": "Baydar profile links" },
+          { "/": "/post/*", "comment": "Baydar post links" },
+          { "/": "/messages/*", "comment": "Baydar message room links" },
+          { "/": "/jobs/*", "comment": "Baydar job links" }
+        ]
+      }
+    ]
+  }
+}
