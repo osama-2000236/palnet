@@ -14,12 +14,17 @@ export interface PickedAsset {
   filename?: string;
 }
 
+export interface UploadedAsset {
+  publicUrl: string;
+  blurhash: string | null;
+}
+
 // Presign → direct PUT (via fetch+Blob) → return public URL.
 export async function uploadAsset(args: {
   asset: PickedAsset;
   purpose: MediaPurpose;
   token: string;
-}): Promise<string> {
+}): Promise<UploadedAsset> {
   const { asset, purpose, token } = args;
 
   const kind: MediaKind = asset.mimeType.startsWith("video/")
@@ -55,5 +60,8 @@ export async function uploadAsset(args: {
     throw new Error(`Upload failed: ${put.status}`);
   }
 
-  return signed.publicUrl;
+  return {
+    publicUrl: signed.publicUrl,
+    blurhash: signed.blurhash,
+  };
 }

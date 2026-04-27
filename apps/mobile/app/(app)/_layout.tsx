@@ -7,16 +7,23 @@
 // Tab glyphs come from ui-native Icon — same 24×24 stroke set as the web
 // header on /feed, so the two platforms stay visually locked in step.
 
+import { WsNotificationEvent } from "@baydar/shared";
 import { Tabs, router } from "expo-router";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Platform } from "react-native";
+import { z } from "zod";
 
 import { Icon, type IconName, nativeTokens } from "@baydar/ui-native";
-import { readSession } from "@/lib/session";
+import { apiFetch } from "@/lib/api";
+import { getAccessToken, readSession } from "@/lib/session";
+import { subscribeSse } from "@/lib/sse";
+
+const UnreadCountEnvelope = z.object({ count: z.number().int().nonnegative() });
 
 export default function AppTabsLayout(): JSX.Element {
   const { t } = useTranslation();
+  const [notificationBadge, setNotificationBadge] = useState<number>(0);
 
   // Gate the whole authenticated area on having a session. If missing, bounce
   // back to the landing page which itself redirects to /login.
@@ -25,6 +32,37 @@ export default function AppTabsLayout(): JSX.Element {
       const session = await readSession();
       if (!session) router.replace("/(auth)/login");
     })();
+  }, []);
+
+  useEffect(() => {
+    let unsubscribe: (() => void) | undefined;
+    void (async () => {
+      const token = await getAccessToken();
+      if (!token) return;
+      try {
+        const out = await apiFetch("/notifications/unread-count", UnreadCountEnvelope, { token });
+        setNotificationBadge(out.count);
+      } catch {
+        /* keep tab shell usable */
+      }
+      unsubscribe = subscribeSse({
+        path: "/notifications/stream",
+        token,
+        schema: WsNotificationEvent,
+        onEvent: (event) => {
+          if (event.type === "notification.unread-count") {
+            setNotificationBadge(event.payload.count);
+          } else if (event.type === "notification.new") {
+            setNotificationBadge((count) => count + 1);
+          } else if (event.type === "notification.read") {
+            setNotificationBadge(0);
+          }
+        },
+      });
+    })();
+    return (): void => {
+      unsubscribe?.();
+    };
   }, []);
 
   return (
@@ -65,7 +103,7 @@ export default function AppTabsLayout(): JSX.Element {
         }}
       />
       <Tabs.Screen
-        name="jobs"
+        name="jobs/index"
         options={{
           title: t("jobs.title"),
           tabBarIcon: ({ color, focused }) => (
@@ -74,7 +112,7 @@ export default function AppTabsLayout(): JSX.Element {
         }}
       />
       <Tabs.Screen
-        name="messages"
+        name="messages/index"
         options={{
           title: t("messaging.title"),
           tabBarIcon: ({ color, focused }) => (
@@ -86,6 +124,7 @@ export default function AppTabsLayout(): JSX.Element {
         name="notifications"
         options={{
           title: t("notifications.title"),
+          tabBarBadge: notificationBadge > 0 ? (notificationBadge > 99 ? "99+" : notificationBadge) : undefined,
           tabBarIcon: ({ color, focused }) => (
             <TabIcon name="bell" color={color} focused={focused} />
           ),
@@ -108,6 +147,7 @@ export default function AppTabsLayout(): JSX.Element {
       <Tabs.Screen name="me/edit" options={{ href: null }} />
       <Tabs.Screen name="in/[handle]" options={{ href: null }} />
       <Tabs.Screen name="jobs/[id]" options={{ href: null }} />
+      <Tabs.Screen name="messages/[roomId]" options={{ href: null, tabBarStyle: { display: "none" } }} />
     </Tabs>
   );
 }

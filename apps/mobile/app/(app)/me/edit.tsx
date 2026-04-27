@@ -12,7 +12,16 @@ import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
 import { useEffect, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
-import { ActivityIndicator, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import {
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { apiFetch } from "@/lib/api";
@@ -48,7 +57,11 @@ export default function EditProfileScreen(): JSX.Element {
 
   return (
     <SafeAreaView style={styles.screen}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        style={styles.flex}
+      >
+        <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.header}>
           <Text style={styles.title}>{t("profile.editTitle")}</Text>
           <Button
@@ -65,7 +78,8 @@ export default function EditProfileScreen(): JSX.Element {
         <ExperiencesCard profile={profile} onChanged={setProfile} />
         <EducationsCard profile={profile} onChanged={setProfile} />
         <SkillsCard profile={profile} onChanged={setProfile} />
-      </ScrollView>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
@@ -122,7 +136,7 @@ function BasicsCard({
     const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!perm.granted) return;
     const picked = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: "images",
       allowsEditing: true,
       aspect: [1, 1],
       quality: 0.85,
@@ -133,7 +147,7 @@ function BasicsCard({
     if (!token) return;
     setUploading(true);
     try {
-      const publicUrl = await uploadAsset({
+      const uploaded = await uploadAsset({
         asset: {
           uri: asset.uri,
           mimeType: asset.mimeType ?? "image/jpeg",
@@ -145,7 +159,7 @@ function BasicsCard({
       });
       const next = await apiFetch("/profiles/me", ProfileSchema, {
         method: "PATCH",
-        body: { avatarUrl: publicUrl },
+        body: { avatarUrl: uploaded.publicUrl },
         token,
       });
       onChanged(next);
@@ -561,6 +575,9 @@ const styles = StyleSheet.create({
   screen: {
     flex: 1,
     backgroundColor: nativeTokens.color.surfaceMuted,
+  },
+  flex: {
+    flex: 1,
   },
   centerScreen: {
     flex: 1,

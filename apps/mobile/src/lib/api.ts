@@ -1,7 +1,7 @@
 import { ApiError } from "@baydar/shared";
 import type { z } from "zod";
 
-const BASE = process.env.EXPO_PUBLIC_API_URL ?? "http://localhost:4000/api/v1";
+export const API_BASE = process.env.EXPO_PUBLIC_API_URL ?? "http://localhost:4000/api/v1";
 
 export class ApiRequestError extends Error {
   constructor(
@@ -27,7 +27,7 @@ export async function apiFetch<T extends z.ZodTypeAny>(
   if (opts.body !== undefined) headers.set("Content-Type", "application/json");
   if (opts.token) headers.set("Authorization", `Bearer ${opts.token}`);
 
-  const res = await fetch(`${BASE}${path}`, {
+  const res = await fetch(`${API_BASE}${path}`, {
     ...opts,
     headers,
     body: opts.body === undefined ? undefined : JSON.stringify(opts.body),
@@ -52,7 +52,7 @@ export async function apiCall(path: string, opts: ApiFetchOptions = {}): Promise
   if (opts.body !== undefined) headers.set("Content-Type", "application/json");
   if (opts.token) headers.set("Authorization", `Bearer ${opts.token}`);
 
-  const res = await fetch(`${BASE}${path}`, {
+  const res = await fetch(`${API_BASE}${path}`, {
     ...opts,
     headers,
     body: opts.body === undefined ? undefined : JSON.stringify(opts.body),
@@ -74,7 +74,7 @@ export async function apiFetchPage<T extends z.ZodTypeAny>(
   if (opts.body !== undefined) headers.set("Content-Type", "application/json");
   if (opts.token) headers.set("Authorization", `Bearer ${opts.token}`);
 
-  const res = await fetch(`${BASE}${path}`, {
+  const res = await fetch(`${API_BASE}${path}`, {
     ...opts,
     headers,
     body: opts.body === undefined ? undefined : JSON.stringify(opts.body),

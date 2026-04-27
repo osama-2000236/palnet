@@ -3,12 +3,12 @@
 
 import { ApplyToJobBody, Job as JobSchema, type Job } from "@baydar/shared";
 import { Button, Sheet, Surface, nativeTokens } from "@baydar/ui-native";
+import { Image } from "expo-image";
 import { router, useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
-  Image,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -20,6 +20,7 @@ import {
 } from "react-native";
 
 import { apiCall, apiFetch } from "@/lib/api";
+import { successHaptic, tapHaptic } from "@/lib/haptics";
 import { getAccessToken } from "@/lib/session";
 
 export default function JobDetailScreen(): JSX.Element {
@@ -75,6 +76,7 @@ export default function JobDetailScreen(): JSX.Element {
     }
     setSubmitting(true);
     try {
+      tapHaptic();
       await apiCall(`/jobs/${job.id}/apply`, {
         method: "POST",
         token,
@@ -82,6 +84,7 @@ export default function JobDetailScreen(): JSX.Element {
       });
       setJob((j) => (j ? { ...j, viewer: { ...j.viewer, hasApplied: true } } : j));
       setApplyOpen(false);
+      successHaptic();
     } catch (e) {
       setSubmitError((e as Error).message || t("common.genericError"));
     } finally {
@@ -147,7 +150,8 @@ export default function JobDetailScreen(): JSX.Element {
                 <Image
                   source={{ uri: job.company.logoUrl }}
                   style={{ width: "100%", height: "100%" }}
-                  resizeMode="cover"
+                  contentFit="cover"
+                  cachePolicy="memory-disk"
                 />
               ) : (
                 <Text style={styles.logoFallback}>

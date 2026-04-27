@@ -1,13 +1,23 @@
 import { CreatePostBody, formatNumber, MediaKind, type MediaRef, Post } from "@baydar/shared";
 import { Avatar, Button, Icon, Surface, nativeTokens, type AvatarUser } from "@baydar/ui-native";
+import { Image } from "expo-image";
 import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Image, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import {
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { apiFetch, ApiRequestError } from "@/lib/api";
+import { successHaptic, tapHaptic } from "@/lib/haptics";
 import { getAccessToken, readSession } from "@/lib/session";
 import { uploadAsset } from "@/lib/uploads";
 
@@ -42,7 +52,7 @@ export default function ComposerScreen(): JSX.Element {
     const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!perm.granted) return;
     const picked = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: "images",
       quality: 0.85,
     });
     if (picked.canceled || !picked.assets[0]) return;
@@ -51,7 +61,7 @@ export default function ComposerScreen(): JSX.Element {
     if (!token) return;
     setUploading(true);
     try {
-      const publicUrl = await uploadAsset({
+      const uploaded = await uploadAsset({
         asset: {
           uri: asset.uri,
           mimeType: asset.mimeType ?? "image/jpeg",
@@ -64,10 +74,13 @@ export default function ComposerScreen(): JSX.Element {
       setMedia((prev) => [
         ...prev,
         {
-          url: publicUrl,
+          url: uploaded.publicUrl,
           kind: MediaKind.IMAGE,
           mimeType: asset.mimeType ?? "image/jpeg",
+          width: asset.width ?? null,
+          height: asset.height ?? null,
           sizeBytes: asset.fileSize ?? null,
+          blurhash: uploaded.blurhash,
         },
       ]);
     } finally {
@@ -93,11 +106,13 @@ export default function ComposerScreen(): JSX.Element {
     }
     setBusy(true);
     try {
+      tapHaptic();
       await apiFetch("/posts", Post, {
         method: "POST",
         body: parsed.data,
         token,
       });
+      successHaptic();
       router.replace("/(app)/feed");
     } catch (e) {
       if (e instanceof ApiRequestError) {
@@ -117,7 +132,10 @@ export default function ComposerScreen(): JSX.Element {
 
   return (
     <SafeAreaView style={styles.screen}>
-      <View style={styles.content}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        style={styles.content}
+      >
         <Text style={styles.title}>{t("composer.title")}</Text>
 
         <Surface variant="tinted" padding="3" style={styles.authorChip}>
@@ -149,7 +167,13 @@ export default function ComposerScreen(): JSX.Element {
                 accessibilityLabel={t("composer.removeImage")}
                 style={styles.mediaThumbWrap}
               >
-                <Image source={{ uri: m.url }} style={styles.mediaThumb} resizeMode="cover" />
+                <Image
+                  source={{ uri: m.url }}
+                  style={styles.mediaThumb}
+                  contentFit="cover"
+                  cachePolicy="memory-disk"
+                  placeholder={m.blurhash ? { blurhash: m.blurhash } : undefined}
+                />
                 <View style={styles.removeBadge}>
                   <Icon
                     name="x"
@@ -204,7 +228,7 @@ export default function ComposerScreen(): JSX.Element {
         >
           {t("common.cancel")}
         </Button>
-      </View>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }

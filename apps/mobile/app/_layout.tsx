@@ -10,6 +10,7 @@ import { Stack, SplashScreen } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
 import { I18nManager, View } from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 import "../global.css";
 import "../src/i18n";
@@ -51,9 +52,9 @@ export default function RootLayout(): JSX.Element | null {
   }
 
   return (
-    <>
+    <GestureHandlerRootView style={{ flex: 1 }}>
       <StatusBar style="dark" />
       <Stack screenOptions={{ headerShown: false }} />
-    </>
+    </GestureHandlerRootView>
   );
 }

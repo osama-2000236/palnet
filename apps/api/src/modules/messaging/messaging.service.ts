@@ -107,7 +107,7 @@ export class MessagingService {
 
   async listMyRooms(viewerId: string): Promise<ChatRoomDto[]> {
     const rooms = (await this.prisma.chatRoom.findMany({
-      where: { members: { some: { userId: viewerId } } },
+      where: { members: { some: { userId: viewerId, archivedAt: null } } },
       orderBy: { updatedAt: "desc" },
       take: 100,
       include: {
@@ -303,6 +303,14 @@ export class MessagingService {
         payload: { roomId, userId: viewerId, at: at.toISOString() },
       });
     }
+  }
+
+  async archiveRoom(viewerId: string, roomId: string): Promise<void> {
+    await this.requireMembership(viewerId, roomId);
+    await this.prisma.chatRoomMember.updateMany({
+      where: { roomId, userId: viewerId },
+      data: { archivedAt: new Date() },
+    });
   }
 
   // ─────────────────────────────────────────────────────────────────────

@@ -135,6 +135,7 @@
     "emptyThread": "No messages yet — say hi.",
     "composePlaceholder": "Write a message…",
     "send": "Send",
+    "archive": "Archive",
     "sendFailed": "Could not send message.",
     "loadOlder": "Load older messages",
     "retry": "Retry",

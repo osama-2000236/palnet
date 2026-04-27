@@ -6,11 +6,20 @@ import { Avatar, Button, Surface, nativeTokens } from "@baydar/ui-native";
 import { router } from "expo-router";
 import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
-import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from "react-native";
+import {
+  ActivityIndicator,
+  FlatList,
+  Pressable,
+  RefreshControl,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { z } from "zod";
 
 import { apiFetch } from "@/lib/api";
+import { successHaptic, tapHaptic } from "@/lib/haptics";
 import { getAccessToken, readSession } from "@/lib/session";
 
 const ListEnvelope = z.array(ConnectionListItemSchema);
@@ -22,6 +31,7 @@ export default function NetworkScreen(): JSX.Element {
   const [filter, setFilter] = useState<Filter>("ACCEPTED");
   const [items, setItems] = useState<ConnectionListItem[]>([]);
   const [loading, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   const load = useCallback(async (f: Filter): Promise<void> => {
     const token = await getAccessToken();
@@ -37,6 +47,15 @@ export default function NetworkScreen(): JSX.Element {
     }
   }, []);
 
+  const refresh = useCallback(async (): Promise<void> => {
+    setRefreshing(true);
+    try {
+      await load(filter);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [filter, load]);
+
   useEffect(() => {
     void (async () => {
       const session = await readSession();
@@ -51,31 +70,37 @@ export default function NetworkScreen(): JSX.Element {
   async function respond(id: string, action: "ACCEPT" | "DECLINE"): Promise<void> {
     const token = await getAccessToken();
     if (!token) return;
+    tapHaptic();
     await apiFetch(`/connections/${id}/respond`, Raw, {
       method: "POST",
       token,
       body: { action },
     });
+    successHaptic();
     setItems((prev) => prev.filter((x) => x.connectionId !== id));
   }
 
   async function withdraw(id: string): Promise<void> {
     const token = await getAccessToken();
     if (!token) return;
+    tapHaptic();
     await apiFetch(`/connections/${id}/withdraw`, Raw, {
       method: "POST",
       token,
     });
+    successHaptic();
     setItems((prev) => prev.filter((x) => x.connectionId !== id));
   }
 
   async function remove(id: string): Promise<void> {
     const token = await getAccessToken();
     if (!token) return;
+    tapHaptic();
     await apiFetch(`/connections/${id}`, Raw, {
       method: "DELETE",
       token,
     });
+    successHaptic();
     setItems((prev) => prev.filter((x) => x.connectionId !== id));
   }
 
@@ -101,6 +126,14 @@ export default function NetworkScreen(): JSX.Element {
           keyExtractor={(c) => c.connectionId}
           contentContainerStyle={styles.listContent}
           ItemSeparatorComponent={() => <View style={styles.separator} />}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={() => void refresh()}
+              tintColor={nativeTokens.color.brand600}
+              colors={[nativeTokens.color.brand600]}
+            />
+          }
           ListEmptyComponent={
             loading ? (
               <View style={styles.loading}>

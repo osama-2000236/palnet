@@ -5,6 +5,8 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
   Pressable,
   SafeAreaView,
   Switch,
@@ -55,7 +57,11 @@ export default function RegisterScreen(): JSX.Element {
 
   return (
     <SafeAreaView className="bg-surface-muted flex-1">
-      <View className="flex-1 gap-4 px-6 pt-12">
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        className="flex-1"
+      >
+        <View className="flex-1 gap-4 px-6 pt-12">
         <Text className="text-ink text-3xl font-bold">{t("auth.register")}</Text>
 
         <Field
@@ -112,7 +118,8 @@ export default function RegisterScreen(): JSX.Element {
         <Pressable onPress={() => router.replace("/(auth)/login")}>
           <Text className="text-brand-600 text-center">{t("auth.toLogin")}</Text>
         </Pressable>
-      </View>
+        </View>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }

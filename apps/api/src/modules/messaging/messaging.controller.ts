@@ -101,6 +101,12 @@ export class MessagingController {
     await this.messaging.markRead(user.id, id);
   }
 
+  @Post("rooms/:id/archive")
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async archive(@CurrentUser() user: AuthUser, @Param("id") id: string): Promise<void> {
+    await this.messaging.archiveRoom(user.id, id);
+  }
+
   @Post("rooms/:id/typing")
   @HttpCode(HttpStatus.NO_CONTENT)
   async typing(@CurrentUser() user: AuthUser, @Param("id") id: string): Promise<void> {

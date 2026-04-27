@@ -18,6 +18,7 @@ export interface AvatarUser {
   firstName?: string | null;
   lastName?: string | null;
   avatarUrl?: string | null;
+  avatarBlurhash?: string | null;
 }
 
 export interface AvatarProps {
@@ -26,6 +27,7 @@ export interface AvatarProps {
   ring?: boolean;
   online?: boolean;
   className?: string;
+  blurhash?: string | null;
   /** Accessible label override. Defaults to the person's name. */
   alt?: string;
 }

@@ -10,7 +10,8 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@baydar/ui-tokens": "workspace:*"
+    "@baydar/ui-tokens": "workspace:*",
+    "expo-image": "~2.0.7"
   },
   "peerDependencies": {
     "react": "^18.3.0",
@@ -21,7 +22,7 @@
     "@baydar/config": "workspace:*",
     "@types/react": "^18.3.12",
     "react": "18.3.1",
-    "react-native": "0.76.1",
+    "react-native": "0.76.9",
     "react-native-svg": "^15.8.0",
     "typescript": "^5.6.0"
   }

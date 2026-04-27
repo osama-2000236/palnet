@@ -11,6 +11,7 @@ import {
   ChatRoom as ChatRoomSchema,
   CursorPageMeta,
   Message as MessageSchema,
+  WsChatEvent,
   type ChatRoom,
   type Message,
 } from "@baydar/shared";
@@ -30,6 +31,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Pressable,
+  RefreshControl,
   SafeAreaView,
   Text,
   TextInput,
@@ -38,14 +40,14 @@ import {
 import { z } from "zod";
 
 import { apiCall, apiFetch, apiFetchPage } from "@/lib/api";
+import { successHaptic, tapHaptic } from "@/lib/haptics";
 import { readSession } from "@/lib/session";
+import { subscribeSse } from "@/lib/sse";
 
 const MessagesPageEnvelope = z.object({
   data: z.array(MessageSchema),
   meta: CursorPageMeta,
 });
-
-const POLL_INTERVAL_MS = 4000;
 
 export default function MessageThreadScreen(): JSX.Element {
   const { t, i18n } = useTranslation();
@@ -59,6 +61,7 @@ export default function MessageThreadScreen(): JSX.Element {
   const [failedClientIds, setFailedClientIds] = useState<Set<string>>(() => new Set());
   const [draft, setDraft] = useState("");
   const [sending, setSending] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const listRef = useRef<FlatList<Message> | null>(null);
 
@@ -98,14 +101,50 @@ export default function MessageThreadScreen(): JSX.Element {
         token,
       }).catch(() => {});
     });
-    const timer = setInterval(() => void refresh(), POLL_INTERVAL_MS);
-    return (): void => clearInterval(timer);
+    return subscribeSse({
+      path: "/messaging/stream",
+      token,
+      schema: WsChatEvent,
+      onEvent: (event) => {
+        if (event.type === "message.new" && event.payload.roomId === roomId) {
+          setMessages((prev) => upsertMessage(prev, event.payload));
+          void apiCall(`/messaging/rooms/${roomId}/read`, {
+            method: "POST",
+            token,
+          }).catch(() => {});
+        }
+        if (event.type === "message.read" && event.payload.roomId === roomId) {
+          setRoom((current) =>
+            current
+              ? {
+                  ...current,
+                  members: current.members.map((member) =>
+                    member.userId === event.payload.userId
+                      ? { ...member, lastReadAt: event.payload.at }
+                      : member,
+                  ),
+                }
+              : current,
+          );
+        }
+      },
+    });
   }, [token, roomId, refresh]);
+
+  const refreshThread = useCallback(async (): Promise<void> => {
+    setRefreshing(true);
+    try {
+      await refresh();
+    } finally {
+      setRefreshing(false);
+    }
+  }, [refresh]);
 
   const sendBody = useCallback(
     async (text: string, clientMessageId: string): Promise<void> => {
       if (!token || !roomId) return;
       try {
+        tapHaptic();
         const saved = await apiFetch(`/messaging/rooms/${roomId}/messages`, MessageSchema, {
           method: "POST",
           token,
@@ -118,6 +157,7 @@ export default function MessageThreadScreen(): JSX.Element {
           next.delete(clientMessageId);
           return next;
         });
+        successHaptic();
       } catch {
         setFailedClientIds((prev) => {
           const next = new Set(prev);
@@ -292,6 +332,14 @@ export default function MessageThreadScreen(): JSX.Element {
             </Surface>
           }
           onContentSizeChange={() => listRef.current?.scrollToEnd({ animated: false })}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={() => void refreshThread()}
+              tintColor={nativeTokens.color.brand600}
+              colors={[nativeTokens.color.brand600]}
+            />
+          }
         />
 
         {error ? (
@@ -395,6 +443,18 @@ function computeStatus(
   const createdAtMs = Date.parse(m.createdAt);
   if (otherLastReadAtMs >= createdAtMs) return "read";
   return "sent";
+}
+
+function upsertMessage(current: Message[], incoming: Message): Message[] {
+  const idx = current.findIndex(
+    (item) =>
+      item.id === incoming.id ||
+      (!!item.clientMessageId && item.clientMessageId === incoming.clientMessageId),
+  );
+  if (idx === -1) return [...current, incoming];
+  const next = current.slice();
+  next[idx] = incoming;
+  return next;
 }
 
 function shortTime(iso: string, locale: string): string {

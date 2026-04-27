@@ -31,6 +31,7 @@ export class PostsService {
                 height: m.height ?? null,
                 durationMs: m.durationMs ?? null,
                 sizeBytes: m.sizeBytes ?? null,
+                blurhash: m.blurhash ?? null,
               })),
             }
           : undefined,

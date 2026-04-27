@@ -264,6 +264,18 @@ describe("MessagingService", () => {
         },
       });
     });
+
+    it("hides rooms archived by the viewer", async () => {
+      prisma.chatRoom.findMany.mockResolvedValue([]);
+
+      await service.listMyRooms("u_me");
+
+      expect(prisma.chatRoom.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { members: { some: { userId: "u_me", archivedAt: null } } },
+        }),
+      );
+    });
   });
 
   describe("markRead", () => {
@@ -282,6 +294,20 @@ describe("MessagingService", () => {
         "u_them",
         expect.objectContaining({ type: "message.read" }),
       );
+    });
+  });
+
+  describe("archiveRoom", () => {
+    it("marks only the viewer membership as archived", async () => {
+      prisma.chatRoomMember.findFirst.mockResolvedValue({ id: "m_1" });
+      prisma.chatRoomMember.updateMany.mockResolvedValue({ count: 1 });
+
+      await service.archiveRoom("u_me", "room_1");
+
+      expect(prisma.chatRoomMember.updateMany).toHaveBeenCalledWith({
+        where: { roomId: "room_1", userId: "u_me" },
+        data: expect.objectContaining({ archivedAt: expect.any(Date) }),
+      });
     });
   });
 });

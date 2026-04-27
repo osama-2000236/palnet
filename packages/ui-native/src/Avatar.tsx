@@ -1,9 +1,10 @@
 // Avatar — native twin of packages/ui-web/src/Avatar.tsx.
 // Same prop API (user + size + ring + online + alt). Rendering uses React
-// Native primitives — <View> for the frame, <Image> for the photo,
+// Native primitives — <View> for the frame, expo-image for the photo,
 // <Text> for initials. All colors come from nativeTokens.
 
-import { Image, StyleSheet, Text, View, type StyleProp, type ViewStyle } from "react-native";
+import { Image } from "expo-image";
+import { StyleSheet, Text, View, type StyleProp, type ViewStyle } from "react-native";
 
 import { nativeTokens } from "./tokens";
 
@@ -15,6 +16,7 @@ export interface AvatarUser {
   firstName?: string | null;
   lastName?: string | null;
   avatarUrl?: string | null;
+  avatarBlurhash?: string | null;
 }
 
 export interface AvatarProps {
@@ -23,6 +25,7 @@ export interface AvatarProps {
   ring?: boolean;
   online?: boolean;
   style?: StyleProp<ViewStyle>;
+  blurhash?: string | null;
   /** Accessible label override. Defaults to the person's name. */
   alt?: string;
 }
@@ -90,6 +93,7 @@ export function Avatar({
   ring = false,
   online = false,
   style,
+  blurhash,
   alt,
 }: AvatarProps): JSX.Element | null {
   if (!user) return null;
@@ -98,6 +102,7 @@ export function Avatar({
   const palette = paletteFor(seed);
   const initials = initialsOf(user);
   const label = alt ?? nameOf(user);
+  const placeholder = blurhash ?? user.avatarBlurhash ?? null;
   const box = BOX_SIZE[size];
   const ringWidth = ring ? 2 : 0;
   const ringGap = ring ? 2 : 0;
@@ -139,7 +144,7 @@ export function Avatar({
     bottom: 0,
     // Logical end: in an RTL layout the caller's parent will handle mirroring.
     // We inset by ~6% of the box so the dot sits on the bottom-end curve.
-    right: 0,
+    end: 0,
     width: DOT_SIZE[size],
     height: DOT_SIZE[size],
     borderRadius: DOT_SIZE[size] / 2,
@@ -155,7 +160,9 @@ export function Avatar({
           accessibilityLabel={label || undefined}
           source={{ uri: user.avatarUrl }}
           style={StyleSheet.absoluteFill}
-          resizeMode="cover"
+          contentFit="cover"
+          cachePolicy="memory-disk"
+          placeholder={placeholder ? { blurhash: placeholder } : undefined}
         />
       ) : (
         <Text

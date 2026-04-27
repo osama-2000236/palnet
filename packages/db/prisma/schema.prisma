@@ -313,6 +313,7 @@ model Media {
   height    Int?
   durationMs Int?
   sizeBytes Int?
+  blurhash  String?
   createdAt DateTime  @default(now())
 
   @@index([postId])
@@ -386,6 +387,7 @@ model ChatRoomMember {
   joinedAt    DateTime @default(now())
   lastReadAt  DateTime?
   mutedUntil  DateTime?
+  archivedAt  DateTime?
 
   @@unique([roomId, userId])
   @@index([userId])

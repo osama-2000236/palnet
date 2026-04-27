@@ -2,7 +2,16 @@ import { tokens } from "@baydar/ui-tokens";
 import { router } from "expo-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ActivityIndicator, Pressable, SafeAreaView, Text, TextInput, View } from "react-native";
+import {
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  SafeAreaView,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 
 import { ApiRequestError, loginAction } from "@/lib/auth-actions";
 
@@ -32,7 +41,11 @@ export default function LoginScreen(): JSX.Element {
 
   return (
     <SafeAreaView className="bg-surface-muted flex-1">
-      <View className="flex-1 gap-4 px-6 pt-12">
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        className="flex-1"
+      >
+        <View className="flex-1 gap-4 px-6 pt-12">
         <Text className="text-ink text-3xl font-bold">{t("auth.login")}</Text>
 
         <View className="flex-col gap-1">
@@ -79,7 +92,8 @@ export default function LoginScreen(): JSX.Element {
         <Pressable onPress={() => router.replace("/(auth)/register")}>
           <Text className="text-brand-600 text-center">{t("auth.toRegister")}</Text>
         </Pressable>
-      </View>
+        </View>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
