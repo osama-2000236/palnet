@@ -9,6 +9,7 @@ export async function registerAction(
   const session = await apiFetch("/auth/register", AuthSession, {
     method: "POST",
     body,
+    skipAuth: true,
   });
   await writeSession(session);
   return session;
@@ -26,6 +27,7 @@ export async function loginAction(input: {
   const session = await apiFetch("/auth/login", AuthSession, {
     method: "POST",
     body,
+    skipAuth: true,
   });
   await writeSession(session);
   return session;
