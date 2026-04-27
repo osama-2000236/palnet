@@ -280,6 +280,22 @@ Things scoped for later sprints so Sprint 3 stays "feed-only":
 - **Existing lint warning:** `apps/mobile/src/i18n/index.ts` still reports one `@typescript-eslint/no-unused-vars` warning for `SUPPORTED`. Mobile lint exits 0.
 - **Visual screenshots:** ar/en screenshot pairs were not captured in this shell. Claude should review the five ported screens on simulator/device before starting Sprint 8.
 
+### Sprint 8 — Native UX layer ✅ SHIPPED
+
+**Landed in Sprint 8:**
+
+- `abf3adf` — added `lint-staged` as a workspace devDependency, wired staged hooks to `pnpm lint:tokens` + `pnpm --filter @baydar/mobile lint`, and removed the unused `SUPPORTED` i18n symbol.
+- `18fbb7b` — ran `npx expo install --fix` in `apps/mobile`, aligning Expo-managed native package versions and committing the lockfile bump separately.
+- `4bfe523` — added approved Sprint 8 deps only: `expo-haptics`, `expo-image`, `react-native-sse`, and API-only `blurhash`.
+- `8d3e2ec` — shipped haptics, expo-image Avatar/media migration, API blurhash placeholders, `Media.blurhash` migration, pull-to-refresh, swipe-to-archive, hidden message thread tabs, mobile SSE, memoized row components, and keyboard avoidance on auth/composer/profile edit screens.
+
+#### Sprint 8 QA gap list
+
+- **Manual device evidence not captured in this shell:** Pull-to-refresh, haptic feel, second-device SSE latency, swipe archive gesture, and blurhash placeholder under killed network still need Claude/device review.
+- **Archive migration is additive:** `202604270002_chat_room_member_archive` ships with the Sprint 8 implementation because swipe archive needs `ChatRoomMember.archivedAt`; include it when applying DB migrations.
+- **Blurhash v1 is API-generated deterministic placeholder:** The API returns a stable low-fi blurhash at presign time without image-byte decoding. It unblocks Expo placeholders now; exact image-derived blurhash can be upgraded later if we approve a decoder dependency.
+- **Expo peer warnings remain informational:** `pnpm install` still reports pre-existing `react-dom` peer warnings from Expo/Jest packages. Type-check, lint, API tests, and token lint are green.
+
 ---
 
 ## What Claude Code should NOT do
