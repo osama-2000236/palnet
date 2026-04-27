@@ -5,11 +5,15 @@
   "description": "Baydar NestJS API — REST + SSE + Swagger",
   "main": "dist/main.js",
   "scripts": {
+    "prebuild": "pnpm --filter @baydar/shared build && pnpm --filter @baydar/db build",
     "build": "nest build",
+    "predev": "pnpm --filter @baydar/shared build && pnpm --filter @baydar/db build",
     "dev": "nest start --watch",
+    "prestart": "pnpm --filter @baydar/shared build && pnpm --filter @baydar/db build",
     "start": "node dist/main.js",
     "lint": "eslint \"{src,test}/**/*.ts\"",
     "type-check": "tsc --noEmit",
+    "pretest": "pnpm --filter @baydar/shared build && pnpm --filter @baydar/db build",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:e2e": "jest --config ./test/jest-e2e.json"
