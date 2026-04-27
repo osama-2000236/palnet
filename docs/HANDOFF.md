@@ -296,6 +296,22 @@ Things scoped for later sprints so Sprint 3 stays "feed-only":
 - **Blurhash v1 is API-generated deterministic placeholder:** The API returns a stable low-fi blurhash at presign time without image-byte decoding. It unblocks Expo placeholders now; exact image-derived blurhash can be upgraded later if we approve a decoder dependency.
 - **Expo peer warnings remain informational:** `pnpm install` still reports pre-existing `react-dom` peer warnings from Expo/Jest packages. Type-check, lint, API tests, and token lint are green.
 
+### Sprint 9 — Auth resilience + deep links + push notifications ✅ SHIPPED
+
+**Landed in Sprint 9:**
+
+- `659fa02` — added the mobile API refresh interceptor: single in-flight `/auth/refresh`, automatic Authorization injection when callers omit `token`, one retry after refresh, public auth calls marked `skipAuth`, and refresh failure cleanup back to `/(auth)/login`.
+- `58ea23c` — added Baydar deep-link routing for `baydar://u/{handle}`, `baydar://post/{id}`, `baydar://messages/{roomId}`, `baydar://jobs/{id}`, HTTPS universal-link mappings, app config intent filters/associated domains, and draft `.well-known` files.
+- `58ea23c` — added Expo push registration/tap routing on mobile plus API `POST /notifications/devices`, best-effort Expo Push fanout from notification creation, shared request schema, `expo-notifications` / `expo-device` / `expo-server-sdk` deps, and DeviceToken persistence.
+- `58ea23c` — added `202604260001_init` baseline plus `202604280001_device_token`, so `prisma migrate dev` applies cleanly from an empty verification database before Sprint 8 and Sprint 9 additive migrations.
+
+#### Sprint 9 QA gap list
+
+- **Manual device evidence not captured in this shell:** refresh success with a deliberately stale access token, refresh failure after clearing the refresh token, Notes/browser deep-link taps, self push tap-to-route, and five concurrent stale requests proving one server `/auth/refresh` still need physical-device/user smoke.
+- **Universal-link hosting deferred to Sprint 12:** `apps/web/public/.well-known/apple-app-site-association` and `assetlinks.json` are committed as drafts. Replace `TEAMID` and `REPLACE_WITH_RELEASE_SHA256_FINGERPRINT` before hosting.
+- **Push token is physical-device dependent:** simulator returns `null` by design through `Device.isDevice`; final push registration still needs a granted-permission Expo Go/device run.
+- **Messaging follow-ups remain Sprint 11 work:** jump-to-unread, group rooms, and message edit/delete stay deferred.
+
 ---
 
 ## What Claude Code should NOT do
