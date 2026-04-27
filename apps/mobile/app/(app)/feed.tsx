@@ -1,5 +1,5 @@
 import { cursorPage, Post as PostSchema, type Post } from "@baydar/shared";
-import { Avatar, Surface, nativeTokens } from "@baydar/ui-native";
+import { Avatar, PostCardSkeleton, Surface, nativeTokens } from "@baydar/ui-native";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { z } from "zod";
@@ -9,11 +9,11 @@ import {
   FlatList,
   Image,
   Pressable,
-  SafeAreaView,
   StyleSheet,
   Text,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 import { CommentsList } from "@/components/CommentsList";
 import { apiCall, apiFetch, apiFetchPage } from "@/lib/api";
@@ -80,9 +80,9 @@ export default function FeedScreen(): JSX.Element {
   );
 
   return (
-    <SafeAreaView className="bg-surface-muted flex-1">
-      <View className="flex-1 px-4 pt-6">
-        <View className="mb-3 flex-col gap-0.5">
+    <SafeAreaView style={feedStyles.screen}>
+      <View style={feedStyles.content}>
+        <View style={feedStyles.header}>
           <Text style={feedStyles.title}>{t("feed.title")}</Text>
           {name ? <Text style={feedStyles.welcome}>{t("feed.welcome", { name })}</Text> : null}
           {unread > 0 ? (
@@ -117,13 +117,19 @@ export default function FeedScreen(): JSX.Element {
               }
             />
           )}
-          ItemSeparatorComponent={() => <View className="h-3" />}
+          ItemSeparatorComponent={() => <View style={feedStyles.separator} />}
           onEndReachedThreshold={0.4}
           onEndReached={() => {
             if (!loading && hasMore && cursor) void load(cursor);
           }}
           ListEmptyComponent={
-            loading ? null : (
+            loading ? (
+              <View style={feedStyles.skeletonStack}>
+                <PostCardSkeleton />
+                <PostCardSkeleton />
+                <PostCardSkeleton />
+              </View>
+            ) : (
               <Surface variant="tinted" padding="6">
                 <Text style={feedStyles.emptyText}>{t("feed.empty")}</Text>
               </Surface>
@@ -131,7 +137,7 @@ export default function FeedScreen(): JSX.Element {
           }
           ListFooterComponent={
             loading ? (
-              <View className="py-4">
+              <View style={feedStyles.footerLoading}>
                 <ActivityIndicator />
               </View>
             ) : null
@@ -277,6 +283,19 @@ function PostRow({ post, onChange }: { post: Post; onChange?: (next: Post) => vo
 }
 
 const feedStyles = StyleSheet.create({
+  screen: {
+    flex: 1,
+    backgroundColor: nativeTokens.color.surfaceMuted,
+  },
+  content: {
+    flex: 1,
+    paddingHorizontal: nativeTokens.space[4],
+    paddingTop: nativeTokens.space[6],
+  },
+  header: {
+    marginBottom: nativeTokens.space[3],
+    gap: nativeTokens.space[1],
+  },
   title: {
     fontSize: nativeTokens.type.scale.display.size,
     lineHeight: nativeTokens.type.scale.display.line,
@@ -312,6 +331,15 @@ const feedStyles = StyleSheet.create({
     color: nativeTokens.color.inkMuted,
     fontSize: nativeTokens.type.scale.body.size,
     fontFamily: nativeTokens.type.family.sans,
+  },
+  skeletonStack: {
+    gap: nativeTokens.space[3],
+  },
+  separator: {
+    height: nativeTokens.space[3],
+  },
+  footerLoading: {
+    paddingVertical: nativeTokens.space[4],
   },
 });
 
