@@ -59,7 +59,9 @@
     "placeholder": "Share an idea, a project, or a professional update…",
     "submit": "Post",
     "addImage": "Add image",
-    "uploading": "Uploading…"
+    "uploading": "Uploading…",
+    "removeImage": "Remove image",
+    "charCount": "{current} / {max}"
   },
   "post": {
     "like": "Like",
@@ -75,6 +77,7 @@
     "title": "Search",
     "placeholder": "Search people…",
     "submit": "Search",
+    "filters": "Filters",
     "noResults": "No people match that search.",
     "prompt": "Try a name or handle to find people.",
     "loadMore": "Load more",
@@ -89,6 +92,10 @@
     "edit": "Edit profile",
     "editTitle": "Edit profile",
     "basics": "Basics",
+    "firstName": "First name",
+    "lastName": "Last name",
+    "headline": "Headline",
+    "location": "Location",
     "save": "Save",
     "cancel": "Cancel",
     "add": "Add",
@@ -99,6 +106,7 @@
     "school": "School",
     "degree": "Degree",
     "fieldOfStudy": "Field of study",
+    "dateHint": "YYYY-MM-DD",
     "addSkillPlaceholder": "Add a skill…",
     "changeAvatar": "Change photo",
     "uploading": "Uploading…",

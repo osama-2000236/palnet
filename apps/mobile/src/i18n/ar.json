@@ -59,7 +59,9 @@
     "placeholder": "شارك فكرة، مشروع، أو تحديث مهني…",
     "submit": "انشر",
     "addImage": "إضافة صورة",
-    "uploading": "جارٍ الرفع…"
+    "uploading": "جارٍ الرفع…",
+    "removeImage": "إزالة الصورة",
+    "charCount": "{current} / {max}"
   },
   "post": {
     "like": "أعجبني",
@@ -75,6 +77,7 @@
     "title": "بحث",
     "placeholder": "ابحث عن أشخاص…",
     "submit": "بحث",
+    "filters": "الفلاتر",
     "noResults": "لا نتائج مطابقة.",
     "prompt": "جرّب اسمًا أو معرّفًا للبحث عن أشخاص.",
     "loadMore": "تحميل المزيد",
@@ -89,6 +92,10 @@
     "edit": "تعديل الملف",
     "editTitle": "تعديل الملف الشخصي",
     "basics": "الأساسيات",
+    "firstName": "الاسم الأول",
+    "lastName": "اسم العائلة",
+    "headline": "المسمى المهني",
+    "location": "الموقع",
     "save": "حفظ",
     "cancel": "إلغاء",
     "add": "إضافة",
@@ -99,6 +106,7 @@
     "school": "الجامعة/المدرسة",
     "degree": "الشهادة",
     "fieldOfStudy": "التخصص",
+    "dateHint": "YYYY-MM-DD",
     "addSkillPlaceholder": "أضف مهارة…",
     "changeAvatar": "تغيير الصورة",
     "uploading": "جارٍ الرفع…",

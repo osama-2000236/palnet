@@ -334,8 +334,8 @@ const styles = {
     fontFamily: nativeTokens.type.family.sans,
   },
   logoBox: {
-    width: 56,
-    height: 56,
+    width: nativeTokens.space[8] + nativeTokens.space[6],
+    height: nativeTokens.space[8] + nativeTokens.space[6],
     borderRadius: nativeTokens.radius.md,
     backgroundColor: nativeTokens.color.surfaceSunken,
     alignItems: "center" as const,
@@ -345,7 +345,7 @@ const styles = {
   logoFallback: {
     color: nativeTokens.color.inkMuted,
     fontWeight: "600" as const,
-    fontSize: 18,
+    fontSize: nativeTokens.type.scale.h2.size,
     fontFamily: nativeTokens.type.family.sans,
   },
   appliedBadge: {
@@ -357,19 +357,19 @@ const styles = {
   },
   appliedBadgeText: {
     color: nativeTokens.color.success,
-    fontSize: 13,
+    fontSize: nativeTokens.type.scale.small.size,
     fontWeight: "700" as const,
     fontFamily: nativeTokens.type.family.sans,
   },
   chip: {
     paddingHorizontal: nativeTokens.space[2],
-    paddingVertical: 4,
+    paddingVertical: nativeTokens.space[1],
     borderRadius: nativeTokens.radius.full,
     backgroundColor: nativeTokens.color.surfaceSubtle,
   },
   chipText: {
     color: nativeTokens.color.ink,
-    fontSize: 12,
+    fontSize: nativeTokens.type.scale.caption.size,
     fontFamily: nativeTokens.type.family.sans,
   },
 };

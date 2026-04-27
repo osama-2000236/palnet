@@ -1,30 +1,42 @@
-import { CreatePostBody, MediaKind, type MediaRef, Post } from "@baydar/shared";
-import { tokens } from "@baydar/ui-tokens";
+import { CreatePostBody, formatNumber, MediaKind, type MediaRef, Post } from "@baydar/shared";
+import { Avatar, Button, Icon, Surface, nativeTokens, type AvatarUser } from "@baydar/ui-native";
 import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import {
-  ActivityIndicator,
-  Image,
-  Pressable,
-  SafeAreaView,
-  Text,
-  TextInput,
-  View,
-} from "react-native";
+import { Image, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 import { apiFetch, ApiRequestError } from "@/lib/api";
-import { getAccessToken } from "@/lib/session";
+import { getAccessToken, readSession } from "@/lib/session";
 import { uploadAsset } from "@/lib/uploads";
 
+const MAX_BODY = 3000;
+const MAX_MEDIA = 8;
+
 export default function ComposerScreen(): JSX.Element {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [body, setBody] = useState("");
   const [media, setMedia] = useState<MediaRef[]>([]);
   const [busy, setBusy] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [author, setAuthor] = useState<AvatarUser | null>(null);
+
+  useEffect(() => {
+    void (async () => {
+      const session = await readSession();
+      if (!session) return;
+      const handle = session.user.email.split("@")[0] ?? session.user.email;
+      setAuthor({
+        id: session.user.id,
+        handle,
+        firstName: handle,
+        lastName: "",
+        avatarUrl: null,
+      });
+    })();
+  }, []);
 
   async function pickImage(): Promise<void> {
     const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -98,66 +110,179 @@ export default function ComposerScreen(): JSX.Element {
     }
   }
 
+  const charCount = t("composer.charCount", {
+    current: formatNumber(body.length, i18n.language),
+    max: formatNumber(MAX_BODY, i18n.language),
+  });
+
   return (
-    <SafeAreaView className="bg-surface-muted flex-1">
-      <View className="flex-1 gap-3 px-6 pt-8">
-        <Text className="text-ink text-3xl font-bold">{t("composer.title")}</Text>
-        <TextInput
-          value={body}
-          onChangeText={setBody}
-          placeholder={t("composer.placeholder")}
-          multiline
-          maxLength={3000}
-          className="border-ink-muted/30 bg-surface text-ink min-h-[160px] rounded-md border p-3"
-          textAlignVertical="top"
-        />
-        <Text className="text-ink-muted self-end text-xs">{body.length} / 3000</Text>
+    <SafeAreaView style={styles.screen}>
+      <View style={styles.content}>
+        <Text style={styles.title}>{t("composer.title")}</Text>
+
+        <Surface variant="tinted" padding="3" style={styles.authorChip}>
+          <Avatar user={author} size="sm" />
+          <Text style={styles.authorText}>{author?.handle ?? t("common.appName")}</Text>
+        </Surface>
+
+        <Surface variant="flat" padding="4">
+          <TextInput
+            value={body}
+            onChangeText={setBody}
+            placeholder={t("composer.placeholder")}
+            placeholderTextColor={nativeTokens.color.inkMuted}
+            multiline
+            maxLength={MAX_BODY}
+            style={styles.bodyInput}
+            textAlignVertical="top"
+          />
+        </Surface>
+        <Text style={styles.counter}>{charCount}</Text>
 
         {media.length > 0 ? (
-          <View className="flex-row flex-wrap gap-2">
+          <View style={styles.mediaGrid}>
             {media.map((m, i) => (
               <Pressable
                 key={m.url}
                 onPress={() => setMedia((prev) => prev.filter((_, j) => j !== i))}
+                accessibilityRole="button"
+                accessibilityLabel={t("composer.removeImage")}
+                style={styles.mediaThumbWrap}
               >
-                <Image source={{ uri: m.url }} style={{ width: 80, height: 80, borderRadius: 6 }} />
+                <Image source={{ uri: m.url }} style={styles.mediaThumb} resizeMode="cover" />
+                <View style={styles.removeBadge}>
+                  <Icon
+                    name="x"
+                    size={nativeTokens.space[4]}
+                    color={nativeTokens.color.inkInverse}
+                  />
+                </View>
               </Pressable>
             ))}
           </View>
         ) : null}
 
-        <Pressable
-          onPress={pickImage}
-          disabled={uploading || media.length >= 8}
-          className="border-ink-muted/30 self-start rounded-md border px-3 py-2"
-        >
-          <Text className="text-ink text-sm">
-            {uploading ? t("composer.uploading") : `+ ${t("composer.addImage")}`}
-          </Text>
-        </Pressable>
+        <View style={styles.actions}>
+          <Button
+            variant="secondary"
+            size="md"
+            leading={
+              <Icon name="image" size={nativeTokens.space[5]} color={nativeTokens.color.ink} />
+            }
+            onPress={pickImage}
+            disabled={uploading || media.length >= MAX_MEDIA}
+            accessibilityLabel={t("composer.addImage")}
+          >
+            {uploading ? t("composer.uploading") : t("composer.addImage")}
+          </Button>
+        </View>
 
         {error ? (
-          <Text className="text-danger text-sm" accessibilityRole="alert">
-            {error}
-          </Text>
+          <Surface variant="tinted" padding="3" accessibilityRole="alert">
+            <Text style={styles.errorText}>{error}</Text>
+          </Surface>
         ) : null}
 
-        <Pressable
+        <Button
+          variant="accent"
+          size="lg"
+          fullWidth
           onPress={submit}
-          disabled={busy || body.trim().length === 0}
-          className="bg-brand-600 shadow-card rounded-md px-6 py-3"
+          disabled={body.trim().length === 0}
+          loading={busy}
+          accessibilityLabel={t("composer.submit")}
         >
-          {busy ? (
-            <ActivityIndicator color={tokens.color.ink.inverse} />
-          ) : (
-            <Text className="text-ink-inverse text-center">{t("composer.submit")}</Text>
-          )}
-        </Pressable>
+          {t("composer.submit")}
+        </Button>
 
-        <Pressable onPress={() => router.back()}>
-          <Text className="text-ink-muted text-center">{t("common.cancel")}</Text>
-        </Pressable>
+        <Button
+          variant="ghost"
+          size="md"
+          fullWidth
+          onPress={() => router.back()}
+          accessibilityLabel={t("common.cancel")}
+        >
+          {t("common.cancel")}
+        </Button>
       </View>
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+    backgroundColor: nativeTokens.color.surfaceMuted,
+  },
+  content: {
+    flex: 1,
+    gap: nativeTokens.space[3],
+    paddingHorizontal: nativeTokens.space[4],
+    paddingTop: nativeTokens.space[8],
+  },
+  title: {
+    color: nativeTokens.color.ink,
+    fontSize: nativeTokens.type.scale.display.size,
+    lineHeight: nativeTokens.type.scale.display.line,
+    fontWeight: "700",
+    fontFamily: nativeTokens.type.family.sans,
+  },
+  authorChip: {
+    alignSelf: "flex-start",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: nativeTokens.space[2],
+  },
+  authorText: {
+    color: nativeTokens.color.inkMuted,
+    fontSize: nativeTokens.type.scale.small.size,
+    fontFamily: nativeTokens.type.family.sans,
+  },
+  bodyInput: {
+    minHeight: nativeTokens.space[20] * 2,
+    color: nativeTokens.color.ink,
+    fontSize: nativeTokens.type.scale.body.size,
+    lineHeight: nativeTokens.type.scale.body.line,
+    fontFamily: nativeTokens.type.family.body,
+  },
+  counter: {
+    alignSelf: "flex-end",
+    color: nativeTokens.color.inkMuted,
+    fontSize: nativeTokens.type.scale.caption.size,
+    fontFamily: nativeTokens.type.family.mono,
+  },
+  mediaGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: nativeTokens.space[2],
+  },
+  mediaThumbWrap: {
+    width: nativeTokens.space[20],
+    height: nativeTokens.space[20],
+  },
+  mediaThumb: {
+    width: "100%",
+    height: "100%",
+    borderRadius: nativeTokens.radius.md,
+  },
+  removeBadge: {
+    position: "absolute",
+    top: nativeTokens.space[1],
+    end: nativeTokens.space[1],
+    width: nativeTokens.space[6],
+    height: nativeTokens.space[6],
+    borderRadius: nativeTokens.radius.full,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: nativeTokens.color.accent600,
+  },
+  actions: {
+    flexDirection: "row",
+    gap: nativeTokens.space[2],
+  },
+  errorText: {
+    color: nativeTokens.color.danger,
+    fontSize: nativeTokens.type.scale.small.size,
+    fontFamily: nativeTokens.type.family.sans,
+  },
+});

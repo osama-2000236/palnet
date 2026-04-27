@@ -5,18 +5,12 @@ import {
   NotificationType,
   type Notification,
 } from "@baydar/shared";
+import { Avatar, Icon, Surface, nativeTokens } from "@baydar/ui-native";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import {
-  ActivityIndicator,
-  FlatList,
-  Image,
-  Pressable,
-  SafeAreaView,
-  Text,
-  View,
-} from "react-native";
+import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 import { apiCall, apiFetchPage } from "@/lib/api";
 import { getAccessToken, readSession } from "@/lib/session";
@@ -81,29 +75,29 @@ export default function NotificationsScreen(): JSX.Element {
   );
 
   return (
-    <SafeAreaView className="bg-surface-muted flex-1">
-      <View className="flex-1 px-4 pt-8">
-        <Text className="text-ink mb-3 text-3xl font-bold">{t("notifications.title")}</Text>
+    <SafeAreaView style={styles.screen}>
+      <View style={styles.content}>
+        <Text style={styles.title}>{t("notifications.title")}</Text>
 
         <FlatList
           data={items}
           keyExtractor={(n) => n.id}
           renderItem={({ item }) => <NotificationRow item={item} />}
-          ItemSeparatorComponent={() => <View className="h-2" />}
+          contentContainerStyle={styles.listContent}
           onEndReachedThreshold={0.4}
           onEndReached={() => {
             if (!loading && hasMore && cursor) void load(cursor);
           }}
           ListEmptyComponent={
             loading ? null : (
-              <View className="border-ink-muted/20 bg-surface rounded-md border p-6">
-                <Text className="text-ink-muted">{t("notifications.empty")}</Text>
-              </View>
+              <Surface variant="tinted" padding="6">
+                <Text style={styles.emptyText}>{t("notifications.empty")}</Text>
+              </Surface>
             )
           }
           ListFooterComponent={
             loading ? (
-              <View className="py-4">
+              <View style={styles.loading}>
                 <ActivityIndicator />
               </View>
             ) : null
@@ -120,37 +114,44 @@ function NotificationRow({ item }: { item: Notification }): JSX.Element {
   const actorName = actor ? `${actor.firstName} ${actor.lastName}`.trim() || actor.handle : "";
   const body = t(`notifications.templates.${item.type}`, { actor: actorName });
   const unread = item.readAt === null;
-
   const destination = hrefFor(item);
 
   const content = (
-    <View
-      className={`flex-row items-start gap-3 rounded-md border p-3 ${
-        unread ? "border-brand-500/30 bg-brand-50" : "border-ink-muted/20 bg-surface"
-      }`}
-    >
-      {actor?.avatarUrl ? (
-        <Image
-          source={{ uri: actor.avatarUrl }}
-          style={{ width: 40, height: 40, borderRadius: 20 }}
+    <Surface variant="row" padding="4" style={unread ? styles.unreadRow : styles.row}>
+      {actor ? (
+        <Avatar
+          user={{
+            id: actor.id,
+            handle: actor.handle,
+            firstName: actor.firstName,
+            lastName: actor.lastName,
+            avatarUrl: actor.avatarUrl,
+          }}
+          size="md"
         />
       ) : (
-        <View className="bg-ink-muted/10 h-10 w-10 items-center justify-center rounded-full">
-          <Text className="text-ink text-sm font-semibold">{initialsOf(actorName) || "?"}</Text>
+        <View style={styles.systemIcon}>
+          <Icon name="bell" size={nativeTokens.space[5]} color={nativeTokens.color.brand700} />
         </View>
       )}
-      <View className="flex-1">
-        <Text className="text-ink text-sm">{body}</Text>
-        <Text className="text-ink-muted text-xs">
-          {formatRelativeTime(item.createdAt, i18n.language)}
-        </Text>
+      <View style={styles.bodyWrap}>
+        <Text style={styles.bodyText}>{body}</Text>
+        <Text style={styles.timeText}>{formatRelativeTime(item.createdAt, i18n.language)}</Text>
       </View>
-      {unread ? <View className="bg-accent-600 mt-1 h-2 w-2 rounded-full" /> : null}
-    </View>
+      {unread ? <View style={styles.unreadDot} /> : null}
+    </Surface>
   );
 
   if (!destination) return content;
-  return <Pressable onPress={() => router.push(destination as never)}>{content}</Pressable>;
+  return (
+    <Pressable
+      onPress={() => router.push(destination as never)}
+      accessibilityRole="link"
+      accessibilityLabel={body}
+    >
+      {content}
+    </Pressable>
+  );
 }
 
 function hrefFor(n: Notification): string | null {
@@ -178,10 +179,76 @@ function hrefFor(n: Notification): string | null {
   return null;
 }
 
-function initialsOf(name: string): string {
-  const parts = name.trim().split(/\s+/);
-  if (parts.length === 0) return "";
-  const first = parts[0]?.[0] ?? "";
-  const last = parts.length > 1 ? (parts[parts.length - 1]?.[0] ?? "") : "";
-  return (first + last).toUpperCase();
-}
+const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+    backgroundColor: nativeTokens.color.surfaceMuted,
+  },
+  content: {
+    flex: 1,
+    paddingHorizontal: nativeTokens.space[4],
+    paddingTop: nativeTokens.space[8],
+  },
+  title: {
+    color: nativeTokens.color.ink,
+    fontSize: nativeTokens.type.scale.display.size,
+    lineHeight: nativeTokens.type.scale.display.line,
+    fontWeight: "700",
+    fontFamily: nativeTokens.type.family.sans,
+    marginBottom: nativeTokens.space[3],
+  },
+  listContent: {
+    paddingBottom: nativeTokens.space[6],
+  },
+  loading: {
+    paddingVertical: nativeTokens.space[4],
+  },
+  row: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: nativeTokens.space[3],
+  },
+  unreadRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: nativeTokens.space[3],
+    backgroundColor: nativeTokens.color.brand50,
+  },
+  bodyWrap: {
+    flex: 1,
+    gap: nativeTokens.space[1],
+  },
+  bodyText: {
+    color: nativeTokens.color.ink,
+    fontSize: nativeTokens.type.scale.small.size,
+    lineHeight: nativeTokens.type.scale.small.line,
+    fontFamily: nativeTokens.type.family.sans,
+  },
+  timeText: {
+    color: nativeTokens.color.inkMuted,
+    fontSize: nativeTokens.type.scale.caption.size,
+    lineHeight: nativeTokens.type.scale.caption.line,
+    fontFamily: nativeTokens.type.family.sans,
+  },
+  unreadDot: {
+    width: nativeTokens.space[2],
+    height: nativeTokens.space[2],
+    borderRadius: nativeTokens.radius.full,
+    backgroundColor: nativeTokens.color.accent600,
+    marginTop: nativeTokens.space[1],
+  },
+  systemIcon: {
+    width: nativeTokens.space[10],
+    height: nativeTokens.space[10],
+    borderRadius: nativeTokens.radius.full,
+    backgroundColor: nativeTokens.color.brand100,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  emptyText: {
+    color: nativeTokens.color.inkMuted,
+    fontSize: nativeTokens.type.scale.body.size,
+    lineHeight: nativeTokens.type.scale.body.line,
+    fontFamily: nativeTokens.type.family.sans,
+  },
+});
