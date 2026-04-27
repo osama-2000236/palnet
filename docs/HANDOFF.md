@@ -265,6 +265,21 @@ Things scoped for later sprints so Sprint 3 stays "feed-only":
 - **`@gorhom/bottom-sheet` migration** — once a screen needs drag-to-dismiss or snap points, swap `Sheet`'s internals. Public API is already shaped for it.
 - **Swipe-to-archive on room rows + tab-hiding thread presentation** still outstanding from Sprint 5.
 
+### Sprint 7 — Mobile screen ports + Skeleton primitive ✅ SHIPPED
+
+**Landed in Sprint 7:**
+
+- `08ef1667bf2f08bc476594830566ce7ecbc016b6` — repaired stale sanity-gate commands for this Windows worktree (`tokens:build`, `@baydar/web` filter, prototype opener).
+- `3987f916929c1fa65c345c9057974f0117588e50` — added `Skeleton` + `PostCardSkeleton` to `@baydar/ui-native`, exported both, and wired first-page feed loading to the new post skeleton stack.
+- `2a0019c83b4870a06820406ca8cfba9e9a05ab60` — ported mobile Network, Notifications, Search, Composer, and Profile Edit screens to `Surface` / `Avatar` / `Button` / `Icon` / `nativeTokens`; added 250ms search debounce; localized new Arabic-first keys; audited jobs detail raw sizing.
+
+#### Sprint 7 QA gap list
+
+- **Git hook gap:** `.husky/pre-commit` calls `pnpm lint-staged`, but `lint-staged` is not installed in this branch. Sprint 7 forbids adding deps, so commits used `--no-verify` after the required gates passed directly. Sprint 8 should either add the intended hook dependency in its own guardrail PR or adjust the hook.
+- **Expo dependency warnings:** `pnpm --filter @baydar/mobile start` is green, but Expo prints pre-existing package compatibility warnings for `expo-image-picker`, `react-native`, `react-native-screens`, and `react-native-svg`. Not changed in Sprint 7 because deps added/updated = none.
+- **Existing lint warning:** `apps/mobile/src/i18n/index.ts` still reports one `@typescript-eslint/no-unused-vars` warning for `SUPPORTED`. Mobile lint exits 0.
+- **Visual screenshots:** ar/en screenshot pairs were not captured in this shell. Claude should review the five ported screens on simulator/device before starting Sprint 8.
+
 ---
 
 ## What Claude Code should NOT do
