@@ -302,11 +302,11 @@ After copying, delete the `handoff/` folder from this design project — it live
 
 Run these commands. All must succeed:
 
-```bash
+```powershell
 pnpm install
 pnpm tokens:build          # regenerates tokens.css + tokens.native.ts
-pnpm --filter apps/web dev  # renders in olive palette, RTL, Arabic fonts loaded
-open docs/_archive/prototype-2025/Baydar\ Prototype.html  # archived visual reference
+pnpm --filter @baydar/web dev  # renders in olive palette, RTL, Arabic fonts loaded
+Start-Process "docs/_archive/prototype-2025/Baydar Prototype.html"  # archived visual reference
 ```
 
 If any of those fail, fix them before writing a single new component.

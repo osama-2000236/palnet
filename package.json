@@ -23,7 +23,8 @@
     "db:deploy": "pnpm --filter @baydar/db db:deploy",
     "db:studio": "pnpm --filter @baydar/db db:studio",
     "db:seed": "pnpm --filter @baydar/db db:seed",
-    "tokens:icons": "node scripts/build-brand-icons.mjs"
+    "tokens:icons": "node scripts/build-brand-icons.mjs",
+    "tokens:build": "pnpm --filter @baydar/ui-tokens build"
   },
   "devDependencies": {
     "eslint-config-prettier": "9.1.0",
