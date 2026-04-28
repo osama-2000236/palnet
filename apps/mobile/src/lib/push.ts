@@ -18,6 +18,8 @@ export function installNotificationHandlers(): () => void {
     Notifications.setNotificationHandler({
       handleNotification: async () => ({
         shouldShowAlert: true,
+        shouldShowBanner: true,
+        shouldShowList: true,
         shouldPlaySound: false,
         shouldSetBadge: true,
       }),
@@ -42,8 +44,8 @@ export async function registerForPushAsync(): Promise<string | null> {
   const platform = getDevicePlatform();
   if (!platform) return null;
 
-  // Expo Go on SDK 53+ removed remote push token support; SDK 52 still warns.
-  // Skip token acquisition entirely so the app stays clean inside the sandbox.
+  // Expo Go on SDK 53+ removed remote push token support. Skip token
+  // acquisition entirely so the app stays clean inside the sandbox.
   if (IS_EXPO_GO) {
     if (__DEV__) {
       console.debug("[push] Skipping push registration: running inside Expo Go.");

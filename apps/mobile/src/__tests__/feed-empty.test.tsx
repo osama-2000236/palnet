@@ -5,6 +5,7 @@ import FeedScreen from "../../app/(app)/feed";
 jest.mock("expo-router", () => ({
   router: { push: jest.fn(), replace: jest.fn() },
   useFocusEffect: (callback: () => void | (() => void)) => {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const React = require("react");
     React.useEffect(() => callback(), [callback]);
   },
