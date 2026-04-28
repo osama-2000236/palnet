@@ -57,9 +57,7 @@ export function LoadingIntro({
   const dotMotion = useMemo(
     () => ({
       opacity: pulse.interpolate({ inputRange: [0, 1], outputRange: [0.35, 1] }),
-      transform: [
-        { translateY: pulse.interpolate({ inputRange: [0, 1], outputRange: [3, -1] }) },
-      ],
+      transform: [{ translateY: pulse.interpolate({ inputRange: [0, 1], outputRange: [3, -1] }) }],
     }),
     [pulse],
   );
@@ -112,7 +110,8 @@ export function LoadingIntro({
                 width: nativeTokens.space[2],
                 height: nativeTokens.space[2],
                 borderRadius: nativeTokens.radius.full,
-                backgroundColor: item === 1 ? nativeTokens.color.accent600 : nativeTokens.color.brand600,
+                backgroundColor:
+                  item === 1 ? nativeTokens.color.accent600 : nativeTokens.color.brand600,
               },
               dotMotion,
             ]}

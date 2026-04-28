@@ -45,7 +45,12 @@ export default function Landing(): JSX.Element {
     () => ({
       opacity: intro,
       transform: [
-        { translateY: intro.interpolate({ inputRange: [0, 1], outputRange: [18, 0] }) },
+        {
+          translateY: intro.interpolate({
+            inputRange: [0, 1],
+            outputRange: [nativeTokens.space[5], 0],
+          }),
+        },
         { scale: intro.interpolate({ inputRange: [0, 1], outputRange: [0.98, 1] }) },
       ],
     }),
@@ -78,8 +83,8 @@ export default function Landing(): JSX.Element {
             <View
               accessibilityElementsHidden
               style={{
-                width: 96,
-                height: 96,
+                width: nativeTokens.space[24],
+                height: nativeTokens.space[24],
                 borderRadius: nativeTokens.radius.xl,
                 borderWidth: 1,
                 borderColor: nativeTokens.color.lineSoft,
@@ -89,7 +94,7 @@ export default function Landing(): JSX.Element {
                 ...nativeTokens.shadow.card,
               }}
             >
-              <Icon name="logo" size={54} color={nativeTokens.color.brand600} />
+              <Icon name="logo" size={nativeTokens.space[12]} color={nativeTokens.color.brand600} />
             </View>
 
             <View style={{ gap: nativeTokens.space[2], alignItems: "center" }}>
