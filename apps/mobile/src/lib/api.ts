@@ -71,7 +71,11 @@ export async function apiFetchPage<T extends z.ZodTypeAny>(
 }
 
 async function requestWithAuth(path: string, opts: ApiFetchOptions): Promise<Response> {
-  const token = opts.skipAuth ? null : opts.token === undefined ? await getAccessToken() : opts.token;
+  const token = opts.skipAuth
+    ? null
+    : opts.token === undefined
+      ? await getAccessToken()
+      : opts.token;
   const res = await request(path, opts, token);
   if (res.status !== 401 || opts.skipAuth) return res;
 

@@ -8,11 +8,14 @@ let initialized = false;
  * native bridge). Sentry's native module is not present there, so we skip
  * `init()` and `wrap()` to avoid crashes on first frame.
  */
-const IS_EXPO_GO =
-  Constants.executionEnvironment === ExecutionEnvironment.StoreClient;
+const IS_EXPO_GO = Constants.executionEnvironment === ExecutionEnvironment.StoreClient;
 
 function runtimeEnvironment(): string {
-  return process.env.EXPO_PUBLIC_APP_ENV ?? process.env.NODE_ENV ?? (__DEV__ ? "development" : "production");
+  return (
+    process.env.EXPO_PUBLIC_APP_ENV ??
+    process.env.NODE_ENV ??
+    (__DEV__ ? "development" : "production")
+  );
 }
 
 export function initObservability(): void {

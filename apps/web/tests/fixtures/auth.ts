@@ -7,12 +7,7 @@ import { AuthSession } from "@baydar/shared";
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000/api/v1";
 const WEB_ORIGIN = process.env.PLAYWRIGHT_BASE_URL ?? "http://localhost:3000";
 
-export const AUTH_STORAGE_STATE = path.join(
-  process.cwd(),
-  "tests",
-  ".auth",
-  "storageState.json",
-);
+export const AUTH_STORAGE_STATE = path.join(process.cwd(), "tests", ".auth", "storageState.json");
 
 export interface A11yAuthState {
   deviceId: string;

@@ -62,22 +62,22 @@ export default function EditProfileScreen(): JSX.Element {
         style={styles.flex}
       >
         <ScrollView contentContainerStyle={styles.scrollContent}>
-        <View style={styles.header}>
-          <Text style={styles.title}>{t("profile.editTitle")}</Text>
-          <Button
-            variant="ghost"
-            size="sm"
-            onPress={() => router.back()}
-            accessibilityLabel={t("common.cancel")}
-          >
-            {t("common.cancel")}
-          </Button>
-        </View>
+          <View style={styles.header}>
+            <Text style={styles.title}>{t("profile.editTitle")}</Text>
+            <Button
+              variant="ghost"
+              size="sm"
+              onPress={() => router.back()}
+              accessibilityLabel={t("common.cancel")}
+            >
+              {t("common.cancel")}
+            </Button>
+          </View>
 
-        <BasicsCard profile={profile} onChanged={setProfile} />
-        <ExperiencesCard profile={profile} onChanged={setProfile} />
-        <EducationsCard profile={profile} onChanged={setProfile} />
-        <SkillsCard profile={profile} onChanged={setProfile} />
+          <BasicsCard profile={profile} onChanged={setProfile} />
+          <ExperiencesCard profile={profile} onChanged={setProfile} />
+          <EducationsCard profile={profile} onChanged={setProfile} />
+          <SkillsCard profile={profile} onChanged={setProfile} />
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>

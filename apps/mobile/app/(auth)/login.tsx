@@ -46,52 +46,52 @@ export default function LoginScreen(): JSX.Element {
         className="flex-1"
       >
         <View className="flex-1 gap-4 px-6 pt-12">
-        <Text className="text-ink text-3xl font-bold">{t("auth.login")}</Text>
+          <Text className="text-ink text-3xl font-bold">{t("auth.login")}</Text>
 
-        <View className="flex-col gap-1">
-          <Text className="text-ink-muted text-sm">{t("auth.email")}</Text>
-          <TextInput
-            value={email}
-            onChangeText={setEmail}
-            autoComplete="email"
-            keyboardType="email-address"
-            autoCapitalize="none"
-            className="border-ink-muted/30 bg-surface text-ink rounded-md border px-3 py-2"
-          />
-        </View>
+          <View className="flex-col gap-1">
+            <Text className="text-ink-muted text-sm">{t("auth.email")}</Text>
+            <TextInput
+              value={email}
+              onChangeText={setEmail}
+              autoComplete="email"
+              keyboardType="email-address"
+              autoCapitalize="none"
+              className="border-ink-muted/30 bg-surface text-ink rounded-md border px-3 py-2"
+            />
+          </View>
 
-        <View className="flex-col gap-1">
-          <Text className="text-ink-muted text-sm">{t("auth.password")}</Text>
-          <TextInput
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-            autoComplete="password"
-            className="border-ink-muted/30 bg-surface text-ink rounded-md border px-3 py-2"
-          />
-        </View>
+          <View className="flex-col gap-1">
+            <Text className="text-ink-muted text-sm">{t("auth.password")}</Text>
+            <TextInput
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry
+              autoComplete="password"
+              className="border-ink-muted/30 bg-surface text-ink rounded-md border px-3 py-2"
+            />
+          </View>
 
-        {error ? (
-          <Text className="text-danger text-sm" accessibilityRole="alert">
-            {error}
-          </Text>
-        ) : null}
+          {error ? (
+            <Text className="text-danger text-sm" accessibilityRole="alert">
+              {error}
+            </Text>
+          ) : null}
 
-        <Pressable
-          onPress={onSubmit}
-          disabled={busy}
-          className="bg-brand-600 shadow-card rounded-md px-6 py-3"
-        >
-          {busy ? (
-            <ActivityIndicator color={tokens.color.ink.inverse} />
-          ) : (
-            <Text className="text-ink-inverse text-center">{t("auth.submitLogin")}</Text>
-          )}
-        </Pressable>
+          <Pressable
+            onPress={onSubmit}
+            disabled={busy}
+            className="bg-brand-600 shadow-card rounded-md px-6 py-3"
+          >
+            {busy ? (
+              <ActivityIndicator color={tokens.color.ink.inverse} />
+            ) : (
+              <Text className="text-ink-inverse text-center">{t("auth.submitLogin")}</Text>
+            )}
+          </Pressable>
 
-        <Pressable onPress={() => router.replace("/(auth)/register")}>
-          <Text className="text-brand-600 text-center">{t("auth.toRegister")}</Text>
-        </Pressable>
+          <Pressable onPress={() => router.replace("/(auth)/register")}>
+            <Text className="text-brand-600 text-center">{t("auth.toRegister")}</Text>
+          </Pressable>
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>

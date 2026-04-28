@@ -32,9 +32,7 @@ export const JobRow = memo(function JobRow({ job }: { job: Job }): JSX.Element {
                 cachePolicy="memory-disk"
               />
             ) : (
-              <Text style={styles.logoFallback}>
-                {(job.company.name[0] ?? "?").toUpperCase()}
-              </Text>
+              <Text style={styles.logoFallback}>{(job.company.name[0] ?? "?").toUpperCase()}</Text>
             )}
           </View>
 

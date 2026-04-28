@@ -12,10 +12,7 @@ export interface RegisteredDeviceToken {
 export class DevicesService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async register(
-    userId: string,
-    body: RegisterDeviceTokenBody,
-  ): Promise<RegisteredDeviceToken> {
+  async register(userId: string, body: RegisterDeviceTokenBody): Promise<RegisteredDeviceToken> {
     const row = await this.prisma.deviceToken.upsert({
       where: { token: body.token },
       update: {

@@ -1,8 +1,4 @@
-import {
-  formatRelativeTime,
-  NotificationType,
-  type Notification,
-} from "@baydar/shared";
+import { formatRelativeTime, NotificationType, type Notification } from "@baydar/shared";
 import { Avatar, Icon, Surface, nativeTokens } from "@baydar/ui-native";
 import { router } from "expo-router";
 import { memo } from "react";
@@ -59,10 +55,7 @@ export const NotificationRow = memo(function NotificationRow({
   );
 }, areEqual);
 
-function areEqual(
-  prev: { item: Notification },
-  next: { item: Notification },
-): boolean {
+function areEqual(prev: { item: Notification }, next: { item: Notification }): boolean {
   return prev.item.id === next.item.id && prev.item.readAt === next.item.readAt;
 }
 

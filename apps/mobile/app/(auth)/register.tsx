@@ -62,62 +62,62 @@ export default function RegisterScreen(): JSX.Element {
         className="flex-1"
       >
         <View className="flex-1 gap-4 px-6 pt-12">
-        <Text className="text-ink text-3xl font-bold">{t("auth.register")}</Text>
+          <Text className="text-ink text-3xl font-bold">{t("auth.register")}</Text>
 
-        <Field
-          label={t("auth.firstName")}
-          value={firstName}
-          onChangeText={setFirstName}
-          autoComplete="name-given"
-        />
-        <Field
-          label={t("auth.lastName")}
-          value={lastName}
-          onChangeText={setLastName}
-          autoComplete="name-family"
-        />
-        <Field
-          label={t("auth.email")}
-          value={email}
-          onChangeText={setEmail}
-          autoComplete="email"
-          keyboardType="email-address"
-          autoCapitalize="none"
-        />
-        <Field
-          label={t("auth.password")}
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-          autoComplete="password-new"
-        />
+          <Field
+            label={t("auth.firstName")}
+            value={firstName}
+            onChangeText={setFirstName}
+            autoComplete="name-given"
+          />
+          <Field
+            label={t("auth.lastName")}
+            value={lastName}
+            onChangeText={setLastName}
+            autoComplete="name-family"
+          />
+          <Field
+            label={t("auth.email")}
+            value={email}
+            onChangeText={setEmail}
+            autoComplete="email"
+            keyboardType="email-address"
+            autoCapitalize="none"
+          />
+          <Field
+            label={t("auth.password")}
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry
+            autoComplete="password-new"
+          />
 
-        <View className="flex-row items-center gap-3">
-          <Switch value={accept} onValueChange={setAccept} />
-          <Text className="text-ink flex-1">{t("auth.acceptTerms")}</Text>
-        </View>
+          <View className="flex-row items-center gap-3">
+            <Switch value={accept} onValueChange={setAccept} />
+            <Text className="text-ink flex-1">{t("auth.acceptTerms")}</Text>
+          </View>
 
-        {error ? (
-          <Text className="text-danger text-sm" accessibilityRole="alert">
-            {error}
-          </Text>
-        ) : null}
+          {error ? (
+            <Text className="text-danger text-sm" accessibilityRole="alert">
+              {error}
+            </Text>
+          ) : null}
 
-        <Pressable
-          onPress={onSubmit}
-          disabled={busy}
-          className="bg-brand-600 shadow-card rounded-md px-6 py-3"
-        >
-          {busy ? (
-            <ActivityIndicator color={tokens.color.ink.inverse} />
-          ) : (
-            <Text className="text-ink-inverse text-center">{t("auth.submitRegister")}</Text>
-          )}
-        </Pressable>
+          <Pressable
+            onPress={onSubmit}
+            disabled={busy}
+            className="bg-brand-600 shadow-card rounded-md px-6 py-3"
+          >
+            {busy ? (
+              <ActivityIndicator color={tokens.color.ink.inverse} />
+            ) : (
+              <Text className="text-ink-inverse text-center">{t("auth.submitRegister")}</Text>
+            )}
+          </Pressable>
 
-        <Pressable onPress={() => router.replace("/(auth)/login")}>
-          <Text className="text-brand-600 text-center">{t("auth.toLogin")}</Text>
-        </Pressable>
+          <Pressable onPress={() => router.replace("/(auth)/login")}>
+            <Text className="text-brand-600 text-center">{t("auth.toLogin")}</Text>
+          </Pressable>
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>

@@ -98,10 +98,7 @@ export const PostRow = memo(function PostRow({ post, onChange }: PostRowProps): 
               <Image
                 key={m.id ?? m.url}
                 source={{ uri: m.url }}
-                style={[
-                  styles.mediaImage,
-                  singleMedia ? styles.mediaSingle : styles.mediaPair,
-                ]}
+                style={[styles.mediaImage, singleMedia ? styles.mediaSingle : styles.mediaPair]}
                 contentFit="cover"
                 cachePolicy="memory-disk"
                 placeholder={m.blurhash ? { blurhash: m.blurhash } : undefined}

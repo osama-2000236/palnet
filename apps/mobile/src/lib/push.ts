@@ -8,8 +8,7 @@ import { Platform } from "react-native";
 import { apiCall } from "./api";
 import { routeFromUrl } from "./linking";
 
-const IS_EXPO_GO =
-  Constants.executionEnvironment === ExecutionEnvironment.StoreClient;
+const IS_EXPO_GO = Constants.executionEnvironment === ExecutionEnvironment.StoreClient;
 
 let notificationHandlerInstalled = false;
 

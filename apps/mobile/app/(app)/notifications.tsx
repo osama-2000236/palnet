@@ -1,20 +1,9 @@
-import {
-  cursorPage,
-  Notification as NotificationSchema,
-  type Notification,
-} from "@baydar/shared";
+import { cursorPage, Notification as NotificationSchema, type Notification } from "@baydar/shared";
 import { Surface, nativeTokens } from "@baydar/ui-native";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import {
-  ActivityIndicator,
-  FlatList,
-  RefreshControl,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { NotificationRow } from "@/components/rows/NotificationRow";
