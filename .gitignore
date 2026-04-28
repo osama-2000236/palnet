@@ -62,3 +62,9 @@ packages/db/prisma/*.db-journal
 # Misc
 *.tsbuildinfo
 .cache/
+
+# Local agent / worktree scratch
+.claude/worktrees/
+.codex-run/
+.codex-logs/
+expo-qr.png

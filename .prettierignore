@@ -5,5 +5,8 @@ build/
 .turbo/
 .expo/
 coverage/
+.claude/
+.codex-run/
+.codex-logs/
 pnpm-lock.yaml
 packages/db/prisma/migrations/
