@@ -8,14 +8,14 @@
 //   • Icon-only buttons require `aria-label`.
 //   • Focus ring visible on keyboard only (`focus-visible:`).
 
-import type { ComponentPropsWithoutRef, ReactNode } from "react";
+import type { ButtonHTMLAttributes, ReactNode } from "react";
 
 import { cx } from "./cx";
 
 export type ButtonVariant = "primary" | "secondary" | "ghost" | "accent" | "danger-ghost";
 export type ButtonSize = "sm" | "md" | "lg";
 
-export interface ButtonProps extends Omit<ComponentPropsWithoutRef<"button">, "className"> {
+export interface ButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, "className"> {
   variant?: ButtonVariant;
   size?: ButtonSize;
   leading?: ReactNode;
