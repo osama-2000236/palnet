@@ -36,5 +36,7 @@ export { Switch } from "./Switch";
 export type { SwitchProps } from "./Switch";
 export { Sheet } from "./Sheet";
 export type { SheetProps } from "./Sheet";
+export { Skeleton } from "./Skeleton";
+export type { SkeletonProps } from "./Skeleton";
 export { LegalFooter } from "./LegalFooter";
 export type { LegalFooterLink, LegalFooterProps } from "./LegalFooter";

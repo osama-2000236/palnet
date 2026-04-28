@@ -495,12 +495,12 @@ export default function MessagesPage(): JSX.Element {
 
   // ───────── Render ─────────
   return (
-    <div className="mx-auto w-full max-w-[1128px] px-4 py-6 lg:px-6">
+    <div className="mx-auto w-full max-w-chrome px-4 py-6 lg:px-6">
       <Surface
         as="div"
         variant="card"
         padding="0"
-        className="grid min-h-[calc(100vh-8rem)] grid-cols-1 overflow-hidden md:grid-cols-[320px_minmax(0,1fr)]"
+        className="grid min-h-messages grid-cols-1 overflow-hidden md:grid-cols-[320px_minmax(0,1fr)]"
       >
         {/* Rooms list */}
         <aside className="border-line-soft flex min-h-0 flex-col md:border-e">
@@ -580,7 +580,7 @@ export default function MessagesPage(): JSX.Element {
                     <span className="text-ink truncate text-sm font-semibold">
                       {activeRoom.title ?? activeRoom.id}
                     </span>
-                    <span className="text-ink-muted text-[11px]">
+                    <span className="text-ink-muted text-nav">
                       {t("newGroup.memberCount", { count: activeRoom.members.length })}
                     </span>
                   </div>
@@ -610,7 +610,7 @@ export default function MessagesPage(): JSX.Element {
                         {`${otherMember.firstName} ${otherMember.lastName}`.trim() ||
                           otherMember.handle}
                       </Link>
-                      <span className="text-ink-muted text-[11px]">
+                      <span className="text-ink-muted text-nav">
                         {otherOnline
                           ? t("onlineNow")
                           : otherMember.lastSeenAt
@@ -636,7 +636,7 @@ export default function MessagesPage(): JSX.Element {
                     onClick={() =>
                       activeRoomId && nextCursor && void loadMessages(activeRoomId, nextCursor)
                     }
-                    className="border-line-soft bg-surface text-ink-muted hover:bg-surface-muted mb-3 self-center rounded-full border px-3 py-1 text-[11px]"
+                    className="border-line-soft bg-surface text-ink-muted hover:bg-surface-muted mb-3 self-center rounded-full border px-3 py-1 text-nav"
                   >
                     {t("loadOlder")}
                   </button>
@@ -646,7 +646,7 @@ export default function MessagesPage(): JSX.Element {
                   <button
                     type="button"
                     onClick={scrollToUnread}
-                    className="bg-brand-100 text-brand-700 border-brand-200 mb-3 self-center rounded-full border px-3 py-1 text-[11px] font-semibold"
+                    className="bg-brand-100 text-brand-700 border-brand-200 mb-3 self-center rounded-full border px-3 py-1 text-nav font-semibold"
                   >
                     {t("unreadJump.banner", { count: unreadCount })}
                   </button>
@@ -720,14 +720,14 @@ export default function MessagesPage(): JSX.Element {
                                   setActionMessage(m);
                                   setEditingBody(m.body);
                                 }}
-                                className="border-line-soft bg-surface text-ink-muted hover:text-ink rounded-full border px-2 py-1 text-[11px]"
+                                className="border-line-soft bg-surface text-ink-muted hover:text-ink rounded-full border px-2 py-1 text-nav"
                               >
                                 {t("edit.action")}
                               </button>
                               <button
                                 type="button"
                                 onClick={() => void deleteMessage(m)}
-                                className="border-danger/40 bg-surface text-danger rounded-full border px-2 py-1 text-[11px]"
+                                className="border-danger/40 bg-surface text-danger rounded-full border px-2 py-1 text-nav"
                               >
                                 {t("delete.action")}
                               </button>

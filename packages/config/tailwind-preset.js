@@ -117,6 +117,9 @@ module.exports = {
         navItem: "64px",
         unread: "20px",
       },
+      minHeight: {
+        messages: "calc(100vh - 8rem)",
+      },
       borderWidth: {
         3: "3px",
       },
