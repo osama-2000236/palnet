@@ -64,7 +64,6 @@ packages/db/prisma/*.db-journal
 # Misc
 *.tsbuildinfo
 .cache/
-docs.rar
 
 # Local agent / worktree scratch
 .claude/worktrees/
