@@ -3,14 +3,14 @@
   Production code is at:
     Components → packages/ui-web/src/   (@baydar/ui-web)
     Pages      → apps/web/src/app/
-  Historical reference only. Internal token names (palnet.*) are stale.
+  Historical reference only. Internal token names have been normalized for Baydar.
 */
 /* global React, AppShell, FeedPage, ProfilePage, NetworkPage, MessagesPage, SearchPage */
 function App() {
-  const [screen, setScreen] = React.useState(() => localStorage.getItem("palnet.screen") || "feed");
+  const [screen, setScreen] = React.useState(() => localStorage.getItem("baydar.screen") || "feed");
   const [profileId, setProfileId] = React.useState(null);
 
-  React.useEffect(() => { localStorage.setItem("palnet.screen", screen); }, [screen]);
+  React.useEffect(() => { localStorage.setItem("baydar.screen", screen); }, [screen]);
 
   function navigate(key) { setScreen(key); if (key !== "profile") setProfileId(null); }
   function openProfile(id) { setProfileId(id); setScreen("profile"); }

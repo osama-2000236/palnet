@@ -1,219 +1,92 @@
-# project-spec.md — Single Source of Truth
+# project-spec.md — Current Source of Truth
 
-> **Every AI prompt (Codex, Gemini, Claude) must be prefixed with the contents of this file or a link to it.** When this file conflicts with anything else in the repo, this file wins. Update this file before you change the plan, not after.
+> This file reflects the accepted `main` state after the April 28, 2026 cleanup. If it conflicts with older sprint docs, this file wins.
 
-Last locked: 2026-04-16.
+## Product
 
----
+- **Name:** Baydar (بيدر)
+- **Mission:** Arabic-first professional networking for Palestine first.
+- **Default locale:** `ar-PS`; English is a fallback.
+- **Default direction:** RTL.
+- **Design authority:** `DESIGN.md`, `BRAND.md`, `docs/design/RTL.md`, `docs/design/MOBILE.md`, and the archived prototype at `docs/_archive/prototype-2025/Baydar Prototype.html`.
 
-## 1. Product Identity
+## Locked Stack
 
-- **Codename:** `palnet`
-- **Mission:** A LinkedIn-equivalent professional network for Palestine first. Arabic-first, RTL-native, mobile-forward.
-- **Scope parity with LinkedIn (copy these flows):** auth, onboarding, public + authenticated profiles, connections graph (request/accept/withdraw/block), home feed (posts, images, video URLs, reactions, comments, reposts), direct messaging (1:1), notifications, unified search (people, posts, jobs, companies), jobs board + applications, company pages.
-- **Out of day-one scope:** premium subscriptions, ads platform, recruiter workspace, learning, creator analytics, newsletters, verification partners, algorithmic ranking. These are reserved for post-PMF.
+| Layer            | Choice                                                                            |
+| ---------------- | --------------------------------------------------------------------------------- |
+| Node             | >=20                                                                              |
+| Package manager  | pnpm 9                                                                            |
+| Monorepo         | Turborepo                                                                         |
+| Web              | Next.js 15 App Router, React 19, Tailwind CSS, `next-intl`                        |
+| Mobile           | Expo SDK 54, React Native 0.81, React 19, Expo Router, NativeWind in host screens |
+| API              | NestJS 10 modular monolith                                                        |
+| API protocol     | REST + Swagger; live events via SSE                                               |
+| Database         | PostgreSQL 16, Prisma 5                                                           |
+| Shared contracts | Zod schemas in `@baydar/shared`                                                   |
+| Auth             | Self-managed JWT access/refresh tokens, bcrypt passwords                          |
+| Media            | Cloudflare R2 signed upload URLs, blurhash placeholders                           |
+| Push             | Expo push device tokens and best-effort Expo fanout                               |
+| State/data       | TanStack Query, Zustand where local client state is needed                        |
+| UI               | `@baydar/ui-web`, `@baydar/ui-native`, `@baydar/ui-tokens`                        |
+| Testing          | Jest, React Testing Library, Playwright, token lint, mobile recovery checks       |
 
----
+Do not reintroduce GraphQL, Kafka, Neptune, EKS, OpenSearch, microservices, dark mode, Tailwind blue, or a themed UI kit without explicit approval.
 
-## 2. Non-negotiable Decisions
+## Architecture Rules
 
-These are locked. Do not reopen without explicit user approval.
+- The API remains one NestJS modular monolith under `apps/api`.
+- API routes live under `/api/v1`; Swagger is served at `/api/docs`.
+- Live messaging and notification updates use SSE endpoints owned by the API. Legacy socket transports are not active in current app flows.
+- Prisma access goes through `@baydar/db`; app code must not create ad-hoc Prisma clients.
+- DTOs and request validation originate in `@baydar/shared/src/schemas`.
+- UI tokens are the source of truth for color, spacing, typography, radius, and shadows.
+- Web and mobile component APIs should stay in lockstep when a shared design-system component exists on both platforms.
+- Arabic strings are authored first. Do not hardcode user-facing English inside components.
+- Use logical CSS properties and RTL-safe layout rules only.
 
-### 2.1 Stack
+## Workspace Names
 
-| Layer                 | Choice                                                | Version (April 2026) |
-| --------------------- | ----------------------------------------------------- | -------------------- |
-| Node                  | 20 LTS                                                | `.nvmrc = 20`        |
-| Package manager       | pnpm                                                  | 9.x                  |
-| Monorepo orchestrator | Turborepo                                             | 2.x                  |
-| Backend framework     | NestJS                                                | 10.x                 |
-| Backend runtime       | Node 20                                               | —                    |
-| ORM                   | Prisma                                                | 5.x                  |
-| DB                    | PostgreSQL                                            | 16                   |
-| Web framework         | Next.js                                               | 15.x (App Router)    |
-| Mobile framework      | Expo                                                  | SDK 52 (RN 0.76)     |
-| Styling (web)         | Tailwind CSS + shadcn/ui                              | TW 3.x               |
-| Styling (mobile)      | NativeWind                                            | 4.x                  |
-| Validation            | Zod                                                   | 3.x                  |
-| Realtime              | Socket.io                                             | 4.x                  |
-| Auth                  | Self-managed JWT + bcrypt, OAuth2 Google (Sprint 1.5) | —                    |
-| Media                 | Cloudflare R2 via `@aws-sdk/client-s3`                | —                    |
-| Hosting — web         | Vercel                                                | —                    |
-| Hosting — API         | Render (Docker)                                       | —                    |
-| Hosting — DB          | Neon                                                  | —                    |
-| Mobile build          | EAS                                                   | —                    |
-| CI                    | GitHub Actions                                        | —                    |
-| i18n web              | `next-intl`                                           | —                    |
-| i18n mobile           | `i18next` + `react-i18next` + `expo-localization`     | —                    |
-| Testing               | Jest, React Testing Library, Playwright, Detox        | —                    |
+- Apps: `@baydar/api`, `@baydar/web`, `@baydar/mobile`
+- Packages: `@baydar/shared`, `@baydar/db`, `@baydar/config`, `@baydar/ui-tokens`, `@baydar/ui-web`, `@baydar/ui-native`
 
-### 2.2 Architecture
+## Current Feature Surface
 
-- **Modular monolith** for the API. One NestJS app, modules per domain (`auth`, `users`, `profiles`, `connections`, `posts`, `interactions`, `messages`, `notifications`, `jobs`, `applications`, `companies`, `media`, `search`). **Do not split into microservices.**
-- **REST + OpenAPI/Swagger**, not GraphQL. Nest's `@nestjs/swagger` auto-generates the spec.
-- **WebSockets (Socket.io)** only for live DMs and notifications. Everything else is REST.
-- **Shared DTO contract:** every request/response body has a matching Zod schema in `packages/shared/src/schemas/`. Nest imports the schema with `nestjs-zod` and uses the inferred type. Next.js and Expo import the same schema for forms.
-- **DB access only through `@palnet/db`** (a workspace package wrapping Prisma). No direct `new PrismaClient()` anywhere in app code.
-- **Auth:** JWT access (15 min) + refresh (30 day, rotated). Refresh tokens stored hashed in Postgres with device id. Passwords bcrypt cost 12.
-- **RBAC roles:** `USER`, `COMPANY_ADMIN`, `MODERATOR`, `ADMIN`. Nest guards enforce role on protected routes.
-- **Pagination:** cursor-based (`after: string | null`, `limit: 20`) for feeds, connections, messages, search. Offset pagination is banned for anything that can grow.
+The current `main` line includes:
 
-### 2.3 Naming & Conventions
+- Auth register/login/refresh/logout/me flows.
+- Profile onboarding/editing and public profile routes.
+- Feed, posts, reactions, comments, repost hooks, media upload URL generation.
+- Connections, suggestions, requests, and blocking primitives.
+- Direct messages, read state, typing events, room archive support, and SSE clients.
+- Notifications, device token registration, and Expo push fanout.
+- Jobs list/detail/apply with cover-letter support.
+- Search, shared Arabic number/date formatting, and tokenized web/mobile UI atoms.
+- Mobile deep links, offline banner, haptics, pull-to-refresh, and Expo Go recovery guardrails.
 
-- TypeScript strict mode on everywhere. No `any` without an eslint-disable with a reason comment.
-- Filenames `kebab-case`, React components `PascalCase` inside `PascalCase.tsx`.
-- API routes plural nouns: `/api/v1/users`, `/api/v1/posts/:id/comments`.
-- Env vars `SCREAMING_SNAKE_CASE`, validated at boot via Zod in `apps/api/src/config/env.ts`.
-- Commit messages: Conventional Commits (`feat:`, `fix:`, `chore:`, `docs:`, `refactor:`, `test:`).
-- Branches: `feature/<scope>-<slug>`, `fix/<scope>-<slug>`, `chore/<slug>`. Never commit to `main`.
+## Definition of Done
 
-### 2.4 Localization Invariants
+For feature work:
 
-- Default locale: `ar-PS`. Fallback: `en`. Direction defaults to `rtl`; flipped for `en`.
-- All UI strings go through `t('namespace.key')`. No hardcoded copy in JSX.
-- Dates default to Gregorian with Arabic numerals. User-facing time uses relative format (`منذ 3 دقائق`).
-- Phone numbers render E.164. Palestinian defaults to `+970`.
-- See [`docs/localization-palestine.md`](docs/localization-palestine.md) for the full rule list.
+1. Prisma migration committed when schema changes.
+2. Zod schema updated when request/response shape changes.
+3. API service/controller tests cover happy path and important failure paths.
+4. Web or mobile user-facing flow has Playwright, Jest, or manual smoke evidence appropriate to risk.
+5. i18n keys are present in Arabic first and English fallback.
+6. `pnpm lint:tokens`, `pnpm format:check`, `pnpm lint`, `pnpm type-check`, and `pnpm test` pass.
+7. Relevant docs are updated in the same change.
 
-### 2.5 Security Baselines
+## AI Prompt Prefix
 
-- Helmet + CORS allow-list in Nest.
-- Rate limit: 100 req/min per IP global, 10/min on auth routes (`@nestjs/throttler`).
-- Input validation: Zod at every controller boundary via `ZodValidationPipe`.
-- Output: never return `password`, `refreshTokenHash`, `email` (to non-owners).
-- Secrets: `.env.local` is gitignored. Prod secrets in Render/Vercel env panels. Never in code.
-- File uploads: signed PUT URLs to R2, server validates mime + size before issuing.
+Use this header for future coding prompts:
 
----
-
-## 3. Monorepo Layout
-
-```
-C:\LinkedIn\
-  apps/
-    web/                # Next.js 15
-    mobile/             # Expo
-    api/                # NestJS
-  packages/
-    shared/             # Zod schemas, DTO types, enums, constants
-      src/
-        schemas/        # user.ts, profile.ts, post.ts, ...
-        enums.ts
-        index.ts
-    db/                 # Prisma
-      prisma/
-        schema.prisma
-        migrations/
-      src/index.ts      # export { prisma } — singleton client
-    config/             # tsconfig.base.json, eslint-preset.js, tailwind-preset.js
-    ui-tokens/          # colors, spacing, typography tokens (consumed by web+mobile)
-  docs/
-  .github/workflows/
-  project-spec.md       # this file
-  turbo.json
-  pnpm-workspace.yaml
-  package.json
-  .nvmrc
-  .gitignore
-  .editorconfig
+```text
+You are contributing to Baydar, an Arabic-first RTL professional network in a Turborepo with Next.js 15 web, Expo SDK 54 mobile, NestJS REST API, Prisma/Postgres, and shared @baydar packages. Read project-spec.md, DESIGN.md, BRAND.md, docs/design/RTL.md, and docs/HANDOFF.md first. Do not introduce new dependencies, UI styles, public API shapes, or architectural patterns unless the request explicitly asks for them. Tokens and i18n are mandatory.
 ```
 
-Workspace names:
+## Deferred Until Explicitly Approved
 
-- `@palnet/web`, `@palnet/mobile`, `@palnet/api`
-- `@palnet/shared`, `@palnet/db`, `@palnet/config`, `@palnet/ui-tokens`
-
----
-
-## 4. Domain Entities (Prisma-backed)
-
-Full schema lives in [`packages/db/prisma/schema.prisma`](packages/db/prisma/schema.prisma). Detailed walkthrough in [`docs/erd.md`](docs/erd.md).
-
-Entities (day-one): `User`, `Profile`, `Experience`, `Education`, `Skill`, `ProfileSkill`, `Connection`, `Post`, `Media`, `Reaction`, `Comment`, `Repost`, `Message`, `ChatRoom`, `ChatRoomMember`, `Notification`, `Job`, `Application`, `Company`, `CompanyMember`, `RefreshToken`, `BlockedUser`, `Report`.
-
-Invariants:
-
-- Every table has `id` (cuid), `createdAt`, `updatedAt`.
-- Soft delete via `deletedAt: DateTime?` on `User`, `Post`, `Comment`, `Message`, `Job`.
-- Cascade deletes: `Profile`, `RefreshToken`, `ProfileSkill`, `Experience`, `Education` cascade on User deletion.
-- Enums live in Prisma and re-export via `@palnet/shared/enums`.
-
----
-
-## 5. API Surface Rules
-
-- Base path: `/api/v1`
-- Always return `{ data, meta }` on success, `{ error: { code, message, details? } }` on error.
-- Error codes are enum strings (`AUTH_INVALID_CREDENTIALS`, `PROFILE_NOT_FOUND`, etc.) defined in `@palnet/shared/enums`.
-- WebSocket namespaces: `/chat`, `/notifications`. Rooms keyed `user:<userId>` for personal events, `room:<chatRoomId>` for DMs.
-
-Full endpoint list in [`docs/api-contract.md`](docs/api-contract.md).
-
----
-
-## 6. AI Prompt Prefix (Required Header)
-
-Paste this verbatim before any feature prompt to Codex/Gemini/Claude:
-
-```
-Project: palnet (LinkedIn clone, Palestine first).
-Repo: C:\LinkedIn (Turborepo monorepo, pnpm workspaces).
-Authoritative spec: project-spec.md (read it before answering).
-
-Hard rules (do not violate):
-1. Stack is locked in project-spec.md §2.1. Do NOT add new libs without approval.
-2. Backend is ONE NestJS app (modular monolith). No microservices.
-3. REST + Swagger, no GraphQL.
-4. All DTOs come from Zod schemas in packages/shared/src/schemas.
-5. DB access only via @palnet/db.
-6. Default locale is ar-PS with RTL. Every UI string is t('...') keyed.
-7. TypeScript strict. No `any` without eslint-disable + reason.
-8. Cursor pagination for lists; offset pagination is banned.
-9. Errors shaped { error: { code, message, details? } } with code from enums.
-10. Shared types flow: Prisma → @palnet/db → Zod schemas in @palnet/shared → consumed by api/web/mobile.
-
-Output: write code diffs only for files in scope. No prose.
-```
-
----
-
-## 7. Definition of Done (per feature)
-
-A feature ships only when all seven are true:
-
-1. Prisma migration applied and committed.
-2. Zod schema added/updated in `packages/shared`.
-3. Nest module: controller + service + DTOs + guards. Swagger decorators on every route.
-4. Jest unit tests for the service (success + two failure cases minimum).
-5. At least one Playwright E2E (web) or Detox (mobile) path if user-facing.
-6. i18n keys added to `ar.json` and `en.json`. No untranslated strings.
-7. CI green: lint, type-check, test, build all pass.
-
----
-
-## 8. Things That Are Explicitly Deferred
-
-Do not build these before Sprint 6 even if asked:
-
-- Algorithmic feed ranking (day-one is chronological with a tiny recency+affinity tiebreak).
-- Premium subscriptions, billing, entitlements.
-- Recruiter workspace, ads manager, learning courses.
-- Verified badges with third-party partners.
-- Creator analytics dashboards.
-- Video processing pipeline (upload MP4 URL only; no transcoding on day one).
-- Neptune, Kafka, OpenSearch, EKS, Aurora, or any Python service.
-
-If a sprint ticket starts needing any of the above, stop and escalate — the sprint is scoped wrong.
-
----
-
-## 9. File Pointers
-
-- [`README.md`](README.md) — orientation
-- [`docs/erd.md`](docs/erd.md) — data model explanation
-- [`docs/sprint-plan.md`](docs/sprint-plan.md) — build order
-- [`docs/api-contract.md`](docs/api-contract.md) — endpoints
-- [`docs/design-system.md`](docs/design-system.md) — atoms/molecules/organisms
-- [`docs/localization-palestine.md`](docs/localization-palestine.md) — Arabic/RTL rules
-- [`docs/testing-strategy.md`](docs/testing-strategy.md) — Jest/Playwright/Detox
-- [`docs/deployment.md`](docs/deployment.md) — Vercel/Render/Neon/EAS/R2
+- Algorithmic ranking beyond the current pragmatic feed behavior.
+- Premium subscriptions, billing, ads, recruiter workspace, learning, newsletters, and creator analytics.
+- Third-party verification programs.
+- Video transcoding pipeline.
+- Service decomposition or alternate database/search infrastructure.

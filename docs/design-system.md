@@ -1,6 +1,6 @@
 # Design System — Atoms, Molecules, Organisms
 
-Shared tokens live in [`packages/ui-tokens`](../packages/ui-tokens) and the Tailwind preset in [`packages/config/tailwind-preset.js`](../packages/config/tailwind-preset.js). Components are **not** shared binaries (React Native ≠ React DOM); instead, the _same token set_ and _same component names_ are implemented in both `apps/web` and `apps/mobile`. AI prompts must use the same names on both platforms.
+Shared tokens live in [`packages/ui-tokens`](../packages/ui-tokens). Components are implemented as platform-specific packages in `packages/ui-web` and `packages/ui-native`, with matching prop names and variant names wherever a component exists on both platforms.
 
 ## Component Inventory
 
@@ -66,7 +66,7 @@ Shared tokens live in [`packages/ui-tokens`](../packages/ui-tokens) and the Tail
 
 ## Density
 
-- Default web breakpoint widths: `sm 640 / md 768 / lg 1024 / xl 1280 / 2xl 1536`. App shell is `max-w-[1128px]` centered — LinkedIn parity.
+- Default web breakpoint widths: `sm 640 / md 768 / lg 1024 / xl 1280 / 2xl 1536`. App shell is centered around the Baydar prototype's professional-network density.
 - Mobile uses 4pt spacing grid; web uses 8pt. Do not hardcode `px` values outside tokens.
 
 ## Component Contract (for AI prompts)
@@ -74,7 +74,7 @@ Shared tokens live in [`packages/ui-tokens`](../packages/ui-tokens) and the Tail
 When asking Codex/Gemini for a component, use this template:
 
 ```
-Create <ComponentName> in apps/<web|mobile>/src/components/<category>/<ComponentName>.tsx.
+Create <ComponentName> in packages/ui-<web|native>/src/<ComponentName>.tsx when it is shared, or in the host app only when it is route-specific.
 - Props: typed from packages/shared if it consumes a domain object.
 - Imports tokens from @baydar/ui-tokens when Tailwind classes aren't enough.
 - All copy uses t('namespace.key'); add keys to ar.json and en.json.
@@ -87,5 +87,5 @@ Create <ComponentName> in apps/<web|mobile>/src/components/<category>/<Component
 
 - Visual editor for posts (WYSIWYG).
 - Custom fonts beyond IBM Plex Sans Arabic + Noto Naskh Arabic.
-- Dark mode (Sprint 7+; trivial once tokens are centralized).
+- Dark mode (not designed yet).
 - Animated reactions popover (can use simple icons day one).

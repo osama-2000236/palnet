@@ -171,18 +171,11 @@ Single column, edge-to-edge cards with 16px horizontal padding, bottom tab bar 6
 - ❌ Dark mode (not yet designed).
 - ❌ Multiple primary CTAs on one screen.
 
-## 8. Token rename from old palette
+## 8. Token state
 
-The repo currently ships a Tailwind-blue `brand` palette. It must be replaced wholesale. The rename is mechanical:
+The old default-blue palette has already been replaced. Current token values live in `packages/ui-tokens/src/index.ts`, generate web CSS in `packages/ui-tokens/src/tokens.css`, and generate native values in `packages/ui-tokens/src/tokens.native.ts`.
 
-```
-OLD (generic blue)          NEW (olive)
---brand-500 #3b82f6    →    --brand-500 #687a3a
---brand-600 #2563eb    →    --brand-600 #526030
-… (see packages/ui-tokens/src/index.ts)
-```
-
-Component usage stays the same (`bg-brand-600`). Only token values change. One commit, one file: `packages/ui-tokens/src/index.ts`. Rebuild everything else from there.
+Do not hardcode new visual values in apps or shared UI packages. Add or adjust a token first, regenerate token outputs, and run `pnpm lint:tokens`.
 
 ## 9. The prototype
 

@@ -39,7 +39,7 @@ Banned dependency categories until otherwise approved:
 - Alternate ORMs (Drizzle, TypeORM, Kysely, Sequelize).
 - Alternate form libs (Formik, RHF is fine but use Zod resolver).
 - Alternate validation libs (Yup, Joi, Valibot).
-- UI kit libs besides shadcn/ui (web) and the locally-built RN primitives (mobile).
+- UI kit libs besides the locally-built `@baydar/ui-web` and `@baydar/ui-native` primitives.
 - State managers besides Zustand (client) + React Query (server state).
 
 ## Code Review Checklist
@@ -47,12 +47,12 @@ Banned dependency categories until otherwise approved:
 Before requesting merge:
 
 - [ ] Definition of Done in `project-spec.md §7` met.
-- [ ] `pnpm lint && pnpm type-check && pnpm test && pnpm --filter @palnet/web build` all pass locally.
+- [ ] `pnpm lint:tokens && pnpm format:check && pnpm lint && pnpm type-check && pnpm test` all pass locally.
 - [ ] No hardcoded strings in components — all via `t()`.
 - [ ] No `left`/`right` CSS — logical properties only.
 - [ ] Every new endpoint is in Swagger and `docs/api-contract.md`.
 - [ ] Prisma migration committed if schema changed.
-- [ ] Zod schema added/updated in `@palnet/shared` if API shape changed.
+- [ ] Zod schema added/updated in `@baydar/shared` if API shape changed.
 
 ## Asking for Help
 

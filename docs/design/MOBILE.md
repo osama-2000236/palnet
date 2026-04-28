@@ -5,9 +5,9 @@
 
 ## Platform
 
-- **Expo SDK 51+**, React Native 0.74+, TypeScript.
+- **Expo SDK 54**, React Native 0.81, React 19, TypeScript.
 - `expo-router` for file-based routing mirroring the web app where possible.
-- `react-native-reanimated` v3 for animation.
+- `react-native-reanimated` v4 for animation.
 - `expo-font` for bundled IBM Plex Sans Arabic + Noto Naskh Arabic.
 - `I18nManager.forceRTL(true)` at app boot. Restart required on first install — document this.
 
@@ -30,7 +30,7 @@ See `packages/ui-tokens/src/tokens.native.ts`.
 - **Single column** everywhere. No 3-column Feed. The right-rail content (suggestions, jobs) becomes inline cards in the feed, inserted every 3–5 posts.
 - **Horizontal padding** is 16pt (`space.4`), not 20. Tighter screens.
 - **Cards go edge-to-edge** with 1px horizontal border only — no floating card look. We call this a `mobile-card` variant (or reuse `flat`).
-- **AppShell** is a 5-item bottom tab bar, not top nav. See `AppShell.md`.
+- **AppShell** is a bottom tab bar, not top nav. Current top-level tabs include feed, network, jobs, messages, notifications, and search.
 
 ## Hit targets
 

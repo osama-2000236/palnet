@@ -1,119 +1,100 @@
 # Deployment
 
-Zero-devops path. Every hosted piece is a managed service with a generous free tier so a solo builder can ship on day one.
+Baydar uses managed services so the pre-launch app can stay operational without a platform team.
 
 ## Topology
 
-```
-Users
-  │
-  ├── Web         → Vercel (Next.js)           custom domain: baydar.ps
-  ├── iOS/Android → App Store / Play Store     built by EAS
-  └── (admin)     → Vercel (same Next.js app, /admin route, RBAC)
-
-All clients → api.baydar.ps (Render) ←→ Neon (Postgres)
-                                    ←→ Cloudflare R2 (media)
-                                    ←→ self-hosted Socket.io on Render
+```text
+Web users      -> Vercel Next.js app
+iOS/Android    -> Expo/EAS builds
+All clients    -> Render NestJS API (/api/v1)
+API            -> Neon Postgres via Prisma
+API            -> Cloudflare R2 for media
+API            -> Expo push service for device notifications
+Live updates   -> API-owned SSE streams
 ```
 
-## Environments
+SSE is the active realtime transport for current app flows.
 
-| Env       | API                | Web            | DB                 | Notes                     |
-| --------- | ------------------ | -------------- | ------------------ | ------------------------- |
-| `dev`     | localhost:4000     | localhost:3000 | Neon dev branch    | per-developer Neon branch |
-| `preview` | Render preview env | Vercel preview | Neon branch per PR | automatic on PR open      |
-| `prod`    | Render service     | Vercel prod    | Neon main branch   | manual promote            |
+## Required Environments
 
-## First-time Setup (runbook)
+### API
 
-### 1. Secrets
+- `DATABASE_URL`
+- `DIRECT_URL`
+- `JWT_ACCESS_SECRET`
+- `JWT_REFRESH_SECRET`
+- `CORS_ORIGINS`
+- `R2_*`
+- Expo push and observability keys where enabled
 
-- Render: `DATABASE_URL`, `DIRECT_URL`, `JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET`, `CORS_ORIGINS`, `R2_*`, `GOOGLE_*`.
-- Vercel: `NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_WS_URL`, `NEXT_PUBLIC_DEFAULT_LOCALE`.
-- EAS: `EXPO_PUBLIC_API_URL`, `EXPO_PUBLIC_WS_URL`, `EXPO_PUBLIC_DEFAULT_LOCALE`.
-- Never commit `.env.local`.
+### Web
 
-### 2. Neon
+- `NEXT_PUBLIC_API_URL`
+- `NEXT_PUBLIC_DEFAULT_LOCALE`
+- Sentry/PostHog public keys where enabled
 
-- Create project `baydar`.
-- Branch `main` = prod. Enable "branch per PR" integration with GitHub.
-- Daily backups on by default — verify in the project settings.
+### Mobile
 
-### 3. Render (API)
+- `EXPO_PUBLIC_API_URL`
+- `EXPO_PUBLIC_DEFAULT_LOCALE`
+- `EXPO_PUBLIC_SENTRY_DSN`
+- `EXPO_PUBLIC_POSTHOG_KEY`
+- `EXPO_PUBLIC_POSTHOG_HOST`
 
-- Create Web Service from GitHub repo, root `apps/api`, Dockerfile based build.
-- Build command: `pnpm install --frozen-lockfile && pnpm --filter @baydar/db db:generate && pnpm --filter @baydar/api build`.
-- Start command: `node dist/main.js`.
-- Health check path: `/api/v1/health`.
-- Autoscale off day one; one instance. Turn on later only if needed.
-- Add a **pre-deploy job** that runs `pnpm --filter @baydar/db db:deploy` (Prisma migrate deploy).
+## Service Setup
 
-### 4. Vercel (Web)
+### Neon
 
-- Import repo. Root directory `apps/web`. Framework preset Next.js.
-- Build command: `pnpm --filter @baydar/web build` with `TURBO_TEAM`/`TURBO_TOKEN` env if using remote cache.
-- Install command: `pnpm install --frozen-lockfile` at repo root.
-- `NEXT_PUBLIC_*` vars set per environment.
-- Custom domain `baydar.ps` + `www.baydar.ps` (redirect apex → www or vice versa — pick one).
+- Project/database: `baydar`.
+- Production branch: main.
+- Preview branches may be used per PR.
+- Run migrations with `pnpm --filter @baydar/db db:deploy`.
 
-### 5. EAS (Mobile)
+### Render API
 
-- `npx eas-cli init` inside `apps/mobile`.
-- `eas build --profile production --platform all` after signing credentials set up.
-- `eas submit` when store listings are ready.
-- OTA: `eas update --branch production` for JS-only hotfixes.
+- Build from the repo root so workspace packages are available.
+- Install: `pnpm install --frozen-lockfile`
+- Build: `pnpm --filter @baydar/api build`
+- Start: `pnpm --filter @baydar/api start`
+- Health: `/api/v1/health`
 
-### 6. Cloudflare R2
+### Vercel Web
 
-- Create bucket `baydar-media-prod` (private) and `baydar-media-dev`.
-- Public media served via custom domain `media.baydar.ps` mapped to R2 via a CNAME.
-- Signed PUT URLs minted by the API only; uploads clamp to:
-  - Images: 10 MB, `image/jpeg|png|webp`.
-  - Video: 200 MB, `video/mp4`. No transcoding on day one.
-  - Documents: 20 MB, `application/pdf`.
+- Root directory: `apps/web`.
+- Install at repo root with pnpm.
+- Build: `pnpm --filter @baydar/web build`.
 
-### 7. DNS
+### EAS Mobile
 
-- `baydar.ps` → Vercel
-- `api.baydar.ps` → Render
-- `media.baydar.ps` → R2 public
-- `status.baydar.ps` (optional) → Better Stack / UptimeRobot public page
+- Bind `apps/mobile` to the real EAS project id before release.
+- Use production profiles only after signing credentials and public env vars are configured.
+- JS-only hotfixes can use EAS Update after project binding is real.
 
-## CI/CD
+### Cloudflare R2
 
-`.github/workflows/ci.yml` runs on every PR:
+- Private buckets for media.
+- Public reads should go through the approved media domain.
+- API mints signed PUT URLs only after MIME and size validation.
 
-1. `pnpm install --frozen-lockfile`
-2. `pnpm --filter @baydar/db db:generate`
-3. `pnpm lint`
-4. `pnpm type-check`
-5. `pnpm test`
-6. `pnpm --filter @baydar/web build` (sanity)
-7. Playwright against a spun-up local stack (Chromium).
+## CI/CD Gate
 
-Deploy is handled by Vercel + Render's own GitHub integrations — no manual deploy step. Main-branch merge triggers prod. PR triggers preview.
+Required confidence commands:
 
-## Observability (baseline)
+```powershell
+pnpm install --frozen-lockfile
+pnpm --filter @baydar/db generate
+pnpm lint:tokens
+pnpm format:check
+pnpm lint
+pnpm type-check
+pnpm test
+```
 
-- Nest: `pino` logger with request id, user id, route, status.
-- Render exposes logs + metrics out of the box. Pipe to Better Stack or Logtail if needed.
-- Sentry (free tier) for both web, mobile, and api — same DSN project split by environment tag.
-- UptimeRobot on `api.baydar.ps/api/v1/health` and `baydar.ps/`.
-- Error budget and SLO dashboards deferred to post-PMF.
+Web build and mobile Expo export checks should run before release candidates.
 
-## Backups & Recovery
+## Current Release Caveats
 
-- Neon daily backups retained 7 days on free; bump tier if RPO needs tightening.
-- R2 versioning enabled on prod bucket.
-- Disaster recovery drill: once a quarter, restore latest Neon backup to a new branch and run migrations against it. Document runbook result.
-
-## Cost Sanity (approximate, solo-builder tier, monthly)
-
-- Vercel Hobby: $0 until limits → Pro $20/mo when prod launches publicly.
-- Render Starter (API + Socket.io in one): $7/mo.
-- Neon Launch: $0 for dev, $19/mo once prod traffic starts.
-- R2: pay-per-use, effectively $0 to start.
-- EAS free tier: $0 for low-volume builds; Production plan $19/mo when shipping monthly builds.
-- Sentry free, Better Stack free, UptimeRobot free.
-
-Worst-case day-one burn ≈ $60/mo. When that cap feels tight, raise the plan of whichever service is actually constrained rather than re-architecting.
+- Universal-link files contain placeholders until Apple team ID and Android release fingerprint are set.
+- EAS project id remains a release binding task.
+- Real-device push, deep-link, offline, and haptic evidence should be captured before public launch.

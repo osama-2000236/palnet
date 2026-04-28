@@ -67,7 +67,7 @@ The `@@unique([userId, postId])` enforces the LinkedIn behavior: replacing a rea
 
 ### 5. Comments are threaded one level deep
 
-`Comment.parentId` is nullable and self-references. UI should **render one level of nesting only** (LinkedIn parity). Replies-of-replies flatten to the parent's thread — enforce in the service, not the DB.
+`Comment.parentId` is nullable and self-references. UI should **render one level of nesting only**. Replies-of-replies flatten to the parent's thread — enforce in the service, not the DB.
 
 ### 6. Messaging uses rooms even for DMs
 

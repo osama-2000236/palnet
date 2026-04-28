@@ -6,7 +6,7 @@
   Historical reference only.
 */
 /* global React */
-// Shared presentation primitives for the PalNet prototype.
+// Shared presentation primitives for the Baydar prototype.
 // Export to window so other babel scripts can consume them.
 
 function Icon({ name, size = 18, strokeWidth = 1.8 }) {

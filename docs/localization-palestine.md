@@ -52,7 +52,7 @@ Locale is stored on `User.locale` (Prisma default `"ar-PS"`) and echoed in `Cont
 
 ## Testing Requirements
 
-- Any page/screen PR touches must run visually in both RTL and LTR in Playwright/Detox screenshot tests.
+- Any page/screen PR touches must run visually in both RTL and LTR through Playwright, native Jest coverage, or documented mobile manual smoke depending on platform risk.
 - Jest tests for any utility that formats numbers/dates assert both locales.
 
 ## What NOT to do

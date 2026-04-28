@@ -1,32 +1,16 @@
 # Changelog
 
-All notable changes to PalNet are documented here. Format follows Keep a Changelog.
+All notable Baydar changes are documented here.
 
 ## [Unreleased]
 
-### Added (Sprint 0 — Foundation)
+### Changed
 
-- Monorepo skeleton: Turborepo + pnpm workspaces.
-- `packages/shared` — Zod schemas for auth, user, profile, connection, post, interaction, message, notification, job, company.
-- `packages/db` — Prisma schema with all day-one entities, singleton Prisma client, dev seed.
-- `packages/config` — base tsconfig, Nest/Next/Expo tsconfigs, eslint preset, Tailwind preset.
-- `packages/ui-tokens` — shared runtime tokens for colors, spacing, radius, typography, locale.
-- `project-spec.md` — authoritative contract for AI prompts.
-- `docs/` — ERD, sprint plan, API contract, design system, localization, testing, deployment.
-- GitHub Actions CI: install → lint → type-check → test → build-web → e2e-web.
-- `.env.example`, `.gitignore`, `.editorconfig`, `.prettierrc.json`, `.nvmrc`.
+- Updated repo docs to reflect the real current `main` state after Sprint 11.5.
+- Recorded the April 28, 2026 cleanup plan and branch/artifact pruning record.
+- Replaced stale legacy product-name, old realtime, old UI-kit, old mobile SDK, legacy package-scope, and greenfield sprint references in active docs.
 
-### Removed
+### Current Baseline
 
-- Prior enterprise README (AWS EKS / Kafka / Neptune / multi-service program) — incompatible with day-one scope.
-
-### Added (Sprint 0 — App scaffolds)
-
-- `apps/api` — NestJS boot, Swagger at `/api/docs`, Helmet, CORS, Throttler, Pino logger, Zod env validation, Zod pipe, DomainException, global exception filter, `/api/v1/health`.
-- `apps/web` — Next.js 15 App Router, next-intl with `ar-PS`/`en`, RTL layout via `<html lang dir>`, Tailwind + shared preset, shared API client, Playwright landing E2E.
-- `apps/mobile` — Expo SDK 52 + expo-router, NativeWind, i18next with `ar-PS`/`en`, RTL bootstrap via `I18nManager`, shared API client, EAS profiles.
-
-### Next (Sprint 1)
-
-- Auth module in `apps/api`.
-- Onboarding flow in `apps/web` and `apps/mobile`.
+- Next.js 15 web app, Expo SDK 54 / React Native 0.81 mobile app, NestJS REST API, Prisma/Postgres, SSE live updates, JWT refresh auth, R2 media uploads, Expo push device registration.
+- Verification gate: `pnpm lint:tokens`, `pnpm format:check`, `pnpm lint`, `pnpm type-check`, `pnpm test`, and `pnpm --filter @baydar/db generate`.

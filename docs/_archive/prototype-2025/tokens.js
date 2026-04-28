@@ -1,4 +1,4 @@
-// Design tokens for the PalNet prototype.
+// Design tokens for the Baydar prototype.
 // These mirror packages/ui-tokens/src/index.ts naming so they can be ported back
 // 1:1. Values are opinionated upgrades on the current palette (away from generic
 // Tailwind blue, toward an olive/charcoal identity).

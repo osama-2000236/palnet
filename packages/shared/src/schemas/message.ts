@@ -65,7 +65,7 @@ export const ChatRoom = z.object({
 });
 export type ChatRoom = z.infer<typeof ChatRoom>;
 
-// WebSocket event shapes. Namespaces: /chat, /notifications.
+// Realtime event payload shapes consumed by SSE channels.
 export const WsChatEvent = z.discriminatedUnion("type", [
   z.object({ type: z.literal("message.new"), payload: Message }),
   z.object({ type: z.literal("message.edited"), payload: Message }),

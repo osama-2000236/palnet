@@ -2,7 +2,7 @@
 
 import type { AuthSession } from "@baydar/shared";
 
-// Bumped to baydar.* on rename from palnet.* (pre-launch, no migration).
+// Stable Baydar session storage key; no migration needed before launch.
 const KEY = "baydar.session.v1";
 
 export function readSession(): AuthSession | null {

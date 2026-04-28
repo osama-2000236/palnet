@@ -1,6 +1,6 @@
 # AI Prompt Cheatsheet
 
-Copy-paste these into Codex, Gemini, or Claude. Every prompt starts with the prefix from [`project-spec.md §6`](../project-spec.md). The blocks below are the _rest_ of the prompt.
+Copy-paste these into Codex, Gemini, or Claude. Every prompt starts with the prefix from [`project-spec.md`](../project-spec.md). The blocks below are the _rest_ of the prompt.
 
 ---
 
@@ -57,9 +57,9 @@ Add route at apps/web/src/app/<segment>/page.tsx.
 ## New Expo screen
 
 ```
-Add screen at apps/mobile/src/screens/<Name>Screen.tsx.
+Add screen at apps/mobile/app/<route>.tsx.
 - Use i18next t() for every string.
-- Wire navigation type in apps/mobile/src/navigation/types.ts.
+- Follow Expo Router file-based navigation.
 - Use NativeWind with ps-/pe-/ms-/me- for RTL safety.
 - Data via shared API client in apps/mobile/src/lib/api.ts.
 ```
@@ -74,13 +74,10 @@ Add test at apps/web/e2e/<flow>.spec.ts.
 - Assert both happy and one failure path.
 ```
 
-## New Detox E2E
+## New mobile smoke
 
 ```
-Add test at apps/mobile/e2e/<flow>.e2e.ts.
-- Log in via API seed, then launch the app with token in AsyncStorage.
-- One happy path minimum.
-- Gate with a feature flag from packages/shared if behind a rollout.
+Add native Jest coverage when the flow can be tested in-process. For OS/device behavior such as push, haptics, universal links, or app handoff, write a manual smoke note with device, OS, account, and result.
 ```
 
 ## Refactor ask (keep tight)
