@@ -68,7 +68,11 @@ export default function MessagesPage(): JSX.Element {
   >({});
   const [failedClientIds, setFailedClientIds] = useState<Set<string>>(() => new Set());
   const [error, setError] = useState<string | null>(null);
+  const [actionMessage, setActionMessage] = useState<Message | null>(null);
+  const [editingBody, setEditingBody] = useState("");
   const threadRef = useRef<HTMLDivElement | null>(null);
+  const firstUnreadRef = useRef<HTMLDivElement | null>(null);
+  const didInitialScrollRef = useRef(false);
   const lastTypingPostRef = useRef<{ roomId: string | null; at: number }>({
     roomId: null,
     at: 0,
@@ -97,8 +101,13 @@ export default function MessagesPage(): JSX.Element {
   useEffect(() => {
     if (!token) return;
     void loadRooms(token).then((list) => {
+      const requestedRoomId = new URLSearchParams(window.location.search).get("roomId");
       if (!activeRoomId && list.length > 0) {
-        setActiveRoomId(list[0]!.id);
+        setActiveRoomId(
+          requestedRoomId && list.some((room) => room.id === requestedRoomId)
+            ? requestedRoomId
+            : list[0]!.id,
+        );
       }
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -129,6 +138,7 @@ export default function MessagesPage(): JSX.Element {
     setMessages([]);
     setNextCursor(null);
     setHasMore(false);
+    didInitialScrollRef.current = false;
     void loadMessages(activeRoomId, null).then(() => {
       if (activeRoomId) {
         void apiCall(`/messaging/rooms/${activeRoomId}/read`, {
@@ -136,11 +146,6 @@ export default function MessagesPage(): JSX.Element {
           token,
         }).catch(() => {});
       }
-      requestAnimationFrame(() => {
-        if (threadRef.current) {
-          threadRef.current.scrollTop = threadRef.current.scrollHeight;
-        }
-      });
     });
   }, [activeRoomId, token, loadMessages]);
 
@@ -215,6 +220,17 @@ export default function MessagesPage(): JSX.Element {
             }).catch(() => {});
           }
         }
+      } else if (event.type === "message.edited" || event.type === "message.deleted") {
+        const m = event.payload;
+        setMessages((prev) => {
+          if (m.roomId !== activeRoomId) return prev;
+          return upsertMessage(prev, m);
+        });
+        setRooms((prev) =>
+          prev.map((r) =>
+            r.id === m.roomId ? { ...r, lastMessage: m, updatedAt: m.createdAt } : r,
+          ),
+        );
       } else if (event.type === "message.read") {
         const { roomId, userId, at } = event.payload;
         setRooms((prev) =>
@@ -292,6 +308,7 @@ export default function MessagesPage(): JSX.Element {
       clientMessageId,
       createdAt: new Date().toISOString(),
       editedAt: null,
+      deletedAt: null,
     };
     setMessages((prev) => [...prev, optimistic]);
     setDraft("");
@@ -356,6 +373,37 @@ export default function MessagesPage(): JSX.Element {
     }
   }
 
+  async function saveEdit(): Promise<void> {
+    if (!actionMessage || !token) return;
+    try {
+      const saved = await apiFetch(`/messaging/messages/${actionMessage.id}`, MessageSchema, {
+        method: "PATCH",
+        token,
+        body: { body: editingBody.trim() },
+      });
+      setMessages((prev) => upsertMessage(prev, saved));
+      setActionMessage(null);
+      setEditingBody("");
+    } catch (err) {
+      setError(err instanceof ApiRequestError ? t("edit.failed") : t("edit.failed"));
+    }
+  }
+
+  async function deleteMessage(message: Message): Promise<void> {
+    if (!token) return;
+    try {
+      const deleted = await apiFetch(`/messaging/messages/${message.id}`, MessageSchema, {
+        method: "DELETE",
+        token,
+      });
+      setMessages((prev) => upsertMessage(prev, deleted));
+      setActionMessage(null);
+      setEditingBody("");
+    } catch (err) {
+      setError(err instanceof ApiRequestError ? t("delete.failed") : t("delete.failed"));
+    }
+  }
+
   // ───────── Derived state ─────────
   const activeRoom = useMemo(
     () => rooms.find((r) => r.id === activeRoomId) ?? null,
@@ -365,6 +413,41 @@ export default function MessagesPage(): JSX.Element {
     if (!activeRoom || !viewerId) return null;
     return activeRoom.members.find((m) => m.userId !== viewerId) ?? null;
   }, [activeRoom, viewerId]);
+
+  const memberById = useMemo(() => {
+    const map = new Map<string, ChatRoom["members"][number]>();
+    for (const member of activeRoom?.members ?? []) {
+      map.set(member.userId, member);
+    }
+    return map;
+  }, [activeRoom]);
+
+  const viewerLastReadAtMs = useMemo(() => {
+    if (!activeRoom || !viewerId) return 0;
+    const me = activeRoom.members.find((m) => m.userId === viewerId);
+    return me?.lastReadAt ? Date.parse(me.lastReadAt) : 0;
+  }, [activeRoom, viewerId]);
+
+  const firstUnreadIndex = useMemo(() => {
+    if (!viewerLastReadAtMs) return -1;
+    return messages.findIndex((m) => Date.parse(m.createdAt) > viewerLastReadAtMs);
+  }, [messages, viewerLastReadAtMs]);
+
+  const unreadCount = firstUnreadIndex >= 0 ? messages.length - firstUnreadIndex : 0;
+
+  const scrollToUnread = useCallback((): void => {
+    if (firstUnreadIndex >= 0) {
+      firstUnreadRef.current?.scrollIntoView({ block: "center" });
+    } else if (threadRef.current) {
+      threadRef.current.scrollTop = threadRef.current.scrollHeight;
+    }
+  }, [firstUnreadIndex]);
+
+  useEffect(() => {
+    if (didInitialScrollRef.current || messages.length === 0) return;
+    didInitialScrollRef.current = true;
+    requestAnimationFrame(scrollToUnread);
+  }, [messages.length, scrollToUnread]);
 
   const otherLastReadAtMs = useMemo(() => {
     if (!otherMember?.lastReadAt) return 0;
@@ -412,9 +495,9 @@ export default function MessagesPage(): JSX.Element {
 
   // ───────── Render ─────────
   return (
-    <main className="mx-auto w-full max-w-[1128px] px-4 py-6 lg:px-6">
+    <div className="mx-auto w-full max-w-[1128px] px-4 py-6 lg:px-6">
       <Surface
-        as="section"
+        as="div"
         variant="card"
         padding="0"
         className="grid min-h-[calc(100vh-8rem)] grid-cols-1 overflow-hidden md:grid-cols-[320px_minmax(0,1fr)]"
@@ -423,13 +506,13 @@ export default function MessagesPage(): JSX.Element {
         <aside className="border-line-soft flex min-h-0 flex-col md:border-e">
           <div className="border-line-soft flex items-center justify-between gap-2 border-b px-4 py-3">
             <h1 className="text-ink text-base font-semibold">{t("title")}</h1>
-            <button
-              type="button"
+            <Link
+              href="/messages/new"
               aria-label={t("newMessage")}
               className="text-ink-muted hover:bg-surface-subtle hover:text-ink focus-visible:ring-brand-600 inline-flex h-8 w-8 items-center justify-center rounded-md focus:outline-none focus-visible:ring-2"
             >
               <Icon name="plus" size={18} />
-            </button>
+            </Link>
           </div>
           <div className="px-3 py-2">
             <label className="bg-surface-subtle flex items-center gap-2 rounded-full px-3 py-1.5">
@@ -458,15 +541,17 @@ export default function MessagesPage(): JSX.Element {
                   <RoomRow
                     key={room.id}
                     user={
-                      other
-                        ? {
-                            id: other.userId,
-                            handle: other.handle,
-                            firstName: other.firstName,
-                            lastName: other.lastName,
-                            avatarUrl: other.avatarUrl,
-                          }
-                        : { handle: room.title ?? room.id }
+                      room.isGroup
+                        ? { handle: room.title ?? room.id }
+                        : other
+                          ? {
+                              id: other.userId,
+                              handle: other.handle,
+                              firstName: other.firstName,
+                              lastName: other.lastName,
+                              avatarUrl: other.avatarUrl,
+                            }
+                          : { handle: room.title ?? room.id }
                     }
                     preview={room.lastMessage?.body ?? ""}
                     timestamp={shortTime(room.updatedAt, locale)}
@@ -482,7 +567,7 @@ export default function MessagesPage(): JSX.Element {
         </aside>
 
         {/* Active thread */}
-        <section className="flex min-h-0 flex-col">
+        <main className="flex min-h-0 flex-col">
           {!activeRoomId ? (
             <div className="text-ink-muted flex flex-1 items-center justify-center p-8 text-sm">
               {t("selectPrompt")}
@@ -490,7 +575,16 @@ export default function MessagesPage(): JSX.Element {
           ) : (
             <>
               <header className="border-line-soft flex items-center gap-3 border-b px-5 py-3">
-                {otherMember ? (
+                {activeRoom?.isGroup ? (
+                  <div className="flex min-w-0 flex-col">
+                    <span className="text-ink truncate text-sm font-semibold">
+                      {activeRoom.title ?? activeRoom.id}
+                    </span>
+                    <span className="text-ink-muted text-[11px]">
+                      {t("newGroup.memberCount", { count: activeRoom.members.length })}
+                    </span>
+                  </div>
+                ) : otherMember ? (
                   <>
                     <Link
                       href={`/in/${otherMember.handle}`}
@@ -548,17 +642,33 @@ export default function MessagesPage(): JSX.Element {
                   </button>
                 ) : null}
 
+                {unreadCount > 0 ? (
+                  <button
+                    type="button"
+                    onClick={scrollToUnread}
+                    className="bg-brand-100 text-brand-700 border-brand-200 mb-3 self-center rounded-full border px-3 py-1 text-[11px] font-semibold"
+                  >
+                    {t("unreadJump.banner", { count: unreadCount })}
+                  </button>
+                ) : null}
+
                 {messages.length === 0 && !activeTyping ? (
                   <p className="text-ink-muted py-6 text-center text-sm">{t("emptyThread")}</p>
                 ) : (
                   <ul role="log" aria-live="polite" className="flex flex-col gap-0.5">
                     {grouped.map(({ message: m, tail, showTimestamp, startsRun }) => {
                       const mine = m.authorId === viewerId;
+                      const index = messages.findIndex((item) => item.id === m.id);
+                      const author = memberById.get(m.authorId);
                       const status: MessageStatus | undefined = mine
                         ? computeStatus(m, failedClientIds, otherLastReadAtMs)
                         : undefined;
                       return (
-                        <div key={m.id} className={startsRun ? "mt-2 first:mt-0" : ""}>
+                        <div
+                          key={m.id}
+                          ref={index === firstUnreadIndex ? firstUnreadRef : undefined}
+                          className={`group relative ${startsRun ? "mt-2 first:mt-0" : ""}`}
+                        >
                           <MessageBubble
                             side={mine ? "mine" : "theirs"}
                             tail={tail}
@@ -569,6 +679,19 @@ export default function MessagesPage(): JSX.Element {
                                 ? `${otherMember.firstName} ${otherMember.lastName}`.trim()
                                 : undefined
                             }
+                            groupAuthor={
+                              !mine && activeRoom?.isGroup && author
+                                ? {
+                                    id: author.userId,
+                                    handle: author.handle,
+                                    firstName: author.firstName,
+                                    lastName: author.lastName,
+                                    avatarUrl: author.avatarUrl,
+                                  }
+                                : undefined
+                            }
+                            edited={Boolean(m.editedAt)}
+                            deleted={Boolean(m.deletedAt)}
                             onRetry={
                               m.clientMessageId
                                 ? () => void retryFailed(m.clientMessageId as string)
@@ -583,10 +706,33 @@ export default function MessagesPage(): JSX.Element {
                               statusDelivered: t("statusDelivered"),
                               statusRead: t("statusRead"),
                               statusFailed: t("statusFailed"),
+                              editedSuffix: t("editedSuffix"),
+                              deletedBody: t("deletedBody"),
                             }}
                           >
                             {m.body}
                           </MessageBubble>
+                          {mine && !m.id.startsWith("pending-") && !m.deletedAt ? (
+                            <div className="absolute end-0 top-0 hidden gap-1 group-focus-within:flex group-hover:flex">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setActionMessage(m);
+                                  setEditingBody(m.body);
+                                }}
+                                className="border-line-soft bg-surface text-ink-muted hover:text-ink rounded-full border px-2 py-1 text-[11px]"
+                              >
+                                {t("edit.action")}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => void deleteMessage(m)}
+                                className="border-danger/40 bg-surface text-danger rounded-full border px-2 py-1 text-[11px]"
+                              >
+                                {t("delete.action")}
+                              </button>
+                            </div>
+                          ) : null}
                         </div>
                       );
                     })}
@@ -645,11 +791,48 @@ export default function MessagesPage(): JSX.Element {
                   {t("send")}
                 </button>
               </form>
+
+              {actionMessage ? (
+                <div className="border-line-soft bg-surface border-t p-3">
+                  <div className="mx-auto flex max-w-3xl flex-col gap-2">
+                    <label className="text-ink text-xs font-semibold" htmlFor="message-edit-body">
+                      {t("edit.sheetTitle")}
+                    </label>
+                    <textarea
+                      id="message-edit-body"
+                      value={editingBody}
+                      onChange={(e) => setEditingBody(e.currentTarget.value)}
+                      className="border-line-hard text-ink focus-visible:border-brand-600 focus-visible:ring-brand-600/30 min-h-20 rounded-md border bg-transparent px-3 py-2 text-sm focus:outline-none focus-visible:ring-2"
+                      maxLength={5000}
+                    />
+                    <div className="flex justify-end gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setActionMessage(null);
+                          setEditingBody("");
+                        }}
+                        className="border-line-soft text-ink-muted hover:bg-surface-subtle rounded-md border px-3 py-2 text-sm"
+                      >
+                        {t("edit.cancel")}
+                      </button>
+                      <button
+                        type="button"
+                        disabled={editingBody.trim().length === 0}
+                        onClick={() => void saveEdit()}
+                        className="bg-brand-600 text-ink-inverse hover:bg-brand-700 rounded-md px-3 py-2 text-sm font-semibold disabled:opacity-60"
+                      >
+                        {t("edit.save")}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ) : null}
             </>
           )}
-        </section>
+        </main>
       </Surface>
-    </main>
+    </div>
   );
 }
 
@@ -668,6 +851,18 @@ function computeStatus(
   const createdAtMs = Date.parse(m.createdAt);
   if (otherLastReadAtMs >= createdAtMs) return "read";
   return "sent";
+}
+
+function upsertMessage(current: Message[], incoming: Message): Message[] {
+  const idx = current.findIndex(
+    (item) =>
+      item.id === incoming.id ||
+      (!!item.clientMessageId && item.clientMessageId === incoming.clientMessageId),
+  );
+  if (idx === -1) return [...current, incoming];
+  const next = current.slice();
+  next[idx] = incoming;
+  return next;
 }
 
 // ────────────────────────────────────────────────────────────────────────

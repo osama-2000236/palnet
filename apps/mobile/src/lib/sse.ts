@@ -5,6 +5,8 @@ import { API_BASE } from "./api";
 
 const CUSTOM_EVENT_TYPES = [
   "message.new",
+  "message.edited",
+  "message.deleted",
   "message.read",
   "typing",
   "notification.new",

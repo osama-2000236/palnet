@@ -136,7 +136,12 @@ export default function AppTabsLayout(): JSX.Element {
         name="notifications"
         options={{
           title: t("notifications.title"),
-          tabBarBadge: notificationBadge > 0 ? (notificationBadge > 99 ? "99+" : notificationBadge) : undefined,
+          tabBarBadge:
+            notificationBadge > 0
+              ? notificationBadge > 99
+                ? "99+"
+                : notificationBadge
+              : undefined,
           tabBarIcon: ({ color, focused }) => (
             <TabIcon name="bell" color={color} focused={focused} />
           ),
@@ -159,7 +164,11 @@ export default function AppTabsLayout(): JSX.Element {
       <Tabs.Screen name="me/edit" options={{ href: null }} />
       <Tabs.Screen name="in/[handle]" options={{ href: null }} />
       <Tabs.Screen name="jobs/[id]" options={{ href: null }} />
-      <Tabs.Screen name="messages/[roomId]" options={{ href: null, tabBarStyle: { display: "none" } }} />
+      <Tabs.Screen name="messages/new" options={{ href: null }} />
+      <Tabs.Screen
+        name="messages/[roomId]"
+        options={{ href: null, tabBarStyle: { display: "none" } }}
+      />
     </Tabs>
   );
 }

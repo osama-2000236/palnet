@@ -19,9 +19,11 @@ export const RoomRow = memo(function RoomRow({
   onArchive,
 }: RoomRowProps): JSX.Element {
   const other = viewerId ? room.members.find((m) => m.userId !== viewerId) : null;
-  const label = other
-    ? `${other.firstName} ${other.lastName}`.trim() || other.handle
-    : (room.title ?? room.id);
+  const label = room.isGroup
+    ? (room.title ?? room.id)
+    : other
+      ? `${other.firstName} ${other.lastName}`.trim() || other.handle
+      : (room.title ?? room.id);
   const avatarUser = other
     ? {
         id: other.userId,

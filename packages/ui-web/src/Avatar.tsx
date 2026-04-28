@@ -104,8 +104,10 @@ export function Avatar({
     className,
   );
 
+  const a11yProps = label ? { "aria-label": label, role: "img" } : { "aria-hidden": true };
+
   return (
-    <span className={box} aria-label={label || undefined} role="img">
+    <span className={box} {...a11yProps}>
       {user.avatarUrl ? (
         <img src={user.avatarUrl} alt={label} className="h-full w-full object-cover" />
       ) : (

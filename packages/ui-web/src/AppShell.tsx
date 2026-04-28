@@ -67,6 +67,8 @@ export interface AppShellProps {
   currentRoute: AppShellRoute | null;
   /** Signed-in user used for the profile avatar. Null during hydration. */
   me: AvatarUser | null;
+  /** Optional profile headline rendered in the menu hero. */
+  meHeadline?: string | null;
   /** i18n strings — required so AppShell never ships hardcoded Arabic/English. */
   labels: AppShellLabels;
 
@@ -114,6 +116,7 @@ function formatBadge(count: number): string {
 export function AppShell({
   currentRoute,
   me,
+  meHeadline,
   labels,
   messagesUnread,
   notificationsUnread,
@@ -317,7 +320,7 @@ export function AppShell({
                     {badgeText ? (
                       <span
                         aria-hidden="true"
-                        className="bg-accent-600 text-ink-inverse absolute -end-1.5 -top-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-bold leading-none"
+                        className="bg-accent-600 text-ink-inverse absolute -top-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-bold leading-none ltr:-end-1.5 rtl:-start-1.5"
                       >
                         {badgeText}
                       </span>
@@ -363,9 +366,37 @@ export function AppShell({
                   id={menuId}
                   role="menu"
                   onKeyDown={onMenuKeyDown}
-                  className="border-line-soft bg-surface shadow-card absolute end-0 top-full z-30 mt-1 min-w-[200px] rounded-md border py-1"
+                  className="border-line-soft bg-surface shadow-card absolute end-0 top-full z-30 mt-1 min-w-[240px] rounded-md border py-1"
                 >
-                  {onViewProfile ? (
+                  {me ? (
+                    <div className="border-line-soft mb-1 flex gap-3 border-b px-3 py-3">
+                      <Avatar user={me} size="md" />
+                      <div className="min-w-0 flex-1">
+                        <p className="text-ink truncate text-sm font-semibold">
+                          {[me.firstName, me.lastName].filter(Boolean).join(" ") ||
+                            me.handle ||
+                            labels.myProfile}
+                        </p>
+                        {meHeadline ? (
+                          <p className="text-ink-muted mt-0.5 truncate text-xs">{meHeadline}</p>
+                        ) : null}
+                        {onViewProfile ? (
+                          <button
+                            type="button"
+                            role="menuitem"
+                            onClick={() => {
+                              setMenuOpen(false);
+                              onViewProfile();
+                            }}
+                            className="text-brand-700 hover:bg-brand-100 focus-visible:ring-brand-600 mt-2 rounded-md px-2 py-1 text-xs font-semibold focus:outline-none focus-visible:ring-2"
+                          >
+                            {labels.viewProfile}
+                          </button>
+                        ) : null}
+                      </div>
+                    </div>
+                  ) : null}
+                  {onViewProfile && !me ? (
                     <MenuItem
                       onSelect={() => {
                         setMenuOpen(false);
@@ -405,7 +436,7 @@ export function AppShell({
         </div>
       </header>
 
-      <main>{children}</main>
+      <div>{children}</div>
     </div>
   );
 }

@@ -20,10 +20,15 @@ type PrismaStub = {
     findMany: jest.Mock;
     updateMany: jest.Mock;
   };
+  connection: {
+    count: jest.Mock;
+  };
   message: {
     findFirst: jest.Mock;
+    findUnique: jest.Mock;
     findMany: jest.Mock;
     create: jest.Mock;
+    update: jest.Mock;
     count: jest.Mock;
   };
 };
@@ -42,10 +47,15 @@ function buildPrisma(): PrismaStub {
       findMany: jest.fn(),
       updateMany: jest.fn(),
     },
+    connection: {
+      count: jest.fn(),
+    },
     message: {
       findFirst: jest.fn(),
+      findUnique: jest.fn(),
       findMany: jest.fn(),
       create: jest.fn(),
+      update: jest.fn(),
       count: jest.fn(),
     },
   };
@@ -278,6 +288,68 @@ describe("MessagingService", () => {
     });
   });
 
+  describe("createGroupRoom", () => {
+    it("creates a group room with accepted connections only", async () => {
+      prisma.connection.count.mockResolvedValue(2);
+      prisma.chatRoom.create.mockResolvedValue({ id: "room_group" });
+      prisma.chatRoom.findFirst.mockResolvedValue(
+        roomRow({
+          id: "room_group",
+          isGroup: true,
+          title: "Launch room",
+          members: [
+            roomRow().members[0],
+            {
+              userId: "u_a",
+              lastReadAt: null,
+              user: {
+                profile: { handle: "a", firstName: "A", lastName: "One", avatarUrl: null },
+              },
+            },
+            {
+              userId: "u_b",
+              lastReadAt: null,
+              user: {
+                profile: { handle: "b", firstName: "B", lastName: "Two", avatarUrl: null },
+              },
+            },
+          ],
+        }),
+      );
+      prisma.message.count.mockResolvedValue(0);
+
+      const out = await service.createGroupRoom("u_me", {
+        isGroup: true,
+        memberIds: ["u_a", "u_b"],
+        title: "Launch room",
+      });
+
+      expect(out.isGroup).toBe(true);
+      expect(prisma.chatRoom.create).toHaveBeenCalledWith({
+        data: {
+          isGroup: true,
+          title: "Launch room",
+          members: {
+            create: [{ userId: "u_me" }, { userId: "u_a" }, { userId: "u_b" }],
+          },
+        },
+        select: { id: true },
+      });
+    });
+
+    it("rejects non-accepted group members", async () => {
+      prisma.connection.count.mockResolvedValue(1);
+
+      await expect(
+        service.createGroupRoom("u_me", {
+          isGroup: true,
+          memberIds: ["u_a", "u_b"],
+          title: "Launch room",
+        }),
+      ).rejects.toMatchObject({ code: ErrorCode.AUTH_FORBIDDEN });
+    });
+  });
+
   describe("markRead", () => {
     it("updates lastReadAt and publishes a read event to every member", async () => {
       prisma.chatRoomMember.findFirst.mockResolvedValue({ id: "m_1" });
@@ -308,6 +380,87 @@ describe("MessagingService", () => {
         where: { roomId: "room_1", userId: "u_me" },
         data: expect.objectContaining({ archivedAt: expect.any(Date) }),
       });
+    });
+  });
+
+  describe("editMessage", () => {
+    const baseMessage = {
+      id: "msg_1",
+      roomId: "room_1",
+      authorId: "u_me",
+      body: "before",
+      mediaUrl: null,
+      clientMessageId: "c_1",
+      createdAt: new Date(),
+      editedAt: null,
+      deletedAt: null,
+      room: { members: [{ userId: "u_me" }, { userId: "u_them" }] },
+    };
+
+    it("edits own message within the 15 minute window and fans out", async () => {
+      prisma.message.findUnique.mockResolvedValue(baseMessage);
+      prisma.message.update.mockResolvedValue({
+        ...baseMessage,
+        body: "after",
+        editedAt: new Date("2026-04-18T10:01:00Z"),
+      });
+
+      const out = await service.editMessage("u_me", "msg_1", { body: "after" });
+
+      expect(out.body).toBe("after");
+      expect(out.editedAt).toBe("2026-04-18T10:01:00.000Z");
+      expect(bus.publish).toHaveBeenCalledWith(
+        "u_them",
+        expect.objectContaining({ type: "message.edited" }),
+      );
+    });
+
+    it("rejects edits from another room member", async () => {
+      prisma.message.findUnique.mockResolvedValue(baseMessage);
+
+      await expect(service.editMessage("u_them", "msg_1", { body: "nope" })).rejects.toMatchObject({
+        code: ErrorCode.AUTH_FORBIDDEN,
+      });
+    });
+
+    it("rejects edits after 15 minutes", async () => {
+      prisma.message.findUnique.mockResolvedValue({
+        ...baseMessage,
+        createdAt: new Date(Date.now() - 16 * 60 * 1000),
+      });
+
+      await expect(service.editMessage("u_me", "msg_1", { body: "late" })).rejects.toMatchObject({
+        code: ErrorCode.AUTH_FORBIDDEN,
+      });
+    });
+  });
+
+  describe("deleteMessage", () => {
+    it("soft-deletes own message and hides the body in the DTO", async () => {
+      const deletedAt = new Date("2026-04-18T10:02:00Z");
+      const row = {
+        id: "msg_1",
+        roomId: "room_1",
+        authorId: "u_me",
+        body: "secret",
+        mediaUrl: null,
+        clientMessageId: "c_1",
+        createdAt: new Date("2026-04-18T10:00:00Z"),
+        editedAt: null,
+        deletedAt: null,
+        room: { members: [{ userId: "u_me" }, { userId: "u_them" }] },
+      };
+      prisma.message.findUnique.mockResolvedValue(row);
+      prisma.message.update.mockResolvedValue({ ...row, deletedAt });
+
+      const out = await service.deleteMessage("u_me", "msg_1");
+
+      expect(out.body).toBe("");
+      expect(out.deletedAt).toBe("2026-04-18T10:02:00.000Z");
+      expect(bus.publish).toHaveBeenCalledWith(
+        "u_them",
+        expect.objectContaining({ type: "message.deleted" }),
+      );
     });
   });
 });

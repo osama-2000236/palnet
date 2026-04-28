@@ -10,7 +10,9 @@
     "type-check": "tsc --noEmit",
     "test": "jest --passWithNoTests",
     "e2e": "playwright test",
-    "lhci": "lhci autorun --config=./lighthouserc.json"
+    "test:a11y": "playwright test e2e/a11y.spec.ts",
+    "lhci": "npx --yes @lhci/cli@0.14.x autorun --config=./lighthouserc.json",
+    "lighthouse": "node scripts/mobile-lighthouse.mjs"
   },
   "dependencies": {
     "@baydar/shared": "workspace:*",

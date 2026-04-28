@@ -114,7 +114,7 @@ export default function JobsPageRoute(): JSX.Element {
 
   return (
     <div className="mx-auto grid w-full max-w-[1128px] grid-cols-1 gap-6 px-4 py-6 lg:grid-cols-[260px_minmax(0,1fr)]">
-      <aside className="hidden lg:block">
+      <div className="hidden lg:block">
         <Surface variant="card" padding="4" as="aside">
           <h2 className="text-ink mb-3 text-sm font-semibold">{t("filters")}</h2>
 
@@ -178,7 +178,7 @@ export default function JobsPageRoute(): JSX.Element {
             </div>
           </fieldset>
         </Surface>
-      </aside>
+      </div>
 
       <main>
         <div className="mb-4 flex items-center justify-between">

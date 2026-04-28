@@ -1,9 +1,11 @@
 import {
   type ChatRoom as ChatRoomDto,
+  type CreateGroupRoomBody,
   ErrorCode,
   type Message as MessageDto,
   NotificationType,
   type SendMessageBody,
+  type UpdateMessageBody,
 } from "@baydar/shared";
 import { Injectable } from "@nestjs/common";
 
@@ -23,6 +25,12 @@ interface MessageRow {
   createdAt: Date;
   editedAt: Date | null;
   deletedAt: Date | null;
+}
+
+interface MessageWithRoomRow extends MessageRow {
+  room: {
+    members: Array<{ userId: string }>;
+  };
 }
 
 interface MemberRow {
@@ -105,6 +113,46 @@ export class MessagingService {
     return this.getRoomDto(created.id, viewerId);
   }
 
+  async createGroupRoom(viewerId: string, body: CreateGroupRoomBody): Promise<ChatRoomDto> {
+    const memberIds = Array.from(new Set(body.memberIds.filter((id) => id !== viewerId)));
+    if (memberIds.length < 2) {
+      throw new DomainException(
+        ErrorCode.VALIDATION_FAILED,
+        "Group rooms need at least two other members.",
+        400,
+      );
+    }
+
+    const accepted = await this.prisma.connection.count({
+      where: {
+        status: "ACCEPTED",
+        OR: memberIds.flatMap((memberId) => [
+          { requesterId: viewerId, receiverId: memberId },
+          { requesterId: memberId, receiverId: viewerId },
+        ]),
+      },
+    });
+    if (accepted !== memberIds.length) {
+      throw new DomainException(
+        ErrorCode.AUTH_FORBIDDEN,
+        "Group members must be accepted connections.",
+        403,
+      );
+    }
+
+    const created = await this.prisma.chatRoom.create({
+      data: {
+        isGroup: true,
+        title: body.title.trim(),
+        members: {
+          create: [viewerId, ...memberIds].map((userId) => ({ userId })),
+        },
+      },
+      select: { id: true },
+    });
+    return this.getRoomDto(created.id, viewerId);
+  }
+
   async listMyRooms(viewerId: string): Promise<ChatRoomDto[]> {
     const rooms = (await this.prisma.chatRoom.findMany({
       where: { members: { some: { userId: viewerId, archivedAt: null } } },
@@ -129,7 +177,6 @@ export class MessagingService {
           },
         },
         messages: {
-          where: { deletedAt: null },
           orderBy: { createdAt: "desc" },
           take: 1,
         },
@@ -164,7 +211,6 @@ export class MessagingService {
           },
         },
         messages: {
-          where: { deletedAt: null },
           orderBy: { createdAt: "desc" },
           take: 1,
         },
@@ -189,7 +235,7 @@ export class MessagingService {
     await this.requireMembership(viewerId, roomId);
     const take = Math.min(Math.max(limit, 1), 50);
     const rows = (await this.prisma.message.findMany({
-      where: { roomId, deletedAt: null },
+      where: { roomId },
       orderBy: { createdAt: "desc" },
       take: take + 1,
       ...(after ? { cursor: { id: after }, skip: 1 } : {}),
@@ -261,6 +307,80 @@ export class MessagingService {
       });
     }
 
+    return dto;
+  }
+
+  async editMessage(
+    viewerId: string,
+    messageId: string,
+    body: UpdateMessageBody,
+  ): Promise<MessageDto> {
+    const row = (await this.prisma.message.findUnique({
+      where: { id: messageId },
+      include: { room: { select: { members: { select: { userId: true } } } } },
+    })) as unknown as MessageWithRoomRow | null;
+    if (!row) {
+      throw new DomainException(ErrorCode.NOT_FOUND, "Message not found.", 404);
+    }
+    if (!row.room.members.some((m) => m.userId === viewerId)) {
+      throw new DomainException(ErrorCode.NOT_FOUND, "Message not found.", 404);
+    }
+    if (row.authorId !== viewerId) {
+      throw new DomainException(
+        ErrorCode.AUTH_FORBIDDEN,
+        "Only the sender can edit this message.",
+        403,
+      );
+    }
+    if (row.deletedAt) {
+      throw new DomainException(ErrorCode.CONFLICT, "Deleted messages cannot be edited.", 409);
+    }
+    if (Date.now() - row.createdAt.getTime() > 15 * 60 * 1000) {
+      throw new DomainException(
+        ErrorCode.AUTH_FORBIDDEN,
+        "Messages can only be edited for 15 minutes.",
+        403,
+      );
+    }
+
+    const updated = (await this.prisma.message.update({
+      where: { id: messageId },
+      data: { body: body.body.trim(), editedAt: new Date() },
+    })) as unknown as MessageRow;
+    const dto = toMessageDto(updated);
+    for (const m of row.room.members) {
+      this.bus.publish(m.userId, { type: "message.edited", payload: dto });
+    }
+    return dto;
+  }
+
+  async deleteMessage(viewerId: string, messageId: string): Promise<MessageDto> {
+    const row = (await this.prisma.message.findUnique({
+      where: { id: messageId },
+      include: { room: { select: { members: { select: { userId: true } } } } },
+    })) as unknown as MessageWithRoomRow | null;
+    if (!row) {
+      throw new DomainException(ErrorCode.NOT_FOUND, "Message not found.", 404);
+    }
+    if (!row.room.members.some((m) => m.userId === viewerId)) {
+      throw new DomainException(ErrorCode.NOT_FOUND, "Message not found.", 404);
+    }
+    if (row.authorId !== viewerId) {
+      throw new DomainException(
+        ErrorCode.AUTH_FORBIDDEN,
+        "Only the sender can delete this message.",
+        403,
+      );
+    }
+
+    const deleted = (await this.prisma.message.update({
+      where: { id: messageId },
+      data: { deletedAt: row.deletedAt ?? new Date() },
+    })) as unknown as MessageRow;
+    const dto = toMessageDto(deleted);
+    for (const m of row.room.members) {
+      this.bus.publish(m.userId, { type: "message.deleted", payload: dto });
+    }
     return dto;
   }
 
@@ -367,10 +487,11 @@ function toMessageDto(row: MessageRow): MessageDto {
     id: row.id,
     roomId: row.roomId,
     authorId: row.authorId,
-    body: row.body,
+    body: row.deletedAt ? "" : row.body,
     mediaUrl: row.mediaUrl ?? null,
     clientMessageId: row.clientMessageId ?? null,
     createdAt: row.createdAt.toISOString(),
     editedAt: row.editedAt ? row.editedAt.toISOString() : null,
+    deletedAt: row.deletedAt ? row.deletedAt.toISOString() : null,
   };
 }

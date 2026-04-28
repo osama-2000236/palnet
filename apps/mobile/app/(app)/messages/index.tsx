@@ -6,7 +6,15 @@ import { Surface, nativeTokens } from "@baydar/ui-native";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ActivityIndicator, FlatList, RefreshControl, SafeAreaView, Text, View } from "react-native";
+import {
+  ActivityIndicator,
+  FlatList,
+  Pressable,
+  RefreshControl,
+  SafeAreaView,
+  Text,
+  View,
+} from "react-native";
 import { z } from "zod";
 
 import { RoomRow } from "@/components/rows/RoomRow";
@@ -85,18 +93,51 @@ export default function MessagesListScreen(): JSX.Element {
           paddingTop: nativeTokens.space[8],
         }}
       >
-        <Text
+        <View
           style={{
             marginBottom: nativeTokens.space[3],
-            color: nativeTokens.color.ink,
-            fontFamily: nativeTokens.type.family.sans,
-            fontSize: nativeTokens.type.scale.display.size,
-            lineHeight: nativeTokens.type.scale.display.line,
-            fontWeight: "700",
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: nativeTokens.space[3],
           }}
         >
-          {t("messaging.title")}
-        </Text>
+          <Text
+            style={{
+              color: nativeTokens.color.ink,
+              fontFamily: nativeTokens.type.family.sans,
+              fontSize: nativeTokens.type.scale.display.size,
+              lineHeight: nativeTokens.type.scale.display.line,
+              fontWeight: "700",
+            }}
+          >
+            {t("messaging.title")}
+          </Text>
+          <Pressable
+            onPress={() => router.push("/(app)/messages/new")}
+            accessibilityRole="button"
+            accessibilityLabel={t("messaging.newGroup.title")}
+            style={{
+              minHeight: 44,
+              borderRadius: nativeTokens.radius.full,
+              backgroundColor: nativeTokens.color.brand600,
+              paddingHorizontal: nativeTokens.space[3],
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Text
+              style={{
+                color: nativeTokens.color.inkInverse,
+                fontFamily: nativeTokens.type.family.sans,
+                fontSize: nativeTokens.type.scale.small.size,
+                fontWeight: "700",
+              }}
+            >
+              {t("messaging.newMessage")}
+            </Text>
+          </Pressable>
+        </View>
 
         <FlatList
           data={rooms}

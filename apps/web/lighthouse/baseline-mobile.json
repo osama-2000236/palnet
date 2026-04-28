@@ -1,0 +1,76 @@
+{
+  "generatedAt": "2026-04-28T04:54:52.770Z",
+  "formFactor": "mobile",
+  "thresholds": {
+    "lcpMs": 2500,
+    "tbtMs": 200,
+    "cls": 0.1,
+    "accessibility": 0.95
+  },
+  "results": [
+    {
+      "url": "http://localhost:3000/ar-PS",
+      "finalUrl": "http://localhost:3000/ar-PS",
+      "fetchTime": "2026-04-28T04:53:37.998Z",
+      "categories": {
+        "performance": 1,
+        "accessibility": 1,
+        "bestPractices": 0.96,
+        "seo": 1
+      },
+      "metrics": {
+        "lcpMs": 113.2,
+        "tbtMs": 0,
+        "cls": 0.0016
+      }
+    },
+    {
+      "url": "http://localhost:3000/en",
+      "finalUrl": "http://localhost:3000/en",
+      "fetchTime": "2026-04-28T04:53:58.530Z",
+      "categories": {
+        "performance": 1,
+        "accessibility": 1,
+        "bestPractices": 0.96,
+        "seo": 1
+      },
+      "metrics": {
+        "lcpMs": 107.6,
+        "tbtMs": 0,
+        "cls": 0.0019
+      }
+    },
+    {
+      "url": "http://localhost:3000/ar-PS/login",
+      "finalUrl": "http://localhost:3000/ar-PS/login",
+      "fetchTime": "2026-04-28T04:54:18.495Z",
+      "categories": {
+        "performance": 1,
+        "accessibility": 1,
+        "bestPractices": 0.96,
+        "seo": 1
+      },
+      "metrics": {
+        "lcpMs": 126.2,
+        "tbtMs": 0,
+        "cls": 0.0007
+      }
+    },
+    {
+      "url": "http://localhost:3000/ar-PS/register",
+      "finalUrl": "http://localhost:3000/ar-PS/register",
+      "fetchTime": "2026-04-28T04:54:38.712Z",
+      "categories": {
+        "performance": 1,
+        "accessibility": 1,
+        "bestPractices": 0.96,
+        "seo": 1
+      },
+      "metrics": {
+        "lcpMs": 128.8,
+        "tbtMs": 0,
+        "cls": 0.0006
+      }
+    }
+  ]
+}

@@ -319,6 +319,14 @@ Things scoped for later sprints so Sprint 3 stays "feed-only":
 - **EAS project binding still needs an authenticated Expo account:** `extra.eas.projectId` remains `REPLACE_WITH_EAS_PROJECT_ID` until `eas init` can run in a logged-in shell. EAS Updates URL should be set from that real project id in the same pass.
 - **Observability keys are placeholders:** production `eas.json` now documents `EXPO_PUBLIC_SENTRY_DSN` and `EXPO_PUBLIC_POSTHOG_KEY`, and the app safely no-ops on `REPLACE_WITH_*` values. Replace them in EAS secrets/env before release.
 
+### Sprint 11 — Launch polish QA gap list
+
+- **Arabic copy was AI-assisted:** `apps/mobile/src/i18n/ar.json` and `apps/web/messages/ar-PS.json` were reviewed for Modern Standard Arabic consistency, but no native human reviewer signed off. Treat final copy review as a Sprint 12 release blocker.
+- **Manual cross-device smoke remains owed:** unread jump, group room creation, peer SSE delivery, edit/delete propagation, and the after-15-minute edit denial need physical-device or two-session evidence.
+- **Authenticated job-detail a11y skipped without seed data:** the authenticated Playwright fixture scanned feed, jobs, notifications, search, profile, and messages in `ar-PS` and `en`; job detail is skipped when the verification database has no seeded job.
+- **Mobile Lighthouse baseline is public/auth route coverage:** `apps/web/lighthouse/baseline-mobile.json` uses the mobile preset on `/ar-PS`, `/en`, `/ar-PS/login`, and `/ar-PS/register`. Authenticated app-route Lighthouse with storage state is deferred to Sprint 12.
+- **Message timestamps migration already existed:** `Message.editedAt` and `Message.deletedAt` were present in the `202604260001_init` baseline migration, so Sprint 11 did not add a new Prisma migration folder.
+
 ---
 
 ## What Claude Code should NOT do

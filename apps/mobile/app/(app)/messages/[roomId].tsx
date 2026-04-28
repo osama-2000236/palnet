@@ -17,6 +17,7 @@ import {
 } from "@baydar/shared";
 import {
   MessageBubble,
+  Sheet,
   Surface,
   nativeTokens,
   type MessageBubbleLabels,
@@ -65,7 +66,10 @@ export default function MessageThreadScreen(): JSX.Element {
   const [sending, setSending] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [actionMessage, setActionMessage] = useState<Message | null>(null);
+  const [editingBody, setEditingBody] = useState("");
   const listRef = useRef<FlatList<Message> | null>(null);
+  const didInitialScrollRef = useRef(false);
   const isConnected = useNetworkStore((state) => state.isConnected);
 
   useEffect(() => {
@@ -91,6 +95,7 @@ export default function MessageThreadScreen(): JSX.Element {
       ]);
       setRoom(r);
       setMessages([...page.data].reverse());
+      didInitialScrollRef.current = false;
     } catch {
       // keep existing state
     }
@@ -115,6 +120,12 @@ export default function MessageThreadScreen(): JSX.Element {
             method: "POST",
             token,
           }).catch(() => {});
+        }
+        if (
+          (event.type === "message.edited" || event.type === "message.deleted") &&
+          event.payload.roomId === roomId
+        ) {
+          setMessages((prev) => upsertMessage(prev, event.payload));
         }
         if (event.type === "message.read" && event.payload.roomId === roomId) {
           setRoom((current) =>
@@ -189,6 +200,7 @@ export default function MessageThreadScreen(): JSX.Element {
       clientMessageId,
       createdAt: new Date().toISOString(),
       editedAt: null,
+      deletedAt: null,
     };
     setMessages((prev) => [...prev, optimistic]);
     setDraft("");
@@ -214,17 +226,98 @@ export default function MessageThreadScreen(): JSX.Element {
     [messages, sendBody],
   );
 
+  const openMessageActions = useCallback((message: Message): void => {
+    setActionMessage(message);
+    setEditingBody(message.body);
+  }, []);
+
+  const saveEdit = useCallback(async (): Promise<void> => {
+    if (!token || !actionMessage) return;
+    try {
+      const saved = await apiFetch(`/messaging/messages/${actionMessage.id}`, MessageSchema, {
+        method: "PATCH",
+        token,
+        body: { body: editingBody.trim() },
+      });
+      setMessages((prev) => upsertMessage(prev, saved));
+      setActionMessage(null);
+      setEditingBody("");
+      successHaptic();
+    } catch {
+      setError(t("messaging.edit.failed"));
+    }
+  }, [actionMessage, editingBody, token, t]);
+
+  const deleteSelected = useCallback(async (): Promise<void> => {
+    if (!token || !actionMessage) return;
+    try {
+      const deleted = await apiFetch(`/messaging/messages/${actionMessage.id}`, MessageSchema, {
+        method: "DELETE",
+        token,
+      });
+      setMessages((prev) => upsertMessage(prev, deleted));
+      setActionMessage(null);
+      setEditingBody("");
+      successHaptic();
+    } catch {
+      setError(t("messaging.delete.failed"));
+    }
+  }, [actionMessage, token, t]);
+
   const other = useMemo(
     () => (viewerId && room ? (room.members.find((m) => m.userId !== viewerId) ?? null) : null),
     [viewerId, room],
   );
   const otherName = other ? `${other.firstName} ${other.lastName}`.trim() || other.handle : "";
-  const title = otherName || (room?.title ?? "");
+  const title = room?.isGroup ? (room.title ?? "") : otherName || (room?.title ?? "");
 
   const otherLastReadAtMs = useMemo(() => {
     if (!other?.lastReadAt) return 0;
     return Date.parse(other.lastReadAt);
   }, [other]);
+
+  const memberById = useMemo(() => {
+    const map = new Map<string, NonNullable<ChatRoom["members"][number]>>();
+    for (const member of room?.members ?? []) {
+      map.set(member.userId, member);
+    }
+    return map;
+  }, [room]);
+
+  const viewerLastReadAtMs = useMemo(() => {
+    if (!viewerId || !room) return 0;
+    const me = room.members.find((member) => member.userId === viewerId);
+    return me?.lastReadAt ? Date.parse(me.lastReadAt) : 0;
+  }, [room, viewerId]);
+
+  const firstUnreadIndex = useMemo(() => {
+    if (!viewerLastReadAtMs) return -1;
+    return messages.findIndex((message) => Date.parse(message.createdAt) > viewerLastReadAtMs);
+  }, [messages, viewerLastReadAtMs]);
+
+  const unreadCount = firstUnreadIndex >= 0 ? messages.length - firstUnreadIndex : 0;
+
+  const scrollToUnread = useCallback(
+    (animated: boolean): void => {
+      if (messages.length === 0) return;
+      if (firstUnreadIndex >= 0) {
+        listRef.current?.scrollToIndex({
+          index: firstUnreadIndex,
+          viewPosition: 0.5,
+          animated,
+        });
+      } else {
+        listRef.current?.scrollToEnd({ animated });
+      }
+    },
+    [firstUnreadIndex, messages.length],
+  );
+
+  useEffect(() => {
+    if (didInitialScrollRef.current || messages.length === 0) return;
+    didInitialScrollRef.current = true;
+    requestAnimationFrame(() => scrollToUnread(false));
+  }, [messages.length, scrollToUnread]);
 
   const labels: MessageBubbleLabels = useMemo(
     () => ({
@@ -236,6 +329,8 @@ export default function MessageThreadScreen(): JSX.Element {
       statusDelivered: t("messaging.status.delivered"),
       statusRead: t("messaging.status.read"),
       statusFailed: t("messaging.status.failed"),
+      editedSuffix: t("messaging.editedSuffix"),
+      deletedBody: t("messaging.deletedBody"),
     }),
     [t],
   );
@@ -283,6 +378,33 @@ export default function MessageThreadScreen(): JSX.Element {
           </Text>
         </View>
 
+        {unreadCount > 0 ? (
+          <Pressable
+            onPress={() => scrollToUnread(true)}
+            accessibilityRole="button"
+            accessibilityLabel={t("messaging.unreadJump.accessibility", { count: unreadCount })}
+            style={{
+              alignSelf: "center",
+              marginTop: nativeTokens.space[2],
+              borderRadius: nativeTokens.radius.full,
+              backgroundColor: nativeTokens.color.brand100,
+              paddingHorizontal: nativeTokens.space[3],
+              paddingVertical: nativeTokens.space[1],
+            }}
+          >
+            <Text
+              style={{
+                color: nativeTokens.color.brand700,
+                fontFamily: nativeTokens.type.family.sans,
+                fontSize: nativeTokens.type.scale.caption.size,
+                fontWeight: "700",
+              }}
+            >
+              {t("messaging.unreadJump.banner", { count: unreadCount })}
+            </Text>
+          </Pressable>
+        ) : null}
+
         <FlatList
           ref={listRef}
           data={messages}
@@ -301,23 +423,43 @@ export default function MessageThreadScreen(): JSX.Element {
             const status: MessageStatus | undefined = mine
               ? computeStatus(item, failedClientIds, otherLastReadAtMs)
               : undefined;
+            const author = memberById.get(item.authorId);
             return (
               <View style={{ marginTop: prevSameAuthor ? 0 : 6 }}>
-                <MessageBubble
-                  side={mine ? "mine" : "theirs"}
-                  tail={tail}
-                  timestamp={tail ? shortTime(item.createdAt, locale) : null}
-                  status={status}
-                  authorName={!mine ? otherName : undefined}
-                  onRetry={
-                    item.clientMessageId
-                      ? () => retryFailed(item.clientMessageId as string)
-                      : undefined
-                  }
-                  labels={labels}
+                <Pressable
+                  disabled={!mine || item.id.startsWith("pending-") || Boolean(item.deletedAt)}
+                  onLongPress={() => openMessageActions(item)}
+                  accessibilityRole={mine ? "button" : "text"}
                 >
-                  {item.body}
-                </MessageBubble>
+                  <MessageBubble
+                    side={mine ? "mine" : "theirs"}
+                    tail={tail}
+                    timestamp={tail ? shortTime(item.createdAt, locale) : null}
+                    status={status}
+                    authorName={!mine ? otherName : undefined}
+                    groupAuthor={
+                      !mine && room?.isGroup && author
+                        ? {
+                            id: author.userId,
+                            handle: author.handle,
+                            firstName: author.firstName,
+                            lastName: author.lastName,
+                            avatarUrl: author.avatarUrl ?? null,
+                          }
+                        : undefined
+                    }
+                    edited={Boolean(item.editedAt)}
+                    deleted={Boolean(item.deletedAt)}
+                    onRetry={
+                      item.clientMessageId
+                        ? () => retryFailed(item.clientMessageId as string)
+                        : undefined
+                    }
+                    labels={labels}
+                  >
+                    {item.body}
+                  </MessageBubble>
+                </Pressable>
               </View>
             );
           }}
@@ -335,7 +477,9 @@ export default function MessageThreadScreen(): JSX.Element {
               </Text>
             </Surface>
           }
-          onContentSizeChange={() => listRef.current?.scrollToEnd({ animated: false })}
+          onScrollToIndexFailed={() => {
+            listRef.current?.scrollToEnd({ animated: false });
+          }}
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
@@ -428,6 +572,84 @@ export default function MessageThreadScreen(): JSX.Element {
             )}
           </Pressable>
         </View>
+
+        <Sheet
+          open={Boolean(actionMessage)}
+          onClose={() => {
+            setActionMessage(null);
+            setEditingBody("");
+          }}
+          title={t("messaging.edit.sheetTitle")}
+          closeLabel={t("common.cancel", { defaultValue: "إلغاء" })}
+        >
+          <TextInput
+            value={editingBody}
+            onChangeText={setEditingBody}
+            multiline
+            maxLength={5000}
+            placeholder={t("messaging.composePlaceholder")}
+            placeholderTextColor={nativeTokens.color.inkMuted}
+            style={{
+              minHeight: 92,
+              borderRadius: nativeTokens.radius.md,
+              borderWidth: 1,
+              borderColor: nativeTokens.color.lineHard,
+              paddingHorizontal: nativeTokens.space[3],
+              paddingVertical: nativeTokens.space[2],
+              color: nativeTokens.color.ink,
+              fontFamily: nativeTokens.type.family.sans,
+              fontSize: nativeTokens.type.scale.body.size,
+              textAlignVertical: "top",
+            }}
+          />
+          <Pressable
+            disabled={editingBody.trim().length === 0}
+            onPress={() => void saveEdit()}
+            accessibilityRole="button"
+            style={{
+              minHeight: 44,
+              borderRadius: nativeTokens.radius.md,
+              backgroundColor: nativeTokens.color.brand600,
+              alignItems: "center",
+              justifyContent: "center",
+              opacity: editingBody.trim().length === 0 ? 0.6 : 1,
+            }}
+          >
+            <Text
+              style={{
+                color: nativeTokens.color.inkInverse,
+                fontFamily: nativeTokens.type.family.sans,
+                fontSize: nativeTokens.type.scale.body.size,
+                fontWeight: "700",
+              }}
+            >
+              {t("messaging.edit.save")}
+            </Text>
+          </Pressable>
+          <Pressable
+            onPress={() => void deleteSelected()}
+            accessibilityRole="button"
+            style={{
+              minHeight: 44,
+              borderRadius: nativeTokens.radius.md,
+              borderWidth: 1,
+              borderColor: nativeTokens.color.danger,
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Text
+              style={{
+                color: nativeTokens.color.danger,
+                fontFamily: nativeTokens.type.family.sans,
+                fontSize: nativeTokens.type.scale.body.size,
+                fontWeight: "700",
+              }}
+            >
+              {t("messaging.delete.action")}
+            </Text>
+          </Pressable>
+        </Sheet>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
