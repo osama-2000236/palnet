@@ -15,10 +15,18 @@ export default defineConfig({
     { name: "chromium-ar", use: { ...devices["Desktop Chrome"], locale: "ar-PS" } },
     { name: "chromium-en", use: { ...devices["Desktop Chrome"], locale: "en" } },
   ],
-  webServer: {
-    command: "pnpm --filter @baydar/web dev",
-    url: "http://localhost:3000",
-    reuseExistingServer: !process.env.CI,
-    timeout: 120_000,
-  },
+  webServer: [
+    {
+      command: "pnpm --filter @baydar/api dev",
+      url: "http://localhost:4000/api/v1/health",
+      reuseExistingServer: !process.env.CI,
+      timeout: 120_000,
+    },
+    {
+      command: "pnpm --filter @baydar/web dev",
+      url: "http://localhost:3000",
+      reuseExistingServer: !process.env.CI,
+      timeout: 120_000,
+    },
+  ],
 });
