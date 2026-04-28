@@ -33,6 +33,15 @@ export const MarkNotificationsReadBody = z
   .refine((v) => !!v.ids || v.all === true, { message: "IDS_OR_ALL_REQUIRED" });
 export type MarkNotificationsReadBody = z.infer<typeof MarkNotificationsReadBody>;
 
+export const DevicePlatform = z.enum(["ios", "android"]);
+export type DevicePlatform = z.infer<typeof DevicePlatform>;
+
+export const RegisterDeviceTokenBody = z.object({
+  token: z.string().min(1).max(512),
+  platform: DevicePlatform,
+});
+export type RegisterDeviceTokenBody = z.infer<typeof RegisterDeviceTokenBody>;
+
 // Server-sent event shapes for the /notifications/stream endpoint.
 export const WsNotificationEvent = z.discriminatedUnion("type", [
   z.object({ type: z.literal("notification.new"), payload: Notification }),

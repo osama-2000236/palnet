@@ -28,6 +28,12 @@ Edit `.env.local` and fill in:
 - `JWT_ACCESS_SECRET` / `JWT_REFRESH_SECRET` — each 32+ random chars
   (generate: `node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"`)
 
+Mobile production observability reads public Expo env vars:
+
+- `EXPO_PUBLIC_SENTRY_DSN` — Sentry React Native DSN. Empty or `REPLACE_WITH_*` values disable crash reporting locally.
+- `EXPO_PUBLIC_POSTHOG_KEY` — PostHog project API key. Empty or `REPLACE_WITH_*` values keep analytics in dev-console no-op mode.
+- `EXPO_PUBLIC_POSTHOG_HOST` — PostHog host, defaulting to `https://us.i.posthog.com`.
+
 ## 3. Database
 
 ### Option A — local Postgres

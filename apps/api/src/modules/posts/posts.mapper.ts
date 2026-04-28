@@ -27,6 +27,7 @@ export interface PostWithIncludes {
     height: number | null;
     durationMs: number | null;
     sizeBytes: number | null;
+    blurhash: string | null;
   }>;
   _count: {
     reactions: number;
@@ -58,6 +59,7 @@ export function toPostDto(post: PostWithIncludes): PostDto {
       height: m.height,
       durationMs: m.durationMs,
       sizeBytes: m.sizeBytes,
+      blurhash: m.blurhash,
     })),
     createdAt: post.createdAt.toISOString(),
     updatedAt: post.updatedAt.toISOString(),

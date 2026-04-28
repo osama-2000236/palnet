@@ -1,18 +1,21 @@
 import {
   type ChatRoom,
-  CreateOrGetDmBody,
+  CreateRoomBody,
   CursorPageQuery,
   type Message,
   SendMessageBody,
+  UpdateMessageBody,
   type WsChatEvent,
 } from "@baydar/shared";
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
   Param,
+  Patch,
   Post,
   Query,
   Sse,
@@ -48,12 +51,12 @@ export class MessagingController {
   }
 
   @Post("rooms")
-  @UsePipes(new ZodValidationPipe(CreateOrGetDmBody))
-  async findOrCreateDm(
-    @CurrentUser() user: AuthUser,
-    @Body() body: CreateOrGetDmBody,
-  ): Promise<ChatRoom> {
-    return this.messaging.findOrCreateDm(user.id, body.otherUserId);
+  @UsePipes(new ZodValidationPipe(CreateRoomBody))
+  async createRoom(@CurrentUser() user: AuthUser, @Body() body: CreateRoomBody): Promise<ChatRoom> {
+    if ("otherUserId" in body) {
+      return this.messaging.findOrCreateDm(user.id, body.otherUserId);
+    }
+    return this.messaging.createGroupRoom(user.id, body);
   }
 
   @Get("rooms/:id")
@@ -95,10 +98,31 @@ export class MessagingController {
     return this.messaging.sendMessage(user.id, id, body);
   }
 
+  @Patch("messages/:id")
+  @UsePipes(new ZodValidationPipe(UpdateMessageBody))
+  async editMessage(
+    @CurrentUser() user: AuthUser,
+    @Param("id") id: string,
+    @Body() body: UpdateMessageBody,
+  ): Promise<Message> {
+    return this.messaging.editMessage(user.id, id, body);
+  }
+
+  @Delete("messages/:id")
+  async deleteMessage(@CurrentUser() user: AuthUser, @Param("id") id: string): Promise<Message> {
+    return this.messaging.deleteMessage(user.id, id);
+  }
+
   @Post("rooms/:id/read")
   @HttpCode(HttpStatus.NO_CONTENT)
   async markRead(@CurrentUser() user: AuthUser, @Param("id") id: string): Promise<void> {
     await this.messaging.markRead(user.id, id);
+  }
+
+  @Post("rooms/:id/archive")
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async archive(@CurrentUser() user: AuthUser, @Param("id") id: string): Promise<void> {
+    await this.messaging.archiveRoom(user.id, id);
   }
 
   @Post("rooms/:id/typing")

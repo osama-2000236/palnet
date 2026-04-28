@@ -10,6 +10,7 @@ export const MediaRef = z.object({
   height: z.number().int().positive().nullish(),
   durationMs: z.number().int().positive().nullish(),
   sizeBytes: z.number().int().positive().nullish(),
+  blurhash: z.string().min(6).nullish(),
 });
 export type MediaRef = z.infer<typeof MediaRef>;
 

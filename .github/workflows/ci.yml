@@ -50,7 +50,7 @@ jobs:
             node_modules
             **/node_modules
             .turbo
-          key: ws-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}
+          key: ws-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml', '.npmrc') }}-${{ github.sha }}
 
   lint:
     needs: install
@@ -70,7 +70,7 @@ jobs:
             node_modules
             **/node_modules
             .turbo
-          key: ws-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}
+          key: ws-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml', '.npmrc') }}-${{ github.sha }}
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @baydar/db db:generate
       - run: pnpm lint
@@ -94,7 +94,7 @@ jobs:
             node_modules
             **/node_modules
             .turbo
-          key: ws-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}
+          key: ws-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml', '.npmrc') }}-${{ github.sha }}
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @baydar/db db:generate
       - run: pnpm type-check
@@ -131,11 +131,12 @@ jobs:
             node_modules
             **/node_modules
             .turbo
-          key: ws-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}
+          key: ws-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml', '.npmrc') }}-${{ github.sha }}
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @baydar/db db:generate
       - run: pnpm --filter @baydar/db db:deploy
       - run: pnpm test
+      - run: pnpm --filter @baydar/mobile test
 
   build-web:
     needs: install
@@ -155,10 +156,10 @@ jobs:
             node_modules
             **/node_modules
             .turbo
-          key: ws-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}
+          key: ws-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml', '.npmrc') }}-${{ github.sha }}
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @baydar/db db:generate
-      - run: pnpm --filter @baydar/web build
+      - run: pnpm turbo run build --filter @baydar/web
         env:
           NEXT_PUBLIC_API_URL: http://localhost:4000/api/v1
           NEXT_PUBLIC_WS_URL: http://localhost:4000
@@ -194,6 +195,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @baydar/db db:generate
       - run: pnpm --filter @baydar/db db:deploy
+      - run: pnpm turbo run build --filter @baydar/shared --filter @baydar/ui-tokens --filter @baydar/ui-web
       - run: pnpm --filter @baydar/web exec playwright install --with-deps chromium
       - name: Start API + Web and run Playwright
         run: pnpm --filter @baydar/web e2e
@@ -217,7 +219,7 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @baydar/db db:generate
-      - run: pnpm --filter @baydar/web build
+      - run: pnpm turbo run build --filter @baydar/web
         env:
           NEXT_PUBLIC_API_URL: http://localhost:4000/api/v1
           NEXT_PUBLIC_WS_URL: http://localhost:4000

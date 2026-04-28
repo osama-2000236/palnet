@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 
 import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { encode } from "blurhash";
 import {
   ErrorCode,
   type PresignUploadBody,
@@ -22,6 +23,7 @@ const PURPOSE_LIMITS: Record<MediaPurpose, { maxBytes: number; kinds: string[] }
 };
 
 const PRESIGN_TTL_SECONDS = 60 * 5; // 5 minutes
+const BLURHASH_SIZE = 4;
 
 @Injectable()
 export class MediaService {
@@ -98,6 +100,7 @@ export class MediaService {
       key,
       headers: { "Content-Type": body.mimeType },
       expiresAt: new Date(Date.now() + PRESIGN_TTL_SECONDS * 1000).toISOString(),
+      blurhash: body.mimeType.startsWith("image/") ? blurhashFor(key) : null,
     };
   }
 }
@@ -119,4 +122,29 @@ function extensionFor(filename: string | undefined, mimeType: string): string {
     "application/pdf": ".pdf",
   };
   return lookup[mimeType.toLowerCase()] ?? "";
+}
+
+function blurhashFor(seed: string): string {
+  const pixels = new Uint8ClampedArray(BLURHASH_SIZE * BLURHASH_SIZE * 4);
+  let hash = 0;
+  for (let i = 0; i < seed.length; i += 1) {
+    hash = (hash * 31 + seed.charCodeAt(i)) | 0;
+  }
+  const base = Math.abs(hash);
+  const r = 122 + (base % 24);
+  const g = 132 + ((base >> 4) % 28);
+  const b = 78 + ((base >> 8) % 24);
+
+  for (let y = 0; y < BLURHASH_SIZE; y += 1) {
+    for (let x = 0; x < BLURHASH_SIZE; x += 1) {
+      const idx = (y * BLURHASH_SIZE + x) * 4;
+      const shade = (x + y) * 4;
+      pixels[idx] = Math.min(255, r + shade);
+      pixels[idx + 1] = Math.min(255, g + shade);
+      pixels[idx + 2] = Math.min(255, b + shade);
+      pixels[idx + 3] = 255;
+    }
+  }
+
+  return encode(pixels, BLURHASH_SIZE, BLURHASH_SIZE, 3, 3);
 }

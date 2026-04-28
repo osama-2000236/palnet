@@ -12,6 +12,7 @@
 import { I18nManager, Pressable, Text, View } from "react-native";
 import type { ReactNode } from "react";
 
+import { Avatar, type AvatarUser } from "./Avatar";
 import { Icon } from "./Icon";
 import { nativeTokens } from "./tokens";
 
@@ -26,6 +27,8 @@ export interface MessageBubbleLabels {
   statusDelivered: string;
   statusRead: string;
   statusFailed: string;
+  editedSuffix?: string;
+  deletedBody?: string;
 }
 
 export interface MessageBubbleProps {
@@ -34,6 +37,9 @@ export interface MessageBubbleProps {
   timestamp?: string | null;
   status?: MessageStatus;
   authorName?: string;
+  groupAuthor?: AvatarUser & { firstName?: string | null };
+  edited?: boolean;
+  deleted?: boolean;
   onRetry?(): void;
   labels: MessageBubbleLabels;
   children: ReactNode;
@@ -48,6 +54,9 @@ export function MessageBubble({
   timestamp,
   status,
   authorName,
+  groupAuthor,
+  edited = false,
+  deleted = false,
   onRetry,
   labels,
   children,
@@ -83,20 +92,64 @@ export function MessageBubble({
         alignItems: mine ? "flex-end" : "flex-start",
       }}
     >
+      {!mine && groupAuthor ? (
+        <View
+          style={{
+            marginBottom: 4,
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 6,
+          }}
+        >
+          <Avatar user={groupAuthor} size="xs" />
+          <Text
+            numberOfLines={1}
+            style={{
+              color: nativeTokens.color.inkMuted,
+              fontFamily: nativeTokens.type.family.sans,
+              fontSize: nativeTokens.type.scale.caption.size,
+              fontWeight: "600",
+            }}
+          >
+            {groupAuthor.firstName || groupAuthor.handle}
+          </Text>
+        </View>
+      ) : null}
+
       <View
         style={{
           borderRadius: RADIUS,
           borderWidth: 1,
           paddingHorizontal: 14,
           paddingVertical: 10,
-          backgroundColor: mine ? nativeTokens.color.brand100 : nativeTokens.color.surface,
-          borderColor: mine ? nativeTokens.color.brand200 : nativeTokens.color.lineSoft,
+          backgroundColor: deleted
+            ? nativeTokens.color.surfaceSubtle
+            : mine
+              ? nativeTokens.color.brand100
+              : nativeTokens.color.surface,
+          borderColor: deleted
+            ? nativeTokens.color.lineSoft
+            : mine
+              ? nativeTokens.color.brand200
+              : nativeTokens.color.lineSoft,
           ...(status === "failed" ? { borderColor: nativeTokens.color.danger } : null),
           ...ownTailCorner,
           ...theirTailCorner,
         }}
       >
-        {typeof children === "string" ? (
+        {deleted ? (
+          <Text
+            style={{
+              color: nativeTokens.color.inkMuted,
+              fontFamily: nativeTokens.type.family.sans,
+              fontSize: nativeTokens.type.scale.body.size,
+              fontStyle: "italic",
+              lineHeight: nativeTokens.type.scale.body.line,
+            }}
+          >
+            {labels.deletedBody ?? ""}
+          </Text>
+        ) : typeof children === "string" ? (
           <Text
             style={{
               color: nativeTokens.color.ink,
@@ -112,7 +165,7 @@ export function MessageBubble({
         )}
       </View>
 
-      {timestamp || (mine && status) ? (
+      {timestamp || edited || (mine && status) ? (
         <View
           style={{
             marginTop: 2,
@@ -140,6 +193,17 @@ export function MessageBubble({
               labels={labels}
               onRetry={status === "failed" ? onRetry : undefined}
             />
+          ) : null}
+          {edited && !deleted ? (
+            <Text
+              style={{
+                color: nativeTokens.color.inkMuted,
+                fontFamily: nativeTokens.type.family.sans,
+                fontSize: 11,
+              }}
+            >
+              {labels.editedSuffix}
+            </Text>
           ) : null}
         </View>
       ) : null}

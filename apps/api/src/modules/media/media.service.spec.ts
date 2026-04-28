@@ -98,5 +98,6 @@ describe("MediaService", () => {
     expect(out.key).toMatch(/^avatar\/u_1\/[0-9a-f-]+\.png$/);
     expect(out.publicUrl).toBe(`https://cdn.example.com/${out.key}`);
     expect(out.headers["Content-Type"]).toBe("image/png");
+    expect(out.blurhash).toEqual(expect.any(String));
   });
 });

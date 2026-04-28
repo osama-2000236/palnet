@@ -18,15 +18,22 @@
     "clean": "turbo run clean && rimraf node_modules",
     "format": "prettier --write \"**/*.{ts,tsx,js,json,md}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,json,md}\"",
+    "check:mobile-imports": "node scripts/check-duplicate-imports.mjs",
+    "check:native-versions": "node scripts/check-native-versions.mjs",
+    "lint:mobile-routes": "pnpm --filter @baydar/mobile exec eslint \"app/**/*.{ts,tsx}\"",
+    "mobile:recovery-check": "pnpm check:mobile-imports && pnpm check:native-versions && pnpm --filter @baydar/mobile lint && pnpm --filter @baydar/mobile type-check",
     "db:generate": "pnpm --filter @baydar/db db:generate",
     "db:migrate": "pnpm --filter @baydar/db db:migrate",
     "db:deploy": "pnpm --filter @baydar/db db:deploy",
     "db:studio": "pnpm --filter @baydar/db db:studio",
     "db:seed": "pnpm --filter @baydar/db db:seed",
-    "tokens:icons": "node scripts/build-brand-icons.mjs"
+    "tokens:icons": "node scripts/build-brand-icons.mjs",
+    "tokens:build": "pnpm --filter @baydar/ui-tokens build"
   },
   "devDependencies": {
+    "@baydar/config": "workspace:^",
     "eslint-config-prettier": "9.1.0",
+    "lint-staged": "^16.4.0",
     "prettier": "^3.3.3",
     "prettier-plugin-tailwindcss": "^0.6.8",
     "rimraf": "^6.0.1",

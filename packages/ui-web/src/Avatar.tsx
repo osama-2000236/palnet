@@ -18,6 +18,7 @@ export interface AvatarUser {
   firstName?: string | null;
   lastName?: string | null;
   avatarUrl?: string | null;
+  avatarBlurhash?: string | null;
 }
 
 export interface AvatarProps {
@@ -26,6 +27,7 @@ export interface AvatarProps {
   ring?: boolean;
   online?: boolean;
   className?: string;
+  blurhash?: string | null;
   /** Accessible label override. Defaults to the person's name. */
   alt?: string;
 }
@@ -102,8 +104,10 @@ export function Avatar({
     className,
   );
 
+  const a11yProps = label ? { "aria-label": label, role: "img" } : { "aria-hidden": true };
+
   return (
-    <span className={box} aria-label={label || undefined} role="img">
+    <span className={box} {...a11yProps}>
       {user.avatarUrl ? (
         <img src={user.avatarUrl} alt={label} className="h-full w-full object-cover" />
       ) : (

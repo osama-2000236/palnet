@@ -95,6 +95,7 @@ export default function FeedPageRoute(): JSX.Element {
 
   return (
     <main className="mx-auto grid w-full max-w-[1128px] grid-cols-1 items-start gap-6 px-4 py-6 lg:grid-cols-[225px_minmax(0,1fr)_300px] lg:gap-6 lg:px-6">
+      <h1 className="sr-only">{t("title")}</h1>
       <LeftRail me={me} />
 
       <div className="flex min-w-0 flex-col gap-3">
@@ -147,7 +148,10 @@ export default function FeedPageRoute(): JSX.Element {
 function LeftRail({ me }: { me: Profile | null }): JSX.Element {
   const t = useTranslations("feed.rail");
   return (
-    <aside className="hidden flex-col gap-3 lg:sticky lg:top-20 lg:flex">
+    <aside
+      aria-label={t("quickAccess")}
+      className="hidden flex-col gap-3 lg:sticky lg:top-20 lg:flex"
+    >
       <Surface variant="hero" padding="0" className="flex flex-col">
         <div className="from-brand-500 to-brand-700 h-14 bg-gradient-to-br" />
         <div className="-mt-7 px-4 pb-4">
@@ -225,7 +229,7 @@ function RightRail({
   const t = useTranslations("feed.rail");
   const tJobs = useTranslations("jobs");
   return (
-    <aside className="hidden flex-col gap-3 lg:sticky lg:top-20 lg:flex">
+    <aside aria-label={t("pymk")} className="hidden flex-col gap-3 lg:sticky lg:top-20 lg:flex">
       <Surface variant="card" padding="0">
         <div className="flex items-center justify-between px-4 pt-3">
           <span className="text-ink text-sm font-semibold">{t("pymk")}</span>

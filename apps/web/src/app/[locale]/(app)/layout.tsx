@@ -311,6 +311,7 @@ export default function AppLayout({ children }: { children: ReactNode }): JSX.El
     <AppShell
       currentRoute={currentRoute}
       me={meUser}
+      meHeadline={me?.headline ?? null}
       labels={labels}
       messagesUnread={messagesUnread}
       notificationsUnread={notificationsUnread}

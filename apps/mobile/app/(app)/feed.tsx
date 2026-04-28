@@ -1,5 +1,5 @@
 import { cursorPage, Post as PostSchema, type Post } from "@baydar/shared";
-import { Avatar, Surface, nativeTokens } from "@baydar/ui-native";
+import { PostCardSkeleton, Surface, nativeTokens } from "@baydar/ui-native";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { z } from "zod";
@@ -7,16 +7,17 @@ import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
   FlatList,
-  Image,
   Pressable,
-  SafeAreaView,
+  RefreshControl,
   StyleSheet,
   Text,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
-import { CommentsList } from "@/components/CommentsList";
-import { apiCall, apiFetch, apiFetchPage } from "@/lib/api";
+import { PostRow } from "@/components/rows/PostRow";
+import { apiFetch, apiFetchPage } from "@/lib/api";
+import { track } from "@/lib/analytics";
 import { getAccessToken, readSession } from "@/lib/session";
 
 const FeedPage = cursorPage(PostSchema);
@@ -28,6 +29,7 @@ export default function FeedScreen(): JSX.Element {
   const [cursor, setCursor] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const [name, setName] = useState<string | null>(null);
   const [unread, setUnread] = useState<number>(0);
 
@@ -60,6 +62,16 @@ export default function FeedScreen(): JSX.Element {
     }
   }, []);
 
+  const refreshFeed = useCallback(async (): Promise<void> => {
+    setRefreshing(true);
+    try {
+      await Promise.all([load(null), loadUnread()]);
+      track("feed.refresh");
+    } finally {
+      setRefreshing(false);
+    }
+  }, [load, loadUnread]);
+
   useEffect(() => {
     void (async () => {
       const session = await readSession();
@@ -80,9 +92,9 @@ export default function FeedScreen(): JSX.Element {
   );
 
   return (
-    <SafeAreaView className="bg-surface-muted flex-1">
-      <View className="flex-1 px-4 pt-6">
-        <View className="mb-3 flex-col gap-0.5">
+    <SafeAreaView style={feedStyles.screen}>
+      <View style={feedStyles.content}>
+        <View style={feedStyles.header}>
           <Text style={feedStyles.title}>{t("feed.title")}</Text>
           {name ? <Text style={feedStyles.welcome}>{t("feed.welcome", { name })}</Text> : null}
           {unread > 0 ? (
@@ -117,13 +129,27 @@ export default function FeedScreen(): JSX.Element {
               }
             />
           )}
-          ItemSeparatorComponent={() => <View className="h-3" />}
+          ItemSeparatorComponent={() => <View style={feedStyles.separator} />}
           onEndReachedThreshold={0.4}
           onEndReached={() => {
             if (!loading && hasMore && cursor) void load(cursor);
           }}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={() => void refreshFeed()}
+              tintColor={nativeTokens.color.brand600}
+              colors={[nativeTokens.color.brand600]}
+            />
+          }
           ListEmptyComponent={
-            loading ? null : (
+            loading ? (
+              <View style={feedStyles.skeletonStack}>
+                <PostCardSkeleton />
+                <PostCardSkeleton />
+                <PostCardSkeleton />
+              </View>
+            ) : (
               <Surface variant="tinted" padding="6">
                 <Text style={feedStyles.emptyText}>{t("feed.empty")}</Text>
               </Surface>
@@ -131,7 +157,7 @@ export default function FeedScreen(): JSX.Element {
           }
           ListFooterComponent={
             loading ? (
-              <View className="py-4">
+              <View style={feedStyles.footerLoading}>
                 <ActivityIndicator />
               </View>
             ) : null
@@ -142,141 +168,20 @@ export default function FeedScreen(): JSX.Element {
   );
 }
 
-function PostRow({ post, onChange }: { post: Post; onChange?: (next: Post) => void }): JSX.Element {
-  const { t } = useTranslation();
-  const [showComments, setShowComments] = useState(false);
-  const [busy, setBusy] = useState(false);
-
-  async function toggleReaction(): Promise<void> {
-    if (busy) return;
-    const token = await getAccessToken();
-    if (!token) return;
-    const wasLiked = post.viewer.reaction !== null;
-    const optimistic: Post = {
-      ...post,
-      viewer: { ...post.viewer, reaction: wasLiked ? null : "LIKE" },
-      counts: {
-        ...post.counts,
-        reactions: Math.max(0, post.counts.reactions + (wasLiked ? -1 : 1)),
-      },
-    };
-    onChange?.(optimistic);
-    setBusy(true);
-    try {
-      if (wasLiked) {
-        await apiCall(`/posts/${post.id}/reaction`, {
-          method: "DELETE",
-          token,
-        });
-      } else {
-        await apiCall(`/posts/${post.id}/reaction`, {
-          method: "PUT",
-          body: { type: "LIKE" },
-          token,
-        });
-      }
-    } catch {
-      onChange?.(post);
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  const liked = post.viewer.reaction !== null;
-  const singleMedia = post.media.length === 1;
-
-  return (
-    <Surface variant="card" padding="4">
-      <Pressable
-        onPress={() => router.push(`/(app)/in/${post.author.handle}`)}
-        style={postStyles.headerRow}
-        accessibilityRole="link"
-        accessibilityLabel={`${post.author.firstName} ${post.author.lastName}`}
-      >
-        <Avatar
-          user={{
-            id: post.author.id,
-            handle: post.author.handle,
-            firstName: post.author.firstName,
-            lastName: post.author.lastName,
-            avatarUrl: post.author.avatarUrl,
-          }}
-          size="md"
-        />
-        <View style={postStyles.headerText}>
-          <Text style={postStyles.name}>
-            {post.author.firstName} {post.author.lastName}
-          </Text>
-          {post.author.headline ? (
-            <Text style={postStyles.muted} numberOfLines={1}>
-              {post.author.headline}
-            </Text>
-          ) : null}
-        </View>
-      </Pressable>
-      <Text style={postStyles.body}>{post.body}</Text>
-      {post.media.length > 0 ? (
-        <View style={postStyles.mediaRow}>
-          {post.media.map((m) =>
-            m.kind === "IMAGE" ? (
-              <Image
-                key={m.id ?? m.url}
-                source={{ uri: m.url }}
-                style={[
-                  postStyles.mediaImage,
-                  singleMedia ? postStyles.mediaSingle : postStyles.mediaPair,
-                ]}
-                resizeMode="cover"
-              />
-            ) : null,
-          )}
-        </View>
-      ) : null}
-      <View style={postStyles.footer}>
-        <Pressable
-          onPress={toggleReaction}
-          disabled={busy}
-          accessibilityRole="button"
-          accessibilityState={{ disabled: busy, selected: liked }}
-          hitSlop={8}
-        >
-          <Text style={[postStyles.muted, liked ? postStyles.likedLabel : null]}>
-            {liked ? t("post.liked") : t("post.like")} ({post.counts.reactions})
-          </Text>
-        </Pressable>
-        <Pressable
-          onPress={() => setShowComments((s) => !s)}
-          accessibilityRole="button"
-          hitSlop={8}
-        >
-          <Text style={postStyles.muted}>
-            {t("post.comments")} ({post.counts.comments})
-          </Text>
-        </Pressable>
-        <Text style={postStyles.muted}>
-          {t("post.reposts")}: {post.counts.reposts}
-        </Text>
-      </View>
-
-      {showComments ? (
-        <CommentsList
-          postId={post.id}
-          onCountChange={(delta) =>
-            onChange?.({
-              ...post,
-              counts: {
-                ...post.counts,
-                comments: Math.max(0, post.counts.comments + delta),
-              },
-            })
-          }
-        />
-      ) : null}
-    </Surface>
-  );
-}
-
 const feedStyles = StyleSheet.create({
+  screen: {
+    flex: 1,
+    backgroundColor: nativeTokens.color.surfaceMuted,
+  },
+  content: {
+    flex: 1,
+    paddingHorizontal: nativeTokens.space[4],
+    paddingTop: nativeTokens.space[6],
+  },
+  header: {
+    marginBottom: nativeTokens.space[3],
+    gap: nativeTokens.space[1],
+  },
   title: {
     fontSize: nativeTokens.type.scale.display.size,
     lineHeight: nativeTokens.type.scale.display.line,
@@ -313,57 +218,13 @@ const feedStyles = StyleSheet.create({
     fontSize: nativeTokens.type.scale.body.size,
     fontFamily: nativeTokens.type.family.sans,
   },
-});
-
-const postStyles = StyleSheet.create({
-  headerRow: {
-    flexDirection: "row",
-    alignItems: "center",
+  skeletonStack: {
     gap: nativeTokens.space[3],
   },
-  headerText: { flex: 1 },
-  name: {
-    color: nativeTokens.color.ink,
-    fontSize: nativeTokens.type.scale.h3.size,
-    lineHeight: nativeTokens.type.scale.h3.line,
-    fontWeight: "600",
-    fontFamily: nativeTokens.type.family.sans,
+  separator: {
+    height: nativeTokens.space[3],
   },
-  muted: {
-    color: nativeTokens.color.inkMuted,
-    fontSize: nativeTokens.type.scale.small.size,
-    lineHeight: nativeTokens.type.scale.small.line,
-    fontFamily: nativeTokens.type.family.sans,
-  },
-  body: {
-    color: nativeTokens.color.ink,
-    fontSize: nativeTokens.type.scale.body.size,
-    lineHeight: nativeTokens.type.scale.body.line,
-    fontFamily: nativeTokens.type.family.body,
-    marginTop: nativeTokens.space[2],
-  },
-  mediaRow: {
-    marginTop: nativeTokens.space[2],
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: nativeTokens.space[1],
-  },
-  mediaImage: {
-    height: 180,
-    borderRadius: nativeTokens.radius.sm,
-  },
-  mediaSingle: { width: "100%" },
-  mediaPair: { width: "49%" },
-  footer: {
-    marginTop: nativeTokens.space[3],
-    paddingTop: nativeTokens.space[2],
-    borderTopWidth: 1,
-    borderTopColor: nativeTokens.color.lineSoft,
-    flexDirection: "row",
-    gap: nativeTokens.space[4],
-  },
-  likedLabel: {
-    color: nativeTokens.color.brand700,
-    fontWeight: "600",
+  footerLoading: {
+    paddingVertical: nativeTokens.space[4],
   },
 });

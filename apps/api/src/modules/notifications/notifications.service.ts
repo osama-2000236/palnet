@@ -11,6 +11,7 @@ import { DomainException } from "../../common/domain-exception";
 import { PrismaService } from "../prisma/prisma.service";
 
 import { NotificationsBus } from "./notifications.bus";
+import { PushService } from "./push.service";
 
 interface NotificationRow {
   id: string;
@@ -76,6 +77,7 @@ export class NotificationsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly bus: NotificationsBus,
+    private readonly push: PushService,
   ) {}
 
   // ─────────────────────────────────────────────────────────────────────
@@ -126,6 +128,11 @@ export class NotificationsService {
       this.bus.publish(input.recipientId, {
         type: "notification.new",
         payload: dto,
+      });
+      void this.push.sendNotification(input.recipientId, dto).catch((err) => {
+        this.log.warn(
+          `Failed to enqueue push notification (type=${input.type}, recipient=${input.recipientId}): ${(err as Error).message}`,
+        );
       });
       const count = await this.countUnread(input.recipientId);
       this.bus.publish(input.recipientId, {

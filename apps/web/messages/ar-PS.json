@@ -170,14 +170,14 @@
     "searchPlaceholder": "ابحث في الرسائل",
     "searchNoResults": "لا توجد محادثات مطابقة.",
     "emptyList": "لا توجد محادثات بعد.",
-    "emptyThread": "لا توجد رسائل بعد — ابدأ بالسلام.",
+    "emptyThread": "لا توجد رسائل بعد — ابدأ بالتحية.",
     "composePlaceholder": "اكتب رسالة…",
     "send": "إرسال",
     "sendFailed": "تعذّر إرسال الرسالة.",
     "selectPrompt": "اختر محادثة لبدء القراءة.",
     "loadOlder": "تحميل الرسائل الأقدم",
     "you": "أنت",
-    "online": "مباشر",
+    "online": "متصل",
     "onlineNow": "متصل الآن",
     "lastSeen": "آخر ظهور",
     "typing": "{name} يكتب…",
@@ -190,23 +190,56 @@
     "statusDelivered": "تم التسليم",
     "statusRead": "قُرئت",
     "statusFailed": "فشل الإرسال",
-    "failedHint": "تعذّر الإرسال، انقر لإعادة المحاولة"
+    "failedHint": "تعذّر الإرسال، انقر لإعادة المحاولة",
+    "editedSuffix": "تم التعديل",
+    "deletedBody": "تم حذف الرسالة",
+    "unreadJump": {
+      "banner": "{count} رسائل غير مقروءة",
+      "accessibility": "انتقل إلى {count} رسائل غير مقروءة"
+    },
+    "newGroup": {
+      "title": "مجموعة جديدة",
+      "subtitle": "ابدأ محادثة جماعية مع زملائك.",
+      "roomTitle": "اسم المجموعة",
+      "roomTitlePlaceholder": "مثال: فريق الإطلاق",
+      "search": "الأعضاء",
+      "searchPlaceholder": "ابحث في اتصالاتك",
+      "select": "اختيار",
+      "selected": "مختار",
+      "submit": "إنشاء المجموعة",
+      "memberCount": "{count} أعضاء",
+      "loading": "جارٍ تحميل الاتصالات…",
+      "empty": "لا توجد اتصالات مطابقة.",
+      "validation": "اختر عضوين على الأقل واكتب اسم المجموعة.",
+      "failed": "تعذّر إنشاء المجموعة."
+    },
+    "edit": {
+      "action": "تعديل",
+      "sheetTitle": "تعديل الرسالة",
+      "save": "حفظ التعديل",
+      "cancel": "إلغاء",
+      "failed": "تعذّر تعديل الرسالة."
+    },
+    "delete": {
+      "action": "حذف",
+      "failed": "تعذّر حذف الرسالة."
+    }
   },
   "notifications": {
     "title": "الإشعارات",
-    "empty": "ما في جديد عندك.",
+    "empty": "لا توجد إشعارات جديدة.",
     "loadMore": "تحميل المزيد",
-    "loading": "عم يحمّل…",
+    "loading": "جارٍ التحميل…",
     "live": "مباشر",
     "templates": {
-      "CONNECTION_REQUEST": "بدّو {actor} يتواصل معك.",
-      "CONNECTION_ACCEPTED": "قبل {actor} طلب التواصل تبعك.",
+      "CONNECTION_REQUEST": "يريد {actor} التواصل معك.",
+      "CONNECTION_ACCEPTED": "قبل {actor} طلب التواصل الخاص بك.",
       "POST_REACTION": "تفاعل {actor} مع منشورك.",
-      "POST_COMMENT": "علّق {actor} ع منشورك.",
-      "POST_MENTION": "أشار إلك {actor} بمنشور.",
-      "MESSAGE_RECEIVED": "بعتلك {actor} رسالة.",
-      "JOB_APPLICATION_UPDATE": "في تحديث على طلبك للوظيفة.",
-      "PROFILE_VIEW": "شاف {actor} ملفك."
+      "POST_COMMENT": "علّق {actor} على منشورك.",
+      "POST_MENTION": "أشار إليك {actor} في منشور.",
+      "MESSAGE_RECEIVED": "أرسل لك {actor} رسالة.",
+      "JOB_APPLICATION_UPDATE": "طرأ تحديث على طلبك للوظيفة.",
+      "PROFILE_VIEW": "شاهد {actor} ملفك الشخصي."
     }
   },
   "jobs": {
@@ -230,7 +263,7 @@
     "description": "وصف الوظيفة",
     "skills": "المهارات المطلوبة",
     "loadMore": "تحميل المزيد",
-    "emptyTitle": "ما في وظائف تطابق الفلاتر.",
+    "emptyTitle": "لا توجد وظائف تطابق عوامل التصفية.",
     "emptyDesc": "جرّب توسيع البحث أو إلغاء فلتر.",
     "notFound": "هذه الوظيفة لم تعد متاحة.",
     "countSummary": "{count} وظيفة",

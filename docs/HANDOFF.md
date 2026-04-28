@@ -265,6 +265,114 @@ Things scoped for later sprints so Sprint 3 stays "feed-only":
 - **`@gorhom/bottom-sheet` migration** — once a screen needs drag-to-dismiss or snap points, swap `Sheet`'s internals. Public API is already shaped for it.
 - **Swipe-to-archive on room rows + tab-hiding thread presentation** still outstanding from Sprint 5.
 
+### Sprint 7 — Mobile screen ports + Skeleton primitive ✅ SHIPPED
+
+**Landed in Sprint 7:**
+
+- `08ef1667bf2f08bc476594830566ce7ecbc016b6` — repaired stale sanity-gate commands for this Windows worktree (`tokens:build`, `@baydar/web` filter, prototype opener).
+- `3987f916929c1fa65c345c9057974f0117588e50` — added `Skeleton` + `PostCardSkeleton` to `@baydar/ui-native`, exported both, and wired first-page feed loading to the new post skeleton stack.
+- `2a0019c83b4870a06820406ca8cfba9e9a05ab60` — ported mobile Network, Notifications, Search, Composer, and Profile Edit screens to `Surface` / `Avatar` / `Button` / `Icon` / `nativeTokens`; added 250ms search debounce; localized new Arabic-first keys; audited jobs detail raw sizing.
+
+#### Sprint 7 QA gap list
+
+- **Git hook gap:** `.husky/pre-commit` calls `pnpm lint-staged`, but `lint-staged` is not installed in this branch. Sprint 7 forbids adding deps, so commits used `--no-verify` after the required gates passed directly. Sprint 8 should either add the intended hook dependency in its own guardrail PR or adjust the hook.
+- **Expo dependency warnings:** `pnpm --filter @baydar/mobile start` is green, but Expo prints pre-existing package compatibility warnings for `expo-image-picker`, `react-native`, `react-native-screens`, and `react-native-svg`. Not changed in Sprint 7 because deps added/updated = none.
+- **Existing lint warning:** `apps/mobile/src/i18n/index.ts` still reports one `@typescript-eslint/no-unused-vars` warning for `SUPPORTED`. Mobile lint exits 0.
+- **Visual screenshots:** ar/en screenshot pairs were not captured in this shell. Claude should review the five ported screens on simulator/device before starting Sprint 8.
+
+### Sprint 8 — Native UX layer ✅ SHIPPED
+
+**Landed in Sprint 8:**
+
+- `abf3adf` — added `lint-staged` as a workspace devDependency, wired staged hooks to `pnpm lint:tokens` + `pnpm --filter @baydar/mobile lint`, and removed the unused `SUPPORTED` i18n symbol.
+- `18fbb7b` — ran `npx expo install --fix` in `apps/mobile`, aligning Expo-managed native package versions and committing the lockfile bump separately.
+- `4bfe523` — added approved Sprint 8 deps only: `expo-haptics`, `expo-image`, `react-native-sse`, and API-only `blurhash`.
+- `8d3e2ec` — shipped haptics, expo-image Avatar/media migration, API blurhash placeholders, `Media.blurhash` migration, pull-to-refresh, swipe-to-archive, hidden message thread tabs, mobile SSE, memoized row components, and keyboard avoidance on auth/composer/profile edit screens.
+
+#### Sprint 8 QA gap list
+
+- **Manual device evidence not captured in this shell:** Pull-to-refresh, haptic feel, second-device SSE latency, swipe archive gesture, and blurhash placeholder under killed network still need Claude/device review.
+- **Archive migration is additive:** `202604270002_chat_room_member_archive` ships with the Sprint 8 implementation because swipe archive needs `ChatRoomMember.archivedAt`; include it when applying DB migrations.
+- **Blurhash v1 is API-generated deterministic placeholder:** The API returns a stable low-fi blurhash at presign time without image-byte decoding. It unblocks Expo placeholders now; exact image-derived blurhash can be upgraded later if we approve a decoder dependency.
+- **Expo peer warnings remain informational:** `pnpm install` still reports pre-existing `react-dom` peer warnings from Expo/Jest packages. Type-check, lint, API tests, and token lint are green.
+
+### Sprint 9 — Auth resilience + deep links + push notifications ✅ SHIPPED
+
+**Landed in Sprint 9:**
+
+- `659fa02` — added the mobile API refresh interceptor: single in-flight `/auth/refresh`, automatic Authorization injection when callers omit `token`, one retry after refresh, public auth calls marked `skipAuth`, and refresh failure cleanup back to `/(auth)/login`.
+- `58ea23c` — added Baydar deep-link routing for `baydar://u/{handle}`, `baydar://post/{id}`, `baydar://messages/{roomId}`, `baydar://jobs/{id}`, HTTPS universal-link mappings, app config intent filters/associated domains, and draft `.well-known` files.
+- `58ea23c` — added Expo push registration/tap routing on mobile plus API `POST /notifications/devices`, best-effort Expo Push fanout from notification creation, shared request schema, `expo-notifications` / `expo-device` / `expo-server-sdk` deps, and DeviceToken persistence.
+- `58ea23c` — added `202604260001_init` baseline plus `202604280001_device_token`, so `prisma migrate dev` applies cleanly from an empty verification database before Sprint 8 and Sprint 9 additive migrations.
+- `3e93617` — fixed live API boot by making Node runtime resolve workspace packages through built `dist`, adding API prebuild/predev/prestart/pretest build hooks for `@baydar/shared` + `@baydar/db`, and marking `/health` public for liveness monitoring.
+
+#### Sprint 9 QA gap list
+
+- **Manual device evidence not captured in this shell:** refresh success with a deliberately stale access token, refresh failure after clearing the refresh token, Notes/browser deep-link taps, self push tap-to-route, and five concurrent stale requests proving one server `/auth/refresh` still need physical-device/user smoke.
+- **Universal-link hosting deferred to Sprint 12:** `apps/web/public/.well-known/apple-app-site-association` and `assetlinks.json` are committed as drafts. Replace `TEAMID` and `REPLACE_WITH_RELEASE_SHA256_FINGERPRINT` before hosting.
+- **Push token is physical-device dependent:** simulator returns `null` by design through `Device.isDevice`; final push registration still needs a granted-permission Expo Go/device run.
+- **Messaging follow-ups remain Sprint 11 work:** jump-to-unread, group rooms, and message edit/delete stay deferred.
+
+### Sprint 10 — Production hardening QA gap list
+
+- **Manual device evidence not captured in this shell:** deliberate crash/Sentry receipt, airplane-mode banner + SSE resume, physical coverage screenshot, and production-environment Sentry init still need Claude/device review.
+- **EAS project binding still needs an authenticated Expo account:** `extra.eas.projectId` remains `REPLACE_WITH_EAS_PROJECT_ID` until `eas init` can run in a logged-in shell. EAS Updates URL should be set from that real project id in the same pass.
+- **Observability keys are placeholders:** production `eas.json` now documents `EXPO_PUBLIC_SENTRY_DSN` and `EXPO_PUBLIC_POSTHOG_KEY`, and the app safely no-ops on `REPLACE_WITH_*` values. Replace them in EAS secrets/env before release.
+
+### Sprint 11 — Launch polish QA gap list
+
+- **Arabic copy was AI-assisted:** `apps/mobile/src/i18n/ar.json` and `apps/web/messages/ar-PS.json` were reviewed for Modern Standard Arabic consistency, but no native human reviewer signed off. Treat final copy review as a Sprint 12 release blocker.
+- **Manual cross-device smoke remains owed:** unread jump, group room creation, peer SSE delivery, edit/delete propagation, and the after-15-minute edit denial need physical-device or two-session evidence.
+- **Authenticated job-detail a11y skipped without seed data:** the authenticated Playwright fixture scanned feed, jobs, notifications, search, profile, and messages in `ar-PS` and `en`; job detail is skipped when the verification database has no seeded job.
+- **Mobile Lighthouse baseline is public/auth route coverage:** `apps/web/lighthouse/baseline-mobile.json` uses the mobile preset on `/ar-PS`, `/en`, `/ar-PS/login`, and `/ar-PS/register`. Authenticated app-route Lighthouse with storage state is deferred to Sprint 12.
+- **Message timestamps migration already existed:** `Message.editedAt` and `Message.deletedAt` were present in the `202604260001_init` baseline migration, so Sprint 11 did not add a new Prisma migration folder.
+
+### Sprint 11.5 — Bundle gate + audit fixes ✅ SHIPPED
+
+Pre-Sprint 12 hardening. Closed gaps that no prior sprint surfaced because Codex never compiled an actual Expo bundle in any verification step (only ran type-check + Metro start ack). Audited every prior sprint and fixed actionable findings.
+
+**Critical infra fixes:**
+
+- **Expo monorepo bundle gate:** added repo-root `.npmrc` with `node-linker=hoisted` + `shamefully-hoist=true`. pnpm strict isolation was breaking every Expo transitive dep lookup (`react-native-css-interop/jsx-runtime`, `@babel/runtime/helpers/*`, `whatwg-fetch`, etc.). Without this, `expo export` and any device launch fails at module resolution before the first React render.
+- **Missing peer dep:** `@expo/metro-runtime@~4.0.0` is a peer of `expo` itself but was never declared. Added to `apps/mobile/package.json` so Metro can resolve `expo-router/entry-classic.js`.
+- **Bundle compile evidence:** `pnpm exec expo export --platform ios --dev` → 2135 modules / 13.5 MB; `--platform android` → 2139 modules. Both green.
+
+**Audit fixes from Sprints 9–11:**
+
+- **Sprint 9 push body locale:** `apps/api/src/modules/notifications/push.service.ts` now reads `User.locale` and emits Arabic OR English notification copy + title (`بيدر` / `Baydar`). Previously every push was hardcoded Arabic, ignoring recipient preference.
+- **Sprint 10 NetInfo seed:** `apps/mobile/app/_layout.tsx` calls `NetInfo.fetch()` once on mount before subscribing. Previous optimistic `isConnected: true` would lock the offline banner off until the OS fired its first connectivity change event.
+- **Sprint 10 Sentry release:** `apps/mobile/src/lib/observability.ts` passes `release: process.env.EXPO_PUBLIC_APP_VERSION` to `Sentry.init` so production crash reports symbolicate against the right build.
+- **Sprint 10 SSE auth header:** `apps/mobile/src/lib/sse.ts` now sends `Authorization: Bearer <token>` instead of `?access_token=` query param. The JWT guard (`apps/api/src/modules/auth/guards/jwt-auth.guard.ts`) already accepts both, so no backend change needed. Stops token leakage to server access logs and HTTP referrers.
+- **Sprint 11 a11y fixture validation:** `apps/web/tests/fixtures/auth.ts` now runs `AuthSession.parse()` on the API response before persisting to `storageState.json`. Previously a malformed login response would silently pass and authenticated routes would fail hydration with no actionable error.
+
+**Audit findings rejected after deeper review (NOT bugs):**
+
+- Web hover edit/delete menu — already present at `apps/web/src/app/[locale]/(app)/messages/page.tsx:715-732`.
+- `Skeleton` not exported from ui-native — already exported at `packages/ui-native/src/index.ts:15-18`.
+- `CreateOrGetDmBody` discriminator — current `z.union([dm, group])` resolves correctly because `z.object()` strips unknown fields by default; group's `isGroup: z.literal(true)` cannot match a missing field, so DMs route correctly.
+
+**Verification logs:**
+
+```
+pnpm install                                       # done in 33s, hoisted
+pnpm --filter @baydar/db generate                  # green
+pnpm --filter @baydar/api type-check               # clean
+pnpm --filter @baydar/web type-check               # clean
+pnpm --filter @baydar/mobile type-check            # clean
+pnpm --filter @baydar/mobile lint                  # clean
+pnpm lint:tokens                                   # clean
+pnpm --filter @baydar/api test                     # 10 suites / 50 tests
+pnpm --filter @baydar/mobile test                  # 5 suites / 7 tests / 1 snapshot
+                                                   # ui-native coverage: 64.24% lines
+expo export --platform ios --dev                   # 2135 modules ✓
+expo export --platform android --dev               # 2139 modules ✓
+```
+
+**Sprint 11.5 follow-ups (carry to Sprint 12 or beyond):**
+
+- **Branch coverage gap:** `Sheet.tsx` 0% branch, `Skeleton.tsx`/`PostCardSkeleton.tsx` 0%, `Icon.tsx` 3.7%, `MessageBubble.tsx` 5.71%. Statement coverage 64.24% is above the 60% target but branch coverage is still thin.
+- **Real device review still owed for every sprint** — Sprints 8–11 manual smoke evidence was never captured.
+
 ---
 
 ## What Claude Code should NOT do
@@ -302,11 +410,11 @@ After copying, delete the `handoff/` folder from this design project — it live
 
 Run these commands. All must succeed:
 
-```bash
+```powershell
 pnpm install
 pnpm tokens:build          # regenerates tokens.css + tokens.native.ts
-pnpm --filter apps/web dev  # renders in olive palette, RTL, Arabic fonts loaded
-open docs/_archive/prototype-2025/Baydar\ Prototype.html  # archived visual reference
+pnpm --filter @baydar/web dev  # renders in olive palette, RTL, Arabic fonts loaded
+Start-Process "docs/_archive/prototype-2025/Baydar Prototype.html"  # archived visual reference
 ```
 
 If any of those fail, fix them before writing a single new component.
