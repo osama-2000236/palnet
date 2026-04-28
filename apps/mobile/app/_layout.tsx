@@ -18,7 +18,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { OfflineBanner } from "@/components/OfflineBanner";
 import { initAnalytics } from "@/lib/analytics";
 import { routeFromUrl } from "@/lib/linking";
-import { initObservability, Sentry } from "@/lib/observability";
+import { initObservability, wrapApp } from "@/lib/observability";
 import { installNotificationHandlers } from "@/lib/push";
 import { useNetworkStore } from "@/store/network";
 
@@ -116,4 +116,4 @@ function RootLayout(): JSX.Element | null {
   );
 }
 
-export default Sentry.wrap(RootLayout);
+export default wrapApp(RootLayout);

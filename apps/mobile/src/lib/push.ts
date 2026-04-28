@@ -1,4 +1,5 @@
 import { type RegisterDeviceTokenBody } from "@baydar/shared";
+import Constants, { ExecutionEnvironment } from "expo-constants";
 import * as Device from "expo-device";
 import * as Notifications from "expo-notifications";
 import { router } from "expo-router";
@@ -6,6 +7,9 @@ import { Platform } from "react-native";
 
 import { apiCall } from "./api";
 import { routeFromUrl } from "./linking";
+
+const IS_EXPO_GO =
+  Constants.executionEnvironment === ExecutionEnvironment.StoreClient;
 
 let notificationHandlerInstalled = false;
 
@@ -37,6 +41,15 @@ export function installNotificationHandlers(): () => void {
 export async function registerForPushAsync(): Promise<string | null> {
   const platform = getDevicePlatform();
   if (!platform) return null;
+
+  // Expo Go on SDK 53+ removed remote push token support; SDK 52 still warns.
+  // Skip token acquisition entirely so the app stays clean inside the sandbox.
+  if (IS_EXPO_GO) {
+    if (__DEV__) {
+      console.debug("[push] Skipping push registration: running inside Expo Go.");
+    }
+    return null;
+  }
 
   if (Platform.OS === "android") {
     await Notifications.setNotificationChannelAsync("default", {
