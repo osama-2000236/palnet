@@ -1,3 +1,8 @@
+// Hermes ships without `Intl.PluralRules`, so i18next falls back to the
+// legacy `compatibilityJSON v3` format with a noisy console.error. Pull in
+// the polyfill before i18next initialises.
+import "intl-pluralrules";
+
 import * as Localization from "expo-localization";
 import i18n from "i18next";
 import { I18nManager } from "react-native";

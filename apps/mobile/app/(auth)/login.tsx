@@ -1,18 +1,15 @@
-import { tokens } from "@baydar/ui-tokens";
+import { Button, Surface, nativeTokens } from "@baydar/ui-native";
 import { router } from "expo-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import {
-  ActivityIndicator,
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  SafeAreaView,
-  Text,
-  TextInput,
-  View,
-} from "react-native";
+import { Text, View } from "react-native";
 
+import {
+  AuthError,
+  AuthFooterLink,
+  AuthScaffold,
+  AuthTextField,
+} from "@/components/auth/AuthScaffold";
 import { ApiRequestError, loginAction } from "@/lib/auth-actions";
 
 export default function LoginScreen(): JSX.Element {
@@ -40,60 +37,87 @@ export default function LoginScreen(): JSX.Element {
   }
 
   return (
-    <SafeAreaView className="bg-surface-muted flex-1">
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-        className="flex-1"
+    <AuthScaffold
+      appName={t("common.appName")}
+      kicker={t("auth.loginKicker")}
+      title={t("auth.welcomeBack")}
+      subtitle={t("auth.loginSubtitle")}
+      testID="login-screen"
+      footer={
+        <AuthFooterLink
+          label={t("auth.noAccount")}
+          actionLabel={t("auth.register")}
+          testID="login-register-link"
+          onPress={() => router.replace("/(auth)/register")}
+        />
+      }
+    >
+      <AuthTextField
+        label={t("auth.email")}
+        testID="login-email-input"
+        value={email}
+        onChangeText={setEmail}
+        autoComplete="email"
+        keyboardType="email-address"
+        autoCapitalize="none"
+        textContentType="emailAddress"
+        inputMode="email"
+        error={!!error}
+      />
+
+      <AuthTextField
+        label={t("auth.password")}
+        testID="login-password-input"
+        value={password}
+        onChangeText={setPassword}
+        secureTextEntry
+        autoComplete="password"
+        textContentType="password"
+        error={!!error}
+      />
+
+      {error ? <AuthError message={error} /> : null}
+
+      <Button
+        fullWidth
+        size="lg"
+        loading={busy}
+        testID="login-submit"
+        accessibilityLabel={t("auth.submitLogin")}
+        onPress={onSubmit}
       >
-        <View className="flex-1 gap-4 px-6 pt-12">
-          <Text className="text-ink text-3xl font-bold">{t("auth.login")}</Text>
+        {t("auth.submitLogin")}
+      </Button>
 
-          <View className="flex-col gap-1">
-            <Text className="text-ink-muted text-sm">{t("auth.email")}</Text>
-            <TextInput
-              value={email}
-              onChangeText={setEmail}
-              autoComplete="email"
-              keyboardType="email-address"
-              autoCapitalize="none"
-              className="border-ink-muted/30 bg-surface text-ink rounded-md border px-3 py-2"
-            />
-          </View>
-
-          <View className="flex-col gap-1">
-            <Text className="text-ink-muted text-sm">{t("auth.password")}</Text>
-            <TextInput
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-              autoComplete="password"
-              className="border-ink-muted/30 bg-surface text-ink rounded-md border px-3 py-2"
-            />
-          </View>
-
-          {error ? (
-            <Text className="text-danger text-sm" accessibilityRole="alert">
-              {error}
-            </Text>
-          ) : null}
-
-          <Pressable
-            onPress={onSubmit}
-            disabled={busy}
-            className="bg-brand-600 shadow-card rounded-md px-6 py-3"
+      <Surface variant="tinted" padding="3">
+        <View style={{ gap: nativeTokens.space[1] }}>
+          <Text
+            selectable
+            style={{
+              color: nativeTokens.color.ink,
+              fontFamily: nativeTokens.type.family.sans,
+              fontSize: nativeTokens.type.scale.small.size,
+              fontWeight: "600",
+              lineHeight: nativeTokens.type.scale.small.line,
+              textAlign: "right",
+            }}
           >
-            {busy ? (
-              <ActivityIndicator color={tokens.color.ink.inverse} />
-            ) : (
-              <Text className="text-ink-inverse text-center">{t("auth.submitLogin")}</Text>
-            )}
-          </Pressable>
-
-          <Pressable onPress={() => router.replace("/(auth)/register")}>
-            <Text className="text-brand-600 text-center">{t("auth.toRegister")}</Text>
-          </Pressable>
+            {t("auth.secureHintTitle")}
+          </Text>
+          <Text
+            selectable
+            style={{
+              color: nativeTokens.color.inkMuted,
+              fontFamily: nativeTokens.type.family.body,
+              fontSize: nativeTokens.type.scale.small.size,
+              lineHeight: nativeTokens.type.scale.small.line,
+              textAlign: "right",
+            }}
+          >
+            {t("auth.secureHint")}
+          </Text>
         </View>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+      </Surface>
+    </AuthScaffold>
   );
 }

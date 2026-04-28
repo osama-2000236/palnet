@@ -1,20 +1,16 @@
 import { RegisterBody } from "@baydar/shared";
-import { tokens } from "@baydar/ui-tokens";
+import { Button, Surface, nativeTokens } from "@baydar/ui-native";
 import { router } from "expo-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import {
-  ActivityIndicator,
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  SafeAreaView,
-  Switch,
-  Text,
-  TextInput,
-  View,
-} from "react-native";
+import { Pressable, Switch, Text, View } from "react-native";
 
+import {
+  AuthError,
+  AuthFooterLink,
+  AuthScaffold,
+  AuthTextField,
+} from "@/components/auth/AuthScaffold";
 import { ApiRequestError, registerAction } from "@/lib/auth-actions";
 
 export default function RegisterScreen(): JSX.Element {
@@ -56,95 +52,115 @@ export default function RegisterScreen(): JSX.Element {
   }
 
   return (
-    <SafeAreaView className="bg-surface-muted flex-1">
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-        className="flex-1"
-      >
-        <View className="flex-1 gap-4 px-6 pt-12">
-          <Text className="text-ink text-3xl font-bold">{t("auth.register")}</Text>
+    <AuthScaffold
+      appName={t("common.appName")}
+      kicker={t("auth.registerKicker")}
+      title={t("auth.createProfile")}
+      subtitle={t("auth.registerSubtitle")}
+      testID="register-screen"
+      footer={
+        <AuthFooterLink
+          label={t("auth.haveAccount")}
+          actionLabel={t("auth.login")}
+          testID="register-login-link"
+          onPress={() => router.replace("/(auth)/login")}
+        />
+      }
+    >
+      <View style={{ gap: nativeTokens.space[3] }}>
+        <AuthTextField
+          label={t("auth.firstName")}
+          testID="register-first-name-input"
+          value={firstName}
+          onChangeText={setFirstName}
+          autoComplete="name-given"
+          textContentType="givenName"
+        />
+        <AuthTextField
+          label={t("auth.lastName")}
+          testID="register-last-name-input"
+          value={lastName}
+          onChangeText={setLastName}
+          autoComplete="name-family"
+          textContentType="familyName"
+        />
+      </View>
 
-          <Field
-            label={t("auth.firstName")}
-            value={firstName}
-            onChangeText={setFirstName}
-            autoComplete="name-given"
-          />
-          <Field
-            label={t("auth.lastName")}
-            value={lastName}
-            onChangeText={setLastName}
-            autoComplete="name-family"
-          />
-          <Field
-            label={t("auth.email")}
-            value={email}
-            onChangeText={setEmail}
-            autoComplete="email"
-            keyboardType="email-address"
-            autoCapitalize="none"
-          />
-          <Field
-            label={t("auth.password")}
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-            autoComplete="password-new"
-          />
-
-          <View className="flex-row items-center gap-3">
-            <Switch value={accept} onValueChange={setAccept} />
-            <Text className="text-ink flex-1">{t("auth.acceptTerms")}</Text>
-          </View>
-
-          {error ? (
-            <Text className="text-danger text-sm" accessibilityRole="alert">
-              {error}
-            </Text>
-          ) : null}
-
-          <Pressable
-            onPress={onSubmit}
-            disabled={busy}
-            className="bg-brand-600 shadow-card rounded-md px-6 py-3"
-          >
-            {busy ? (
-              <ActivityIndicator color={tokens.color.ink.inverse} />
-            ) : (
-              <Text className="text-ink-inverse text-center">{t("auth.submitRegister")}</Text>
-            )}
-          </Pressable>
-
-          <Pressable onPress={() => router.replace("/(auth)/login")}>
-            <Text className="text-brand-600 text-center">{t("auth.toLogin")}</Text>
-          </Pressable>
-        </View>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
-  );
-}
-
-function Field(props: {
-  label: string;
-  value: string;
-  onChangeText: (v: string) => void;
-  secureTextEntry?: boolean;
-  autoComplete?: React.ComponentProps<typeof TextInput>["autoComplete"];
-  keyboardType?: React.ComponentProps<typeof TextInput>["keyboardType"];
-  autoCapitalize?: React.ComponentProps<typeof TextInput>["autoCapitalize"];
-}): JSX.Element {
-  return (
-    <View className="flex-col gap-1">
-      <Text className="text-ink-muted text-sm">{props.label}</Text>
-      <TextInput
-        value={props.value}
-        onChangeText={props.onChangeText}
-        secureTextEntry={props.secureTextEntry}
-        autoComplete={props.autoComplete}
-        keyboardType={props.keyboardType}
-        autoCapitalize={props.autoCapitalize}
-        className="border-ink-muted/30 bg-surface text-ink rounded-md border px-3 py-2"
+      <AuthTextField
+        label={t("auth.email")}
+        testID="register-email-input"
+        value={email}
+        onChangeText={setEmail}
+        autoComplete="email"
+        keyboardType="email-address"
+        autoCapitalize="none"
+        textContentType="emailAddress"
+        inputMode="email"
       />
-    </View>
+
+      <AuthTextField
+        label={t("auth.password")}
+        hint={t("auth.passwordHint")}
+        testID="register-password-input"
+        value={password}
+        onChangeText={setPassword}
+        secureTextEntry
+        autoComplete="password-new"
+        textContentType="newPassword"
+      />
+
+      <Surface variant="tinted" padding="3">
+        <Pressable
+          accessibilityRole="switch"
+          accessibilityState={{ checked: accept }}
+          accessibilityLabel={t("auth.acceptTerms")}
+          testID="register-accept-terms"
+          onPress={() => setAccept((value) => !value)}
+          style={{
+            minHeight: nativeTokens.chrome.minHit,
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: nativeTokens.space[3],
+          }}
+        >
+          <Text
+            selectable
+            style={{
+              flex: 1,
+              color: nativeTokens.color.ink,
+              fontFamily: nativeTokens.type.family.body,
+              fontSize: nativeTokens.type.scale.small.size,
+              lineHeight: nativeTokens.type.scale.small.line,
+              textAlign: "right",
+            }}
+          >
+            {t("auth.acceptTerms")}
+          </Text>
+          <Switch
+            value={accept}
+            onValueChange={setAccept}
+            trackColor={{
+              false: nativeTokens.color.surfaceSunken,
+              true: nativeTokens.color.brand200,
+            }}
+            thumbColor={accept ? nativeTokens.color.brand600 : nativeTokens.color.surface}
+          />
+        </Pressable>
+      </Surface>
+
+      {error ? <AuthError message={error} /> : null}
+
+      <Button
+        fullWidth
+        size="lg"
+        loading={busy}
+        testID="register-submit"
+        accessibilityLabel={t("auth.submitRegister")}
+        onPress={onSubmit}
+      >
+        {t("auth.submitRegister")}
+      </Button>
+    </AuthScaffold>
   );
 }
