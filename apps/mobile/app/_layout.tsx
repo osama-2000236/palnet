@@ -4,17 +4,17 @@ import {
   IBMPlexSansArabic_700Bold,
 } from "@expo-google-fonts/ibm-plex-sans-arabic";
 import { NotoNaskhArabic_400Regular } from "@expo-google-fonts/noto-naskh-arabic";
-import { nativeTokens } from "@baydar/ui-native";
 import NetInfo from "@react-native-community/netinfo";
 import { useFonts } from "expo-font";
 import { router, Stack, SplashScreen } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
-import { I18nManager, Linking, View } from "react-native";
+import { I18nManager, Linking } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { LoadingIntro } from "@/components/LoadingIntro";
 import { OfflineBanner } from "@/components/OfflineBanner";
 import { initAnalytics } from "@/lib/analytics";
 import { routeFromUrl } from "@/lib/linking";
@@ -100,7 +100,7 @@ function RootLayout(): JSX.Element | null {
   // While fonts load, render a blank surface-coloured view so we don't flash
   // the default system font for a single frame.
   if (!fontsLoaded && !fontError) {
-    return <View style={{ flex: 1, backgroundColor: nativeTokens.color.surfaceMuted }} />;
+    return <LoadingIntro compact showText={false} testID="app-loading-intro" />;
   }
 
   return (
