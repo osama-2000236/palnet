@@ -158,6 +158,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @baydar/db db:generate
       - run: pnpm --filter @baydar/db db:deploy
+      - run: pnpm --filter @baydar/db db:seed
       - run: pnpm turbo run build --filter @baydar/shared --filter @baydar/ui-tokens --filter @baydar/ui-web
       - run: pnpm --filter @baydar/web exec playwright install --with-deps chromium
       - name: Start API + Web and run Playwright
