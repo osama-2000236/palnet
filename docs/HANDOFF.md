@@ -327,6 +327,52 @@ Things scoped for later sprints so Sprint 3 stays "feed-only":
 - **Mobile Lighthouse baseline is public/auth route coverage:** `apps/web/lighthouse/baseline-mobile.json` uses the mobile preset on `/ar-PS`, `/en`, `/ar-PS/login`, and `/ar-PS/register`. Authenticated app-route Lighthouse with storage state is deferred to Sprint 12.
 - **Message timestamps migration already existed:** `Message.editedAt` and `Message.deletedAt` were present in the `202604260001_init` baseline migration, so Sprint 11 did not add a new Prisma migration folder.
 
+### Sprint 11.5 — Bundle gate + audit fixes ✅ SHIPPED
+
+Pre-Sprint 12 hardening. Closed gaps that no prior sprint surfaced because Codex never compiled an actual Expo bundle in any verification step (only ran type-check + Metro start ack). Audited every prior sprint and fixed actionable findings.
+
+**Critical infra fixes:**
+
+- **Expo monorepo bundle gate:** added repo-root `.npmrc` with `node-linker=hoisted` + `shamefully-hoist=true`. pnpm strict isolation was breaking every Expo transitive dep lookup (`react-native-css-interop/jsx-runtime`, `@babel/runtime/helpers/*`, `whatwg-fetch`, etc.). Without this, `expo export` and any device launch fails at module resolution before the first React render.
+- **Missing peer dep:** `@expo/metro-runtime@~4.0.0` is a peer of `expo` itself but was never declared. Added to `apps/mobile/package.json` so Metro can resolve `expo-router/entry-classic.js`.
+- **Bundle compile evidence:** `pnpm exec expo export --platform ios --dev` → 2135 modules / 13.5 MB; `--platform android` → 2139 modules. Both green.
+
+**Audit fixes from Sprints 9–11:**
+
+- **Sprint 9 push body locale:** `apps/api/src/modules/notifications/push.service.ts` now reads `User.locale` and emits Arabic OR English notification copy + title (`بيدر` / `Baydar`). Previously every push was hardcoded Arabic, ignoring recipient preference.
+- **Sprint 10 NetInfo seed:** `apps/mobile/app/_layout.tsx` calls `NetInfo.fetch()` once on mount before subscribing. Previous optimistic `isConnected: true` would lock the offline banner off until the OS fired its first connectivity change event.
+- **Sprint 10 Sentry release:** `apps/mobile/src/lib/observability.ts` passes `release: process.env.EXPO_PUBLIC_APP_VERSION` to `Sentry.init` so production crash reports symbolicate against the right build.
+- **Sprint 10 SSE auth header:** `apps/mobile/src/lib/sse.ts` now sends `Authorization: Bearer <token>` instead of `?access_token=` query param. The JWT guard (`apps/api/src/modules/auth/guards/jwt-auth.guard.ts`) already accepts both, so no backend change needed. Stops token leakage to server access logs and HTTP referrers.
+- **Sprint 11 a11y fixture validation:** `apps/web/tests/fixtures/auth.ts` now runs `AuthSession.parse()` on the API response before persisting to `storageState.json`. Previously a malformed login response would silently pass and authenticated routes would fail hydration with no actionable error.
+
+**Audit findings rejected after deeper review (NOT bugs):**
+
+- Web hover edit/delete menu — already present at `apps/web/src/app/[locale]/(app)/messages/page.tsx:715-732`.
+- `Skeleton` not exported from ui-native — already exported at `packages/ui-native/src/index.ts:15-18`.
+- `CreateOrGetDmBody` discriminator — current `z.union([dm, group])` resolves correctly because `z.object()` strips unknown fields by default; group's `isGroup: z.literal(true)` cannot match a missing field, so DMs route correctly.
+
+**Verification logs:**
+
+```
+pnpm install                                       # done in 33s, hoisted
+pnpm --filter @baydar/db generate                  # green
+pnpm --filter @baydar/api type-check               # clean
+pnpm --filter @baydar/web type-check               # clean
+pnpm --filter @baydar/mobile type-check            # clean
+pnpm --filter @baydar/mobile lint                  # clean
+pnpm lint:tokens                                   # clean
+pnpm --filter @baydar/api test                     # 10 suites / 50 tests
+pnpm --filter @baydar/mobile test                  # 5 suites / 7 tests / 1 snapshot
+                                                   # ui-native coverage: 64.24% lines
+expo export --platform ios --dev                   # 2135 modules ✓
+expo export --platform android --dev               # 2139 modules ✓
+```
+
+**Sprint 11.5 follow-ups (carry to Sprint 12 or beyond):**
+
+- **Branch coverage gap:** `Sheet.tsx` 0% branch, `Skeleton.tsx`/`PostCardSkeleton.tsx` 0%, `Icon.tsx` 3.7%, `MessageBubble.tsx` 5.71%. Statement coverage 64.24% is above the 60% target but branch coverage is still thin.
+- **Real device review still owed for every sprint** — Sprints 8–11 manual smoke evidence was never captured.
+
 ---
 
 ## What Claude Code should NOT do

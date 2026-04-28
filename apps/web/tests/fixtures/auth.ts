@@ -2,6 +2,7 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 import type { APIRequestContext } from "@playwright/test";
+import { AuthSession } from "@baydar/shared";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000/api/v1";
 const WEB_ORIGIN = process.env.PLAYWRIGHT_BASE_URL ?? "http://localhost:3000";
@@ -44,9 +45,9 @@ async function prepareA11yStorageState(request: APIRequestContext): Promise<A11y
     },
   });
 
-  let session: unknown;
+  let rawSession: unknown;
   if (register.ok()) {
-    session = ((await register.json()) as { data: unknown }).data;
+    rawSession = ((await register.json()) as { data: unknown }).data;
   } else {
     const login = await request.post(`${API_BASE}/auth/login`, {
       data: {
@@ -58,9 +59,10 @@ async function prepareA11yStorageState(request: APIRequestContext): Promise<A11y
     if (!login.ok()) {
       throw new Error(`Unable to prepare a11y auth fixture: ${login.status()}`);
     }
-    session = ((await login.json()) as { data: unknown }).data;
+    rawSession = ((await login.json()) as { data: unknown }).data;
   }
 
+  const session = AuthSession.parse(rawSession);
   const serializedSession = JSON.stringify(session);
 
   await mkdir(path.dirname(AUTH_STORAGE_STATE), { recursive: true });

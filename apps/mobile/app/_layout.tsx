@@ -84,6 +84,10 @@ function RootLayout(): JSX.Element | null {
   useEffect(() => installNotificationHandlers(), []);
 
   useEffect(() => {
+    void NetInfo.fetch().then((state) => {
+      setConnected(state.isConnected !== false && state.isInternetReachable !== false);
+    });
+
     const unsubscribe = NetInfo.addEventListener((state) => {
       setConnected(state.isConnected !== false && state.isInternetReachable !== false);
     });

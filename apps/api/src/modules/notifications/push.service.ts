@@ -19,12 +19,19 @@ export class PushService {
 
   async sendNotification(recipientId: string, notification: NotificationDto): Promise<void> {
     const { Expo, expo } = await this.getExpo();
-    const rows = await this.prisma.deviceToken.findMany({
-      where: { userId: recipientId },
-      select: { token: true },
-    });
+    const [rows, recipient] = await Promise.all([
+      this.prisma.deviceToken.findMany({
+        where: { userId: recipientId },
+        select: { token: true },
+      }),
+      this.prisma.user.findUnique({
+        where: { id: recipientId },
+        select: { locale: true },
+      }),
+    ]);
     if (rows.length === 0) return;
 
+    const locale = recipient?.locale ?? "ar-PS";
     const deepLink = buildDeepLink(notification);
     const messages: ExpoPushMessage[] = rows
       .map((row) => row.token)
@@ -32,8 +39,8 @@ export class PushService {
       .map((token) => ({
         to: token,
         sound: "default",
-        title: "بيدر",
-        body: buildBody(notification),
+        title: titleFor(locale),
+        body: buildBody(notification, locale),
         data: deepLink ? { deepLink } : {},
       }));
 
@@ -90,30 +97,58 @@ function buildDeepLink(notification: NotificationDto): string | null {
   return notification.postId ? `baydar://post/${notification.postId}` : null;
 }
 
-function buildBody(notification: NotificationDto): string {
+type Lang = "ar" | "en";
+
+function isArabic(locale: string): boolean {
+  return locale.toLowerCase().startsWith("ar");
+}
+
+function titleFor(locale: string): string {
+  return isArabic(locale) ? "بيدر" : "Baydar";
+}
+
+function buildBody(notification: NotificationDto, locale: string): string {
+  const lang: Lang = isArabic(locale) ? "ar" : "en";
   const actor = notification.actor
     ? `${notification.actor.firstName} ${notification.actor.lastName}`.trim()
     : null;
 
+  const ar = (withActor: string, fallback: string): string => (actor ? withActor : fallback);
+  const en = (withActor: string, fallback: string): string => (actor ? withActor : fallback);
+
   switch (notification.type) {
     case NotificationType.CONNECTION_REQUEST:
-      return actor ? `${actor} أرسل لك طلب تواصل` : "لديك طلب تواصل جديد";
+      return lang === "ar"
+        ? ar(`${actor} أرسل لك طلب تواصل`, "لديك طلب تواصل جديد")
+        : en(`${actor} sent you a connection request`, "You have a new connection request");
     case NotificationType.CONNECTION_ACCEPTED:
-      return actor ? `${actor} قبل طلب التواصل` : "تم قبول طلب التواصل";
+      return lang === "ar"
+        ? ar(`${actor} قبل طلب التواصل`, "تم قبول طلب التواصل")
+        : en(`${actor} accepted your connection request`, "Your connection request was accepted");
     case NotificationType.POST_REACTION:
-      return actor ? `${actor} تفاعل مع منشورك` : "هناك تفاعل جديد على منشورك";
+      return lang === "ar"
+        ? ar(`${actor} تفاعل مع منشورك`, "هناك تفاعل جديد على منشورك")
+        : en(`${actor} reacted to your post`, "New reaction on your post");
     case NotificationType.POST_COMMENT:
-      return actor ? `${actor} علّق على منشورك` : "هناك تعليق جديد على منشورك";
+      return lang === "ar"
+        ? ar(`${actor} علّق على منشورك`, "هناك تعليق جديد على منشورك")
+        : en(`${actor} commented on your post`, "New comment on your post");
     case NotificationType.POST_MENTION:
-      return actor ? `${actor} أشار إليك في منشور` : "تمت الإشارة إليك في منشور";
+      return lang === "ar"
+        ? ar(`${actor} أشار إليك في منشور`, "تمت الإشارة إليك في منشور")
+        : en(`${actor} mentioned you in a post`, "You were mentioned in a post");
     case NotificationType.MESSAGE_RECEIVED:
-      return actor ? `رسالة جديدة من ${actor}` : "لديك رسالة جديدة";
+      return lang === "ar"
+        ? ar(`رسالة جديدة من ${actor}`, "لديك رسالة جديدة")
+        : en(`New message from ${actor}`, "You have a new message");
     case NotificationType.JOB_APPLICATION_UPDATE:
-      return "هناك تحديث على طلبك الوظيفي";
+      return lang === "ar" ? "هناك تحديث على طلبك الوظيفي" : "Update on your job application";
     case NotificationType.PROFILE_VIEW:
-      return actor ? `${actor} شاهد ملفك` : "هناك زيارة جديدة لملفك";
+      return lang === "ar"
+        ? ar(`${actor} شاهد ملفك`, "هناك زيارة جديدة لملفك")
+        : en(`${actor} viewed your profile`, "Someone viewed your profile");
     default:
-      return "لديك إشعار جديد";
+      return lang === "ar" ? "لديك إشعار جديد" : "You have a new notification";
   }
 }
 

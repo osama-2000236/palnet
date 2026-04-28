@@ -31,8 +31,11 @@ export function subscribeSse<T extends z.ZodTypeAny>({
   onEvent,
   onError,
 }: SubscribeArgs<T>): () => void {
-  const url = `${API_BASE}${path}?access_token=${encodeURIComponent(token)}`;
-  const source = new EventSource<CustomEventType>(url, { pollingInterval: 0 });
+  const url = `${API_BASE}${path}`;
+  const source = new EventSource<CustomEventType>(url, {
+    pollingInterval: 0,
+    headers: { Authorization: `Bearer ${token}` },
+  });
 
   const onMessage = (event: DataEvent) => {
     if (!event.data) return;

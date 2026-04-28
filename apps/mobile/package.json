@@ -19,6 +19,7 @@
     "@baydar/ui-tokens": "workspace:*",
     "@expo-google-fonts/ibm-plex-sans-arabic": "^0.2.3",
     "@expo-google-fonts/noto-naskh-arabic": "^0.2.3",
+    "@expo/metro-runtime": "^4.0.1",
     "@react-native-community/netinfo": "^11.4.1",
     "@react-navigation/bottom-tabs": "^7.0.0",
     "@react-navigation/native": "^7.0.0",
