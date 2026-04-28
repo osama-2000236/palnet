@@ -13,4 +13,5 @@ if (process.env.NODE_ENV !== "production") {
   globalForPrisma.prisma = prisma;
 }
 
+// eslint-disable-next-line import/export -- Prisma generates runtime exports that eslint-plugin-import cannot statically enumerate.
 export * from "@prisma/client";
