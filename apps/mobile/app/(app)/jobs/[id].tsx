@@ -20,6 +20,7 @@ import {
 } from "react-native";
 
 import { apiCall, apiFetch } from "@/lib/api";
+import { track } from "@/lib/analytics";
 import { successHaptic, tapHaptic } from "@/lib/haptics";
 import { getAccessToken } from "@/lib/session";
 
@@ -84,6 +85,7 @@ export default function JobDetailScreen(): JSX.Element {
       });
       setJob((j) => (j ? { ...j, viewer: { ...j.viewer, hasApplied: true } } : j));
       setApplyOpen(false);
+      track("jobs.apply", { jobId: job.id });
       successHaptic();
     } catch (e) {
       setSubmitError((e as Error).message || t("common.genericError"));

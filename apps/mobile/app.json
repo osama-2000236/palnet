@@ -11,8 +11,9 @@
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#f4f6ef"
+      "backgroundColor": "#faf9f5"
     },
+    "runtimeVersion": { "policy": "appVersion" },
     "ios": {
       "bundleIdentifier": "ps.baydar.app",
       "supportsTablet": true,
@@ -26,7 +27,7 @@
       "package": "ps.baydar.app",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#f4f6ef"
+        "backgroundColor": "#526030"
       },
       "intentFilters": [
         {

@@ -40,9 +40,11 @@ import {
 import { z } from "zod";
 
 import { apiCall, apiFetch, apiFetchPage } from "@/lib/api";
+import { track } from "@/lib/analytics";
 import { successHaptic, tapHaptic } from "@/lib/haptics";
 import { readSession } from "@/lib/session";
 import { subscribeSse } from "@/lib/sse";
+import { useNetworkStore } from "@/store/network";
 
 const MessagesPageEnvelope = z.object({
   data: z.array(MessageSchema),
@@ -64,6 +66,7 @@ export default function MessageThreadScreen(): JSX.Element {
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const listRef = useRef<FlatList<Message> | null>(null);
+  const isConnected = useNetworkStore((state) => state.isConnected);
 
   useEffect(() => {
     void (async () => {
@@ -94,7 +97,7 @@ export default function MessageThreadScreen(): JSX.Element {
   }, [token, roomId]);
 
   useEffect(() => {
-    if (!token || !roomId) return;
+    if (!token || !roomId || !isConnected) return;
     void refresh().then(() => {
       void apiCall(`/messaging/rooms/${roomId}/read`, {
         method: "POST",
@@ -129,7 +132,7 @@ export default function MessageThreadScreen(): JSX.Element {
         }
       },
     });
-  }, [token, roomId, refresh]);
+  }, [token, roomId, refresh, isConnected]);
 
   const refreshThread = useCallback(async (): Promise<void> => {
     setRefreshing(true);
@@ -151,6 +154,7 @@ export default function MessageThreadScreen(): JSX.Element {
           body: { body: text, clientMessageId },
         });
         setMessages((prev) => prev.map((x) => (x.clientMessageId === clientMessageId ? saved : x)));
+        track("messages.send", { roomId });
         setFailedClientIds((prev) => {
           if (!prev.has(clientMessageId)) return prev;
           const next = new Set(prev);

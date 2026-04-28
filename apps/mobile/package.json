@@ -11,7 +11,7 @@
     "build": "echo \"Mobile builds run in EAS — nothing to build locally.\" && exit 0",
     "lint": "eslint \"src/**/*.{ts,tsx}\"",
     "type-check": "tsc --noEmit",
-    "test": "jest --passWithNoTests"
+    "test": "jest --coverage"
   },
   "dependencies": {
     "@baydar/shared": "workspace:*",
@@ -19,9 +19,11 @@
     "@baydar/ui-tokens": "workspace:*",
     "@expo-google-fonts/ibm-plex-sans-arabic": "^0.2.3",
     "@expo-google-fonts/noto-naskh-arabic": "^0.2.3",
+    "@react-native-community/netinfo": "^11.4.1",
     "@react-navigation/bottom-tabs": "^7.0.0",
     "@react-navigation/native": "^7.0.0",
     "@react-navigation/native-stack": "^7.0.0",
+    "@sentry/react-native": "^6.10.0",
     "@tanstack/react-query": "^5.59.15",
     "expo": "~52.0.0",
     "expo-device": "~7.0.3",
@@ -36,6 +38,7 @@
     "expo-status-bar": "~2.0.0",
     "i18next": "^23.16.4",
     "nativewind": "^4.1.23",
+    "posthog-react-native": "^4.43.10",
     "react": "18.3.1",
     "react-i18next": "^15.1.1",
     "react-native": "0.76.9",
@@ -51,6 +54,7 @@
   "devDependencies": {
     "@babel/core": "^7.25.9",
     "@baydar/config": "workspace:*",
+    "@testing-library/react-native": "^13.3.3",
     "@types/react": "~18.3.12",
     "eslint": "^8.57.1",
     "eslint-config-expo": "^8.0.1",

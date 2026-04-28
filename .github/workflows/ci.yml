@@ -136,6 +136,7 @@ jobs:
       - run: pnpm --filter @baydar/db db:generate
       - run: pnpm --filter @baydar/db db:deploy
       - run: pnpm test
+      - run: pnpm --filter @baydar/mobile test
 
   build-web:
     needs: install

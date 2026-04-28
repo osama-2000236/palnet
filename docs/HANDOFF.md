@@ -313,6 +313,12 @@ Things scoped for later sprints so Sprint 3 stays "feed-only":
 - **Push token is physical-device dependent:** simulator returns `null` by design through `Device.isDevice`; final push registration still needs a granted-permission Expo Go/device run.
 - **Messaging follow-ups remain Sprint 11 work:** jump-to-unread, group rooms, and message edit/delete stay deferred.
 
+### Sprint 10 — Production hardening QA gap list
+
+- **Manual device evidence not captured in this shell:** deliberate crash/Sentry receipt, airplane-mode banner + SSE resume, physical coverage screenshot, and production-environment Sentry init still need Claude/device review.
+- **EAS project binding still needs an authenticated Expo account:** `extra.eas.projectId` remains `REPLACE_WITH_EAS_PROJECT_ID` until `eas init` can run in a logged-in shell. EAS Updates URL should be set from that real project id in the same pass.
+- **Observability keys are placeholders:** production `eas.json` now documents `EXPO_PUBLIC_SENTRY_DSN` and `EXPO_PUBLIC_POSTHOG_KEY`, and the app safely no-ops on `REPLACE_WITH_*` values. Replace them in EAS secrets/env before release.
+
 ---
 
 ## What Claude Code should NOT do

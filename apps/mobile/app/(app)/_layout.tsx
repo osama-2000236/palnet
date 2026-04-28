@@ -11,7 +11,7 @@ import { WsNotificationEvent } from "@baydar/shared";
 import { Tabs, router } from "expo-router";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Platform } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { z } from "zod";
 
 import { Icon, type IconName, nativeTokens } from "@baydar/ui-native";
@@ -19,11 +19,14 @@ import { apiFetch } from "@/lib/api";
 import { registerForPushAsync } from "@/lib/push";
 import { getAccessToken, readSession } from "@/lib/session";
 import { subscribeSse } from "@/lib/sse";
+import { useNetworkStore } from "@/store/network";
 
 const UnreadCountEnvelope = z.object({ count: z.number().int().nonnegative() });
 
 export default function AppTabsLayout(): JSX.Element {
   const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
+  const isConnected = useNetworkStore((state) => state.isConnected);
   const [notificationBadge, setNotificationBadge] = useState<number>(0);
 
   // Gate the whole authenticated area on having a session. If missing, bounce
@@ -40,6 +43,7 @@ export default function AppTabsLayout(): JSX.Element {
   }, []);
 
   useEffect(() => {
+    if (!isConnected) return;
     let unsubscribe: (() => void) | undefined;
     void (async () => {
       let token = await getAccessToken();
@@ -71,7 +75,7 @@ export default function AppTabsLayout(): JSX.Element {
     return (): void => {
       unsubscribe?.();
     };
-  }, []);
+  }, [isConnected]);
 
   return (
     <Tabs
@@ -80,9 +84,9 @@ export default function AppTabsLayout(): JSX.Element {
         tabBarActiveTintColor: nativeTokens.color.brand700,
         tabBarInactiveTintColor: nativeTokens.color.inkMuted,
         tabBarStyle: {
-          height: nativeTokens.chrome.tabHeight + (Platform.OS === "ios" ? 20 : 0),
+          height: nativeTokens.chrome.tabHeight + Math.max(insets.bottom, nativeTokens.space[2]),
           paddingTop: nativeTokens.space[1],
-          paddingBottom: Platform.OS === "ios" ? nativeTokens.space[4] : nativeTokens.space[2],
+          paddingBottom: Math.max(insets.bottom, nativeTokens.space[2]),
           backgroundColor: nativeTokens.color.surface,
           borderTopColor: nativeTokens.color.lineSoft,
         },

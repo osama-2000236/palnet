@@ -5,18 +5,28 @@ import {
 } from "@expo-google-fonts/ibm-plex-sans-arabic";
 import { NotoNaskhArabic_400Regular } from "@expo-google-fonts/noto-naskh-arabic";
 import { nativeTokens } from "@baydar/ui-native";
+import NetInfo from "@react-native-community/netinfo";
 import { useFonts } from "expo-font";
 import { router, Stack, SplashScreen } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
 import { I18nManager, Linking, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 
+import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { OfflineBanner } from "@/components/OfflineBanner";
+import { initAnalytics } from "@/lib/analytics";
 import { routeFromUrl } from "@/lib/linking";
+import { initObservability, Sentry } from "@/lib/observability";
 import { installNotificationHandlers } from "@/lib/push";
+import { useNetworkStore } from "@/store/network";
 
 import "../global.css";
 import "../src/i18n";
+
+initObservability();
+initAnalytics();
 
 // Arabic is the default. Force RTL once on first boot so every screen lays
 // out mirrored without each component having to think about it.
@@ -30,7 +40,7 @@ void SplashScreen.preventAutoHideAsync().catch(() => {
   /* already hidden — ignore */
 });
 
-export default function RootLayout(): JSX.Element | null {
+function RootLayout(): JSX.Element | null {
   // Family aliases here match nativeTokens.type.family.* so atoms in ui-native
   // can reference the family by string. See packages/ui-tokens/src/tokens.native.ts.
   const [fontsLoaded, fontError] = useFonts({
@@ -39,6 +49,7 @@ export default function RootLayout(): JSX.Element | null {
     "IBMPlexSansArabic-Bold": IBMPlexSansArabic_700Bold,
     NotoNaskhArabic: NotoNaskhArabic_400Regular,
   });
+  const setConnected = useNetworkStore((state) => state.setConnected);
 
   useEffect(() => {
     if (fontsLoaded || fontError) {
@@ -72,6 +83,16 @@ export default function RootLayout(): JSX.Element | null {
 
   useEffect(() => installNotificationHandlers(), []);
 
+  useEffect(() => {
+    const unsubscribe = NetInfo.addEventListener((state) => {
+      setConnected(state.isConnected !== false && state.isInternetReachable !== false);
+    });
+
+    return (): void => {
+      unsubscribe();
+    };
+  }, [setConnected]);
+
   // While fonts load, render a blank surface-coloured view so we don't flash
   // the default system font for a single frame.
   if (!fontsLoaded && !fontError) {
@@ -80,8 +101,15 @@ export default function RootLayout(): JSX.Element | null {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <StatusBar style="dark" />
-      <Stack screenOptions={{ headerShown: false }} />
+      <SafeAreaProvider>
+        <StatusBar style="dark" />
+        <ErrorBoundary>
+          <Stack screenOptions={{ headerShown: false }} />
+        </ErrorBoundary>
+        <OfflineBanner />
+      </SafeAreaProvider>
     </GestureHandlerRootView>
   );
 }
+
+export default Sentry.wrap(RootLayout);

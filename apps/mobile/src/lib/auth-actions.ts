@@ -1,6 +1,7 @@
 import { AuthSession, type LoginBody, type RegisterBody } from "@baydar/shared";
 
 import { apiFetch, ApiRequestError } from "./api";
+import { track } from "./analytics";
 import { getDeviceId, writeSession } from "./session";
 
 export async function registerAction(
@@ -12,6 +13,7 @@ export async function registerAction(
     skipAuth: true,
   });
   await writeSession(session);
+  track("auth.login", { method: "password" });
   return session;
 }
 

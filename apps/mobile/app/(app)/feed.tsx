@@ -17,6 +17,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { PostRow } from "@/components/rows/PostRow";
 import { apiFetch, apiFetchPage } from "@/lib/api";
+import { track } from "@/lib/analytics";
 import { getAccessToken, readSession } from "@/lib/session";
 
 const FeedPage = cursorPage(PostSchema);
@@ -65,6 +66,7 @@ export default function FeedScreen(): JSX.Element {
     setRefreshing(true);
     try {
       await Promise.all([load(null), loadUnread()]);
+      track("feed.refresh");
     } finally {
       setRefreshing(false);
     }

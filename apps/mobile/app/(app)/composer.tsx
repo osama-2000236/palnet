@@ -17,6 +17,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { apiFetch, ApiRequestError } from "@/lib/api";
+import { track } from "@/lib/analytics";
 import { successHaptic, tapHaptic } from "@/lib/haptics";
 import { getAccessToken, readSession } from "@/lib/session";
 import { uploadAsset } from "@/lib/uploads";
@@ -113,6 +114,7 @@ export default function ComposerScreen(): JSX.Element {
         token,
       });
       successHaptic();
+      track("post.create", { mediaCount: media.length });
       router.replace("/(app)/feed");
     } catch (e) {
       if (e instanceof ApiRequestError) {
