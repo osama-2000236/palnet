@@ -11,6 +11,7 @@ import { z } from "zod";
 
 import { UserActions } from "@/components/UserActions";
 import { apiFetch } from "@/lib/api";
+import { successHaptic, tapHaptic } from "@/lib/haptics";
 import { getAccessToken } from "@/lib/session";
 
 const Raw = z.object({}).passthrough();
@@ -51,6 +52,7 @@ export default function ProfileScreen(): JSX.Element {
     if (!token) return;
     setBusy(true);
     try {
+      tapHaptic();
       const conn = profile.viewer.connection;
       if (action === "CONNECT") {
         const row = (await apiFetch("/connections", Raw, {
@@ -69,6 +71,7 @@ export default function ProfileScreen(): JSX.Element {
             },
           },
         });
+        successHaptic();
         return;
       }
       if (!conn) return;
@@ -78,6 +81,7 @@ export default function ProfileScreen(): JSX.Element {
           token,
         });
         setProfile({ ...profile, viewer: { isSelf: false, connection: null } });
+        successHaptic();
       } else if (action === "ACCEPT" || action === "DECLINE") {
         await apiFetch(`/connections/${conn.connectionId}/respond`, Raw, {
           method: "POST",
@@ -95,12 +99,14 @@ export default function ProfileScreen(): JSX.Element {
             },
           },
         });
+        successHaptic();
       } else if (action === "REMOVE") {
         await apiFetch(`/connections/${conn.connectionId}`, Raw, {
           method: "DELETE",
           token,
         });
         setProfile({ ...profile, viewer: { isSelf: false, connection: null } });
+        successHaptic();
       }
     } finally {
       setBusy(false);

@@ -113,10 +113,10 @@ export default function JobsPageRoute(): JSX.Element {
   }, [token, filters, load]);
 
   return (
-    <div className="max-w-chrome mx-auto grid w-full grid-cols-1 gap-6 px-4 py-6 lg:grid-cols-[260px_minmax(0,1fr)]">
-      <aside className="hidden lg:block" aria-label={t("filters")}>
-        <Surface variant="card" padding="4">
-          <div className="text-ink mb-3 text-sm font-semibold">{t("filters")}</div>
+    <div className="mx-auto grid w-full max-w-[1128px] grid-cols-1 gap-6 px-4 py-6 lg:grid-cols-[260px_minmax(0,1fr)]">
+      <div className="hidden lg:block">
+        <Surface variant="card" padding="4" as="aside">
+          <h2 className="text-ink mb-3 text-sm font-semibold">{t("filters")}</h2>
 
           <label className="mb-3 block">
             <span className="text-ink-muted mb-1 block text-xs">{t("search")}</span>
@@ -178,23 +178,18 @@ export default function JobsPageRoute(): JSX.Element {
             </div>
           </fieldset>
         </Surface>
-      </aside>
+      </div>
 
       <main>
         <div className="mb-4 flex items-center justify-between">
-          <div>
-            <h1 className="text-ink text-xl font-semibold">{t("title")}</h1>
-            <span className="text-ink-muted text-sm" aria-live="polite">
-              {items.length > 0
-                ? t("countSummary", { count: items.length })
-                : firstLoad
-                  ? ""
-                  : t("noneSummary")}
-            </span>
-          </div>
-          <Link href="/me/jobs" className="text-brand-700 hover:text-brand-800 text-sm font-medium">
-            {t("myApplications")}
-          </Link>
+          <h1 className="text-ink text-xl font-semibold">{t("title")}</h1>
+          <span className="text-ink-muted text-sm" aria-live="polite">
+            {items.length > 0
+              ? t("countSummary", { count: items.length })
+              : firstLoad
+                ? ""
+                : t("noneSummary")}
+          </span>
         </div>
 
         {firstLoad ? (
@@ -300,11 +295,11 @@ function JobListRow({ job, salary }: { job: Job; salary: string | null }): JSX.E
           <div className="min-w-0 flex-1">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <h2 className="text-ink truncate text-base font-semibold">{job.title}</h2>
+                <h3 className="text-ink truncate text-base font-semibold">{job.title}</h3>
                 <p className="text-ink-muted truncate text-sm">{job.company.name}</p>
               </div>
               {job.viewer.hasApplied ? (
-                <span className="border-success/30 bg-success/10 text-success text-nav shrink-0 rounded-full border px-2 py-0.5 font-semibold">
+                <span className="border-success/30 bg-success/10 text-success shrink-0 rounded-full border px-2 py-0.5 text-[11px] font-semibold">
                   {t("appliedBadge")}
                 </span>
               ) : null}
@@ -316,7 +311,7 @@ function JobListRow({ job, salary }: { job: Job; salary: string | null }): JSX.E
                 {job.skillsRequired.slice(0, 5).map((s) => (
                   <li
                     key={s}
-                    className="bg-surface-subtle text-ink-muted text-nav rounded-full px-2 py-0.5"
+                    className="bg-surface-subtle text-ink-muted rounded-full px-2 py-0.5 text-[11px]"
                   >
                     {s}
                   </li>

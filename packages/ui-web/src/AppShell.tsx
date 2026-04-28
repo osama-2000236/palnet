@@ -1,6 +1,6 @@
 // AppShell — the sticky chrome wrapping every authenticated web route.
 // Spec: docs/components/AppShell.md.
-// Lifted from docs/design/prototype/components/AppShell.jsx.
+// Lifted from docs/_archive/prototype-2025/components/AppShell.jsx.
 //
 // Shape:
 //   [Logo] [Search-pill] [flex] [nav items] [divider] [profile menu]
@@ -54,7 +54,7 @@ export interface AppShellLabels {
   myProfile: string;
   viewProfile: string;
   settings: string;
-  moderation?: string;
+  moderation: string;
   signOut: string;
   /**
    * Screen-reader template for unread badges. `{count}` is replaced with the
@@ -68,6 +68,8 @@ export interface AppShellProps {
   currentRoute: AppShellRoute | null;
   /** Signed-in user used for the profile avatar. Null during hydration. */
   me: AvatarUser | null;
+  /** Optional profile headline rendered in the menu hero. */
+  meHeadline?: string | null;
   /** i18n strings — required so AppShell never ships hardcoded Arabic/English. */
   labels: AppShellLabels;
 
@@ -106,7 +108,7 @@ const NAV_ITEMS: ReadonlyArray<{
   { key: "notifications", icon: "bell" },
 ];
 
-/** 99+ cap so badges keep the compact token target. */
+/** 99+ cap so badges never break the 20px target. */
 function formatBadge(count: number): string {
   if (count <= 0) return "";
   if (count > 99) return "99+";
@@ -116,6 +118,7 @@ function formatBadge(count: number): string {
 export function AppShell({
   currentRoute,
   me,
+  meHeadline,
   labels,
   messagesUnread,
   notificationsUnread,
@@ -181,7 +184,9 @@ export function AppShell({
   }, [menuOpen]);
 
   // Arrow-key roving between nav items (per AppShell.md accessibility rules).
-  // Keys follow visual direction: forward/backward map through document dir.
+  // Keys follow visual direction: ArrowRight always moves one step to the
+  // physical right — which is "previous" in RTL and "next" in LTR. Home/End
+  // jump to the first/last visible item.
   const onNavKeyDown = useCallback((e: KeyboardEvent<HTMLElement>) => {
     if (e.key !== "ArrowLeft" && e.key !== "ArrowRight" && e.key !== "Home" && e.key !== "End") {
       return;
@@ -246,7 +251,7 @@ export function AppShell({
   return (
     <div className="bg-surface-muted min-h-screen">
       <header role="banner" className="border-line-soft bg-surface sticky top-0 z-20 h-14 border-b">
-        <div className="max-w-chrome mx-auto flex h-full w-full items-center gap-4 px-5">
+        <div className="mx-auto flex h-full w-full max-w-[1128px] items-center gap-4 px-5">
           {/* Logo — routes home. */}
           <button
             type="button"
@@ -259,7 +264,7 @@ export function AppShell({
           </button>
 
           {/* Search pill. */}
-          <div className="bg-surface-subtle focus-within:ring-brand-600 sm:max-w-search flex min-w-0 flex-1 items-center gap-2 rounded-full px-3.5 py-2 focus-within:ring-2">
+          <div className="bg-surface-subtle focus-within:ring-brand-600 flex min-w-0 flex-1 items-center gap-2 rounded-full px-3.5 py-2 focus-within:ring-2 sm:max-w-[320px]">
             <span className="text-ink-muted" aria-hidden="true">
               <Icon name="search" size={16} />
             </span>
@@ -275,7 +280,7 @@ export function AppShell({
             />
           </div>
 
-          {/* Header action cluster: nav + divider + profile. */}
+          {/* Right cluster: nav + divider + profile. */}
           <nav
             ref={navRef}
             onKeyDown={onNavKeyDown}
@@ -307,7 +312,7 @@ export function AppShell({
                   onClick={() => onNavigate(item.key)}
                   aria-current={active ? "page" : undefined}
                   className={cx(
-                    "focus-visible:ring-brand-600 focus-visible:ring-offset-surface min-w-navItem text-nav relative -mb-px inline-flex flex-col items-center gap-0.5 border-b-2 px-3 py-2 font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
+                    "focus-visible:ring-brand-600 focus-visible:ring-offset-surface relative -mb-px inline-flex min-w-[64px] flex-col items-center gap-0.5 border-b-2 px-3 py-2 text-[11px] font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
                     active
                       ? "border-brand-600 text-ink"
                       : "text-ink-muted hover:text-ink border-transparent",
@@ -318,7 +323,7 @@ export function AppShell({
                     {badgeText ? (
                       <span
                         aria-hidden="true"
-                        className="bg-accent-600 text-ink-inverse h-badge min-w-badge text-micro absolute -end-1.5 -top-1 inline-flex items-center justify-center rounded-full px-1 font-bold leading-none"
+                        className="bg-accent-600 text-ink-inverse absolute -top-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-bold leading-none ltr:-end-1.5 rtl:-start-1.5"
                       >
                         {badgeText}
                       </span>
@@ -345,7 +350,7 @@ export function AppShell({
                 aria-controls={menuId}
                 aria-current={currentRoute === "profile" ? "page" : undefined}
                 className={cx(
-                  "focus-visible:ring-brand-600 focus-visible:ring-offset-surface text-nav relative -mb-px inline-flex flex-col items-center gap-0.5 border-b-2 px-3 py-1.5 font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
+                  "focus-visible:ring-brand-600 focus-visible:ring-offset-surface relative -mb-px inline-flex flex-col items-center gap-0.5 border-b-2 px-3 py-1.5 text-[11px] font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
                   currentRoute === "profile"
                     ? "border-brand-600 text-ink"
                     : "text-ink-muted hover:text-ink border-transparent",
@@ -364,9 +369,37 @@ export function AppShell({
                   id={menuId}
                   role="menu"
                   onKeyDown={onMenuKeyDown}
-                  className="border-line-soft bg-surface shadow-card min-w-menu absolute end-0 top-full z-30 mt-1 rounded-md border py-1"
+                  className="border-line-soft bg-surface shadow-card absolute end-0 top-full z-30 mt-1 min-w-[240px] rounded-md border py-1"
                 >
-                  {onViewProfile ? (
+                  {me ? (
+                    <div className="border-line-soft mb-1 flex gap-3 border-b px-3 py-3">
+                      <Avatar user={me} size="md" />
+                      <div className="min-w-0 flex-1">
+                        <p className="text-ink truncate text-sm font-semibold">
+                          {[me.firstName, me.lastName].filter(Boolean).join(" ") ||
+                            me.handle ||
+                            labels.myProfile}
+                        </p>
+                        {meHeadline ? (
+                          <p className="text-ink-muted mt-0.5 truncate text-xs">{meHeadline}</p>
+                        ) : null}
+                        {onViewProfile ? (
+                          <button
+                            type="button"
+                            role="menuitem"
+                            onClick={() => {
+                              setMenuOpen(false);
+                              onViewProfile();
+                            }}
+                            className="text-brand-700 hover:bg-brand-100 focus-visible:ring-brand-600 mt-2 rounded-md px-2 py-1 text-xs font-semibold focus:outline-none focus-visible:ring-2"
+                          >
+                            {labels.viewProfile}
+                          </button>
+                        ) : null}
+                      </div>
+                    </div>
+                  ) : null}
+                  {onViewProfile && !me ? (
                     <MenuItem
                       onSelect={() => {
                         setMenuOpen(false);
@@ -386,7 +419,7 @@ export function AppShell({
                       {labels.settings}
                     </MenuItem>
                   ) : null}
-                  {onOpenModeration && labels.moderation ? (
+                  {onOpenModeration ? (
                     <MenuItem
                       onSelect={() => {
                         setMenuOpen(false);

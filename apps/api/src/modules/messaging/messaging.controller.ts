@@ -1,24 +1,27 @@
 import {
+  type ChatRoom,
+  CreateRoomBody,
+  CursorPageQuery,
+  type Message,
+  SendMessageBody,
+  UpdateMessageBody,
+  type WsChatEvent,
+} from "@baydar/shared";
+import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
   Param,
+  Patch,
   Post,
   Query,
   Sse,
+  UsePipes,
 } from "@nestjs/common";
 import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
-import { Throttle } from "@nestjs/throttler";
-import {
-  type ChatRoom,
-  CreateOrGetDmBody,
-  CursorPageQuery,
-  type Message,
-  SendMessageBody,
-  type WsChatEvent,
-} from "@baydar/shared";
 import { Observable } from "rxjs";
 
 import { ZodValidationPipe } from "../../common/zod-pipe";
@@ -42,24 +45,18 @@ export class MessagingController {
   ) {}
 
   @Get("rooms")
-  async listRooms(
-    @CurrentUser() user: AuthUser,
-    @Query("archived") archived?: string,
-  ): Promise<{ data: ChatRoom[] }> {
-    const data = await this.messaging.listMyRooms(user.id, {
-      archived: archived === "1" || archived === "true",
-    });
+  async listRooms(@CurrentUser() user: AuthUser): Promise<{ data: ChatRoom[] }> {
+    const data = await this.messaging.listMyRooms(user.id);
     return { data };
   }
 
   @Post("rooms")
-  @Throttle({ default: { limit: 20, ttl: 60_000 } })
-  async findOrCreateDm(
-    @CurrentUser() user: AuthUser,
-    @Body(new ZodValidationPipe(CreateOrGetDmBody))
-    body: CreateOrGetDmBody,
-  ): Promise<ChatRoom> {
-    return this.messaging.findOrCreateDm(user.id, body.otherUserId);
+  @UsePipes(new ZodValidationPipe(CreateRoomBody))
+  async createRoom(@CurrentUser() user: AuthUser, @Body() body: CreateRoomBody): Promise<ChatRoom> {
+    if ("otherUserId" in body) {
+      return this.messaging.findOrCreateDm(user.id, body.otherUserId);
+    }
+    return this.messaging.createGroupRoom(user.id, body);
   }
 
   @Get("rooms/:id")
@@ -92,16 +89,28 @@ export class MessagingController {
   }
 
   @Post("rooms/:id/messages")
-  // Send burst — 60/min per user across all rooms. Keeps a fast chatter
-  // happy, cuts a broadcast bot off before it hits the global 100/60s.
-  @Throttle({ default: { limit: 60, ttl: 60_000 } })
+  @UsePipes(new ZodValidationPipe(SendMessageBody))
   async sendMessage(
     @CurrentUser() user: AuthUser,
     @Param("id") id: string,
-    @Body(new ZodValidationPipe(SendMessageBody))
-    body: SendMessageBody,
+    @Body() body: SendMessageBody,
   ): Promise<Message> {
     return this.messaging.sendMessage(user.id, id, body);
+  }
+
+  @Patch("messages/:id")
+  @UsePipes(new ZodValidationPipe(UpdateMessageBody))
+  async editMessage(
+    @CurrentUser() user: AuthUser,
+    @Param("id") id: string,
+    @Body() body: UpdateMessageBody,
+  ): Promise<Message> {
+    return this.messaging.editMessage(user.id, id, body);
+  }
+
+  @Delete("messages/:id")
+  async deleteMessage(@CurrentUser() user: AuthUser, @Param("id") id: string): Promise<Message> {
+    return this.messaging.deleteMessage(user.id, id);
   }
 
   @Post("rooms/:id/read")
@@ -116,15 +125,8 @@ export class MessagingController {
     await this.messaging.archiveRoom(user.id, id);
   }
 
-  @Post("rooms/:id/unarchive")
-  @HttpCode(HttpStatus.NO_CONTENT)
-  async unarchive(@CurrentUser() user: AuthUser, @Param("id") id: string): Promise<void> {
-    await this.messaging.unarchiveRoom(user.id, id);
-  }
-
   @Post("rooms/:id/typing")
   @HttpCode(HttpStatus.NO_CONTENT)
-  @Throttle({ default: { limit: 120, ttl: 60_000 } })
   async typing(@CurrentUser() user: AuthUser, @Param("id") id: string): Promise<void> {
     await this.messaging.publishTyping(user.id, id);
   }

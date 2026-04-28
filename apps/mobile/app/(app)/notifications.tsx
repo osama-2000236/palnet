@@ -1,23 +1,12 @@
-import {
-  cursorPage,
-  formatRelativeTime,
-  Notification as NotificationSchema,
-  NotificationType,
-  type Notification,
-} from "@baydar/shared";
+import { cursorPage, Notification as NotificationSchema, type Notification } from "@baydar/shared";
+import { Surface, nativeTokens } from "@baydar/ui-native";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import {
-  ActivityIndicator,
-  FlatList,
-  Image,
-  Pressable,
-  SafeAreaView,
-  Text,
-  View,
-} from "react-native";
+import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
+import { NotificationRow } from "@/components/rows/NotificationRow";
 import { apiCall, apiFetchPage } from "@/lib/api";
 import { getAccessToken, readSession } from "@/lib/session";
 
@@ -29,6 +18,7 @@ export default function NotificationsScreen(): JSX.Element {
   const [cursor, setCursor] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   const load = useCallback(async (after: string | null): Promise<void> => {
     const token = await getAccessToken();
@@ -58,6 +48,16 @@ export default function NotificationsScreen(): JSX.Element {
     }).catch(() => {});
   }, []);
 
+  const refreshNotifications = useCallback(async (): Promise<void> => {
+    setRefreshing(true);
+    try {
+      await load(null);
+      await markAllRead();
+    } finally {
+      setRefreshing(false);
+    }
+  }, [load, markAllRead]);
+
   useEffect(() => {
     void (async () => {
       const session = await readSession();
@@ -81,29 +81,37 @@ export default function NotificationsScreen(): JSX.Element {
   );
 
   return (
-    <SafeAreaView className="bg-surface-muted flex-1">
-      <View className="flex-1 px-4 pt-8">
-        <Text className="text-ink mb-3 text-3xl font-bold">{t("notifications.title")}</Text>
+    <SafeAreaView style={styles.screen}>
+      <View style={styles.content}>
+        <Text style={styles.title}>{t("notifications.title")}</Text>
 
         <FlatList
           data={items}
           keyExtractor={(n) => n.id}
           renderItem={({ item }) => <NotificationRow item={item} />}
-          ItemSeparatorComponent={() => <View className="h-2" />}
+          contentContainerStyle={styles.listContent}
           onEndReachedThreshold={0.4}
           onEndReached={() => {
             if (!loading && hasMore && cursor) void load(cursor);
           }}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={() => void refreshNotifications()}
+              tintColor={nativeTokens.color.brand600}
+              colors={[nativeTokens.color.brand600]}
+            />
+          }
           ListEmptyComponent={
             loading ? null : (
-              <View className="border-ink-muted/20 bg-surface rounded-md border p-6">
-                <Text className="text-ink-muted">{t("notifications.empty")}</Text>
-              </View>
+              <Surface variant="tinted" padding="6">
+                <Text style={styles.emptyText}>{t("notifications.empty")}</Text>
+              </Surface>
             )
           }
           ListFooterComponent={
             loading ? (
-              <View className="py-4">
+              <View style={styles.loading}>
                 <ActivityIndicator />
               </View>
             ) : null
@@ -114,74 +122,34 @@ export default function NotificationsScreen(): JSX.Element {
   );
 }
 
-function NotificationRow({ item }: { item: Notification }): JSX.Element {
-  const { t, i18n } = useTranslation();
-  const actor = item.actor;
-  const actorName = actor ? `${actor.firstName} ${actor.lastName}`.trim() || actor.handle : "";
-  const body = t(`notifications.templates.${item.type}`, { actor: actorName });
-  const unread = item.readAt === null;
-
-  const destination = hrefFor(item);
-
-  const content = (
-    <View
-      className={`flex-row items-start gap-3 rounded-md border p-3 ${
-        unread ? "border-brand-500/30 bg-brand-50" : "border-ink-muted/20 bg-surface"
-      }`}
-    >
-      {actor?.avatarUrl ? (
-        <Image
-          source={{ uri: actor.avatarUrl }}
-          style={{ width: 40, height: 40, borderRadius: 20 }}
-        />
-      ) : (
-        <View className="bg-ink-muted/10 h-10 w-10 items-center justify-center rounded-full">
-          <Text className="text-ink text-sm font-semibold">{initialsOf(actorName) || "?"}</Text>
-        </View>
-      )}
-      <View className="flex-1">
-        <Text className="text-ink text-sm">{body}</Text>
-        <Text className="text-ink-muted text-xs">
-          {formatRelativeTime(item.createdAt, i18n.language)}
-        </Text>
-      </View>
-      {unread ? <View className="bg-accent-600 mt-1 h-2 w-2 rounded-full" /> : null}
-    </View>
-  );
-
-  if (!destination) return content;
-  return <Pressable onPress={() => router.push(destination as never)}>{content}</Pressable>;
-}
-
-function hrefFor(n: Notification): string | null {
-  if (n.type === NotificationType.MESSAGE_RECEIVED) {
-    const data = n.data as { roomId?: string } | null;
-    if (data?.roomId) return `/(app)/messages/${data.roomId}`;
-    return "/(app)/messages";
-  }
-  if (
-    n.type === NotificationType.CONNECTION_REQUEST ||
-    n.type === NotificationType.CONNECTION_ACCEPTED
-  ) {
-    return "/(app)/network";
-  }
-  if (
-    n.type === NotificationType.POST_REACTION ||
-    n.type === NotificationType.POST_COMMENT ||
-    n.type === NotificationType.POST_MENTION
-  ) {
-    return "/(app)/feed";
-  }
-  if (n.type === NotificationType.PROFILE_VIEW && n.actor?.handle) {
-    return `/(app)/in/${n.actor.handle}`;
-  }
-  return null;
-}
-
-function initialsOf(name: string): string {
-  const parts = name.trim().split(/\s+/);
-  if (parts.length === 0) return "";
-  const first = parts[0]?.[0] ?? "";
-  const last = parts.length > 1 ? (parts[parts.length - 1]?.[0] ?? "") : "";
-  return (first + last).toUpperCase();
-}
+const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+    backgroundColor: nativeTokens.color.surfaceMuted,
+  },
+  content: {
+    flex: 1,
+    paddingHorizontal: nativeTokens.space[4],
+    paddingTop: nativeTokens.space[8],
+  },
+  title: {
+    color: nativeTokens.color.ink,
+    fontSize: nativeTokens.type.scale.display.size,
+    lineHeight: nativeTokens.type.scale.display.line,
+    fontWeight: "700",
+    fontFamily: nativeTokens.type.family.sans,
+    marginBottom: nativeTokens.space[3],
+  },
+  listContent: {
+    paddingBottom: nativeTokens.space[6],
+  },
+  loading: {
+    paddingVertical: nativeTokens.space[4],
+  },
+  emptyText: {
+    color: nativeTokens.color.inkMuted,
+    fontSize: nativeTokens.type.scale.body.size,
+    lineHeight: nativeTokens.type.scale.body.line,
+    fontFamily: nativeTokens.type.family.sans,
+  },
+});

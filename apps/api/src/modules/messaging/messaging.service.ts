@@ -1,16 +1,18 @@
 import {
   type ChatRoom as ChatRoomDto,
+  type CreateGroupRoomBody,
   ErrorCode,
   type Message as MessageDto,
   NotificationType,
   type SendMessageBody,
+  type UpdateMessageBody,
 } from "@baydar/shared";
 import { Injectable } from "@nestjs/common";
 
 import { DomainException } from "../../common/domain-exception";
-import { ModerationService } from "../moderation/moderation.service";
 import { NotificationsService } from "../notifications/notifications.service";
 import { PrismaService } from "../prisma/prisma.service";
+import { ModerationService } from "../moderation/moderation.service";
 
 import { MessagingBus } from "./messaging.bus";
 
@@ -24,6 +26,12 @@ interface MessageRow {
   createdAt: Date;
   editedAt: Date | null;
   deletedAt: Date | null;
+}
+
+interface MessageWithRoomRow extends MessageRow {
+  room: {
+    members: Array<{ userId: string }>;
+  };
 }
 
 interface MemberRow {
@@ -78,9 +86,6 @@ export class MessagingService {
       throw new DomainException(ErrorCode.NOT_FOUND, "User not found.", 404);
     }
 
-    // Blocks are symmetric: if either side blocked the other, neither can
-    // open a DM. We surface as NOT_FOUND rather than a distinct code so
-    // the target can't confirm whether they've been blocked.
     const blocked = await this.moderation.blockedIds(viewerId);
     if (blocked.includes(otherUserId)) {
       throw new DomainException(ErrorCode.NOT_FOUND, "User not found.", 404);
@@ -115,31 +120,49 @@ export class MessagingService {
     return this.getRoomDto(created.id, viewerId);
   }
 
-  async listMyRooms(viewerId: string, opts: { archived?: boolean } = {}): Promise<ChatRoomDto[]> {
-    const archived = opts.archived === true;
-    const blocked = await this.moderation.blockedIds(viewerId);
-    const rooms = (await this.prisma.chatRoom.findMany({
+  async createGroupRoom(viewerId: string, body: CreateGroupRoomBody): Promise<ChatRoomDto> {
+    const memberIds = Array.from(new Set(body.memberIds.filter((id) => id !== viewerId)));
+    if (memberIds.length < 2) {
+      throw new DomainException(
+        ErrorCode.VALIDATION_FAILED,
+        "Group rooms need at least two other members.",
+        400,
+      );
+    }
+
+    const accepted = await this.prisma.connection.count({
       where: {
-        members: {
-          some: {
-            userId: viewerId,
-            // Default list: only rows the viewer hasn't archived.
-            // archived=true returns only their archived rows.
-            archivedAt: archived ? { not: null } : null,
-          },
-        },
-        // Drop 1:1 rooms whose only other member is on either side of a
-        // block with the viewer. Group rooms stay — a block in a group
-        // conversation silences the blocked user's messages but doesn't
-        // kick the viewer out.
-        ...(blocked.length > 0
-          ? {
-              NOT: {
-                AND: [{ isGroup: false }, { members: { some: { userId: { in: blocked } } } }],
-              },
-            }
-          : {}),
+        status: "ACCEPTED",
+        OR: memberIds.flatMap((memberId) => [
+          { requesterId: viewerId, receiverId: memberId },
+          { requesterId: memberId, receiverId: viewerId },
+        ]),
       },
+    });
+    if (accepted !== memberIds.length) {
+      throw new DomainException(
+        ErrorCode.AUTH_FORBIDDEN,
+        "Group members must be accepted connections.",
+        403,
+      );
+    }
+
+    const created = await this.prisma.chatRoom.create({
+      data: {
+        isGroup: true,
+        title: body.title.trim(),
+        members: {
+          create: [viewerId, ...memberIds].map((userId) => ({ userId })),
+        },
+      },
+      select: { id: true },
+    });
+    return this.getRoomDto(created.id, viewerId);
+  }
+
+  async listMyRooms(viewerId: string): Promise<ChatRoomDto[]> {
+    const rooms = (await this.prisma.chatRoom.findMany({
+      where: { members: { some: { userId: viewerId, archivedAt: null } } },
       orderBy: { updatedAt: "desc" },
       take: 100,
       include: {
@@ -161,7 +184,6 @@ export class MessagingService {
           },
         },
         messages: {
-          where: { deletedAt: null },
           orderBy: { createdAt: "desc" },
           take: 1,
         },
@@ -196,7 +218,6 @@ export class MessagingService {
           },
         },
         messages: {
-          where: { deletedAt: null },
           orderBy: { createdAt: "desc" },
           take: 1,
         },
@@ -221,7 +242,7 @@ export class MessagingService {
     await this.requireMembership(viewerId, roomId);
     const take = Math.min(Math.max(limit, 1), 50);
     const rows = (await this.prisma.message.findMany({
-      where: { roomId, deletedAt: null },
+      where: { roomId },
       orderBy: { createdAt: "desc" },
       take: take + 1,
       ...(after ? { cursor: { id: after }, skip: 1 } : {}),
@@ -267,18 +288,6 @@ export class MessagingService {
       data: { updatedAt: new Date() },
     });
 
-    // A new message resurfaces the room for every member who'd archived it —
-    // mirrors what mainstream messengers do. Archiver (the viewer) is left
-    // untouched: they might want their own thread to stay archived.
-    await this.prisma.chatRoomMember.updateMany({
-      where: {
-        roomId,
-        userId: { not: viewerId },
-        archivedAt: { not: null },
-      },
-      data: { archivedAt: null },
-    });
-
     const dto = toMessageDto(created);
 
     // Fan out to every member except the author's other tabs also get it so
@@ -305,6 +314,80 @@ export class MessagingService {
       });
     }
 
+    return dto;
+  }
+
+  async editMessage(
+    viewerId: string,
+    messageId: string,
+    body: UpdateMessageBody,
+  ): Promise<MessageDto> {
+    const row = (await this.prisma.message.findUnique({
+      where: { id: messageId },
+      include: { room: { select: { members: { select: { userId: true } } } } },
+    })) as unknown as MessageWithRoomRow | null;
+    if (!row) {
+      throw new DomainException(ErrorCode.NOT_FOUND, "Message not found.", 404);
+    }
+    if (!row.room.members.some((m) => m.userId === viewerId)) {
+      throw new DomainException(ErrorCode.NOT_FOUND, "Message not found.", 404);
+    }
+    if (row.authorId !== viewerId) {
+      throw new DomainException(
+        ErrorCode.AUTH_FORBIDDEN,
+        "Only the sender can edit this message.",
+        403,
+      );
+    }
+    if (row.deletedAt) {
+      throw new DomainException(ErrorCode.CONFLICT, "Deleted messages cannot be edited.", 409);
+    }
+    if (Date.now() - row.createdAt.getTime() > 15 * 60 * 1000) {
+      throw new DomainException(
+        ErrorCode.AUTH_FORBIDDEN,
+        "Messages can only be edited for 15 minutes.",
+        403,
+      );
+    }
+
+    const updated = (await this.prisma.message.update({
+      where: { id: messageId },
+      data: { body: body.body.trim(), editedAt: new Date() },
+    })) as unknown as MessageRow;
+    const dto = toMessageDto(updated);
+    for (const m of row.room.members) {
+      this.bus.publish(m.userId, { type: "message.edited", payload: dto });
+    }
+    return dto;
+  }
+
+  async deleteMessage(viewerId: string, messageId: string): Promise<MessageDto> {
+    const row = (await this.prisma.message.findUnique({
+      where: { id: messageId },
+      include: { room: { select: { members: { select: { userId: true } } } } },
+    })) as unknown as MessageWithRoomRow | null;
+    if (!row) {
+      throw new DomainException(ErrorCode.NOT_FOUND, "Message not found.", 404);
+    }
+    if (!row.room.members.some((m) => m.userId === viewerId)) {
+      throw new DomainException(ErrorCode.NOT_FOUND, "Message not found.", 404);
+    }
+    if (row.authorId !== viewerId) {
+      throw new DomainException(
+        ErrorCode.AUTH_FORBIDDEN,
+        "Only the sender can delete this message.",
+        403,
+      );
+    }
+
+    const deleted = (await this.prisma.message.update({
+      where: { id: messageId },
+      data: { deletedAt: row.deletedAt ?? new Date() },
+    })) as unknown as MessageRow;
+    const dto = toMessageDto(deleted);
+    for (const m of row.room.members) {
+      this.bus.publish(m.userId, { type: "message.deleted", payload: dto });
+    }
     return dto;
   }
 
@@ -349,25 +432,11 @@ export class MessagingService {
     }
   }
 
-  /**
-   * Archive a room for the viewer only. Idempotent: if already archived,
-   * the timestamp is left alone so clients can safely retry on network
-   * flakes without losing the original archive time.
-   */
   async archiveRoom(viewerId: string, roomId: string): Promise<void> {
     await this.requireMembership(viewerId, roomId);
     await this.prisma.chatRoomMember.updateMany({
-      where: { roomId, userId: viewerId, archivedAt: null },
+      where: { roomId, userId: viewerId },
       data: { archivedAt: new Date() },
-    });
-  }
-
-  /** Restore a previously archived room. Idempotent. */
-  async unarchiveRoom(viewerId: string, roomId: string): Promise<void> {
-    await this.requireMembership(viewerId, roomId);
-    await this.prisma.chatRoomMember.updateMany({
-      where: { roomId, userId: viewerId, archivedAt: { not: null } },
-      data: { archivedAt: null },
     });
   }
 
@@ -384,19 +453,12 @@ export class MessagingService {
       throw new DomainException(ErrorCode.NOT_FOUND, "Room not found.", 404);
     }
 
-    // For 1:1 rooms, a block between the two members slams the door shut
-    // for BOTH sides — list/send/mark-read all 404. Group rooms stay
-    // reachable; silencing is handled by the UI (muting the blocked user's
-    // messages on render).
     const room = await this.prisma.chatRoom.findUnique({
       where: { id: roomId },
-      select: {
-        isGroup: true,
-        members: { select: { userId: true } },
-      },
+      select: { isGroup: true, members: { select: { userId: true } } },
     });
     if (room && !room.isGroup) {
-      const other = room.members.find((mm) => mm.userId !== userId);
+      const other = room.members.find((member) => member.userId !== userId);
       if (other) {
         const blocked = await this.moderation.blockedIds(userId);
         if (blocked.includes(other.userId)) {
@@ -446,10 +508,11 @@ function toMessageDto(row: MessageRow): MessageDto {
     id: row.id,
     roomId: row.roomId,
     authorId: row.authorId,
-    body: row.body,
+    body: row.deletedAt ? "" : row.body,
     mediaUrl: row.mediaUrl ?? null,
     clientMessageId: row.clientMessageId ?? null,
     createdAt: row.createdAt.toISOString(),
     editedAt: row.editedAt ? row.editedAt.toISOString() : null,
+    deletedAt: row.deletedAt ? row.deletedAt.toISOString() : null,
   };
 }

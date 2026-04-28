@@ -5,12 +5,27 @@ export const CreateOrGetDmBody = z.object({
 });
 export type CreateOrGetDmBody = z.infer<typeof CreateOrGetDmBody>;
 
+export const CreateGroupRoomBody = z.object({
+  isGroup: z.literal(true),
+  memberIds: z.array(z.string().cuid()).min(2).max(25),
+  title: z.string().min(1).max(80),
+});
+export type CreateGroupRoomBody = z.infer<typeof CreateGroupRoomBody>;
+
+export const CreateRoomBody = z.union([CreateOrGetDmBody, CreateGroupRoomBody]);
+export type CreateRoomBody = z.infer<typeof CreateRoomBody>;
+
 export const SendMessageBody = z.object({
   body: z.string().min(1).max(5000),
   mediaUrl: z.string().url().optional(),
   clientMessageId: z.string().min(1).max(64), // for idempotency + optimistic UI
 });
 export type SendMessageBody = z.infer<typeof SendMessageBody>;
+
+export const UpdateMessageBody = z.object({
+  body: z.string().min(1).max(5000),
+});
+export type UpdateMessageBody = z.infer<typeof UpdateMessageBody>;
 
 export const Message = z.object({
   id: z.string().cuid(),
@@ -20,6 +35,7 @@ export const Message = z.object({
   mediaUrl: z.string().url().nullable(),
   createdAt: z.string().datetime(),
   editedAt: z.string().datetime().nullable(),
+  deletedAt: z.string().datetime().nullable(),
   clientMessageId: z.string().nullable(),
 });
 export type Message = z.infer<typeof Message>;
@@ -52,6 +68,8 @@ export type ChatRoom = z.infer<typeof ChatRoom>;
 // WebSocket event shapes. Namespaces: /chat, /notifications.
 export const WsChatEvent = z.discriminatedUnion("type", [
   z.object({ type: z.literal("message.new"), payload: Message }),
+  z.object({ type: z.literal("message.edited"), payload: Message }),
+  z.object({ type: z.literal("message.deleted"), payload: Message }),
   z.object({
     type: z.literal("message.read"),
     payload: z.object({

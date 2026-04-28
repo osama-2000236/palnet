@@ -10,8 +10,9 @@
     "type-check": "tsc --noEmit",
     "test": "jest --passWithNoTests",
     "e2e": "playwright test",
-    "e2e:a11y-authed": "playwright test e2e/a11y-authed.spec.ts --project=chromium-en",
-    "lhci": "lhci autorun --config=./lighthouserc.json"
+    "test:a11y": "playwright test e2e/a11y.spec.ts",
+    "lhci": "npx --yes @lhci/cli@0.14.x autorun --config=./lighthouserc.json",
+    "lighthouse": "node scripts/mobile-lighthouse.mjs"
   },
   "dependencies": {
     "@baydar/shared": "workspace:*",
@@ -23,8 +24,9 @@
     "lucide-react": "^0.456.0",
     "next": "15.0.2",
     "next-intl": "^3.24.0",
-    "react": "18.3.1",
-    "react-dom": "18.3.1",
+    "posthog-js": "^1.372.3",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
     "tailwind-merge": "^2.5.4",
     "zod": "^3.23.8",
     "zustand": "^5.0.1"
@@ -34,8 +36,8 @@
     "@baydar/config": "workspace:*",
     "@playwright/test": "^1.48.1",
     "@types/node": "^22.7.5",
-    "@types/react": "^18.3.12",
-    "@types/react-dom": "^18.3.1",
+    "@types/react": "~19.1.10",
+    "@types/react-dom": "~19.1.10",
     "autoprefixer": "^10.4.20",
     "eslint": "^8.57.1",
     "eslint-config-next": "15.0.2",

@@ -7,200 +7,171 @@
 // Tab glyphs come from ui-native Icon — same 24×24 stroke set as the web
 // header on /feed, so the two platforms stay visually locked in step.
 
+import { WsNotificationEvent } from "@baydar/shared";
 import { Tabs, router } from "expo-router";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Platform, Pressable, StyleSheet, Text, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { z } from "zod";
 
 import { Icon, type IconName, nativeTokens } from "@baydar/ui-native";
 import { apiFetch } from "@/lib/api";
-import { readSession } from "@/lib/session";
+import { registerForPushAsync } from "@/lib/push";
+import { getAccessToken, readSession } from "@/lib/session";
+import { subscribeSse } from "@/lib/sse";
+import { useNetworkStore } from "@/store/network";
 
-const AuthMeUser = z.object({
-  id: z.string(),
-  email: z.string(),
-  role: z.string(),
-  locale: z.string(),
-  emailVerified: z.boolean(),
-  suspendedAt: z.string().datetime().nullable().optional(),
-  suspendedReason: z.string().nullable().optional(),
-});
+const UnreadCountEnvelope = z.object({ count: z.number().int().nonnegative() });
 
 export default function AppTabsLayout(): JSX.Element {
   const { t } = useTranslation();
-  const [suspendedAt, setSuspendedAt] = useState<string | null>(null);
-  const [suspendedReason, setSuspendedReason] = useState<string | null>(null);
+  const insets = useSafeAreaInsets();
+  const isConnected = useNetworkStore((state) => state.isConnected);
+  const [notificationBadge, setNotificationBadge] = useState<number>(0);
 
   // Gate the whole authenticated area on having a session. If missing, bounce
   // back to the landing page which itself redirects to /login.
   useEffect(() => {
-    let cancelled = false;
     void (async () => {
       const session = await readSession();
       if (!session) {
         router.replace("/(auth)/login");
         return;
       }
-      try {
-        const me = await apiFetch("/auth/me", AuthMeUser, {
-          token: session.tokens.accessToken,
-        });
-        if (cancelled) return;
-        setSuspendedAt(me.suspendedAt ?? null);
-        setSuspendedReason(me.suspendedReason ?? null);
-      } catch {
-        // non-fatal — banner stays hidden.
-      }
+      void registerForPushAsync().catch(() => undefined);
     })();
-    return () => {
-      cancelled = true;
-    };
   }, []);
 
-  return (
-    <View style={styles.root}>
-      {suspendedAt ? (
-        <Pressable
-          onPress={() => router.push("/(app)/me/appeals" as never)}
-          accessibilityRole="link"
-          accessibilityLabel={t("suspension.appealCta")}
-          testID="suspension-banner"
-        >
-          <View style={styles.banner} accessibilityRole="alert">
-            <Text style={styles.bannerText}>
-              {suspendedReason
-                ? t("suspension.bannerWithReason", { reason: suspendedReason })
-                : t("suspension.banner")}
-            </Text>
-            <Text style={styles.bannerCta} testID="suspension-appeal-cta">
-              {t("suspension.appealCta")}
-            </Text>
-          </View>
-        </Pressable>
-      ) : null}
-      <View style={styles.tabsWrap}>
-        <Tabs
-          screenOptions={{
-            headerShown: false,
-            tabBarActiveTintColor: nativeTokens.color.brand700,
-            tabBarInactiveTintColor: nativeTokens.color.inkMuted,
-            tabBarStyle: {
-              height: nativeTokens.chrome.tabHeight + (Platform.OS === "ios" ? 20 : 0),
-              paddingTop: nativeTokens.space[1],
-              paddingBottom: Platform.OS === "ios" ? nativeTokens.space[4] : nativeTokens.space[2],
-              backgroundColor: nativeTokens.color.surface,
-              borderTopColor: nativeTokens.color.lineSoft,
-            },
-            tabBarLabelStyle: {
-              fontSize: 11,
-              fontFamily: nativeTokens.type.family.sans,
-            },
-          }}
-        >
-          <Tabs.Screen
-            name="feed"
-            options={{
-              title: t("feed.title"),
-              tabBarIcon: ({ color, focused }) => (
-                <TabIcon name="home" color={color} focused={focused} />
-              ),
-            }}
-          />
-          <Tabs.Screen
-            name="network"
-            options={{
-              title: t("network.title"),
-              tabBarIcon: ({ color, focused }) => (
-                <TabIcon name="users" color={color} focused={focused} />
-              ),
-            }}
-          />
-          <Tabs.Screen
-            name="jobs"
-            options={{
-              title: t("jobs.title"),
-              tabBarIcon: ({ color, focused }) => (
-                <TabIcon name="briefcase" color={color} focused={focused} />
-              ),
-            }}
-          />
-          <Tabs.Screen
-            name="messages"
-            options={{
-              title: t("messaging.title"),
-              tabBarIcon: ({ color, focused }) => (
-                <TabIcon name="message" color={color} focused={focused} />
-              ),
-              tabBarButtonTestID: "tab-messages",
-            }}
-          />
-          <Tabs.Screen
-            name="notifications"
-            options={{
-              title: t("notifications.title"),
-              tabBarIcon: ({ color, focused }) => (
-                <TabIcon name="bell" color={color} focused={focused} />
-              ),
-            }}
-          />
-          <Tabs.Screen
-            name="settings"
-            options={{
-              title: t("nav.me"),
-              tabBarIcon: ({ color, focused }) => (
-                <TabIcon name="user" color={color} focused={focused} />
-              ),
-              tabBarButtonTestID: "tab-me",
-            }}
-          />
+  useEffect(() => {
+    if (!isConnected) return;
+    let unsubscribe: (() => void) | undefined;
+    void (async () => {
+      let token = await getAccessToken();
+      if (!token) return;
+      try {
+        const out = await apiFetch("/notifications/unread-count", UnreadCountEnvelope, { token });
+        setNotificationBadge(out.count);
+        token = (await getAccessToken()) ?? token;
+      } catch {
+        token = await getAccessToken();
+        if (!token) return;
+        /* keep tab shell usable */
+      }
+      unsubscribe = subscribeSse({
+        path: "/notifications/stream",
+        token,
+        schema: WsNotificationEvent,
+        onEvent: (event) => {
+          if (event.type === "notification.unread-count") {
+            setNotificationBadge(event.payload.count);
+          } else if (event.type === "notification.new") {
+            setNotificationBadge((count) => count + 1);
+          } else if (event.type === "notification.read") {
+            setNotificationBadge(0);
+          }
+        },
+      });
+    })();
+    return (): void => {
+      unsubscribe?.();
+    };
+  }, [isConnected]);
 
-          {/* Routes that exist inside (app) but shouldn't have a tab. Setting
+  return (
+    <Tabs
+      screenOptions={{
+        headerShown: false,
+        tabBarActiveTintColor: nativeTokens.color.brand700,
+        tabBarInactiveTintColor: nativeTokens.color.inkMuted,
+        tabBarStyle: {
+          height: nativeTokens.chrome.tabHeight + Math.max(insets.bottom, nativeTokens.space[2]),
+          paddingTop: nativeTokens.space[1],
+          paddingBottom: Math.max(insets.bottom, nativeTokens.space[2]),
+          backgroundColor: nativeTokens.color.surface,
+          borderTopColor: nativeTokens.color.lineSoft,
+        },
+        tabBarLabelStyle: {
+          fontSize: 11,
+          fontFamily: nativeTokens.type.family.sans,
+        },
+      }}
+    >
+      <Tabs.Screen
+        name="feed"
+        options={{
+          title: t("feed.title"),
+          tabBarIcon: ({ color, focused }) => (
+            <TabIcon name="home" color={color} focused={focused} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="network"
+        options={{
+          title: t("network.title"),
+          tabBarIcon: ({ color, focused }) => (
+            <TabIcon name="users" color={color} focused={focused} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="jobs/index"
+        options={{
+          title: t("jobs.title"),
+          tabBarIcon: ({ color, focused }) => (
+            <TabIcon name="briefcase" color={color} focused={focused} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="messages/index"
+        options={{
+          title: t("messaging.title"),
+          tabBarIcon: ({ color, focused }) => (
+            <TabIcon name="message" color={color} focused={focused} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="notifications"
+        options={{
+          title: t("notifications.title"),
+          tabBarBadge:
+            notificationBadge > 0
+              ? notificationBadge > 99
+                ? "99+"
+                : notificationBadge
+              : undefined,
+          tabBarIcon: ({ color, focused }) => (
+            <TabIcon name="bell" color={color} focused={focused} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="search"
+        options={{
+          title: t("search.title"),
+          tabBarIcon: ({ color, focused }) => (
+            <TabIcon name="search" color={color} focused={focused} />
+          ),
+        }}
+      />
+
+      {/* Routes that exist inside (app) but shouldn't have a tab. Setting
          href: null hides them from the tab bar while keeping them pushable. */}
-          <Tabs.Screen name="search" options={{ href: null }} />
-          <Tabs.Screen name="composer" options={{ href: null }} />
-          <Tabs.Screen name="onboarding" options={{ href: null }} />
-          <Tabs.Screen name="me/edit" options={{ href: null }} />
-          <Tabs.Screen name="me/appeals" options={{ href: null }} />
-          <Tabs.Screen name="in/[handle]" options={{ href: null }} />
-          <Tabs.Screen name="jobs/applications" options={{ href: null }} />
-          <Tabs.Screen name="jobs/[id]" options={{ href: null }} />
-        </Tabs>
-      </View>
-    </View>
+      <Tabs.Screen name="composer" options={{ href: null }} />
+      <Tabs.Screen name="onboarding" options={{ href: null }} />
+      <Tabs.Screen name="me/edit" options={{ href: null }} />
+      <Tabs.Screen name="in/[handle]" options={{ href: null }} />
+      <Tabs.Screen name="jobs/[id]" options={{ href: null }} />
+      <Tabs.Screen name="messages/new" options={{ href: null }} />
+      <Tabs.Screen
+        name="messages/[roomId]"
+        options={{ href: null, tabBarStyle: { display: "none" } }}
+      />
+    </Tabs>
   );
 }
-
-const styles = StyleSheet.create({
-  root: {
-    flex: 1,
-    backgroundColor: nativeTokens.color.surface,
-  },
-  tabsWrap: {
-    flex: 1,
-  },
-  banner: {
-    paddingHorizontal: nativeTokens.space[4],
-    paddingVertical: nativeTokens.space[3],
-    backgroundColor: nativeTokens.color.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: nativeTokens.color.lineSoft,
-  },
-  bannerText: {
-    color: nativeTokens.color.danger,
-    fontSize: 14,
-    fontWeight: "600",
-    fontFamily: nativeTokens.type.family.sans,
-  },
-  bannerCta: {
-    marginTop: 4,
-    color: nativeTokens.color.brand700,
-    fontSize: 13,
-    fontWeight: "600",
-    fontFamily: nativeTokens.type.family.sans,
-    textDecorationLine: "underline",
-  },
-});
 
 // Tab icons: bump stroke-width a touch when focused so the active tab reads
 // bolder without needing a separate filled glyph set.

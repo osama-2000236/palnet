@@ -5,7 +5,10 @@ import Redis from "ioredis";
 
 import { PrismaService } from "../prisma/prisma.service";
 
+import { Public } from "../auth/decorators/public.decorator";
+
 @ApiTags("health")
+@Public()
 @Controller("health")
 export class HealthController implements OnModuleDestroy {
   private readonly startedAt = Date.now();

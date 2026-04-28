@@ -18,14 +18,15 @@ import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
   FlatList,
-  Image,
   Pressable,
+  RefreshControl,
   SafeAreaView,
   Text,
   TextInput,
   View,
 } from "react-native";
 
+import { JobRow } from "@/components/rows/JobRow";
 import { apiFetchPage } from "@/lib/api";
 import { getAccessToken } from "@/lib/session";
 
@@ -80,6 +81,7 @@ export default function JobsScreen(): JSX.Element {
   const [cursor, setCursor] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const [firstLoad, setFirstLoad] = useState(true);
   const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS);
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -108,6 +110,14 @@ export default function JobsScreen(): JSX.Element {
   }, [filters, load]);
 
   const activeCount = useMemo(() => activeFilterCount(filters), [filters]);
+  const refreshJobs = useCallback(async (): Promise<void> => {
+    setRefreshing(true);
+    try {
+      await load(null, filters);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [filters, load]);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: nativeTokens.color.surfaceMuted }}>
@@ -235,6 +245,14 @@ export default function JobsScreen(): JSX.Element {
             onEndReached={() => {
               if (!loading && hasMore && cursor) void load(cursor, filters);
             }}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={() => void refreshJobs()}
+                tintColor={nativeTokens.color.brand600}
+                colors={[nativeTokens.color.brand600]}
+              />
+            }
             ListEmptyComponent={
               loading ? null : (
                 <Surface variant="tinted" padding="6">
@@ -453,125 +471,6 @@ function inputStyle(): {
 // ────────────────────────────────────────────────────────────────────────
 // Row + skeleton. Unchanged from the pre-filter iteration.
 // ────────────────────────────────────────────────────────────────────────
-
-function JobRow({ job }: { job: Job }): JSX.Element {
-  const { t } = useTranslation();
-  const metaParts = [
-    job.city,
-    t(`jobs.locationLabels.${job.locationMode}`),
-    t(`jobs.typeLabels.${job.type}`),
-  ].filter(Boolean) as string[];
-
-  return (
-    <Pressable
-      onPress={() => router.push({ pathname: "/(app)/jobs/[id]", params: { id: job.id } })}
-      accessibilityRole="link"
-      accessibilityLabel={`${job.title} — ${job.company.name}`}
-    >
-      <Surface variant="card" padding="4">
-        <View style={{ flexDirection: "row", gap: nativeTokens.space[3] }}>
-          <View
-            style={{
-              width: 48,
-              height: 48,
-              borderRadius: nativeTokens.radius.md,
-              backgroundColor: nativeTokens.color.surfaceSunken,
-              alignItems: "center",
-              justifyContent: "center",
-              overflow: "hidden",
-            }}
-          >
-            {job.company.logoUrl ? (
-              <Image
-                source={{ uri: job.company.logoUrl }}
-                style={{ width: "100%", height: "100%" }}
-                resizeMode="cover"
-              />
-            ) : (
-              <Text
-                style={{
-                  color: nativeTokens.color.inkMuted,
-                  fontWeight: "600",
-                  fontFamily: nativeTokens.type.family.sans,
-                }}
-              >
-                {(job.company.name[0] ?? "?").toUpperCase()}
-              </Text>
-            )}
-          </View>
-
-          <View style={{ flex: 1, minWidth: 0 }}>
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                gap: nativeTokens.space[2],
-              }}
-            >
-              <View style={{ flex: 1, minWidth: 0 }}>
-                <Text
-                  numberOfLines={1}
-                  style={{
-                    color: nativeTokens.color.ink,
-                    fontSize: nativeTokens.type.scale.h3.size,
-                    lineHeight: nativeTokens.type.scale.h3.line,
-                    fontWeight: "600",
-                    fontFamily: nativeTokens.type.family.sans,
-                  }}
-                >
-                  {job.title}
-                </Text>
-                <Text
-                  numberOfLines={1}
-                  style={{
-                    color: nativeTokens.color.inkMuted,
-                    fontSize: nativeTokens.type.scale.small.size,
-                    fontFamily: nativeTokens.type.family.sans,
-                  }}
-                >
-                  {job.company.name}
-                </Text>
-              </View>
-              {job.viewer.hasApplied ? (
-                <View
-                  style={{
-                    alignSelf: "flex-start",
-                    paddingHorizontal: nativeTokens.space[2],
-                    paddingVertical: 2,
-                    borderRadius: nativeTokens.radius.full,
-                    backgroundColor: nativeTokens.color.successSoft,
-                  }}
-                >
-                  <Text
-                    style={{
-                      color: nativeTokens.color.success,
-                      fontSize: 11,
-                      fontWeight: "700",
-                      fontFamily: nativeTokens.type.family.sans,
-                    }}
-                  >
-                    {t("jobs.appliedBadge")}
-                  </Text>
-                </View>
-              ) : null}
-            </View>
-
-            <Text
-              style={{
-                marginTop: nativeTokens.space[1],
-                color: nativeTokens.color.inkMuted,
-                fontSize: nativeTokens.type.scale.small.size,
-                fontFamily: nativeTokens.type.family.sans,
-              }}
-            >
-              {metaParts.join(" · ")}
-            </Text>
-          </View>
-        </View>
-      </Surface>
-    </Pressable>
-  );
-}
 
 function JobRowSkeleton(): JSX.Element {
   return (

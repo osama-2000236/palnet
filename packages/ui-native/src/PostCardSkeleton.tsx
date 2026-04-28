@@ -1,69 +1,77 @@
-import { useEffect, useRef } from "react";
-import { Animated, StyleSheet, View } from "react-native";
+import { View } from "react-native";
 
+import { Skeleton } from "./Skeleton";
 import { Surface } from "./Surface";
 import { nativeTokens } from "./tokens";
 
 export function PostCardSkeleton(): JSX.Element {
-  const opacity = usePulse();
   return (
-    <Surface variant="card" padding="4" accessibilityRole="summary">
-      <Animated.View style={[styles.stack, { opacity }]}>
-        <View style={styles.header}>
-          <View style={styles.avatar} />
-          <View style={styles.lines}>
-            <View style={styles.lineWide} />
-            <View style={styles.lineShort} />
-          </View>
+    <Surface
+      variant="card"
+      padding="0"
+      accessibilityElementsHidden
+      importantForAccessibility="no-hide-descendants"
+      style={{ overflow: "hidden" }}
+    >
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "flex-start",
+          gap: nativeTokens.space[3],
+          paddingHorizontal: nativeTokens.space[4],
+          paddingTop: nativeTokens.space[4],
+          paddingBottom: nativeTokens.space[2],
+        }}
+      >
+        <Skeleton width={nativeTokens.space[10]} height={nativeTokens.space[10]} kind="circle" />
+        <View style={{ flex: 1, gap: nativeTokens.space[1] }}>
+          <Skeleton width="56%" height={nativeTokens.space[3]} />
+          <Skeleton width="42%" height={nativeTokens.space[3]} />
+          <Skeleton width="34%" height={nativeTokens.space[3]} />
         </View>
-        <View style={styles.lineFull} />
-        <View style={styles.lineWide} />
-      </Animated.View>
+      </View>
+
+      <View
+        style={{
+          paddingHorizontal: nativeTokens.space[4],
+          paddingBottom: nativeTokens.space[3],
+          gap: nativeTokens.space[2],
+        }}
+      >
+        <Skeleton width="92%" height={nativeTokens.space[3]} />
+        <Skeleton width="78%" height={nativeTokens.space[3]} />
+        <Skeleton width="60%" height={nativeTokens.space[3]} />
+      </View>
+
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          gap: nativeTokens.space[2],
+          paddingHorizontal: nativeTokens.space[4],
+          paddingVertical: nativeTokens.space[3],
+        }}
+      >
+        <Skeleton width={nativeTokens.space[5]} height={nativeTokens.space[5]} kind="circle" />
+        <Skeleton width={nativeTokens.space[8]} height={nativeTokens.space[3]} />
+        <View style={{ flex: 1 }} />
+        <Skeleton width="30%" height={nativeTokens.space[3]} />
+      </View>
+
+      <View
+        style={{
+          borderTopWidth: 1,
+          borderTopColor: nativeTokens.color.lineSoft,
+          flexDirection: "row",
+          gap: nativeTokens.space[1],
+          padding: nativeTokens.space[1],
+        }}
+      >
+        <Skeleton width="24%" height={nativeTokens.space[10]} radius={nativeTokens.radius.md} />
+        <Skeleton width="24%" height={nativeTokens.space[10]} radius={nativeTokens.radius.md} />
+        <Skeleton width="24%" height={nativeTokens.space[10]} radius={nativeTokens.radius.md} />
+        <Skeleton width="24%" height={nativeTokens.space[10]} radius={nativeTokens.radius.md} />
+      </View>
     </Surface>
   );
 }
-
-function usePulse(): Animated.Value {
-  const value = useRef(new Animated.Value(0.45)).current;
-  useEffect(() => {
-    const loop = Animated.loop(
-      Animated.sequence([
-        Animated.timing(value, { toValue: 1, duration: 650, useNativeDriver: true }),
-        Animated.timing(value, { toValue: 0.45, duration: 650, useNativeDriver: true }),
-      ]),
-    );
-    loop.start();
-    return () => loop.stop();
-  }, [value]);
-  return value;
-}
-
-const styles = StyleSheet.create({
-  stack: { gap: nativeTokens.space[3] },
-  header: { flexDirection: "row", alignItems: "center", gap: nativeTokens.space[3] },
-  avatar: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: nativeTokens.color.surfaceSubtle,
-  },
-  lines: { flex: 1, gap: nativeTokens.space[2] },
-  lineWide: {
-    height: 12,
-    borderRadius: 6,
-    width: "70%",
-    backgroundColor: nativeTokens.color.surfaceSubtle,
-  },
-  lineShort: {
-    height: 12,
-    borderRadius: 6,
-    width: "42%",
-    backgroundColor: nativeTokens.color.surfaceSubtle,
-  },
-  lineFull: {
-    height: 12,
-    borderRadius: 6,
-    width: "100%",
-    backgroundColor: nativeTokens.color.surfaceSubtle,
-  },
-});

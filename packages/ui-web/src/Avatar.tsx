@@ -18,6 +18,7 @@ export interface AvatarUser {
   firstName?: string | null;
   lastName?: string | null;
   avatarUrl?: string | null;
+  avatarBlurhash?: string | null;
 }
 
 export interface AvatarProps {
@@ -26,24 +27,25 @@ export interface AvatarProps {
   ring?: boolean;
   online?: boolean;
   className?: string;
+  blurhash?: string | null;
   /** Accessible label override. Defaults to the person's name. */
   alt?: string;
 }
 
 const BOX_CLASSES: Record<AvatarSize, string> = {
-  xs: "h-6 w-6 text-micro",
+  xs: "h-6 w-6 text-[10px]",
   sm: "h-8 w-8 text-xs",
   md: "h-10 w-10 text-sm",
   lg: "h-14 w-14 text-lg",
-  xl: "h-24 w-24 text-3xl border-3 border-surface",
+  xl: "h-24 w-24 text-3xl border-[3px] border-surface",
 };
 
 const DOT_CLASSES: Record<AvatarSize, string> = {
-  xs: "h-avatar-dot-xs w-avatar-dot-xs",
-  sm: "h-avatar-dot-sm w-avatar-dot-sm",
-  md: "h-avatar-dot-md w-avatar-dot-md",
-  lg: "h-avatar-dot-lg w-avatar-dot-lg",
-  xl: "h-avatar-dot-xl w-avatar-dot-xl",
+  xs: "h-[7px] w-[7px]",
+  sm: "h-[9px] w-[9px]",
+  md: "h-[11px] w-[11px]",
+  lg: "h-[13px] w-[13px]",
+  xl: "h-[15px] w-[15px]",
 };
 
 // Three token-backed palettes. Chosen deterministically from user id/handle so
@@ -102,13 +104,10 @@ export function Avatar({
     className,
   );
 
+  const a11yProps = label ? { "aria-label": label, role: "img" } : { "aria-hidden": true };
+
   return (
-    <span
-      className={box}
-      aria-hidden={label ? undefined : true}
-      aria-label={label || undefined}
-      role={label ? "img" : undefined}
-    >
+    <span className={box} {...a11yProps}>
       {user.avatarUrl ? (
         <img src={user.avatarUrl} alt={label} className="h-full w-full object-cover" />
       ) : (

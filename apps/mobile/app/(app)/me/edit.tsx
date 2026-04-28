@@ -7,20 +7,22 @@ import {
   UpdateProfileBody,
   type Profile,
 } from "@baydar/shared";
+import { Avatar, Button, Icon, Surface, nativeTokens } from "@baydar/ui-native";
 import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
-  Image,
-  Pressable,
-  SafeAreaView,
+  KeyboardAvoidingView,
+  Platform,
   ScrollView,
+  StyleSheet,
   Text,
   TextInput,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 import { apiFetch } from "@/lib/api";
 import { getAccessToken } from "@/lib/session";
@@ -47,39 +49,47 @@ export default function EditProfileScreen(): JSX.Element {
 
   if (loading || !profile) {
     return (
-      <SafeAreaView className="bg-surface-muted flex-1 items-center justify-center">
+      <SafeAreaView style={styles.centerScreen}>
         <ActivityIndicator />
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView className="bg-surface-muted flex-1">
-      <ScrollView contentContainerClassName="p-4 gap-4">
-        <View className="flex-row items-center justify-between">
-          <Text className="text-ink text-2xl font-bold">{t("profile.editTitle")}</Text>
-          <Pressable onPress={() => router.back()}>
-            <Text className="text-ink-muted text-sm">{t("common.cancel")}</Text>
-          </Pressable>
-        </View>
+    <SafeAreaView style={styles.screen}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        style={styles.flex}
+      >
+        <ScrollView contentContainerStyle={styles.scrollContent}>
+          <View style={styles.header}>
+            <Text style={styles.title}>{t("profile.editTitle")}</Text>
+            <Button
+              variant="ghost"
+              size="sm"
+              onPress={() => router.back()}
+              accessibilityLabel={t("common.cancel")}
+            >
+              {t("common.cancel")}
+            </Button>
+          </View>
 
-        <BasicsCard profile={profile} onChanged={setProfile} />
-        <ExperiencesCard profile={profile} onChanged={setProfile} />
-        <EducationsCard profile={profile} onChanged={setProfile} />
-        <SkillsCard profile={profile} onChanged={setProfile} />
-      </ScrollView>
+          <BasicsCard profile={profile} onChanged={setProfile} />
+          <ExperiencesCard profile={profile} onChanged={setProfile} />
+          <EducationsCard profile={profile} onChanged={setProfile} />
+          <SkillsCard profile={profile} onChanged={setProfile} />
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
 
-// ──────────────────────────────────────────────────────────────────────────
-
-function Card({ title, children }: { title: string; children: React.ReactNode }): JSX.Element {
+function Card({ title, children }: { title: string; children: ReactNode }): JSX.Element {
   return (
-    <View className="border-ink-muted/20 bg-surface rounded-md border p-4">
-      <Text className="text-ink mb-3 text-lg font-semibold">{title}</Text>
-      {children}
-    </View>
+    <Surface variant="card" padding="4">
+      <Text style={styles.cardTitle}>{title}</Text>
+      <View style={styles.cardBody}>{children}</View>
+    </Surface>
   );
 }
 
@@ -99,14 +109,12 @@ function Input({
       value={value}
       onChangeText={onChangeText}
       placeholder={placeholder}
+      placeholderTextColor={nativeTokens.color.inkMuted}
       multiline={multiline}
-      className="border-ink-muted/30 bg-surface text-ink mb-2 rounded-md border px-3 py-2"
-      style={multiline ? { minHeight: 80, textAlignVertical: "top" } : undefined}
+      style={[styles.input, multiline ? styles.multilineInput : null]}
     />
   );
 }
-
-// ──────────────────────────────────────────────────────────────────────────
 
 function BasicsCard({
   profile,
@@ -128,7 +136,7 @@ function BasicsCard({
     const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!perm.granted) return;
     const picked = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: "images",
       allowsEditing: true,
       aspect: [1, 1],
       quality: 0.85,
@@ -139,7 +147,7 @@ function BasicsCard({
     if (!token) return;
     setUploading(true);
     try {
-      const publicUrl = await uploadAsset({
+      const uploaded = await uploadAsset({
         asset: {
           uri: asset.uri,
           mimeType: asset.mimeType ?? "image/jpeg",
@@ -151,7 +159,7 @@ function BasicsCard({
       });
       const next = await apiFetch("/profiles/me", ProfileSchema, {
         method: "PATCH",
-        body: { avatarUrl: publicUrl },
+        body: { avatarUrl: uploaded.publicUrl },
         token,
       });
       onChanged(next);
@@ -186,55 +194,44 @@ function BasicsCard({
 
   return (
     <Card title={t("profile.basics")}>
-      <View className="mb-3 flex-row items-center gap-3">
-        {profile.avatarUrl ? (
-          <Image
-            source={{ uri: profile.avatarUrl }}
-            style={{ width: 64, height: 64, borderRadius: 32 }}
-          />
-        ) : (
-          <View className="border-ink-muted/20 bg-surface-muted h-16 w-16 items-center justify-center rounded-full border">
-            <Text className="text-ink-muted text-xs">
-              {profile.firstName[0]}
-              {profile.lastName[0]}
-            </Text>
-          </View>
-        )}
-        <Pressable
+      <View style={styles.avatarRow}>
+        <Avatar
+          user={{
+            id: profile.userId,
+            handle: profile.handle,
+            firstName: profile.firstName,
+            lastName: profile.lastName,
+            avatarUrl: profile.avatarUrl,
+          }}
+          size="lg"
+        />
+        <Button
+          variant="secondary"
+          size="md"
           onPress={pickAvatar}
           disabled={uploading}
-          className="border-ink-muted/30 rounded-md border px-3 py-2"
+          accessibilityLabel={t("profile.changeAvatar")}
         >
-          <Text className="text-ink text-sm">
-            {uploading ? t("profile.uploading") : t("profile.changeAvatar")}
-          </Text>
-        </Pressable>
+          {uploading ? t("profile.uploading") : t("profile.changeAvatar")}
+        </Button>
       </View>
-      <Input value={firstName} onChangeText={setFirstName} placeholder="First name" />
-      <Input value={lastName} onChangeText={setLastName} placeholder="Last name" />
-      <Input
-        value={headline}
-        onChangeText={setHeadline}
-        placeholder={t("onboarding.headline") ?? "Headline"}
-      />
+      <Input value={firstName} onChangeText={setFirstName} placeholder={t("profile.firstName")} />
+      <Input value={lastName} onChangeText={setLastName} placeholder={t("profile.lastName")} />
+      <Input value={headline} onChangeText={setHeadline} placeholder={t("profile.headline")} />
       <Input value={about} onChangeText={setAbout} placeholder={t("profile.about")} multiline />
-      <Input
-        value={location}
-        onChangeText={setLocation}
-        placeholder={t("onboarding.location") ?? "Location"}
-      />
-      <Pressable
+      <Input value={location} onChangeText={setLocation} placeholder={t("profile.location")} />
+      <Button
         onPress={save}
         disabled={busy}
-        className="bg-brand-600 self-end rounded-md px-4 py-2"
+        loading={busy}
+        style={styles.alignEnd}
+        accessibilityLabel={t("profile.save")}
       >
-        <Text className="text-ink-inverse text-sm font-semibold">{t("profile.save")}</Text>
-      </Pressable>
+        {t("profile.save")}
+      </Button>
     </Card>
   );
 }
-
-// ──────────────────────────────────────────────────────────────────────────
 
 function ExperiencesCard({
   profile,
@@ -299,62 +296,78 @@ function ExperiencesCard({
 
   return (
     <Card title={t("profile.experience")}>
-      {profile.experiences.map((e) => (
+      {profile.experiences.map((experience) => (
         <View
-          key={e.id ?? `${e.companyName}-${e.startDate}`}
-          className="mb-3 flex-row items-start justify-between"
+          key={experience.id ?? `${experience.companyName}-${experience.startDate}`}
+          style={styles.itemRow}
         >
-          <View className="flex-1">
-            <Text className="text-ink font-semibold">{e.title}</Text>
-            <Text className="text-ink-muted text-sm">{e.companyName}</Text>
-            {e.description ? <Text className="text-ink mt-1 text-sm">{e.description}</Text> : null}
+          <View style={styles.itemText}>
+            <Text style={styles.itemTitle}>{experience.title}</Text>
+            <Text style={styles.itemMeta}>{experience.companyName}</Text>
+            {experience.description ? (
+              <Text style={styles.itemBody}>{experience.description}</Text>
+            ) : null}
           </View>
-          {e.id ? (
-            <Pressable onPress={() => void remove(e.id as string)} disabled={busy}>
-              <Text className="text-danger text-xs">{t("profile.remove")}</Text>
-            </Pressable>
+          {experience.id ? (
+            <Button
+              variant="danger-ghost"
+              size="sm"
+              onPress={() => void remove(experience.id as string)}
+              disabled={busy}
+              accessibilityLabel={t("profile.remove")}
+            >
+              {t("profile.remove")}
+            </Button>
           ) : null}
         </View>
       ))}
 
       {show ? (
-        <View className="border-brand-600/30 bg-brand-600/5 mt-2 rounded-md border p-3">
-          <Input
-            value={title}
-            onChangeText={setTitle}
-            placeholder={t("profile.expTitle") ?? "Title"}
-          />
-          <Input
-            value={companyName}
-            onChangeText={setCompanyName}
-            placeholder={t("profile.company") ?? "Company"}
-          />
-          <Input value={startDate} onChangeText={setStartDate} placeholder="YYYY-MM-DD" />
-          <Input
-            value={description}
-            onChangeText={setDescription}
-            placeholder={t("profile.description") ?? "Description"}
-            multiline
-          />
-          <View className="flex-row justify-end gap-2">
-            <Pressable onPress={() => setShow(false)}>
-              <Text className="text-ink-muted text-sm">{t("profile.cancel")}</Text>
-            </Pressable>
-            <Pressable onPress={add} disabled={busy} className="bg-brand-600 rounded-md px-4 py-2">
-              <Text className="text-ink-inverse text-sm font-semibold">{t("profile.save")}</Text>
-            </Pressable>
+        <Surface variant="tinted" padding="3">
+          <View style={styles.cardBody}>
+            <Input value={title} onChangeText={setTitle} placeholder={t("profile.expTitle")} />
+            <Input
+              value={companyName}
+              onChangeText={setCompanyName}
+              placeholder={t("profile.company")}
+            />
+            <Input
+              value={startDate}
+              onChangeText={setStartDate}
+              placeholder={t("profile.dateHint")}
+            />
+            <Input
+              value={description}
+              onChangeText={setDescription}
+              placeholder={t("profile.description")}
+              multiline
+            />
+            <View style={styles.buttonRow}>
+              <Button variant="ghost" size="sm" onPress={() => setShow(false)}>
+                {t("profile.cancel")}
+              </Button>
+              <Button size="sm" onPress={add} disabled={busy} loading={busy}>
+                {t("profile.save")}
+              </Button>
+            </View>
           </View>
-        </View>
+        </Surface>
       ) : (
-        <Pressable onPress={() => setShow(true)}>
-          <Text className="text-brand-600 text-sm">+ {t("profile.add")}</Text>
-        </Pressable>
+        <Button
+          variant="ghost"
+          size="sm"
+          leading={
+            <Icon name="plus" size={nativeTokens.space[4]} color={nativeTokens.color.brand700} />
+          }
+          onPress={() => setShow(true)}
+          accessibilityLabel={t("profile.add")}
+        >
+          {t("profile.add")}
+        </Button>
       )}
     </Card>
   );
 }
-
-// ──────────────────────────────────────────────────────────────────────────
 
 function EducationsCard({
   profile,
@@ -416,61 +429,67 @@ function EducationsCard({
 
   return (
     <Card title={t("profile.education")}>
-      {profile.educations.map((e) => (
-        <View key={e.id ?? e.school} className="mb-3 flex-row items-start justify-between">
-          <View className="flex-1">
-            <Text className="text-ink font-semibold">{e.school}</Text>
-            {e.degree ? (
-              <Text className="text-ink-muted text-sm">
-                {e.degree}
-                {e.fieldOfStudy ? ` · ${e.fieldOfStudy}` : ""}
+      {profile.educations.map((education) => (
+        <View key={education.id ?? education.school} style={styles.itemRow}>
+          <View style={styles.itemText}>
+            <Text style={styles.itemTitle}>{education.school}</Text>
+            {education.degree ? (
+              <Text style={styles.itemMeta}>
+                {education.degree}
+                {education.fieldOfStudy ? ` · ${education.fieldOfStudy}` : ""}
               </Text>
             ) : null}
           </View>
-          {e.id ? (
-            <Pressable onPress={() => void remove(e.id as string)} disabled={busy}>
-              <Text className="text-danger text-xs">{t("profile.remove")}</Text>
-            </Pressable>
+          {education.id ? (
+            <Button
+              variant="danger-ghost"
+              size="sm"
+              onPress={() => void remove(education.id as string)}
+              disabled={busy}
+              accessibilityLabel={t("profile.remove")}
+            >
+              {t("profile.remove")}
+            </Button>
           ) : null}
         </View>
       ))}
 
       {show ? (
-        <View className="border-brand-600/30 bg-brand-600/5 mt-2 rounded-md border p-3">
-          <Input
-            value={school}
-            onChangeText={setSchool}
-            placeholder={t("profile.school") ?? "School"}
-          />
-          <Input
-            value={degree}
-            onChangeText={setDegree}
-            placeholder={t("profile.degree") ?? "Degree"}
-          />
-          <Input
-            value={fieldOfStudy}
-            onChangeText={setFieldOfStudy}
-            placeholder={t("profile.fieldOfStudy") ?? "Field of study"}
-          />
-          <View className="flex-row justify-end gap-2">
-            <Pressable onPress={() => setShow(false)}>
-              <Text className="text-ink-muted text-sm">{t("profile.cancel")}</Text>
-            </Pressable>
-            <Pressable onPress={add} disabled={busy} className="bg-brand-600 rounded-md px-4 py-2">
-              <Text className="text-ink-inverse text-sm font-semibold">{t("profile.save")}</Text>
-            </Pressable>
+        <Surface variant="tinted" padding="3">
+          <View style={styles.cardBody}>
+            <Input value={school} onChangeText={setSchool} placeholder={t("profile.school")} />
+            <Input value={degree} onChangeText={setDegree} placeholder={t("profile.degree")} />
+            <Input
+              value={fieldOfStudy}
+              onChangeText={setFieldOfStudy}
+              placeholder={t("profile.fieldOfStudy")}
+            />
+            <View style={styles.buttonRow}>
+              <Button variant="ghost" size="sm" onPress={() => setShow(false)}>
+                {t("profile.cancel")}
+              </Button>
+              <Button size="sm" onPress={add} disabled={busy} loading={busy}>
+                {t("profile.save")}
+              </Button>
+            </View>
           </View>
-        </View>
+        </Surface>
       ) : (
-        <Pressable onPress={() => setShow(true)}>
-          <Text className="text-brand-600 text-sm">+ {t("profile.add")}</Text>
-        </Pressable>
+        <Button
+          variant="ghost"
+          size="sm"
+          leading={
+            <Icon name="plus" size={nativeTokens.space[4]} color={nativeTokens.color.brand700} />
+          }
+          onPress={() => setShow(true)}
+          accessibilityLabel={t("profile.add")}
+        >
+          {t("profile.add")}
+        </Button>
       )}
     </Card>
   );
 }
-
-// ──────────────────────────────────────────────────────────────────────────
 
 function SkillsCard({
   profile,
@@ -519,35 +538,163 @@ function SkillsCard({
 
   return (
     <Card title={t("profile.skills")}>
-      <View className="mb-3 flex-row flex-wrap gap-2">
-        {profile.skills.map((s) => (
-          <Pressable
-            key={s.id}
-            onPress={() => void remove(s.id)}
-            disabled={busy}
-            className="border-ink-muted/30 flex-row items-center gap-1 rounded-full border px-3 py-1"
-          >
-            <Text className="text-ink text-sm">{s.name}</Text>
-            <Text className="text-danger text-xs"> ×</Text>
-          </Pressable>
+      <View style={styles.skillList}>
+        {profile.skills.map((skill) => (
+          <Surface key={skill.id} variant="tinted" padding="2" style={styles.skillChip}>
+            <Text style={styles.skillText}>{skill.name}</Text>
+            <Button
+              variant="danger-ghost"
+              size="sm"
+              onPress={() => void remove(skill.id)}
+              disabled={busy}
+              accessibilityLabel={t("profile.remove")}
+            >
+              {t("profile.remove")}
+            </Button>
+          </Surface>
         ))}
       </View>
-      <View className="flex-row gap-2">
+      <View style={styles.skillInputRow}>
         <TextInput
           value={name}
           onChangeText={setName}
-          placeholder={t("profile.addSkillPlaceholder") ?? "Add a skill"}
+          placeholder={t("profile.addSkillPlaceholder")}
+          placeholderTextColor={nativeTokens.color.inkMuted}
           maxLength={60}
-          className="border-ink-muted/30 bg-surface text-ink flex-1 rounded-md border px-3 py-2"
+          style={[styles.input, styles.skillInput]}
         />
-        <Pressable
-          onPress={add}
-          disabled={busy || name.trim().length === 0}
-          className="bg-brand-600 rounded-md px-4 py-2"
-        >
-          <Text className="text-ink-inverse text-sm font-semibold">{t("profile.add")}</Text>
-        </Pressable>
+        <Button onPress={add} disabled={busy || name.trim().length === 0} loading={busy}>
+          {t("profile.add")}
+        </Button>
       </View>
     </Card>
   );
 }
+
+const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+    backgroundColor: nativeTokens.color.surfaceMuted,
+  },
+  flex: {
+    flex: 1,
+  },
+  centerScreen: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: nativeTokens.color.surfaceMuted,
+  },
+  scrollContent: {
+    padding: nativeTokens.space[4],
+    gap: nativeTokens.space[4],
+  },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: nativeTokens.space[3],
+  },
+  title: {
+    flex: 1,
+    color: nativeTokens.color.ink,
+    fontSize: nativeTokens.type.scale.h1.size,
+    lineHeight: nativeTokens.type.scale.h1.line,
+    fontWeight: "700",
+    fontFamily: nativeTokens.type.family.sans,
+  },
+  cardTitle: {
+    color: nativeTokens.color.ink,
+    fontSize: nativeTokens.type.scale.h2.size,
+    lineHeight: nativeTokens.type.scale.h2.line,
+    fontWeight: "600",
+    fontFamily: nativeTokens.type.family.sans,
+    marginBottom: nativeTokens.space[3],
+  },
+  cardBody: {
+    gap: nativeTokens.space[2],
+  },
+  avatarRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: nativeTokens.space[3],
+    marginBottom: nativeTokens.space[1],
+  },
+  input: {
+    minHeight: nativeTokens.chrome.minHit,
+    borderRadius: nativeTokens.radius.md,
+    borderWidth: 1,
+    borderColor: nativeTokens.color.lineHard,
+    backgroundColor: nativeTokens.color.surface,
+    paddingHorizontal: nativeTokens.space[3],
+    paddingVertical: nativeTokens.space[2],
+    color: nativeTokens.color.ink,
+    fontSize: nativeTokens.type.scale.body.size,
+    fontFamily: nativeTokens.type.family.sans,
+  },
+  multilineInput: {
+    minHeight: nativeTokens.space[20],
+    textAlignVertical: "top",
+  },
+  alignEnd: {
+    alignSelf: "flex-end",
+  },
+  itemRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    justifyContent: "space-between",
+    gap: nativeTokens.space[3],
+    paddingBottom: nativeTokens.space[3],
+  },
+  itemText: {
+    flex: 1,
+  },
+  itemTitle: {
+    color: nativeTokens.color.ink,
+    fontSize: nativeTokens.type.scale.h3.size,
+    lineHeight: nativeTokens.type.scale.h3.line,
+    fontWeight: "600",
+    fontFamily: nativeTokens.type.family.sans,
+  },
+  itemMeta: {
+    color: nativeTokens.color.inkMuted,
+    fontSize: nativeTokens.type.scale.small.size,
+    lineHeight: nativeTokens.type.scale.small.line,
+    fontFamily: nativeTokens.type.family.sans,
+  },
+  itemBody: {
+    color: nativeTokens.color.ink,
+    fontSize: nativeTokens.type.scale.small.size,
+    lineHeight: nativeTokens.type.scale.small.line,
+    fontFamily: nativeTokens.type.family.body,
+    marginTop: nativeTokens.space[1],
+  },
+  buttonRow: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    gap: nativeTokens.space[2],
+  },
+  skillList: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: nativeTokens.space[2],
+  },
+  skillChip: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: nativeTokens.space[2],
+  },
+  skillText: {
+    color: nativeTokens.color.ink,
+    fontSize: nativeTokens.type.scale.small.size,
+    fontFamily: nativeTokens.type.family.sans,
+  },
+  skillInputRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: nativeTokens.space[2],
+  },
+  skillInput: {
+    flex: 1,
+  },
+});

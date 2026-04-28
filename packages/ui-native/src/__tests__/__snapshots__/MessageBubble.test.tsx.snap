@@ -1,0 +1,141 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`MessageBubble matches the own-message snapshot 1`] = `
+<View
+  accessibilityLabel="You at 10:30"
+  accessible={true}
+  style={
+    {
+      "alignItems": "flex-end",
+      "alignSelf": "flex-end",
+      "maxWidth": "70%",
+    }
+  }
+>
+  <View
+    style={
+      {
+        "backgroundColor": "#e6ebd6",
+        "borderBottomRightRadius": 4,
+        "borderColor": "#ccd6a8",
+        "borderRadius": 14,
+        "borderWidth": 1,
+        "paddingHorizontal": 14,
+        "paddingVertical": 10,
+      }
+    }
+  >
+    <Text
+      style={
+        {
+          "color": "#1a1a17",
+          "fontFamily": "IBMPlexSansArabic",
+          "fontSize": 15,
+          "lineHeight": 24,
+        }
+      }
+    >
+      مرحبًا
+    </Text>
+  </View>
+  <View
+    style={
+      {
+        "alignItems": "center",
+        "flexDirection": "row",
+        "gap": 4,
+        "marginTop": 2,
+      }
+    }
+  >
+    <Text
+      style={
+        {
+          "color": "#5c5a52",
+          "fontFamily": "IBMPlexSansArabic",
+          "fontSize": 11,
+          "writingDirection": "ltr",
+        }
+      }
+    >
+      10:30
+    </Text>
+    <View
+      accessibilityLabel="Read"
+    >
+      <RNSVGSvgView
+        align="xMidYMid"
+        bbHeight={14}
+        bbWidth={14}
+        fill="none"
+        focusable={false}
+        height={14}
+        meetOrSlice={0}
+        minX={0}
+        minY={0}
+        stroke="#526030"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={1.8}
+        style={
+          [
+            {
+              "backgroundColor": "transparent",
+              "borderWidth": 0,
+            },
+            {
+              "flex": 0,
+              "height": 14,
+              "width": 14,
+            },
+          ]
+        }
+        vbHeight={24}
+        vbWidth={24}
+        width={14}
+      >
+        <RNSVGGroup
+          fill={null}
+          propList={
+            [
+              "fill",
+              "stroke",
+              "strokeWidth",
+              "strokeLinecap",
+              "strokeLinejoin",
+            ]
+          }
+          stroke={
+            {
+              "payload": 4283588656,
+              "type": 0,
+            }
+          }
+          strokeLinecap={1}
+          strokeLinejoin={1}
+          strokeWidth={1.8}
+        >
+          <RNSVGPath
+            d="m3 12 4 4L15 7"
+            fill={
+              {
+                "payload": 4278190080,
+                "type": 0,
+              }
+            }
+          />
+          <RNSVGPath
+            d="m10 16 1 1L22 7"
+            fill={
+              {
+                "payload": 4278190080,
+                "type": 0,
+              }
+            }
+          />
+        </RNSVGGroup>
+      </RNSVGSvgView>
+    </View>
+  </View>
+</View>
+`;

@@ -2,8 +2,15 @@
   "name": "@baydar/db",
   "version": "0.0.1",
   "private": true,
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "node": "./dist/index.js",
+      "default": "./src/index.ts"
+    }
+  },
   "files": [
     "dist"
   ],
@@ -11,14 +18,14 @@
     "build": "tsc -p tsconfig.json",
     "dev": "tsc -p tsconfig.json --watch",
     "clean": "rimraf dist",
+    "generate": "prisma generate",
+    "migrate:dev": "node scripts/migrate-dev.mjs",
     "db:generate": "prisma generate",
-    "db:migrate": "prisma migrate dev",
-    "db:status": "prisma migrate status",
+    "db:migrate": "node scripts/migrate-dev.mjs",
     "db:deploy": "prisma migrate deploy",
     "db:studio": "prisma studio",
     "db:seed": "tsx prisma/seed.ts",
-    "db:seed:prod": "tsx prisma/seed.prod.ts",
-    "lint": "eslint \"src/**/*.ts\" \"prisma/**/*.ts\"",
+    "lint": "eslint .",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {

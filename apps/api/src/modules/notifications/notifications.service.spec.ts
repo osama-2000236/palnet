@@ -1,14 +1,17 @@
-import { ConfigService } from "@nestjs/config";
-import { Test } from "@nestjs/testing";
 import { NotificationType } from "@baydar/shared";
+import { Test } from "@nestjs/testing";
 
-import { MailService } from "../mail/mail.service";
 import { PrismaService } from "../prisma/prisma.service";
 
 import { NotificationsBus } from "./notifications.bus";
 import { NotificationsService } from "./notifications.service";
+import { PushService } from "./push.service";
 
 type PrismaStub = {
+  user: {
+    findUnique: jest.Mock;
+    update: jest.Mock;
+  };
   notification: {
     create: jest.Mock;
     findFirst: jest.Mock;
@@ -16,26 +19,20 @@ type PrismaStub = {
     updateMany: jest.Mock;
     count: jest.Mock;
   };
-  user: {
-    findUnique: jest.Mock;
-  };
 };
 
 function buildPrisma(): PrismaStub {
   return {
+    user: {
+      findUnique: jest.fn().mockResolvedValue({ isActive: true, notificationPrefs: null }),
+      update: jest.fn(),
+    },
     notification: {
       create: jest.fn(),
       findFirst: jest.fn(),
       findMany: jest.fn(),
       updateMany: jest.fn(),
       count: jest.fn(),
-    },
-    user: {
-      findUnique: jest.fn().mockResolvedValue({
-        email: "rec@example.com",
-        notificationPrefs: null,
-        isActive: true,
-      }),
     },
   };
 }
@@ -71,23 +68,18 @@ describe("NotificationsService", () => {
   let service: NotificationsService;
   let prisma: PrismaStub;
   let bus: { publish: jest.Mock; subscribe: jest.Mock };
-  let mail: { sendNotificationEmail: jest.Mock };
+  let push: { sendNotification: jest.Mock };
 
   beforeEach(async () => {
     prisma = buildPrisma();
     bus = { publish: jest.fn(), subscribe: jest.fn() };
-    mail = { sendNotificationEmail: jest.fn().mockResolvedValue(undefined) };
-    const config = {
-      getOrThrow: jest.fn().mockReturnValue("http://localhost:3000/verify-email"),
-      get: jest.fn().mockReturnValue("http://localhost:3000/verify-email"),
-    };
+    push = { sendNotification: jest.fn().mockResolvedValue(undefined) };
     const moduleRef = await Test.createTestingModule({
       providers: [
         NotificationsService,
         { provide: PrismaService, useValue: prisma },
         { provide: NotificationsBus, useValue: bus },
-        { provide: MailService, useValue: mail },
-        { provide: ConfigService, useValue: config },
+        { provide: PushService, useValue: push },
       ],
     }).compile();
     service = moduleRef.get(NotificationsService);
@@ -119,6 +111,10 @@ describe("NotificationsService", () => {
       expect(bus.publish).toHaveBeenCalledWith(
         "u_rec",
         expect.objectContaining({ type: "notification.new" }),
+      );
+      expect(push.sendNotification).toHaveBeenCalledWith(
+        "u_rec",
+        expect.objectContaining({ id: "n_1" }),
       );
       expect(bus.publish).toHaveBeenCalledWith(
         "u_rec",

@@ -3,12 +3,12 @@
 
 import { ApplyToJobBody, Job as JobSchema, type Job } from "@baydar/shared";
 import { Button, Sheet, Surface, nativeTokens } from "@baydar/ui-native";
+import { Image } from "expo-image";
 import { router, useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
-  Image,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -20,6 +20,8 @@ import {
 } from "react-native";
 
 import { apiCall, apiFetch } from "@/lib/api";
+import { track } from "@/lib/analytics";
+import { successHaptic, tapHaptic } from "@/lib/haptics";
 import { getAccessToken } from "@/lib/session";
 
 export default function JobDetailScreen(): JSX.Element {
@@ -75,6 +77,7 @@ export default function JobDetailScreen(): JSX.Element {
     }
     setSubmitting(true);
     try {
+      tapHaptic();
       await apiCall(`/jobs/${job.id}/apply`, {
         method: "POST",
         token,
@@ -82,6 +85,8 @@ export default function JobDetailScreen(): JSX.Element {
       });
       setJob((j) => (j ? { ...j, viewer: { ...j.viewer, hasApplied: true } } : j));
       setApplyOpen(false);
+      track("jobs.apply", { jobId: job.id });
+      successHaptic();
     } catch (e) {
       setSubmitError((e as Error).message || t("common.genericError"));
     } finally {
@@ -147,7 +152,8 @@ export default function JobDetailScreen(): JSX.Element {
                 <Image
                   source={{ uri: job.company.logoUrl }}
                   style={{ width: "100%", height: "100%" }}
-                  resizeMode="cover"
+                  contentFit="cover"
+                  cachePolicy="memory-disk"
                 />
               ) : (
                 <Text style={styles.logoFallback}>
@@ -334,8 +340,8 @@ const styles = {
     fontFamily: nativeTokens.type.family.sans,
   },
   logoBox: {
-    width: 56,
-    height: 56,
+    width: nativeTokens.space[8] + nativeTokens.space[6],
+    height: nativeTokens.space[8] + nativeTokens.space[6],
     borderRadius: nativeTokens.radius.md,
     backgroundColor: nativeTokens.color.surfaceSunken,
     alignItems: "center" as const,
@@ -345,7 +351,7 @@ const styles = {
   logoFallback: {
     color: nativeTokens.color.inkMuted,
     fontWeight: "600" as const,
-    fontSize: 18,
+    fontSize: nativeTokens.type.scale.h2.size,
     fontFamily: nativeTokens.type.family.sans,
   },
   appliedBadge: {
@@ -357,19 +363,19 @@ const styles = {
   },
   appliedBadgeText: {
     color: nativeTokens.color.success,
-    fontSize: 13,
+    fontSize: nativeTokens.type.scale.small.size,
     fontWeight: "700" as const,
     fontFamily: nativeTokens.type.family.sans,
   },
   chip: {
     paddingHorizontal: nativeTokens.space[2],
-    paddingVertical: 4,
+    paddingVertical: nativeTokens.space[1],
     borderRadius: nativeTokens.radius.full,
     backgroundColor: nativeTokens.color.surfaceSubtle,
   },
   chipText: {
     color: nativeTokens.color.ink,
-    fontSize: 12,
+    fontSize: nativeTokens.type.scale.caption.size,
     fontFamily: nativeTokens.type.family.sans,
   },
 };

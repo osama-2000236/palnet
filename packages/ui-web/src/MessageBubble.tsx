@@ -13,6 +13,7 @@
 
 import type { ReactNode } from "react";
 
+import { Avatar, type AvatarUser } from "./Avatar";
 import { cx } from "./cx";
 import { Icon } from "./Icon";
 
@@ -32,6 +33,10 @@ export interface MessageBubbleLabels {
   statusDelivered: string;
   statusRead: string;
   statusFailed: string;
+  /** Visible muted suffix below edited messages. */
+  editedSuffix?: string;
+  /** Replacement body for deleted messages. */
+  deletedBody?: string;
 }
 
 export interface MessageBubbleProps {
@@ -44,6 +49,10 @@ export interface MessageBubbleProps {
   status?: MessageStatus;
   /** Author name for screen-reader prefix (theirs only). */
   authorName?: string;
+  /** Rendered above received group-room bubbles. */
+  groupAuthor?: AvatarUser & { firstName?: string | null };
+  edited?: boolean;
+  deleted?: boolean;
   /** Click handler for failed bubbles (retry). */
   onRetry?(): void;
   labels: MessageBubbleLabels;
@@ -56,6 +65,9 @@ export function MessageBubble({
   timestamp,
   status,
   authorName,
+  groupAuthor,
+  edited = false,
+  deleted = false,
   onRetry,
   labels,
   children,
@@ -73,25 +85,36 @@ export function MessageBubble({
         mine ? "items-end self-end" : "items-start self-start",
       )}
     >
+      {!mine && groupAuthor ? (
+        <div className="text-ink-muted mb-1 flex items-center gap-1.5 text-[11px] font-semibold">
+          <Avatar user={groupAuthor} size="xs" />
+          <span className="truncate">{groupAuthor.firstName || groupAuthor.handle}</span>
+        </div>
+      ) : null}
+
       <div
         className={cx(
-          "whitespace-pre-wrap break-words rounded-lg border px-3.5 py-2.5 text-sm leading-[1.6]",
-          mine ? "bg-brand-100 border-brand-200 text-ink" : "bg-surface border-line-soft text-ink",
-          // Tail — the only corner that goes tight. Logical so it
+          "whitespace-pre-wrap break-words rounded-[14px] border px-3.5 py-2.5 text-sm leading-[1.6]",
+          deleted
+            ? "bg-surface-subtle border-line-soft text-ink-muted italic"
+            : mine
+              ? "bg-brand-100 border-brand-200 text-ink"
+              : "bg-surface border-line-soft text-ink",
+          // Tail — the only corner that goes tight (4px). Logical so it
           // flips correctly in RTL.
-          tail && mine && "rounded-ee-xs",
-          tail && !mine && "rounded-es-xs",
+          tail && mine && "rounded-ee-[4px]",
+          tail && !mine && "rounded-es-[4px]",
           status === "failed" && "border-danger/60",
         )}
       >
         <span className="sr-only">{srPrefix}</span>
-        {children}
+        {deleted ? (labels.deletedBody ?? "") : children}
       </div>
 
-      {timestamp || (mine && status) ? (
+      {timestamp || edited || (mine && status) ? (
         <div
           className={cx(
-            "text-nav mt-0.5 flex items-center gap-1",
+            "mt-0.5 flex items-center gap-1 text-[11px]",
             mine ? "text-ink-muted self-end" : "text-ink-muted self-start",
           )}
         >
@@ -107,6 +130,7 @@ export function MessageBubble({
               onRetry={status === "failed" ? onRetry : undefined}
             />
           ) : null}
+          {edited && !deleted ? <span>{labels.editedSuffix}</span> : null}
         </div>
       ) : null}
 
@@ -114,7 +138,7 @@ export function MessageBubble({
         <button
           type="button"
           onClick={onRetry}
-          className="text-danger focus-visible:ring-danger text-nav mt-0.5 hover:underline focus:outline-none focus-visible:ring-2"
+          className="text-danger focus-visible:ring-danger mt-0.5 text-[11px] hover:underline focus:outline-none focus-visible:ring-2"
         >
           {labels.failedHint}
         </button>

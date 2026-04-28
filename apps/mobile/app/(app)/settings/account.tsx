@@ -10,7 +10,16 @@ import { Button, Surface, nativeTokens } from "@baydar/ui-native";
 import { router } from "expo-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Alert, SafeAreaView, ScrollView, Text, TextInput, View } from "react-native";
+import {
+  Alert,
+  SafeAreaView,
+  ScrollView,
+  Text,
+  TextInput,
+  View,
+  type StyleProp,
+  type TextStyle,
+} from "react-native";
 
 import { apiCall, ApiRequestError } from "@/lib/api";
 import { clearSession, getAccessToken } from "@/lib/session";
@@ -29,7 +38,7 @@ function FieldLabel({ children }: { children: string }): JSX.Element {
   );
 }
 
-function input(): any {
+function input(): { style: StyleProp<TextStyle> } {
   return {
     style: {
       borderWidth: 1,

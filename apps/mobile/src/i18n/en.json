@@ -10,23 +10,42 @@
     "done": "Done",
     "genericError": "Something went wrong. Please try again."
   },
-  "nav": {
-    "me": "Me",
-    "unreadNotifications": "{count} unread notifications"
+  "system": {
+    "errorBoundary": {
+      "title": "The app hit a problem",
+      "body": "We saved the crash details for review. You can try again now.",
+      "retry": "Try again"
+    },
+    "offline": {
+      "title": "You're offline",
+      "body": "Live updates are paused and will resume when the connection returns."
+    }
   },
   "landing": {
-    "title": "The professional network for the Arab world.",
-    "subtitle": "Build your presence, connect with peers, and discover jobs — in Arabic first.",
+    "kicker": "Baydar",
+    "title": "Your professional network, in your language.",
+    "subtitle": "Build your presence, connect with trusted peers, and discover opportunities that fit your path.",
     "cta": "Create your account",
     "haveAccount": "Already have an account?",
-    "login": "Sign in"
+    "login": "Sign in",
+    "loading": "Preparing your Baydar space…",
+    "featureNetwork": "Trusted network",
+    "featureJobs": "Local opportunities",
+    "featureMessages": "Professional messages"
   },
   "auth": {
     "login": "Sign in",
     "register": "Create account",
     "logout": "Sign out",
+    "loginKicker": "Secure sign in",
+    "registerKicker": "Join Baydar",
+    "welcomeBack": "Welcome back",
+    "loginSubtitle": "Pick up your conversations and opportunities where you left off.",
+    "createProfile": "Create your professional profile",
+    "registerSubtitle": "Start with a clear, trusted account. We will help you complete your profile next.",
     "email": "Email",
     "password": "Password",
+    "passwordHint": "Use at least 8 characters.",
     "firstName": "First name",
     "lastName": "Last name",
     "acceptTerms": "I agree to the Terms and Privacy Policy",
@@ -34,6 +53,10 @@
     "submitLogin": "Sign in",
     "toLogin": "Already have an account? Sign in",
     "toRegister": "No account yet? Create one",
+    "noAccount": "No account yet?",
+    "haveAccount": "Already have an account?",
+    "secureHintTitle": "Your data stays protected",
+    "secureHint": "We use a secure session and never expose your email or password in the app.",
     "errors": {
       "CONFLICT": "An account with this email already exists.",
       "AUTH_UNAUTHORIZED": "Invalid email or password.",
@@ -41,62 +64,6 @@
       "RATE_LIMITED": "Too many attempts. Try again later.",
       "INTERNAL": "An unexpected error occurred."
     }
-  },
-  "verifyEmail": {
-    "title": "Verify your email",
-    "verifying": "Verifying…",
-    "success": "Your email is verified.",
-    "goFeed": "Go to feed",
-    "invalid": "Link invalid or expired.",
-    "missingToken": "No verification token in the link."
-  },
-  "suspension": {
-    "banner": "Your account is suspended. You can view Baydar but cannot post, message, or react until the suspension is lifted.",
-    "bannerWithReason": "Your account is suspended: {{reason}}",
-    "appealCta": "File an appeal"
-  },
-  "appeals": {
-    "title": "My appeals",
-    "description": "Reports filed against your content. File an appeal to ask a moderator to take a second look.",
-    "empty": "No actioned reports yet. Nothing to appeal.",
-    "moderatorNote": "Moderator note",
-    "decisionNote": "Decision note",
-    "formLabel": "Why should this decision be reversed?",
-    "formPlaceholder": "Minimum {{min}} characters.",
-    "submit": "Submit appeal",
-    "submitting": "Submitting…",
-    "loadMore": "Load more",
-    "errorGeneric": "Could not load your appeals. Try again.",
-    "errorAlreadyFiled": "An appeal has already been filed for this report.",
-    "errorNoteTooShort": "Add at least {{min}} characters to your appeal.",
-    "status": {
-      "PENDING": "Appeal pending review",
-      "UPHELD": "Appeal upheld",
-      "DENIED": "Appeal denied"
-    },
-    "targetKind": {
-      "USER": "Account",
-      "POST": "Post",
-      "COMMENT": "Comment",
-      "MESSAGE": "Message"
-    },
-    "reasons": {
-      "SPAM": "Spam",
-      "HARASSMENT": "Harassment",
-      "HATE": "Hate speech",
-      "VIOLENCE": "Violence",
-      "ILLEGAL": "Illegal content",
-      "MISINFO": "Misinformation",
-      "OTHER": "Other"
-    }
-  },
-  "resetPassword": {
-    "title": "Reset password",
-    "missingToken": "This link is missing a reset token.",
-    "success": "Your password is updated. Sign in to continue.",
-    "toLogin": "Go to sign in",
-    "newPassword": "New password",
-    "submit": "Reset password"
   },
   "onboarding": {
     "title": "Complete your profile",
@@ -119,7 +86,9 @@
     "placeholder": "Share an idea, a project, or a professional update…",
     "submit": "Post",
     "addImage": "Add image",
-    "uploading": "Uploading…"
+    "uploading": "Uploading…",
+    "removeImage": "Remove image",
+    "charCount": "{current} / {max}"
   },
   "post": {
     "like": "Like",
@@ -135,6 +104,7 @@
     "title": "Search",
     "placeholder": "Search people…",
     "submit": "Search",
+    "filters": "Filters",
     "noResults": "No people match that search.",
     "prompt": "Try a name or handle to find people.",
     "loadMore": "Load more",
@@ -149,6 +119,10 @@
     "edit": "Edit profile",
     "editTitle": "Edit profile",
     "basics": "Basics",
+    "firstName": "First name",
+    "lastName": "Last name",
+    "headline": "Headline",
+    "location": "Location",
     "save": "Save",
     "cancel": "Cancel",
     "add": "Add",
@@ -159,6 +133,7 @@
     "school": "School",
     "degree": "Degree",
     "fieldOfStudy": "Field of study",
+    "dateHint": "YYYY-MM-DD",
     "addSkillPlaceholder": "Add a skill…",
     "changeAvatar": "Change photo",
     "uploading": "Uploading…",
@@ -183,12 +158,11 @@
   "messaging": {
     "title": "Messages",
     "newMessage": "New message",
-    "archive": "Archive",
-    "unarchive": "Unarchive",
     "emptyList": "No conversations yet.",
     "emptyThread": "No messages yet — say hi.",
     "composePlaceholder": "Write a message…",
     "send": "Send",
+    "archive": "Archive",
     "sendFailed": "Could not send message.",
     "loadOlder": "Load older messages",
     "retry": "Retry",
@@ -202,6 +176,39 @@
       "delivered": "Delivered",
       "read": "Read",
       "failed": "Failed to send"
+    },
+    "editedSuffix": "Edited",
+    "deletedBody": "Message deleted",
+    "unreadJump": {
+      "banner": "{{count}} unread messages",
+      "accessibility": "Jump to {{count}} unread messages"
+    },
+    "newGroup": {
+      "title": "New group",
+      "subtitle": "Start a group conversation with your connections.",
+      "roomTitle": "Group name",
+      "roomTitlePlaceholder": "e.g. Launch team",
+      "search": "Members",
+      "searchPlaceholder": "Search your connections",
+      "select": "Select",
+      "selected": "Selected",
+      "submit": "Create group",
+      "memberCount": "{{count}} members",
+      "loading": "Loading connections…",
+      "empty": "No matching connections.",
+      "validation": "Choose at least two members and enter a group name.",
+      "failed": "Could not create group."
+    },
+    "edit": {
+      "action": "Edit",
+      "sheetTitle": "Edit message",
+      "save": "Save edit",
+      "cancel": "Cancel",
+      "failed": "Could not edit message."
+    },
+    "delete": {
+      "action": "Delete",
+      "failed": "Could not delete message."
     }
   },
   "notifications": {
@@ -218,111 +225,6 @@
       "MESSAGE_RECEIVED": "{actor} sent you a message.",
       "JOB_APPLICATION_UPDATE": "Your application has an update.",
       "PROFILE_VIEW": "{actor} viewed your profile."
-    }
-  },
-  "settings": {
-    "title": "Settings",
-    "profileSubtitle": "Profile, account, and privacy",
-    "account": "Account",
-    "accountSubtitle": "Email, password, delete account",
-    "sessions": "Active sessions",
-    "sessionsSubtitle": "Devices signed into your account",
-    "notifications": "Notifications",
-    "notificationsSubtitle": "What we ping you about, and where",
-    "signOutConfirmTitle": "Sign out?",
-    "signOutConfirmBody": "You'll be signed out on this device. Your data stays safe.",
-    "signOutSubtitle": "End this session on this device",
-    "editProfile": "Edit profile",
-    "changeEmail": "Change email",
-    "newEmail": "New email",
-    "currentPassword": "Current password",
-    "invalidInput": "Check your inputs.",
-    "emailUpdated": "Email changed. Verify the new address.",
-    "changePassword": "Change password",
-    "passwordTooShort": "Password must be at least 8 characters.",
-    "newPassword": "New password",
-    "updatePassword": "Update password",
-    "deleteAccount": "Delete account",
-    "deleteAccountHint": "Type DELETE to confirm and enter your password.",
-    "deleteTypeDelete": "Type DELETE to confirm.",
-    "deleteConfirmTitle": "Delete account?",
-    "deleteConfirmBody": "This deactivates your profile and frees your email. This action cannot be undone.",
-    "deleteConfirmCta": "Delete my account",
-    "sessionsInfo": {
-      "description": "Devices currently signed in to your account.",
-      "current": "This device",
-      "revoke": "Revoke",
-      "revokeAll": "Sign out everywhere else",
-      "empty": "No active sessions.",
-      "genericError": "Could not revoke. Try again.",
-      "unknownDevice": "Unknown device",
-      "revokeConfirmBody": "Sign this device out of your account?",
-      "revokeAllConfirmTitle": "Sign out everywhere else?",
-      "revokeAllConfirmBody": "All other devices will be signed out. This device stays signed in."
-    },
-    "blocks": "Blocked accounts",
-    "blocksSubtitle": "People you've blocked",
-    "blocksInfo": {
-      "title": "Blocked accounts",
-      "description": "People you've blocked can't see your posts, message you, or open your profile. They also stop appearing in your feed and search.",
-      "empty": "You haven't blocked anyone.",
-      "unblock": "Unblock",
-      "unblockConfirmTitle": "Unblock {name}?",
-      "unblockConfirmBody": "They'll be able to see your public posts and send you connection requests again.",
-      "genericError": "Could not update. Try again."
-    },
-    "notificationPrefs": {
-      "title": "Notification preferences",
-      "description": "Choose what you receive and how.",
-      "channels": {
-        "inApp": "In app",
-        "email": "Email",
-        "push": "Push"
-      },
-      "events": {
-        "connections": "Connection requests",
-        "messages": "Direct messages",
-        "reactions": "Reactions on your posts",
-        "comments": "Comments on your posts",
-        "jobs": "Job matches"
-      },
-      "saveOk": "Preferences saved.",
-      "genericError": "Could not save preferences."
-    },
-    "legal": "Legal",
-    "legalSubtitle": "Terms, privacy, and community guidelines"
-  },
-  "moderation": {
-    "more": "More options",
-    "reportPost": "Report this post",
-    "reportUser": "Report this person",
-    "reportComment": "Report this comment",
-    "reportMessage": "Report this message",
-    "blockUser": "Block {name}",
-    "blockConfirmTitle": "Block {name}?",
-    "blockConfirmBody": "You won't see their posts or messages. They won't see yours. You can undo this from Settings → Blocked accounts.",
-    "blockCta": "Block",
-    "blockErrorToast": "Could not block. Try again.",
-    "reportDialog": {
-      "title": "Report",
-      "subtitle": "Tell us what's wrong. A moderator will review.",
-      "reasonLegend": "Why are you reporting this?",
-      "detailsLabel": "Details (optional)",
-      "detailsPlaceholder": "Add anything we should know.",
-      "submit": "Submit report",
-      "successTitle": "Report received",
-      "successBody": "Thanks. A human will take a look.",
-      "genericError": "Could not submit. Try again.",
-      "reasons": {
-        "SPAM": "Spam or scam",
-        "HARASSMENT": "Harassment or bullying",
-        "HATE_SPEECH": "Hate speech",
-        "VIOLENCE": "Violence or threats",
-        "ADULT_CONTENT": "Adult or sexual content",
-        "IMPERSONATION": "Impersonation",
-        "OTHER": "Something else"
-      },
-      "guidelinesLink": "See our community guidelines"
     }
   },
   "jobs": {
@@ -348,18 +250,6 @@
     "emptyTitle": "No jobs match those filters.",
     "emptyDesc": "Try widening your search or clearing a filter.",
     "notFound": "This job is no longer available.",
-    "myApplications": "My applications",
-    "backToJobs": "Back to jobs",
-    "emptyApplicationsTitle": "You haven't applied to any jobs yet.",
-    "appliedOn": "Applied {date}",
-    "applicationStatusLabels": {
-      "SUBMITTED": "Submitted",
-      "REVIEWING": "Reviewing",
-      "SHORTLISTED": "Shortlisted",
-      "REJECTED": "Rejected",
-      "HIRED": "Hired",
-      "WITHDRAWN": "Withdrawn"
-    },
     "typeLabels": {
       "FULL_TIME": "Full-time",
       "PART_TIME": "Part-time",
@@ -377,12 +267,5 @@
   "company": {
     "about": "About",
     "jobs": "Jobs"
-  },
-  "legal": {
-    "title": "Legal",
-    "terms": "Terms",
-    "privacy": "Privacy",
-    "community": "Community guidelines",
-    "copyright": "© 2026 Baydar"
   }
 }

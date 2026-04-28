@@ -1,7 +1,7 @@
 "use client";
 
 // Feed — the home page of the app.
-// Spec: docs/design/prototype FeedPage.jsx (3-col grid: left mini-profile +
+// Spec: docs/_archive/prototype-2025 FeedPage.jsx (3-col grid: left mini-profile +
 // center composer/posts + right PYMK/jobs).
 //
 // This file is the host: fetches the viewer's profile (for the mini-profile
@@ -94,7 +94,7 @@ export default function FeedPageRoute(): JSX.Element {
   }, [router, load]);
 
   return (
-    <main className="max-w-chrome mx-auto grid w-full grid-cols-1 items-start gap-6 px-4 py-6 lg:grid-cols-[225px_minmax(0,1fr)_300px] lg:gap-6 lg:px-6">
+    <main className="mx-auto grid w-full max-w-[1128px] grid-cols-1 items-start gap-6 px-4 py-6 lg:grid-cols-[225px_minmax(0,1fr)_300px] lg:gap-6 lg:px-6">
       <h1 className="sr-only">{t("title")}</h1>
       <LeftRail me={me} />
 
@@ -118,7 +118,6 @@ export default function FeedPageRoute(): JSX.Element {
                   onChange={(next) =>
                     setPosts((prev) => prev.map((x) => (x.id === next.id ? next : x)))
                   }
-                  onHide={() => setPosts((prev) => prev.filter((x) => x.author.id !== p.author.id))}
                 />
               </li>
             ))}
@@ -149,7 +148,10 @@ export default function FeedPageRoute(): JSX.Element {
 function LeftRail({ me }: { me: Profile | null }): JSX.Element {
   const t = useTranslations("feed.rail");
   return (
-    <div className="hidden flex-col gap-3 lg:sticky lg:top-20 lg:flex">
+    <aside
+      aria-label={t("quickAccess")}
+      className="hidden flex-col gap-3 lg:sticky lg:top-20 lg:flex"
+    >
       <Surface variant="hero" padding="0" className="flex flex-col">
         <div className="from-brand-500 to-brand-700 h-14 bg-gradient-to-br" />
         <div className="-mt-7 px-4 pb-4">
@@ -195,7 +197,7 @@ function LeftRail({ me }: { me: Profile | null }): JSX.Element {
           <QuickLink icon="calendar" label={t("events")} />
         </ul>
       </Surface>
-    </div>
+    </aside>
   );
 }
 
@@ -227,7 +229,7 @@ function RightRail({
   const t = useTranslations("feed.rail");
   const tJobs = useTranslations("jobs");
   return (
-    <div className="hidden flex-col gap-3 lg:sticky lg:top-20 lg:flex">
+    <aside aria-label={t("pymk")} className="hidden flex-col gap-3 lg:sticky lg:top-20 lg:flex">
       <Surface variant="card" padding="0">
         <div className="flex items-center justify-between px-4 pt-3">
           <span className="text-ink text-sm font-semibold">{t("pymk")}</span>
@@ -262,7 +264,7 @@ function RightRail({
                   {s.user.headline ? (
                     <span className="text-ink-muted truncate text-xs">{s.user.headline}</span>
                   ) : null}
-                  <span className="text-ink-muted text-nav mt-0.5">{t("pymkReason")}</span>
+                  <span className="text-ink-muted mt-0.5 text-[11px]">{t("pymkReason")}</span>
                 </div>
                 <Link
                   href={`/in/${s.user.handle}`}
@@ -317,7 +319,7 @@ function RightRail({
                       <span className="text-ink truncate text-sm font-semibold">{j.title}</span>
                       <span className="text-ink-muted truncate text-xs">{j.company.name}</span>
                       {metaParts.length > 0 ? (
-                        <span className="text-ink-muted text-nav mt-0.5 truncate">
+                        <span className="text-ink-muted mt-0.5 truncate text-[11px]">
                           {metaParts.join(" · ")}
                         </span>
                       ) : null}
@@ -332,8 +334,8 @@ function RightRail({
         )}
       </Surface>
 
-      <p className="text-ink-muted text-nav text-center">{t("footer")}</p>
-    </div>
+      <p className="text-ink-muted text-center text-[11px]">{t("footer")}</p>
+    </aside>
   );
 }
 

@@ -5,10 +5,9 @@
 
 import { ReportReason, type ReportTargetKind } from "@baydar/shared";
 import { Button, Sheet, nativeTokens } from "@baydar/ui-native";
-import * as WebBrowser from "expo-web-browser";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Pressable, Text, TextInput, View } from "react-native";
+import { Linking, Pressable, Text, TextInput, View } from "react-native";
 import { z } from "zod";
 
 import { apiFetch } from "@/lib/api";
@@ -164,7 +163,7 @@ export function ReportDialog({
             <Pressable
               accessibilityRole="link"
               onPress={() => {
-                void WebBrowser.openBrowserAsync(`${WEB_BASE}/${locale}/community-guidelines`);
+                void Linking.openURL(`${WEB_BASE}/${locale}/community-guidelines`);
               }}
               hitSlop={8}
             >

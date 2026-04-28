@@ -1,7 +1,6 @@
 import { Icon, Surface, nativeTokens } from "@baydar/ui-native";
-import * as WebBrowser from "expo-web-browser";
 import { useTranslation } from "react-i18next";
-import { Pressable, SafeAreaView, ScrollView, Text, View } from "react-native";
+import { Linking, Pressable, SafeAreaView, ScrollView, Text, View } from "react-native";
 
 const WEB_BASE = (() => {
   const url = process.env.EXPO_PUBLIC_WEB_URL;
@@ -49,7 +48,7 @@ export default function LegalSettingsScreen(): JSX.Element {
             accessibilityRole="link"
             accessibilityLabel={row.title}
             onPress={() => {
-              void WebBrowser.openBrowserAsync(row.href);
+              void Linking.openURL(row.href);
             }}
             testID={`legal-row-${row.key}`}
           >

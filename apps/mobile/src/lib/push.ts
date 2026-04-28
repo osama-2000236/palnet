@@ -1,87 +1,85 @@
-// Push registration helper. Called from the auth boot path after login so
-// the server has an Expo push token to target. Silently no-ops on simulators,
-// web, or when the user denies permission — push is not essential for the
-// app to function.
-//
-// We register with the API by (deviceId, token, platform). deviceId comes
-// from SecureStore so it survives app restarts; token rotates on OS-initiated
-// events (app reinstall, OS restore) and the API upserts on the composite key.
-
+import { type RegisterDeviceTokenBody } from "@baydar/shared";
+import Constants, { ExecutionEnvironment } from "expo-constants";
 import * as Device from "expo-device";
 import * as Notifications from "expo-notifications";
+import { router } from "expo-router";
 import { Platform } from "react-native";
 
 import { apiCall } from "./api";
-import { getAccessToken, getDeviceId } from "./session";
+import { routeFromUrl } from "./linking";
 
-function platformTag(): "ios" | "android" | "web" {
-  if (Platform.OS === "ios") return "ios";
-  if (Platform.OS === "android") return "android";
-  return "web";
+const IS_EXPO_GO = Constants.executionEnvironment === ExecutionEnvironment.StoreClient;
+
+let notificationHandlerInstalled = false;
+
+export function installNotificationHandlers(): () => void {
+  if (!notificationHandlerInstalled) {
+    Notifications.setNotificationHandler({
+      handleNotification: async () => ({
+        shouldShowAlert: true,
+        shouldShowBanner: true,
+        shouldShowList: true,
+        shouldPlaySound: false,
+        shouldSetBadge: true,
+      }),
+    });
+    notificationHandlerInstalled = true;
+  }
+
+  const subscription = Notifications.addNotificationResponseReceivedListener((response) => {
+    const deepLink = response.notification.request.content.data.deepLink;
+    if (typeof deepLink !== "string") return;
+
+    const route = routeFromUrl(deepLink);
+    if (route) router.push(route as never);
+  });
+
+  return () => {
+    subscription.remove();
+  };
 }
 
-/**
- * Request push permission (iOS prompts, Android auto-grants on <13) and
- * register the resulting Expo token with the API. Idempotent — safe to call
- * on every app boot after login.
- */
-export async function registerForPush(): Promise<void> {
-  // Simulators can't receive push. Bail fast rather than hitting a native
-  // error path.
-  if (!Device.isDevice) return;
+export async function registerForPushAsync(): Promise<string | null> {
+  const platform = getDevicePlatform();
+  if (!platform) return null;
 
-  const existing = await Notifications.getPermissionsAsync();
-  let status = existing.status;
-  if (status !== "granted") {
-    const req = await Notifications.requestPermissionsAsync();
-    status = req.status;
+  // Expo Go on SDK 53+ removed remote push token support. Skip token
+  // acquisition entirely so the app stays clean inside the sandbox.
+  if (IS_EXPO_GO) {
+    if (__DEV__) {
+      console.debug("[push] Skipping push registration: running inside Expo Go.");
+    }
+    return null;
   }
-  if (status !== "granted") return;
 
-  // Android needs a channel configured before any notification fires or
-  // they get silently dropped on API 26+.
   if (Platform.OS === "android") {
     await Notifications.setNotificationChannelAsync("default", {
       name: "default",
       importance: Notifications.AndroidImportance.DEFAULT,
-      vibrationPattern: [0, 250, 250, 250],
     });
   }
 
-  let tokenRes;
-  try {
-    tokenRes = await Notifications.getExpoPushTokenAsync();
-  } catch {
-    // No projectId configured, or network hiccup. Not worth surfacing.
-    return;
-  }
-  const token = tokenRes.data;
-  if (!token) return;
+  if (!Device.isDevice) return null;
 
-  const apiToken = await getAccessToken();
-  if (!apiToken) return;
-  const deviceId = await getDeviceId();
+  const permission = await Notifications.getPermissionsAsync();
+  const finalStatus =
+    permission.status === "granted"
+      ? permission.status
+      : (await Notifications.requestPermissionsAsync()).status;
+  if (finalStatus !== "granted") return null;
 
-  await apiCall("/account/push-tokens", {
+  const token = (await Notifications.getExpoPushTokenAsync()).data;
+  const body: RegisterDeviceTokenBody = { token, platform };
+  await apiCall("/notifications/devices", {
     method: "POST",
-    token: apiToken,
-    body: { deviceId, token, platform: platformTag() },
-  }).catch(() => {
-    // Push is best-effort — a failed registration shouldn't block login.
+    body,
   });
+
+  return token;
 }
 
-/**
- * Revoke the push token for this device. Called on logout. The server also
- * deletes the row inside the logout transaction as a belt-and-braces so this
- * is purely best-effort from the client side.
- */
-export async function unregisterForPush(): Promise<void> {
-  const apiToken = await getAccessToken();
-  if (!apiToken) return;
-  const deviceId = await getDeviceId();
-  await apiCall(`/account/push-tokens/${encodeURIComponent(deviceId)}`, {
-    method: "DELETE",
-    token: apiToken,
-  }).catch(() => undefined);
+function getDevicePlatform(): RegisterDeviceTokenBody["platform"] | null {
+  if (Platform.OS === "ios") return "ios";
+  if (Platform.OS === "android") return "android";
+  return null;
 }

@@ -45,7 +45,7 @@ export type IconName =
   | "flag"
   | "shield-off";
 
-export interface IconProps extends Omit<SVGProps<SVGSVGElement>, "name"> {
+export interface IconProps extends Omit<SVGProps<SVGSVGElement>, "name" | "ref"> {
   name: IconName;
   size?: number;
   strokeWidth?: number;
@@ -59,7 +59,7 @@ export function Icon({
   title,
   ...rest
 }: IconProps): JSX.Element | null {
-  const common: SVGProps<SVGSVGElement> = {
+  const common: Omit<SVGProps<SVGSVGElement>, "ref"> = {
     width: size,
     height: size,
     viewBox: "0 0 24 24",

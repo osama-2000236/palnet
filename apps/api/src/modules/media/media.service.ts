@@ -103,6 +103,7 @@ export class MediaService {
       key,
       headers: { "Content-Type": body.mimeType },
       expiresAt: new Date(Date.now() + PRESIGN_TTL_SECONDS * 1000).toISOString(),
+      blurhash: null,
     };
   }
 

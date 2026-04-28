@@ -14,7 +14,13 @@
     },
     "production": {
       "channel": "production",
-      "autoIncrement": true
+      "autoIncrement": true,
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://api.baydar.ps/api/v1",
+        "EXPO_PUBLIC_SENTRY_DSN": "REPLACE_WITH_SENTRY_DSN",
+        "EXPO_PUBLIC_POSTHOG_KEY": "phc_REPLACE_WITH_POSTHOG_PROJECT_KEY",
+        "EXPO_PUBLIC_POSTHOG_HOST": "https://us.i.posthog.com"
+      }
     }
   },
   "submit": {

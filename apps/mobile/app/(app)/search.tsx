@@ -3,18 +3,20 @@ import {
   SearchPersonHit as SearchPersonHitSchema,
   type SearchPersonHit,
 } from "@baydar/shared";
+import { Avatar, Button, Icon, Surface, nativeTokens } from "@baydar/ui-native";
 import { router } from "expo-router";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
   FlatList,
   Pressable,
-  SafeAreaView,
+  StyleSheet,
   Text,
   TextInput,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 import { apiFetchPage } from "@/lib/api";
 import { getAccessToken } from "@/lib/session";
@@ -31,16 +33,18 @@ export default function SearchScreen(): JSX.Element {
   const [touched, setTouched] = useState(false);
 
   const run = useCallback(async (term: string, after: string | null): Promise<void> => {
-    if (!term.trim()) {
+    const trimmed = term.trim();
+    if (!trimmed) {
       setHits([]);
       setHasMore(false);
       setCursor(null);
+      setLoading(false);
       return;
     }
     setLoading(true);
     try {
       const token = (await getAccessToken()) ?? undefined;
-      const qs = new URLSearchParams({ q: term, limit: "20" });
+      const qs = new URLSearchParams({ q: trimmed, limit: "20" });
       if (after) qs.set("after", after);
       const page = await apiFetchPage(`/search/people?${qs.toString()}`, PeoplePage, { token });
       setHits((prev) => (after ? [...prev, ...page.data] : page.data));
@@ -51,71 +55,89 @@ export default function SearchScreen(): JSX.Element {
     }
   }, []);
 
-  return (
-    <SafeAreaView className="bg-surface-muted flex-1" testID="search-screen">
-      <View className="flex-1 px-4 pt-8">
-        <Text className="text-ink mb-3 text-3xl font-bold">{t("search.title")}</Text>
+  useEffect(() => {
+    const trimmed = q.trim();
+    if (!trimmed) {
+      setTouched(false);
+      setHits([]);
+      setHasMore(false);
+      setCursor(null);
+      setLoading(false);
+      return;
+    }
+    setTouched(true);
+    const timeout = setTimeout(() => {
+      void run(trimmed, null);
+    }, 250);
+    return () => clearTimeout(timeout);
+  }, [q, run]);
 
-        <View className="mb-3 flex-row gap-2">
+  return (
+    <SafeAreaView style={styles.screen}>
+      <View style={styles.content}>
+        <Text style={styles.title}>{t("search.title")}</Text>
+
+        <View style={styles.searchRow}>
           <TextInput
             value={q}
             onChangeText={setQ}
             placeholder={t("search.placeholder")}
+            placeholderTextColor={nativeTokens.color.inkMuted}
             returnKeyType="search"
             onSubmitEditing={() => {
               setTouched(true);
               void run(q, null);
             }}
-            className="border-ink-muted/30 bg-surface text-ink flex-1 rounded-md border px-3 py-2"
-            testID="search-input"
+            style={styles.input}
           />
-          <Pressable
+          <Button
+            size="md"
             onPress={() => {
               setTouched(true);
               void run(q, null);
             }}
-            className="bg-brand-600 rounded-md px-4 py-2"
-            testID="search-submit"
+            accessibilityLabel={t("search.submit")}
           >
-            <Text className="text-ink-inverse text-sm font-semibold">{t("search.submit")}</Text>
-          </Pressable>
+            {t("search.submit")}
+          </Button>
         </View>
+
+        <Button
+          variant="ghost"
+          size="sm"
+          leading={
+            <Icon name="search" size={nativeTokens.space[4]} color={nativeTokens.color.inkMuted} />
+          }
+          onPress={() => undefined}
+          accessibilityLabel={t("search.filters")}
+          style={styles.filterButton}
+          textStyle={styles.filterButtonText}
+        >
+          {t("search.filters")}
+        </Button>
 
         <FlatList
           data={hits}
           keyExtractor={(p) => p.userId}
-          ItemSeparatorComponent={() => <View className="h-2" />}
-          renderItem={({ item }) => (
-            <Pressable
-              onPress={() => router.push(`/(app)/in/${item.handle}`)}
-              className="border-ink-muted/20 bg-surface rounded-md border p-3"
-              testID={`search-result-${item.handle}`}
-            >
-              <Text className="text-ink font-semibold">
-                {item.firstName} {item.lastName}
-              </Text>
-              <Text className="text-ink-muted text-xs">/in/{item.handle}</Text>
-              {item.headline ? (
-                <Text className="text-ink-muted mt-1 text-sm">{item.headline}</Text>
-              ) : null}
-            </Pressable>
-          )}
+          contentContainerStyle={styles.listContent}
+          ItemSeparatorComponent={() => <View style={styles.separator} />}
+          renderItem={({ item }) => <SearchRow item={item} />}
           onEndReachedThreshold={0.5}
           onEndReached={() => {
             if (!loading && hasMore && cursor) void run(q, cursor);
           }}
           ListEmptyComponent={
             loading ? null : (
-              <View className="border-ink-muted/20 bg-surface rounded-md border p-6">
-                <Text className="text-ink-muted">
+              <Surface variant="tinted" padding="6">
+                <Text style={styles.emptyText}>
                   {touched ? t("search.noResults") : t("search.prompt")}
                 </Text>
-              </View>
+              </Surface>
             )
           }
           ListFooterComponent={
             loading ? (
-              <View className="py-4">
+              <View style={styles.loading}>
                 <ActivityIndicator />
               </View>
             ) : null
@@ -125,3 +147,123 @@ export default function SearchScreen(): JSX.Element {
     </SafeAreaView>
   );
 }
+
+function SearchRow({ item }: { item: SearchPersonHit }): JSX.Element {
+  const name = `${item.firstName} ${item.lastName}`.trim();
+  return (
+    <Pressable
+      onPress={() => router.push(`/(app)/in/${item.handle}`)}
+      accessibilityRole="link"
+      accessibilityLabel={name}
+    >
+      <Surface variant="card" padding="4" style={styles.resultRow}>
+        <Avatar
+          user={{
+            id: item.userId,
+            handle: item.handle,
+            firstName: item.firstName,
+            lastName: item.lastName,
+            avatarUrl: item.avatarUrl,
+          }}
+          size="md"
+        />
+        <View style={styles.resultText}>
+          <Text style={styles.name}>{name}</Text>
+          <Text style={styles.handle}>/in/{item.handle}</Text>
+          {item.headline ? (
+            <Text style={styles.headline} numberOfLines={2}>
+              {item.headline}
+            </Text>
+          ) : null}
+        </View>
+      </Surface>
+    </Pressable>
+  );
+}
+
+const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+    backgroundColor: nativeTokens.color.surfaceMuted,
+  },
+  content: {
+    flex: 1,
+    paddingHorizontal: nativeTokens.space[4],
+    paddingTop: nativeTokens.space[8],
+  },
+  title: {
+    color: nativeTokens.color.ink,
+    fontSize: nativeTokens.type.scale.display.size,
+    lineHeight: nativeTokens.type.scale.display.line,
+    fontWeight: "700",
+    fontFamily: nativeTokens.type.family.sans,
+    marginBottom: nativeTokens.space[3],
+  },
+  searchRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: nativeTokens.space[2],
+    marginBottom: nativeTokens.space[2],
+  },
+  input: {
+    flex: 1,
+    minHeight: nativeTokens.chrome.minHit,
+    borderRadius: nativeTokens.radius.md,
+    borderWidth: 1,
+    borderColor: nativeTokens.color.lineHard,
+    backgroundColor: nativeTokens.color.surface,
+    paddingHorizontal: nativeTokens.space[3],
+    color: nativeTokens.color.ink,
+    fontSize: nativeTokens.type.scale.body.size,
+    fontFamily: nativeTokens.type.family.sans,
+  },
+  filterButton: {
+    marginBottom: nativeTokens.space[3],
+  },
+  filterButtonText: {
+    color: nativeTokens.color.inkMuted,
+  },
+  listContent: {
+    paddingBottom: nativeTokens.space[6],
+  },
+  separator: {
+    height: nativeTokens.space[2],
+  },
+  loading: {
+    paddingVertical: nativeTokens.space[4],
+  },
+  resultRow: {
+    flexDirection: "row",
+    gap: nativeTokens.space[3],
+    alignItems: "center",
+  },
+  resultText: {
+    flex: 1,
+  },
+  name: {
+    color: nativeTokens.color.ink,
+    fontSize: nativeTokens.type.scale.h3.size,
+    lineHeight: nativeTokens.type.scale.h3.line,
+    fontWeight: "600",
+    fontFamily: nativeTokens.type.family.sans,
+  },
+  handle: {
+    color: nativeTokens.color.inkMuted,
+    fontSize: nativeTokens.type.scale.caption.size,
+    lineHeight: nativeTokens.type.scale.caption.line,
+    fontFamily: nativeTokens.type.family.mono,
+  },
+  headline: {
+    color: nativeTokens.color.inkMuted,
+    fontSize: nativeTokens.type.scale.small.size,
+    lineHeight: nativeTokens.type.scale.small.line,
+    fontFamily: nativeTokens.type.family.sans,
+    marginTop: nativeTokens.space[1],
+  },
+  emptyText: {
+    color: nativeTokens.color.inkMuted,
+    fontSize: nativeTokens.type.scale.body.size,
+    lineHeight: nativeTokens.type.scale.body.line,
+    fontFamily: nativeTokens.type.family.sans,
+  },
+});

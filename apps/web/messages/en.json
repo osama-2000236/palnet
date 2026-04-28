@@ -202,7 +202,40 @@
     "statusDelivered": "Delivered",
     "statusRead": "Read",
     "statusFailed": "Failed to send",
-    "failedHint": "Send failed — tap to retry"
+    "failedHint": "Send failed — tap to retry",
+    "editedSuffix": "Edited",
+    "deletedBody": "Message deleted",
+    "unreadJump": {
+      "banner": "{count} unread messages",
+      "accessibility": "Jump to {count} unread messages"
+    },
+    "newGroup": {
+      "title": "New group",
+      "subtitle": "Start a group conversation with your connections.",
+      "roomTitle": "Group name",
+      "roomTitlePlaceholder": "e.g. Launch team",
+      "search": "Members",
+      "searchPlaceholder": "Search your connections",
+      "select": "Select",
+      "selected": "Selected",
+      "submit": "Create group",
+      "memberCount": "{count} members",
+      "loading": "Loading connections…",
+      "empty": "No matching connections.",
+      "validation": "Choose at least two members and enter a group name.",
+      "failed": "Could not create group."
+    },
+    "edit": {
+      "action": "Edit",
+      "sheetTitle": "Edit message",
+      "save": "Save edit",
+      "cancel": "Cancel",
+      "failed": "Could not edit message."
+    },
+    "delete": {
+      "action": "Delete",
+      "failed": "Could not delete message."
+    }
   },
   "notifications": {
     "title": "Notifications",

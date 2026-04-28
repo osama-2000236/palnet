@@ -15,12 +15,17 @@ export interface PickedAsset {
   filename?: string;
 }
 
+export interface UploadedAsset {
+  publicUrl: string;
+  blurhash: string | null;
+}
+
 // Presign → direct PUT (via fetch+Blob) → return public URL.
 export async function uploadAsset(args: {
   asset: PickedAsset;
   purpose: MediaPurpose;
   token: string;
-}): Promise<string> {
+}): Promise<UploadedAsset> {
   const { asset, purpose, token } = args;
 
   const kind: MediaKind = asset.mimeType.startsWith("video/")
@@ -56,7 +61,10 @@ export async function uploadAsset(args: {
     throw new Error(`Upload failed: ${put.status}`);
   }
 
-  return signed.publicUrl;
+  return {
+    publicUrl: signed.publicUrl,
+    blurhash: signed.blurhash,
+  };
 }
 
 // Upload + blurhash in one shot. Hash failure is non-fatal.
@@ -65,15 +73,15 @@ export async function uploadImageAsset(args: {
   purpose: MediaPurpose;
   token: string;
 }): Promise<{ publicUrl: string; blurhash: string | null }> {
-  const publicUrl = await uploadAsset(args);
+  const uploaded = await uploadAsset(args);
   try {
     const hashed = await apiFetch("/media/hash", HashedUpload, {
       method: "POST",
-      body: { url: publicUrl },
+      body: { url: uploaded.publicUrl },
       token: args.token,
     });
-    return { publicUrl, blurhash: hashed.blurhash };
+    return { publicUrl: uploaded.publicUrl, blurhash: hashed.blurhash };
   } catch {
-    return { publicUrl, blurhash: null };
+    return uploaded;
   }
 }
