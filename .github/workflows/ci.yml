@@ -159,6 +159,23 @@ jobs:
       - run: pnpm --filter @baydar/db db:generate
       - run: pnpm --filter @baydar/db db:deploy
       - run: pnpm --filter @baydar/db db:seed
+      - name: Verify demo credentials in seeded DB
+        working-directory: packages/db
+        run: |
+          node -e "
+            const { PrismaClient } = require('@prisma/client');
+            const bcrypt = require('bcrypt');
+            (async () => {
+              const p = new PrismaClient();
+              const u = await p.user.findUnique({ where: { email: 'demo@baydar.ps' } });
+              if (!u) { console.error('demo user MISSING after seed'); process.exit(1); }
+              console.log('demo:', { hashLen: u.passwordHash.length, role: u.role, verified: !!u.emailVerified, active: u.isActive });
+              const ok = await bcrypt.compare('Password123', u.passwordHash);
+              console.log('bcrypt.compare(Password123):', ok);
+              if (!ok) { console.error('PASSWORD MISMATCH on seeded demo user'); process.exit(1); }
+              await p.\$disconnect();
+            })();
+          "
       - run: pnpm turbo run build --filter @baydar/shared --filter @baydar/ui-tokens --filter @baydar/ui-web
       - run: pnpm --filter @baydar/web exec playwright install --with-deps chromium
       - name: Start API + Web and run Playwright
