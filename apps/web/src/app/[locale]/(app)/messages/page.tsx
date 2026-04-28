@@ -495,12 +495,12 @@ export default function MessagesPage(): JSX.Element {
 
   // ───────── Render ─────────
   return (
-    <div className="mx-auto w-full max-w-chrome px-4 py-6 lg:px-6">
+    <div className="max-w-chrome mx-auto w-full px-4 py-6 lg:px-6">
       <Surface
         as="div"
         variant="card"
         padding="0"
-        className="grid min-h-messages grid-cols-1 overflow-hidden md:grid-cols-[320px_minmax(0,1fr)]"
+        className="min-h-messages grid grid-cols-1 overflow-hidden md:grid-cols-[320px_minmax(0,1fr)]"
       >
         {/* Rooms list */}
         <aside className="border-line-soft flex min-h-0 flex-col md:border-e">
@@ -636,7 +636,7 @@ export default function MessagesPage(): JSX.Element {
                     onClick={() =>
                       activeRoomId && nextCursor && void loadMessages(activeRoomId, nextCursor)
                     }
-                    className="border-line-soft bg-surface text-ink-muted hover:bg-surface-muted mb-3 self-center rounded-full border px-3 py-1 text-nav"
+                    className="border-line-soft bg-surface text-ink-muted hover:bg-surface-muted text-nav mb-3 self-center rounded-full border px-3 py-1"
                   >
                     {t("loadOlder")}
                   </button>
@@ -646,7 +646,7 @@ export default function MessagesPage(): JSX.Element {
                   <button
                     type="button"
                     onClick={scrollToUnread}
-                    className="bg-brand-100 text-brand-700 border-brand-200 mb-3 self-center rounded-full border px-3 py-1 text-nav font-semibold"
+                    className="bg-brand-100 text-brand-700 border-brand-200 text-nav mb-3 self-center rounded-full border px-3 py-1 font-semibold"
                   >
                     {t("unreadJump.banner", { count: unreadCount })}
                   </button>
@@ -720,14 +720,14 @@ export default function MessagesPage(): JSX.Element {
                                   setActionMessage(m);
                                   setEditingBody(m.body);
                                 }}
-                                className="border-line-soft bg-surface text-ink-muted hover:text-ink rounded-full border px-2 py-1 text-nav"
+                                className="border-line-soft bg-surface text-ink-muted hover:text-ink text-nav rounded-full border px-2 py-1"
                               >
                                 {t("edit.action")}
                               </button>
                               <button
                                 type="button"
                                 onClick={() => void deleteMessage(m)}
-                                className="border-danger/40 bg-surface text-danger rounded-full border px-2 py-1 text-nav"
+                                className="border-danger/40 bg-surface text-danger text-nav rounded-full border px-2 py-1"
                               >
                                 {t("delete.action")}
                               </button>

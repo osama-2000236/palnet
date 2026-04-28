@@ -71,7 +71,9 @@ export function Tab({ value, children, count }: TabProps): JSX.Element {
           <Text
             style={{
               color: active ? nativeTokens.color.brand700 : nativeTokens.color.inkMuted,
-              backgroundColor: active ? nativeTokens.color.brand50 : nativeTokens.color.surfaceSubtle,
+              backgroundColor: active
+                ? nativeTokens.color.brand50
+                : nativeTokens.color.surfaceSubtle,
               borderRadius: nativeTokens.radius.full,
               overflow: "hidden",
               paddingHorizontal: nativeTokens.space[2],

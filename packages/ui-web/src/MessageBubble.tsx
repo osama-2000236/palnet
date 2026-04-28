@@ -86,7 +86,7 @@ export function MessageBubble({
       )}
     >
       {!mine && groupAuthor ? (
-        <div className="text-ink-muted mb-1 flex items-center gap-1.5 text-nav font-semibold">
+        <div className="text-ink-muted text-nav mb-1 flex items-center gap-1.5 font-semibold">
           <Avatar user={groupAuthor} size="xs" />
           <span className="truncate">{groupAuthor.firstName || groupAuthor.handle}</span>
         </div>
@@ -114,7 +114,7 @@ export function MessageBubble({
       {timestamp || edited || (mine && status) ? (
         <div
           className={cx(
-            "mt-0.5 flex items-center gap-1 text-nav",
+            "text-nav mt-0.5 flex items-center gap-1",
             mine ? "text-ink-muted self-end" : "text-ink-muted self-start",
           )}
         >
@@ -138,7 +138,7 @@ export function MessageBubble({
         <button
           type="button"
           onClick={onRetry}
-          className="text-danger focus-visible:ring-danger mt-0.5 text-nav hover:underline focus:outline-none focus-visible:ring-2"
+          className="text-danger focus-visible:ring-danger text-nav mt-0.5 hover:underline focus:outline-none focus-visible:ring-2"
         >
           {labels.failedHint}
         </button>

@@ -22,7 +22,7 @@ import {
   type StyleProp,
   type ViewStyle,
 } from "react-native";
-import Svg, { Rect } from "react-native-svg";
+import { Rect, Svg } from "react-native-svg";
 
 import { nativeTokens } from "./tokens";
 

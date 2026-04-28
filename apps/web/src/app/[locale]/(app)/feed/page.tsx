@@ -94,7 +94,7 @@ export default function FeedPageRoute(): JSX.Element {
   }, [router, load]);
 
   return (
-    <main className="mx-auto grid w-full max-w-chrome grid-cols-1 items-start gap-6 px-4 py-6 lg:grid-cols-[225px_minmax(0,1fr)_300px] lg:gap-6 lg:px-6">
+    <main className="max-w-chrome mx-auto grid w-full grid-cols-1 items-start gap-6 px-4 py-6 lg:grid-cols-[225px_minmax(0,1fr)_300px] lg:gap-6 lg:px-6">
       <h1 className="sr-only">{t("title")}</h1>
       <LeftRail me={me} />
 
@@ -264,7 +264,7 @@ function RightRail({
                   {s.user.headline ? (
                     <span className="text-ink-muted truncate text-xs">{s.user.headline}</span>
                   ) : null}
-                  <span className="text-ink-muted mt-0.5 text-nav">{t("pymkReason")}</span>
+                  <span className="text-ink-muted text-nav mt-0.5">{t("pymkReason")}</span>
                 </div>
                 <Link
                   href={`/in/${s.user.handle}`}
@@ -319,7 +319,7 @@ function RightRail({
                       <span className="text-ink truncate text-sm font-semibold">{j.title}</span>
                       <span className="text-ink-muted truncate text-xs">{j.company.name}</span>
                       {metaParts.length > 0 ? (
-                        <span className="text-ink-muted mt-0.5 truncate text-nav">
+                        <span className="text-ink-muted text-nav mt-0.5 truncate">
                           {metaParts.join(" · ")}
                         </span>
                       ) : null}
@@ -334,7 +334,7 @@ function RightRail({
         )}
       </Surface>
 
-      <p className="text-ink-muted text-center text-nav">{t("footer")}</p>
+      <p className="text-ink-muted text-nav text-center">{t("footer")}</p>
     </aside>
   );
 }
