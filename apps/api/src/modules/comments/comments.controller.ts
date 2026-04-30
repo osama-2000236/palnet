@@ -14,7 +14,6 @@ import {
   Param,
   Post,
   Query,
-  UsePipes,
 } from "@nestjs/common";
 import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 
@@ -30,11 +29,10 @@ export class CommentsController {
   constructor(private readonly comments: CommentsService) {}
 
   @Post("posts/:id/comments")
-  @UsePipes(new ZodValidationPipe(CreateCommentBody))
   async create(
     @CurrentUser() user: AuthUser,
     @Param("id") postId: string,
-    @Body() body: CreateCommentBody,
+    @Body(new ZodValidationPipe(CreateCommentBody)) body: CreateCommentBody,
   ): Promise<{ data: CommentDto }> {
     const data = await this.comments.create(user.id, postId, body);
     return { data };

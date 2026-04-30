@@ -4,7 +4,7 @@ import {
   MarkNotificationsReadBody,
   type Notification,
 } from "@baydar/shared";
-import { Body, Controller, Get, Post, Query, Sse, UsePipes } from "@nestjs/common";
+import { Body, Controller, Get, Post, Query, Sse } from "@nestjs/common";
 import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 import { Observable } from "rxjs";
 
@@ -47,10 +47,9 @@ export class NotificationsController {
   }
 
   @Post("read")
-  @UsePipes(new ZodValidationPipe(MarkNotificationsReadBody))
   async markRead(
     @CurrentUser() user: AuthUser,
-    @Body() body: MarkNotificationsReadBody,
+    @Body(new ZodValidationPipe(MarkNotificationsReadBody)) body: MarkNotificationsReadBody,
   ): Promise<{ count: number }> {
     return this.notifications.markRead(user.id, body);
   }

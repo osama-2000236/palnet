@@ -225,8 +225,7 @@ export function Icon({
             cy={19}
             rx={2.6}
             ry={4.6}
-            origin="27,19"
-            rotation={-28}
+            transform="rotate(-28 27 19)"
             fill={nativeTokens.color.brand50}
           />
           <Ellipse
@@ -234,8 +233,7 @@ export function Icon({
             cy={19}
             rx={2.6}
             ry={4.6}
-            origin="37,19"
-            rotation={28}
+            transform="rotate(28 37 19)"
             fill={nativeTokens.color.brand50}
           />
           <Ellipse
@@ -243,8 +241,7 @@ export function Icon({
             cy={27}
             rx={2.8}
             ry={4.8}
-            origin="26,27"
-            rotation={-28}
+            transform="rotate(-28 26 27)"
             fill={nativeTokens.color.brand50}
           />
           <Ellipse
@@ -252,8 +249,7 @@ export function Icon({
             cy={27}
             rx={2.8}
             ry={4.8}
-            origin="38,27"
-            rotation={28}
+            transform="rotate(28 38 27)"
             fill={nativeTokens.color.brand50}
           />
           <Ellipse
@@ -261,8 +257,7 @@ export function Icon({
             cy={35}
             rx={2.8}
             ry={4.8}
-            origin="25,35"
-            rotation={-28}
+            transform="rotate(-28 25 35)"
             fill={nativeTokens.color.brand50}
           />
           <Ellipse
@@ -270,8 +265,7 @@ export function Icon({
             cy={35}
             rx={2.8}
             ry={4.8}
-            origin="39,35"
-            rotation={28}
+            transform="rotate(28 39 35)"
             fill={nativeTokens.color.brand50}
           />
           <Ellipse
@@ -279,8 +273,7 @@ export function Icon({
             cy={43}
             rx={2.8}
             ry={4.8}
-            origin="24,43"
-            rotation={-28}
+            transform="rotate(-28 24 43)"
             fill={nativeTokens.color.brand50}
           />
           <Ellipse
@@ -288,8 +281,7 @@ export function Icon({
             cy={43}
             rx={2.8}
             ry={4.8}
-            origin="40,43"
-            rotation={28}
+            transform="rotate(28 40 43)"
             fill={nativeTokens.color.brand50}
           />
         </Svg>

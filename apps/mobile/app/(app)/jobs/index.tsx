@@ -11,7 +11,7 @@
 // with a 250 ms debounce, matching the web behavior.
 
 import { cursorPage, Job as JobSchema, JobLocationMode, JobType, type Job } from "@baydar/shared";
-import { Button, Sheet, Surface, nativeTokens } from "@baydar/ui-native";
+import { AppHeader, Button, Icon, SearchField, Sheet, Surface, nativeTokens } from "@baydar/ui-native";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -19,14 +19,16 @@ import {
   FlatList,
   Pressable,
   RefreshControl,
-  SafeAreaView,
   Text,
   TextInput,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
+import { StateMessage } from "@/components/StateMessage";
 import { JobRow } from "@/components/rows/JobRow";
 import { apiFetchPage } from "@/lib/api";
+import { apiErrorMessage } from "@/lib/api-errors";
 import { getAccessToken } from "@/lib/session";
 
 const JobsPage = cursorPage(JobSchema);
@@ -84,21 +86,25 @@ export default function JobsScreen(): JSX.Element {
   const [firstLoad, setFirstLoad] = useState(true);
   const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS);
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async (after: string | null, f: Filters): Promise<void> => {
     const token = await getAccessToken();
     if (!token) return;
     setLoading(true);
+    if (!after) setError(null);
     try {
       const page = await apiFetchPage(`/jobs?${buildQs(f, after)}`, JobsPage, { token });
       setItems((prev) => (after ? [...prev, ...page.data] : page.data));
       setCursor(page.meta.nextCursor);
       setHasMore(page.meta.hasMore);
+    } catch (caught) {
+      if (!after) setError(apiErrorMessage(t, caught));
     } finally {
       setLoading(false);
       setFirstLoad(false);
     }
-  }, []);
+  }, [t]);
 
   // Debounced refetch when filters change. Reset cursor on every filter edit.
   useEffect(() => {
@@ -127,79 +133,38 @@ export default function JobsScreen(): JSX.Element {
           paddingTop: nativeTokens.space[4],
         }}
       >
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "space-between",
-            marginBottom: nativeTokens.space[3],
-          }}
-        >
-          <Text
-            style={{
-              fontSize: nativeTokens.type.scale.display.size,
-              lineHeight: nativeTokens.type.scale.display.line,
-              fontWeight: "700",
-              color: nativeTokens.color.ink,
-              fontFamily: nativeTokens.type.family.sans,
-            }}
-          >
-            {t("jobs.title")}
-          </Text>
-
-          <Pressable
-            onPress={() => setSheetOpen(true)}
-            accessibilityRole="button"
-            accessibilityLabel={t("jobs.filters")}
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              gap: nativeTokens.space[2],
-              paddingHorizontal: nativeTokens.space[3],
-              paddingVertical: nativeTokens.space[2],
-              borderRadius: nativeTokens.radius.full,
-              borderWidth: 1,
-              borderColor: nativeTokens.color.lineHard,
-              backgroundColor:
-                activeCount > 0 ? nativeTokens.color.brand50 : nativeTokens.color.surface,
-            }}
-          >
-            <Text
-              style={{
-                color: nativeTokens.color.ink,
-                fontFamily: nativeTokens.type.family.sans,
-                fontSize: nativeTokens.type.scale.small.size,
-                fontWeight: "600",
-              }}
+        <AppHeader
+          title={t("jobs.title")}
+          subtitle={t("jobs.searchPlaceholder")}
+          trailing={
+            <Button
+              variant={activeCount > 0 ? "primary" : "secondary"}
+              size="sm"
+              leading={
+                <Icon
+                  name="search"
+                  size={16}
+                  color={activeCount > 0 ? nativeTokens.color.inkInverse : nativeTokens.color.ink}
+                />
+              }
+              onPress={() => setSheetOpen(true)}
+              accessibilityLabel={t("jobs.filters")}
             >
-              {t("jobs.filters")}
-            </Text>
-            {activeCount > 0 ? (
-              <View
-                style={{
-                  minWidth: 20,
-                  height: 20,
-                  paddingHorizontal: 6,
-                  borderRadius: nativeTokens.radius.full,
-                  backgroundColor: nativeTokens.color.brand600,
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <Text
-                  style={{
-                    color: nativeTokens.color.inkInverse,
-                    fontSize: 11,
-                    fontWeight: "700",
-                    fontFamily: nativeTokens.type.family.sans,
-                  }}
-                >
-                  {activeCount}
-                </Text>
-              </View>
-            ) : null}
-          </Pressable>
-        </View>
+              {activeCount > 0 ? `${t("jobs.filters")} ${activeCount}` : t("jobs.filters")}
+            </Button>
+          }
+          search={
+            <SearchField
+              value={filters.q}
+              onChangeText={(q) => setFilters((current) => ({ ...current, q }))}
+              onClear={() => setFilters((current) => ({ ...current, q: "" }))}
+              clearLabel={t("common.clear")}
+              placeholder={t("jobs.searchPlaceholder")}
+              accessibilityLabel={t("jobs.search")}
+              testID="jobs-search-input"
+            />
+          }
+        />
 
         {firstLoad ? (
           <View style={{ gap: nativeTokens.space[3] }}>
@@ -208,6 +173,16 @@ export default function JobsScreen(): JSX.Element {
             <JobRowSkeleton />
           </View>
         ) : (
+          <>
+          {error && items.length > 0 ? (
+            <StateMessage
+              message={error}
+              actionLabel={t("common.retry")}
+              busy={loading}
+              onAction={() => void load(null, filters)}
+              style={{ marginBottom: nativeTokens.space[3] }}
+            />
+          ) : null}
           <FlatList
             data={items}
             keyExtractor={(j) => j.id}
@@ -226,19 +201,15 @@ export default function JobsScreen(): JSX.Element {
               />
             }
             ListEmptyComponent={
-              loading ? null : (
-                <Surface variant="tinted" padding="6">
-                  <Text
-                    style={{
-                      color: nativeTokens.color.inkMuted,
-                      fontSize: nativeTokens.type.scale.body.size,
-                      fontFamily: nativeTokens.type.family.sans,
-                      textAlign: "center",
-                    }}
-                  >
-                    {t("jobs.emptyTitle")}
-                  </Text>
-                </Surface>
+              loading ? null : error ? (
+                <StateMessage
+                  message={error}
+                  actionLabel={t("common.retry")}
+                  busy={loading}
+                  onAction={() => void load(null, filters)}
+                />
+              ) : (
+                <StateMessage message={t("jobs.emptyTitle")} role="text" />
               )
             }
             ListFooterComponent={
@@ -249,6 +220,7 @@ export default function JobsScreen(): JSX.Element {
               ) : null
             }
           />
+          </>
         )}
       </View>
 
@@ -285,16 +257,6 @@ function FilterSheet({
 
   return (
     <Sheet open={open} onClose={onClose} title={t("jobs.filters")}>
-      <Field label={t("jobs.search")}>
-        <TextInput
-          value={filters.q}
-          onChangeText={(v) => set("q", v)}
-          placeholder={t("jobs.searchPlaceholder")}
-          placeholderTextColor={nativeTokens.color.inkSubtle}
-          style={inputStyle()}
-        />
-      </Field>
-
       <Field label={t("jobs.city")}>
         <TextInput
           value={filters.city}

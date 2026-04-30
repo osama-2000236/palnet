@@ -14,7 +14,6 @@ import {
   Param,
   Post,
   Query,
-  UsePipes,
 } from "@nestjs/common";
 import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 import { z } from "zod";
@@ -42,8 +41,10 @@ export class ConnectionsController {
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  @UsePipes(new ZodValidationPipe(SendConnectionBody))
-  async send(@CurrentUser() user: AuthUser, @Body() body: SendConnectionBody) {
+  async send(
+    @CurrentUser() user: AuthUser,
+    @Body(new ZodValidationPipe(SendConnectionBody)) body: SendConnectionBody,
+  ) {
     const data = await this.connections.send(user.id, body);
     return { data };
   }

@@ -19,6 +19,11 @@ jest.mock("react-i18next", () => ({
         "feed.title": "الخلاصة",
         "feed.empty": "ابدأ بنشر أول منشور لك.",
         "feed.welcome": `أهلًا ${String(values?.name ?? "")}`,
+        "feed.profileCompletion": `اكتمال الملف ${String(values?.completed ?? "")} من ${String(
+          values?.total ?? "",
+        )}`,
+        "feed.editProfile": "تعديل الملف",
+        "common.retry": "إعادة المحاولة",
         "composer.placeholder": "شارك فكرة",
         "nav.unreadNotifications": "إشعارات غير مقروءة",
       };
@@ -31,7 +36,24 @@ jest.mock("@/components/rows/PostRow", () => ({
   PostRow: () => null,
 }));
 
-const mockApiFetch = jest.fn(async () => ({ count: 0 }));
+const mockApiFetch = jest.fn(async (path: string) => {
+  if (path === "/profiles/me") {
+    return {
+      id: "profile-1",
+      userId: "user-1",
+      handle: "demo",
+      firstName: "ليان",
+      lastName: "خليل",
+      headline: "مصممة منتجات",
+      location: "رام الله",
+      avatarUrl: null,
+      experiences: [],
+      educations: [],
+      skills: [],
+    };
+  }
+  return { count: 0 };
+});
 const mockApiFetchPage = jest.fn(async () => ({
   data: [],
   meta: { nextCursor: null, hasMore: false },
@@ -51,11 +73,26 @@ jest.mock("@/lib/session", () => ({
 }));
 
 describe("FeedScreen empty state", () => {
+  let consoleErrorSpy: jest.SpyInstance;
+
+  beforeEach(() => {
+    const original = console.error;
+    consoleErrorSpy = jest.spyOn(console, "error").mockImplementation((...args: unknown[]) => {
+      if (String(args[0]).includes("not wrapped in act")) return;
+      original(...args);
+    });
+  });
+
+  afterEach(() => {
+    consoleErrorSpy.mockRestore();
+  });
+
   it("renders the localized empty state after loading an empty feed", async () => {
     const screen = render(<FeedScreen />);
 
     await waitFor(() => {
       expect(screen.getByText("ابدأ بنشر أول منشور لك.")).toBeTruthy();
+      expect(screen.getByText("ليان خليل")).toBeTruthy();
     });
   });
 });

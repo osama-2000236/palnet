@@ -1,5 +1,20 @@
-import { cursorPage, Post as PostSchema, type Post } from "@baydar/shared";
-import { PostCardSkeleton, Surface, nativeTokens } from "@baydar/ui-native";
+import {
+  cursorPage,
+  Post as PostSchema,
+  Profile as ProfileSchema,
+  type Post,
+  type Profile,
+} from "@baydar/shared";
+import {
+  AppHeader,
+  Avatar,
+  Button,
+  ComposerEntry,
+  Icon,
+  PostCardSkeleton,
+  Surface,
+  nativeTokens,
+} from "@baydar/ui-native";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { z } from "zod";
@@ -18,7 +33,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { PostRow } from "@/components/rows/PostRow";
 import { apiFetch, apiFetchPage } from "@/lib/api";
 import { track } from "@/lib/analytics";
-import { getAccessToken, readSession } from "@/lib/session";
+import { clearSession, getAccessToken, readSession } from "@/lib/session";
 
 const FeedPage = cursorPage(PostSchema);
 const UnreadCountEnvelope = z.object({ count: z.number().int().nonnegative() });
@@ -32,6 +47,9 @@ export default function FeedScreen(): JSX.Element {
   const [refreshing, setRefreshing] = useState(false);
   const [name, setName] = useState<string | null>(null);
   const [unread, setUnread] = useState<number>(0);
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [feedError, setFeedError] = useState<string | null>(null);
+  const [loggingOut, setLoggingOut] = useState(false);
 
   const loadUnread = useCallback(async (): Promise<void> => {
     const token = await getAccessToken();
@@ -44,33 +62,51 @@ export default function FeedScreen(): JSX.Element {
     }
   }, []);
 
-  const load = useCallback(async (after: string | null): Promise<void> => {
+  const loadProfile = useCallback(async (): Promise<void> => {
     const token = await getAccessToken();
     if (!token) return;
-    setLoading(true);
     try {
-      const qs = new URLSearchParams({ limit: "20" });
-      if (after) qs.set("after", after);
-      const page = await apiFetchPage(`/feed?${qs.toString()}`, FeedPage, {
-        token,
-      });
-      setPosts((prev) => (after ? [...prev, ...page.data] : page.data));
-      setCursor(page.meta.nextCursor);
-      setHasMore(page.meta.hasMore);
-    } finally {
-      setLoading(false);
+      const next = await apiFetch("/profiles/me", ProfileSchema, { token });
+      setProfile(next);
+      setName(`${next.firstName} ${next.lastName}`.trim());
+    } catch {
+      /* the app gate handles missing profiles; keep the feed usable */
     }
   }, []);
+
+  const load = useCallback(
+    async (after: string | null): Promise<void> => {
+      const token = await getAccessToken();
+      if (!token) return;
+      setLoading(true);
+      if (!after) setFeedError(null);
+      try {
+        const qs = new URLSearchParams({ limit: "20" });
+        if (after) qs.set("after", after);
+        const page = await apiFetchPage(`/feed?${qs.toString()}`, FeedPage, {
+          token,
+        });
+        setPosts((prev) => (after ? [...prev, ...page.data] : page.data));
+        setCursor(page.meta.nextCursor);
+        setHasMore(page.meta.hasMore);
+      } catch {
+        if (!after) setFeedError(t("feed.error"));
+      } finally {
+        setLoading(false);
+      }
+    },
+    [t],
+  );
 
   const refreshFeed = useCallback(async (): Promise<void> => {
     setRefreshing(true);
     try {
-      await Promise.all([load(null), loadUnread()]);
+      await Promise.all([load(null), loadUnread(), loadProfile()]);
       track("feed.refresh");
     } finally {
       setRefreshing(false);
     }
-  }, [load, loadUnread]);
+  }, [load, loadProfile, loadUnread]);
 
   useEffect(() => {
     void (async () => {
@@ -80,10 +116,9 @@ export default function FeedScreen(): JSX.Element {
         return;
       }
       setName(session.user.email.split("@")[0] ?? session.user.email);
-      await load(null);
-      await loadUnread();
+      await Promise.all([loadProfile(), load(null), loadUnread()]);
     })();
-  }, [load, loadUnread]);
+  }, [load, loadProfile, loadUnread]);
 
   useFocusEffect(
     useCallback(() => {
@@ -91,32 +126,104 @@ export default function FeedScreen(): JSX.Element {
     }, [loadUnread]),
   );
 
+  const logout = useCallback(async (): Promise<void> => {
+    setLoggingOut(true);
+    await clearSession();
+    router.replace("/(auth)/login");
+  }, []);
+
   return (
     <SafeAreaView style={feedStyles.screen}>
       <View style={feedStyles.content}>
-        <View style={feedStyles.header}>
-          <Text style={feedStyles.title}>{t("feed.title")}</Text>
-          {name ? <Text style={feedStyles.welcome}>{t("feed.welcome", { name })}</Text> : null}
-          {unread > 0 ? (
-            <Text
-              style={feedStyles.unreadBadge}
-              accessibilityLabel={t("nav.unreadNotifications", { count: unread })}
+        <AppHeader
+          title={t("feed.title")}
+          subtitle={name ? t("feed.welcome", { name }) : undefined}
+          leading={
+            profile ? (
+              <Avatar
+                size="sm"
+                user={{
+                  id: profile.userId,
+                  handle: profile.handle,
+                  firstName: profile.firstName,
+                  lastName: profile.lastName,
+                  avatarUrl: profile.avatarUrl,
+                }}
+              />
+            ) : (
+              <Icon name="logo" size={34} />
+            )
+          }
+          trailing={
+            <View style={feedStyles.headerActions}>
+              {unread > 0 ? (
+                <Pressable
+                  onPress={() => router.push("/(app)/notifications")}
+                  accessibilityRole="button"
+                  accessibilityLabel={t("nav.unreadNotifications", { count: unread })}
+                  style={feedStyles.unreadPill}
+                >
+                  <Text style={feedStyles.unreadText}>{unread > 99 ? "99+" : String(unread)}</Text>
+                </Pressable>
+              ) : null}
+              <Button
+                variant="ghost"
+                size="sm"
+                loading={loggingOut}
+                disabled={loggingOut}
+                accessibilityLabel={t("auth.logout")}
+                onPress={() => void logout()}
+              >
+                {t("auth.logout")}
+              </Button>
+            </View>
+          }
+          search={
+            <Pressable
+              onPress={() => router.push("/(app)/search")}
+              accessibilityRole="button"
+              accessibilityLabel={t("search.placeholder")}
+              style={({ pressed }) => [feedStyles.searchEntry, pressed ? feedStyles.pressed : null]}
             >
-              {unread > 99 ? "99+" : String(unread)}
-            </Text>
-          ) : null}
-        </View>
+              <Icon name="search" size={18} color={nativeTokens.color.inkMuted} />
+              <Text numberOfLines={1} style={feedStyles.searchText}>
+                {t("search.placeholder")}
+              </Text>
+            </Pressable>
+          }
+        />
 
-        <Pressable
+        <ComposerEntry
+          user={
+            profile
+              ? {
+                  id: profile.userId,
+                  handle: profile.handle,
+                  firstName: profile.firstName,
+                  lastName: profile.lastName,
+                  avatarUrl: profile.avatarUrl,
+                }
+              : null
+          }
+          placeholder={t("composer.placeholder")}
+          actionLabel={t("composer.title")}
           onPress={() => router.push("/(app)/composer")}
+          testID="feed-composer-entry"
           style={feedStyles.composerWrap}
-          accessibilityRole="button"
-          accessibilityLabel={t("composer.placeholder")}
-        >
-          <Surface variant="card" padding="4">
-            <Text style={feedStyles.composerPlaceholder}>{t("composer.placeholder")}</Text>
+        />
+
+        {profile ? <ProfileSummary profile={profile} /> : null}
+
+        {feedError ? (
+          <Surface variant="tinted" padding="4" style={feedStyles.errorBox}>
+            <Text selectable accessibilityRole="alert" style={feedStyles.errorText}>
+              {feedError}
+            </Text>
+            <Button variant="secondary" size="sm" onPress={() => void load(null)}>
+              {t("common.retry")}
+            </Button>
           </Surface>
-        </Pressable>
+        ) : null}
 
         <FlatList
           data={posts}
@@ -168,6 +275,63 @@ export default function FeedScreen(): JSX.Element {
   );
 }
 
+function ProfileSummary({ profile }: { profile: Profile }): JSX.Element {
+  const { t } = useTranslation();
+  const name = `${profile.firstName} ${profile.lastName}`.trim();
+  const completed = [
+    Boolean(profile.avatarUrl),
+    Boolean(profile.headline),
+    Boolean(profile.location),
+    profile.experiences.length > 0 || profile.educations.length > 0,
+    profile.skills.length > 0,
+  ].filter(Boolean).length;
+
+  return (
+    <Surface variant="card" padding="4" style={feedStyles.profileCard}>
+      <View style={feedStyles.profileMain}>
+        <Avatar
+          size="lg"
+          user={{
+            id: profile.userId,
+            handle: profile.handle,
+            firstName: profile.firstName,
+            lastName: profile.lastName,
+            avatarUrl: profile.avatarUrl,
+          }}
+        />
+        <View style={feedStyles.profileText}>
+          <Text selectable style={feedStyles.profileName}>
+            {name}
+          </Text>
+          {profile.headline ? (
+            <Text selectable style={feedStyles.profileHeadline} numberOfLines={2}>
+              {profile.headline}
+            </Text>
+          ) : null}
+          {profile.location ? (
+            <Text selectable style={feedStyles.profileMeta}>
+              {profile.location}
+            </Text>
+          ) : null}
+        </View>
+      </View>
+      <View style={feedStyles.profileFooter}>
+        <Text selectable style={feedStyles.profileProgress}>
+          {t("feed.profileCompletion", { completed, total: 5 })}
+        </Text>
+        <Button
+          variant="secondary"
+          size="sm"
+          accessibilityLabel={t("feed.editProfile")}
+          onPress={() => router.push("/(app)/me/edit")}
+        >
+          {t("feed.editProfile")}
+        </Button>
+      </View>
+    </Surface>
+  );
+}
+
 const feedStyles = StyleSheet.create({
   screen: {
     flex: 1,
@@ -176,42 +340,108 @@ const feedStyles = StyleSheet.create({
   content: {
     flex: 1,
     paddingHorizontal: nativeTokens.space[4],
-    paddingTop: nativeTokens.space[6],
+    paddingTop: nativeTokens.space[3],
   },
-  header: {
-    marginBottom: nativeTokens.space[3],
+  headerActions: {
+    flexDirection: "row",
+    alignItems: "center",
     gap: nativeTokens.space[1],
   },
-  title: {
-    fontSize: nativeTokens.type.scale.display.size,
-    lineHeight: nativeTokens.type.scale.display.line,
+  unreadPill: {
+    minWidth: 28,
+    height: 28,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: nativeTokens.color.accent600,
+    paddingHorizontal: nativeTokens.space[2],
+    borderRadius: nativeTokens.radius.full,
+  },
+  unreadText: {
+    color: nativeTokens.color.inkInverse,
+    fontSize: 11,
     fontWeight: "700",
-    color: nativeTokens.color.ink,
     fontFamily: nativeTokens.type.family.sans,
   },
-  welcome: {
+  searchEntry: {
+    minHeight: nativeTokens.chrome.minHit,
+    borderRadius: nativeTokens.radius.full,
+    borderWidth: 1,
+    borderColor: nativeTokens.color.lineSoft,
+    backgroundColor: nativeTokens.color.surface,
+    paddingHorizontal: nativeTokens.space[3],
+    flexDirection: "row",
+    alignItems: "center",
+    gap: nativeTokens.space[2],
+  },
+  searchText: {
+    flex: 1,
+    color: nativeTokens.color.inkMuted,
+    fontFamily: nativeTokens.type.family.sans,
+    fontSize: nativeTokens.type.scale.body.size,
+    textAlign: "right",
+  },
+  pressed: { opacity: 0.88 },
+  composerWrap: { marginBottom: nativeTokens.space[3] },
+  profileCard: {
+    gap: nativeTokens.space[3],
+    marginBottom: nativeTokens.space[3],
+  },
+  profileMain: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: nativeTokens.space[3],
+  },
+  profileText: {
+    flex: 1,
+  },
+  profileName: {
+    color: nativeTokens.color.ink,
+    fontSize: nativeTokens.type.scale.h2.size,
+    lineHeight: nativeTokens.type.scale.h2.line,
+    fontWeight: "700",
+    fontFamily: nativeTokens.type.family.sans,
+    textAlign: "right",
+  },
+  profileHeadline: {
     color: nativeTokens.color.inkMuted,
     fontSize: nativeTokens.type.scale.small.size,
     lineHeight: nativeTokens.type.scale.small.line,
     fontFamily: nativeTokens.type.family.sans,
+    textAlign: "right",
   },
-  unreadBadge: {
-    marginTop: nativeTokens.space[1],
-    alignSelf: "flex-start",
-    backgroundColor: nativeTokens.color.accent600,
-    color: nativeTokens.color.inkInverse,
-    fontSize: 11,
+  profileMeta: {
+    color: nativeTokens.color.inkSubtle,
+    fontSize: nativeTokens.type.scale.caption.size,
+    lineHeight: nativeTokens.type.scale.caption.line,
+    fontFamily: nativeTokens.type.family.sans,
+    textAlign: "right",
+  },
+  profileFooter: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: nativeTokens.space[2],
+  },
+  profileProgress: {
+    flex: 1,
+    color: nativeTokens.color.brand700,
+    fontSize: nativeTokens.type.scale.caption.size,
+    lineHeight: nativeTokens.type.scale.caption.line,
     fontWeight: "700",
-    paddingHorizontal: nativeTokens.space[2],
-    paddingVertical: 2,
-    borderRadius: nativeTokens.radius.full,
     fontFamily: nativeTokens.type.family.sans,
+    textAlign: "right",
   },
-  composerWrap: { marginBottom: nativeTokens.space[3] },
-  composerPlaceholder: {
-    color: nativeTokens.color.inkMuted,
-    fontSize: nativeTokens.type.scale.body.size,
+  errorBox: {
+    gap: nativeTokens.space[2],
+    marginBottom: nativeTokens.space[3],
+    backgroundColor: nativeTokens.color.warningSoft,
+  },
+  errorText: {
+    color: nativeTokens.color.ink,
+    fontSize: nativeTokens.type.scale.small.size,
+    lineHeight: nativeTokens.type.scale.small.line,
     fontFamily: nativeTokens.type.family.sans,
+    textAlign: "right",
   },
   emptyText: {
     color: nativeTokens.color.inkMuted,

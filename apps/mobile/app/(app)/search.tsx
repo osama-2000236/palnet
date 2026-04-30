@@ -3,7 +3,7 @@ import {
   SearchPersonHit as SearchPersonHitSchema,
   type SearchPersonHit,
 } from "@baydar/shared";
-import { Avatar, Button, Icon, Surface, nativeTokens } from "@baydar/ui-native";
+import { AppHeader, Avatar, Button, Icon, SearchField, Surface, nativeTokens } from "@baydar/ui-native";
 import { router } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -13,12 +13,13 @@ import {
   Pressable,
   StyleSheet,
   Text,
-  TextInput,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { StateMessage } from "@/components/StateMessage";
 import { apiFetchPage } from "@/lib/api";
+import { apiErrorMessage } from "@/lib/api-errors";
 import { getAccessToken } from "@/lib/session";
 
 const PeoplePage = cursorPage(SearchPersonHitSchema);
@@ -31,6 +32,7 @@ export default function SearchScreen(): JSX.Element {
   const [hasMore, setHasMore] = useState(false);
   const [loading, setLoading] = useState(false);
   const [touched, setTouched] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const run = useCallback(async (term: string, after: string | null): Promise<void> => {
     const trimmed = term.trim();
@@ -39,9 +41,11 @@ export default function SearchScreen(): JSX.Element {
       setHasMore(false);
       setCursor(null);
       setLoading(false);
+      setError(null);
       return;
     }
     setLoading(true);
+    if (!after) setError(null);
     try {
       const token = (await getAccessToken()) ?? undefined;
       const qs = new URLSearchParams({ q: trimmed, limit: "20" });
@@ -50,10 +54,12 @@ export default function SearchScreen(): JSX.Element {
       setHits((prev) => (after ? [...prev, ...page.data] : page.data));
       setCursor(page.meta.nextCursor);
       setHasMore(page.meta.hasMore);
+    } catch (caught) {
+      if (!after) setError(apiErrorMessage(t, caught));
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     const trimmed = q.trim();
@@ -75,32 +81,24 @@ export default function SearchScreen(): JSX.Element {
   return (
     <SafeAreaView style={styles.screen}>
       <View style={styles.content}>
-        <Text style={styles.title}>{t("search.title")}</Text>
-
-        <View style={styles.searchRow}>
-          <TextInput
-            value={q}
-            onChangeText={setQ}
-            placeholder={t("search.placeholder")}
-            placeholderTextColor={nativeTokens.color.inkMuted}
-            returnKeyType="search"
-            onSubmitEditing={() => {
-              setTouched(true);
-              void run(q, null);
-            }}
-            style={styles.input}
-          />
-          <Button
-            size="md"
-            onPress={() => {
-              setTouched(true);
-              void run(q, null);
-            }}
-            accessibilityLabel={t("search.submit")}
-          >
-            {t("search.submit")}
-          </Button>
-        </View>
+        <AppHeader
+          title={t("search.title")}
+          search={
+            <SearchField
+              value={q}
+              onChangeText={setQ}
+              onClear={() => setQ("")}
+              clearLabel={t("common.clear")}
+              placeholder={t("search.placeholder")}
+              accessibilityLabel={t("search.placeholder")}
+              testID="search-input"
+              onSubmitEditing={() => {
+                setTouched(true);
+                void run(q, null);
+              }}
+            />
+          }
+        />
 
         <Button
           variant="ghost"
@@ -127,12 +125,18 @@ export default function SearchScreen(): JSX.Element {
             if (!loading && hasMore && cursor) void run(q, cursor);
           }}
           ListEmptyComponent={
-            loading ? null : (
-              <Surface variant="tinted" padding="6">
-                <Text style={styles.emptyText}>
-                  {touched ? t("search.noResults") : t("search.prompt")}
-                </Text>
-              </Surface>
+            loading ? null : error ? (
+              <StateMessage
+                message={error}
+                actionLabel={t("common.retry")}
+                busy={loading}
+                onAction={() => void run(q, null)}
+              />
+            ) : (
+              <StateMessage
+                message={touched ? t("search.noResults") : t("search.prompt")}
+                role="text"
+              />
             )
           }
           ListFooterComponent={
@@ -189,33 +193,7 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     paddingHorizontal: nativeTokens.space[4],
-    paddingTop: nativeTokens.space[8],
-  },
-  title: {
-    color: nativeTokens.color.ink,
-    fontSize: nativeTokens.type.scale.display.size,
-    lineHeight: nativeTokens.type.scale.display.line,
-    fontWeight: "700",
-    fontFamily: nativeTokens.type.family.sans,
-    marginBottom: nativeTokens.space[3],
-  },
-  searchRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: nativeTokens.space[2],
-    marginBottom: nativeTokens.space[2],
-  },
-  input: {
-    flex: 1,
-    minHeight: nativeTokens.chrome.minHit,
-    borderRadius: nativeTokens.radius.md,
-    borderWidth: 1,
-    borderColor: nativeTokens.color.lineHard,
-    backgroundColor: nativeTokens.color.surface,
-    paddingHorizontal: nativeTokens.space[3],
-    color: nativeTokens.color.ink,
-    fontSize: nativeTokens.type.scale.body.size,
-    fontFamily: nativeTokens.type.family.sans,
+    paddingTop: nativeTokens.space[3],
   },
   filterButton: {
     marginBottom: nativeTokens.space[3],

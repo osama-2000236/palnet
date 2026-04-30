@@ -7,10 +7,10 @@ import {
   UpdateProfileBody,
   type Profile,
 } from "@baydar/shared";
-import { Avatar, Button, Icon, Surface, nativeTokens } from "@baydar/ui-native";
+import { AppHeader, Avatar, Button, Icon, Surface, nativeTokens } from "@baydar/ui-native";
 import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
-import { useEffect, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
@@ -24,7 +24,9 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { StateMessage } from "@/components/StateMessage";
 import { apiFetch } from "@/lib/api";
+import { apiErrorMessage } from "@/lib/api-errors";
 import { getAccessToken } from "@/lib/session";
 import { uploadAsset } from "@/lib/uploads";
 
@@ -32,25 +34,44 @@ export default function EditProfileScreen(): JSX.Element {
   const { t } = useTranslation();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const refresh = async (): Promise<void> => {
+  const refresh = useCallback(async (): Promise<void> => {
     const token = await getAccessToken();
     if (!token) {
       router.replace("/(auth)/login");
       return;
     }
-    const p = await apiFetch("/profiles/me", ProfileSchema, { token });
-    setProfile(p);
-  };
+    setError(null);
+    try {
+      const p = await apiFetch("/profiles/me", ProfileSchema, { token });
+      setProfile(p);
+    } catch (caught) {
+      setError(apiErrorMessage(t, caught));
+    }
+  }, [t]);
 
   useEffect(() => {
     void refresh().finally(() => setLoading(false));
-  }, []);
+  }, [refresh]);
 
   if (loading || !profile) {
     return (
       <SafeAreaView style={styles.centerScreen}>
-        <ActivityIndicator />
+        {loading ? (
+          <ActivityIndicator />
+        ) : error ? (
+          <View style={styles.errorWrap}>
+            <StateMessage
+              message={error}
+              actionLabel={t("common.retry")}
+              onAction={() => {
+                setLoading(true);
+                void refresh().finally(() => setLoading(false));
+              }}
+            />
+          </View>
+        ) : null}
       </SafeAreaView>
     );
   }
@@ -62,22 +83,33 @@ export default function EditProfileScreen(): JSX.Element {
         style={styles.flex}
       >
         <ScrollView contentContainerStyle={styles.scrollContent}>
-          <View style={styles.header}>
-            <Text style={styles.title}>{t("profile.editTitle")}</Text>
-            <Button
-              variant="ghost"
-              size="sm"
-              onPress={() => router.back()}
-              accessibilityLabel={t("common.cancel")}
-            >
-              {t("common.cancel")}
-            </Button>
-          </View>
+          <AppHeader
+            title={t("profile.editTitle")}
+            compact
+            trailing={
+              <Button
+                variant="ghost"
+                size="sm"
+                onPress={() => router.back()}
+                accessibilityLabel={t("common.cancel")}
+              >
+                {t("common.cancel")}
+              </Button>
+            }
+          />
 
-          <BasicsCard profile={profile} onChanged={setProfile} />
-          <ExperiencesCard profile={profile} onChanged={setProfile} />
-          <EducationsCard profile={profile} onChanged={setProfile} />
-          <SkillsCard profile={profile} onChanged={setProfile} />
+          {error ? (
+            <StateMessage
+              message={error}
+              actionLabel={t("common.retry")}
+              onAction={() => void refresh()}
+            />
+          ) : null}
+
+          <BasicsCard profile={profile} onChanged={setProfile} onError={setError} />
+          <ExperiencesCard profile={profile} onChanged={setProfile} onError={setError} />
+          <EducationsCard profile={profile} onChanged={setProfile} onError={setError} />
+          <SkillsCard profile={profile} onChanged={setProfile} onError={setError} />
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -119,9 +151,11 @@ function Input({
 function BasicsCard({
   profile,
   onChanged,
+  onError,
 }: {
   profile: Profile;
   onChanged: (next: Profile) => void;
+  onError: (message: string | null) => void;
 }): JSX.Element {
   const { t } = useTranslation();
   const [firstName, setFirstName] = useState(profile.firstName);
@@ -146,6 +180,7 @@ function BasicsCard({
     const token = await getAccessToken();
     if (!token) return;
     setUploading(true);
+    onError(null);
     try {
       const uploaded = await uploadAsset({
         asset: {
@@ -163,6 +198,8 @@ function BasicsCard({
         token,
       });
       onChanged(next);
+    } catch (caught) {
+      onError(apiErrorMessage(t, caught));
     } finally {
       setUploading(false);
     }
@@ -180,6 +217,7 @@ function BasicsCard({
     const token = await getAccessToken();
     if (!token) return;
     setBusy(true);
+    onError(null);
     try {
       const next = await apiFetch("/profiles/me", ProfileSchema, {
         method: "PATCH",
@@ -187,6 +225,8 @@ function BasicsCard({
         token,
       });
       onChanged(next);
+    } catch (caught) {
+      onError(apiErrorMessage(t, caught));
     } finally {
       setBusy(false);
     }
@@ -236,9 +276,11 @@ function BasicsCard({
 function ExperiencesCard({
   profile,
   onChanged,
+  onError,
 }: {
   profile: Profile;
   onChanged: (next: Profile) => void;
+  onError: (message: string | null) => void;
 }): JSX.Element {
   const { t } = useTranslation();
   const [show, setShow] = useState(false);
@@ -263,6 +305,7 @@ function ExperiencesCard({
     const token = await getAccessToken();
     if (!token) return;
     setBusy(true);
+    onError(null);
     try {
       const next = await apiFetch("/profiles/me/experiences", ProfileSchema, {
         method: "POST",
@@ -274,6 +317,8 @@ function ExperiencesCard({
       setTitle("");
       setCompanyName("");
       setDescription("");
+    } catch (caught) {
+      onError(apiErrorMessage(t, caught));
     } finally {
       setBusy(false);
     }
@@ -283,12 +328,15 @@ function ExperiencesCard({
     const token = await getAccessToken();
     if (!token) return;
     setBusy(true);
+    onError(null);
     try {
       const next = await apiFetch(`/profiles/me/experiences/${id}`, ProfileSchema, {
         method: "DELETE",
         token,
       });
       onChanged(next);
+    } catch (caught) {
+      onError(apiErrorMessage(t, caught));
     } finally {
       setBusy(false);
     }
@@ -372,9 +420,11 @@ function ExperiencesCard({
 function EducationsCard({
   profile,
   onChanged,
+  onError,
 }: {
   profile: Profile;
   onChanged: (next: Profile) => void;
+  onError: (message: string | null) => void;
 }): JSX.Element {
   const { t } = useTranslation();
   const [show, setShow] = useState(false);
@@ -396,6 +446,7 @@ function EducationsCard({
     const token = await getAccessToken();
     if (!token) return;
     setBusy(true);
+    onError(null);
     try {
       const next = await apiFetch("/profiles/me/educations", ProfileSchema, {
         method: "POST",
@@ -407,6 +458,8 @@ function EducationsCard({
       setSchool("");
       setDegree("");
       setFieldOfStudy("");
+    } catch (caught) {
+      onError(apiErrorMessage(t, caught));
     } finally {
       setBusy(false);
     }
@@ -416,12 +469,15 @@ function EducationsCard({
     const token = await getAccessToken();
     if (!token) return;
     setBusy(true);
+    onError(null);
     try {
       const next = await apiFetch(`/profiles/me/educations/${id}`, ProfileSchema, {
         method: "DELETE",
         token,
       });
       onChanged(next);
+    } catch (caught) {
+      onError(apiErrorMessage(t, caught));
     } finally {
       setBusy(false);
     }
@@ -494,9 +550,11 @@ function EducationsCard({
 function SkillsCard({
   profile,
   onChanged,
+  onError,
 }: {
   profile: Profile;
   onChanged: (next: Profile) => void;
+  onError: (message: string | null) => void;
 }): JSX.Element {
   const { t } = useTranslation();
   const [name, setName] = useState("");
@@ -508,6 +566,7 @@ function SkillsCard({
     const token = await getAccessToken();
     if (!token) return;
     setBusy(true);
+    onError(null);
     try {
       const next = await apiFetch("/profiles/me/skills", ProfileSchema, {
         method: "POST",
@@ -516,6 +575,8 @@ function SkillsCard({
       });
       onChanged(next);
       setName("");
+    } catch (caught) {
+      onError(apiErrorMessage(t, caught));
     } finally {
       setBusy(false);
     }
@@ -525,12 +586,15 @@ function SkillsCard({
     const token = await getAccessToken();
     if (!token) return;
     setBusy(true);
+    onError(null);
     try {
       const next = await apiFetch(`/profiles/me/skills/${skillId}`, ProfileSchema, {
         method: "DELETE",
         token,
       });
       onChanged(next);
+    } catch (caught) {
+      onError(apiErrorMessage(t, caught));
     } finally {
       setBusy(false);
     }
@@ -585,23 +649,13 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     backgroundColor: nativeTokens.color.surfaceMuted,
   },
+  errorWrap: {
+    alignSelf: "stretch",
+    paddingHorizontal: nativeTokens.space[4],
+  },
   scrollContent: {
     padding: nativeTokens.space[4],
     gap: nativeTokens.space[4],
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: nativeTokens.space[3],
-  },
-  title: {
-    flex: 1,
-    color: nativeTokens.color.ink,
-    fontSize: nativeTokens.type.scale.h1.size,
-    lineHeight: nativeTokens.type.scale.h1.line,
-    fontWeight: "700",
-    fontFamily: nativeTokens.type.family.sans,
   },
   cardTitle: {
     color: nativeTokens.color.ink,

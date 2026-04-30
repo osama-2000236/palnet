@@ -3,7 +3,7 @@ import {
   ConnectionListItem,
   type ConnectionListItem as ConnectionListItemType,
 } from "@baydar/shared";
-import { Avatar, Button, Surface, nativeTokens } from "@baydar/ui-native";
+import { AppHeader, Avatar, Button, Icon, SearchField, Surface, nativeTokens } from "@baydar/ui-native";
 import { router } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -11,15 +11,16 @@ import {
   ActivityIndicator,
   FlatList,
   Pressable,
-  SafeAreaView,
   StyleSheet,
   Text,
   TextInput,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { z } from "zod";
 
 import { apiFetch, apiFetchPage } from "@/lib/api";
+import { apiErrorMessage } from "@/lib/api-errors";
 import { successHaptic, tapHaptic } from "@/lib/haptics";
 import { getAccessToken } from "@/lib/session";
 
@@ -49,11 +50,13 @@ export default function NewGroupRoomScreen(): JSX.Element {
           token: accessToken,
         });
         setConnections(out.data);
+      } catch (caught) {
+        setError(apiErrorMessage(t, caught));
       } finally {
         setLoading(false);
       }
     })();
-  }, []);
+  }, [t]);
 
   const filtered = useMemo(() => {
     const needle = query.trim().toLocaleLowerCase();
@@ -102,8 +105,8 @@ export default function NewGroupRoomScreen(): JSX.Element {
       });
       successHaptic();
       router.replace({ pathname: "/(app)/messages/[roomId]", params: { roomId: room.id } });
-    } catch {
-      setError(t("messaging.newGroup.failed"));
+    } catch (caught) {
+      setError(apiErrorMessage(t, caught));
     } finally {
       setSubmitting(false);
     }
@@ -112,12 +115,16 @@ export default function NewGroupRoomScreen(): JSX.Element {
   return (
     <SafeAreaView style={styles.screen}>
       <View style={styles.wrap}>
-        <View style={styles.header}>
-          <Pressable onPress={() => router.back()} hitSlop={12} accessibilityRole="button">
-            <Text style={styles.back}>‹</Text>
-          </Pressable>
-          <Text style={styles.title}>{t("messaging.newGroup.title")}</Text>
-        </View>
+        <AppHeader
+          title={t("messaging.newGroup.title")}
+          subtitle={t("messaging.newGroup.subtitle")}
+          compact
+          trailing={
+            <Button variant="ghost" size="sm" onPress={() => router.back()}>
+              {t("common.back")}
+            </Button>
+          }
+        />
 
         <Surface variant="card" padding="4">
           <Text style={styles.label}>{t("messaging.newGroup.roomTitle")}</Text>
@@ -129,12 +136,13 @@ export default function NewGroupRoomScreen(): JSX.Element {
             style={styles.input}
           />
           <Text style={[styles.label, styles.spaced]}>{t("messaging.newGroup.search")}</Text>
-          <TextInput
+          <SearchField
             value={query}
             onChangeText={setQuery}
+            onClear={() => setQuery("")}
+            clearLabel={t("common.clear")}
             placeholder={t("messaging.newGroup.searchPlaceholder")}
-            placeholderTextColor={nativeTokens.color.inkMuted}
-            style={styles.input}
+            accessibilityLabel={t("messaging.newGroup.search")}
           />
         </Surface>
 
@@ -208,6 +216,8 @@ export default function NewGroupRoomScreen(): JSX.Element {
           disabled={submitting || selectedIds.size < 2 || title.trim().length === 0}
           onPress={() => void submit()}
           accessibilityLabel={t("messaging.newGroup.submit")}
+          loading={submitting}
+          leading={<Icon name="send" size={18} color={nativeTokens.color.inkInverse} />}
         >
           {t("messaging.newGroup.submit")}
         </Button>
@@ -227,24 +237,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: nativeTokens.space[4],
     paddingTop: nativeTokens.space[6],
     paddingBottom: nativeTokens.space[4],
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: nativeTokens.space[3],
-  },
-  back: {
-    color: nativeTokens.color.brand600,
-    fontFamily: nativeTokens.type.family.sans,
-    fontSize: nativeTokens.type.scale.h2.size,
-  },
-  title: {
-    flex: 1,
-    color: nativeTokens.color.ink,
-    fontFamily: nativeTokens.type.family.sans,
-    fontSize: nativeTokens.type.scale.h1.size,
-    fontWeight: "700",
-    lineHeight: nativeTokens.type.scale.h1.line,
   },
   label: {
     color: nativeTokens.color.ink,

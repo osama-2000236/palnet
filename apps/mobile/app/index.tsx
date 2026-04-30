@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { Animated, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { resolvePostAuthRoute } from "@/lib/profile-state";
 import { readSession } from "@/lib/session";
 
 export default function Landing(): JSX.Element {
@@ -30,7 +31,12 @@ export default function Landing(): JSX.Element {
     void (async () => {
       const session = await readSession();
       if (session) {
-        router.replace("/(app)/feed");
+        try {
+          const route = await resolvePostAuthRoute(session);
+          router.replace(route);
+        } catch {
+          router.replace("/(app)/feed");
+        }
         return;
       }
       if (mounted) setCheckingSession(false);

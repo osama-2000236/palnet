@@ -4,7 +4,7 @@ import { z } from "zod";
 const EnvSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
   API_PORT: z.coerce.number().int().positive().default(4000),
-  CORS_ORIGINS: z.string().default("http://localhost:3000,http://localhost:8081"),
+  CORS_ORIGINS: z.string().default("http://localhost:3000,http://localhost:8081,http://localhost:8082"),
   DATABASE_URL: z.string().url(),
   DIRECT_URL: z.string().url().optional(),
   JWT_ACCESS_SECRET: z.string().min(32),

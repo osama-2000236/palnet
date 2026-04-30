@@ -15,6 +15,7 @@ export const RegisterBody = z.object({
   firstName: z.string().min(1).max(60),
   lastName: z.string().min(1).max(60),
   locale: z.string().default("ar-PS"),
+  deviceId: z.string().min(1).max(128).optional(),
   acceptTerms: z.literal(true),
 });
 export type RegisterBody = z.infer<typeof RegisterBody>;

@@ -7,7 +7,6 @@ import {
   HttpStatus,
   Param,
   Put,
-  UsePipes,
 } from "@nestjs/common";
 import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 
@@ -24,11 +23,10 @@ export class ReactionsController {
 
   @Put()
   @HttpCode(HttpStatus.NO_CONTENT)
-  @UsePipes(new ZodValidationPipe(SetReactionBody))
   async set(
     @CurrentUser() user: AuthUser,
     @Param("id") id: string,
-    @Body() body: SetReactionBody,
+    @Body(new ZodValidationPipe(SetReactionBody)) body: SetReactionBody,
   ): Promise<void> {
     await this.reactions.set(user.id, id, body.type);
   }

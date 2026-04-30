@@ -25,6 +25,7 @@ interface AuthScaffoldProps {
 interface AuthTextFieldProps extends TextInputProps {
   label: string;
   error?: boolean;
+  errorMessage?: string;
   hint?: string;
   testID: string;
 }
@@ -136,6 +137,7 @@ export function AuthScaffold({
 export function AuthTextField({
   label,
   error,
+  errorMessage,
   hint,
   testID,
   keyboardType,
@@ -174,6 +176,7 @@ export function AuthTextField({
             borderRadius: nativeTokens.radius.md,
             backgroundColor: nativeTokens.color.surface,
             color: nativeTokens.color.ink,
+            opacity: rest.editable === false ? 0.65 : 1,
             paddingHorizontal: nativeTokens.space[3],
             paddingVertical: nativeTokens.space[2],
             fontFamily: nativeTokens.type.family.sans,
@@ -195,6 +198,21 @@ export function AuthTextField({
           }}
         >
           {hint}
+        </Text>
+      ) : null}
+      {errorMessage ? (
+        <Text
+          selectable
+          accessibilityRole="alert"
+          style={{
+            color: nativeTokens.color.danger,
+            fontFamily: nativeTokens.type.family.sans,
+            fontSize: nativeTokens.type.scale.caption.size,
+            lineHeight: nativeTokens.type.scale.caption.line,
+            textAlign: "right",
+          }}
+        >
+          {errorMessage}
         </Text>
       ) : null}
     </View>

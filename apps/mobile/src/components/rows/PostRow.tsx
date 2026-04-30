@@ -1,5 +1,5 @@
 import { type Post } from "@baydar/shared";
-import { Avatar, Surface, nativeTokens } from "@baydar/ui-native";
+import { Avatar, Icon, Surface, nativeTokens } from "@baydar/ui-native";
 import { Image } from "expo-image";
 import { router } from "expo-router";
 import { memo, useState } from "react";
@@ -116,22 +116,35 @@ export const PostRow = memo(function PostRow({ post, onChange }: PostRowProps): 
           hitSlop={nativeTokens.space[2]}
           testID={`post-like-${post.id}`}
         >
-          <Text style={[styles.muted, liked ? styles.likedLabel : null]}>
-            {liked ? t("post.liked") : t("post.like")} ({post.counts.reactions})
-          </Text>
+          <View style={styles.actionItem}>
+            <Icon
+              name="thumb"
+              size={16}
+              color={liked ? nativeTokens.color.brand700 : nativeTokens.color.inkMuted}
+            />
+            <Text style={[styles.muted, liked ? styles.likedLabel : null]}>
+              {liked ? t("post.liked") : t("post.like")} ({post.counts.reactions})
+            </Text>
+          </View>
         </Pressable>
         <Pressable
           onPress={() => setShowComments((s) => !s)}
           accessibilityRole="button"
           hitSlop={nativeTokens.space[2]}
         >
-          <Text style={styles.muted}>
-            {t("post.comments")} ({post.counts.comments})
-          </Text>
+          <View style={styles.actionItem}>
+            <Icon name="comment" size={16} color={nativeTokens.color.inkMuted} />
+            <Text style={styles.muted}>
+              {t("post.comments")} ({post.counts.comments})
+            </Text>
+          </View>
         </Pressable>
-        <Text style={styles.muted}>
-          {t("post.reposts")}: {post.counts.reposts}
-        </Text>
+        <View style={styles.actionItem}>
+          <Icon name="repost" size={16} color={nativeTokens.color.inkMuted} />
+          <Text style={styles.muted}>
+            {t("post.reposts")}: {post.counts.reposts}
+          </Text>
+        </View>
       </View>
 
       {showComments ? (
@@ -207,7 +220,13 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: nativeTokens.color.lineSoft,
     flexDirection: "row",
-    gap: nativeTokens.space[4],
+    flexWrap: "wrap",
+    gap: nativeTokens.space[3],
+  },
+  actionItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: nativeTokens.space[1],
   },
   likedLabel: {
     color: nativeTokens.color.brand700,

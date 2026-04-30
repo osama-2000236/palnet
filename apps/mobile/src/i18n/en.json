@@ -4,6 +4,7 @@
     "loading": "Loading…",
     "retry": "Retry",
     "cancel": "Cancel",
+    "back": "Back",
     "save": "Save",
     "continue": "Continue",
     "clear": "Clear",
@@ -59,25 +60,137 @@
     "secureHint": "We use a secure session and never expose your email or password in the app.",
     "errors": {
       "CONFLICT": "An account with this email already exists.",
+      "AUTH_EMAIL_TAKEN": "An account with this email already exists.",
+      "AUTH_INVALID_CREDENTIALS": "Invalid email or password.",
       "AUTH_UNAUTHORIZED": "Invalid email or password.",
+      "PROFILE_HANDLE_TAKEN": "This handle is taken. Choose another one.",
       "VALIDATION_FAILED": "Please check the fields and try again.",
-      "RATE_LIMITED": "Too many attempts. Try again later.",
-      "INTERNAL": "An unexpected error occurred."
+        "NOT_FOUND": "We could not find the requested data.",
+        "OFFLINE": "You need an internet connection to complete this step.",
+        "NETWORK_ERROR": "We could not reach Baydar. Check that the API is running and try again.",
+        "INVALID_RESPONSE": "Baydar returned data we could not read. Try again.",
+        "RATE_LIMITED": "Too many attempts. Try again later.",
+        "INTERNAL": "An unexpected error occurred."
+      },
+    "validation": {
+      "required": "This field is required.",
+      "email": "Enter a valid email address.",
+      "nameMax": "That name is too long.",
+      "passwordMin": "Password must be at least 8 characters.",
+      "passwordLetter": "Add at least one letter.",
+      "passwordDigit": "Add at least one number.",
+      "terms": "You must accept the terms to continue."
     }
   },
   "onboarding": {
     "title": "Complete your profile",
     "subtitle": "This helps others find you.",
+    "progress": "Step {{current}} of {{total}}",
+    "back": "Back",
+    "offline": "You're offline. You can review fields, but final saving needs a connection.",
     "handle": "Your handle",
-    "handleHint": "Appears as /in/{handle}",
+    "handleHint": "Appears as /in/{{handle}}",
     "headline": "Headline",
+    "headlineHint": "Example: Digital product developer in Ramallah",
+    "about": "Short about",
+    "aboutHint": "Optional. Write a line or two about your experience and professional interests.",
     "location": "Location (city)",
-    "submit": "Save and continue"
+    "locationHint": "Example: Ramallah, Amman, Dubai",
+    "country": "Country code",
+    "countryHint": "Two letters such as PS or JO.",
+    "submit": "Enter the feed",
+    "steps": {
+      "identity": "Verify your professional identity",
+      "profile": "Introduce yourself",
+      "location": "Add your location",
+      "background": "Add work or education",
+      "photo": "Add a profile photo",
+      "network": "Build an initial network"
+    },
+    "stepCopy": {
+      "identity": "Use your real name so your network stays clear and trusted.",
+      "profile": "Add a handle and headline that help people understand your work quickly.",
+      "location": "Location helps nearby opportunities and peers find you.",
+      "background": "Add at least one work or education entry to start a serious professional profile.",
+      "photo": "A photo is optional now, but it makes your presence clearer and more trusted.",
+      "network": "Choose people you may know. We will send requests after saving your profile."
+    },
+    "identity": {
+      "confirm": "I confirm this information professionally represents me."
+    },
+    "background": {
+      "work": "Work",
+      "education": "Education",
+      "startYear": "Start year"
+    },
+    "photo": {
+      "choose": "Choose photo",
+      "change": "Change photo",
+      "remove": "Remove photo",
+      "hint": "Use a clear face photo. Maximum size is 2MB.",
+      "permission": "Photo access is needed to choose a profile photo.",
+      "tooLarge": "That photo is larger than 2MB. Choose a smaller one."
+    },
+    "network": {
+      "message": "Short request message",
+      "messageHint": "Optional. Example: Glad to connect with you on Baydar.",
+      "loading": "Loading connection suggestions…",
+      "empty": "No suggestions right now. You can build your network from My network later.",
+      "failed": "Could not load connection suggestions.",
+      "offline": "Connection suggestions need internet access.",
+      "select": "Select",
+      "selected": "Selected"
+    },
+    "validation": {
+      "required": "This field is required.",
+      "identity": "Confirm your professional identity to continue.",
+      "nameMax": "That name is too long.",
+      "handle": "Use 3-30 lowercase English letters, numbers, or dashes. Do not start or end with a dash.",
+      "headlineMax": "Headline must be 220 characters or fewer.",
+      "aboutMax": "This text is too long.",
+      "locationMax": "That location is too long.",
+      "country": "Enter a two-letter country code.",
+      "background": "Choose work or education.",
+      "shortMax": "This text is too long.",
+      "year": "Enter a valid year between 1950 and the current year.",
+      "networkMessage": "Message must be 300 characters or fewer.",
+      "review": "Review the required fields and try again."
+    },
+    "errors": {
+      "offline": "You need an internet connection to save your profile.",
+      "CONFLICT": "This handle is taken. Choose another one.",
+      "PROFILE_HANDLE_TAKEN": "This handle is taken. Choose another one.",
+      "VALIDATION_FAILED": "Please check the fields and try again.",
+      "INTERNAL": "An unexpected error occurred while saving your profile.",
+      "generic": "Could not complete setup right now. Please try again."
+    }
+  },
+  "appGate": {
+    "title": "We need to verify your profile",
+    "body": "Could not verify your profile status right now. Try again.",
+    "offlineBody": "We cannot verify your profile while you're offline. Try again once the connection returns."
+  },
+  "api": {
+    "errors": {
+      "RATE_LIMITED": "Too many requests right now. Wait a moment and try again.",
+      "NETWORK_ERROR": "We could not reach Baydar. Check your connection and try again.",
+      "INVALID_RESPONSE": "Baydar returned data we could not read. Try again.",
+      "AUTH_UNAUTHORIZED": "Your session expired. Sign in again.",
+      "NOT_FOUND": "We could not find the requested data.",
+      "VALIDATION_FAILED": "Please check the fields and try again.",
+      "INTERNAL": "An unexpected error occurred."
+    }
+  },
+  "nav": {
+    "unreadNotifications": "{{count}} unread notifications"
   },
   "feed": {
     "title": "Feed",
     "empty": "Start by publishing your first post.",
-    "welcome": "Welcome {name} — your account is ready.",
+    "welcome": "Welcome {{name}} — your account is ready.",
+    "error": "Could not load the feed right now.",
+    "profileCompletion": "Profile completion {{completed}} of {{total}}",
+    "editProfile": "Edit profile",
     "loadMore": "Load more",
     "loadingMore": "Loading…"
   },
@@ -88,7 +201,7 @@
     "addImage": "Add image",
     "uploading": "Uploading…",
     "removeImage": "Remove image",
-    "charCount": "{current} / {max}"
+    "charCount": "{{current}} / {{max}}"
   },
   "post": {
     "like": "Like",
@@ -167,8 +280,8 @@
     "loadOlder": "Load older messages",
     "retry": "Retry",
     "you": "You",
-    "ownPrefix": "You, at {time}:",
-    "otherPrefix": "{name}, at {time}:",
+    "ownPrefix": "You, at {{time}}:",
+    "otherPrefix": "{{name}}, at {{time}}:",
     "failedHint": "Send failed — tap to retry",
     "status": {
       "sending": "Sending",
@@ -217,14 +330,14 @@
     "loadMore": "Load more",
     "loading": "Loading…",
     "templates": {
-      "CONNECTION_REQUEST": "{actor} wants to connect with you.",
-      "CONNECTION_ACCEPTED": "{actor} accepted your connection request.",
-      "POST_REACTION": "{actor} reacted to your post.",
-      "POST_COMMENT": "{actor} commented on your post.",
-      "POST_MENTION": "{actor} mentioned you in a post.",
-      "MESSAGE_RECEIVED": "{actor} sent you a message.",
+      "CONNECTION_REQUEST": "{{actor}} wants to connect with you.",
+      "CONNECTION_ACCEPTED": "{{actor}} accepted your connection request.",
+      "POST_REACTION": "{{actor}} reacted to your post.",
+      "POST_COMMENT": "{{actor}} commented on your post.",
+      "POST_MENTION": "{{actor}} mentioned you in a post.",
+      "MESSAGE_RECEIVED": "{{actor}} sent you a message.",
       "JOB_APPLICATION_UPDATE": "Your application has an update.",
-      "PROFILE_VIEW": "{actor} viewed your profile."
+      "PROFILE_VIEW": "{{actor}} viewed your profile."
     }
   },
   "jobs": {
@@ -238,8 +351,8 @@
     "location": "Location",
     "apply": "Apply",
     "appliedBadge": "Applied",
-    "applyTitle": "Apply to {title}",
-    "applySubtitle": "Share a short note with {company}. You can leave it blank and apply directly.",
+    "applyTitle": "Apply to {{title}}",
+    "applySubtitle": "Share a short note with {{company}}. You can leave it blank and apply directly.",
     "coverLetterLabel": "Cover letter (optional)",
     "coverLetterPlaceholder": "Tell them why you'd be a great fit…",
     "coverLetterHint": "Up to 8,000 characters.",

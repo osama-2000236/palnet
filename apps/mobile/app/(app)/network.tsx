@@ -2,9 +2,9 @@ import {
   ConnectionListItem as ConnectionListItemSchema,
   type ConnectionListItem,
 } from "@baydar/shared";
-import { Avatar, Button, Surface, nativeTokens } from "@baydar/ui-native";
+import { AppHeader, Avatar, Button, SegmentedControl, Surface, nativeTokens } from "@baydar/ui-native";
 import { router } from "expo-router";
-import { useCallback, useEffect, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
@@ -18,7 +18,9 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { z } from "zod";
 
+import { StateMessage } from "@/components/StateMessage";
 import { apiFetch } from "@/lib/api";
+import { apiErrorMessage } from "@/lib/api-errors";
 import { successHaptic, tapHaptic } from "@/lib/haptics";
 import { getAccessToken, readSession } from "@/lib/session";
 
@@ -32,20 +34,36 @@ export default function NetworkScreen(): JSX.Element {
   const [items, setItems] = useState<ConnectionListItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const filterItems = useMemo(
+    () => [
+      {
+        key: "ACCEPTED" as const,
+        label: t("network.myConnections"),
+        testID: "network-filter-accepted",
+      },
+      { key: "INCOMING" as const, label: t("network.invitations"), testID: "network-filter-incoming" },
+      { key: "OUTGOING" as const, label: t("network.sent"), testID: "network-filter-outgoing" },
+    ],
+    [t],
+  );
 
   const load = useCallback(async (f: Filter): Promise<void> => {
     const token = await getAccessToken();
     if (!token) return;
     setLoading(true);
+    setError(null);
     try {
       const data = await apiFetch(`/connections?filter=${f}`, ListEnvelope, {
         token,
       });
       setItems(data);
+    } catch (caught) {
+      setError(apiErrorMessage(t, caught));
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   const refresh = useCallback(async (): Promise<void> => {
     setRefreshing(true);
@@ -71,55 +89,76 @@ export default function NetworkScreen(): JSX.Element {
     const token = await getAccessToken();
     if (!token) return;
     tapHaptic();
-    await apiFetch(`/connections/${id}/respond`, Raw, {
-      method: "POST",
-      token,
-      body: { action },
-    });
-    successHaptic();
-    setItems((prev) => prev.filter((x) => x.connectionId !== id));
+    setError(null);
+    try {
+      await apiFetch(`/connections/${id}/respond`, Raw, {
+        method: "POST",
+        token,
+        body: { action },
+      });
+      successHaptic();
+      setItems((prev) => prev.filter((x) => x.connectionId !== id));
+    } catch (caught) {
+      setError(apiErrorMessage(t, caught));
+    }
   }
 
   async function withdraw(id: string): Promise<void> {
     const token = await getAccessToken();
     if (!token) return;
     tapHaptic();
-    await apiFetch(`/connections/${id}/withdraw`, Raw, {
-      method: "POST",
-      token,
-    });
-    successHaptic();
-    setItems((prev) => prev.filter((x) => x.connectionId !== id));
+    setError(null);
+    try {
+      await apiFetch(`/connections/${id}/withdraw`, Raw, {
+        method: "POST",
+        token,
+      });
+      successHaptic();
+      setItems((prev) => prev.filter((x) => x.connectionId !== id));
+    } catch (caught) {
+      setError(apiErrorMessage(t, caught));
+    }
   }
 
   async function remove(id: string): Promise<void> {
     const token = await getAccessToken();
     if (!token) return;
     tapHaptic();
-    await apiFetch(`/connections/${id}`, Raw, {
-      method: "DELETE",
-      token,
-    });
-    successHaptic();
-    setItems((prev) => prev.filter((x) => x.connectionId !== id));
+    setError(null);
+    try {
+      await apiFetch(`/connections/${id}`, Raw, {
+        method: "DELETE",
+        token,
+      });
+      successHaptic();
+      setItems((prev) => prev.filter((x) => x.connectionId !== id));
+    } catch (caught) {
+      setError(apiErrorMessage(t, caught));
+    }
   }
 
   return (
     <SafeAreaView style={styles.screen}>
       <View style={styles.content}>
-        <Text style={styles.title}>{t("network.title")}</Text>
+        <AppHeader title={t("network.title")} compact />
 
-        <View style={styles.tabs}>
-          <FilterTab active={filter === "ACCEPTED"} onPress={() => setFilter("ACCEPTED")}>
-            {t("network.myConnections")}
-          </FilterTab>
-          <FilterTab active={filter === "INCOMING"} onPress={() => setFilter("INCOMING")}>
-            {t("network.invitations")}
-          </FilterTab>
-          <FilterTab active={filter === "OUTGOING"} onPress={() => setFilter("OUTGOING")}>
-            {t("network.sent")}
-          </FilterTab>
-        </View>
+        <SegmentedControl
+          items={filterItems}
+          selectedKey={filter}
+          onChange={setFilter}
+          style={styles.tabs}
+          testID="network-filter-tabs"
+        />
+
+        {error && items.length > 0 ? (
+          <StateMessage
+            message={error}
+            actionLabel={t("common.retry")}
+            busy={loading}
+            onAction={() => void load(filter)}
+            style={styles.inlineError}
+          />
+        ) : null}
 
         <FlatList
           data={items}
@@ -139,10 +178,15 @@ export default function NetworkScreen(): JSX.Element {
               <View style={styles.loading}>
                 <ActivityIndicator />
               </View>
+            ) : error ? (
+              <StateMessage
+                message={error}
+                actionLabel={t("common.retry")}
+                busy={loading}
+                onAction={() => void load(filter)}
+              />
             ) : (
-              <Surface variant="tinted" padding="6">
-                <Text style={styles.emptyText}>{t("network.empty")}</Text>
-              </Surface>
+              <StateMessage message={t("network.empty")} role="text" />
             )
           }
           renderItem={({ item }) => (
@@ -245,27 +289,6 @@ function ConnectionRow({
   );
 }
 
-function FilterTab({
-  active,
-  onPress,
-  children,
-}: {
-  active: boolean;
-  onPress: () => void;
-  children: ReactNode;
-}): JSX.Element {
-  return (
-    <Button
-      variant={active ? "primary" : "secondary"}
-      size="sm"
-      onPress={onPress}
-      accessibilityState={{ selected: active }}
-    >
-      {children}
-    </Button>
-  );
-}
-
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
@@ -274,20 +297,9 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     paddingHorizontal: nativeTokens.space[4],
-    paddingTop: nativeTokens.space[8],
-  },
-  title: {
-    color: nativeTokens.color.ink,
-    fontSize: nativeTokens.type.scale.display.size,
-    lineHeight: nativeTokens.type.scale.display.line,
-    fontWeight: "700",
-    fontFamily: nativeTokens.type.family.sans,
-    marginBottom: nativeTokens.space[3],
+    paddingTop: nativeTokens.space[3],
   },
   tabs: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: nativeTokens.space[2],
     marginBottom: nativeTokens.space[3],
   },
   listContent: {
@@ -304,6 +316,9 @@ const styles = StyleSheet.create({
     fontSize: nativeTokens.type.scale.body.size,
     lineHeight: nativeTokens.type.scale.body.line,
     fontFamily: nativeTokens.type.family.sans,
+  },
+  inlineError: {
+    marginBottom: nativeTokens.space[3],
   },
   row: {
     flexDirection: "row",

@@ -7,7 +7,6 @@ import {
   HttpStatus,
   Param,
   Post,
-  UsePipes,
 } from "@nestjs/common";
 import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 
@@ -24,11 +23,10 @@ export class RepostsController {
 
   @Post()
   @HttpCode(HttpStatus.NO_CONTENT)
-  @UsePipes(new ZodValidationPipe(CreateRepostBody))
   async create(
     @CurrentUser() user: AuthUser,
     @Param("id") id: string,
-    @Body() body: CreateRepostBody,
+    @Body(new ZodValidationPipe(CreateRepostBody)) body: CreateRepostBody,
   ): Promise<void> {
     await this.reposts.create(user.id, id, body);
   }

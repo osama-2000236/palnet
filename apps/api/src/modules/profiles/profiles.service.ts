@@ -228,12 +228,15 @@ export class ProfilesService {
     const name = body.name.trim();
     const slug = slugifySkill(name);
 
-    // Find-or-create the Skill row by slug.
-    const skill = await this.prisma.skill.upsert({
-      where: { slug },
-      create: { name, slug },
-      update: {}, // keep the canonical name on first write
-    });
+    // Find-or-create by both slug and display name. Seeded skills may include
+    // punctuation in the name while the slug is punctuation-normalized.
+    const skill =
+      (await this.prisma.skill.findFirst({
+        where: { OR: [{ slug }, { name }] },
+      })) ??
+      (await this.prisma.skill.create({
+        data: { name, slug },
+      }));
 
     // Associate to profile (idempotent).
     await this.prisma.profileSkill.upsert({
@@ -303,7 +306,7 @@ function slugifySkill(raw: string): string {
   return raw
     .trim()
     .toLowerCase()
-    .replace(/[\s_]+/g, "-")
+    .replace(/[^a-z0-9\u0600-\u06ff]+/g, "-")
     .replace(/-+/g, "-")
     .replace(/^-|-$/g, "");
 }

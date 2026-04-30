@@ -2,22 +2,23 @@
 // nativeTokens so styling stays in lockstep with the web twin.
 
 import { ChatRoom as ChatRoomSchema, Profile as ProfileSchema, type Profile } from "@baydar/shared";
-import { Avatar, Button, Surface, nativeTokens } from "@baydar/ui-native";
+import { Avatar, Button, SegmentedControl, Surface, nativeTokens } from "@baydar/ui-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
-  Pressable,
-  SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { z } from "zod";
 
+import { StateMessage } from "@/components/StateMessage";
 import { apiFetch } from "@/lib/api";
+import { apiErrorMessage } from "@/lib/api-errors";
 import { successHaptic, tapHaptic } from "@/lib/haptics";
 import { getAccessToken } from "@/lib/session";
 
@@ -38,22 +39,23 @@ export default function ProfileScreen(): JSX.Element {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<ProfileTab>("about");
 
   useEffect(() => {
     if (!handle) return;
     void (async () => {
       setLoading(true);
-      setError(null);
+      setLoadError(null);
       try {
         const token = (await getAccessToken()) ?? undefined;
         const data = await apiFetch(`/profiles/${handle}`, ProfileSchema, {
           token,
         });
         setProfile(data);
-      } catch {
-        setError(t("profile.notFound"));
+      } catch (caught) {
+        setLoadError(apiErrorMessage(t, caught));
       } finally {
         setLoading(false);
       }
@@ -67,6 +69,7 @@ export default function ProfileScreen(): JSX.Element {
     const token = await getAccessToken();
     if (!token) return;
     setBusy(true);
+    setActionError(null);
     try {
       tapHaptic();
       const conn = profile.viewer.connection;
@@ -124,6 +127,8 @@ export default function ProfileScreen(): JSX.Element {
         setProfile({ ...profile, viewer: { isSelf: false, connection: null } });
         successHaptic();
       }
+    } catch (caught) {
+      setActionError(apiErrorMessage(t, caught));
     } finally {
       setBusy(false);
     }
@@ -137,12 +142,10 @@ export default function ProfileScreen(): JSX.Element {
     );
   }
 
-  if (error || !profile) {
+  if (loadError || !profile) {
     return (
       <SafeAreaView style={profileStyles.errorScreen}>
-        <Surface variant="tinted" padding="6">
-          <Text style={profileStyles.errorText}>{error ?? t("profile.notFound")}</Text>
-        </Surface>
+        <StateMessage message={loadError ?? t("profile.notFound")} />
       </SafeAreaView>
     );
   }
@@ -152,27 +155,35 @@ export default function ProfileScreen(): JSX.Element {
   return (
     <SafeAreaView style={profileStyles.screen}>
       <ScrollView contentContainerStyle={profileStyles.scrollBody}>
-        <Surface variant="card" padding="4">
-          <Avatar
-            user={{
-              id: profile.userId,
-              handle: profile.handle,
-              firstName: profile.firstName,
-              lastName: profile.lastName,
-              avatarUrl: profile.avatarUrl,
-            }}
-            size="xl"
-          />
-          <Text style={profileStyles.name}>
-            {profile.firstName} {profile.lastName}
-          </Text>
-          {profile.headline ? <Text style={profileStyles.headline}>{profile.headline}</Text> : null}
-          {profile.location ? <Text style={profileStyles.location}>{profile.location}</Text> : null}
-          <Text style={profileStyles.handle}>/in/{profile.handle}</Text>
+        <Surface variant="hero" padding="0" style={profileStyles.hero}>
+          <View style={profileStyles.coverBand} />
+          <View style={profileStyles.identityBlock}>
+            <Avatar
+              user={{
+                id: profile.userId,
+                handle: profile.handle,
+                firstName: profile.firstName,
+                lastName: profile.lastName,
+                avatarUrl: profile.avatarUrl,
+              }}
+              size="xl"
+            />
+            <Text style={profileStyles.name}>
+              {profile.firstName} {profile.lastName}
+            </Text>
+            {profile.headline ? <Text style={profileStyles.headline}>{profile.headline}</Text> : null}
+            {profile.location ? <Text style={profileStyles.location}>{profile.location}</Text> : null}
+            <Text style={profileStyles.handle}>/in/{profile.handle}</Text>
+          </View>
 
           {profile.viewer?.isSelf ? (
             <View style={profileStyles.editWrap}>
-              <Button variant="secondary" size="md" onPress={() => router.push("/(app)/me/edit")}>
+              <Button
+                variant="secondary"
+                size="md"
+                testID="profile-edit-button"
+                onPress={() => router.push("/(app)/me/edit")}
+              >
                 {t("profile.edit")}
               </Button>
             </View>
@@ -245,8 +256,8 @@ export default function ProfileScreen(): JSX.Element {
                       pathname: "/(app)/messages/[roomId]",
                       params: { roomId: room.id },
                     });
-                  } catch {
-                    // no-op
+                  } catch (caught) {
+                    setActionError(apiErrorMessage(t, caught));
                   } finally {
                     setBusy(false);
                   }
@@ -258,36 +269,20 @@ export default function ProfileScreen(): JSX.Element {
           ) : null}
         </Surface>
 
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={profileStyles.tabsRow}
-        >
-          {TABS.map((tab) => {
-            const active = tab.key === activeTab;
-            return (
-              <Pressable
-                key={tab.key}
-                accessibilityRole="tab"
-                accessibilityState={{ selected: active }}
-                onPress={() => setActiveTab(tab.key)}
-                style={[
-                  profileStyles.tab,
-                  active ? profileStyles.tabActive : profileStyles.tabInactive,
-                ]}
-              >
-                <Text
-                  style={[
-                    profileStyles.tabLabel,
-                    active ? profileStyles.tabLabelActive : profileStyles.tabLabelInactive,
-                  ]}
-                >
-                  {t(tab.i18n)}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </ScrollView>
+        {actionError ? (
+          <StateMessage
+            message={actionError}
+            actionLabel={t("common.retry")}
+            busy={busy}
+            onAction={() => setActionError(null)}
+          />
+        ) : null}
+
+        <SegmentedControl
+          items={TABS.map((tab) => ({ key: tab.key, label: t(tab.i18n) }))}
+          selectedKey={activeTab}
+          onChange={setActiveTab}
+        />
 
         {activeTab === "about" ? (
           profile.about ? (
@@ -363,7 +358,7 @@ export default function ProfileScreen(): JSX.Element {
 
         <View style={profileStyles.footer}>
           <Button variant="ghost" size="md" fullWidth onPress={() => router.back()}>
-            {t("common.cancel")}
+            {t("common.back")}
           </Button>
         </View>
       </ScrollView>
@@ -403,6 +398,21 @@ const profileStyles = StyleSheet.create({
     padding: nativeTokens.space[4],
     gap: nativeTokens.space[4],
   },
+  hero: {
+    overflow: "hidden",
+  },
+  coverBand: {
+    height: nativeTokens.space[16],
+    backgroundColor: nativeTokens.color.brand100,
+    borderBottomWidth: 1,
+    borderBottomColor: nativeTokens.color.lineSoft,
+  },
+  identityBlock: {
+    marginTop: -nativeTokens.space[8],
+    paddingHorizontal: nativeTokens.space[4],
+    paddingBottom: nativeTokens.space[3],
+    alignItems: "flex-start",
+  },
   name: {
     marginTop: nativeTokens.space[3],
     color: nativeTokens.color.ink,
@@ -430,34 +440,17 @@ const profileStyles = StyleSheet.create({
     marginTop: nativeTokens.space[1],
   },
   editWrap: {
-    marginTop: nativeTokens.space[3],
+    paddingHorizontal: nativeTokens.space[4],
+    paddingBottom: nativeTokens.space[3],
     alignSelf: "flex-start",
   },
   actionsRow: {
-    marginTop: nativeTokens.space[3],
+    paddingHorizontal: nativeTokens.space[4],
+    paddingBottom: nativeTokens.space[3],
     flexDirection: "row",
     flexWrap: "wrap",
     gap: nativeTokens.space[2],
   },
-  tabsRow: {
-    flexDirection: "row",
-    gap: nativeTokens.space[2],
-    paddingHorizontal: nativeTokens.space[1],
-  },
-  tab: {
-    paddingVertical: nativeTokens.space[2],
-    paddingHorizontal: nativeTokens.space[3],
-    borderBottomWidth: 2,
-  },
-  tabActive: { borderBottomColor: nativeTokens.color.brand600 },
-  tabInactive: { borderBottomColor: "transparent" },
-  tabLabel: {
-    fontFamily: nativeTokens.type.family.sans,
-    fontSize: nativeTokens.type.scale.body.size,
-    fontWeight: "500",
-  },
-  tabLabelActive: { color: nativeTokens.color.ink },
-  tabLabelInactive: { color: nativeTokens.color.inkMuted },
   bodyText: {
     color: nativeTokens.color.ink,
     fontFamily: nativeTokens.type.family.sans,

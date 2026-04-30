@@ -8,14 +8,17 @@
 // header on /feed, so the two platforms stay visually locked in step.
 
 import { WsNotificationEvent } from "@baydar/shared";
-import { Tabs, router } from "expo-router";
-import { useEffect, useState } from "react";
+import { Tabs, router, usePathname } from "expo-router";
+import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Text, View } from "react-native";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { z } from "zod";
 
-import { Icon, type IconName, nativeTokens } from "@baydar/ui-native";
+import { Button, Icon, Surface, type IconName, nativeTokens } from "@baydar/ui-native";
+import { LoadingIntro } from "@/components/LoadingIntro";
 import { apiFetch } from "@/lib/api";
+import { cachedProfileStatus, fetchProfileStatus } from "@/lib/profile-state";
 import { registerForPushAsync } from "@/lib/push";
 import { getAccessToken, readSession } from "@/lib/session";
 import { subscribeSse } from "@/lib/sse";
@@ -25,25 +28,65 @@ const UnreadCountEnvelope = z.object({ count: z.number().int().nonnegative() });
 
 export default function AppTabsLayout(): JSX.Element {
   const { t } = useTranslation();
+  const pathname = usePathname();
   const insets = useSafeAreaInsets();
   const isConnected = useNetworkStore((state) => state.isConnected);
   const [notificationBadge, setNotificationBadge] = useState<number>(0);
+  const [gateState, setGateState] = useState<"checking" | "ready" | "error">("checking");
 
-  // Gate the whole authenticated area on having a session. If missing, bounce
-  // back to the landing page which itself redirects to /login.
-  useEffect(() => {
-    void (async () => {
-      const session = await readSession();
-      if (!session) {
-        router.replace("/(auth)/login");
+  const verifyGate = useCallback(async (): Promise<void> => {
+    setGateState("checking");
+    const session = await readSession();
+    if (!session) {
+      router.replace("/(auth)/login");
+      return;
+    }
+
+    const isOnboardingRoute = pathname.includes("/onboarding");
+    const cached = await cachedProfileStatus(session.user.id);
+
+    if (isOnboardingRoute) {
+      try {
+        const status = await fetchProfileStatus(session.tokens.accessToken);
+        if (status.status === "complete") {
+          router.replace("/(app)/feed");
+          return;
+        }
+      } catch {
+        if (cached?.status === "complete") {
+          router.replace("/(app)/feed");
+          return;
+        }
+      }
+      setGateState("ready");
+      return;
+    }
+
+    if (cached?.status === "complete") {
+      setGateState("ready");
+      void registerForPushAsync().catch(() => undefined);
+      return;
+    }
+
+    try {
+      const status = await fetchProfileStatus(session.tokens.accessToken);
+      if (status.status === "required") {
+        router.replace("/(app)/onboarding");
         return;
       }
+      setGateState("ready");
       void registerForPushAsync().catch(() => undefined);
-    })();
-  }, []);
+    } catch {
+      setGateState("error");
+    }
+  }, [pathname]);
 
   useEffect(() => {
-    if (!isConnected) return;
+    void verifyGate();
+  }, [verifyGate]);
+
+  useEffect(() => {
+    if (!isConnected || gateState !== "ready" || pathname.includes("/onboarding")) return;
     let unsubscribe: (() => void) | undefined;
     void (async () => {
       let token = await getAccessToken();
@@ -75,7 +118,61 @@ export default function AppTabsLayout(): JSX.Element {
     return (): void => {
       unsubscribe?.();
     };
-  }, [isConnected]);
+  }, [gateState, isConnected, pathname]);
+
+  if (gateState === "checking") {
+    return <LoadingIntro compact testID="app-gate-loading" />;
+  }
+
+  if (gateState === "error") {
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: nativeTokens.color.surfaceMuted }}>
+        <View
+          style={{
+            flex: 1,
+            justifyContent: "center",
+            padding: nativeTokens.space[4],
+          }}
+        >
+          <Surface variant="hero" padding="5" style={{ gap: nativeTokens.space[3] }}>
+            <Text
+              selectable
+              style={{
+                color: nativeTokens.color.ink,
+                fontFamily: nativeTokens.type.family.sans,
+                fontSize: nativeTokens.type.scale.h1.size,
+                fontWeight: "700",
+                lineHeight: nativeTokens.type.scale.h1.line,
+                textAlign: "right",
+              }}
+            >
+              {t("appGate.title")}
+            </Text>
+            <Text
+              selectable
+              style={{
+                color: nativeTokens.color.inkMuted,
+                fontFamily: nativeTokens.type.family.body,
+                fontSize: nativeTokens.type.scale.body.size,
+                lineHeight: nativeTokens.type.scale.body.line,
+                textAlign: "right",
+              }}
+            >
+              {isConnected ? t("appGate.body") : t("appGate.offlineBody")}
+            </Text>
+            <Button
+              fullWidth
+              size="lg"
+              accessibilityLabel={t("common.retry")}
+              onPress={() => void verifyGate()}
+            >
+              {t("common.retry")}
+            </Button>
+          </Surface>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <Tabs
@@ -85,13 +182,18 @@ export default function AppTabsLayout(): JSX.Element {
         tabBarInactiveTintColor: nativeTokens.color.inkMuted,
         tabBarStyle: {
           height: nativeTokens.chrome.tabHeight + Math.max(insets.bottom, nativeTokens.space[2]),
-          paddingTop: nativeTokens.space[1],
+          paddingTop: nativeTokens.space[2],
           paddingBottom: Math.max(insets.bottom, nativeTokens.space[2]),
           backgroundColor: nativeTokens.color.surface,
           borderTopColor: nativeTokens.color.lineSoft,
+          borderTopWidth: 1,
+        },
+        tabBarItemStyle: {
+          paddingTop: nativeTokens.space[1],
         },
         tabBarLabelStyle: {
           fontSize: 11,
+          fontWeight: "700",
           fontFamily: nativeTokens.type.family.sans,
         },
       }}
@@ -160,7 +262,7 @@ export default function AppTabsLayout(): JSX.Element {
       {/* Routes that exist inside (app) but shouldn't have a tab. Setting
          href: null hides them from the tab bar while keeping them pushable. */}
       <Tabs.Screen name="composer" options={{ href: null }} />
-      <Tabs.Screen name="onboarding" options={{ href: null }} />
+      <Tabs.Screen name="onboarding" options={{ href: null, tabBarStyle: { display: "none" } }} />
       <Tabs.Screen name="me/edit" options={{ href: null }} />
       <Tabs.Screen name="in/[handle]" options={{ href: null }} />
       <Tabs.Screen name="jobs/[id]" options={{ href: null }} />
@@ -184,5 +286,18 @@ function TabIcon({
   color: string;
   focused: boolean;
 }): JSX.Element {
-  return <Icon name={name} color={color} size={22} strokeWidth={focused ? 2.2 : 1.8} />;
+  return (
+    <View
+      style={{
+        minWidth: 42,
+        height: 28,
+        borderRadius: nativeTokens.radius.full,
+        alignItems: "center",
+        justifyContent: "center",
+        backgroundColor: focused ? nativeTokens.color.brand50 : "transparent",
+      }}
+    >
+      <Icon name={name} color={color} size={22} strokeWidth={focused ? 2.2 : 1.8} />
+    </View>
+  );
 }

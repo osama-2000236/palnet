@@ -47,7 +47,7 @@ export class AuthService {
 
     const passwordHash = await bcrypt.hash(
       body.password,
-      this.config.getOrThrow<number>("BCRYPT_COST"),
+      this.getNumberConfig("BCRYPT_COST"),
     );
 
     const user = await this.prisma.user.create({
@@ -56,16 +56,6 @@ export class AuthService {
         passwordHash,
         locale: body.locale,
         role: "USER",
-        profile: {
-          create: {
-            handle: await this.generateHandle(body.firstName, body.lastName),
-            firstName: body.firstName,
-            lastName: body.lastName,
-            country: "PS",
-            openToWork: false,
-            hiring: false,
-          },
-        },
       },
     });
 
@@ -171,8 +161,8 @@ export class AuthService {
     role: AuthUser["role"];
     locale: string;
   }): AuthTokens {
-    const accessTtl = this.config.getOrThrow<number>("JWT_ACCESS_TTL");
-    const refreshTtl = this.config.getOrThrow<number>("JWT_REFRESH_TTL");
+    const accessTtl = this.getNumberConfig("JWT_ACCESS_TTL");
+    const refreshTtl = this.getNumberConfig("JWT_REFRESH_TTL");
     const accessSecret = this.config.getOrThrow<string>("JWT_ACCESS_SECRET");
 
     const payload: AccessTokenPayload = {
@@ -198,29 +188,16 @@ export class AuthService {
     };
   }
 
-  private async generateHandle(first: string, last: string): Promise<string> {
-    const base = slugify(`${first}-${last}`).slice(0, 24) || "user";
-    for (let i = 0; i < 8; i++) {
-      const suffix = i === 0 ? "" : `-${crypto.randomInt(100, 9999)}`;
-      const candidate = `${base}${suffix}`.slice(0, 30);
-      const taken = await this.prisma.profile.findUnique({
-        where: { handle: candidate },
-      });
-      if (!taken) return candidate;
+  private getNumberConfig(key: keyof Pick<Env, "BCRYPT_COST" | "JWT_ACCESS_TTL" | "JWT_REFRESH_TTL">): number {
+    const value = this.config.getOrThrow<number | string>(key);
+    const parsed = typeof value === "number" ? value : Number(value);
+    if (!Number.isFinite(parsed)) {
+      throw new Error(`Invalid numeric config value: ${key}`);
     }
-    return `${base}-${crypto.randomBytes(3).toString("hex")}`.slice(0, 30);
+    return parsed;
   }
 }
 
 function hashToken(token: string): string {
   return crypto.createHash("sha256").update(token).digest("hex");
-}
-
-function slugify(input: string): string {
-  return input
-    .toLowerCase()
-    .normalize("NFKD")
-    .replace(/[^\p{Letter}\p{Number}]+/gu, "-")
-    .replace(/^-+|-+$/g, "")
-    .replace(/-+/g, "-");
 }

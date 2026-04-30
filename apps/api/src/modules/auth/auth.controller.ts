@@ -32,9 +32,7 @@ export class AuthController {
   @UsePipes(new ZodValidationPipe(RegisterBody))
   @ApiCreatedResponse({ description: "Account created; returns tokens." })
   async register(@Body() body: RegisterBody): Promise<{ data: AuthSession }> {
-    // deviceId is not in RegisterBody — generate a stable bootstrap id client-side later.
-    // For now, issue session under a synthetic device marker.
-    const data = await this.auth.register(body, "register-bootstrap");
+    const data = await this.auth.register(body, body.deviceId ?? "register-bootstrap");
     return { data };
   }
 
