@@ -3,11 +3,14 @@ import { Pressable, StyleSheet, TextInput, View, type TextInputProps } from "rea
 import { Icon } from "./Icon";
 import { nativeTokens } from "./tokens";
 
-export interface SearchFieldProps
-  extends Omit<TextInputProps, "style" | "placeholderTextColor" | "onChange"> {
+export interface SearchFieldProps extends Omit<
+  TextInputProps,
+  "style" | "placeholderTextColor" | "onChange"
+> {
   onClear?: () => void;
   clearLabel?: string;
   containerTestID?: string;
+  inputDirection?: "rtl" | "ltr" | "auto";
 }
 
 export function SearchField({
@@ -15,6 +18,7 @@ export function SearchField({
   onClear,
   clearLabel = "Clear",
   containerTestID,
+  inputDirection = "rtl",
   testID,
   accessibilityLabel,
   ...rest
@@ -31,7 +35,14 @@ export function SearchField({
         accessibilityLabel={accessibilityLabel ?? rest.placeholder}
         placeholderTextColor={nativeTokens.color.inkMuted}
         returnKeyType={rest.returnKeyType ?? "search"}
-        style={styles.input}
+        style={[
+          styles.input,
+          inputDirection === "ltr"
+            ? styles.inputLtr
+            : inputDirection === "auto"
+              ? styles.inputAuto
+              : null,
+        ]}
       />
       {canClear ? (
         <Pressable
@@ -67,7 +78,15 @@ const styles = StyleSheet.create({
     fontFamily: nativeTokens.type.family.sans,
     fontSize: nativeTokens.type.scale.body.size,
     textAlign: "right",
+    writingDirection: "rtl",
     paddingVertical: nativeTokens.space[2],
+  },
+  inputLtr: {
+    textAlign: "left",
+    writingDirection: "ltr",
+  },
+  inputAuto: {
+    writingDirection: "auto",
   },
   clear: {
     width: nativeTokens.space[6],

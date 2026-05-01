@@ -58,7 +58,6 @@ export function SegmentedControl<Key extends string = string>({
 const styles = StyleSheet.create({
   wrap: {
     flexDirection: "row",
-    flexWrap: "wrap",
     gap: nativeTokens.space[2],
   },
   item: {

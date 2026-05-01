@@ -124,7 +124,10 @@ function shouldUseBrowserStorage(): boolean {
     document?: unknown;
     window?: unknown;
   };
-  return Platform.OS === "web" || (maybeGlobal.window !== undefined && maybeGlobal.document !== undefined);
+  return (
+    Platform.OS === "web" ||
+    (maybeGlobal.window !== undefined && maybeGlobal.document !== undefined)
+  );
 }
 
 function hasSecureStore(): boolean {

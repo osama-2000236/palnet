@@ -152,9 +152,7 @@ describe("ProfilesService (edit)", () => {
 
   describe("onboard", () => {
     it("creates a profile when the registered user has none", async () => {
-      prisma.profile.findUnique
-        .mockResolvedValueOnce(null)
-        .mockResolvedValueOnce(null);
+      prisma.profile.findUnique.mockResolvedValueOnce(null).mockResolvedValueOnce(null);
       prisma.profile.create.mockResolvedValue(
         profileRow({
           handle: "new-user",

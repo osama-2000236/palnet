@@ -65,13 +65,13 @@
       "AUTH_UNAUTHORIZED": "Invalid email or password.",
       "PROFILE_HANDLE_TAKEN": "This handle is taken. Choose another one.",
       "VALIDATION_FAILED": "Please check the fields and try again.",
-        "NOT_FOUND": "We could not find the requested data.",
-        "OFFLINE": "You need an internet connection to complete this step.",
-        "NETWORK_ERROR": "We could not reach Baydar. Check that the API is running and try again.",
-        "INVALID_RESPONSE": "Baydar returned data we could not read. Try again.",
-        "RATE_LIMITED": "Too many attempts. Try again later.",
-        "INTERNAL": "An unexpected error occurred."
-      },
+      "NOT_FOUND": "We could not find the requested data.",
+      "OFFLINE": "You need an internet connection to complete this step.",
+      "NETWORK_ERROR": "We could not reach Baydar. Check that the API is running and try again.",
+      "INVALID_RESPONSE": "Baydar returned data we could not read. Try again.",
+      "RATE_LIMITED": "Too many attempts. Try again later.",
+      "INTERNAL": "An unexpected error occurred."
+    },
     "validation": {
       "required": "This field is required.",
       "email": "Enter a valid email address.",
@@ -182,7 +182,9 @@
     }
   },
   "nav": {
-    "unreadNotifications": "{{count}} unread notifications"
+    "unreadNotifications": "{{count}} unread notifications",
+    "compose": "Post",
+    "profile": "Profile"
   },
   "feed": {
     "title": "Feed",
@@ -191,6 +193,9 @@
     "error": "Could not load the feed right now.",
     "profileCompletion": "Profile completion {{completed}} of {{total}}",
     "editProfile": "Edit profile",
+    "jobsEntryTitle": "Professional opportunities for your path",
+    "jobsEntrySubtitle": "Browse local roles and save the right opportunities before applying.",
+    "jobsEntryAction": "View jobs",
     "loadMore": "Load more",
     "loadingMore": "Loading…"
   },
@@ -208,6 +213,7 @@
     "liked": "Liked ✓",
     "comments": "Comments",
     "reposts": "Reposts",
+    "send": "Send",
     "commentPlaceholder": "Add a comment…",
     "commentSubmit": "Reply",
     "commentError": "Could not post comment.",
@@ -231,6 +237,7 @@
     "notFound": "Profile not found.",
     "edit": "Edit profile",
     "editTitle": "Edit profile",
+    "publicView": "View profile",
     "basics": "Basics",
     "firstName": "First name",
     "lastName": "Last name",
@@ -253,7 +260,19 @@
     "aboutEmpty": "No about section added yet.",
     "expEmpty": "No experiences added.",
     "eduEmpty": "No education added.",
-    "skillsEmpty": "No skills added yet."
+    "skillsEmpty": "No skills added yet.",
+    "validation": {
+      "firstName": "Enter your first name.",
+      "lastName": "Enter your last name.",
+      "headline": "Headline is too long.",
+      "about": "About text is too long.",
+      "location": "Location is too long.",
+      "expTitle": "Enter an experience title.",
+      "company": "Enter a company name.",
+      "date": "Enter the date as YYYY-MM-DD.",
+      "school": "Enter a school name.",
+      "skill": "Enter a valid skill."
+    }
   },
   "network": {
     "title": "My network",

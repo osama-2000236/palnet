@@ -2,16 +2,11 @@
 // like the web `/messages` left rail instead of the raw-RN cards.
 
 import { ChatRoom as ChatRoomSchema, type ChatRoom } from "@baydar/shared";
-import { AppHeader, Button, Icon, nativeTokens } from "@baydar/ui-native";
+import { AppHeader, Button, Icon, RecordCardSkeleton, nativeTokens } from "@baydar/ui-native";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import {
-  ActivityIndicator,
-  FlatList,
-  RefreshControl,
-  View,
-} from "react-native";
+import { FlatList, RefreshControl, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { z } from "zod";
 
@@ -73,21 +68,24 @@ export default function MessagesListScreen(): JSX.Element {
     }
   }, [load]);
 
-  const archiveRoom = useCallback(async (roomId: string): Promise<void> => {
-    const token = await getAccessToken();
-    if (!token) return;
-    tapHaptic();
-    try {
-      await apiCall(`/messaging/rooms/${roomId}/archive`, {
-        method: "POST",
-        token,
-      });
-      setRooms((prev) => prev.filter((room) => room.id !== roomId));
-      successHaptic();
-    } catch (caught) {
-      setError(apiErrorMessage(t, caught));
-    }
-  }, [t]);
+  const archiveRoom = useCallback(
+    async (roomId: string): Promise<void> => {
+      const token = await getAccessToken();
+      if (!token) return;
+      tapHaptic();
+      try {
+        await apiCall(`/messaging/rooms/${roomId}/archive`, {
+          method: "POST",
+          token,
+        });
+        setRooms((prev) => prev.filter((room) => room.id !== roomId));
+        successHaptic();
+      } catch (caught) {
+        setError(apiErrorMessage(t, caught));
+      }
+    },
+    [t],
+  );
 
   useEffect(() => {
     void (async () => {
@@ -107,14 +105,8 @@ export default function MessagesListScreen(): JSX.Element {
   );
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: nativeTokens.color.surfaceMuted }}>
-      <View
-        style={{
-          flex: 1,
-          paddingHorizontal: nativeTokens.space[4],
-          paddingTop: nativeTokens.space[8],
-        }}
-      >
+    <SafeAreaView style={styles.screen}>
+      <View style={styles.content}>
         <AppHeader
           title={t("messaging.title")}
           compact
@@ -133,6 +125,7 @@ export default function MessagesListScreen(): JSX.Element {
         <FlatList
           data={rooms}
           keyExtractor={(r) => r.id}
+          contentContainerStyle={styles.listContent}
           renderItem={({ item }) => (
             <RoomRow
               room={item}
@@ -141,7 +134,7 @@ export default function MessagesListScreen(): JSX.Element {
               onArchive={(roomId) => void archiveRoom(roomId)}
             />
           )}
-          ItemSeparatorComponent={() => <View style={{ height: nativeTokens.space[2] }} />}
+          ItemSeparatorComponent={() => <View style={styles.separator} />}
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
@@ -151,7 +144,13 @@ export default function MessagesListScreen(): JSX.Element {
             />
           }
           ListEmptyComponent={
-            loading ? null : error ? (
+            loading ? (
+              <View style={styles.skeletonStack}>
+                <RecordCardSkeleton />
+                <RecordCardSkeleton />
+                <RecordCardSkeleton />
+              </View>
+            ) : error ? (
               <StateMessage
                 message={error}
                 actionLabel={t("common.retry")}
@@ -163,15 +162,29 @@ export default function MessagesListScreen(): JSX.Element {
               <StateMessage message={t("messaging.emptyList")} role="text" />
             )
           }
-          ListFooterComponent={
-            loading ? (
-              <View style={{ paddingVertical: nativeTokens.space[4] }}>
-                <ActivityIndicator />
-              </View>
-            ) : null
-          }
         />
       </View>
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+    backgroundColor: nativeTokens.color.surfaceMuted,
+  },
+  content: {
+    flex: 1,
+    paddingHorizontal: nativeTokens.space[4],
+    paddingTop: nativeTokens.space[3],
+  },
+  listContent: {
+    paddingBottom: nativeTokens.space[6],
+  },
+  separator: {
+    height: nativeTokens.space[2],
+  },
+  skeletonStack: {
+    gap: nativeTokens.space[2],
+  },
+});

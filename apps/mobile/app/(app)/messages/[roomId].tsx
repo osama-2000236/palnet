@@ -3,9 +3,8 @@
 // same rules web uses (pending- id → sending, failed set → failed,
 // otherLastReadAt → read, else sent).
 //
-// No SSE yet on mobile; 4s polling reconciles state. That means "sending"
-// only flashes briefly; the rest of the time messages arrive as "sent" or
-// "read" straight from the server.
+// Mobile subscribes to the shared SSE stream and reconciles optimistic sends
+// by clientMessageId, matching the web thread behavior.
 
 import {
   ChatRoom as ChatRoomSchema,
@@ -344,7 +343,12 @@ export default function MessageThreadScreen(): JSX.Element {
         behavior={Platform.OS === "ios" ? "padding" : undefined}
         style={{ flex: 1 }}
       >
-        <View style={{ backgroundColor: nativeTokens.color.surface, paddingHorizontal: nativeTokens.space[4] }}>
+        <View
+          style={{
+            backgroundColor: nativeTokens.color.surface,
+            paddingHorizontal: nativeTokens.space[4],
+          }}
+        >
           <AppHeader
             title={title || t("messaging.title")}
             compact
@@ -389,7 +393,7 @@ export default function MessageThreadScreen(): JSX.Element {
           keyExtractor={(m) => m.id}
           contentContainerStyle={{
             padding: nativeTokens.space[3],
-            gap: 6,
+            gap: nativeTokens.space[2],
           }}
           renderItem={({ item, index }) => {
             const prev = messages[index - 1];
@@ -403,7 +407,7 @@ export default function MessageThreadScreen(): JSX.Element {
               : undefined;
             const author = memberById.get(item.authorId);
             return (
-              <View style={{ marginTop: prevSameAuthor ? 0 : 6 }}>
+              <View style={{ marginTop: prevSameAuthor ? 0 : nativeTokens.space[2] }}>
                 <Pressable
                   disabled={!mine || item.id.startsWith("pending-") || Boolean(item.deletedAt)}
                   onLongPress={() => openMessageActions(item)}
@@ -519,7 +523,7 @@ export default function MessageThreadScreen(): JSX.Element {
               color: nativeTokens.color.ink,
               fontFamily: nativeTokens.type.family.sans,
               fontSize: nativeTokens.type.scale.body.size,
-              maxHeight: 120,
+              maxHeight: nativeTokens.space[24] + nativeTokens.space[6],
             }}
           />
           <Button
@@ -552,7 +556,7 @@ export default function MessageThreadScreen(): JSX.Element {
             placeholder={t("messaging.composePlaceholder")}
             placeholderTextColor={nativeTokens.color.inkMuted}
             style={{
-              minHeight: 92,
+              minHeight: nativeTokens.space[24],
               borderRadius: nativeTokens.radius.md,
               borderWidth: 1,
               borderColor: nativeTokens.color.lineHard,
@@ -569,7 +573,7 @@ export default function MessageThreadScreen(): JSX.Element {
             onPress={() => void saveEdit()}
             accessibilityRole="button"
             style={{
-              minHeight: 44,
+              minHeight: nativeTokens.chrome.minHit,
               borderRadius: nativeTokens.radius.md,
               backgroundColor: nativeTokens.color.brand600,
               alignItems: "center",
@@ -592,7 +596,7 @@ export default function MessageThreadScreen(): JSX.Element {
             onPress={() => void deleteSelected()}
             accessibilityRole="button"
             style={{
-              minHeight: 44,
+              minHeight: nativeTokens.chrome.minHit,
               borderRadius: nativeTokens.radius.md,
               borderWidth: 1,
               borderColor: nativeTokens.color.danger,

@@ -6,13 +6,7 @@ import { Avatar, Button, SegmentedControl, Surface, nativeTokens } from "@baydar
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import {
-  ActivityIndicator,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { z } from "zod";
 
@@ -136,8 +130,8 @@ export default function ProfileScreen(): JSX.Element {
 
   if (loading) {
     return (
-      <SafeAreaView style={profileStyles.center}>
-        <ActivityIndicator />
+      <SafeAreaView style={profileStyles.errorScreen}>
+        <StateMessage message={t("common.loading")} role="text" />
       </SafeAreaView>
     );
   }
@@ -171,8 +165,12 @@ export default function ProfileScreen(): JSX.Element {
             <Text style={profileStyles.name}>
               {profile.firstName} {profile.lastName}
             </Text>
-            {profile.headline ? <Text style={profileStyles.headline}>{profile.headline}</Text> : null}
-            {profile.location ? <Text style={profileStyles.location}>{profile.location}</Text> : null}
+            {profile.headline ? (
+              <Text style={profileStyles.headline}>{profile.headline}</Text>
+            ) : null}
+            {profile.location ? (
+              <Text style={profileStyles.location}>{profile.location}</Text>
+            ) : null}
             <Text style={profileStyles.handle}>/in/{profile.handle}</Text>
           </View>
 
@@ -425,13 +423,13 @@ const profileStyles = StyleSheet.create({
     color: nativeTokens.color.inkMuted,
     fontFamily: nativeTokens.type.family.sans,
     fontSize: nativeTokens.type.scale.body.size,
-    marginTop: 2,
+    marginTop: nativeTokens.space[1],
   },
   location: {
     color: nativeTokens.color.inkMuted,
     fontFamily: nativeTokens.type.family.sans,
     fontSize: nativeTokens.type.scale.small.size,
-    marginTop: 2,
+    marginTop: nativeTokens.space[1],
   },
   handle: {
     color: nativeTokens.color.inkMuted,

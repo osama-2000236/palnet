@@ -7,16 +7,10 @@ import { Image } from "expo-image";
 import { router, useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import {
-  ActivityIndicator,
-  Pressable,
-  ScrollView,
-  Text,
-  TextInput,
-  View,
-} from "react-native";
+import { ScrollView, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { StateMessage } from "@/components/StateMessage";
 import { apiCall, apiFetch } from "@/lib/api";
 import { apiErrorMessage } from "@/lib/api-errors";
 import { track } from "@/lib/analytics";
@@ -97,7 +91,7 @@ export default function JobDetailScreen(): JSX.Element {
     return (
       <SafeAreaView style={styles.screen}>
         <View style={{ padding: nativeTokens.space[4] }}>
-          <ActivityIndicator />
+          <StateMessage message={t("common.loading")} role="text" />
         </View>
       </SafeAreaView>
     );
@@ -107,23 +101,11 @@ export default function JobDetailScreen(): JSX.Element {
     return (
       <SafeAreaView style={styles.screen}>
         <View style={{ padding: nativeTokens.space[4] }}>
-          <Surface variant="tinted" padding="6">
-            <Text style={styles.muted}>{error ?? t("jobs.notFound")}</Text>
-            <Pressable
-              onPress={() => router.back()}
-              style={{ marginTop: nativeTokens.space[2] }}
-              accessibilityRole="button"
-            >
-              <Text
-                style={{
-                  color: nativeTokens.color.brand700,
-                  fontFamily: nativeTokens.type.family.sans,
-                }}
-              >
-                ← {t("jobs.title")}
-              </Text>
-            </Pressable>
-          </Surface>
+          <StateMessage
+            message={error ?? t("jobs.notFound")}
+            actionLabel={t("common.back")}
+            onAction={() => router.back()}
+          />
         </View>
       </SafeAreaView>
     );
@@ -193,9 +175,7 @@ export default function JobDetailScreen(): JSX.Element {
           <Surface variant="card" padding="6">
             <View style={{ gap: nativeTokens.space[3] }}>
               <View style={{ gap: nativeTokens.space[1] }}>
-                <Text style={styles.section}>
-                  {t("jobs.applyTitle", { title: job.title })}
-                </Text>
+                <Text style={styles.section}>{t("jobs.applyTitle", { title: job.title })}</Text>
                 <Text style={styles.muted}>
                   {t("jobs.applySubtitle", { company: job.company.name })}
                 </Text>

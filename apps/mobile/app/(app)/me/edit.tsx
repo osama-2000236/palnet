@@ -13,7 +13,6 @@ import { router } from "expo-router";
 import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import {
-  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -59,7 +58,7 @@ export default function EditProfileScreen(): JSX.Element {
     return (
       <SafeAreaView style={styles.centerScreen}>
         {loading ? (
-          <ActivityIndicator />
+          <StateMessage message={t("common.loading")} role="text" />
         ) : error ? (
           <View style={styles.errorWrap}>
             <StateMessage
@@ -130,21 +129,43 @@ function Input({
   onChangeText,
   placeholder,
   multiline,
+  error,
+  inputDirection = "rtl",
 }: {
   value: string;
   onChangeText: (v: string) => void;
   placeholder?: string;
   multiline?: boolean;
+  error?: string | null;
+  inputDirection?: "rtl" | "ltr" | "auto";
 }): JSX.Element {
   return (
-    <TextInput
-      value={value}
-      onChangeText={onChangeText}
-      placeholder={placeholder}
-      placeholderTextColor={nativeTokens.color.inkMuted}
-      multiline={multiline}
-      style={[styles.input, multiline ? styles.multilineInput : null]}
-    />
+    <View style={styles.inputWrap}>
+      <TextInput
+        value={value}
+        onChangeText={onChangeText}
+        placeholder={placeholder}
+        placeholderTextColor={nativeTokens.color.inkMuted}
+        multiline={multiline}
+        accessibilityLabel={placeholder}
+        accessibilityHint={error ?? undefined}
+        style={[
+          styles.input,
+          multiline ? styles.multilineInput : null,
+          inputDirection === "ltr"
+            ? styles.inputLtr
+            : inputDirection === "auto"
+              ? styles.inputAuto
+              : null,
+          error ? styles.inputError : null,
+        ]}
+      />
+      {error ? (
+        <Text selectable accessibilityRole="alert" style={styles.fieldError}>
+          {error}
+        </Text>
+      ) : null}
+    </View>
   );
 }
 
@@ -165,6 +186,7 @@ function BasicsCard({
   const [location, setLocation] = useState(profile.location ?? "");
   const [busy, setBusy] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string | null>>({});
 
   async function pickAvatar(): Promise<void> {
     const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -213,7 +235,17 @@ function BasicsCard({
       about: about || null,
       location: location || null,
     });
-    if (!parsed.success) return;
+    if (!parsed.success) {
+      const errors = parsed.error.flatten().fieldErrors;
+      setFieldErrors({
+        firstName: errors.firstName?.length ? t("profile.validation.firstName") : null,
+        lastName: errors.lastName?.length ? t("profile.validation.lastName") : null,
+        headline: errors.headline?.length ? t("profile.validation.headline") : null,
+        about: errors.about?.length ? t("profile.validation.about") : null,
+        location: errors.location?.length ? t("profile.validation.location") : null,
+      });
+      return;
+    }
     const token = await getAccessToken();
     if (!token) return;
     setBusy(true);
@@ -225,6 +257,7 @@ function BasicsCard({
         token,
       });
       onChanged(next);
+      setFieldErrors({});
     } catch (caught) {
       onError(apiErrorMessage(t, caught));
     } finally {
@@ -255,11 +288,38 @@ function BasicsCard({
           {uploading ? t("profile.uploading") : t("profile.changeAvatar")}
         </Button>
       </View>
-      <Input value={firstName} onChangeText={setFirstName} placeholder={t("profile.firstName")} />
-      <Input value={lastName} onChangeText={setLastName} placeholder={t("profile.lastName")} />
-      <Input value={headline} onChangeText={setHeadline} placeholder={t("profile.headline")} />
-      <Input value={about} onChangeText={setAbout} placeholder={t("profile.about")} multiline />
-      <Input value={location} onChangeText={setLocation} placeholder={t("profile.location")} />
+      <Input
+        value={firstName}
+        onChangeText={setFirstName}
+        placeholder={t("profile.firstName")}
+        error={fieldErrors.firstName}
+      />
+      <Input
+        value={lastName}
+        onChangeText={setLastName}
+        placeholder={t("profile.lastName")}
+        error={fieldErrors.lastName}
+      />
+      <Input
+        value={headline}
+        onChangeText={setHeadline}
+        placeholder={t("profile.headline")}
+        error={fieldErrors.headline}
+        inputDirection="auto"
+      />
+      <Input
+        value={about}
+        onChangeText={setAbout}
+        placeholder={t("profile.about")}
+        multiline
+        error={fieldErrors.about}
+      />
+      <Input
+        value={location}
+        onChangeText={setLocation}
+        placeholder={t("profile.location")}
+        error={fieldErrors.location}
+      />
       <Button
         onPress={save}
         disabled={busy}
@@ -289,6 +349,7 @@ function ExperiencesCard({
   const [description, setDescription] = useState("");
   const [startDate, setStartDate] = useState(new Date().toISOString().slice(0, 10));
   const [busy, setBusy] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string | null>>({});
 
   async function add(): Promise<void> {
     const parsed = ExperienceBody.safeParse({
@@ -297,11 +358,19 @@ function ExperiencesCard({
       companyId: null,
       location: null,
       locationMode: JobLocationMode.ONSITE,
-      startDate: new Date(startDate).toISOString(),
+      startDate: parseDateInput(startDate) ?? "",
       endDate: null,
       description: description || null,
     });
-    if (!parsed.success) return;
+    if (!parsed.success) {
+      const errors = parsed.error.flatten().fieldErrors;
+      setFieldErrors({
+        title: errors.title?.length ? t("profile.validation.expTitle") : null,
+        companyName: errors.companyName?.length ? t("profile.validation.company") : null,
+        startDate: errors.startDate?.length ? t("profile.validation.date") : null,
+      });
+      return;
+    }
     const token = await getAccessToken();
     if (!token) return;
     setBusy(true);
@@ -317,6 +386,7 @@ function ExperiencesCard({
       setTitle("");
       setCompanyName("");
       setDescription("");
+      setFieldErrors({});
     } catch (caught) {
       onError(apiErrorMessage(t, caught));
     } finally {
@@ -373,16 +443,26 @@ function ExperiencesCard({
       {show ? (
         <Surface variant="tinted" padding="3">
           <View style={styles.cardBody}>
-            <Input value={title} onChangeText={setTitle} placeholder={t("profile.expTitle")} />
+            <Input
+              value={title}
+              onChangeText={setTitle}
+              placeholder={t("profile.expTitle")}
+              error={fieldErrors.title}
+              inputDirection="auto"
+            />
             <Input
               value={companyName}
               onChangeText={setCompanyName}
               placeholder={t("profile.company")}
+              error={fieldErrors.companyName}
+              inputDirection="auto"
             />
             <Input
               value={startDate}
               onChangeText={setStartDate}
               placeholder={t("profile.dateHint")}
+              error={fieldErrors.startDate}
+              inputDirection="ltr"
             />
             <Input
               value={description}
@@ -432,6 +512,7 @@ function EducationsCard({
   const [degree, setDegree] = useState("");
   const [fieldOfStudy, setFieldOfStudy] = useState("");
   const [busy, setBusy] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string | null>>({});
 
   async function add(): Promise<void> {
     const parsed = EducationBody.safeParse({
@@ -442,7 +523,13 @@ function EducationsCard({
       endDate: null,
       description: null,
     });
-    if (!parsed.success) return;
+    if (!parsed.success) {
+      const errors = parsed.error.flatten().fieldErrors;
+      setFieldErrors({
+        school: errors.school?.length ? t("profile.validation.school") : null,
+      });
+      return;
+    }
     const token = await getAccessToken();
     if (!token) return;
     setBusy(true);
@@ -458,6 +545,7 @@ function EducationsCard({
       setSchool("");
       setDegree("");
       setFieldOfStudy("");
+      setFieldErrors({});
     } catch (caught) {
       onError(apiErrorMessage(t, caught));
     } finally {
@@ -513,12 +601,24 @@ function EducationsCard({
       {show ? (
         <Surface variant="tinted" padding="3">
           <View style={styles.cardBody}>
-            <Input value={school} onChangeText={setSchool} placeholder={t("profile.school")} />
-            <Input value={degree} onChangeText={setDegree} placeholder={t("profile.degree")} />
+            <Input
+              value={school}
+              onChangeText={setSchool}
+              placeholder={t("profile.school")}
+              error={fieldErrors.school}
+              inputDirection="auto"
+            />
+            <Input
+              value={degree}
+              onChangeText={setDegree}
+              placeholder={t("profile.degree")}
+              inputDirection="auto"
+            />
             <Input
               value={fieldOfStudy}
               onChangeText={setFieldOfStudy}
               placeholder={t("profile.fieldOfStudy")}
+              inputDirection="auto"
             />
             <View style={styles.buttonRow}>
               <Button variant="ghost" size="sm" onPress={() => setShow(false)}>
@@ -559,10 +659,14 @@ function SkillsCard({
   const { t } = useTranslation();
   const [name, setName] = useState("");
   const [busy, setBusy] = useState(false);
+  const [fieldError, setFieldError] = useState<string | null>(null);
 
   async function add(): Promise<void> {
     const parsed = AddSkillBody.safeParse({ name });
-    if (!parsed.success) return;
+    if (!parsed.success) {
+      setFieldError(t("profile.validation.skill"));
+      return;
+    }
     const token = await getAccessToken();
     if (!token) return;
     setBusy(true);
@@ -575,6 +679,7 @@ function SkillsCard({
       });
       onChanged(next);
       setName("");
+      setFieldError(null);
     } catch (caught) {
       onError(apiErrorMessage(t, caught));
     } finally {
@@ -625,14 +730,27 @@ function SkillsCard({
           placeholder={t("profile.addSkillPlaceholder")}
           placeholderTextColor={nativeTokens.color.inkMuted}
           maxLength={60}
-          style={[styles.input, styles.skillInput]}
+          accessibilityLabel={t("profile.addSkillPlaceholder")}
+          accessibilityHint={fieldError ?? undefined}
+          style={[styles.input, styles.skillInput, fieldError ? styles.inputError : null]}
         />
         <Button onPress={add} disabled={busy || name.trim().length === 0} loading={busy}>
           {t("profile.add")}
         </Button>
       </View>
+      {fieldError ? (
+        <Text selectable accessibilityRole="alert" style={styles.fieldError}>
+          {fieldError}
+        </Text>
+      ) : null}
     </Card>
   );
+}
+
+function parseDateInput(value: string): string | null {
+  const timestamp = Date.parse(value);
+  if (Number.isNaN(timestamp)) return null;
+  return new Date(timestamp).toISOString();
 }
 
 const styles = StyleSheet.create({
@@ -685,6 +803,28 @@ const styles = StyleSheet.create({
     color: nativeTokens.color.ink,
     fontSize: nativeTokens.type.scale.body.size,
     fontFamily: nativeTokens.type.family.sans,
+    textAlign: "right",
+    writingDirection: "rtl",
+  },
+  inputWrap: {
+    gap: nativeTokens.space[1],
+  },
+  inputLtr: {
+    textAlign: "left",
+    writingDirection: "ltr",
+  },
+  inputAuto: {
+    writingDirection: "auto",
+  },
+  inputError: {
+    borderColor: nativeTokens.color.danger,
+  },
+  fieldError: {
+    color: nativeTokens.color.danger,
+    fontFamily: nativeTokens.type.family.sans,
+    fontSize: nativeTokens.type.scale.caption.size,
+    lineHeight: nativeTokens.type.scale.caption.line,
+    textAlign: "right",
   },
   multilineInput: {
     minHeight: nativeTokens.space[20],

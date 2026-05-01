@@ -78,9 +78,7 @@ describe("MessagesListScreen", () => {
     const screen = render(<MessagesListScreen />);
 
     await waitFor(() => {
-      expect(
-        screen.getByText("الطلبات كثيرة الآن. انتظر قليلًا ثم حاول مرة أخرى."),
-      ).toBeTruthy();
+      expect(screen.getByText("الطلبات كثيرة الآن. انتظر قليلًا ثم حاول مرة أخرى.")).toBeTruthy();
     });
 
     expect(mockApiFetchPage).toHaveBeenCalledTimes(1);

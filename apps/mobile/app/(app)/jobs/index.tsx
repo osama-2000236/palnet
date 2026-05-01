@@ -1,28 +1,19 @@
-// Mobile jobs list — the tab-bar entry for the briefcase icon.
-//
-// Rows mirror the web layout but drop the skills chips for space. Tap opens
-// the detail at /(app)/jobs/[id]. Applied badge shown per-row.
-//
-// Paginated via the same cursorPage envelope the web list uses — FlatList
-// onEndReached triggers the next page when within 40% of the bottom.
-//
-// Filtering: a header "Filter" button opens a Sheet with controlled inputs
-// for q / city (text) and type / locationMode (chips). Changes refetch
-// with a 250 ms debounce, matching the web behavior.
+// Mobile jobs list. Jobs are reached from feed/search content rather than the
+// bottom shell, so this route keeps a compact header and dense record rhythm.
 
 import { cursorPage, Job as JobSchema, JobLocationMode, JobType, type Job } from "@baydar/shared";
-import { AppHeader, Button, Icon, SearchField, Sheet, Surface, nativeTokens } from "@baydar/ui-native";
+import {
+  AppHeader,
+  Button,
+  Icon,
+  RecordCardSkeleton,
+  SearchField,
+  Sheet,
+  nativeTokens,
+} from "@baydar/ui-native";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import {
-  ActivityIndicator,
-  FlatList,
-  Pressable,
-  RefreshControl,
-  Text,
-  TextInput,
-  View,
-} from "react-native";
+import { FlatList, Pressable, RefreshControl, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { StateMessage } from "@/components/StateMessage";
@@ -88,23 +79,26 @@ export default function JobsScreen(): JSX.Element {
   const [sheetOpen, setSheetOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const load = useCallback(async (after: string | null, f: Filters): Promise<void> => {
-    const token = await getAccessToken();
-    if (!token) return;
-    setLoading(true);
-    if (!after) setError(null);
-    try {
-      const page = await apiFetchPage(`/jobs?${buildQs(f, after)}`, JobsPage, { token });
-      setItems((prev) => (after ? [...prev, ...page.data] : page.data));
-      setCursor(page.meta.nextCursor);
-      setHasMore(page.meta.hasMore);
-    } catch (caught) {
-      if (!after) setError(apiErrorMessage(t, caught));
-    } finally {
-      setLoading(false);
-      setFirstLoad(false);
-    }
-  }, [t]);
+  const load = useCallback(
+    async (after: string | null, f: Filters): Promise<void> => {
+      const token = await getAccessToken();
+      if (!token) return;
+      setLoading(true);
+      if (!after) setError(null);
+      try {
+        const page = await apiFetchPage(`/jobs?${buildQs(f, after)}`, JobsPage, { token });
+        setItems((prev) => (after ? [...prev, ...page.data] : page.data));
+        setCursor(page.meta.nextCursor);
+        setHasMore(page.meta.hasMore);
+      } catch (caught) {
+        if (!after) setError(apiErrorMessage(t, caught));
+      } finally {
+        setLoading(false);
+        setFirstLoad(false);
+      }
+    },
+    [t],
+  );
 
   // Debounced refetch when filters change. Reset cursor on every filter edit.
   useEffect(() => {
@@ -162,64 +156,65 @@ export default function JobsScreen(): JSX.Element {
               placeholder={t("jobs.searchPlaceholder")}
               accessibilityLabel={t("jobs.search")}
               testID="jobs-search-input"
+              inputDirection="auto"
             />
           }
         />
 
         {firstLoad ? (
           <View style={{ gap: nativeTokens.space[3] }}>
-            <JobRowSkeleton />
-            <JobRowSkeleton />
-            <JobRowSkeleton />
+            <RecordCardSkeleton />
+            <RecordCardSkeleton />
+            <RecordCardSkeleton />
           </View>
         ) : (
           <>
-          {error && items.length > 0 ? (
-            <StateMessage
-              message={error}
-              actionLabel={t("common.retry")}
-              busy={loading}
-              onAction={() => void load(null, filters)}
-              style={{ marginBottom: nativeTokens.space[3] }}
-            />
-          ) : null}
-          <FlatList
-            data={items}
-            keyExtractor={(j) => j.id}
-            renderItem={({ item }) => <JobRow job={item} />}
-            ItemSeparatorComponent={() => <View style={{ height: nativeTokens.space[3] }} />}
-            onEndReachedThreshold={0.4}
-            onEndReached={() => {
-              if (!loading && hasMore && cursor) void load(cursor, filters);
-            }}
-            refreshControl={
-              <RefreshControl
-                refreshing={refreshing}
-                onRefresh={() => void refreshJobs()}
-                tintColor={nativeTokens.color.brand600}
-                colors={[nativeTokens.color.brand600]}
+            {error && items.length > 0 ? (
+              <StateMessage
+                message={error}
+                actionLabel={t("common.retry")}
+                busy={loading}
+                onAction={() => void load(null, filters)}
+                style={{ marginBottom: nativeTokens.space[3] }}
               />
-            }
-            ListEmptyComponent={
-              loading ? null : error ? (
-                <StateMessage
-                  message={error}
-                  actionLabel={t("common.retry")}
-                  busy={loading}
-                  onAction={() => void load(null, filters)}
+            ) : null}
+            <FlatList
+              data={items}
+              keyExtractor={(j) => j.id}
+              renderItem={({ item }) => <JobRow job={item} />}
+              ItemSeparatorComponent={() => <View style={{ height: nativeTokens.space[3] }} />}
+              onEndReachedThreshold={0.4}
+              onEndReached={() => {
+                if (!loading && hasMore && cursor) void load(cursor, filters);
+              }}
+              refreshControl={
+                <RefreshControl
+                  refreshing={refreshing}
+                  onRefresh={() => void refreshJobs()}
+                  tintColor={nativeTokens.color.brand600}
+                  colors={[nativeTokens.color.brand600]}
                 />
-              ) : (
-                <StateMessage message={t("jobs.emptyTitle")} role="text" />
-              )
-            }
-            ListFooterComponent={
-              loading && !firstLoad ? (
-                <View style={{ paddingVertical: nativeTokens.space[4] }}>
-                  <ActivityIndicator />
-                </View>
-              ) : null
-            }
-          />
+              }
+              ListEmptyComponent={
+                loading ? null : error ? (
+                  <StateMessage
+                    message={error}
+                    actionLabel={t("common.retry")}
+                    busy={loading}
+                    onAction={() => void load(null, filters)}
+                  />
+                ) : (
+                  <StateMessage message={t("jobs.emptyTitle")} role="text" />
+                )
+              }
+              ListFooterComponent={
+                loading && !firstLoad ? (
+                  <View style={{ paddingVertical: nativeTokens.space[3] }}>
+                    <RecordCardSkeleton />
+                  </View>
+                ) : null
+              }
+            />
           </>
         )}
       </View>
@@ -400,43 +395,4 @@ function inputStyle(): {
     fontSize: nativeTokens.type.scale.body.size,
     backgroundColor: nativeTokens.color.surface,
   };
-}
-
-// ────────────────────────────────────────────────────────────────────────
-// Row + skeleton. Unchanged from the pre-filter iteration.
-// ────────────────────────────────────────────────────────────────────────
-
-function JobRowSkeleton(): JSX.Element {
-  return (
-    <Surface variant="card" padding="4">
-      <View style={{ flexDirection: "row", gap: nativeTokens.space[3] }}>
-        <View
-          style={{
-            width: 48,
-            height: 48,
-            borderRadius: nativeTokens.radius.md,
-            backgroundColor: nativeTokens.color.surfaceSunken,
-          }}
-        />
-        <View style={{ flex: 1, gap: nativeTokens.space[2] }}>
-          <View
-            style={{
-              height: 14,
-              width: "66%",
-              borderRadius: nativeTokens.radius.sm,
-              backgroundColor: nativeTokens.color.surfaceSunken,
-            }}
-          />
-          <View
-            style={{
-              height: 12,
-              width: "40%",
-              borderRadius: nativeTokens.radius.sm,
-              backgroundColor: nativeTokens.color.surfaceSunken,
-            }}
-          />
-        </View>
-      </View>
-    </Surface>
-  );
 }

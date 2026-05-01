@@ -19,6 +19,15 @@ import { CurrentUser, type AuthUser } from "./decorators/current-user.decorator"
 import { Public } from "./decorators/public.decorator";
 import { JwtAuthGuard } from "./guards/jwt-auth.guard";
 
+const authRouteLimit =
+  process.env.NODE_ENV === "production"
+    ? 10
+    : Number.parseInt(process.env.BAYDAR_DEV_AUTH_RATE_LIMIT ?? "100", 10);
+const authRefreshLimit =
+  process.env.NODE_ENV === "production"
+    ? 30
+    : Number.parseInt(process.env.BAYDAR_DEV_AUTH_RATE_LIMIT ?? "300", 10);
+
 @ApiTags("auth")
 @Controller("auth")
 @UseGuards(JwtAuthGuard)
@@ -28,7 +37,7 @@ export class AuthController {
   @Public()
   @Post("register")
   @HttpCode(HttpStatus.CREATED)
-  @Throttle({ auth: { limit: 10, ttl: 60_000 } })
+  @Throttle({ auth: { limit: authRouteLimit, ttl: 60_000 } })
   @UsePipes(new ZodValidationPipe(RegisterBody))
   @ApiCreatedResponse({ description: "Account created; returns tokens." })
   async register(@Body() body: RegisterBody): Promise<{ data: AuthSession }> {
@@ -39,7 +48,7 @@ export class AuthController {
   @Public()
   @Post("login")
   @HttpCode(HttpStatus.OK)
-  @Throttle({ auth: { limit: 10, ttl: 60_000 } })
+  @Throttle({ auth: { limit: authRouteLimit, ttl: 60_000 } })
   @UsePipes(new ZodValidationPipe(LoginBody))
   @ApiOkResponse({ description: "Authenticated; returns tokens." })
   async login(@Body() body: LoginBody): Promise<{ data: AuthSession }> {
@@ -50,7 +59,7 @@ export class AuthController {
   @Public()
   @Post("refresh")
   @HttpCode(HttpStatus.OK)
-  @Throttle({ auth: { limit: 30, ttl: 60_000 } })
+  @Throttle({ auth: { limit: authRefreshLimit, ttl: 60_000 } })
   @UsePipes(new ZodValidationPipe(RefreshBody))
   @ApiOkResponse({ description: "Rotated refresh + new access token." })
   async refresh(@Body() body: RefreshBody): Promise<{ data: AuthSession }> {

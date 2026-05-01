@@ -235,9 +235,7 @@ export default function ComposerScreen(): JSX.Element {
           disabled={body.trim().length === 0}
           loading={busy}
           accessibilityLabel={t("composer.submit")}
-          leading={
-            <Icon name="send" size={18} color={nativeTokens.color.inkInverse} />
-          }
+          leading={<Icon name="send" size={18} color={nativeTokens.color.inkInverse} />}
         >
           {t("composer.submit")}
         </Button>

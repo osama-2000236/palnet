@@ -3,18 +3,18 @@ import {
   SearchPersonHit as SearchPersonHitSchema,
   type SearchPersonHit,
 } from "@baydar/shared";
-import { AppHeader, Avatar, Button, Icon, SearchField, Surface, nativeTokens } from "@baydar/ui-native";
+import {
+  AppHeader,
+  Avatar,
+  RecordCard,
+  RecordCardSkeleton,
+  SearchField,
+  nativeTokens,
+} from "@baydar/ui-native";
 import { router } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import {
-  ActivityIndicator,
-  FlatList,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { FlatList, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { StateMessage } from "@/components/StateMessage";
@@ -34,32 +34,35 @@ export default function SearchScreen(): JSX.Element {
   const [touched, setTouched] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const run = useCallback(async (term: string, after: string | null): Promise<void> => {
-    const trimmed = term.trim();
-    if (!trimmed) {
-      setHits([]);
-      setHasMore(false);
-      setCursor(null);
-      setLoading(false);
-      setError(null);
-      return;
-    }
-    setLoading(true);
-    if (!after) setError(null);
-    try {
-      const token = (await getAccessToken()) ?? undefined;
-      const qs = new URLSearchParams({ q: trimmed, limit: "20" });
-      if (after) qs.set("after", after);
-      const page = await apiFetchPage(`/search/people?${qs.toString()}`, PeoplePage, { token });
-      setHits((prev) => (after ? [...prev, ...page.data] : page.data));
-      setCursor(page.meta.nextCursor);
-      setHasMore(page.meta.hasMore);
-    } catch (caught) {
-      if (!after) setError(apiErrorMessage(t, caught));
-    } finally {
-      setLoading(false);
-    }
-  }, [t]);
+  const run = useCallback(
+    async (term: string, after: string | null): Promise<void> => {
+      const trimmed = term.trim();
+      if (!trimmed) {
+        setHits([]);
+        setHasMore(false);
+        setCursor(null);
+        setLoading(false);
+        setError(null);
+        return;
+      }
+      setLoading(true);
+      if (!after) setError(null);
+      try {
+        const token = (await getAccessToken()) ?? undefined;
+        const qs = new URLSearchParams({ q: trimmed, limit: "20" });
+        if (after) qs.set("after", after);
+        const page = await apiFetchPage(`/search/people?${qs.toString()}`, PeoplePage, { token });
+        setHits((prev) => (after ? [...prev, ...page.data] : page.data));
+        setCursor(page.meta.nextCursor);
+        setHasMore(page.meta.hasMore);
+      } catch (caught) {
+        if (!after) setError(apiErrorMessage(t, caught));
+      } finally {
+        setLoading(false);
+      }
+    },
+    [t],
+  );
 
   useEffect(() => {
     const trimmed = q.trim();
@@ -92,6 +95,7 @@ export default function SearchScreen(): JSX.Element {
               placeholder={t("search.placeholder")}
               accessibilityLabel={t("search.placeholder")}
               testID="search-input"
+              inputDirection="auto"
               onSubmitEditing={() => {
                 setTouched(true);
                 void run(q, null);
@@ -99,20 +103,6 @@ export default function SearchScreen(): JSX.Element {
             />
           }
         />
-
-        <Button
-          variant="ghost"
-          size="sm"
-          leading={
-            <Icon name="search" size={nativeTokens.space[4]} color={nativeTokens.color.inkMuted} />
-          }
-          onPress={() => undefined}
-          accessibilityLabel={t("search.filters")}
-          style={styles.filterButton}
-          textStyle={styles.filterButtonText}
-        >
-          {t("search.filters")}
-        </Button>
 
         <FlatList
           data={hits}
@@ -125,7 +115,13 @@ export default function SearchScreen(): JSX.Element {
             if (!loading && hasMore && cursor) void run(q, cursor);
           }}
           ListEmptyComponent={
-            loading ? null : error ? (
+            loading ? (
+              <View style={styles.skeletonStack}>
+                <RecordCardSkeleton />
+                <RecordCardSkeleton />
+                <RecordCardSkeleton />
+              </View>
+            ) : error ? (
               <StateMessage
                 message={error}
                 actionLabel={t("common.retry")}
@@ -139,13 +135,6 @@ export default function SearchScreen(): JSX.Element {
               />
             )
           }
-          ListFooterComponent={
-            loading ? (
-              <View style={styles.loading}>
-                <ActivityIndicator />
-              </View>
-            ) : null
-          }
         />
       </View>
     </SafeAreaView>
@@ -155,12 +144,10 @@ export default function SearchScreen(): JSX.Element {
 function SearchRow({ item }: { item: SearchPersonHit }): JSX.Element {
   const name = `${item.firstName} ${item.lastName}`.trim();
   return (
-    <Pressable
+    <RecordCard
       onPress={() => router.push(`/(app)/in/${item.handle}`)}
-      accessibilityRole="link"
       accessibilityLabel={name}
-    >
-      <Surface variant="card" padding="4" style={styles.resultRow}>
+      leading={
         <Avatar
           user={{
             id: item.userId,
@@ -171,17 +158,12 @@ function SearchRow({ item }: { item: SearchPersonHit }): JSX.Element {
           }}
           size="md"
         />
-        <View style={styles.resultText}>
-          <Text style={styles.name}>{name}</Text>
-          <Text style={styles.handle}>/in/{item.handle}</Text>
-          {item.headline ? (
-            <Text style={styles.headline} numberOfLines={2}>
-              {item.headline}
-            </Text>
-          ) : null}
-        </View>
-      </Surface>
-    </Pressable>
+      }
+      title={name}
+      subtitle={item.headline}
+      meta={`/in/${item.handle}`}
+      metaDirection="ltr"
+    />
   );
 }
 
@@ -195,53 +177,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: nativeTokens.space[4],
     paddingTop: nativeTokens.space[3],
   },
-  filterButton: {
-    marginBottom: nativeTokens.space[3],
-  },
-  filterButtonText: {
-    color: nativeTokens.color.inkMuted,
-  },
   listContent: {
     paddingBottom: nativeTokens.space[6],
   },
   separator: {
     height: nativeTokens.space[2],
   },
-  loading: {
-    paddingVertical: nativeTokens.space[4],
-  },
-  resultRow: {
-    flexDirection: "row",
-    gap: nativeTokens.space[3],
-    alignItems: "center",
-  },
-  resultText: {
-    flex: 1,
-  },
-  name: {
-    color: nativeTokens.color.ink,
-    fontSize: nativeTokens.type.scale.h3.size,
-    lineHeight: nativeTokens.type.scale.h3.line,
-    fontWeight: "600",
-    fontFamily: nativeTokens.type.family.sans,
-  },
-  handle: {
-    color: nativeTokens.color.inkMuted,
-    fontSize: nativeTokens.type.scale.caption.size,
-    lineHeight: nativeTokens.type.scale.caption.line,
-    fontFamily: nativeTokens.type.family.mono,
-  },
-  headline: {
-    color: nativeTokens.color.inkMuted,
-    fontSize: nativeTokens.type.scale.small.size,
-    lineHeight: nativeTokens.type.scale.small.line,
-    fontFamily: nativeTokens.type.family.sans,
-    marginTop: nativeTokens.space[1],
-  },
-  emptyText: {
-    color: nativeTokens.color.inkMuted,
-    fontSize: nativeTokens.type.scale.body.size,
-    lineHeight: nativeTokens.type.scale.body.line,
-    fontFamily: nativeTokens.type.family.sans,
+  skeletonStack: {
+    gap: nativeTokens.space[2],
   },
 });

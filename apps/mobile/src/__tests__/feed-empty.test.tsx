@@ -23,8 +23,13 @@ jest.mock("react-i18next", () => ({
           values?.total ?? "",
         )}`,
         "feed.editProfile": "تعديل الملف",
+        "feed.jobsEntryTitle": "فرص مهنية تناسب مسارك",
+        "feed.jobsEntrySubtitle": "استعرض وظائف محلية.",
+        "feed.jobsEntryAction": "عرض الوظائف",
         "common.retry": "إعادة المحاولة",
         "composer.placeholder": "شارك فكرة",
+        "search.placeholder": "ابحث عن أشخاص…",
+        "notifications.title": "الإشعارات",
         "nav.unreadNotifications": "إشعارات غير مقروءة",
       };
       return translations[key] ?? key;
@@ -93,6 +98,9 @@ describe("FeedScreen empty state", () => {
     await waitFor(() => {
       expect(screen.getByText("ابدأ بنشر أول منشور لك.")).toBeTruthy();
       expect(screen.getByText("ليان خليل")).toBeTruthy();
+      expect(screen.getByTestId("feed-search-button")).toBeTruthy();
+      expect(screen.getByTestId("feed-notifications-button")).toBeTruthy();
+      expect(screen.getByTestId("jobs-entry-card")).toBeTruthy();
     });
   });
 });

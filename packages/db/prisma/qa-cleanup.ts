@@ -59,8 +59,14 @@ async function main(): Promise<void> {
 }
 
 function parseArgs(args: string[]): Args {
-  const runId = args.find((arg) => arg.startsWith("--run-id="))?.slice("--run-id=".length).trim();
-  const confirm = args.find((arg) => arg.startsWith("--confirm="))?.slice("--confirm=".length).trim();
+  const runId = args
+    .find((arg) => arg.startsWith("--run-id="))
+    ?.slice("--run-id=".length)
+    .trim();
+  const confirm = args
+    .find((arg) => arg.startsWith("--confirm="))
+    ?.slice("--confirm=".length)
+    .trim();
   if (!runId || !/^qa-[a-z0-9-]{4,24}$/.test(runId) || !confirm) {
     throw new Error(
       "Usage: pnpm --filter @baydar/db qa:cleanup -- --run-id=qa-<id> --confirm=qa-<id>",

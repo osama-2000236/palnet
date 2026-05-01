@@ -1,9 +1,9 @@
 import { cursorPage, Notification as NotificationSchema, type Notification } from "@baydar/shared";
-import { AppHeader, nativeTokens } from "@baydar/ui-native";
+import { AppHeader, RecordCardSkeleton, nativeTokens } from "@baydar/ui-native";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, View } from "react-native";
+import { FlatList, RefreshControl, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { StateMessage } from "@/components/StateMessage";
@@ -25,35 +25,38 @@ export default function NotificationsScreen(): JSX.Element {
   const loadPromiseRef = useRef<Promise<void> | null>(null);
   const latestInitialLoadRef = useRef<() => Promise<void>>(async () => undefined);
 
-  const load = useCallback(async (after: string | null): Promise<void> => {
-    if (!after && loadPromiseRef.current) return loadPromiseRef.current;
+  const load = useCallback(
+    async (after: string | null): Promise<void> => {
+      if (!after && loadPromiseRef.current) return loadPromiseRef.current;
 
-    const run = (async () => {
-      const token = await getAccessToken();
-      if (!token) return;
-      setLoading(true);
-      if (!after) setError(null);
-      try {
-        const qs = new URLSearchParams({ limit: "30" });
-        if (after) qs.set("after", after);
-        const page = await apiFetchPage(`/notifications?${qs.toString()}`, NotificationsPage, {
-          token,
-        });
-        setItems((prev) => (after ? [...prev, ...page.data] : page.data));
-        setCursor(page.meta.nextCursor);
-        setHasMore(page.meta.hasMore);
-      } catch (caught) {
-        if (!after) setError(apiErrorMessage(t, caught));
-      } finally {
-        setLoading(false);
-      }
-    })().finally(() => {
-      if (!after) loadPromiseRef.current = null;
-    });
+      const run = (async () => {
+        const token = await getAccessToken();
+        if (!token) return;
+        setLoading(true);
+        if (!after) setError(null);
+        try {
+          const qs = new URLSearchParams({ limit: "30" });
+          if (after) qs.set("after", after);
+          const page = await apiFetchPage(`/notifications?${qs.toString()}`, NotificationsPage, {
+            token,
+          });
+          setItems((prev) => (after ? [...prev, ...page.data] : page.data));
+          setCursor(page.meta.nextCursor);
+          setHasMore(page.meta.hasMore);
+        } catch (caught) {
+          if (!after) setError(apiErrorMessage(t, caught));
+        } finally {
+          setLoading(false);
+        }
+      })().finally(() => {
+        if (!after) loadPromiseRef.current = null;
+      });
 
-    if (!after) loadPromiseRef.current = run;
-    return run;
-  }, [t]);
+      if (!after) loadPromiseRef.current = run;
+      return run;
+    },
+    [t],
+  );
 
   const markAllRead = useCallback(async (): Promise<void> => {
     const token = await getAccessToken();
@@ -123,7 +126,13 @@ export default function NotificationsScreen(): JSX.Element {
             />
           }
           ListEmptyComponent={
-            loading ? null : error ? (
+            loading ? (
+              <View style={styles.skeletonStack}>
+                <RecordCardSkeleton />
+                <RecordCardSkeleton />
+                <RecordCardSkeleton />
+              </View>
+            ) : error ? (
               <StateMessage
                 message={error}
                 actionLabel={t("common.retry")}
@@ -133,13 +142,6 @@ export default function NotificationsScreen(): JSX.Element {
             ) : (
               <StateMessage message={t("notifications.empty")} role="text" />
             )
-          }
-          ListFooterComponent={
-            loading ? (
-              <View style={styles.loading}>
-                <ActivityIndicator />
-              </View>
-            ) : null
           }
         />
       </View>
@@ -160,16 +162,10 @@ const styles = StyleSheet.create({
   listContent: {
     paddingBottom: nativeTokens.space[6],
   },
-  loading: {
-    paddingVertical: nativeTokens.space[4],
-  },
   separator: {
     height: nativeTokens.space[2],
   },
-  emptyText: {
-    color: nativeTokens.color.inkMuted,
-    fontSize: nativeTokens.type.scale.body.size,
-    lineHeight: nativeTokens.type.scale.body.line,
-    fontFamily: nativeTokens.type.family.sans,
+  skeletonStack: {
+    gap: nativeTokens.space[2],
   },
 });

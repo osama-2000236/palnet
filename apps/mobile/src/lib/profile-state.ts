@@ -28,10 +28,10 @@ export async function fetchProfileStatus(token: string): Promise<ProfileStatus> 
 export function isProfileComplete(profile: ProfileDto): boolean {
   const hasIdentity = Boolean(
     profile.firstName.trim() &&
-      profile.lastName.trim() &&
-      profile.handle.trim() &&
-      profile.headline?.trim() &&
-      profile.location?.trim(),
+    profile.lastName.trim() &&
+    profile.handle.trim() &&
+    profile.headline?.trim() &&
+    profile.location?.trim(),
   );
   const hasBackground = profile.experiences.length > 0 || profile.educations.length > 0;
   return hasIdentity && hasBackground;

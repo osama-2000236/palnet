@@ -67,4 +67,5 @@ packages/db/prisma/*.db-journal
 .claude/worktrees/
 .codex-run/
 .codex-logs/
+.artifacts/
 expo-qr.png

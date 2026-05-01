@@ -35,6 +35,7 @@ export type IconName =
   | "send"
   | "send-paper"
   | "thumb"
+  | "user"
   | "users"
   | "video"
   | "x";
@@ -78,6 +79,13 @@ export function Icon({
           <Path d="M2.5 20c0-3 3-5 6.5-5s6.5 2 6.5 5" />
           <Circle cx={17} cy={10} r={2.5} />
           <Path d="M21.5 19c0-2-1.5-3.5-4-4" />
+        </Svg>
+      );
+    case "user":
+      return (
+        <Svg {...common}>
+          <Circle cx={12} cy={8} r={4} />
+          <Path d="M4 21c0-4 3.5-7 8-7s8 3 8 7" />
         </Svg>
       );
     case "briefcase":

@@ -128,9 +128,9 @@ describe("RegisterScreen", () => {
 
     fireEvent.press(screen.getByTestId("register-submit"));
 
-    expect(screen.getAllByText("تحتاج اتصالًا بالإنترنت لإكمال هذه الخطوة.").length).toBeGreaterThan(
-      0,
-    );
+    expect(
+      screen.getAllByText("تحتاج اتصالًا بالإنترنت لإكمال هذه الخطوة.").length,
+    ).toBeGreaterThan(0);
     expect(mockRegisterAction).not.toHaveBeenCalled();
   });
 });

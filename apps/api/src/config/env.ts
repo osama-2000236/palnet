@@ -4,7 +4,9 @@ import { z } from "zod";
 const EnvSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
   API_PORT: z.coerce.number().int().positive().default(4000),
-  CORS_ORIGINS: z.string().default("http://localhost:3000,http://localhost:8081,http://localhost:8082"),
+  CORS_ORIGINS: z
+    .string()
+    .default("http://localhost:3000,http://localhost:8081,http://localhost:8082"),
   DATABASE_URL: z.string().url(),
   DIRECT_URL: z.string().url().optional(),
   JWT_ACCESS_SECRET: z.string().min(32),
@@ -12,6 +14,8 @@ const EnvSchema = z.object({
   JWT_ACCESS_TTL: z.coerce.number().int().positive().default(900),
   JWT_REFRESH_TTL: z.coerce.number().int().positive().default(2_592_000),
   BCRYPT_COST: z.coerce.number().int().min(10).max(15).default(12),
+  BAYDAR_DEV_RATE_LIMIT: z.coerce.number().int().positive().optional(),
+  BAYDAR_DEV_AUTH_RATE_LIMIT: z.coerce.number().int().positive().optional(),
   // R2 — optional until Sprint 2 media upload.
   R2_ACCOUNT_ID: z.string().optional(),
   R2_ACCESS_KEY_ID: z.string().optional(),

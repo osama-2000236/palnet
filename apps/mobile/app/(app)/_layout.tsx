@@ -1,21 +1,18 @@
-// Bottom-tab AppShell for the authenticated app. Six visible tabs:
-// feed · network · jobs · messages · notifications · search. Everything else
-// (composer, onboarding, profile-edit, public profile, room detail) still
-// lives under this route group but renders `href: null` so it doesn't appear
-// in the tab bar — those screens are pushed via router.push().
-//
-// Tab glyphs come from ui-native Icon — same 24×24 stroke set as the web
-// header on /feed, so the two platforms stay visually locked in step.
+// Bottom-tab AppShell for the authenticated app. Five visible entries per the
+// mobile design docs: feed, network, raised composer action, messages, profile.
+// Jobs, search, notifications, detail routes, onboarding, and edit screens stay
+// pushable hidden routes so primary navigation stays focused and touch-safe.
 
 import { WsNotificationEvent } from "@baydar/shared";
+import { Button, Icon, Surface, type IconName, nativeTokens } from "@baydar/ui-native";
+import type { BottomTabBarButtonProps } from "@react-navigation/bottom-tabs";
 import { Tabs, router, usePathname } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { z } from "zod";
 
-import { Button, Icon, Surface, type IconName, nativeTokens } from "@baydar/ui-native";
 import { LoadingIntro } from "@/components/LoadingIntro";
 import { apiFetch } from "@/lib/api";
 import { cachedProfileStatus, fetchProfileStatus } from "@/lib/profile-state";
@@ -98,7 +95,6 @@ export default function AppTabsLayout(): JSX.Element {
       } catch {
         token = await getAccessToken();
         if (!token) return;
-        /* keep tab shell usable */
       }
       unsubscribe = subscribeSse({
         path: "/notifications/stream",
@@ -192,7 +188,7 @@ export default function AppTabsLayout(): JSX.Element {
           paddingTop: nativeTokens.space[1],
         },
         tabBarLabelStyle: {
-          fontSize: 11,
+          fontSize: nativeTokens.type.scale.caption.size,
           fontWeight: "700",
           fontFamily: nativeTokens.type.family.sans,
         },
@@ -202,6 +198,7 @@ export default function AppTabsLayout(): JSX.Element {
         name="feed"
         options={{
           title: t("feed.title"),
+          tabBarButton: (props) => <TabButton {...props} testID="tab-feed" />,
           tabBarIcon: ({ color, focused }) => (
             <TabIcon name="home" color={color} focused={focused} />
           ),
@@ -211,58 +208,56 @@ export default function AppTabsLayout(): JSX.Element {
         name="network"
         options={{
           title: t("network.title"),
+          tabBarButton: (props) => <TabButton {...props} testID="tab-network" />,
           tabBarIcon: ({ color, focused }) => (
             <TabIcon name="users" color={color} focused={focused} />
           ),
         }}
       />
       <Tabs.Screen
-        name="jobs/index"
+        name="composer"
         options={{
-          title: t("jobs.title"),
-          tabBarIcon: ({ color, focused }) => (
-            <TabIcon name="briefcase" color={color} focused={focused} />
-          ),
+          title: t("nav.compose"),
+          tabBarButton: (props) => <ComposerTabButton {...props} label={t("nav.compose")} />,
+          tabBarIcon: ({ focused }) => <ComposerIcon focused={focused} />,
         }}
       />
       <Tabs.Screen
         name="messages/index"
         options={{
           title: t("messaging.title"),
+          tabBarButton: (props) => <TabButton {...props} testID="tab-messages" />,
           tabBarIcon: ({ color, focused }) => (
             <TabIcon name="message" color={color} focused={focused} />
           ),
         }}
       />
       <Tabs.Screen
-        name="notifications"
+        name="me/index"
         options={{
-          title: t("notifications.title"),
+          title: t("nav.profile"),
+          tabBarButton: (props) => <TabButton {...props} testID="tab-me" />,
+          tabBarIcon: ({ color, focused }) => (
+            <TabIcon name="user" color={color} focused={focused} />
+          ),
+        }}
+      />
+
+      <Tabs.Screen name="onboarding" options={{ href: null, tabBarStyle: { display: "none" } }} />
+      <Tabs.Screen name="jobs/index" options={{ href: null }} />
+      <Tabs.Screen name="notifications" options={{ href: null }} />
+      <Tabs.Screen
+        name="search"
+        options={{
+          href: null,
           tabBarBadge:
             notificationBadge > 0
               ? notificationBadge > 99
                 ? "99+"
                 : notificationBadge
               : undefined,
-          tabBarIcon: ({ color, focused }) => (
-            <TabIcon name="bell" color={color} focused={focused} />
-          ),
         }}
       />
-      <Tabs.Screen
-        name="search"
-        options={{
-          title: t("search.title"),
-          tabBarIcon: ({ color, focused }) => (
-            <TabIcon name="search" color={color} focused={focused} />
-          ),
-        }}
-      />
-
-      {/* Routes that exist inside (app) but shouldn't have a tab. Setting
-         href: null hides them from the tab bar while keeping them pushable. */}
-      <Tabs.Screen name="composer" options={{ href: null }} />
-      <Tabs.Screen name="onboarding" options={{ href: null, tabBarStyle: { display: "none" } }} />
       <Tabs.Screen name="me/edit" options={{ href: null }} />
       <Tabs.Screen name="in/[handle]" options={{ href: null }} />
       <Tabs.Screen name="jobs/[id]" options={{ href: null }} />
@@ -275,8 +270,36 @@ export default function AppTabsLayout(): JSX.Element {
   );
 }
 
-// Tab icons: bump stroke-width a touch when focused so the active tab reads
-// bolder without needing a separate filled glyph set.
+function TabButton({
+  testID,
+  ...props
+}: BottomTabBarButtonProps & { testID: string }): JSX.Element {
+  const { ref: _ref, ...pressableProps } = props as BottomTabBarButtonProps & { ref?: unknown };
+  return <Pressable {...pressableProps} testID={testID} />;
+}
+
+function ComposerTabButton({
+  label,
+  ...props
+}: BottomTabBarButtonProps & { label: string }): JSX.Element {
+  const { ref: _ref, ...pressableProps } = props as BottomTabBarButtonProps & { ref?: unknown };
+  return (
+    <Pressable
+      {...pressableProps}
+      testID="tab-composer"
+      accessibilityLabel={label}
+      style={[
+        pressableProps.style,
+        {
+          top: -nativeTokens.space[2],
+          alignItems: "center",
+          justifyContent: "center",
+        },
+      ]}
+    />
+  );
+}
+
 function TabIcon({
   name,
   color,
@@ -289,15 +312,45 @@ function TabIcon({
   return (
     <View
       style={{
-        minWidth: 42,
-        height: 28,
+        minWidth: nativeTokens.chrome.minHit,
+        height: nativeTokens.space[6] + nativeTokens.space[1],
         borderRadius: nativeTokens.radius.full,
         alignItems: "center",
         justifyContent: "center",
         backgroundColor: focused ? nativeTokens.color.brand50 : "transparent",
       }}
     >
-      <Icon name={name} color={color} size={22} strokeWidth={focused ? 2.2 : 1.8} />
+      <Icon
+        name={name}
+        color={color}
+        size={nativeTokens.space[5]}
+        strokeWidth={focused ? 2.2 : 1.8}
+      />
+    </View>
+  );
+}
+
+function ComposerIcon({ focused }: { focused: boolean }): JSX.Element {
+  return (
+    <View
+      style={{
+        width: nativeTokens.space[12] + nativeTokens.space[1],
+        height: nativeTokens.space[12] + nativeTokens.space[1],
+        borderRadius: nativeTokens.radius.full,
+        alignItems: "center",
+        justifyContent: "center",
+        backgroundColor: focused ? nativeTokens.color.brand700 : nativeTokens.color.brand600,
+        borderWidth: nativeTokens.space[1],
+        borderColor: nativeTokens.color.surface,
+        ...nativeTokens.shadow.card,
+      }}
+    >
+      <Icon
+        name="plus"
+        color={nativeTokens.color.inkInverse}
+        size={nativeTokens.space[6]}
+        strokeWidth={2.4}
+      />
     </View>
   );
 }

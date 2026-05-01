@@ -3,7 +3,15 @@ import {
   ConnectionListItem,
   type ConnectionListItem as ConnectionListItemType,
 } from "@baydar/shared";
-import { AppHeader, Avatar, Button, Icon, SearchField, Surface, nativeTokens } from "@baydar/ui-native";
+import {
+  AppHeader,
+  Avatar,
+  Button,
+  Icon,
+  SearchField,
+  Surface,
+  nativeTokens,
+} from "@baydar/ui-native";
 import { router } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";

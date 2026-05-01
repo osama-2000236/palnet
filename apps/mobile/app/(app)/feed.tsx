@@ -19,21 +19,14 @@ import { router, useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { z } from "zod";
 import { useTranslation } from "react-i18next";
-import {
-  ActivityIndicator,
-  FlatList,
-  Pressable,
-  RefreshControl,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { StateMessage } from "@/components/StateMessage";
 import { PostRow } from "@/components/rows/PostRow";
 import { apiFetch, apiFetchPage } from "@/lib/api";
 import { track } from "@/lib/analytics";
-import { clearSession, getAccessToken, readSession } from "@/lib/session";
+import { getAccessToken, readSession } from "@/lib/session";
 
 const FeedPage = cursorPage(PostSchema);
 const UnreadCountEnvelope = z.object({ count: z.number().int().nonnegative() });
@@ -49,7 +42,6 @@ export default function FeedScreen(): JSX.Element {
   const [unread, setUnread] = useState<number>(0);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [feedError, setFeedError] = useState<string | null>(null);
-  const [loggingOut, setLoggingOut] = useState(false);
 
   const loadUnread = useCallback(async (): Promise<void> => {
     const token = await getAccessToken();
@@ -126,12 +118,6 @@ export default function FeedScreen(): JSX.Element {
     }, [loadUnread]),
   );
 
-  const logout = useCallback(async (): Promise<void> => {
-    setLoggingOut(true);
-    await clearSession();
-    router.replace("/(auth)/login");
-  }, []);
-
   return (
     <SafeAreaView style={feedStyles.screen}>
       <View style={feedStyles.content}>
@@ -155,34 +141,39 @@ export default function FeedScreen(): JSX.Element {
             )
           }
           trailing={
-            <View style={feedStyles.headerActions}>
+            <Pressable
+              onPress={() => router.push("/(app)/notifications")}
+              accessibilityRole="button"
+              accessibilityLabel={
+                unread > 0
+                  ? t("nav.unreadNotifications", { count: unread })
+                  : t("notifications.title")
+              }
+              testID="feed-notifications-button"
+              style={({ pressed }) => [
+                feedStyles.iconButton,
+                unread > 0 ? feedStyles.iconButtonActive : null,
+                pressed ? feedStyles.pressed : null,
+              ]}
+            >
+              <Icon
+                name="bell"
+                size={20}
+                color={unread > 0 ? nativeTokens.color.inkInverse : nativeTokens.color.ink}
+              />
               {unread > 0 ? (
-                <Pressable
-                  onPress={() => router.push("/(app)/notifications")}
-                  accessibilityRole="button"
-                  accessibilityLabel={t("nav.unreadNotifications", { count: unread })}
-                  style={feedStyles.unreadPill}
-                >
+                <View style={feedStyles.unreadDot}>
                   <Text style={feedStyles.unreadText}>{unread > 99 ? "99+" : String(unread)}</Text>
-                </Pressable>
+                </View>
               ) : null}
-              <Button
-                variant="ghost"
-                size="sm"
-                loading={loggingOut}
-                disabled={loggingOut}
-                accessibilityLabel={t("auth.logout")}
-                onPress={() => void logout()}
-              >
-                {t("auth.logout")}
-              </Button>
-            </View>
+            </Pressable>
           }
           search={
             <Pressable
               onPress={() => router.push("/(app)/search")}
               accessibilityRole="button"
               accessibilityLabel={t("search.placeholder")}
+              testID="feed-search-button"
               style={({ pressed }) => [feedStyles.searchEntry, pressed ? feedStyles.pressed : null]}
             >
               <Icon name="search" size={18} color={nativeTokens.color.inkMuted} />
@@ -214,15 +205,17 @@ export default function FeedScreen(): JSX.Element {
 
         {profile ? <ProfileSummary profile={profile} /> : null}
 
+        <JobsEntry />
+
         {feedError ? (
-          <Surface variant="tinted" padding="4" style={feedStyles.errorBox}>
-            <Text selectable accessibilityRole="alert" style={feedStyles.errorText}>
-              {feedError}
-            </Text>
-            <Button variant="secondary" size="sm" onPress={() => void load(null)}>
-              {t("common.retry")}
-            </Button>
-          </Surface>
+          <StateMessage
+            message={feedError}
+            actionLabel={t("common.retry")}
+            busy={loading}
+            onAction={() => void load(null)}
+            tone="error"
+            style={feedStyles.errorBox}
+          />
         ) : null}
 
         <FlatList
@@ -257,21 +250,49 @@ export default function FeedScreen(): JSX.Element {
                 <PostCardSkeleton />
               </View>
             ) : (
-              <Surface variant="tinted" padding="6">
-                <Text style={feedStyles.emptyText}>{t("feed.empty")}</Text>
-              </Surface>
+              <StateMessage message={t("feed.empty")} role="text" />
             )
           }
           ListFooterComponent={
-            loading ? (
+            loading && posts.length > 0 ? (
               <View style={feedStyles.footerLoading}>
-                <ActivityIndicator />
+                <PostCardSkeleton />
               </View>
             ) : null
           }
         />
       </View>
     </SafeAreaView>
+  );
+}
+
+function JobsEntry(): JSX.Element {
+  const { t } = useTranslation();
+  return (
+    <Pressable
+      onPress={() => router.push("/(app)/jobs")}
+      accessibilityRole="link"
+      accessibilityLabel={t("feed.jobsEntryTitle")}
+      testID="jobs-entry-card"
+      style={({ pressed }) => [pressed ? feedStyles.pressed : null, feedStyles.jobsEntryWrap]}
+    >
+      <Surface variant="tinted" padding="4" style={feedStyles.jobsEntry}>
+        <View style={feedStyles.jobsIcon}>
+          <Icon name="briefcase" size={20} color={nativeTokens.color.brand700} />
+        </View>
+        <View style={feedStyles.jobsText}>
+          <Text selectable style={feedStyles.jobsTitle}>
+            {t("feed.jobsEntryTitle")}
+          </Text>
+          <Text selectable style={feedStyles.jobsSubtitle} numberOfLines={2}>
+            {t("feed.jobsEntrySubtitle")}
+          </Text>
+        </View>
+        <Button variant="secondary" size="sm" onPress={() => router.push("/(app)/jobs")}>
+          {t("feed.jobsEntryAction")}
+        </Button>
+      </Surface>
+    </Pressable>
   );
 }
 
@@ -342,23 +363,35 @@ const feedStyles = StyleSheet.create({
     paddingHorizontal: nativeTokens.space[4],
     paddingTop: nativeTokens.space[3],
   },
-  headerActions: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: nativeTokens.space[1],
-  },
-  unreadPill: {
-    minWidth: 28,
-    height: 28,
+  iconButton: {
+    width: nativeTokens.chrome.minHit,
+    height: nativeTokens.chrome.minHit,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: nativeTokens.color.accent600,
-    paddingHorizontal: nativeTokens.space[2],
     borderRadius: nativeTokens.radius.full,
+    backgroundColor: nativeTokens.color.surface,
+    borderWidth: 1,
+    borderColor: nativeTokens.color.lineSoft,
+  },
+  iconButtonActive: {
+    backgroundColor: nativeTokens.color.accent600,
+    borderColor: nativeTokens.color.accent600,
+  },
+  unreadDot: {
+    position: "absolute",
+    top: -nativeTokens.space[1],
+    end: -nativeTokens.space[1],
+    minWidth: nativeTokens.space[5],
+    height: nativeTokens.space[5],
+    borderRadius: nativeTokens.radius.full,
+    backgroundColor: nativeTokens.color.accent700,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: nativeTokens.space[1],
   },
   unreadText: {
     color: nativeTokens.color.inkInverse,
-    fontSize: 11,
+    fontSize: nativeTokens.type.scale.caption.size,
     fontWeight: "700",
     fontFamily: nativeTokens.type.family.sans,
   },
@@ -382,6 +415,41 @@ const feedStyles = StyleSheet.create({
   },
   pressed: { opacity: 0.88 },
   composerWrap: { marginBottom: nativeTokens.space[3] },
+  jobsEntryWrap: {
+    marginBottom: nativeTokens.space[3],
+  },
+  jobsEntry: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: nativeTokens.space[3],
+  },
+  jobsIcon: {
+    width: nativeTokens.space[10],
+    height: nativeTokens.space[10],
+    borderRadius: nativeTokens.radius.full,
+    backgroundColor: nativeTokens.color.brand100,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  jobsText: {
+    flex: 1,
+    minWidth: 0,
+  },
+  jobsTitle: {
+    color: nativeTokens.color.ink,
+    fontSize: nativeTokens.type.scale.h3.size,
+    lineHeight: nativeTokens.type.scale.h3.line,
+    fontWeight: "700",
+    fontFamily: nativeTokens.type.family.sans,
+    textAlign: "right",
+  },
+  jobsSubtitle: {
+    color: nativeTokens.color.inkMuted,
+    fontSize: nativeTokens.type.scale.small.size,
+    lineHeight: nativeTokens.type.scale.small.line,
+    fontFamily: nativeTokens.type.family.sans,
+    textAlign: "right",
+  },
   profileCard: {
     gap: nativeTokens.space[3],
     marginBottom: nativeTokens.space[3],
@@ -435,18 +503,6 @@ const feedStyles = StyleSheet.create({
     gap: nativeTokens.space[2],
     marginBottom: nativeTokens.space[3],
     backgroundColor: nativeTokens.color.warningSoft,
-  },
-  errorText: {
-    color: nativeTokens.color.ink,
-    fontSize: nativeTokens.type.scale.small.size,
-    lineHeight: nativeTokens.type.scale.small.line,
-    fontFamily: nativeTokens.type.family.sans,
-    textAlign: "right",
-  },
-  emptyText: {
-    color: nativeTokens.color.inkMuted,
-    fontSize: nativeTokens.type.scale.body.size,
-    fontFamily: nativeTokens.type.family.sans,
   },
   skeletonStack: {
     gap: nativeTokens.space[3],

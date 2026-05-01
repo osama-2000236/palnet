@@ -17,8 +17,11 @@ export interface RecordCardProps {
   title: string;
   subtitle?: string | null;
   meta?: string | null;
+  metaDirection?: "rtl" | "ltr" | "auto";
   trailing?: ReactNode;
   children?: ReactNode;
+  variant?: "card" | "row";
+  density?: "comfortable" | "compact";
   onPress?: (event: GestureResponderEvent) => void;
   accessibilityLabel?: string;
   testID?: string;
@@ -30,15 +33,22 @@ export function RecordCard({
   title,
   subtitle,
   meta,
+  metaDirection = "rtl",
   trailing,
   children,
+  variant = "card",
+  density = "comfortable",
   onPress,
   accessibilityLabel,
   testID,
   style,
 }: RecordCardProps): JSX.Element {
   const content = (
-    <Surface variant="card" padding="4" style={[styles.surface, style]}>
+    <Surface
+      variant={variant === "row" ? "row" : "card"}
+      padding={density === "compact" ? "3" : "4"}
+      style={[styles.surface, variant === "row" ? styles.rowSurface : null, style]}
+    >
       <View style={styles.row}>
         {leading ? <View style={styles.leading}>{leading}</View> : null}
         <View style={styles.textWrap}>
@@ -51,7 +61,17 @@ export function RecordCard({
             </Text>
           ) : null}
           {meta ? (
-            <Text numberOfLines={1} style={styles.meta}>
+            <Text
+              numberOfLines={1}
+              style={[
+                styles.meta,
+                metaDirection === "ltr"
+                  ? styles.metaLtr
+                  : metaDirection === "auto"
+                    ? styles.metaAuto
+                    : null,
+              ]}
+            >
               {meta}
             </Text>
           ) : null}
@@ -80,6 +100,9 @@ export function RecordCard({
 const styles = StyleSheet.create({
   surface: {
     gap: nativeTokens.space[3],
+  },
+  rowSurface: {
+    borderRadius: 0,
   },
   row: {
     flexDirection: "row",
@@ -116,6 +139,14 @@ const styles = StyleSheet.create({
     fontSize: nativeTokens.type.scale.caption.size,
     lineHeight: nativeTokens.type.scale.caption.line,
     textAlign: "right",
+    writingDirection: "rtl",
+  },
+  metaLtr: {
+    textAlign: "left",
+    writingDirection: "ltr",
+  },
+  metaAuto: {
+    writingDirection: "auto",
   },
   trailing: {
     alignItems: "flex-end",

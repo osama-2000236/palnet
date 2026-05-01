@@ -1,0 +1,125 @@
+config:
+  target: "http://localhost:4000/api/v1"
+  phases:
+    - duration: 30
+      arrivalRate: 2
+  environments:
+    smoke:
+      phases:
+        - duration: 30
+          arrivalRate: 2
+    baseline:
+      phases:
+        - duration: 60
+          arrivalRate: 2
+          rampTo: 8
+        - duration: 240
+          arrivalRate: 8
+    high:
+      phases:
+        - duration: 120
+          arrivalRate: 4
+          rampTo: 12
+        - duration: 480
+          arrivalRate: 12
+          maxVusers: 120
+    spike:
+      phases:
+        - duration: 60
+          arrivalRate: 4
+        - duration: 60
+          arrivalRate: 24
+          maxVusers: 150
+        - duration: 120
+          arrivalRate: 8
+  payload:
+    path: "../../.artifacts/load/users.csv"
+    fields:
+      - email
+      - password
+      - peerUserId
+      - jobId
+    skipHeader: true
+    order: sequence
+  defaults:
+    headers:
+      Accept: "application/json"
+      Content-Type: "application/json"
+
+scenarios:
+  - name: "Baydar local authenticated journey"
+    flow:
+      - get:
+          url: "/health"
+      - post:
+          url: "/auth/login"
+          json:
+            email: "{{ email }}"
+            password: "{{ password }}"
+            deviceId: "artillery-{{ email }}"
+          capture:
+            - json: "$.data.tokens.accessToken"
+              as: "token"
+      - get:
+          url: "/profiles/me"
+          headers:
+            Authorization: "Bearer {{ token }}"
+      - get:
+          url: "/feed?limit=10"
+          headers:
+            Authorization: "Bearer {{ token }}"
+      - post:
+          url: "/posts"
+          headers:
+            Authorization: "Bearer {{ token }}"
+          json:
+            body: "منشور اختبار تحميل محلي {{ email }}"
+            language: "ar"
+            media: []
+      - get:
+          url: "/search/people?q=%D9%85%D8%B3%D8%AA%D8%AE%D8%AF%D9%85&limit=10"
+          headers:
+            Authorization: "Bearer {{ token }}"
+      - get:
+          url: "/jobs?limit=10&q=Full%20Stack"
+          headers:
+            Authorization: "Bearer {{ token }}"
+      - get:
+          url: "/jobs/{{ jobId }}"
+          headers:
+            Authorization: "Bearer {{ token }}"
+      - post:
+          url: "/jobs/{{ jobId }}/apply"
+          headers:
+            Authorization: "Bearer {{ token }}"
+          json:
+            coverLetter: "Local load application for {{ email }}"
+      - get:
+          url: "/connections?filter=ACCEPTED"
+          headers:
+            Authorization: "Bearer {{ token }}"
+      - post:
+          url: "/messaging/rooms"
+          headers:
+            Authorization: "Bearer {{ token }}"
+          json:
+            otherUserId: "{{ peerUserId }}"
+          capture:
+            - json: "$.id"
+              as: "roomId"
+      - get:
+          url: "/messaging/rooms"
+          headers:
+            Authorization: "Bearer {{ token }}"
+      - post:
+          url: "/messaging/rooms/{{ roomId }}/messages"
+          headers:
+            Authorization: "Bearer {{ token }}"
+          json:
+            body: "رسالة اختبار تحميل محلي {{ email }}"
+            clientMessageId: "load-{{ email }}"
+      - get:
+          url: "/notifications?limit=10"
+          headers:
+            Authorization: "Bearer {{ token }}"
+      - think: 8

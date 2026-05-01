@@ -45,10 +45,7 @@ export class AuthService {
       );
     }
 
-    const passwordHash = await bcrypt.hash(
-      body.password,
-      this.getNumberConfig("BCRYPT_COST"),
-    );
+    const passwordHash = await bcrypt.hash(body.password, this.getNumberConfig("BCRYPT_COST"));
 
     const user = await this.prisma.user.create({
       data: {
@@ -188,7 +185,9 @@ export class AuthService {
     };
   }
 
-  private getNumberConfig(key: keyof Pick<Env, "BCRYPT_COST" | "JWT_ACCESS_TTL" | "JWT_REFRESH_TTL">): number {
+  private getNumberConfig(
+    key: keyof Pick<Env, "BCRYPT_COST" | "JWT_ACCESS_TTL" | "JWT_REFRESH_TTL">,
+  ): number {
     const value = this.config.getOrThrow<number | string>(key);
     const parsed = typeof value === "number" ? value : Number(value);
     if (!Number.isFinite(parsed)) {
