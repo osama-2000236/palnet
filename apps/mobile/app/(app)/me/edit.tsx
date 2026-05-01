@@ -288,18 +288,24 @@ function BasicsCard({
           {uploading ? t("profile.uploading") : t("profile.changeAvatar")}
         </Button>
       </View>
-      <Input
-        value={firstName}
-        onChangeText={setFirstName}
-        placeholder={t("profile.firstName")}
-        error={fieldErrors.firstName}
-      />
-      <Input
-        value={lastName}
-        onChangeText={setLastName}
-        placeholder={t("profile.lastName")}
-        error={fieldErrors.lastName}
-      />
+      <View style={styles.nameGrid}>
+        <View style={styles.nameCell}>
+          <Input
+            value={firstName}
+            onChangeText={setFirstName}
+            placeholder={t("profile.firstName")}
+            error={fieldErrors.firstName}
+          />
+        </View>
+        <View style={styles.nameCell}>
+          <Input
+            value={lastName}
+            onChangeText={setLastName}
+            placeholder={t("profile.lastName")}
+            error={fieldErrors.lastName}
+          />
+        </View>
+      </View>
       <Input
         value={headline}
         onChangeText={setHeadline}
@@ -324,10 +330,10 @@ function BasicsCard({
         onPress={save}
         disabled={busy}
         loading={busy}
-        style={styles.alignEnd}
-        accessibilityLabel={t("profile.save")}
+        fullWidth
+        accessibilityLabel={t("common.saveChanges")}
       >
-        {t("profile.save")}
+        {t("common.saveChanges")}
       </Button>
     </Card>
   );
@@ -808,6 +814,14 @@ const styles = StyleSheet.create({
   },
   inputWrap: {
     gap: nativeTokens.space[1],
+  },
+  nameGrid: {
+    flexDirection: "row",
+    gap: nativeTokens.space[2],
+  },
+  nameCell: {
+    flex: 1,
+    minWidth: 0,
   },
   inputLtr: {
     textAlign: "left",

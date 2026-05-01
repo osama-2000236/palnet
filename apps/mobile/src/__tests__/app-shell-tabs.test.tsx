@@ -42,6 +42,7 @@ jest.mock("@/lib/push", () => ({
 }));
 
 jest.mock("@/lib/session", () => ({
+  clearSession: jest.fn(async () => undefined),
   getAccessToken: jest.fn(async () => "access-token"),
   readSession: jest.fn(async () => ({
     user: { id: "user-1", email: "qa@baydar.test", role: "USER", locale: "ar-PS" },
@@ -50,6 +51,7 @@ jest.mock("@/lib/session", () => ({
 }));
 
 jest.mock("@/lib/api", () => ({
+  ...jest.requireActual("@/lib/api"),
   apiFetch: jest.fn(async () => ({ count: 0 })),
 }));
 
@@ -67,11 +69,29 @@ jest.mock("react-i18next", () => ({
   }),
 }));
 
+const { router: mockRouter } = jest.requireMock("expo-router") as {
+  router: { replace: jest.Mock; push: jest.Mock };
+};
+const {
+  cachedProfileStatus: mockCachedProfileStatus,
+  fetchProfileStatus: mockFetchProfileStatus,
+} = jest.requireMock("@/lib/profile-state") as {
+  cachedProfileStatus: jest.Mock;
+  fetchProfileStatus: jest.Mock;
+};
+const { clearSession: mockClearSession } = jest.requireMock("@/lib/session") as {
+  clearSession: jest.Mock;
+};
+const { ApiRequestError: MockApiRequestError } = jest.requireMock("@/lib/api") as {
+  ApiRequestError: new (status: number, code: string, details?: unknown) => Error;
+};
+
 describe("AppTabsLayout", () => {
   beforeEach(() => {
     visibleScreens.length = 0;
     hiddenScreens.length = 0;
     jest.clearAllMocks();
+    mockCachedProfileStatus.mockResolvedValue({ status: "complete" });
   });
 
   it("exposes the five design-doc tabs and hides secondary routes", async () => {
@@ -91,5 +111,19 @@ describe("AppTabsLayout", () => {
     expect(hiddenScreens).toEqual(
       expect.arrayContaining(["jobs/index", "notifications", "search", "me/edit"]),
     );
+  });
+
+  it("redirects expired sessions to login instead of showing a profile gate error", async () => {
+    mockCachedProfileStatus.mockResolvedValueOnce(null);
+    mockFetchProfileStatus.mockRejectedValueOnce(
+      new MockApiRequestError(401, "AUTH_UNAUTHORIZED"),
+    );
+
+    render(<AppTabsLayout />);
+
+    await waitFor(() => {
+      expect(mockClearSession).toHaveBeenCalledTimes(1);
+      expect(mockRouter.replace).toHaveBeenCalledWith("/(auth)/login");
+    });
   });
 });

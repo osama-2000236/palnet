@@ -38,7 +38,7 @@ export function ComposerEntry({
           </Text>
         </View>
         <View style={styles.iconWrap}>
-          <Icon name="plus" size={18} color={nativeTokens.color.inkInverse} />
+          <Icon name="image" size={18} color={nativeTokens.color.inkMuted} />
         </View>
       </Surface>
     </Pressable>
@@ -69,10 +69,12 @@ const styles = StyleSheet.create({
     textAlign: "right",
   },
   iconWrap: {
-    width: 36,
-    height: 36,
+    width: nativeTokens.chrome.minHit,
+    height: nativeTokens.chrome.minHit,
     borderRadius: nativeTokens.radius.full,
-    backgroundColor: nativeTokens.color.accent600,
+    borderWidth: 1,
+    borderColor: nativeTokens.color.lineSoft,
+    backgroundColor: nativeTokens.color.surfaceMuted,
     alignItems: "center",
     justifyContent: "center",
   },

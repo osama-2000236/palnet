@@ -6,7 +6,6 @@ import {
   type Profile,
 } from "@baydar/shared";
 import {
-  AppHeader,
   Avatar,
   Button,
   ComposerEntry,
@@ -38,7 +37,6 @@ export default function FeedScreen(): JSX.Element {
   const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  const [name, setName] = useState<string | null>(null);
   const [unread, setUnread] = useState<number>(0);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [feedError, setFeedError] = useState<string | null>(null);
@@ -60,7 +58,6 @@ export default function FeedScreen(): JSX.Element {
     try {
       const next = await apiFetch("/profiles/me", ProfileSchema, { token });
       setProfile(next);
-      setName(`${next.firstName} ${next.lastName}`.trim());
     } catch {
       /* the app gate handles missing profiles; keep the feed usable */
     }
@@ -107,7 +104,6 @@ export default function FeedScreen(): JSX.Element {
         router.replace("/(auth)/login");
         return;
       }
-      setName(session.user.email.split("@")[0] ?? session.user.email);
       await Promise.all([loadProfile(), load(null), loadUnread()]);
     })();
   }, [load, loadProfile, loadUnread]);
@@ -121,68 +117,7 @@ export default function FeedScreen(): JSX.Element {
   return (
     <SafeAreaView style={feedStyles.screen}>
       <View style={feedStyles.content}>
-        <AppHeader
-          title={t("feed.title")}
-          subtitle={name ? t("feed.welcome", { name }) : undefined}
-          leading={
-            profile ? (
-              <Avatar
-                size="sm"
-                user={{
-                  id: profile.userId,
-                  handle: profile.handle,
-                  firstName: profile.firstName,
-                  lastName: profile.lastName,
-                  avatarUrl: profile.avatarUrl,
-                }}
-              />
-            ) : (
-              <Icon name="logo" size={34} />
-            )
-          }
-          trailing={
-            <Pressable
-              onPress={() => router.push("/(app)/notifications")}
-              accessibilityRole="button"
-              accessibilityLabel={
-                unread > 0
-                  ? t("nav.unreadNotifications", { count: unread })
-                  : t("notifications.title")
-              }
-              testID="feed-notifications-button"
-              style={({ pressed }) => [
-                feedStyles.iconButton,
-                unread > 0 ? feedStyles.iconButtonActive : null,
-                pressed ? feedStyles.pressed : null,
-              ]}
-            >
-              <Icon
-                name="bell"
-                size={20}
-                color={unread > 0 ? nativeTokens.color.inkInverse : nativeTokens.color.ink}
-              />
-              {unread > 0 ? (
-                <View style={feedStyles.unreadDot}>
-                  <Text style={feedStyles.unreadText}>{unread > 99 ? "99+" : String(unread)}</Text>
-                </View>
-              ) : null}
-            </Pressable>
-          }
-          search={
-            <Pressable
-              onPress={() => router.push("/(app)/search")}
-              accessibilityRole="button"
-              accessibilityLabel={t("search.placeholder")}
-              testID="feed-search-button"
-              style={({ pressed }) => [feedStyles.searchEntry, pressed ? feedStyles.pressed : null]}
-            >
-              <Icon name="search" size={18} color={nativeTokens.color.inkMuted} />
-              <Text numberOfLines={1} style={feedStyles.searchText}>
-                {t("search.placeholder")}
-              </Text>
-            </Pressable>
-          }
-        />
+        <FeedTopBar unread={unread} />
 
         <ComposerEntry
           user={
@@ -263,6 +198,59 @@ export default function FeedScreen(): JSX.Element {
         />
       </View>
     </SafeAreaView>
+  );
+}
+
+function FeedTopBar({ unread }: { unread: number }): JSX.Element {
+  const { t } = useTranslation();
+
+  return (
+    <View style={feedStyles.topBar}>
+      <Pressable
+        onPress={() => router.push("/(app)/notifications")}
+        accessibilityRole="button"
+        accessibilityLabel={
+          unread > 0 ? t("nav.unreadNotifications", { count: unread }) : t("notifications.title")
+        }
+        testID="feed-notifications-button"
+        style={({ pressed }) => [
+          feedStyles.iconButton,
+          unread > 0 ? feedStyles.iconButtonActive : null,
+          pressed ? feedStyles.pressed : null,
+        ]}
+      >
+        <Icon
+          name="bell"
+          size={20}
+          color={unread > 0 ? nativeTokens.color.inkInverse : nativeTokens.color.ink}
+        />
+        {unread > 0 ? (
+          <View style={feedStyles.unreadDot}>
+            <Text style={feedStyles.unreadText}>{unread > 99 ? "99+" : String(unread)}</Text>
+          </View>
+        ) : null}
+      </Pressable>
+
+      <Pressable
+        onPress={() => router.push("/(app)/search")}
+        accessibilityRole="button"
+        accessibilityLabel={t("search.placeholder")}
+        testID="feed-search-button"
+        style={({ pressed }) => [feedStyles.searchEntry, pressed ? feedStyles.pressed : null]}
+      >
+        <Icon name="search" size={18} color={nativeTokens.color.inkMuted} />
+        <Text numberOfLines={1} style={feedStyles.searchText}>
+          {t("search.placeholder")}
+        </Text>
+      </Pressable>
+
+      <View style={feedStyles.brandLockup} accessibilityRole="header">
+        <Text selectable style={feedStyles.brandText}>
+          {t("common.appName")}
+        </Text>
+        <Icon name="logo" size={28} />
+      </View>
+    </View>
   );
 }
 
@@ -363,6 +351,27 @@ const feedStyles = StyleSheet.create({
     paddingHorizontal: nativeTokens.space[4],
     paddingTop: nativeTokens.space[3],
   },
+  topBar: {
+    minHeight: nativeTokens.chrome.minHit,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: nativeTokens.space[2],
+    paddingBottom: nativeTokens.space[2],
+  },
+  brandLockup: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: nativeTokens.space[1],
+    minWidth: nativeTokens.space[20],
+    justifyContent: "flex-end",
+  },
+  brandText: {
+    color: nativeTokens.color.brand700,
+    fontFamily: nativeTokens.type.family.sans,
+    fontSize: nativeTokens.type.scale.h2.size,
+    lineHeight: nativeTokens.type.scale.h2.line,
+    fontWeight: "800",
+  },
   iconButton: {
     width: nativeTokens.chrome.minHit,
     height: nativeTokens.chrome.minHit,
@@ -400,11 +409,12 @@ const feedStyles = StyleSheet.create({
     borderRadius: nativeTokens.radius.full,
     borderWidth: 1,
     borderColor: nativeTokens.color.lineSoft,
-    backgroundColor: nativeTokens.color.surface,
+    backgroundColor: nativeTokens.color.surfaceSubtle,
     paddingHorizontal: nativeTokens.space[3],
     flexDirection: "row",
     alignItems: "center",
     gap: nativeTokens.space[2],
+    flex: 1,
   },
   searchText: {
     flex: 1,

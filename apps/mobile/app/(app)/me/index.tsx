@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { FieldCover } from "@/components/FieldCover";
 import { StateMessage } from "@/components/StateMessage";
 import { apiFetch } from "@/lib/api";
 import { apiErrorMessage } from "@/lib/api-errors";
@@ -87,7 +88,7 @@ export default function MeScreen(): JSX.Element {
     <SafeAreaView style={styles.screen}>
       <ScrollView contentContainerStyle={styles.scrollBody}>
         <Surface variant="hero" padding="0" style={styles.hero}>
-          <View style={styles.coverBand} />
+          <FieldCover uri={profile.coverUrl} />
           <View style={styles.identityBlock}>
             <Avatar
               ring
@@ -286,14 +287,8 @@ const styles = StyleSheet.create({
   hero: {
     overflow: "hidden",
   },
-  coverBand: {
-    height: nativeTokens.space[16],
-    backgroundColor: nativeTokens.color.brand100,
-    borderBottomWidth: 1,
-    borderBottomColor: nativeTokens.color.lineSoft,
-  },
   identityBlock: {
-    marginTop: -nativeTokens.space[8],
+    marginTop: -nativeTokens.space[10],
     paddingHorizontal: nativeTokens.space[4],
     paddingBottom: nativeTokens.space[3],
     alignItems: "flex-start",

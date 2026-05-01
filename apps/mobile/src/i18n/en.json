@@ -6,6 +6,7 @@
     "cancel": "Cancel",
     "back": "Back",
     "save": "Save",
+    "saveChanges": "Save changes",
     "continue": "Continue",
     "clear": "Clear",
     "done": "Done",
@@ -183,7 +184,7 @@
   },
   "nav": {
     "unreadNotifications": "{{count}} unread notifications",
-    "compose": "Post",
+    "compose": "Add",
     "profile": "Profile"
   },
   "feed": {
@@ -221,7 +222,7 @@
   },
   "search": {
     "title": "Search",
-    "placeholder": "Search people…",
+    "placeholder": "Search people or jobs",
     "submit": "Search",
     "filters": "Filters",
     "noResults": "No people match that search.",

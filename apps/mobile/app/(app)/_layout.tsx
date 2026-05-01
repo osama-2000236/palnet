@@ -14,10 +14,10 @@ import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 import { z } from "zod";
 
 import { LoadingIntro } from "@/components/LoadingIntro";
-import { apiFetch } from "@/lib/api";
+import { apiFetch, ApiRequestError } from "@/lib/api";
 import { cachedProfileStatus, fetchProfileStatus } from "@/lib/profile-state";
 import { registerForPushAsync } from "@/lib/push";
-import { getAccessToken, readSession } from "@/lib/session";
+import { clearSession, getAccessToken, readSession } from "@/lib/session";
 import { subscribeSse } from "@/lib/sse";
 import { useNetworkStore } from "@/store/network";
 
@@ -73,7 +73,12 @@ export default function AppTabsLayout(): JSX.Element {
       }
       setGateState("ready");
       void registerForPushAsync().catch(() => undefined);
-    } catch {
+    } catch (error) {
+      if (isSessionGateError(error)) {
+        await clearSession();
+        router.replace("/(auth)/login");
+        return;
+      }
       setGateState("error");
     }
   }, [pathname]);
@@ -185,12 +190,18 @@ export default function AppTabsLayout(): JSX.Element {
           borderTopWidth: 1,
         },
         tabBarItemStyle: {
+          flex: 1,
+          minWidth: 0,
           paddingTop: nativeTokens.space[1],
         },
         tabBarLabelStyle: {
           fontSize: nativeTokens.type.scale.caption.size,
           fontWeight: "700",
           fontFamily: nativeTokens.type.family.sans,
+          width: nativeTokens.space[16],
+          maxWidth: nativeTokens.space[16],
+          textAlign: "center",
+          includeFontPadding: false,
         },
       }}
     >
@@ -198,6 +209,7 @@ export default function AppTabsLayout(): JSX.Element {
         name="feed"
         options={{
           title: t("feed.title"),
+          tabBarLabel: (props) => <TabLabel {...props} label={t("feed.title")} />,
           tabBarButton: (props) => <TabButton {...props} testID="tab-feed" />,
           tabBarIcon: ({ color, focused }) => (
             <TabIcon name="home" color={color} focused={focused} />
@@ -208,6 +220,7 @@ export default function AppTabsLayout(): JSX.Element {
         name="network"
         options={{
           title: t("network.title"),
+          tabBarLabel: (props) => <TabLabel {...props} label={t("network.title")} />,
           tabBarButton: (props) => <TabButton {...props} testID="tab-network" />,
           tabBarIcon: ({ color, focused }) => (
             <TabIcon name="users" color={color} focused={focused} />
@@ -218,6 +231,7 @@ export default function AppTabsLayout(): JSX.Element {
         name="composer"
         options={{
           title: t("nav.compose"),
+          tabBarLabel: (props) => <TabLabel {...props} label={t("nav.compose")} raised />,
           tabBarButton: (props) => <ComposerTabButton {...props} label={t("nav.compose")} />,
           tabBarIcon: ({ focused }) => <ComposerIcon focused={focused} />,
         }}
@@ -226,6 +240,7 @@ export default function AppTabsLayout(): JSX.Element {
         name="messages/index"
         options={{
           title: t("messaging.title"),
+          tabBarLabel: (props) => <TabLabel {...props} label={t("messaging.title")} />,
           tabBarButton: (props) => <TabButton {...props} testID="tab-messages" />,
           tabBarIcon: ({ color, focused }) => (
             <TabIcon name="message" color={color} focused={focused} />
@@ -236,6 +251,7 @@ export default function AppTabsLayout(): JSX.Element {
         name="me/index"
         options={{
           title: t("nav.profile"),
+          tabBarLabel: (props) => <TabLabel {...props} label={t("nav.profile")} />,
           tabBarButton: (props) => <TabButton {...props} testID="tab-me" />,
           tabBarIcon: ({ color, focused }) => (
             <TabIcon name="user" color={color} focused={focused} />
@@ -267,6 +283,51 @@ export default function AppTabsLayout(): JSX.Element {
         options={{ href: null, tabBarStyle: { display: "none" } }}
       />
     </Tabs>
+  );
+}
+
+function isSessionGateError(error: unknown): boolean {
+  if (!(error instanceof ApiRequestError)) return false;
+  return (
+    error.status === 401 ||
+    error.code === "AUTH_UNAUTHORIZED" ||
+    error.code === "AUTH_TOKEN_EXPIRED" ||
+    error.code === "AUTH_TOKEN_INVALID"
+  );
+}
+
+function TabLabel({
+  label,
+  color,
+  focused,
+  raised = false,
+}: {
+  label: string;
+  color: string;
+  focused: boolean;
+  raised?: boolean;
+}): JSX.Element {
+  return (
+    <Text
+      allowFontScaling={false}
+      numberOfLines={1}
+      adjustsFontSizeToFit
+      minimumFontScale={0.72}
+      style={{
+        width: nativeTokens.space[16],
+        maxWidth: nativeTokens.space[16],
+        color,
+        fontFamily: nativeTokens.type.family.sans,
+        fontSize: nativeTokens.type.scale.caption.size - nativeTokens.space[1] / 2,
+        lineHeight: nativeTokens.type.scale.caption.line - nativeTokens.space[1],
+        fontWeight: focused ? "800" : "700",
+        textAlign: "center",
+        includeFontPadding: false,
+        marginTop: raised ? nativeTokens.space[1] : 0,
+      }}
+    >
+      {label}
+    </Text>
   );
 }
 

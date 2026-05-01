@@ -6,6 +6,7 @@
     "cancel": "إلغاء",
     "back": "رجوع",
     "save": "حفظ",
+    "saveChanges": "حفظ التغييرات",
     "continue": "متابعة",
     "clear": "مسح",
     "done": "تم",
@@ -183,7 +184,7 @@
   },
   "nav": {
     "unreadNotifications": "{{count}} إشعارات غير مقروءة",
-    "compose": "نشر",
+    "compose": "إضافة",
     "profile": "ملفي"
   },
   "feed": {
@@ -221,7 +222,7 @@
   },
   "search": {
     "title": "بحث",
-    "placeholder": "ابحث عن أشخاص…",
+    "placeholder": "ابحث عن أشخاص أو وظائف",
     "submit": "بحث",
     "filters": "الفلاتر",
     "noResults": "لا نتائج مطابقة.",

@@ -62,7 +62,8 @@ const styles = StyleSheet.create({
   },
   item: {
     minHeight: nativeTokens.chrome.minHit,
-    minWidth: nativeTokens.space[20],
+    minWidth: 0,
+    flexBasis: 0,
     flexGrow: 1,
     alignItems: "center",
     justifyContent: "center",

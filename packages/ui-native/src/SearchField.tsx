@@ -65,10 +65,10 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: nativeTokens.space[2],
-    borderRadius: nativeTokens.radius.md,
+    borderRadius: nativeTokens.radius.full,
     borderWidth: 1,
-    borderColor: nativeTokens.color.lineHard,
-    backgroundColor: nativeTokens.color.surface,
+    borderColor: nativeTokens.color.lineSoft,
+    backgroundColor: nativeTokens.color.surfaceSubtle,
     paddingHorizontal: nativeTokens.space[3],
   },
   input: {
