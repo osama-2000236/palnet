@@ -6,23 +6,23 @@
 
 ## 0. How this document is organised
 
-| §    | Topic                                                              |
-| ---- | ------------------------------------------------------------------ |
-| 1    | Direction & feel — the voice the product should have               |
-| 2    | Human & task — who uses Baydar and what they're doing              |
-| 3    | What Baydar is — name, metaphor, posture                           |
-| 4    | The three non-negotiables                                          |
-| 5    | Visual language — color, type, space, radius, shadow, surfaces     |
-| 6    | Signature pattern — the field-row composition that ties screens    |
-| 7    | Component inventory — what ships in `ui-web` and `ui-native`       |
-| 8    | Cross-platform parity — see [docs/design/PARITY.md](docs/design/PARITY.md) |
-| 9    | Navigation chrome — see [docs/design/NAV.md](docs/design/NAV.md)   |
-| 10   | Layout patterns — web grids and mobile column                      |
-| 11   | Screens — see [docs/design/SCREENS.md](docs/design/SCREENS.md)     |
-| 12   | Interaction patterns                                               |
-| 13   | What NOT to do                                                     |
-| 14   | Token state                                                        |
-| 15   | The prototype                                                      |
+| §   | Topic                                                                      |
+| --- | -------------------------------------------------------------------------- |
+| 1   | Direction & feel — the voice the product should have                       |
+| 2   | Human & task — who uses Baydar and what they're doing                      |
+| 3   | What Baydar is — name, metaphor, posture                                   |
+| 4   | The three non-negotiables                                                  |
+| 5   | Visual language — color, type, space, radius, shadow, surfaces             |
+| 6   | Signature pattern — the field-row composition that ties screens            |
+| 7   | Component inventory — what ships in `ui-web` and `ui-native`               |
+| 8   | Cross-platform parity — see [docs/design/PARITY.md](docs/design/PARITY.md) |
+| 9   | Navigation chrome — see [docs/design/NAV.md](docs/design/NAV.md)           |
+| 10  | Layout patterns — web grids and mobile column                              |
+| 11  | Screens — see [docs/design/SCREENS.md](docs/design/SCREENS.md)             |
+| 12  | Interaction patterns                                                       |
+| 13  | What NOT to do                                                             |
+| 14  | Token state                                                                |
+| 15  | The prototype                                                              |
 
 ## 1. Direction & feel
 
@@ -150,54 +150,54 @@ Truth: what exists in `packages/ui-web/src/` and `packages/ui-native/src/` today
 
 ### 7.1 Atoms
 
-| Component | Web | Native | Spec                                                             |
-| --------- | --- | ------ | ---------------------------------------------------------------- |
-| `Button`  | ✅  | ✅     | [docs/components/Button.md](docs/components/Button.md)           |
-| `Avatar`  | ✅  | ✅     | [docs/components/Avatar.md](docs/components/Avatar.md)           |
-| `Icon`    | ✅  | ✅     | wraps lucide-react / lucide-react-native                         |
-| `Surface` | ✅  | ✅     | [docs/components/Surface.md](docs/components/Surface.md)         |
-| `Input` / `Textarea` | 🟡 | 🟡 | App-local for now — promote when 3+ screens reuse |
-| `Badge`   | 🟡  | 🟡     | App-local — promote when reused |
-| `Chip`    | 🟡  | 🟡     | App-local — promote when reused |
+| Component            | Web | Native | Spec                                                     |
+| -------------------- | --- | ------ | -------------------------------------------------------- |
+| `Button`             | ✅  | ✅     | [docs/components/Button.md](docs/components/Button.md)   |
+| `Avatar`             | ✅  | ✅     | [docs/components/Avatar.md](docs/components/Avatar.md)   |
+| `Icon`               | ✅  | ✅     | wraps lucide-react / lucide-react-native                 |
+| `Surface`            | ✅  | ✅     | [docs/components/Surface.md](docs/components/Surface.md) |
+| `Input` / `Textarea` | 🟡  | 🟡     | App-local for now — promote when 3+ screens reuse        |
+| `Badge`              | 🟡  | 🟡     | App-local — promote when reused                          |
+| `Chip`               | 🟡  | 🟡     | App-local — promote when reused                          |
 
 ### 7.2 Molecules
 
-| Component         | Web | Native | Spec                                                                       |
-| ----------------- | --- | ------ | -------------------------------------------------------------------------- |
-| `MessageBubble`   | ✅  | ✅     | [docs/components/MessageBubble.md](docs/components/MessageBubble.md)       |
-| `PostCard`        | ✅  | 🟡 (app-local) | [docs/components/PostCard.md](docs/components/PostCard.md)         |
-| `PostCardSkeleton`| ✅  | ✅     | [docs/components/PostCardSkeleton.md](docs/components/PostCardSkeleton.md) |
-| `Skeleton`        | 🟡 (Tailwind utility) | ✅ | [docs/components/Skeleton.md](docs/components/Skeleton.md)        |
-| `RoomRow`         | ✅  | 🟡 (app-local) | [docs/components/RoomRow.md](docs/components/RoomRow.md)           |
-| `TypingIndicator` | ✅  | 🟡 (app-local) | [docs/components/TypingIndicator.md](docs/components/TypingIndicator.md) |
-| `ConnectionRow`   | 🟡 (app-local) | 🟡 (app-local) | — promote to shared kit              |
+| Component          | Web                   | Native         | Spec                                                                       |
+| ------------------ | --------------------- | -------------- | -------------------------------------------------------------------------- |
+| `MessageBubble`    | ✅                    | ✅             | [docs/components/MessageBubble.md](docs/components/MessageBubble.md)       |
+| `PostCard`         | ✅                    | 🟡 (app-local) | [docs/components/PostCard.md](docs/components/PostCard.md)                 |
+| `PostCardSkeleton` | ✅                    | ✅             | [docs/components/PostCardSkeleton.md](docs/components/PostCardSkeleton.md) |
+| `Skeleton`         | 🟡 (Tailwind utility) | ✅             | [docs/components/Skeleton.md](docs/components/Skeleton.md)                 |
+| `RoomRow`          | ✅                    | 🟡 (app-local) | [docs/components/RoomRow.md](docs/components/RoomRow.md)                   |
+| `TypingIndicator`  | ✅                    | 🟡 (app-local) | [docs/components/TypingIndicator.md](docs/components/TypingIndicator.md)   |
+| `ConnectionRow`    | 🟡 (app-local)        | 🟡 (app-local) | — promote to shared kit                                                    |
 
 ### 7.3 Organisms
 
-| Component       | Web | Native                  | Spec                                                       |
-| --------------- | --- | ----------------------- | ---------------------------------------------------------- |
-| `AppShell`      | ✅  | 🟡 (app-local tabs)     | [docs/components/AppShell.md](docs/components/AppShell.md) |
-| `Composer`      | ✅  | 🟡 (app-local)          | [docs/components/Composer.md](docs/components/Composer.md) |
-| `Tabs` / `Tab`  | ✅  | ⏳                       | [docs/components/Tabs.md](docs/components/Tabs.md)         |
-| `Sheet`         | ⏳   | ✅                      | [docs/components/Sheet.md](docs/components/Sheet.md)       |
-| `ProfileHeader` | 🟡 (app-local) | 🟡 (app-local) | — promote when stable                       |
-| `Thread`        | 🟡 (app-local) | 🟡 (app-local) | — promote when stable                       |
-| `RightRail`     | 🟡 (app-local) | n/a            | web-only by definition                      |
+| Component       | Web            | Native              | Spec                                                       |
+| --------------- | -------------- | ------------------- | ---------------------------------------------------------- |
+| `AppShell`      | ✅             | 🟡 (app-local tabs) | [docs/components/AppShell.md](docs/components/AppShell.md) |
+| `Composer`      | ✅             | 🟡 (app-local)      | [docs/components/Composer.md](docs/components/Composer.md) |
+| `Tabs` / `Tab`  | ✅             | ⏳                  | [docs/components/Tabs.md](docs/components/Tabs.md)         |
+| `Sheet`         | ⏳             | ✅                  | [docs/components/Sheet.md](docs/components/Sheet.md)       |
+| `ProfileHeader` | 🟡 (app-local) | 🟡 (app-local)      | — promote when stable                                      |
+| `Thread`        | 🟡 (app-local) | 🟡 (app-local)      | — promote when stable                                      |
+| `RightRail`     | 🟡 (app-local) | n/a                 | web-only by definition                                     |
 
 **Parity gap policy:** every web component should have a native twin in `@baydar/ui-native` with the same prop names. App-local mobile implementations are tolerated as a step on the way to the shared kit, but cross-platform consistency means a shared component is the goal. Tracking matrix lives in [docs/design/PARITY.md](docs/design/PARITY.md).
 
 ### 7.4 Screens → routes
 
-| Screen        | Route (web)                     | Mobile screen        | Status |
-| ------------- | ------------------------------- | -------------------- | ------ |
-| Feed          | `/[locale]/(app)/feed`          | `FeedScreen`         | ✅      |
-| Profile       | `/[locale]/(app)/u/[handle]`    | `ProfileScreen`      | ✅      |
-| Network       | `/[locale]/(app)/network`       | `NetworkScreen`      | ✅      |
-| Messages      | `/[locale]/(app)/messages`      | `MessagesScreen`     | ✅      |
-| Search        | `/[locale]/(app)/search`        | `SearchScreen`       | ✅      |
-| Jobs          | `/[locale]/(app)/jobs`          | `JobsScreen`         | ✅      |
-| Notifications | `/[locale]/(app)/notifications` | `NotificationsScreen`| ✅      |
-| Auth          | `/[locale]/(auth)/login` etc.   | `AuthStack`          | ✅      |
+| Screen        | Route (web)                     | Mobile screen         | Status |
+| ------------- | ------------------------------- | --------------------- | ------ |
+| Feed          | `/[locale]/(app)/feed`          | `FeedScreen`          | ✅     |
+| Profile       | `/[locale]/(app)/u/[handle]`    | `ProfileScreen`       | ✅     |
+| Network       | `/[locale]/(app)/network`       | `NetworkScreen`       | ✅     |
+| Messages      | `/[locale]/(app)/messages`      | `MessagesScreen`      | ✅     |
+| Search        | `/[locale]/(app)/search`        | `SearchScreen`        | ✅     |
+| Jobs          | `/[locale]/(app)/jobs`          | `JobsScreen`          | ✅     |
+| Notifications | `/[locale]/(app)/notifications` | `NotificationsScreen` | ✅     |
+| Auth          | `/[locale]/(auth)/login` etc.   | `AuthStack`           | ✅     |
 
 Per-screen recipes (surfaces, components, copy stance, states) live in [docs/design/SCREENS.md](docs/design/SCREENS.md).
 
@@ -270,6 +270,6 @@ Do not hardcode new visual values in apps or shared UI packages. Add or adjust a
 
 ## 15. The prototype
 
-[docs/_archive/prototype-2025/Baydar Prototype.html](docs/_archive/prototype-2025/Baydar%20Prototype.html) is the visual ground truth. Open it, navigate the screens, and match what you build to what's rendered.
+[docs/\_archive/prototype-2025/Baydar Prototype.html](docs/_archive/prototype-2025/Baydar%20Prototype.html) is the visual ground truth. Open it, navigate the screens, and match what you build to what's rendered.
 
 When this document and the prototype disagree, **the prototype wins** — and open a PR updating this document.
