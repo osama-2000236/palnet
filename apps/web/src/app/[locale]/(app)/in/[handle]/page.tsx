@@ -37,12 +37,18 @@ export default function ProfileRoute(): JSX.Element {
   }, [handle, t]);
 
   if (loading) {
-    return <main className="text-ink-muted mx-auto max-w-[840px] px-6 py-10">…</main>;
+    return (
+      <main className="mx-auto max-w-[840px] px-6 py-10">
+        <h1 className="text-ink sr-only">{t("title")}</h1>
+        <p className="text-ink-muted">…</p>
+      </main>
+    );
   }
 
   if (error || !profile) {
     return (
       <main className="mx-auto max-w-[840px] px-6 py-10">
+        <h1 className="text-ink sr-only">{t("title")}</h1>
         <p className="text-ink-muted">{error ?? t("notFound")}</p>
       </main>
     );
