@@ -2,18 +2,18 @@ import { type CursorPageMeta, PeopleSearchQuery, type SearchPersonHit } from "@b
 import { Controller, Get, Query } from "@nestjs/common";
 import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 
+import { RequireCompleteProfile } from "../../common/require-complete-profile.decorator";
 import { ZodValidationPipe } from "../../common/zod-pipe";
-import { OptionalAuth } from "../auth/decorators/optional-auth.decorator";
 
 import { SearchService } from "./search.service";
 
 @ApiTags("search")
 @ApiBearerAuth()
+@RequireCompleteProfile()
 @Controller("search")
 export class SearchController {
   constructor(private readonly search: SearchService) {}
 
-  @OptionalAuth()
   @Get("people")
   async people(
     @Query(new ZodValidationPipe(PeopleSearchQuery))

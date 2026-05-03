@@ -5,6 +5,7 @@ import AppTabsLayout from "../../app/(app)/_layout";
 
 const visibleScreens: string[] = [];
 const hiddenScreens: string[] = [];
+let mockIsConnected = true;
 
 jest.mock("expo-router", () => {
   const Tabs = function MockTabs({ children }: { children: ReactNode }) {
@@ -60,7 +61,7 @@ jest.mock("@/lib/sse", () => ({
 }));
 
 jest.mock("@/store/network", () => ({
-  useNetworkStore: jest.fn(() => true),
+  useNetworkStore: jest.fn(() => mockIsConnected),
 }));
 
 jest.mock("react-i18next", () => ({
@@ -72,13 +73,11 @@ jest.mock("react-i18next", () => ({
 const { router: mockRouter } = jest.requireMock("expo-router") as {
   router: { replace: jest.Mock; push: jest.Mock };
 };
-const {
-  cachedProfileStatus: mockCachedProfileStatus,
-  fetchProfileStatus: mockFetchProfileStatus,
-} = jest.requireMock("@/lib/profile-state") as {
-  cachedProfileStatus: jest.Mock;
-  fetchProfileStatus: jest.Mock;
-};
+const { cachedProfileStatus: mockCachedProfileStatus, fetchProfileStatus: mockFetchProfileStatus } =
+  jest.requireMock("@/lib/profile-state") as {
+    cachedProfileStatus: jest.Mock;
+    fetchProfileStatus: jest.Mock;
+  };
 const { clearSession: mockClearSession } = jest.requireMock("@/lib/session") as {
   clearSession: jest.Mock;
 };
@@ -90,8 +89,10 @@ describe("AppTabsLayout", () => {
   beforeEach(() => {
     visibleScreens.length = 0;
     hiddenScreens.length = 0;
+    mockIsConnected = true;
     jest.clearAllMocks();
     mockCachedProfileStatus.mockResolvedValue({ status: "complete" });
+    mockFetchProfileStatus.mockResolvedValue({ status: "complete" });
   });
 
   it("exposes the five design-doc tabs and hides secondary routes", async () => {
@@ -115,15 +116,25 @@ describe("AppTabsLayout", () => {
 
   it("redirects expired sessions to login instead of showing a profile gate error", async () => {
     mockCachedProfileStatus.mockResolvedValueOnce(null);
-    mockFetchProfileStatus.mockRejectedValueOnce(
-      new MockApiRequestError(401, "AUTH_UNAUTHORIZED"),
-    );
+    mockFetchProfileStatus.mockRejectedValueOnce(new MockApiRequestError(401, "AUTH_UNAUTHORIZED"));
 
     render(<AppTabsLayout />);
 
     await waitFor(() => {
       expect(mockClearSession).toHaveBeenCalledTimes(1);
       expect(mockRouter.replace).toHaveBeenCalledWith("/(auth)/login");
+    });
+  });
+
+  it("does not let cached completion bypass onboarding while online", async () => {
+    mockCachedProfileStatus.mockResolvedValueOnce({ status: "complete" });
+    mockFetchProfileStatus.mockResolvedValueOnce({ status: "required" });
+
+    render(<AppTabsLayout />);
+
+    await waitFor(() => {
+      expect(mockFetchProfileStatus).toHaveBeenCalledWith("access-token");
+      expect(mockRouter.replace).toHaveBeenCalledWith("/(app)/onboarding");
     });
   });
 });

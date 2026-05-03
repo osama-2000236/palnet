@@ -105,8 +105,23 @@ describe("profile-state", () => {
       userId: "user-1",
       handle: "demo",
       completedAt: new Date().toISOString(),
+      expiresAt: new Date(Date.now() + 60_000).toISOString(),
     });
 
     await expect(resolvePostAuthRoute(session)).resolves.toBe("/(app)/feed");
+  });
+
+  it("does not fall back to cache for authenticated API failures", async () => {
+    mockApiFetch.mockRejectedValue(new ApiRequestError(403, "PROFILE_ONBOARDING_REQUIRED"));
+    mockReadProfileCache.mockResolvedValue({
+      userId: "user-1",
+      handle: "demo",
+      completedAt: new Date().toISOString(),
+      expiresAt: new Date(Date.now() + 60_000).toISOString(),
+    });
+
+    await expect(resolvePostAuthRoute(session)).rejects.toMatchObject({
+      code: "PROFILE_ONBOARDING_REQUIRED",
+    });
   });
 });

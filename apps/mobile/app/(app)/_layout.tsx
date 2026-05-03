@@ -40,7 +40,6 @@ export default function AppTabsLayout(): JSX.Element {
     }
 
     const isOnboardingRoute = pathname.includes("/onboarding");
-    const cached = await cachedProfileStatus(session.user.id);
 
     if (isOnboardingRoute) {
       try {
@@ -49,19 +48,19 @@ export default function AppTabsLayout(): JSX.Element {
           router.replace("/(app)/feed");
           return;
         }
-      } catch {
-        if (cached?.status === "complete") {
+      } catch (error) {
+        if (isSessionGateError(error)) {
+          await clearSession();
+          router.replace("/(auth)/login");
+          return;
+        }
+        const cached = !isConnected ? await cachedProfileStatus(session.user.id) : null;
+        if (!isConnected && cached?.status === "complete") {
           router.replace("/(app)/feed");
           return;
         }
       }
       setGateState("ready");
-      return;
-    }
-
-    if (cached?.status === "complete") {
-      setGateState("ready");
-      void registerForPushAsync().catch(() => undefined);
       return;
     }
 
@@ -81,7 +80,7 @@ export default function AppTabsLayout(): JSX.Element {
       }
       setGateState("error");
     }
-  }, [pathname]);
+  }, [isConnected, pathname]);
 
   useEffect(() => {
     void verifyGate();
@@ -122,7 +121,14 @@ export default function AppTabsLayout(): JSX.Element {
   }, [gateState, isConnected, pathname]);
 
   if (gateState === "checking") {
-    return <LoadingIntro compact testID="app-gate-loading" />;
+    return (
+      <LoadingIntro
+        compact
+        testID="app-gate-loading"
+        label={t("appGate.loadingTitle")}
+        caption={t("appGate.loadingBody")}
+      />
+    );
   }
 
   if (gateState === "error") {

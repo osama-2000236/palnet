@@ -17,6 +17,7 @@ import {
 } from "@nestjs/common";
 import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 
+import { RequireCompleteProfile } from "../../common/require-complete-profile.decorator";
 import { ZodValidationPipe } from "../../common/zod-pipe";
 import { CurrentUser, type AuthUser } from "../auth/decorators/current-user.decorator";
 
@@ -24,6 +25,7 @@ import { CommentsService } from "./comments.service";
 
 @ApiTags("comments")
 @ApiBearerAuth()
+@RequireCompleteProfile()
 @Controller()
 export class CommentsController {
   constructor(private readonly comments: CommentsService) {}

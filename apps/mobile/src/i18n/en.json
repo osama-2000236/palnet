@@ -168,6 +168,8 @@
   },
   "appGate": {
     "title": "We need to verify your profile",
+    "loadingTitle": "Checking your profile",
+    "loadingBody": "One moment while we open the right Baydar space for you.",
     "body": "Could not verify your profile status right now. Try again.",
     "offlineBody": "We cannot verify your profile while you're offline. Try again once the connection returns."
   },
@@ -177,6 +179,9 @@
       "NETWORK_ERROR": "We could not reach Baydar. Check your connection and try again.",
       "INVALID_RESPONSE": "Baydar returned data we could not read. Try again.",
       "AUTH_UNAUTHORIZED": "Your session expired. Sign in again.",
+      "AUTH_TOKEN_EXPIRED": "Your session expired. Sign in again.",
+      "AUTH_TOKEN_INVALID": "Your session expired. Sign in again.",
+      "PROFILE_ONBOARDING_REQUIRED": "Complete your professional profile before continuing.",
       "NOT_FOUND": "We could not find the requested data.",
       "VALIDATION_FAILED": "Please check the fields and try again.",
       "INTERNAL": "An unexpected error occurred."

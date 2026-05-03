@@ -40,6 +40,7 @@ import * as yup from "yup";
 import { z } from "zod";
 
 import { apiFetch, ApiRequestError } from "@/lib/api";
+import { apiErrorMessage } from "@/lib/api-errors";
 import { successHaptic, tapHaptic } from "@/lib/haptics";
 import { getAccessToken, readSession, writeProfileCache } from "@/lib/session";
 import { uploadAsset, type PickedAsset } from "@/lib/uploads";
@@ -393,13 +394,7 @@ export default function OnboardingScreen(): JSX.Element {
       router.replace("/(app)/feed");
     } catch (error) {
       if (error instanceof ApiRequestError) {
-        setSubmitError(
-          t(`onboarding.errors.${error.code}`, {
-            defaultValue: t(`auth.errors.${error.code}`, {
-              defaultValue: t("onboarding.errors.generic"),
-            }),
-          }),
-        );
+        setSubmitError(apiErrorMessage(t, error));
       } else {
         setSubmitError(t("onboarding.errors.generic"));
       }

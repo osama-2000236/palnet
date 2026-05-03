@@ -2,7 +2,13 @@ import type { AuthSession } from "@baydar/shared";
 import * as SecureStore from "expo-secure-store";
 import { Platform } from "react-native";
 
-import { clearSession, readSession, writeSession } from "@/lib/session";
+import {
+  clearSession,
+  readProfileCache,
+  readSession,
+  writeProfileCache,
+  writeSession,
+} from "@/lib/session";
 
 const session: AuthSession = {
   user: {
@@ -48,6 +54,47 @@ describe("session storage", () => {
 
     expect(SecureStore.deleteItemAsync).not.toHaveBeenCalled();
     await expect(readSession()).resolves.toBeNull();
+  });
+
+  it("treats legacy profile caches without expiry as expired", async () => {
+    const values = new Map<string, string>();
+    setPlatform("web");
+    Object.defineProperty(globalThis, "localStorage", {
+      configurable: true,
+      value: {
+        getItem: (key: string) => values.get(key) ?? null,
+        setItem: (key: string, value: string) => values.set(key, value),
+        removeItem: (key: string) => values.delete(key),
+      },
+    });
+    values.set(
+      "baydar.profile-cache.v1",
+      JSON.stringify({
+        userId: "user-1",
+        handle: "demo",
+        completedAt: new Date().toISOString(),
+      }),
+    );
+
+    await expect(readProfileCache("user-1")).resolves.toBeNull();
+  });
+
+  it("writes profile caches with expiry", async () => {
+    const values = new Map<string, string>();
+    setPlatform("web");
+    Object.defineProperty(globalThis, "localStorage", {
+      configurable: true,
+      value: {
+        getItem: (key: string) => values.get(key) ?? null,
+        setItem: (key: string, value: string) => values.set(key, value),
+        removeItem: (key: string) => values.delete(key),
+      },
+    });
+
+    await writeProfileCache({ userId: "user-1", handle: "demo" });
+
+    const cache = await readProfileCache("user-1");
+    expect(cache?.expiresAt).toBeTruthy();
   });
 });
 

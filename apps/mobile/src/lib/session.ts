@@ -6,6 +6,7 @@ import { Platform } from "react-native";
 const KEY = "baydar.session.v1";
 const DEVICE_KEY = "baydar.deviceId";
 const PROFILE_CACHE_KEY = "baydar.profile-cache.v1";
+const PROFILE_CACHE_TTL_MS = 1000 * 60 * 60 * 24;
 
 type BrowserStorage = {
   getItem: (key: string) => string | null;
@@ -19,6 +20,7 @@ export interface ProfileCompletionCache {
   userId: string;
   handle: string;
   completedAt: string;
+  expiresAt: string;
 }
 
 export async function readSession(): Promise<AuthSession | null> {
@@ -59,6 +61,8 @@ export async function readProfileCache(userId?: string): Promise<ProfileCompleti
   try {
     const parsed = JSON.parse(raw) as ProfileCompletionCache;
     if (userId && parsed.userId !== userId) return null;
+    if (!parsed.expiresAt || Number.isNaN(Date.parse(parsed.expiresAt))) return null;
+    if (Date.parse(parsed.expiresAt) <= Date.now()) return null;
     return parsed;
   } catch {
     return null;
@@ -72,6 +76,7 @@ export async function writeProfileCache(
     userId: profile.userId,
     handle: profile.handle,
     completedAt: new Date().toISOString(),
+    expiresAt: new Date(Date.now() + PROFILE_CACHE_TTL_MS).toISOString(),
   };
   await setStoredValue(PROFILE_CACHE_KEY, JSON.stringify(cache));
 }

@@ -2,6 +2,7 @@ import {
   AddSkillBody,
   EducationBody,
   ExperienceBody,
+  isProfileComplete,
   JobLocationMode,
   Profile as ProfileSchema,
   UpdateProfileBody,
@@ -26,7 +27,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { StateMessage } from "@/components/StateMessage";
 import { apiFetch } from "@/lib/api";
 import { apiErrorMessage } from "@/lib/api-errors";
-import { getAccessToken } from "@/lib/session";
+import { clearProfileCache, getAccessToken, writeProfileCache } from "@/lib/session";
 import { uploadAsset } from "@/lib/uploads";
 
 export default function EditProfileScreen(): JSX.Element {
@@ -53,6 +54,16 @@ export default function EditProfileScreen(): JSX.Element {
   useEffect(() => {
     void refresh().finally(() => setLoading(false));
   }, [refresh]);
+
+  const handleProfileChanged = useCallback(async (next: Profile): Promise<void> => {
+    setProfile(next);
+    if (isProfileComplete(next)) {
+      await writeProfileCache(next);
+      return;
+    }
+    await clearProfileCache();
+    router.replace("/(app)/onboarding");
+  }, []);
 
   if (loading || !profile) {
     return (
@@ -105,10 +116,26 @@ export default function EditProfileScreen(): JSX.Element {
             />
           ) : null}
 
-          <BasicsCard profile={profile} onChanged={setProfile} onError={setError} />
-          <ExperiencesCard profile={profile} onChanged={setProfile} onError={setError} />
-          <EducationsCard profile={profile} onChanged={setProfile} onError={setError} />
-          <SkillsCard profile={profile} onChanged={setProfile} onError={setError} />
+          <BasicsCard
+            profile={profile}
+            onChanged={(next) => void handleProfileChanged(next)}
+            onError={setError}
+          />
+          <ExperiencesCard
+            profile={profile}
+            onChanged={(next) => void handleProfileChanged(next)}
+            onError={setError}
+          />
+          <EducationsCard
+            profile={profile}
+            onChanged={(next) => void handleProfileChanged(next)}
+            onError={setError}
+          />
+          <SkillsCard
+            profile={profile}
+            onChanged={(next) => void handleProfileChanged(next)}
+            onError={setError}
+          />
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -817,11 +844,12 @@ const styles = StyleSheet.create({
   },
   nameGrid: {
     flexDirection: "row",
+    flexWrap: "wrap",
     gap: nativeTokens.space[2],
   },
   nameCell: {
     flex: 1,
-    minWidth: 0,
+    minWidth: nativeTokens.space[20],
   },
   inputLtr: {
     textAlign: "left",
