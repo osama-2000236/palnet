@@ -3,41 +3,22 @@
 // the polyfill before i18next initialises.
 import "intl-pluralrules";
 
-import * as Localization from "expo-localization";
 import i18n from "i18next";
-import { I18nManager } from "react-native";
 import { initReactI18next } from "react-i18next";
+
+import {
+  applyLocaleDirection,
+  getInitialLocale,
+  readLocalePreference,
+  writeLocalePreference,
+  type SupportedLocale,
+} from "@/lib/locale";
 
 import ar from "./ar.json";
 import en from "./en.json";
 
-type Supported = "ar-PS" | "en";
-
-function pickLocale(): Supported {
-  const configuredLocale = normalizeLocale(process.env.EXPO_PUBLIC_DEFAULT_LOCALE);
-  if (configuredLocale) return configuredLocale;
-
-  const tag = Localization.getLocales()[0]?.languageTag ?? "ar-PS";
-  if (tag.startsWith("ar")) return "ar-PS";
-  return "ar-PS";
-}
-
-function normalizeLocale(locale?: string): Supported | null {
-  if (!locale) return null;
-  if (locale.startsWith("ar")) return "ar-PS";
-  if (locale === "en" || locale.startsWith("en-")) return "en";
-  return null;
-}
-
-const locale = pickLocale();
-
-// RTL for Arabic. Native side needs a reload if this flips vs. current runtime.
-const shouldBeRtl = locale === "ar-PS";
-if (I18nManager.isRTL !== shouldBeRtl) {
-  I18nManager.allowRTL(shouldBeRtl);
-  I18nManager.forceRTL(shouldBeRtl);
-  // Caller should restart the app on first boot after locale change.
-}
+const locale = getInitialLocale();
+applyLocaleDirection(locale);
 
 void i18n.use(initReactI18next).init({
   resources: {
@@ -49,5 +30,18 @@ void i18n.use(initReactI18next).init({
   interpolation: { escapeValue: false },
   returnNull: false,
 });
+
+export async function setAppLocale(locale: SupportedLocale): Promise<void> {
+  await writeLocalePreference(locale);
+  applyLocaleDirection(locale);
+  await i18n.changeLanguage(locale);
+}
+
+export async function loadStoredAppLocale(): Promise<void> {
+  const stored = await readLocalePreference();
+  if (stored && stored !== i18n.language) {
+    await setAppLocale(stored);
+  }
+}
 
 export default i18n;

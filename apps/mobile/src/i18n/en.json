@@ -10,6 +10,9 @@
     "continue": "Continue",
     "clear": "Clear",
     "done": "Done",
+    "language": "Language",
+    "arabic": "Arabic",
+    "english": "English",
     "genericError": "Something went wrong. Please try again."
   },
   "system": {

@@ -10,6 +10,9 @@
     "continue": "متابعة",
     "clear": "مسح",
     "done": "تم",
+    "language": "اللغة",
+    "arabic": "العربية",
+    "english": "الإنجليزية",
     "genericError": "حدث خطأ ما. حاول مرة أخرى."
   },
   "system": {
