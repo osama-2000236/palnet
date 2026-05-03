@@ -69,3 +69,10 @@ packages/db/prisma/*.db-journal
 .codex-logs/
 .artifacts/
 expo-qr.png
+
+# Python (agentflow tooling)
+__pycache__/
+*.pyc
+
+# QA run scratch
+.qa-last-run-id.tmp
