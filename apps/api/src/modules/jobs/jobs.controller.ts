@@ -7,10 +7,11 @@ import {
   JobLocationMode,
   JobType,
 } from "@baydar/shared";
-import { Body, Controller, Get, Param, Post, Query, UsePipes } from "@nestjs/common";
+import { Body, Controller, Get, Param, Post, Query } from "@nestjs/common";
 import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 import { z } from "zod";
 
+import { RequireCompleteProfile } from "../../common/require-complete-profile.decorator";
 import { ZodValidationPipe } from "../../common/zod-pipe";
 import { CurrentUser, type AuthUser } from "../auth/decorators/current-user.decorator";
 
@@ -26,6 +27,7 @@ type JobListQuery = z.infer<typeof JobListQuery>;
 
 @ApiTags("jobs")
 @ApiBearerAuth()
+@RequireCompleteProfile()
 @Controller("jobs")
 export class JobsController {
   constructor(private readonly jobs: JobsService) {}
@@ -49,11 +51,10 @@ export class JobsController {
   }
 
   @Post(":id/apply")
-  @UsePipes(new ZodValidationPipe(ApplyToJobBody))
   async apply(
     @CurrentUser() user: AuthUser,
     @Param("id") id: string,
-    @Body() body: ApplyToJobBody,
+    @Body(new ZodValidationPipe(ApplyToJobBody)) body: ApplyToJobBody,
   ): Promise<{ id: string; status: ApplicationStatus }> {
     return this.jobs.apply(user.id, id, body);
   }

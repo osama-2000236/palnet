@@ -2,6 +2,7 @@ export * from "./enums";
 export * from "./pagination";
 export * from "./errors";
 export * from "./format";
+export * from "./profile-completion";
 export * from "./schemas/auth";
 export * from "./schemas/user";
 export * from "./schemas/profile";

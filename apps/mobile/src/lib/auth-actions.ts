@@ -2,18 +2,19 @@ import { AuthSession, type LoginBody, type RegisterBody } from "@baydar/shared";
 
 import { apiFetch, ApiRequestError } from "./api";
 import { track } from "./analytics";
-import { getDeviceId, writeSession } from "./session";
+import { clearProfileCache, getDeviceId, writeSession } from "./session";
 
 export async function registerAction(
   body: Omit<RegisterBody, "acceptTerms"> & { acceptTerms: true },
 ): Promise<AuthSession> {
   const session = await apiFetch("/auth/register", AuthSession, {
     method: "POST",
-    body,
+    body: { ...body, deviceId: await getDeviceId() },
     skipAuth: true,
   });
   await writeSession(session);
-  track("auth.login", { method: "password" });
+  await clearProfileCache();
+  track("auth.register", { method: "password" });
   return session;
 }
 
@@ -32,6 +33,7 @@ export async function loginAction(input: {
     skipAuth: true,
   });
   await writeSession(session);
+  track("auth.login", { method: "password" });
   return session;
 }
 

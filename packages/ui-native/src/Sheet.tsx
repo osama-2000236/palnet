@@ -15,13 +15,14 @@
 // `end` edge via `writingDirection`/flexDirection flip.
 
 import {
+  I18nManager,
   Modal,
   Pressable,
   ScrollView,
   StyleSheet,
   Text,
   View,
-  I18nManager,
+  useWindowDimensions,
   type ScrollViewProps,
 } from "react-native";
 import type { ReactNode } from "react";
@@ -54,6 +55,9 @@ export function Sheet({
   scrollProps,
   closeLabel = "Close",
 }: SheetProps): JSX.Element {
+  const { height } = useWindowDimensions();
+  const cardMaxHeight = Math.max(320, Math.floor(height * 0.85));
+
   return (
     <Modal
       transparent
@@ -69,7 +73,7 @@ export function Sheet({
         accessibilityRole="button"
       />
 
-      <View style={styles.card} pointerEvents="box-none">
+      <View style={[styles.card, { maxHeight: cardMaxHeight }]} pointerEvents="box-none">
         <View style={styles.handleWrap}>
           <View style={styles.handle} />
         </View>
@@ -129,8 +133,6 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: nativeTokens.radius.xl,
     borderTopRightRadius: nativeTokens.radius.xl,
     paddingBottom: nativeTokens.space[6],
-    // Cap max height so the sheet doesn't cover the full screen on phones.
-    maxHeight: "85%",
     ...nativeTokens.shadow.pop,
   },
   handleWrap: {

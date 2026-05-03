@@ -2,23 +2,18 @@
 // like the web `/messages` left rail instead of the raw-RN cards.
 
 import { ChatRoom as ChatRoomSchema, type ChatRoom } from "@baydar/shared";
-import { Surface, nativeTokens } from "@baydar/ui-native";
+import { AppHeader, Button, Icon, RecordCardSkeleton, nativeTokens } from "@baydar/ui-native";
 import { router, useFocusEffect } from "expo-router";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import {
-  ActivityIndicator,
-  FlatList,
-  Pressable,
-  RefreshControl,
-  SafeAreaView,
-  Text,
-  View,
-} from "react-native";
+import { FlatList, RefreshControl, StyleSheet, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { z } from "zod";
 
+import { StateMessage } from "@/components/StateMessage";
 import { RoomRow } from "@/components/rows/RoomRow";
 import { apiCall, apiFetchPage } from "@/lib/api";
+import { apiErrorMessage } from "@/lib/api-errors";
 import { successHaptic, tapHaptic } from "@/lib/haptics";
 import { getAccessToken, readSession } from "@/lib/session";
 
@@ -30,20 +25,39 @@ export default function MessagesListScreen(): JSX.Element {
   const [viewerId, setViewerId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const loadPromiseRef = useRef<Promise<void> | null>(null);
+  const latestLoadRef = useRef<() => Promise<void>>(async () => undefined);
 
   const load = useCallback(async (): Promise<void> => {
-    const token = await getAccessToken();
-    if (!token) return;
-    setLoading(true);
-    try {
-      const out = await apiFetchPage("/messaging/rooms", RoomsEnvelope, {
-        token,
-      });
-      setRooms(out.data);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+    if (loadPromiseRef.current) return loadPromiseRef.current;
+
+    const run = (async () => {
+      const token = await getAccessToken();
+      if (!token) return;
+      setLoading(true);
+      setError(null);
+      try {
+        const out = await apiFetchPage("/messaging/rooms", RoomsEnvelope, {
+          token,
+        });
+        setRooms(out.data);
+      } catch (caught) {
+        setError(apiErrorMessage(t, caught));
+      } finally {
+        setLoading(false);
+      }
+    })().finally(() => {
+      loadPromiseRef.current = null;
+    });
+
+    loadPromiseRef.current = run;
+    return run;
+  }, [t]);
+
+  useEffect(() => {
+    latestLoadRef.current = load;
+  }, [load]);
 
   const refresh = useCallback(async (): Promise<void> => {
     setRefreshing(true);
@@ -54,17 +68,24 @@ export default function MessagesListScreen(): JSX.Element {
     }
   }, [load]);
 
-  const archiveRoom = useCallback(async (roomId: string): Promise<void> => {
-    const token = await getAccessToken();
-    if (!token) return;
-    tapHaptic();
-    await apiCall(`/messaging/rooms/${roomId}/archive`, {
-      method: "POST",
-      token,
-    });
-    setRooms((prev) => prev.filter((room) => room.id !== roomId));
-    successHaptic();
-  }, []);
+  const archiveRoom = useCallback(
+    async (roomId: string): Promise<void> => {
+      const token = await getAccessToken();
+      if (!token) return;
+      tapHaptic();
+      try {
+        await apiCall(`/messaging/rooms/${roomId}/archive`, {
+          method: "POST",
+          token,
+        });
+        setRooms((prev) => prev.filter((room) => room.id !== roomId));
+        successHaptic();
+      } catch (caught) {
+        setError(apiErrorMessage(t, caught));
+      }
+    },
+    [t],
+  );
 
   useEffect(() => {
     void (async () => {
@@ -74,74 +95,37 @@ export default function MessagesListScreen(): JSX.Element {
         return;
       }
       setViewerId(session.user.id);
-      await load();
     })();
-  }, [load]);
+  }, []);
 
   useFocusEffect(
     useCallback(() => {
-      void load();
-    }, [load]),
+      void latestLoadRef.current();
+    }, []),
   );
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: nativeTokens.color.surfaceMuted }}>
-      <View
-        style={{
-          flex: 1,
-          paddingHorizontal: nativeTokens.space[4],
-          paddingTop: nativeTokens.space[8],
-        }}
-      >
-        <View
-          style={{
-            marginBottom: nativeTokens.space[3],
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: nativeTokens.space[3],
-          }}
-        >
-          <Text
-            style={{
-              color: nativeTokens.color.ink,
-              fontFamily: nativeTokens.type.family.sans,
-              fontSize: nativeTokens.type.scale.display.size,
-              lineHeight: nativeTokens.type.scale.display.line,
-              fontWeight: "700",
-            }}
-          >
-            {t("messaging.title")}
-          </Text>
-          <Pressable
-            onPress={() => router.push("/(app)/messages/new")}
-            accessibilityRole="button"
-            accessibilityLabel={t("messaging.newGroup.title")}
-            style={{
-              minHeight: 44,
-              borderRadius: nativeTokens.radius.full,
-              backgroundColor: nativeTokens.color.brand600,
-              paddingHorizontal: nativeTokens.space[3],
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <Text
-              style={{
-                color: nativeTokens.color.inkInverse,
-                fontFamily: nativeTokens.type.family.sans,
-                fontSize: nativeTokens.type.scale.small.size,
-                fontWeight: "700",
-              }}
+    <SafeAreaView style={styles.screen}>
+      <View style={styles.content}>
+        <AppHeader
+          title={t("messaging.title")}
+          compact
+          trailing={
+            <Button
+              size="sm"
+              leading={<Icon name="message" size={16} color={nativeTokens.color.inkInverse} />}
+              onPress={() => router.push("/(app)/messages/new")}
+              accessibilityLabel={t("messaging.newGroup.title")}
             >
               {t("messaging.newMessage")}
-            </Text>
-          </Pressable>
-        </View>
+            </Button>
+          }
+        />
 
         <FlatList
           data={rooms}
           keyExtractor={(r) => r.id}
+          contentContainerStyle={styles.listContent}
           renderItem={({ item }) => (
             <RoomRow
               room={item}
@@ -150,7 +134,7 @@ export default function MessagesListScreen(): JSX.Element {
               onArchive={(roomId) => void archiveRoom(roomId)}
             />
           )}
-          ItemSeparatorComponent={() => <View style={{ height: nativeTokens.space[2] }} />}
+          ItemSeparatorComponent={() => <View style={styles.separator} />}
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
@@ -160,30 +144,47 @@ export default function MessagesListScreen(): JSX.Element {
             />
           }
           ListEmptyComponent={
-            loading ? null : (
-              <Surface variant="tinted" padding="6">
-                <Text
-                  style={{
-                    color: nativeTokens.color.inkMuted,
-                    fontFamily: nativeTokens.type.family.sans,
-                    fontSize: nativeTokens.type.scale.body.size,
-                    textAlign: "center",
-                  }}
-                >
-                  {t("messaging.emptyList")}
-                </Text>
-              </Surface>
-            )
-          }
-          ListFooterComponent={
             loading ? (
-              <View style={{ paddingVertical: nativeTokens.space[4] }}>
-                <ActivityIndicator />
+              <View style={styles.skeletonStack}>
+                <RecordCardSkeleton />
+                <RecordCardSkeleton />
+                <RecordCardSkeleton />
               </View>
-            ) : null
+            ) : error ? (
+              <StateMessage
+                message={error}
+                actionLabel={t("common.retry")}
+                busy={loading}
+                onAction={() => void load()}
+                testID="messages-list-error"
+              />
+            ) : (
+              <StateMessage message={t("messaging.emptyList")} role="text" />
+            )
           }
         />
       </View>
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+    backgroundColor: nativeTokens.color.surfaceMuted,
+  },
+  content: {
+    flex: 1,
+    paddingHorizontal: nativeTokens.space[4],
+    paddingTop: nativeTokens.space[3],
+  },
+  listContent: {
+    paddingBottom: nativeTokens.space[6],
+  },
+  separator: {
+    height: nativeTokens.space[2],
+  },
+  skeletonStack: {
+    gap: nativeTokens.space[2],
+  },
+});

@@ -1,5 +1,13 @@
 import { CreatePostBody, formatNumber, MediaKind, type MediaRef, Post } from "@baydar/shared";
-import { Avatar, Button, Icon, Surface, nativeTokens, type AvatarUser } from "@baydar/ui-native";
+import {
+  AppHeader,
+  Avatar,
+  Button,
+  Icon,
+  Surface,
+  nativeTokens,
+  type AvatarUser,
+} from "@baydar/ui-native";
 import { Image } from "expo-image";
 import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
@@ -16,7 +24,8 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { apiFetch, ApiRequestError } from "@/lib/api";
+import { apiFetch } from "@/lib/api";
+import { apiErrorMessage } from "@/lib/api-errors";
 import { track } from "@/lib/analytics";
 import { successHaptic, tapHaptic } from "@/lib/haptics";
 import { getAccessToken, readSession } from "@/lib/session";
@@ -116,12 +125,8 @@ export default function ComposerScreen(): JSX.Element {
       successHaptic();
       track("post.create", { mediaCount: media.length });
       router.replace("/(app)/feed");
-    } catch (e) {
-      if (e instanceof ApiRequestError) {
-        setError(t(`auth.errors.${e.code}`, { defaultValue: t("auth.errors.INTERNAL") }));
-      } else {
-        setError(t("auth.errors.INTERNAL"));
-      }
+    } catch (caught) {
+      setError(apiErrorMessage(t, caught));
     } finally {
       setBusy(false);
     }
@@ -138,7 +143,20 @@ export default function ComposerScreen(): JSX.Element {
         behavior={Platform.OS === "ios" ? "padding" : undefined}
         style={styles.content}
       >
-        <Text style={styles.title}>{t("composer.title")}</Text>
+        <AppHeader
+          title={t("composer.title")}
+          compact
+          trailing={
+            <Button
+              variant="ghost"
+              size="sm"
+              onPress={() => router.back()}
+              accessibilityLabel={t("common.cancel")}
+            >
+              {t("common.cancel")}
+            </Button>
+          }
+        />
 
         <Surface variant="tinted" padding="3" style={styles.authorChip}>
           <Avatar user={author} size="sm" />
@@ -217,18 +235,9 @@ export default function ComposerScreen(): JSX.Element {
           disabled={body.trim().length === 0}
           loading={busy}
           accessibilityLabel={t("composer.submit")}
+          leading={<Icon name="send" size={18} color={nativeTokens.color.inkInverse} />}
         >
           {t("composer.submit")}
-        </Button>
-
-        <Button
-          variant="ghost"
-          size="md"
-          fullWidth
-          onPress={() => router.back()}
-          accessibilityLabel={t("common.cancel")}
-        >
-          {t("common.cancel")}
         </Button>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -245,13 +254,6 @@ const styles = StyleSheet.create({
     gap: nativeTokens.space[3],
     paddingHorizontal: nativeTokens.space[4],
     paddingTop: nativeTokens.space[8],
-  },
-  title: {
-    color: nativeTokens.color.ink,
-    fontSize: nativeTokens.type.scale.display.size,
-    lineHeight: nativeTokens.type.scale.display.line,
-    fontWeight: "700",
-    fontFamily: nativeTokens.type.family.sans,
   },
   authorChip: {
     alignSelf: "flex-start",

@@ -14,10 +14,19 @@ import en from "./en.json";
 type Supported = "ar-PS" | "en";
 
 function pickLocale(): Supported {
+  const configuredLocale = normalizeLocale(process.env.EXPO_PUBLIC_DEFAULT_LOCALE);
+  if (configuredLocale) return configuredLocale;
+
   const tag = Localization.getLocales()[0]?.languageTag ?? "ar-PS";
   if (tag.startsWith("ar")) return "ar-PS";
-  if (tag.startsWith("en")) return "en";
   return "ar-PS";
+}
+
+function normalizeLocale(locale?: string): Supported | null {
+  if (!locale) return null;
+  if (locale.startsWith("ar")) return "ar-PS";
+  if (locale === "en" || locale.startsWith("en-")) return "en";
+  return null;
 }
 
 const locale = pickLocale();

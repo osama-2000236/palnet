@@ -7,7 +7,7 @@ import { PrismaService } from "../prisma/prisma.service";
 import { ProfilesService } from "./profiles.service";
 
 type PrismaStub = {
-  profile: { findUnique: jest.Mock };
+  profile: { create: jest.Mock; findUnique: jest.Mock; update: jest.Mock };
   experience: {
     create: jest.Mock;
     update: jest.Mock;
@@ -20,14 +20,14 @@ type PrismaStub = {
     delete: jest.Mock;
     findUnique: jest.Mock;
   };
-  skill: { upsert: jest.Mock };
+  skill: { create: jest.Mock; findFirst: jest.Mock };
   profileSkill: { upsert: jest.Mock; deleteMany: jest.Mock };
   connection: { findFirst: jest.Mock };
 };
 
 function buildPrisma(): PrismaStub {
   return {
-    profile: { findUnique: jest.fn() },
+    profile: { create: jest.fn(), findUnique: jest.fn(), update: jest.fn() },
     experience: {
       create: jest.fn(),
       update: jest.fn(),
@@ -40,7 +40,7 @@ function buildPrisma(): PrismaStub {
       delete: jest.fn(),
       findUnique: jest.fn(),
     },
-    skill: { upsert: jest.fn() },
+    skill: { create: jest.fn(), findFirst: jest.fn() },
     profileSkill: { upsert: jest.fn(), deleteMany: jest.fn() },
     connection: { findFirst: jest.fn() },
   };
@@ -150,9 +150,92 @@ describe("ProfilesService (edit)", () => {
     });
   });
 
+  describe("onboard", () => {
+    it("creates a profile when the registered user has none", async () => {
+      prisma.profile.findUnique.mockResolvedValueOnce(null).mockResolvedValueOnce(null);
+      prisma.profile.create.mockResolvedValue(
+        profileRow({
+          handle: "new-user",
+          firstName: "New",
+          lastName: "User",
+          headline: "Full Stack Engineer",
+          location: "Ramallah",
+        }),
+      );
+
+      const result = await service.onboard("u_1", {
+        handle: "new-user",
+        firstName: "New",
+        lastName: "User",
+        headline: "Full Stack Engineer",
+        location: "Ramallah",
+        country: "PS",
+      });
+
+      expect(prisma.profile.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            userId: "u_1",
+            handle: "new-user",
+          }),
+        }),
+      );
+      expect(result.handle).toBe("new-user");
+    });
+
+    it("updates the caller's profile when onboarding is resumed", async () => {
+      prisma.profile.findUnique
+        .mockResolvedValueOnce(profileRow({ userId: "u_1" }))
+        .mockResolvedValueOnce(profileRow({ userId: "u_1" }));
+      prisma.profile.update.mockResolvedValue(
+        profileRow({
+          handle: "resumed",
+          firstName: "Resume",
+          lastName: "User",
+          headline: "Full Stack Engineer",
+          location: "Nablus",
+        }),
+      );
+
+      await service.onboard("u_1", {
+        handle: "resumed",
+        firstName: "Resume",
+        lastName: "User",
+        headline: "Full Stack Engineer",
+        location: "Nablus",
+        country: "PS",
+      });
+
+      expect(prisma.profile.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { userId: "u_1" },
+          data: expect.objectContaining({ handle: "resumed" }),
+        }),
+      );
+    });
+
+    it("rejects a handle owned by another user", async () => {
+      prisma.profile.findUnique
+        .mockResolvedValueOnce(null)
+        .mockResolvedValueOnce(profileRow({ userId: "u_other" }));
+
+      await expect(
+        service.onboard("u_1", {
+          handle: "taken",
+          firstName: "New",
+          lastName: "User",
+          headline: "Full Stack Engineer",
+          location: "Ramallah",
+          country: "PS",
+        }),
+      ).rejects.toMatchObject({ code: ErrorCode.CONFLICT } as Partial<DomainException>);
+    });
+  });
+
   describe("skills", () => {
-    it("slugifies the name and upserts skill + association", async () => {
-      prisma.skill.upsert.mockResolvedValue({
+    it("slugifies the name and creates skill + association", async () => {
+      prisma.skill.findFirst.mockResolvedValue(null);
+      prisma.skill.create.mockResolvedValue({
         id: "sk_1",
         name: "TypeScript",
         slug: "typescript",
@@ -164,16 +247,42 @@ describe("ProfilesService (edit)", () => {
 
       await service.addSkill("u_1", { name: "  TypeScript  " });
 
-      expect(prisma.skill.upsert).toHaveBeenCalledWith(
-        expect.objectContaining({
-          where: { slug: "typescript" },
-          create: expect.objectContaining({ slug: "typescript" }),
-        }),
-      );
+      expect(prisma.skill.findFirst).toHaveBeenCalledWith({
+        where: { OR: [{ slug: "typescript" }, { name: "TypeScript" }] },
+      });
+      expect(prisma.skill.create).toHaveBeenCalledWith({
+        data: { name: "TypeScript", slug: "typescript" },
+      });
       expect(prisma.profileSkill.upsert).toHaveBeenCalledWith(
         expect.objectContaining({
           where: {
             profileId_skillId: { profileId: "p_1", skillId: "sk_1" },
+          },
+        }),
+      );
+    });
+
+    it("normalizes punctuation when matching seeded skill names", async () => {
+      prisma.skill.findFirst.mockResolvedValue({
+        id: "sk_node",
+        name: "Node.js",
+        slug: "node-js",
+      });
+      prisma.profileSkill.upsert.mockResolvedValue({
+        profileId: "p_1",
+        skillId: "sk_node",
+      });
+
+      await service.addSkill("u_1", { name: "Node.js" });
+
+      expect(prisma.skill.findFirst).toHaveBeenCalledWith({
+        where: { OR: [{ slug: "node-js" }, { name: "Node.js" }] },
+      });
+      expect(prisma.skill.create).not.toHaveBeenCalled();
+      expect(prisma.profileSkill.upsert).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: {
+            profileId_skillId: { profileId: "p_1", skillId: "sk_node" },
           },
         }),
       );

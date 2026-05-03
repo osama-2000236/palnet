@@ -14,7 +14,6 @@ type PrismaStub = {
     create: jest.Mock;
     findUniqueOrThrow: jest.Mock;
   };
-  profile: { findUnique: jest.Mock };
   refreshToken: {
     create: jest.Mock;
     findFirst: jest.Mock;
@@ -30,7 +29,6 @@ function buildPrisma(): PrismaStub {
       create: jest.fn(),
       findUniqueOrThrow: jest.fn(),
     },
-    profile: { findUnique: jest.fn() },
     refreshToken: {
       create: jest.fn(),
       findFirst: jest.fn(),
@@ -42,9 +40,9 @@ function buildPrisma(): PrismaStub {
 
 function buildConfig(): Pick<ConfigService, "getOrThrow"> {
   const values: Record<string, unknown> = {
-    BCRYPT_COST: 4, // low cost keeps tests fast
-    JWT_ACCESS_TTL: 900,
-    JWT_REFRESH_TTL: 2_592_000,
+    BCRYPT_COST: "4", // string mirrors ConfigService values from process.env in dev.
+    JWT_ACCESS_TTL: "900",
+    JWT_REFRESH_TTL: "2592000",
     JWT_ACCESS_SECRET: "x".repeat(48),
     JWT_REFRESH_SECRET: "y".repeat(48),
   };
@@ -70,9 +68,8 @@ describe("AuthService", () => {
   });
 
   describe("register", () => {
-    it("creates a user + profile and issues tokens (happy path)", async () => {
+    it("creates a user without a profile and issues tokens", async () => {
       prisma.user.findUnique.mockResolvedValue(null);
-      prisma.profile.findUnique.mockResolvedValue(null);
       prisma.user.create.mockResolvedValue({
         id: "user_1",
         email: "a@b.co",
@@ -97,6 +94,14 @@ describe("AuthService", () => {
       expect(result.tokens.accessToken).toBeTruthy();
       expect(result.tokens.refreshToken).toBeTruthy();
       expect(prisma.user.create).toHaveBeenCalledTimes(1);
+      expect(prisma.user.create).toHaveBeenCalledWith({
+        data: {
+          email: "a@b.co",
+          passwordHash: expect.any(String),
+          locale: "ar-PS",
+          role: "USER",
+        },
+      });
       expect(prisma.refreshToken.create).toHaveBeenCalledTimes(1);
     });
 

@@ -18,7 +18,7 @@ export const NotificationRow = memo(function NotificationRow({
   const destination = hrefFor(item);
 
   const content = (
-    <Surface variant="row" padding="4" style={unread ? styles.unreadRow : styles.row}>
+    <Surface variant="card" padding="4" style={unread ? styles.unreadRow : styles.row}>
       {actor ? (
         <Avatar
           user={{

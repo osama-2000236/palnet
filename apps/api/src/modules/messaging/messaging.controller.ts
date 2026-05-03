@@ -19,11 +19,11 @@ import {
   Post,
   Query,
   Sse,
-  UsePipes,
 } from "@nestjs/common";
 import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 import { Observable } from "rxjs";
 
+import { RequireCompleteProfile } from "../../common/require-complete-profile.decorator";
 import { ZodValidationPipe } from "../../common/zod-pipe";
 import { CurrentUser, type AuthUser } from "../auth/decorators/current-user.decorator";
 
@@ -37,6 +37,7 @@ interface SseMessage {
 
 @ApiTags("messaging")
 @ApiBearerAuth()
+@RequireCompleteProfile()
 @Controller("messaging")
 export class MessagingController {
   constructor(
@@ -51,8 +52,10 @@ export class MessagingController {
   }
 
   @Post("rooms")
-  @UsePipes(new ZodValidationPipe(CreateRoomBody))
-  async createRoom(@CurrentUser() user: AuthUser, @Body() body: CreateRoomBody): Promise<ChatRoom> {
+  async createRoom(
+    @CurrentUser() user: AuthUser,
+    @Body(new ZodValidationPipe(CreateRoomBody)) body: CreateRoomBody,
+  ): Promise<ChatRoom> {
     if ("otherUserId" in body) {
       return this.messaging.findOrCreateDm(user.id, body.otherUserId);
     }
@@ -89,21 +92,19 @@ export class MessagingController {
   }
 
   @Post("rooms/:id/messages")
-  @UsePipes(new ZodValidationPipe(SendMessageBody))
   async sendMessage(
     @CurrentUser() user: AuthUser,
     @Param("id") id: string,
-    @Body() body: SendMessageBody,
+    @Body(new ZodValidationPipe(SendMessageBody)) body: SendMessageBody,
   ): Promise<Message> {
     return this.messaging.sendMessage(user.id, id, body);
   }
 
   @Patch("messages/:id")
-  @UsePipes(new ZodValidationPipe(UpdateMessageBody))
   async editMessage(
     @CurrentUser() user: AuthUser,
     @Param("id") id: string,
-    @Body() body: UpdateMessageBody,
+    @Body(new ZodValidationPipe(UpdateMessageBody)) body: UpdateMessageBody,
   ): Promise<Message> {
     return this.messaging.editMessage(user.id, id, body);
   }

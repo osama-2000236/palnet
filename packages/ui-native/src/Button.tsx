@@ -95,7 +95,7 @@ export function Button({
     justifyContent: "center",
     height: SIZE_HEIGHT[size],
     paddingHorizontal: SIZE_PAD_X[size],
-    borderRadius: nativeTokens.radius.md,
+    borderRadius: nativeTokens.radius.full,
     borderWidth: 1,
     borderColor: VARIANT_BORDER[variant],
     backgroundColor: VARIANT_BG[variant],
@@ -133,7 +133,9 @@ export function Button({
       ) : null}
       {children !== undefined && children !== null ? (
         typeof children === "string" ? (
-          <Text style={[label, textStyle]}>{children}</Text>
+          <Text numberOfLines={1} adjustsFontSizeToFit style={[label, textStyle]}>
+            {children}
+          </Text>
         ) : (
           <View>{children}</View>
         )

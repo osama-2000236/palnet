@@ -41,7 +41,11 @@ export async function apiFetch<T extends z.ZodTypeAny>(
   }
 
   const body = (json as { data?: unknown }).data ?? json;
-  return schema.parse(body) as z.infer<T>;
+  const parsed = schema.safeParse(body);
+  if (!parsed.success) {
+    throw new ApiRequestError(0, "INVALID_RESPONSE", parsed.error.flatten());
+  }
+  return parsed.data as z.infer<T>;
 }
 
 // For mutation endpoints returning 204 No Content (or where the response body is not needed).
@@ -67,7 +71,11 @@ export async function apiFetchPage<T extends z.ZodTypeAny>(
     const code = parsed.success ? parsed.data.error.code : "INTERNAL";
     throw new ApiRequestError(res.status, code);
   }
-  return envelope.parse(json) as z.infer<T>;
+  const parsed = envelope.safeParse(json);
+  if (!parsed.success) {
+    throw new ApiRequestError(0, "INVALID_RESPONSE", parsed.error.flatten());
+  }
+  return parsed.data as z.infer<T>;
 }
 
 async function requestWithAuth(path: string, opts: ApiFetchOptions): Promise<Response> {
@@ -97,11 +105,15 @@ async function request(
   void _token;
   void _skipAuth;
 
-  return fetch(`${API_BASE}${path}`, {
-    ...init,
-    headers,
-    body: body === undefined ? undefined : JSON.stringify(body),
-  });
+  try {
+    return await fetch(`${API_BASE}${path}`, {
+      ...init,
+      headers,
+      body: body === undefined ? undefined : JSON.stringify(body),
+    });
+  } catch (error) {
+    throw new ApiRequestError(0, "NETWORK_ERROR", error);
+  }
 }
 
 async function refreshAccessToken(): Promise<string | null> {

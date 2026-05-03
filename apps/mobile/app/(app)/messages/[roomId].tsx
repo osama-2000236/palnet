@@ -3,9 +3,8 @@
 // same rules web uses (pending- id → sending, failed set → failed,
 // otherLastReadAt → read, else sent).
 //
-// No SSE yet on mobile; 4s polling reconciles state. That means "sending"
-// only flashes briefly; the rest of the time messages arrive as "sent" or
-// "read" straight from the server.
+// Mobile subscribes to the shared SSE stream and reconciles optimistic sends
+// by clientMessageId, matching the web thread behavior.
 
 import {
   ChatRoom as ChatRoomSchema,
@@ -16,6 +15,9 @@ import {
   type Message,
 } from "@baydar/shared";
 import {
+  AppHeader,
+  Button,
+  Icon,
   MessageBubble,
   Sheet,
   Surface,
@@ -27,20 +29,20 @@ import { router, useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
-  ActivityIndicator,
   FlatList,
   KeyboardAvoidingView,
   Platform,
   Pressable,
   RefreshControl,
-  SafeAreaView,
   Text,
   TextInput,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { z } from "zod";
 
 import { apiCall, apiFetch, apiFetchPage } from "@/lib/api";
+import { apiErrorMessage } from "@/lib/api-errors";
 import { track } from "@/lib/analytics";
 import { successHaptic, tapHaptic } from "@/lib/haptics";
 import { readSession } from "@/lib/session";
@@ -96,10 +98,10 @@ export default function MessageThreadScreen(): JSX.Element {
       setRoom(r);
       setMessages([...page.data].reverse());
       didInitialScrollRef.current = false;
-    } catch {
-      // keep existing state
+    } catch (caught) {
+      setError(apiErrorMessage(t, caught));
     }
-  }, [token, roomId]);
+  }, [token, roomId, t]);
 
   useEffect(() => {
     if (!token || !roomId || !isConnected) return;
@@ -173,13 +175,13 @@ export default function MessageThreadScreen(): JSX.Element {
           return next;
         });
         successHaptic();
-      } catch {
+      } catch (caught) {
         setFailedClientIds((prev) => {
           const next = new Set(prev);
           next.add(clientMessageId);
           return next;
         });
-        setError(t("messaging.sendFailed"));
+        setError(apiErrorMessage(t, caught));
       }
     },
     [token, roomId, t],
@@ -243,8 +245,8 @@ export default function MessageThreadScreen(): JSX.Element {
       setActionMessage(null);
       setEditingBody("");
       successHaptic();
-    } catch {
-      setError(t("messaging.edit.failed"));
+    } catch (caught) {
+      setError(apiErrorMessage(t, caught));
     }
   }, [actionMessage, editingBody, token, t]);
 
@@ -259,8 +261,8 @@ export default function MessageThreadScreen(): JSX.Element {
       setActionMessage(null);
       setEditingBody("");
       successHaptic();
-    } catch {
-      setError(t("messaging.delete.failed"));
+    } catch (caught) {
+      setError(apiErrorMessage(t, caught));
     }
   }, [actionMessage, token, t]);
 
@@ -343,39 +345,19 @@ export default function MessageThreadScreen(): JSX.Element {
       >
         <View
           style={{
-            flexDirection: "row",
-            alignItems: "center",
-            gap: nativeTokens.space[2],
-            borderBottomWidth: 1,
-            borderBottomColor: nativeTokens.color.lineSoft,
             backgroundColor: nativeTokens.color.surface,
             paddingHorizontal: nativeTokens.space[4],
-            paddingVertical: nativeTokens.space[3],
           }}
         >
-          <Pressable onPress={() => router.back()} hitSlop={12} accessibilityRole="button">
-            <Text
-              style={{
-                color: nativeTokens.color.brand600,
-                fontSize: nativeTokens.type.scale.h3.size,
-                fontFamily: nativeTokens.type.family.sans,
-              }}
-            >
-              ‹
-            </Text>
-          </Pressable>
-          <Text
-            numberOfLines={1}
-            style={{
-              flex: 1,
-              color: nativeTokens.color.ink,
-              fontFamily: nativeTokens.type.family.sans,
-              fontSize: nativeTokens.type.scale.body.size,
-              fontWeight: "600",
-            }}
-          >
-            {title}
-          </Text>
+          <AppHeader
+            title={title || t("messaging.title")}
+            compact
+            trailing={
+              <Button variant="ghost" size="sm" onPress={() => router.back()}>
+                {t("common.back")}
+              </Button>
+            }
+          />
         </View>
 
         {unreadCount > 0 ? (
@@ -411,7 +393,7 @@ export default function MessageThreadScreen(): JSX.Element {
           keyExtractor={(m) => m.id}
           contentContainerStyle={{
             padding: nativeTokens.space[3],
-            gap: 6,
+            gap: nativeTokens.space[2],
           }}
           renderItem={({ item, index }) => {
             const prev = messages[index - 1];
@@ -425,7 +407,7 @@ export default function MessageThreadScreen(): JSX.Element {
               : undefined;
             const author = memberById.get(item.authorId);
             return (
-              <View style={{ marginTop: prevSameAuthor ? 0 : 6 }}>
+              <View style={{ marginTop: prevSameAuthor ? 0 : nativeTokens.space[2] }}>
                 <Pressable
                   disabled={!mine || item.id.startsWith("pending-") || Boolean(item.deletedAt)}
                   onLongPress={() => openMessageActions(item)}
@@ -541,36 +523,20 @@ export default function MessageThreadScreen(): JSX.Element {
               color: nativeTokens.color.ink,
               fontFamily: nativeTokens.type.family.sans,
               fontSize: nativeTokens.type.scale.body.size,
-              maxHeight: 120,
+              maxHeight: nativeTokens.space[24] + nativeTokens.space[6],
             }}
           />
-          <Pressable
+          <Button
             disabled={sending || draft.trim().length === 0}
             onPress={() => void submit()}
-            accessibilityRole="button"
-            style={({ pressed }) => ({
-              borderRadius: nativeTokens.radius.md,
-              backgroundColor: nativeTokens.color.brand600,
-              paddingHorizontal: nativeTokens.space[4],
-              paddingVertical: nativeTokens.space[2],
-              opacity: sending || draft.trim().length === 0 ? 0.6 : pressed ? 0.85 : 1,
-            })}
+            loading={sending}
+            accessibilityLabel={t("messaging.send")}
+            testID="messages-send-button"
+            size="lg"
+            leading={<Icon name="send" size={18} color={nativeTokens.color.inkInverse} />}
           >
-            {sending ? (
-              <ActivityIndicator color={nativeTokens.color.inkInverse} />
-            ) : (
-              <Text
-                style={{
-                  color: nativeTokens.color.inkInverse,
-                  fontFamily: nativeTokens.type.family.sans,
-                  fontSize: nativeTokens.type.scale.body.size,
-                  fontWeight: "600",
-                }}
-              >
-                {t("messaging.send")}
-              </Text>
-            )}
-          </Pressable>
+            {t("messaging.send")}
+          </Button>
         </View>
 
         <Sheet
@@ -590,7 +556,7 @@ export default function MessageThreadScreen(): JSX.Element {
             placeholder={t("messaging.composePlaceholder")}
             placeholderTextColor={nativeTokens.color.inkMuted}
             style={{
-              minHeight: 92,
+              minHeight: nativeTokens.space[24],
               borderRadius: nativeTokens.radius.md,
               borderWidth: 1,
               borderColor: nativeTokens.color.lineHard,
@@ -607,7 +573,7 @@ export default function MessageThreadScreen(): JSX.Element {
             onPress={() => void saveEdit()}
             accessibilityRole="button"
             style={{
-              minHeight: 44,
+              minHeight: nativeTokens.chrome.minHit,
               borderRadius: nativeTokens.radius.md,
               backgroundColor: nativeTokens.color.brand600,
               alignItems: "center",
@@ -630,7 +596,7 @@ export default function MessageThreadScreen(): JSX.Element {
             onPress={() => void deleteSelected()}
             accessibilityRole="button"
             style={{
-              minHeight: 44,
+              minHeight: nativeTokens.chrome.minHit,
               borderRadius: nativeTokens.radius.md,
               borderWidth: 1,
               borderColor: nativeTokens.color.danger,

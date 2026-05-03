@@ -2,18 +2,18 @@ import {
   AddSkillBody,
   EducationBody,
   ExperienceBody,
+  isProfileComplete,
   JobLocationMode,
   Profile as ProfileSchema,
   UpdateProfileBody,
   type Profile,
 } from "@baydar/shared";
-import { Avatar, Button, Icon, Surface, nativeTokens } from "@baydar/ui-native";
+import { AppHeader, Avatar, Button, Icon, Surface, nativeTokens } from "@baydar/ui-native";
 import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
-import { useEffect, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import {
-  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -24,33 +24,64 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { StateMessage } from "@/components/StateMessage";
 import { apiFetch } from "@/lib/api";
-import { getAccessToken } from "@/lib/session";
+import { apiErrorMessage } from "@/lib/api-errors";
+import { clearProfileCache, getAccessToken, writeProfileCache } from "@/lib/session";
 import { uploadAsset } from "@/lib/uploads";
 
 export default function EditProfileScreen(): JSX.Element {
   const { t } = useTranslation();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const refresh = async (): Promise<void> => {
+  const refresh = useCallback(async (): Promise<void> => {
     const token = await getAccessToken();
     if (!token) {
       router.replace("/(auth)/login");
       return;
     }
-    const p = await apiFetch("/profiles/me", ProfileSchema, { token });
-    setProfile(p);
-  };
+    setError(null);
+    try {
+      const p = await apiFetch("/profiles/me", ProfileSchema, { token });
+      setProfile(p);
+    } catch (caught) {
+      setError(apiErrorMessage(t, caught));
+    }
+  }, [t]);
 
   useEffect(() => {
     void refresh().finally(() => setLoading(false));
+  }, [refresh]);
+
+  const handleProfileChanged = useCallback(async (next: Profile): Promise<void> => {
+    setProfile(next);
+    if (isProfileComplete(next)) {
+      await writeProfileCache(next);
+      return;
+    }
+    await clearProfileCache();
+    router.replace("/(app)/onboarding");
   }, []);
 
   if (loading || !profile) {
     return (
       <SafeAreaView style={styles.centerScreen}>
-        <ActivityIndicator />
+        {loading ? (
+          <StateMessage message={t("common.loading")} role="text" />
+        ) : error ? (
+          <View style={styles.errorWrap}>
+            <StateMessage
+              message={error}
+              actionLabel={t("common.retry")}
+              onAction={() => {
+                setLoading(true);
+                void refresh().finally(() => setLoading(false));
+              }}
+            />
+          </View>
+        ) : null}
       </SafeAreaView>
     );
   }
@@ -62,22 +93,49 @@ export default function EditProfileScreen(): JSX.Element {
         style={styles.flex}
       >
         <ScrollView contentContainerStyle={styles.scrollContent}>
-          <View style={styles.header}>
-            <Text style={styles.title}>{t("profile.editTitle")}</Text>
-            <Button
-              variant="ghost"
-              size="sm"
-              onPress={() => router.back()}
-              accessibilityLabel={t("common.cancel")}
-            >
-              {t("common.cancel")}
-            </Button>
-          </View>
+          <AppHeader
+            title={t("profile.editTitle")}
+            compact
+            trailing={
+              <Button
+                variant="ghost"
+                size="sm"
+                onPress={() => router.back()}
+                accessibilityLabel={t("common.cancel")}
+              >
+                {t("common.cancel")}
+              </Button>
+            }
+          />
 
-          <BasicsCard profile={profile} onChanged={setProfile} />
-          <ExperiencesCard profile={profile} onChanged={setProfile} />
-          <EducationsCard profile={profile} onChanged={setProfile} />
-          <SkillsCard profile={profile} onChanged={setProfile} />
+          {error ? (
+            <StateMessage
+              message={error}
+              actionLabel={t("common.retry")}
+              onAction={() => void refresh()}
+            />
+          ) : null}
+
+          <BasicsCard
+            profile={profile}
+            onChanged={(next) => void handleProfileChanged(next)}
+            onError={setError}
+          />
+          <ExperiencesCard
+            profile={profile}
+            onChanged={(next) => void handleProfileChanged(next)}
+            onError={setError}
+          />
+          <EducationsCard
+            profile={profile}
+            onChanged={(next) => void handleProfileChanged(next)}
+            onError={setError}
+          />
+          <SkillsCard
+            profile={profile}
+            onChanged={(next) => void handleProfileChanged(next)}
+            onError={setError}
+          />
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -98,30 +156,54 @@ function Input({
   onChangeText,
   placeholder,
   multiline,
+  error,
+  inputDirection = "rtl",
 }: {
   value: string;
   onChangeText: (v: string) => void;
   placeholder?: string;
   multiline?: boolean;
+  error?: string | null;
+  inputDirection?: "rtl" | "ltr" | "auto";
 }): JSX.Element {
   return (
-    <TextInput
-      value={value}
-      onChangeText={onChangeText}
-      placeholder={placeholder}
-      placeholderTextColor={nativeTokens.color.inkMuted}
-      multiline={multiline}
-      style={[styles.input, multiline ? styles.multilineInput : null]}
-    />
+    <View style={styles.inputWrap}>
+      <TextInput
+        value={value}
+        onChangeText={onChangeText}
+        placeholder={placeholder}
+        placeholderTextColor={nativeTokens.color.inkMuted}
+        multiline={multiline}
+        accessibilityLabel={placeholder}
+        accessibilityHint={error ?? undefined}
+        style={[
+          styles.input,
+          multiline ? styles.multilineInput : null,
+          inputDirection === "ltr"
+            ? styles.inputLtr
+            : inputDirection === "auto"
+              ? styles.inputAuto
+              : null,
+          error ? styles.inputError : null,
+        ]}
+      />
+      {error ? (
+        <Text selectable accessibilityRole="alert" style={styles.fieldError}>
+          {error}
+        </Text>
+      ) : null}
+    </View>
   );
 }
 
 function BasicsCard({
   profile,
   onChanged,
+  onError,
 }: {
   profile: Profile;
   onChanged: (next: Profile) => void;
+  onError: (message: string | null) => void;
 }): JSX.Element {
   const { t } = useTranslation();
   const [firstName, setFirstName] = useState(profile.firstName);
@@ -131,6 +213,7 @@ function BasicsCard({
   const [location, setLocation] = useState(profile.location ?? "");
   const [busy, setBusy] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string | null>>({});
 
   async function pickAvatar(): Promise<void> {
     const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -146,6 +229,7 @@ function BasicsCard({
     const token = await getAccessToken();
     if (!token) return;
     setUploading(true);
+    onError(null);
     try {
       const uploaded = await uploadAsset({
         asset: {
@@ -163,6 +247,8 @@ function BasicsCard({
         token,
       });
       onChanged(next);
+    } catch (caught) {
+      onError(apiErrorMessage(t, caught));
     } finally {
       setUploading(false);
     }
@@ -176,10 +262,21 @@ function BasicsCard({
       about: about || null,
       location: location || null,
     });
-    if (!parsed.success) return;
+    if (!parsed.success) {
+      const errors = parsed.error.flatten().fieldErrors;
+      setFieldErrors({
+        firstName: errors.firstName?.length ? t("profile.validation.firstName") : null,
+        lastName: errors.lastName?.length ? t("profile.validation.lastName") : null,
+        headline: errors.headline?.length ? t("profile.validation.headline") : null,
+        about: errors.about?.length ? t("profile.validation.about") : null,
+        location: errors.location?.length ? t("profile.validation.location") : null,
+      });
+      return;
+    }
     const token = await getAccessToken();
     if (!token) return;
     setBusy(true);
+    onError(null);
     try {
       const next = await apiFetch("/profiles/me", ProfileSchema, {
         method: "PATCH",
@@ -187,6 +284,9 @@ function BasicsCard({
         token,
       });
       onChanged(next);
+      setFieldErrors({});
+    } catch (caught) {
+      onError(apiErrorMessage(t, caught));
     } finally {
       setBusy(false);
     }
@@ -215,19 +315,52 @@ function BasicsCard({
           {uploading ? t("profile.uploading") : t("profile.changeAvatar")}
         </Button>
       </View>
-      <Input value={firstName} onChangeText={setFirstName} placeholder={t("profile.firstName")} />
-      <Input value={lastName} onChangeText={setLastName} placeholder={t("profile.lastName")} />
-      <Input value={headline} onChangeText={setHeadline} placeholder={t("profile.headline")} />
-      <Input value={about} onChangeText={setAbout} placeholder={t("profile.about")} multiline />
-      <Input value={location} onChangeText={setLocation} placeholder={t("profile.location")} />
+      <View style={styles.nameGrid}>
+        <View style={styles.nameCell}>
+          <Input
+            value={firstName}
+            onChangeText={setFirstName}
+            placeholder={t("profile.firstName")}
+            error={fieldErrors.firstName}
+          />
+        </View>
+        <View style={styles.nameCell}>
+          <Input
+            value={lastName}
+            onChangeText={setLastName}
+            placeholder={t("profile.lastName")}
+            error={fieldErrors.lastName}
+          />
+        </View>
+      </View>
+      <Input
+        value={headline}
+        onChangeText={setHeadline}
+        placeholder={t("profile.headline")}
+        error={fieldErrors.headline}
+        inputDirection="auto"
+      />
+      <Input
+        value={about}
+        onChangeText={setAbout}
+        placeholder={t("profile.about")}
+        multiline
+        error={fieldErrors.about}
+      />
+      <Input
+        value={location}
+        onChangeText={setLocation}
+        placeholder={t("profile.location")}
+        error={fieldErrors.location}
+      />
       <Button
         onPress={save}
         disabled={busy}
         loading={busy}
-        style={styles.alignEnd}
-        accessibilityLabel={t("profile.save")}
+        fullWidth
+        accessibilityLabel={t("common.saveChanges")}
       >
-        {t("profile.save")}
+        {t("common.saveChanges")}
       </Button>
     </Card>
   );
@@ -236,9 +369,11 @@ function BasicsCard({
 function ExperiencesCard({
   profile,
   onChanged,
+  onError,
 }: {
   profile: Profile;
   onChanged: (next: Profile) => void;
+  onError: (message: string | null) => void;
 }): JSX.Element {
   const { t } = useTranslation();
   const [show, setShow] = useState(false);
@@ -247,6 +382,7 @@ function ExperiencesCard({
   const [description, setDescription] = useState("");
   const [startDate, setStartDate] = useState(new Date().toISOString().slice(0, 10));
   const [busy, setBusy] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string | null>>({});
 
   async function add(): Promise<void> {
     const parsed = ExperienceBody.safeParse({
@@ -255,14 +391,23 @@ function ExperiencesCard({
       companyId: null,
       location: null,
       locationMode: JobLocationMode.ONSITE,
-      startDate: new Date(startDate).toISOString(),
+      startDate: parseDateInput(startDate) ?? "",
       endDate: null,
       description: description || null,
     });
-    if (!parsed.success) return;
+    if (!parsed.success) {
+      const errors = parsed.error.flatten().fieldErrors;
+      setFieldErrors({
+        title: errors.title?.length ? t("profile.validation.expTitle") : null,
+        companyName: errors.companyName?.length ? t("profile.validation.company") : null,
+        startDate: errors.startDate?.length ? t("profile.validation.date") : null,
+      });
+      return;
+    }
     const token = await getAccessToken();
     if (!token) return;
     setBusy(true);
+    onError(null);
     try {
       const next = await apiFetch("/profiles/me/experiences", ProfileSchema, {
         method: "POST",
@@ -274,6 +419,9 @@ function ExperiencesCard({
       setTitle("");
       setCompanyName("");
       setDescription("");
+      setFieldErrors({});
+    } catch (caught) {
+      onError(apiErrorMessage(t, caught));
     } finally {
       setBusy(false);
     }
@@ -283,12 +431,15 @@ function ExperiencesCard({
     const token = await getAccessToken();
     if (!token) return;
     setBusy(true);
+    onError(null);
     try {
       const next = await apiFetch(`/profiles/me/experiences/${id}`, ProfileSchema, {
         method: "DELETE",
         token,
       });
       onChanged(next);
+    } catch (caught) {
+      onError(apiErrorMessage(t, caught));
     } finally {
       setBusy(false);
     }
@@ -325,16 +476,26 @@ function ExperiencesCard({
       {show ? (
         <Surface variant="tinted" padding="3">
           <View style={styles.cardBody}>
-            <Input value={title} onChangeText={setTitle} placeholder={t("profile.expTitle")} />
+            <Input
+              value={title}
+              onChangeText={setTitle}
+              placeholder={t("profile.expTitle")}
+              error={fieldErrors.title}
+              inputDirection="auto"
+            />
             <Input
               value={companyName}
               onChangeText={setCompanyName}
               placeholder={t("profile.company")}
+              error={fieldErrors.companyName}
+              inputDirection="auto"
             />
             <Input
               value={startDate}
               onChangeText={setStartDate}
               placeholder={t("profile.dateHint")}
+              error={fieldErrors.startDate}
+              inputDirection="ltr"
             />
             <Input
               value={description}
@@ -372,9 +533,11 @@ function ExperiencesCard({
 function EducationsCard({
   profile,
   onChanged,
+  onError,
 }: {
   profile: Profile;
   onChanged: (next: Profile) => void;
+  onError: (message: string | null) => void;
 }): JSX.Element {
   const { t } = useTranslation();
   const [show, setShow] = useState(false);
@@ -382,6 +545,7 @@ function EducationsCard({
   const [degree, setDegree] = useState("");
   const [fieldOfStudy, setFieldOfStudy] = useState("");
   const [busy, setBusy] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string | null>>({});
 
   async function add(): Promise<void> {
     const parsed = EducationBody.safeParse({
@@ -392,10 +556,17 @@ function EducationsCard({
       endDate: null,
       description: null,
     });
-    if (!parsed.success) return;
+    if (!parsed.success) {
+      const errors = parsed.error.flatten().fieldErrors;
+      setFieldErrors({
+        school: errors.school?.length ? t("profile.validation.school") : null,
+      });
+      return;
+    }
     const token = await getAccessToken();
     if (!token) return;
     setBusy(true);
+    onError(null);
     try {
       const next = await apiFetch("/profiles/me/educations", ProfileSchema, {
         method: "POST",
@@ -407,6 +578,9 @@ function EducationsCard({
       setSchool("");
       setDegree("");
       setFieldOfStudy("");
+      setFieldErrors({});
+    } catch (caught) {
+      onError(apiErrorMessage(t, caught));
     } finally {
       setBusy(false);
     }
@@ -416,12 +590,15 @@ function EducationsCard({
     const token = await getAccessToken();
     if (!token) return;
     setBusy(true);
+    onError(null);
     try {
       const next = await apiFetch(`/profiles/me/educations/${id}`, ProfileSchema, {
         method: "DELETE",
         token,
       });
       onChanged(next);
+    } catch (caught) {
+      onError(apiErrorMessage(t, caught));
     } finally {
       setBusy(false);
     }
@@ -457,12 +634,24 @@ function EducationsCard({
       {show ? (
         <Surface variant="tinted" padding="3">
           <View style={styles.cardBody}>
-            <Input value={school} onChangeText={setSchool} placeholder={t("profile.school")} />
-            <Input value={degree} onChangeText={setDegree} placeholder={t("profile.degree")} />
+            <Input
+              value={school}
+              onChangeText={setSchool}
+              placeholder={t("profile.school")}
+              error={fieldErrors.school}
+              inputDirection="auto"
+            />
+            <Input
+              value={degree}
+              onChangeText={setDegree}
+              placeholder={t("profile.degree")}
+              inputDirection="auto"
+            />
             <Input
               value={fieldOfStudy}
               onChangeText={setFieldOfStudy}
               placeholder={t("profile.fieldOfStudy")}
+              inputDirection="auto"
             />
             <View style={styles.buttonRow}>
               <Button variant="ghost" size="sm" onPress={() => setShow(false)}>
@@ -494,20 +683,27 @@ function EducationsCard({
 function SkillsCard({
   profile,
   onChanged,
+  onError,
 }: {
   profile: Profile;
   onChanged: (next: Profile) => void;
+  onError: (message: string | null) => void;
 }): JSX.Element {
   const { t } = useTranslation();
   const [name, setName] = useState("");
   const [busy, setBusy] = useState(false);
+  const [fieldError, setFieldError] = useState<string | null>(null);
 
   async function add(): Promise<void> {
     const parsed = AddSkillBody.safeParse({ name });
-    if (!parsed.success) return;
+    if (!parsed.success) {
+      setFieldError(t("profile.validation.skill"));
+      return;
+    }
     const token = await getAccessToken();
     if (!token) return;
     setBusy(true);
+    onError(null);
     try {
       const next = await apiFetch("/profiles/me/skills", ProfileSchema, {
         method: "POST",
@@ -516,6 +712,9 @@ function SkillsCard({
       });
       onChanged(next);
       setName("");
+      setFieldError(null);
+    } catch (caught) {
+      onError(apiErrorMessage(t, caught));
     } finally {
       setBusy(false);
     }
@@ -525,12 +724,15 @@ function SkillsCard({
     const token = await getAccessToken();
     if (!token) return;
     setBusy(true);
+    onError(null);
     try {
       const next = await apiFetch(`/profiles/me/skills/${skillId}`, ProfileSchema, {
         method: "DELETE",
         token,
       });
       onChanged(next);
+    } catch (caught) {
+      onError(apiErrorMessage(t, caught));
     } finally {
       setBusy(false);
     }
@@ -561,14 +763,27 @@ function SkillsCard({
           placeholder={t("profile.addSkillPlaceholder")}
           placeholderTextColor={nativeTokens.color.inkMuted}
           maxLength={60}
-          style={[styles.input, styles.skillInput]}
+          accessibilityLabel={t("profile.addSkillPlaceholder")}
+          accessibilityHint={fieldError ?? undefined}
+          style={[styles.input, styles.skillInput, fieldError ? styles.inputError : null]}
         />
         <Button onPress={add} disabled={busy || name.trim().length === 0} loading={busy}>
           {t("profile.add")}
         </Button>
       </View>
+      {fieldError ? (
+        <Text selectable accessibilityRole="alert" style={styles.fieldError}>
+          {fieldError}
+        </Text>
+      ) : null}
     </Card>
   );
+}
+
+function parseDateInput(value: string): string | null {
+  const timestamp = Date.parse(value);
+  if (Number.isNaN(timestamp)) return null;
+  return new Date(timestamp).toISOString();
 }
 
 const styles = StyleSheet.create({
@@ -585,23 +800,13 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     backgroundColor: nativeTokens.color.surfaceMuted,
   },
+  errorWrap: {
+    alignSelf: "stretch",
+    paddingHorizontal: nativeTokens.space[4],
+  },
   scrollContent: {
     padding: nativeTokens.space[4],
     gap: nativeTokens.space[4],
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: nativeTokens.space[3],
-  },
-  title: {
-    flex: 1,
-    color: nativeTokens.color.ink,
-    fontSize: nativeTokens.type.scale.h1.size,
-    lineHeight: nativeTokens.type.scale.h1.line,
-    fontWeight: "700",
-    fontFamily: nativeTokens.type.family.sans,
   },
   cardTitle: {
     color: nativeTokens.color.ink,
@@ -631,6 +836,37 @@ const styles = StyleSheet.create({
     color: nativeTokens.color.ink,
     fontSize: nativeTokens.type.scale.body.size,
     fontFamily: nativeTokens.type.family.sans,
+    textAlign: "right",
+    writingDirection: "rtl",
+  },
+  inputWrap: {
+    gap: nativeTokens.space[1],
+  },
+  nameGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: nativeTokens.space[2],
+  },
+  nameCell: {
+    flex: 1,
+    minWidth: nativeTokens.space[20],
+  },
+  inputLtr: {
+    textAlign: "left",
+    writingDirection: "ltr",
+  },
+  inputAuto: {
+    writingDirection: "auto",
+  },
+  inputError: {
+    borderColor: nativeTokens.color.danger,
+  },
+  fieldError: {
+    color: nativeTokens.color.danger,
+    fontFamily: nativeTokens.type.family.sans,
+    fontSize: nativeTokens.type.scale.caption.size,
+    lineHeight: nativeTokens.type.scale.caption.line,
+    textAlign: "right",
   },
   multilineInput: {
     minHeight: nativeTokens.space[20],

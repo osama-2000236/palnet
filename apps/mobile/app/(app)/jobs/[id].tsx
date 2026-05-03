@@ -2,24 +2,17 @@
 // Applied badge flips optimistically on press, rolls back on failure.
 
 import { ApplyToJobBody, Job as JobSchema, type Job } from "@baydar/shared";
-import { Button, Sheet, Surface, nativeTokens } from "@baydar/ui-native";
+import { AppHeader, Button, Icon, Surface, nativeTokens } from "@baydar/ui-native";
 import { Image } from "expo-image";
 import { router, useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import {
-  ActivityIndicator,
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  SafeAreaView,
-  ScrollView,
-  Text,
-  TextInput,
-  View,
-} from "react-native";
+import { ScrollView, Text, TextInput, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
+import { StateMessage } from "@/components/StateMessage";
 import { apiCall, apiFetch } from "@/lib/api";
+import { apiErrorMessage } from "@/lib/api-errors";
 import { track } from "@/lib/analytics";
 import { successHaptic, tapHaptic } from "@/lib/haptics";
 import { getAccessToken } from "@/lib/session";
@@ -47,8 +40,8 @@ export default function JobDetailScreen(): JSX.Element {
       try {
         const j = await apiFetch(`/jobs/${jobId}`, JobSchema, { token });
         if (!cancelled) setJob(j);
-      } catch (e) {
-        if (!cancelled) setError((e as Error).message);
+      } catch (caught) {
+        if (!cancelled) setError(apiErrorMessage(t, caught));
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -56,7 +49,7 @@ export default function JobDetailScreen(): JSX.Element {
     return (): void => {
       cancelled = true;
     };
-  }, [jobId]);
+  }, [jobId, t]);
 
   const openApply = useCallback(() => {
     setSubmitError(null);
@@ -87,8 +80,8 @@ export default function JobDetailScreen(): JSX.Element {
       setApplyOpen(false);
       track("jobs.apply", { jobId: job.id });
       successHaptic();
-    } catch (e) {
-      setSubmitError((e as Error).message || t("common.genericError"));
+    } catch (caught) {
+      setSubmitError(apiErrorMessage(t, caught));
     } finally {
       setSubmitting(false);
     }
@@ -98,7 +91,7 @@ export default function JobDetailScreen(): JSX.Element {
     return (
       <SafeAreaView style={styles.screen}>
         <View style={{ padding: nativeTokens.space[4] }}>
-          <ActivityIndicator />
+          <StateMessage message={t("common.loading")} role="text" />
         </View>
       </SafeAreaView>
     );
@@ -108,23 +101,11 @@ export default function JobDetailScreen(): JSX.Element {
     return (
       <SafeAreaView style={styles.screen}>
         <View style={{ padding: nativeTokens.space[4] }}>
-          <Surface variant="tinted" padding="6">
-            <Text style={styles.muted}>{error ?? t("jobs.notFound")}</Text>
-            <Pressable
-              onPress={() => router.back()}
-              style={{ marginTop: nativeTokens.space[2] }}
-              accessibilityRole="button"
-            >
-              <Text
-                style={{
-                  color: nativeTokens.color.brand700,
-                  fontFamily: nativeTokens.type.family.sans,
-                }}
-              >
-                ← {t("jobs.title")}
-              </Text>
-            </Pressable>
-          </Surface>
+          <StateMessage
+            message={error ?? t("jobs.notFound")}
+            actionLabel={t("common.back")}
+            onAction={() => router.back()}
+          />
         </View>
       </SafeAreaView>
     );
@@ -141,9 +122,15 @@ export default function JobDetailScreen(): JSX.Element {
       <ScrollView
         contentContainerStyle={{ padding: nativeTokens.space[4], gap: nativeTokens.space[3] }}
       >
-        <Pressable onPress={() => router.back()} accessibilityRole="button">
-          <Text style={styles.muted}>← {t("jobs.title")}</Text>
-        </Pressable>
+        <AppHeader
+          title={t("jobs.title")}
+          compact
+          trailing={
+            <Button variant="ghost" size="sm" onPress={() => router.back()}>
+              {t("common.back")}
+            </Button>
+          }
+        />
 
         <Surface variant="hero" padding="6">
           <View style={{ flexDirection: "row", gap: nativeTokens.space[3] }}>
@@ -184,6 +171,54 @@ export default function JobDetailScreen(): JSX.Element {
           </View>
         </Surface>
 
+        {applyOpen && !job.viewer.hasApplied ? (
+          <Surface variant="card" padding="6">
+            <View style={{ gap: nativeTokens.space[3] }}>
+              <View style={{ gap: nativeTokens.space[1] }}>
+                <Text style={styles.section}>{t("jobs.applyTitle", { title: job.title })}</Text>
+                <Text style={styles.muted}>
+                  {t("jobs.applySubtitle", { company: job.company.name })}
+                </Text>
+              </View>
+
+              <View style={{ gap: nativeTokens.space[1] }}>
+                <Text style={styles.fieldLabel}>{t("jobs.coverLetterLabel")}</Text>
+                <TextInput
+                  value={coverLetter}
+                  onChangeText={setCoverLetter}
+                  placeholder={t("jobs.coverLetterPlaceholder")}
+                  placeholderTextColor={nativeTokens.color.inkMuted}
+                  multiline
+                  maxLength={8000}
+                  style={styles.coverLetterInput}
+                />
+                <Text style={styles.hint}>{t("jobs.coverLetterHint")}</Text>
+              </View>
+
+              {submitError ? (
+                <View accessibilityRole="alert" style={styles.inlineError}>
+                  <Text style={styles.inlineErrorText}>{submitError}</Text>
+                </View>
+              ) : null}
+
+              <View style={styles.formActions}>
+                <Button variant="ghost" onPress={() => setApplyOpen(false)} disabled={submitting}>
+                  {t("common.cancel")}
+                </Button>
+                <Button
+                  variant="accent"
+                  onPress={() => void submitApply()}
+                  loading={submitting}
+                  testID="job-apply-submit"
+                  leading={<Icon name="send" size={16} color={nativeTokens.color.inkInverse} />}
+                >
+                  {t("jobs.submitApplication")}
+                </Button>
+              </View>
+            </View>
+          </Surface>
+        ) : null}
+
         <Surface variant="card" padding="6">
           <Text style={styles.section}>{t("jobs.description")}</Text>
           <Text style={styles.body}>{job.description}</Text>
@@ -202,112 +237,6 @@ export default function JobDetailScreen(): JSX.Element {
           </Surface>
         ) : null}
       </ScrollView>
-
-      <Sheet
-        open={applyOpen}
-        onClose={() => (submitting ? undefined : setApplyOpen(false))}
-        title={t("jobs.applyTitle", { title: job.title })}
-        closeLabel={t("common.cancel")}
-        scroll={false}
-      >
-        <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : undefined}
-          style={{ gap: nativeTokens.space[3] }}
-        >
-          <Text
-            style={{
-              color: nativeTokens.color.inkMuted,
-              fontFamily: nativeTokens.type.family.sans,
-              fontSize: nativeTokens.type.scale.small.size,
-            }}
-          >
-            {t("jobs.applySubtitle", { company: job.company.name })}
-          </Text>
-
-          <View style={{ gap: nativeTokens.space[1] }}>
-            <Text
-              style={{
-                color: nativeTokens.color.ink,
-                fontFamily: nativeTokens.type.family.sans,
-                fontSize: nativeTokens.type.scale.small.size,
-                fontWeight: "600",
-              }}
-            >
-              {t("jobs.coverLetterLabel")}
-            </Text>
-            <TextInput
-              value={coverLetter}
-              onChangeText={setCoverLetter}
-              placeholder={t("jobs.coverLetterPlaceholder")}
-              placeholderTextColor={nativeTokens.color.inkMuted}
-              multiline
-              maxLength={8000}
-              style={{
-                minHeight: 140,
-                borderRadius: nativeTokens.radius.md,
-                borderWidth: 1,
-                borderColor: nativeTokens.color.lineHard,
-                backgroundColor: nativeTokens.color.surface,
-                paddingHorizontal: nativeTokens.space[3],
-                paddingVertical: nativeTokens.space[2],
-                color: nativeTokens.color.ink,
-                fontFamily: nativeTokens.type.family.sans,
-                fontSize: nativeTokens.type.scale.body.size,
-                textAlignVertical: "top",
-              }}
-            />
-            <Text
-              style={{
-                color: nativeTokens.color.inkMuted,
-                fontFamily: nativeTokens.type.family.sans,
-                fontSize: nativeTokens.type.scale.caption.size,
-              }}
-            >
-              {t("jobs.coverLetterHint")}
-            </Text>
-          </View>
-
-          {submitError ? (
-            <View
-              accessibilityRole="alert"
-              style={{
-                backgroundColor: nativeTokens.color.dangerSoft,
-                borderWidth: 1,
-                borderColor: nativeTokens.color.danger,
-                borderRadius: nativeTokens.radius.md,
-                paddingHorizontal: nativeTokens.space[3],
-                paddingVertical: nativeTokens.space[2],
-              }}
-            >
-              <Text
-                style={{
-                  color: nativeTokens.color.danger,
-                  fontFamily: nativeTokens.type.family.sans,
-                  fontSize: nativeTokens.type.scale.small.size,
-                }}
-              >
-                {submitError}
-              </Text>
-            </View>
-          ) : null}
-
-          <View
-            style={{
-              flexDirection: "row",
-              justifyContent: "flex-end",
-              gap: nativeTokens.space[2],
-              marginTop: nativeTokens.space[2],
-            }}
-          >
-            <Button variant="ghost" onPress={() => setApplyOpen(false)} disabled={submitting}>
-              {t("common.cancel")}
-            </Button>
-            <Button variant="accent" onPress={() => void submitApply()} loading={submitting}>
-              {t("jobs.submitApplication")}
-            </Button>
-          </View>
-        </KeyboardAvoidingView>
-      </Sheet>
     </SafeAreaView>
   );
 }
@@ -338,6 +267,49 @@ const styles = {
     color: nativeTokens.color.inkMuted,
     fontSize: nativeTokens.type.scale.small.size,
     fontFamily: nativeTokens.type.family.sans,
+  },
+  fieldLabel: {
+    color: nativeTokens.color.ink,
+    fontFamily: nativeTokens.type.family.sans,
+    fontSize: nativeTokens.type.scale.small.size,
+    fontWeight: "600" as const,
+  },
+  hint: {
+    color: nativeTokens.color.inkMuted,
+    fontFamily: nativeTokens.type.family.sans,
+    fontSize: nativeTokens.type.scale.caption.size,
+  },
+  coverLetterInput: {
+    minHeight: 140,
+    borderRadius: nativeTokens.radius.md,
+    borderWidth: 1,
+    borderColor: nativeTokens.color.lineHard,
+    backgroundColor: nativeTokens.color.surface,
+    paddingHorizontal: nativeTokens.space[3],
+    paddingVertical: nativeTokens.space[2],
+    color: nativeTokens.color.ink,
+    fontFamily: nativeTokens.type.family.sans,
+    fontSize: nativeTokens.type.scale.body.size,
+    textAlignVertical: "top" as const,
+  },
+  inlineError: {
+    backgroundColor: nativeTokens.color.dangerSoft,
+    borderWidth: 1,
+    borderColor: nativeTokens.color.danger,
+    borderRadius: nativeTokens.radius.md,
+    paddingHorizontal: nativeTokens.space[3],
+    paddingVertical: nativeTokens.space[2],
+  },
+  inlineErrorText: {
+    color: nativeTokens.color.danger,
+    fontFamily: nativeTokens.type.family.sans,
+    fontSize: nativeTokens.type.scale.small.size,
+  },
+  formActions: {
+    flexDirection: "row" as const,
+    justifyContent: "flex-end" as const,
+    gap: nativeTokens.space[2],
+    marginTop: nativeTokens.space[1],
   },
   logoBox: {
     width: nativeTokens.space[8] + nativeTokens.space[6],

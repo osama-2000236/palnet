@@ -23,6 +23,10 @@ import { RepostsModule } from "./modules/reposts/reposts.module";
 import { SearchModule } from "./modules/search/search.module";
 
 const env = loadEnv();
+const defaultThrottleLimit =
+  env.NODE_ENV === "production" ? 100 : (env.BAYDAR_DEV_RATE_LIMIT ?? 1_000);
+const authThrottleLimit =
+  env.NODE_ENV === "production" ? 10 : (env.BAYDAR_DEV_AUTH_RATE_LIMIT ?? 100);
 
 @Module({
   imports: [
@@ -40,8 +44,8 @@ const env = loadEnv();
       },
     }),
     ThrottlerModule.forRoot([
-      { name: "default", ttl: 60_000, limit: 100 },
-      { name: "auth", ttl: 60_000, limit: 10 },
+      { name: "default", ttl: 60_000, limit: defaultThrottleLimit },
+      { name: "auth", ttl: 60_000, limit: authThrottleLimit },
     ]),
     PrismaModule,
     HealthModule,

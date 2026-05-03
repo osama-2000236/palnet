@@ -25,6 +25,9 @@
     "db:deploy": "prisma migrate deploy",
     "db:studio": "prisma studio",
     "db:seed": "tsx prisma/seed.ts",
+    "qa:fixture": "tsx prisma/qa-fixture.ts",
+    "qa:load-fixture": "tsx prisma/qa-load-fixture.ts",
+    "qa:cleanup": "tsx prisma/qa-cleanup.ts",
     "lint": "eslint .",
     "type-check": "tsc --noEmit"
   },
@@ -36,6 +39,7 @@
     "@types/bcrypt": "^5.0.2",
     "@types/node": "^22.7.5",
     "bcrypt": "^5.1.1",
+    "dotenv": "16.4.7",
     "prisma": "^5.22.0",
     "rimraf": "^6.0.1",
     "tsx": "^4.19.0",
