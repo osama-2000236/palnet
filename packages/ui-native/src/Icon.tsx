@@ -62,6 +62,8 @@ export function Icon({
     strokeWidth,
     strokeLinecap: "round" as const,
     strokeLinejoin: "round" as const,
+    accessibilityElementsHidden: true,
+    importantForAccessibility: "no-hide-descendants" as const,
   };
 
   switch (name) {
@@ -225,7 +227,13 @@ export function Icon({
       // Baydar mark — wheat head on olive circle.
       // RN can't use Tailwind classes on SVG primitives — read hex from nativeTokens.
       return (
-        <Svg width={size} height={size} viewBox="0 0 64 64">
+        <Svg
+          width={size}
+          height={size}
+          viewBox="0 0 64 64"
+          accessibilityElementsHidden
+          importantForAccessibility="no-hide-descendants"
+        >
           <Circle cx={32} cy={32} r={30} fill={nativeTokens.color.brand600} />
           <Rect x={31} y={14} width={2} height={37} rx={1} fill={nativeTokens.color.brand50} />
           <Ellipse

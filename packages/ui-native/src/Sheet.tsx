@@ -44,6 +44,8 @@ export interface SheetProps {
   scrollProps?: ScrollViewProps;
   /** Accessibility label for the close button. Defaults to "Close". */
   closeLabel?: string;
+  /** Accessibility label for the sheet wrapper. Defaults to `title`. */
+  accessibilityLabel?: string;
 }
 
 export function Sheet({
@@ -54,6 +56,7 @@ export function Sheet({
   scroll = true,
   scrollProps,
   closeLabel = "Close",
+  accessibilityLabel,
 }: SheetProps): JSX.Element {
   const { height } = useWindowDimensions();
   const cardMaxHeight = Math.max(320, Math.floor(height * 0.85));
@@ -73,7 +76,14 @@ export function Sheet({
         accessibilityRole="button"
       />
 
-      <View style={[styles.card, { maxHeight: cardMaxHeight }]} pointerEvents="box-none">
+      <View
+        style={[styles.card, { maxHeight: cardMaxHeight }]}
+        pointerEvents="box-none"
+        accessible
+        accessibilityViewIsModal
+        accessibilityRole={"dialog" as never}
+        accessibilityLabel={accessibilityLabel ?? title}
+      >
         <View style={styles.handleWrap}>
           <View style={styles.handle} />
         </View>
