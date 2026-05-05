@@ -1,0 +1,256 @@
+# Sprint 12 Audit - Requirements & Gap Audit
+
+Date: 2026-05-05
+Scope: static repo inspection across `apps/web`, `apps/mobile`, `apps/api`, `packages/*`, `packages/db/prisma`, root config, CI, docs, and the archived 2025 prototype.
+Write policy: discovery only. The only intentional write for this sprint is this audit artifact.
+
+## Executive Summary
+
+Baydar has the core app shape in place: authenticated feed, profiles, network, jobs, messaging, notifications, onboarding, search, shared design tokens, shared Zod schemas, Prisma models, RTL-first web and mobile shells, API auth guards, rate limiting, and mobile/web route coverage for the main MVP surfaces.
+
+Launch readiness is not decision-complete yet. The highest risk gaps are legal/privacy artifacts, UGC safety and moderation, mobile store placeholders, a failing root test gate, API contract drift, incomplete search scope, and security posture around token handling and SSE fallback. Several HANDOFF items are now stale, especially native component test names, but the root coverage gate still prevents proving the intended branch coverage.
+
+Severity mix:
+
+| Severity | Count | Main themes |
+| --- | ---: | --- |
+| `BLOCKER` | 4 | legal/privacy launch artifacts, reporting/blocking, mobile store placeholders, root test gate failure |
+| `HIGH` | 12 | search scope, API validation/contracts, auth/security posture, job/company drift, privacy account lifecycle, release smoke evidence, web/API/mobile test gaps |
+| `MEDIUM` | 12 | token lint coverage, RTL native physical positioning, observability depth, push receipts, performance budgets, SSE scaling, stale docs |
+| `LOW` | 4 | repo hygiene and prototype polish deltas that are not MVP-declared |
+
+## QA Gate Results
+
+`pnpm` on `C:\Users\osama\bin\pnpm` failed with `Access is denied`; gates were executed with the available shim `pnpm.cmd` at `C:\Users\osama\scoop\shims\pnpm.cmd`.
+
+| Command | Result | Evidence |
+| --- | --- | --- |
+| `pnpm.cmd lint:tokens` | `PASS` | Exit 0. Output included `lint:tokens - clean.` |
+| `pnpm.cmd lint` | `PASS` | Exit 0. Turbo reported 8/8 successful tasks. Non-fatal import/order warnings were present in `packages/shared/src/errors.ts`, several shared schema files, `apps/api/src/common/profile-completion.guard*.ts`, and `packages/ui-native/src/{Icon,MessageBubble,Sheet}.tsx`. |
+| `pnpm.cmd type-check` | `PASS` | Exit 0. Turbo reported 13/13 successful tasks. |
+| `pnpm.cmd test` | `FAIL` | Exit 1. `@baydar/shared`, `@baydar/api`, and `@baydar/web` completed; web had no Jest tests. `@baydar/mobile:test` failed in Jest coverage with `Error: spawn EPERM` while adding untested files. |
+| `pnpm.cmd --filter @baydar/mobile exec jest --runInBand --coverage=false` | `PASS` | Diagnostic only. 17 suites, 49 tests, and 2 snapshots passed. Console output still contained React `act(...)` warnings in mobile feed/onboarding tests. |
+
+## Repo Inventory
+
+### Top-Level Structure
+
+Observed top-level directories include `.github`, `apps`, `packages`, `docs`, `scripts`, `tools`, `node_modules`, and config files. Workspace packages come from `pnpm-workspace.yaml`: `apps/*` and `packages/*`.
+
+One unexpected subtree exists under `apps/Users/.../Temp/palnet-api-pruned/node_modules`. It does not have a package manifest, caused static scans to recurse into temp/node_modules content unless excluded, and should be cleaned outside this read-only sprint.
+
+### Packages And Apps
+
+| Package/app | Type | Entry points and notes |
+| --- | --- | --- |
+| `apps/api` | NestJS API | `src/main.ts`, `src/app.module.ts`, module controllers under `src/modules/*`. Uses Helmet, CORS, global auth/profile guards, throttler, Prisma, Swagger, SSE, Expo push, R2 presign. |
+| `apps/web` | Next.js app | `src/app/[locale]`, `next-intl`, PostHog, Playwright e2e/a11y tests, PWA manifest. |
+| `apps/mobile` | Expo app | Expo Router under `app/`, native i18n, SecureStore/session helpers, PostHog, Sentry, SSE, push registration, native UI package tests. |
+| `packages/shared` | Shared contracts | Zod schemas, enums, format helpers. |
+| `packages/db` | Prisma package | `prisma/schema.prisma`, generated client, seeds. |
+| `packages/ui-tokens` | Design tokens | Web CSS tokens and native tokens. |
+| `packages/ui-web` | Web UI kit | AppShell, Avatar, Button, MessageBubble, PostCard, RoomRow, skeletons. No unit test script found. |
+| `packages/ui-native` | Native UI kit | AppHeader, Avatar, Button, Icon, MessageBubble, PostCard, Sheet, Skeleton, Surface tests under `src/__tests__`. No independent package test script; tested via mobile Jest roots. |
+| `packages/config` | Shared config | Shared ESLint/TS config. |
+
+### Route Maps
+
+Web routes found:
+
+- Public/localized: `apps/web/src/app/[locale]/page.tsx`, `layout.tsx`.
+- Auth: `login`, `register`.
+- App: `feed`, `in/[handle]`, `jobs`, `jobs/[id]`, `me/edit`, `messages`, `messages/new`, `network`, `notifications`, `onboarding`, `search`.
+
+Mobile routes found:
+
+- Auth: `(auth)/login`, `(auth)/register`.
+- App: `(app)/feed`, `(app)/network`, `(app)/search`, `(app)/notifications`, `(app)/onboarding`, `(app)/composer`, `(app)/in/[handle]`, `(app)/jobs/index`, `(app)/jobs/[id]`, `(app)/me/index`, `(app)/me/edit`, `(app)/messages/index`, `(app)/messages/[roomId]`, `(app)/messages/new`.
+- Current bottom tab layout hides `jobs`, `notifications`, and `search` behind `href: null`, with entry points from feed.
+
+API routes found:
+
+- `auth`: `POST register`, `POST login`, `POST refresh`, `POST logout`, `GET me`.
+- `feed`: `GET /feed`.
+- `posts`: create, get, update, delete.
+- `comments`: create/list/delete under posts/comments.
+- `reactions`: put/delete post reaction.
+- `reposts`: post/delete repost.
+- `profiles`: onboard, update me, get me, experience/education/skill CRUD, get by handle.
+- `connections`: send/respond/withdraw/remove/list/counts/suggestions.
+- `jobs`: list, get one, apply.
+- `media`: `POST /media/presign`.
+- `messaging`: rooms list/create/get, room messages, send/edit/delete, read, archive, typing, stream.
+- `notifications`: list, unread count, mark read, stream, device registration.
+- `search`: `GET /search/people`.
+- `health`: public health check.
+
+## Top 10 Ranked BLOCKER + HIGH Items
+
+| Rank | Severity | Title | Sprint 13 slice |
+| ---: | --- | --- | --- |
+| 1 | `BLOCKER` | Legal/privacy/terms launch artifacts are absent while registration requires terms acceptance. | Add launch-approved Terms, Privacy Policy, data retention/account deletion requirements, product links in web/mobile, and API/account lifecycle decisions. |
+| 2 | `BLOCKER` | UGC safety controls are missing: no report/block endpoints or flows despite Prisma models. | Implement report, block, unblock, blocked-user filtering, moderation review surface or minimum operational process. |
+| 3 | `BLOCKER` | Root `pnpm test` fails because mobile Jest coverage crashes with `spawn EPERM`. | Fix coverage execution on Windows/CI or adjust Jest coverage collection so root gate is reliable. |
+| 4 | `BLOCKER` | Mobile store/deep-link readiness has placeholders. | Replace EAS project ID, AASA team ID, Android release SHA, production Sentry/PostHog values, and add store privacy metadata checklist. |
+| 5 | `HIGH` | Search scope is incomplete. Prototype/API contract declare posts/jobs/companies; implementation only searches people. | Decide MVP search scope, then add API/shared/web/mobile routes for declared scopes or update docs/prototype authority. |
+| 6 | `HIGH` | API contract and validation drift can return unexpected shapes or 500s. | Normalize response envelope, fix `/media/upload-url` vs `/media/presign`, move raw query `.parse()` calls behind `ZodValidationPipe`, validate logout body. |
+| 7 | `HIGH` | Web token/security posture is thin. | Decide localStorage vs httpOnly refresh-cookie model, add web CSP/security headers, and resolve `?access_token=` SSE fallback vs API security invariant. |
+| 8 | `HIGH` | Company/job admin contract exists in Prisma/shared schemas but no API/web/mobile management surface exists. | Either implement company/admin job posting and application status APIs or remove/defer the contracts from MVP docs. |
+| 9 | `HIGH` | Privacy account lifecycle is missing. | Add email verification/password reset/account deletion/export/retention requirements and routes, or explicitly defer with launch approval. |
+| 10 | `HIGH` | Mobile real-device release evidence is still owed. | Execute smoke matrix for push, haptics, deep links, refresh, offline/SSE resume, swipe archive, cross-device messaging, and dynamic type. |
+
+## Functional Gaps
+
+| ID | Severity | Gap | Location | Evidence | Remediation sketch |
+| --- | --- | --- | --- | --- | --- |
+| F-01 | `BLOCKER` | Legal and privacy requirements are missing from the product surface. | `apps/web`, `apps/mobile`, docs | Registration schema requires `acceptTerms`; no Terms/Privacy pages or docs were found in public web assets/docs. | Add approved Terms and Privacy Policy, link them from registration/settings/store metadata, and define retention/deletion/export requirements. |
+| F-02 | `BLOCKER` | Report/block functionality is missing. | API, shared schemas, web/mobile flows | Prisma has `BlockedUser` and `Report`; shared enums include report/block-related values; no report/block controllers, schemas, or client flows were found. | Add report/block/unblock APIs, shared schemas, UI entry points on profile/post/message surfaces, and filtering semantics. |
+| F-03 | `HIGH` | Search is people-only. | `apps/api/src/modules/search/search.controller.ts`, `packages/shared/src/schemas/search.ts`, web/mobile search screens | API exposes only `GET /search/people`; shared schema only has `PeopleSearchQuery`; prototype `SearchPage.jsx` shows filters for people/jobs/posts/companies; `docs/api-contract.md` lists `/search/posts`, `/search/jobs`, `/search/companies`. | Implement declared scopes or formally reduce docs/prototype authority to people-only MVP. |
+| F-04 | `HIGH` | Company and job-management APIs are missing despite contracts/models. | `packages/shared/src/schemas/company.ts`, `packages/shared/src/schemas/job.ts`, Prisma, API route map | Shared has `CreateCompanyBody`, `UpdateCompanyBody`, `CreateJobBody`, `UpdateJobBody`, `UpdateApplicationStatusBody`; API only has job list/get/apply and no company module. | Add company/admin authorization model, company CRUD, job posting/editing, application status endpoints, or remove/defer contracts from MVP. |
+| F-05 | `HIGH` | API docs and implementation disagree on media upload route. | `docs/api-contract.md`, `apps/api/src/modules/media/media.controller.ts`, `packages/shared/src/schemas/media.ts` | API contract lists `POST /media/upload-url`; actual controller and shared schema comment use `POST /media/presign`. | Pick one route and update docs/clients/tests. |
+| F-06 | `HIGH` | API response envelope is inconsistent with contract. | `docs/api-contract.md`, `messaging.controller.ts`, `jobs.controller.ts`, `notifications.controller.ts` | Contract says success responses use `{ data, meta? }`; messaging/job detail/unread-count routes return raw DTOs or `{ count }`. Clients unwrap either shape, masking drift. | Add envelope DTOs or update the contract; add controller tests that assert response shapes. |
+| F-07 | `HIGH` | Some validation errors can become 500s. | `messaging.controller.ts`, `notifications.controller.ts`, `common/exception.filter.ts`, `common/zod-pipe.ts` | Messaging and notifications list routes use raw `@Query()` followed by `CursorPageQuery.parse(...)`; the global exception filter maps non-HttpException errors to 500. | Use `new ZodValidationPipe(CursorPageQuery)` for those queries or catch `ZodError` globally as 400. |
+| F-08 | `HIGH` | Logout body is not validated with Zod. | `apps/api/src/modules/auth/auth.controller.ts` | `logout` accepts `@Body() body: { deviceId: string }`; `packages/shared/src/schemas/auth.ts` has no logout schema. | Add shared `LogoutBody`, use `ZodValidationPipe`, and test malformed/missing device IDs. |
+| F-09 | `HIGH` | Email verification and password reset are missing. | `packages/db/prisma/schema.prisma`, `packages/shared/src/schemas/user.ts`, auth module | Prisma/User DTO expose `emailVerified`; no verify-email, resend, forgot-password, or reset-password route/code was found. | Add auth lifecycle requirements and routes, or explicitly approve launch without them. |
+| F-10 | `HIGH` | Notification swipe dismiss is specified but not implemented. | `docs/design/MOBILE.md`, `apps/mobile/app/(app)/notifications.tsx` | Mobile spec says swipe notification -> dismiss; notifications screen uses `FlatList`/mark-read flow and no `Swipeable`/dismiss endpoint. | Add dismiss endpoint/state and native/web affordance, or update spec if mark-read is the intended MVP behavior. |
+| F-11 | `MEDIUM` | Mobile tab navigation differs from mobile spec. | `docs/design/MOBILE.md`, `apps/mobile/app/(app)/_layout.tsx`, `feed.tsx` | Spec says current top-level tabs include feed, network, jobs, messages, notifications, search. Layout hides jobs/notifications/search with `href: null`; notification badge is attached to hidden `search` screen while feed has separate buttons. | Decide five-tab vs six-surface navigation, make badge visible on an actual tab or header affordance, and update tests/docs. |
+| F-12 | `HIGH` | Web has no Jest/unit coverage and UI web kit has no test script. | `apps/web`, `packages/ui-web` | Root test output says web has no tests found; `packages/ui-web` has no package test script/tests. | Add focused component and route tests for AppShell, MessageBubble, PostCard, RoomRow, auth/session, and locale behavior; keep Playwright for e2e/a11y. |
+| F-13 | `MEDIUM` | API test coverage misses interaction modules. | `apps/api/src/modules` | Existing API specs cover auth, connections, health, jobs, media, messaging, notifications, posts, profiles, search; no specs found for comments, feed, reactions, reposts, or controller auth/envelope behavior. | Add service/controller tests for missing modules and Supertest contract tests for auth, validation, envelope, ownership checks. |
+| F-14 | `MEDIUM` | HANDOFF native component coverage note is stale but coverage depth is unproven. | `docs/HANDOFF.md`, `packages/ui-native/src/__tests__`, root Jest coverage | Tests now exist for `Icon`, `MessageBubble`, `Sheet`, `Skeleton`, and `PostCardSkeleton`, but root coverage fails before reporting branch coverage. | Update HANDOFF after coverage is fixed; add branch assertions if coverage still shows weak paths. |
+| F-15 | `MEDIUM` | Prototype has no whole-screen gap, but declared search filters are not carried forward. | `docs/_archive/prototype-2025` | Prototype scripts declare Feed, Profile, Network, Messages, Search. Production has these plus Jobs/Notifications. SearchPage filter rows include jobs/posts/companies. | Treat as the F-03 search scope decision; no separate new screen is needed. |
+| F-16 | `LOW` | Prototype side-rail quick links are not implemented. | Prototype Feed/Network side rails vs production | Prototype contains saved/groups/events/pages style side-rail concepts; DESIGN also says cut LinkedIn bloat. | Do not add unless MVP docs explicitly restore these features. |
+| F-17 | `LOW` | Stray `apps/Users` temp subtree pollutes repo scans. | `apps/Users/.../Temp/palnet-api-pruned/node_modules` | Static scans recurse into copied node_modules/temp files unless excluded; no package manifest found. | Remove from repo/workspace outside this sprint and add ignore rules if needed. |
+
+## NFR Gap Inventory
+
+| Category | Severity | Gap | Location | Evidence | Remediation sketch |
+| --- | --- | --- | --- | --- | --- |
+| Security | `HIGH` | Query-string token fallback conflicts with documented token rule. | `apps/api/src/modules/auth/guards/jwt-auth.guard.ts`, `docs/api-contract.md` | Guard accepts `?access_token=` for EventSource fallback; API contract says not to expose access tokens in query strings. | Prefer header-capable SSE/polyfill or short-lived one-time stream tokens; update docs and tests. |
+| Security | `HIGH` | Web stores access and refresh tokens in `localStorage` without visible CSP/security header hardening. | `apps/web/src/lib/session.ts`, `apps/web/next.config.mjs` | Session helper reads/writes localStorage; no `Content-Security-Policy` hit in web config/source. | Decide browser token model, add CSP/security headers, and consider httpOnly refresh cookies or token rotation constraints. |
+| Security | `MEDIUM` | Rate limiting is global and auth-specific, but high-abuse routes lack route-specific budgets. | `apps/api/src/app.module.ts`, controllers | Global `ThrottlerGuard` exists; auth is throttled; no route-level throttles found for media presign, search, posts, comments, messages, notifications, or push device registration. | Add endpoint classes and limits by abuse risk; include tests/documentation. |
+| Security | `MEDIUM` | CORS/CSRF posture is under-specified. | `apps/api/src/main.ts`, env schema/docs | API uses bearer tokens and CORS origins from `CORS_ORIGINS.split(",")` with credentials true. No explicit production wildcard rejection or CSRF rationale doc was found. | Document bearer-token CSRF rationale, reject wildcard origins in production, and test CORS env parsing. |
+| Security | `HIGH` | Uploaded media is trusted from client metadata after presign. | `media.service.ts`, `packages/shared/src/schemas/media.ts` | MIME validation is regex-based; server presigns direct PUT and returns deterministic blurhash placeholder; no post-upload byte inspection/virus/moderation step found. | Add strict MIME allowlist, metadata validation, optional async scan/moderation, and lifecycle cleanup for abandoned uploads. |
+| Privacy | `BLOCKER` | Privacy policy and data processing requirements are absent. | docs, web/mobile public routes | No privacy/terms artifacts found; registration still requires `acceptTerms`. | Add launch-approved privacy policy, consent text, data categories, retention/deletion/export requirements. |
+| Privacy | `HIGH` | Account deletion/export/retention flows are missing. | API/profile/auth modules, Prisma User `deletedAt` | User model has soft-delete field; no account delete/export route found. | Define account lifecycle API and UI; include retention and recovery windows. |
+| Privacy | `MEDIUM` | Auth token audit metadata is modeled but not populated. | Prisma `RefreshToken`, `auth.service.ts` | RefreshToken includes user agent/IP fields in schema; auth service creates refresh tokens but no request metadata was observed in route body/service call. | Capture device/user-agent/IP metadata where legally appropriate and document retention. |
+| Performance | `MEDIUM` | Performance budgets are not a required root gate. | `tools/load`, web Lighthouse config/CI | Load tooling and Lighthouse artifacts exist, but Sprint gate list only includes lint/type/test and no API load budget result was captured. | Add documented launch budgets for feed/search/messages and CI/manual load run criteria. |
+| Performance | `MEDIUM` | Mobile comments render through mapped views instead of a virtualized list. | `apps/mobile/src/components/CommentsList.tsx` | Mobile spec says use `FlatList`/`FlashList` for every scrolling list; comments component maps comments inside a view. | Cap comments aggressively or virtualize when pagination/thread depth grows. |
+| Accessibility | `MEDIUM` | Mobile accessibility evidence is incomplete. | `docs/design/MOBILE.md`, mobile tests | Spec requires 200 percent font scale and real-device checks; no automated dynamic type or screen reader evidence found. | Add manual/automated a11y matrix for Dynamic Type XXL, TalkBack/VoiceOver labels, focus order, and touch target checks. |
+| Accessibility | `LOW` | Web a11y has route scans but no component-level regression coverage. | `apps/web/e2e/a11y.spec.ts`, `packages/ui-web` | Playwright/axe route scans exist; ui-web has no unit tests. | Add component tests for icon-only buttons, AppShell nav, MessageBubble actions, and modal/focus behavior. |
+| i18n/RTL | `HIGH` | Localization governance is not enforced in CI. | `docs/localization-palestine.md`, package scripts | Localization doc requires all readable strings use `t(...)` and same keys across platforms once CI is added; no parity/lint script was found. | Add i18n lint/key parity checks, scoped allowlists for tests/config, and CI enforcement. |
+| i18n/RTL | `MEDIUM` | Some production metadata/config strings bypass i18n. | `apps/web/src/app/manifest.ts`, web layout metadata | Manifest has hardcoded app name/description; product metadata is not locale-driven. JSX product string scan found no high-confidence web hardcoded display strings outside comments. | Decide which config strings must be localized and add locale-aware metadata where framework allows. |
+| i18n/RTL | `MEDIUM` | Token linter does not cover raw size units or React Native physical positioning. | `scripts/lint-tokens.mjs`, web/mobile scans | Linter checks hex/default palettes/physical Tailwind classes. Static scan found 62 raw web size hits (`max-w-[1128px]`, `text-[11px]`, etc.) and 61 native physical direction hits, including true `left/right` positioning in `FieldCover` and `Sheet`. | Extend lint rules or add explicit allowlists for layout constants; prefer token aliases and logical/RTL-safe helpers. |
+| Observability | `HIGH` | Production observability values are placeholders for mobile. | `apps/mobile/eas.json`, `docs/HANDOFF.md` | EAS production env has `REPLACE_WITH_SENTRY_DSN` and placeholder PostHog key; HANDOFF calls out env tasks. | Set production values, verify event/error capture, and document opt-in/privacy posture. |
+| Observability | `MEDIUM` | Web has analytics but no visible error tracking. | `apps/web/src/lib/analytics.ts`, web source scan | PostHog is present; no Sentry/error capture integration found for web. | Add web error monitoring or document why API/mobile capture is sufficient. |
+| Observability | `MEDIUM` | API logs exist but release tracing/SLOs are not documented. | `apps/api/src/app.module.ts`, exception filter | Pino logger and exception filter exist; no request tracing/SLO/alert policy found in docs. | Define request IDs, dashboards, error rate alerts, and launch SLO thresholds. |
+| Reliability | `MEDIUM` | SSE fanout is in-memory and single-node. | `messaging.bus.ts`, `notifications.bus.ts` | Comments explicitly say to swap to Redis/pub-sub for horizontal scaling. | Approve single-node launch or add Redis/pub-sub before scaled deployment. |
+| Reliability | `MEDIUM` | Expo push receipts are not processed. | `apps/api/src/modules/notifications/push.service.ts` | Service sends push chunks with Expo but no receipt polling/invalid token cleanup was found. | Add receipt processing and stale-token cleanup job. |
+| Reliability | `HIGH` | Real-device smoke evidence is missing for release-critical flows. | `docs/HANDOFF.md` | HANDOFF says evidence owed for refresh, deep links, push, haptics, offline/SSE resume, swipe archive, cross-device messaging. | Execute and archive a manual smoke log before release. |
+| Data integrity | `HIGH` | Moderation/report/block models are not wired to API or feed/search filtering. | Prisma, API route map | `Report` and `BlockedUser` exist in schema but no endpoints/filtering flows were found. | Same as F-02, plus ensure feed/search/messages respect block state. |
+| Data integrity | `MEDIUM` | Presence can be inaccurate. | `messaging.service.ts`, web message presence UI | `lastSeenAt` is selected and displayed; no update path found in service scans. | Add heartbeat/session update semantics or remove online/last seen claims. |
+| Data integrity | `MEDIUM` | Notification dedupe and lifecycle are weakly specified. | Notifications service/schema | Mark-read exists, but dismiss/delete/retention policies and unique dedupe constraints were not evident. | Define notification lifecycle, retention, dedupe constraints, and cleanup jobs. |
+| Mobile store readiness | `BLOCKER` | Store/deep-link config contains placeholders. | `apps/mobile/app.json`, `apps/mobile/eas.json`, `apps/web/public/.well-known/*` | `REPLACE_WITH_EAS_PROJECT_ID`, `TEAMID.ps.baydar.app`, `REPLACE_WITH_RELEASE_SHA256_FINGERPRINT`, Sentry/PostHog placeholders. | Replace with production values and verify iOS/Android associated links. |
+| Mobile store readiness | `HIGH` | Store submission artifacts are not inventoried. | docs/mobile release docs | No complete store metadata/privacy/nutrition/support URL checklist was found. | Add release checklist with screenshots, privacy URL, support URL, app access instructions, age/content rating, and test credentials. |
+| Legal/compliance for Palestine launch | `BLOCKER` | No launch legal/compliance checklist exists. | docs | No legal checklist was found for Palestine launch. Static audit did not perform external legal research. | Create counsel-approved checklist covering privacy, terms, moderation/reporting, data retention, consumer/contact info, and store disclosures. |
+| Legal/compliance for Palestine launch | `HIGH` | Arabic/localization policy exists but compliance is not enforced. | `docs/localization-palestine.md`, CI/scripts | Locale policy includes copy, numerals, dates, cities, and holidays; no automated enforcement or sign-off evidence found. | Add QA sign-off for `ar-PS`, city list, numerals/dates, notification quiet-period policy, and key parity. |
+
+## Drift Findings
+
+| Drift | Severity | Evidence | Decision needed |
+| --- | --- | --- | --- |
+| Design docs reference missing files. | `HIGH` | `DESIGN.md` references `docs/design/PARITY.md`, `NAV.md`, and `SCREENS.md`; `docs/design` currently contains only `MOBILE.md`, `RTL.md`, and `TESTING.md`. | Restore those docs or update `DESIGN.md` to point to current authoritative files. |
+| Prototype search scope vs implementation. | `HIGH` | Prototype `SearchPage.jsx` includes jobs/posts/companies filters; implementation has people-only API/shared search. | Implement or explicitly cut scopes. |
+| API contract media route mismatch. | `HIGH` | `docs/api-contract.md` lists `/media/upload-url`; API/shared use `/media/presign`. | Pick one route. |
+| API contract response envelope mismatch. | `HIGH` | Contract says `{ data, meta? }`; several controllers return raw DTOs or `{ count }`. | Normalize or update contract. |
+| Prisma/shared contracts vs API modules. | `HIGH` | Company/job admin schemas and Prisma models exist, but API has no company module and no job create/update/application status routes. | Implement, defer, or delete stale contracts. |
+| Prisma moderation models vs product/API. | `BLOCKER` | `Report` and `BlockedUser` models exist, but no endpoints or UI flows found. | Wire minimum safety flow before UGC launch. |
+| HANDOFF test notes partially stale. | `MEDIUM` | Native tests for `Icon`, `MessageBubble`, `Sheet`, `Skeleton`, and `PostCardSkeleton` exist now. Root coverage still fails. | Update HANDOFF after fixing coverage. |
+| Mobile nav spec vs implementation. | `MEDIUM` | `MOBILE.md` names jobs/notifications/search as top-level tabs; mobile layout hides them with `href: null`. | Decide final mobile navigation pattern. |
+| Token guardrails vs linter behavior. | `MEDIUM` | `DESIGN.md` says no hardcoded colors, sizes, or spacing; token linter omits raw px/rem and native StyleSheet `left/right`. | Add lint coverage and/or explicit token allowlists. |
+
+## Missing Tests By Package
+
+| Package/app | Current evidence | Gap | Severity | Remediation sketch |
+| --- | --- | --- | --- | --- |
+| `apps/api` | 12 specs found for auth, connections, health, jobs, media, messaging, notifications, posts, profiles, search. | No specs found for comments, feed, reactions, reposts; no Supertest controller suite for auth/envelope/validation/authorization. | `MEDIUM` | Add service and controller tests for missing modules; add contract tests around global guards and Zod 400 behavior. |
+| `apps/web` | Playwright e2e/a11y specs exist. Jest reports no tests found. | No unit/integration tests for session/auth, route data states, i18n rendering, web UI behavior. | `HIGH` | Add focused React tests; keep Playwright for full-route a11y/smoke. |
+| `apps/mobile` | Diagnostic Jest run passes 17 suites/49 tests without coverage. | Root coverage crashes with `spawn EPERM`; act warnings remain. | `BLOCKER` for gate, `MEDIUM` for warnings | Fix coverage collection, then clean test act warnings and preserve coverage thresholds. |
+| `packages/shared` | `format.spec.ts` passes. | Schema parse/error tests are thin relative to API dependency. | `MEDIUM` | Add schema tests for auth, profile, post/comment, messaging, job, media, notifications, search. |
+| `packages/ui-web` | No tests found/script found. | Core web atoms/rows lack component regression tests. | `HIGH` | Add tests for AppShell, Avatar, Button, MessageBubble, PostCard, RoomRow, skeletons. |
+| `packages/ui-native` | Tests exist for the HANDOFF-named components and more. | Branch coverage cannot be verified until root coverage gate is fixed. | `MEDIUM` | Re-run coverage after gate fix, update HANDOFF, add branch cases only where coverage remains thin. |
+
+## API Auth, Authorization, Validation, Rate Limit Posture
+
+| Area | Status | Evidence | Gap/remediation |
+| --- | --- | --- | --- |
+| Global auth | Mostly present | `auth.module.ts` registers global `JwtAuthGuard` and `ProfileCompletionGuard`; `health` and auth register/login/refresh are `@Public`. | No route was found accidentally public beyond health/auth. |
+| Profile completion guard | Present | `ProfileCompletionGuard` is registered as global guard. | Need controller/e2e coverage for incomplete-profile behavior beyond existing guard spec. |
+| Ownership checks | Partially covered | Service specs exist for posts/messaging/profiles/jobs; controllers pass `CurrentUser`. | Add controller/e2e tests for comments, reactions, reposts, feed visibility, block filtering once implemented. |
+| Role/admin authorization | Missing for missing feature | Company/admin job endpoints do not exist. | Define company roles and authorization before adding job/company management. |
+| Input validation | Mostly present, with gaps | Most bodies/queries use `ZodValidationPipe`; messaging/notifications list use raw query `.parse`; logout body is raw. | Fix F-07/F-08. |
+| Rate limiting | Baseline present | Global `ThrottlerGuard`; auth-specific limits in app module. | Add per-route abuse budgets for media, search, post/comment/message, push device registration. |
+| CSRF/CORS | Needs documentation | Bearer tokens reduce CSRF exposure; CORS is env-origin based with credentials true. | Document production origin policy and test invalid/wildcard env values. |
+
+## Hardcoded Strings And Token Inventory
+
+### i18n String Scan
+
+- Web/ui-web JSX display-string scan found only comment/doc examples in `packages/ui-web/src/Surface.tsx` among production source.
+- Mobile/native display-string scan found one production fallback: `apps/mobile/app/(app)/messages/[roomId].tsx` uses `t("common.cancel", { defaultValue: ... })`; the key exists, so this is low risk.
+- Web manifest contains hardcoded display metadata (`name`, `short_name`, `description`) in `apps/web/src/app/manifest.ts`. This may be allowed by platform constraints, but it is not covered by the localization policy.
+- Localization policy in `docs/localization-palestine.md` requires every readable JSX/TSX string to use `t(...)` and calls for cross-platform key parity once CI is added. No such CI/script gate was found.
+
+### Token And RTL Scan
+
+| Finding | Evidence | Severity | Remediation |
+| --- | --- | --- | --- |
+| Token linter passed. | `pnpm.cmd lint:tokens` output `clean`. | Good | Keep gate. |
+| Raw size values remain in web/ui-web. | Static scan found 62 hits including `max-w-[1128px]`, `max-w-[840px]`, `text-[11px]`, `rounded-[14px]`, `border-s-[3px]`. | `MEDIUM` | Decide allowed layout constants vs token violation; add lint allowlists or token aliases. |
+| Native physical positioning exists. | Static scan found `left/right` in `apps/mobile/src/components/FieldCover.tsx` and `packages/ui-native/src/Sheet.tsx`; many `textAlign: "right"` are intentional Arabic text alignment. | `MEDIUM` | Replace physical positioning with RTL-safe helpers where directionally meaningful; allow alignment when required by `MOBILE.md`. |
+| Config raw hex values bypass token lint. | `apps/mobile/app.json` and `apps/web/src/app/manifest.ts` contain raw hex values; linter explicitly skips web manifest. | `LOW` | Document sanctioned platform config consumers or generate values from tokens. |
+
+## Raw Evidence Appendix
+
+### Gate Output Summary
+
+- `pnpm.cmd lint:tokens`: pass, clean.
+- `pnpm.cmd lint`: pass, with warnings only.
+- `pnpm.cmd type-check`: pass.
+- `pnpm.cmd test`: fail in mobile Jest coverage with `Error: spawn EPERM`.
+- `pnpm.cmd --filter @baydar/mobile exec jest --runInBand --coverage=false`: pass, with React `act(...)` warnings.
+
+### Key Grep/Static Hits
+
+- `docs/api-contract.md`: `/media/upload-url`, `/search/posts`, `/search/jobs`, `/search/companies`, and "Do not expose access tokens in query strings".
+- `apps/api/src/modules/auth/guards/jwt-auth.guard.ts`: accepts query `access_token` as EventSource fallback.
+- `apps/api/src/modules/media/media.controller.ts`: `@Post("presign")`.
+- `apps/api/src/modules/search/search.controller.ts`: `@Get("people")`.
+- `apps/api/src/modules/messaging/messaging.controller.ts`: raw `@Query()` plus `CursorPageQuery.parse(...)`.
+- `apps/api/src/modules/notifications/notifications.controller.ts`: raw `@Query()` plus `CursorPageQuery.parse(...)`.
+- `apps/api/src/common/exception.filter.ts`: non-HttpException fallback returns internal server error.
+- `packages/shared/src/schemas/company.ts`: `CreateCompanyBody`, `UpdateCompanyBody`.
+- `packages/shared/src/schemas/job.ts`: `CreateJobBody`, `UpdateJobBody`, `UpdateApplicationStatusBody`.
+- `packages/db/prisma/schema.prisma`: `model BlockedUser`, `model Report`, `emailVerified`.
+- `apps/mobile/app.json`: `REPLACE_WITH_EAS_PROJECT_ID`.
+- `apps/mobile/eas.json`: production Sentry/PostHog placeholders.
+- `apps/web/public/.well-known/apple-app-site-association`: `TEAMID.ps.baydar.app`.
+- `apps/web/public/.well-known/assetlinks.json`: `REPLACE_WITH_RELEASE_SHA256_FINGERPRINT`.
+- `docs/HANDOFF.md`: real-device smoke evidence owed for refresh, deep links, push, haptics, offline/SSE resume, swipe archive, cross-device messaging.
+- `docs/design/MOBILE.md`: swipe notification -> dismiss, deep links, 200 percent font scale, virtualized list requirement.
+- `docs/design/RTL.md`: RTL visual-test expectations.
+- `scripts/lint-tokens.mjs`: checks hex/default palettes/physical Tailwind classes, not raw px/rem or React Native StyleSheet direction.
+
+### Spot-Check Log
+
+| Check | Result |
+| --- | --- |
+| Top-level package inventory | Completed from workspace/package manifests. |
+| Web route inventory | Completed from `apps/web/src/app/[locale]`. |
+| Mobile route inventory | Completed from Expo Router files under `apps/mobile/app`. |
+| API controller route inventory | Completed from controller decorators. |
+| Prisma to API/shared drift | Drift found for company/job admin and moderation/report/block. |
+| Shared Zod to API drift | Drift found for company/job/admin schemas without routes; logout body lacks schema; raw query parse bypasses pipe. |
+| Prototype to implementation drift | No whole MVP screen missing; search scopes drift from prototype. |
+| Hardcoded JSX string scan | No high-confidence production web JSX strings outside comments; one low-risk mobile fallback; manifest metadata remains hardcoded. |
+| Token/RTL scan | Token gate passed; raw size/native direction coverage gaps found. |
+| Test inventory | Completed by package; web/ui-web and API interaction gaps found; native HANDOFF component list now has tests but coverage gate fails. |
