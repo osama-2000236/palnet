@@ -22,4 +22,6 @@ module.exports = {
   coverageDirectory: "<rootDir>/apps/mobile/coverage",
   coverageProvider: "v8",
   coverageReporters: ["json-summary", "text"],
+  // Windows sandbox blocks Jest's coverage reporter from spawning workers.
+  maxWorkers: 1,
 };

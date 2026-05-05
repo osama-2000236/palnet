@@ -21,10 +21,11 @@
 ## Known Follow-Ups
 
 - Real-device manual smoke evidence is still owed for refresh, deep links, push, haptics, offline/SSE resume, swipe archive, and cross-device messaging.
-- Native branch coverage remains thin for `Icon`, `MessageBubble`, `Sheet`, `Skeleton`, and `PostCardSkeleton`.
+- Native Jest coverage now runs in the root test gate on Windows; branch coverage remains thin for `Icon`, `MessageBubble`, `Sheet`, `Skeleton`, and `PostCardSkeleton`.
 - Arabic copy received AI-assisted cleanup but still needs a native human review before launch.
 - Universal-link files are committed as drafts; replace Apple team ID and Android release SHA256 before production hosting.
 - EAS project id and production Sentry/PostHog values remain environment-level release tasks.
+- Sprint 14 should pick up UGC safety: report/block flows, moderation queue behavior, and any related privacy/legal copy after counsel review.
 
 ## Verification Snapshot
 

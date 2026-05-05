@@ -1,4 +1,4 @@
-import { type AuthSession, LoginBody, RefreshBody, RegisterBody } from "@baydar/shared";
+import { type AuthSession, LoginBody, LogoutBody, RefreshBody, RegisterBody } from "@baydar/shared";
 import {
   Body,
   Controller,
@@ -70,7 +70,10 @@ export class AuthController {
   @Post("logout")
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiBearerAuth()
-  async logout(@CurrentUser() user: AuthUser, @Body() body: { deviceId: string }): Promise<void> {
+  async logout(
+    @CurrentUser() user: AuthUser,
+    @Body(new ZodValidationPipe(LogoutBody)) body: LogoutBody,
+  ): Promise<void> {
     await this.auth.logout(user.id, body.deviceId);
   }
 

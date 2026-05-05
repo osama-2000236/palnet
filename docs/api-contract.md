@@ -6,11 +6,26 @@ Base path: `/api/v1`. Swagger is available at `/api/docs`. Request and response 
 
 - Protected routes use `Authorization: Bearer <accessToken>`.
 - Refresh is handled by `/auth/refresh` with a stored refresh token.
-- Success responses use `{ data, meta? }`.
+- Success response envelopes are route-specific. Wrapped routes use `{ data, meta? }`; raw DTO exceptions are listed in [Response Envelopes](#response-envelopes).
 - Errors use `{ error: { code, message, details? } }`.
 - Cursor pagination uses `after` and `limit` with `{ nextCursor, hasMore, limit }` metadata.
 - Live app updates use SSE streams from the API, not legacy socket namespaces.
 - Timestamps are ISO 8601 UTC strings.
+
+## Response Envelopes
+
+Default policy for new REST routes: return `{ data, meta? }`, with `meta` reserved for pagination or transport metadata. Sprint 13 keeps the current shipped raw DTO routes stable instead of wrapping them in a breaking API sweep.
+
+Current raw response exceptions:
+
+- `GET /health` returns a health object.
+- `POST /auth/logout`, delete routes, reaction/repost toggles, and messaging read/archive/typing routes return `204 No Content`.
+- Messaging detail/action routes return raw DTOs: `POST /messaging/rooms`, `GET /messaging/rooms/:id`, `POST /messaging/rooms/:id/messages`, `PATCH /messaging/messages/:id`, and `DELETE /messaging/messages/:id`.
+- Job detail/action routes return raw DTOs: `GET /jobs/:id` returns a `Job`; `POST /jobs/:id/apply` returns `{ id, status }`.
+- Notification counters/actions return raw count DTOs: `GET /notifications/unread-count` and `POST /notifications/read` return `{ count }`.
+- SSE routes stream event frames and do not use JSON response envelopes.
+
+All other JSON success responses should use `{ data, meta? }` unless a future decision record adds a raw exception.
 
 ## Core Endpoints
 
@@ -58,7 +73,7 @@ Base path: `/api/v1`. Swagger is available at `/api/docs`. Request and response 
 
 ### Media
 
-- `POST /media/upload-url`
+- `POST /media/presign`
 
 Returns signed upload data and media metadata. Current blurhash support is a deterministic API placeholder, not image-byte decoding.
 
@@ -66,9 +81,13 @@ Returns signed upload data and media metadata. Current blurhash support is a det
 
 - `GET /messaging/rooms`
 - `POST /messaging/rooms`
+- `GET /messaging/rooms/:id`
 - `GET /messaging/rooms/:id/messages`
 - `POST /messaging/rooms/:id/messages`
+- `PATCH /messaging/messages/:id`
+- `DELETE /messaging/messages/:id`
 - `POST /messaging/rooms/:id/read`
+- `POST /messaging/rooms/:id/archive`
 - `POST /messaging/rooms/:id/typing`
 
 ### Live Messaging
@@ -80,6 +99,7 @@ The stream sends events such as new messages, read state, typing state, and room
 ### Notifications
 
 - `GET /notifications`
+- `GET /notifications/unread-count`
 - `POST /notifications/read`
 - `POST /notifications/devices`
 - `GET /notifications/stream`

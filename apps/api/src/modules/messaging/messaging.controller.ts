@@ -71,16 +71,12 @@ export class MessagingController {
   async listMessages(
     @CurrentUser() user: AuthUser,
     @Param("id") id: string,
-    @Query() query: Record<string, string | undefined>,
+    @Query(new ZodValidationPipe(CursorPageQuery)) query: CursorPageQuery,
   ): Promise<{
     data: Message[];
     meta: { nextCursor: string | null; hasMore: boolean; limit: number };
   }> {
-    const parsed = CursorPageQuery.parse({
-      after: query.after,
-      limit: query.limit,
-    });
-    const page = await this.messaging.listMessages(user.id, id, parsed.after ?? null, parsed.limit);
+    const page = await this.messaging.listMessages(user.id, id, query.after ?? null, query.limit);
     return {
       data: page.data,
       meta: {

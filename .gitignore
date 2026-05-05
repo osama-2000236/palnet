@@ -68,6 +68,7 @@ packages/db/prisma/*.db-journal
 .codex-run/
 .codex-logs/
 .artifacts/
+apps/Users/
 expo-qr.png
 
 # Python (agentflow tooling)

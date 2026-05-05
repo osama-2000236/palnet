@@ -33,6 +33,11 @@ export const RefreshBody = z.object({
 });
 export type RefreshBody = z.infer<typeof RefreshBody>;
 
+export const LogoutBody = z.object({
+  deviceId: z.string().min(1).max(128),
+});
+export type LogoutBody = z.infer<typeof LogoutBody>;
+
 export const AuthTokens = z.object({
   accessToken: z.string(),
   refreshToken: z.string(),

@@ -8,4 +8,6 @@ module.exports = {
   coverageDirectory: "../coverage",
   testEnvironment: "node",
   moduleNameMapper: { "^@/(.*)$": "<rootDir>/$1" },
+  // Windows sandbox blocks Jest worker processes during the root test gate.
+  maxWorkers: 1,
 };

@@ -33,13 +33,9 @@ export class NotificationsController {
   @Get()
   async list(
     @CurrentUser() user: AuthUser,
-    @Query() query: Record<string, string | undefined>,
+    @Query(new ZodValidationPipe(CursorPageQuery)) query: CursorPageQuery,
   ): Promise<{ data: Notification[]; meta: CursorPageMeta }> {
-    const parsed = CursorPageQuery.parse({
-      after: query.after,
-      limit: query.limit,
-    });
-    return this.notifications.list(user.id, parsed.after ?? null, parsed.limit);
+    return this.notifications.list(user.id, query.after ?? null, query.limit);
   }
 
   @Get("unread-count")
