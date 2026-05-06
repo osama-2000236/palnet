@@ -3,6 +3,7 @@ import { Test } from "@nestjs/testing";
 
 import { DomainException } from "../../common/domain-exception";
 import { PrismaService } from "../prisma/prisma.service";
+import { SafetyService } from "../safety/safety.service";
 
 import { PostsService } from "./posts.service";
 
@@ -50,11 +51,17 @@ const hydrated = (overrides: Partial<{ authorId: string; id: string }> = {}) => 
 describe("PostsService", () => {
   let service: PostsService;
   let prisma: PrismaStub;
+  let safety: { getBlockedEitherIds: jest.Mock };
 
   beforeEach(async () => {
     prisma = buildPrisma();
+    safety = { getBlockedEitherIds: jest.fn().mockResolvedValue([]) };
     const moduleRef = await Test.createTestingModule({
-      providers: [PostsService, { provide: PrismaService, useValue: prisma }],
+      providers: [
+        PostsService,
+        { provide: PrismaService, useValue: prisma },
+        { provide: SafetyService, useValue: safety },
+      ],
     }).compile();
     service = moduleRef.get(PostsService);
   });

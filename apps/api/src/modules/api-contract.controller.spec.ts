@@ -1,4 +1,4 @@
-import { ErrorCode, JobLocationMode, JobType, MediaKind } from "@baydar/shared";
+import { ErrorCode, JobLocationMode, JobType, MediaKind, ReportReason } from "@baydar/shared";
 import type { ExecutionContext, INestApplication, Provider, Type } from "@nestjs/common";
 import { Test } from "@nestjs/testing";
 import type { NextFunction, Request, Response } from "express";
@@ -20,6 +20,8 @@ import { MessagingService } from "./messaging/messaging.service";
 import { NotificationsBus } from "./notifications/notifications.bus";
 import { NotificationsController } from "./notifications/notifications.controller";
 import { NotificationsService } from "./notifications/notifications.service";
+import { SafetyController } from "./safety/safety.controller";
+import { SafetyService } from "./safety/safety.service";
 
 const authUser: AuthUser = {
   id: "cm00000000000000000000001",
@@ -259,6 +261,64 @@ describe("API controller contract", () => {
         .expect((res) => {
           expect(res.body).toEqual({ count: 7 });
           expect(res.body).not.toHaveProperty("data");
+        });
+    } finally {
+      await app.close();
+    }
+  });
+
+  it("pins safety routes to envelopes and raw 204 unblock", async () => {
+    const createdAt = new Date("2026-05-05T00:00:00Z");
+    const safety = {
+      report: jest.fn().mockResolvedValue({ id: "cm00000000000000000000010", createdAt }),
+      block: jest.fn().mockResolvedValue({
+        id: "cm00000000000000000000011",
+        blockedUserId: "cm00000000000000000000002",
+        createdAt,
+      }),
+      unblock: jest.fn().mockResolvedValue(undefined),
+      listBlocked: jest.fn().mockResolvedValue({
+        data: [],
+        meta: { nextCursor: null, hasMore: false, limit: 20 },
+      }),
+    };
+    const app = await createApp({
+      controllers: [SafetyController],
+      providers: [{ provide: SafetyService, useValue: safety }],
+      overrideJwt: true,
+    });
+
+    try {
+      await request(app.getHttpServer())
+        .post("/reports")
+        .send({ reason: ReportReason.SPAM, targetUserId: "cm00000000000000000000002" })
+        .expect(201)
+        .expect({
+          data: { id: "cm00000000000000000000010", createdAt: createdAt.toISOString() },
+        });
+
+      await request(app.getHttpServer())
+        .post("/blocks")
+        .send({ blockedUserId: "cm00000000000000000000002" })
+        .expect(201)
+        .expect({
+          data: {
+            id: "cm00000000000000000000011",
+            blockedUserId: "cm00000000000000000000002",
+            createdAt: createdAt.toISOString(),
+          },
+        });
+
+      await request(app.getHttpServer()).get("/blocks").expect(200).expect({
+        data: [],
+        meta: { nextCursor: null, hasMore: false, limit: 20 },
+      });
+
+      await request(app.getHttpServer())
+        .delete("/blocks/cm00000000000000000000002")
+        .expect(204)
+        .expect((res) => {
+          expect(res.text).toBe("");
         });
     } finally {
       await app.close();

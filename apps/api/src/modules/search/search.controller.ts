@@ -4,6 +4,7 @@ import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 
 import { RequireCompleteProfile } from "../../common/require-complete-profile.decorator";
 import { ZodValidationPipe } from "../../common/zod-pipe";
+import { CurrentUser, type AuthUser } from "../auth/decorators/current-user.decorator";
 
 import { SearchService } from "./search.service";
 
@@ -16,9 +17,10 @@ export class SearchController {
 
   @Get("people")
   async people(
+    @CurrentUser() user: AuthUser,
     @Query(new ZodValidationPipe(PeopleSearchQuery))
     query: PeopleSearchQuery,
   ): Promise<{ data: SearchPersonHit[]; meta: CursorPageMeta }> {
-    return this.search.people(query);
+    return this.search.people(user.id, query);
   }
 }

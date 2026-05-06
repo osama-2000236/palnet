@@ -1,6 +1,7 @@
 import { Test } from "@nestjs/testing";
 
 import { PrismaService } from "../prisma/prisma.service";
+import { SafetyService } from "../safety/safety.service";
 
 import { SearchService } from "./search.service";
 
@@ -26,11 +27,17 @@ const hit = (overrides: Partial<{ id: string; handle: string }> = {}) => ({
 describe("SearchService", () => {
   let service: SearchService;
   let prisma: PrismaStub;
+  let safety: { getBlockedEitherIds: jest.Mock };
 
   beforeEach(async () => {
     prisma = buildPrisma();
+    safety = { getBlockedEitherIds: jest.fn().mockResolvedValue([]) };
     const moduleRef = await Test.createTestingModule({
-      providers: [SearchService, { provide: PrismaService, useValue: prisma }],
+      providers: [
+        SearchService,
+        { provide: PrismaService, useValue: prisma },
+        { provide: SafetyService, useValue: safety },
+      ],
     }).compile();
     service = moduleRef.get(SearchService);
   });
@@ -38,7 +45,7 @@ describe("SearchService", () => {
   it("returns hits with pagination metadata (happy path)", async () => {
     prisma.profile.findMany.mockResolvedValue([hit()]);
 
-    const page = await service.people({ q: "osama", limit: 20 });
+    const page = await service.people("viewer", { q: "osama", limit: 20 });
 
     expect(page.data).toHaveLength(1);
     expect(page.data[0]?.handle).toBe("osama");
@@ -54,7 +61,7 @@ describe("SearchService", () => {
       hit({ id: "p_3", handle: "c" }),
     ]);
 
-    const page = await service.people({ q: "z", limit: 2 });
+    const page = await service.people("viewer", { q: "z", limit: 2 });
 
     expect(page.data).toHaveLength(2);
     expect(page.meta.hasMore).toBe(true);
@@ -64,12 +71,25 @@ describe("SearchService", () => {
   it("forwards cursor + skip when `after` is provided", async () => {
     prisma.profile.findMany.mockResolvedValue([]);
 
-    await service.people({ q: "x", limit: 20, after: "p_prev" });
+    await service.people("viewer", { q: "x", limit: 20, after: "p_prev" });
 
     expect(prisma.profile.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
         cursor: { id: "p_prev" },
         skip: 1,
+      }),
+    );
+  });
+
+  it("excludes blocked users at the Prisma query layer", async () => {
+    safety.getBlockedEitherIds.mockResolvedValue(["blocked_1"]);
+    prisma.profile.findMany.mockResolvedValue([]);
+
+    await service.people("viewer", { q: "x", limit: 20 });
+
+    expect(prisma.profile.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ userId: { notIn: ["blocked_1"] } }),
       }),
     );
   });

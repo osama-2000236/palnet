@@ -20,6 +20,7 @@ Current raw response exceptions:
 
 - `GET /health` returns a health object.
 - `POST /auth/logout`, delete routes, reaction/repost toggles, and messaging read/archive/typing routes return `204 No Content`.
+- `DELETE /blocks/:blockedUserId` returns `204 No Content`.
 - Messaging detail/action routes return raw DTOs: `POST /messaging/rooms`, `GET /messaging/rooms/:id`, `POST /messaging/rooms/:id/messages`, `PATCH /messaging/messages/:id`, and `DELETE /messaging/messages/:id`.
 - Job detail/action routes return raw DTOs: `GET /jobs/:id` returns a `Job`; `POST /jobs/:id/apply` returns `{ id, status }`.
 - Notification counters/actions return raw count DTOs: `GET /notifications/unread-count` and `POST /notifications/read` return `{ count }`.
@@ -76,6 +77,25 @@ All other JSON success responses should use `{ data, meta? }` unless a future de
 - `POST /media/presign`
 
 Returns signed upload data and media metadata. Current blurhash support is a deterministic API placeholder, not image-byte decoding.
+
+### Safety
+
+- `POST /reports`
+- `POST /blocks`
+- `DELETE /blocks/:blockedUserId`
+- `GET /blocks`
+
+Safety routes are protected and use shared Zod schemas from `packages/shared/src/schemas/safety.ts`.
+
+`POST /reports` accepts `{ reason, details?, targetUserId?, targetPostId?, targetCommentId?, targetMessageId? }`; at least one target is required. Reporting yourself, including your own post/comment/message target, returns `400`.
+
+`POST /blocks` accepts `{ blockedUserId }` and is idempotent. Re-blocking the same user returns the existing block in `{ data }`.
+
+`DELETE /blocks/:blockedUserId` is idempotent and returns `204` even when no block row exists.
+
+`GET /blocks` uses cursor pagination and returns `{ data: BlockedUserDTO[], meta }`.
+
+Blocking is bidirectional for visibility: feed, people search, comments, post activity counts, direct-message room listing, group-room message visibility, and notification creation/listing exclude users who either blocked the viewer or were blocked by the viewer. Sending a message into a room with any blocked relationship returns `403` with `error.code = "BLOCKED"`.
 
 ### Messaging
 

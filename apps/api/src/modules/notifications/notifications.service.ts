@@ -9,6 +9,7 @@ import { Injectable, Logger } from "@nestjs/common";
 
 import { DomainException } from "../../common/domain-exception";
 import { PrismaService } from "../prisma/prisma.service";
+import { SafetyService } from "../safety/safety.service";
 
 import { NotificationsBus } from "./notifications.bus";
 import { PushService } from "./push.service";
@@ -78,6 +79,7 @@ export class NotificationsService {
     private readonly prisma: PrismaService,
     private readonly bus: NotificationsBus,
     private readonly push: PushService,
+    private readonly safety: SafetyService,
   ) {}
 
   // ─────────────────────────────────────────────────────────────────────
@@ -90,6 +92,9 @@ export class NotificationsService {
     try {
       // No self-notifications.
       if (input.actorId && input.actorId === input.recipientId) return;
+      if (input.actorId && (await this.safety.isBlockedEither(input.actorId, input.recipientId))) {
+        return;
+      }
 
       if (input.dedupe) {
         const existing = await this.prisma.notification.findFirst({
@@ -156,8 +161,12 @@ export class NotificationsService {
     limit: number,
   ): Promise<{ data: NotificationDto[]; meta: CursorPageMeta }> {
     const take = Math.min(Math.max(limit, 1), 50);
+    const excludedUserIds = await this.safety.getBlockedEitherIds(viewerId);
     const rows = (await this.prisma.notification.findMany({
-      where: { recipientId: viewerId },
+      where: {
+        recipientId: viewerId,
+        ...(excludedUserIds.length ? { actorId: { notIn: excludedUserIds } } : {}),
+      },
       orderBy: { createdAt: "desc" },
       take: take + 1,
       ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),

@@ -2,6 +2,7 @@ import type { CursorPageMeta, PeopleSearchQuery, SearchPersonHit } from "@baydar
 import { Injectable } from "@nestjs/common";
 
 import { PrismaService } from "../prisma/prisma.service";
+import { SafetyService } from "../safety/safety.service";
 
 interface ProfileSearchRow {
   id: string;
@@ -16,18 +17,24 @@ interface ProfileSearchRow {
 
 @Injectable()
 export class SearchService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly safety: SafetyService,
+  ) {}
 
   async people(
+    viewerId: string,
     query: PeopleSearchQuery,
   ): Promise<{ data: SearchPersonHit[]; meta: CursorPageMeta }> {
     const q = query.q.trim();
     const limit = query.limit;
+    const excludedUserIds = await this.safety.getBlockedEitherIds(viewerId);
 
     // Substring match across handle/firstName/lastName/headline. Postgres
     // `mode: "insensitive"` keeps us case-insensitive without needing
     // trigram/fts indexes yet; we'll layer GIN FTS in a later sprint.
     const where = {
+      ...(excludedUserIds.length ? { userId: { notIn: excludedUserIds } } : {}),
       OR: [
         { handle: { contains: q, mode: "insensitive" as const } },
         { firstName: { contains: q, mode: "insensitive" as const } },

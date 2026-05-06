@@ -15,3 +15,4 @@ export * from "./schemas/job";
 export * from "./schemas/company";
 export * from "./schemas/search";
 export * from "./schemas/media";
+export * from "./schemas/safety";

@@ -10,6 +10,7 @@ import { Injectable } from "@nestjs/common";
 import { DomainException } from "../../common/domain-exception";
 import { NotificationsService } from "../notifications/notifications.service";
 import { PrismaService } from "../prisma/prisma.service";
+import { SafetyService } from "../safety/safety.service";
 
 interface CommentWithAuthor {
   id: string;
@@ -71,6 +72,7 @@ export class CommentsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly notifications: NotificationsService,
+    private readonly safety: SafetyService,
   ) {}
 
   async create(viewerId: string, postId: string, body: CreateCommentBody): Promise<CommentDto> {
@@ -127,12 +129,19 @@ export class CommentsService {
   }
 
   async list(
+    viewerId: string,
     postId: string,
     cursor: string | null,
     limit: number,
   ): Promise<{ data: CommentDto[]; meta: CursorPageMeta }> {
+    const excludedUserIds = await this.safety.getBlockedEitherIds(viewerId);
     const rows = await this.prisma.comment.findMany({
-      where: { postId, deletedAt: null, parentId: null },
+      where: {
+        postId,
+        deletedAt: null,
+        parentId: null,
+        ...(excludedUserIds.length ? { authorId: { notIn: excludedUserIds } } : {}),
+      },
       orderBy: [{ createdAt: "asc" }, { id: "asc" }],
       take: limit + 1,
       ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),

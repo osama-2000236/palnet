@@ -3,6 +3,7 @@ import { Test } from "@nestjs/testing";
 
 import { NotificationsService } from "../notifications/notifications.service";
 import { PrismaService } from "../prisma/prisma.service";
+import { SafetyService } from "../safety/safety.service";
 
 import { MessagingBus } from "./messaging.bus";
 import { MessagingService } from "./messaging.service";
@@ -31,6 +32,7 @@ type PrismaStub = {
     update: jest.Mock;
     count: jest.Mock;
   };
+  blockedUser: { count: jest.Mock };
 };
 
 function buildPrisma(): PrismaStub {
@@ -58,6 +60,7 @@ function buildPrisma(): PrismaStub {
       update: jest.fn(),
       count: jest.fn(),
     },
+    blockedUser: { count: jest.fn() },
   };
 }
 
@@ -103,17 +106,24 @@ describe("MessagingService", () => {
   let prisma: PrismaStub;
   let bus: { publish: jest.Mock; subscribe: jest.Mock };
   let notifications: { notify: jest.Mock };
+  let safety: { getBlockedEitherIds: jest.Mock; isBlockedEither: jest.Mock };
 
   beforeEach(async () => {
     prisma = buildPrisma();
     bus = { publish: jest.fn(), subscribe: jest.fn() };
     notifications = { notify: jest.fn().mockResolvedValue(undefined) };
+    safety = {
+      getBlockedEitherIds: jest.fn().mockResolvedValue([]),
+      isBlockedEither: jest.fn().mockResolvedValue(false),
+    };
+    prisma.blockedUser.count.mockResolvedValue(0);
     const moduleRef = await Test.createTestingModule({
       providers: [
         MessagingService,
         { provide: PrismaService, useValue: prisma },
         { provide: MessagingBus, useValue: bus },
         { provide: NotificationsService, useValue: notifications },
+        { provide: SafetyService, useValue: safety },
       ],
     }).compile();
     service = moduleRef.get(MessagingService);
@@ -236,6 +246,18 @@ describe("MessagingService", () => {
         }),
       ).rejects.toMatchObject({ code: ErrorCode.NOT_FOUND });
     });
+
+    it("rejects sends when either side has blocked the other", async () => {
+      prisma.blockedUser.count.mockResolvedValue(1);
+
+      await expect(
+        service.sendMessage("u_me", "room_1", {
+          body: "hi",
+          clientMessageId: "c_blocked",
+        }),
+      ).rejects.toMatchObject({ code: ErrorCode.BLOCKED });
+      expect(prisma.message.create).not.toHaveBeenCalled();
+    });
   });
 
   describe("listMyRooms unread count", () => {
@@ -282,7 +304,9 @@ describe("MessagingService", () => {
 
       expect(prisma.chatRoom.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
-          where: { members: { some: { userId: "u_me", archivedAt: null } } },
+          where: expect.objectContaining({
+            members: { some: { userId: "u_me", archivedAt: null } },
+          }),
         }),
       );
     });

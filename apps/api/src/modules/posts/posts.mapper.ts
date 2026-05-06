@@ -84,7 +84,12 @@ export function toPostDto(post: PostWithIncludes): PostDto {
 }
 
 // Standard `include` shape for Prisma post queries. Call-sites override where needed.
-export function postInclude(viewerId: string) {
+export function postInclude(viewerId: string, excludedUserIds: string[] = []) {
+  const visibleUserWhere = excludedUserIds.length ? { userId: { notIn: excludedUserIds } } : {};
+  const visibleAuthorWhere = excludedUserIds.length
+    ? { authorId: { notIn: excludedUserIds } }
+    : {};
+
   return {
     author: {
       select: {
@@ -102,7 +107,11 @@ export function postInclude(viewerId: string) {
     },
     media: true,
     _count: {
-      select: { reactions: true, comments: true, reposts: true },
+      select: {
+        reactions: { where: visibleUserWhere },
+        comments: { where: { deletedAt: null, ...visibleAuthorWhere } },
+        reposts: { where: visibleUserWhere },
+      },
     },
     reactions: {
       where: { userId: viewerId },

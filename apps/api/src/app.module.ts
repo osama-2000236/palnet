@@ -20,6 +20,7 @@ import { PrismaModule } from "./modules/prisma/prisma.module";
 import { ProfilesModule } from "./modules/profiles/profiles.module";
 import { ReactionsModule } from "./modules/reactions/reactions.module";
 import { RepostsModule } from "./modules/reposts/reposts.module";
+import { SafetyModule } from "./modules/safety/safety.module";
 import { SearchModule } from "./modules/search/search.module";
 
 const env = loadEnv();
@@ -57,6 +58,7 @@ const authThrottleLimit =
     CommentsModule,
     RepostsModule,
     ConnectionsModule,
+    SafetyModule,
     SearchModule,
     MediaModule,
     MessagingModule,

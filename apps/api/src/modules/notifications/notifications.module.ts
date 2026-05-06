@@ -1,5 +1,7 @@
 import { Global, Module } from "@nestjs/common";
 
+import { SafetyModule } from "../safety/safety.module";
+
 import { DevicesController } from "./devices.controller";
 import { DevicesService } from "./devices.service";
 import { NotificationsBus } from "./notifications.bus";
@@ -11,6 +13,7 @@ import { PushService } from "./push.service";
 // inject NotificationsService without importing this module.
 @Global()
 @Module({
+  imports: [SafetyModule],
   controllers: [NotificationsController, DevicesController],
   providers: [NotificationsService, NotificationsBus, DevicesService, PushService],
   exports: [NotificationsService, NotificationsBus, PushService],

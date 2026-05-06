@@ -8,12 +8,16 @@ import { Injectable } from "@nestjs/common";
 
 import { DomainException } from "../../common/domain-exception";
 import { PrismaService } from "../prisma/prisma.service";
+import { SafetyService } from "../safety/safety.service";
 
 import { postInclude, toPostDto, type PostWithIncludes } from "./posts.mapper";
 
 @Injectable()
 export class PostsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly safety: SafetyService,
+  ) {}
 
   async create(authorId: string, body: CreatePostBody): Promise<PostDto> {
     const post = await this.prisma.post.create({
@@ -42,9 +46,14 @@ export class PostsService {
   }
 
   async getById(viewerId: string, postId: string): Promise<PostDto> {
+    const excludedUserIds = await this.safety.getBlockedEitherIds(viewerId);
     const post = await this.prisma.post.findFirst({
-      where: { id: postId, deletedAt: null },
-      include: postInclude(viewerId),
+      where: {
+        id: postId,
+        deletedAt: null,
+        ...(excludedUserIds.length ? { authorId: { notIn: excludedUserIds } } : {}),
+      },
+      include: postInclude(viewerId, excludedUserIds),
     });
     if (!post) {
       throw new DomainException(ErrorCode.NOT_FOUND, "Post not found.", 404);

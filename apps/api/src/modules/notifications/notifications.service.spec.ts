@@ -2,6 +2,7 @@ import { NotificationType } from "@baydar/shared";
 import { Test } from "@nestjs/testing";
 
 import { PrismaService } from "../prisma/prisma.service";
+import { SafetyService } from "../safety/safety.service";
 
 import { NotificationsBus } from "./notifications.bus";
 import { NotificationsService } from "./notifications.service";
@@ -61,17 +62,23 @@ describe("NotificationsService", () => {
   let prisma: PrismaStub;
   let bus: { publish: jest.Mock; subscribe: jest.Mock };
   let push: { sendNotification: jest.Mock };
+  let safety: { isBlockedEither: jest.Mock; getBlockedEitherIds: jest.Mock };
 
   beforeEach(async () => {
     prisma = buildPrisma();
     bus = { publish: jest.fn(), subscribe: jest.fn() };
     push = { sendNotification: jest.fn().mockResolvedValue(undefined) };
+    safety = {
+      isBlockedEither: jest.fn().mockResolvedValue(false),
+      getBlockedEitherIds: jest.fn().mockResolvedValue([]),
+    };
     const moduleRef = await Test.createTestingModule({
       providers: [
         NotificationsService,
         { provide: PrismaService, useValue: prisma },
         { provide: NotificationsBus, useValue: bus },
         { provide: PushService, useValue: push },
+        { provide: SafetyService, useValue: safety },
       ],
     }).compile();
     service = moduleRef.get(NotificationsService);
@@ -129,6 +136,18 @@ describe("NotificationsService", () => {
       });
       expect(prisma.notification.create).not.toHaveBeenCalled();
       expect(bus.publish).not.toHaveBeenCalled();
+    });
+
+    it("does not create notifications between blocked users", async () => {
+      safety.isBlockedEither.mockResolvedValue(true);
+
+      await service.notify({
+        type: NotificationType.POST_REACTION,
+        recipientId: "u_rec",
+        actorId: "u_actor",
+        postId: "p_1",
+      });
+      expect(prisma.notification.create).not.toHaveBeenCalled();
     });
 
     it("does not throw when Prisma create fails — notifications are fire-and-forget", async () => {

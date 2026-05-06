@@ -42,11 +42,12 @@ export class CommentsController {
 
   @Get("posts/:id/comments")
   async list(
+    @CurrentUser() user: AuthUser,
     @Param("id") postId: string,
     @Query(new ZodValidationPipe(CursorPageQuery))
     query: CursorPageQuery,
   ): Promise<{ data: CommentDto[]; meta: CursorPageMeta }> {
-    return this.comments.list(postId, query.after ?? null, query.limit);
+    return this.comments.list(user.id, postId, query.after ?? null, query.limit);
   }
 
   @Delete("comments/:id")

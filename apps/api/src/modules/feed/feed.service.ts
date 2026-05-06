@@ -3,10 +3,14 @@ import { Injectable } from "@nestjs/common";
 
 import { postInclude, toPostDto, type PostWithIncludes } from "../posts/posts.mapper";
 import { PrismaService } from "../prisma/prisma.service";
+import { SafetyService } from "../safety/safety.service";
 
 @Injectable()
 export class FeedService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly safety: SafetyService,
+  ) {}
 
   async getFeed(
     viewerId: string,
@@ -25,6 +29,10 @@ export class FeedService {
     for (const c of connections) {
       authorIds.add(c.requesterId === viewerId ? c.receiverId : c.requesterId);
     }
+    const excludedUserIds = await this.safety.getBlockedEitherIds(viewerId);
+    for (const id of excludedUserIds) {
+      authorIds.delete(id);
+    }
 
     // Fetch limit + 1 for hasMore detection.
     const rows = await this.prisma.post.findMany({
@@ -35,7 +43,7 @@ export class FeedService {
       orderBy: [{ createdAt: "desc" }, { id: "desc" }],
       take: limit + 1,
       ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
-      include: postInclude(viewerId),
+      include: postInclude(viewerId, excludedUserIds),
     });
 
     const hasMore = rows.length > limit;

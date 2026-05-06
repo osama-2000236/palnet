@@ -12,6 +12,7 @@ import { Injectable } from "@nestjs/common";
 import { DomainException } from "../../common/domain-exception";
 import { NotificationsService } from "../notifications/notifications.service";
 import { PrismaService } from "../prisma/prisma.service";
+import { SafetyService } from "../safety/safety.service";
 
 import { MessagingBus } from "./messaging.bus";
 
@@ -62,6 +63,7 @@ export class MessagingService {
     private readonly prisma: PrismaService,
     private readonly bus: MessagingBus,
     private readonly notifications: NotificationsService,
+    private readonly safety: SafetyService,
   ) {}
 
   // ─────────────────────────────────────────────────────────────────────
@@ -154,8 +156,14 @@ export class MessagingService {
   }
 
   async listMyRooms(viewerId: string): Promise<ChatRoomDto[]> {
+    const excludedUserIds = await this.safety.getBlockedEitherIds(viewerId);
     const rooms = (await this.prisma.chatRoom.findMany({
-      where: { members: { some: { userId: viewerId, archivedAt: null } } },
+      where: {
+        members: { some: { userId: viewerId, archivedAt: null } },
+        NOT: excludedUserIds.length
+          ? { isGroup: false, members: { some: { userId: { in: excludedUserIds } } } }
+          : undefined,
+      },
       orderBy: { updatedAt: "desc" },
       take: 100,
       include: {
@@ -177,20 +185,25 @@ export class MessagingService {
           },
         },
         messages: {
+          where: excludedUserIds.length ? { authorId: { notIn: excludedUserIds } } : undefined,
           orderBy: { createdAt: "desc" },
           take: 1,
         },
       },
     })) as unknown as RoomRow[];
 
-    return Promise.all(rooms.map((row) => this.toChatRoomDto(row, viewerId)));
+    return Promise.all(rooms.map((row) => this.toChatRoomDto(row, viewerId, excludedUserIds)));
   }
 
   async getRoomDto(roomId: string, viewerId: string): Promise<ChatRoomDto> {
+    const excludedUserIds = await this.safety.getBlockedEitherIds(viewerId);
     const row = (await this.prisma.chatRoom.findFirst({
       where: {
         id: roomId,
         members: { some: { userId: viewerId } },
+        NOT: excludedUserIds.length
+          ? { isGroup: false, members: { some: { userId: { in: excludedUserIds } } } }
+          : undefined,
       },
       include: {
         members: {
@@ -211,6 +224,7 @@ export class MessagingService {
           },
         },
         messages: {
+          where: excludedUserIds.length ? { authorId: { notIn: excludedUserIds } } : undefined,
           orderBy: { createdAt: "desc" },
           take: 1,
         },
@@ -219,7 +233,7 @@ export class MessagingService {
     if (!row) {
       throw new DomainException(ErrorCode.NOT_FOUND, "Room not found.", 404);
     }
-    return this.toChatRoomDto(row, viewerId);
+    return this.toChatRoomDto(row, viewerId, excludedUserIds);
   }
 
   // ─────────────────────────────────────────────────────────────────────
@@ -233,9 +247,13 @@ export class MessagingService {
     limit: number,
   ): Promise<{ data: MessageDto[]; nextCursor: string | null; hasMore: boolean; limit: number }> {
     await this.requireMembership(viewerId, roomId);
+    const excludedUserIds = await this.safety.getBlockedEitherIds(viewerId);
     const take = Math.min(Math.max(limit, 1), 50);
     const rows = (await this.prisma.message.findMany({
-      where: { roomId },
+      where: {
+        roomId,
+        ...(excludedUserIds.length ? { authorId: { notIn: excludedUserIds } } : {}),
+      },
       orderBy: { createdAt: "desc" },
       take: take + 1,
       ...(after ? { cursor: { id: after }, skip: 1 } : {}),
@@ -252,6 +270,11 @@ export class MessagingService {
 
   async sendMessage(viewerId: string, roomId: string, body: SendMessageBody): Promise<MessageDto> {
     await this.requireMembership(viewerId, roomId);
+    const members = await this.prisma.chatRoomMember.findMany({
+      where: { roomId },
+      select: { userId: true },
+    });
+    await this.rejectBlockedRoomSend(viewerId, members.map((m) => m.userId));
 
     // Idempotency via (roomId, authorId, clientMessageId) unique.
     const existing = (await this.prisma.message.findFirst({
@@ -285,10 +308,6 @@ export class MessagingService {
 
     // Fan out to every member except the author's other tabs also get it so
     // optimistic UI can reconcile. Everyone in the room receives the event.
-    const members = await this.prisma.chatRoomMember.findMany({
-      where: { roomId },
-      select: { userId: true },
-    });
     for (const m of members) {
       this.bus.publish(m.userId, { type: "message.new", payload: dto });
     }
@@ -447,7 +466,11 @@ export class MessagingService {
     }
   }
 
-  private async toChatRoomDto(row: RoomRow, viewerId: string): Promise<ChatRoomDto> {
+  private async toChatRoomDto(
+    row: RoomRow,
+    viewerId: string,
+    excludedUserIds: string[],
+  ): Promise<ChatRoomDto> {
     const lastMessage = row.messages[0] ? toMessageDto(row.messages[0]) : null;
 
     // Unread count = messages authored by others after this member's lastReadAt.
@@ -457,7 +480,9 @@ export class MessagingService {
       where: {
         roomId: row.id,
         deletedAt: null,
-        authorId: { not: viewerId },
+        authorId: excludedUserIds.length
+          ? { notIn: [viewerId, ...excludedUserIds] }
+          : { not: viewerId },
         ...(lastReadAt ? { createdAt: { gt: lastReadAt } } : {}),
       },
     });
@@ -479,6 +504,22 @@ export class MessagingService {
       })),
       updatedAt: row.updatedAt.toISOString(),
     };
+  }
+
+  private async rejectBlockedRoomSend(viewerId: string, memberIds: string[]): Promise<void> {
+    const otherMemberIds = memberIds.filter((id) => id !== viewerId);
+    if (otherMemberIds.length === 0) return;
+    const blocked = await this.prisma.blockedUser.count({
+      where: {
+        OR: otherMemberIds.flatMap((memberId) => [
+          { blockerId: viewerId, blockedId: memberId },
+          { blockerId: memberId, blockedId: viewerId },
+        ]),
+      },
+    });
+    if (blocked > 0) {
+      throw new DomainException(ErrorCode.BLOCKED, "Messaging is blocked between these users.", 403);
+    }
   }
 }
 
