@@ -136,10 +136,11 @@ The current shipped UI supports job listing, detail, filters, optimistic apply, 
 
 ### Search
 
-- `GET /search/people`
-- `GET /search/posts`
-- `GET /search/jobs`
-- `GET /search/companies`
+- `GET /search/people?q=&after=&limit=` returns `{ data: SearchPersonHit[], meta }`.
+- `GET /search/posts?q=&after=&limit=` returns `{ data: SearchPostHit[], meta }` and excludes posts from users in either direction of a block relationship.
+- `GET /search/jobs?q=&after=&limit=` returns `{ data: SearchJobHit[], meta }` and only includes active, unexpired jobs.
+
+`/search/companies` is deferred until the company admin/management surface ships.
 
 ## Security Invariants
 

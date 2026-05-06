@@ -1,7 +1,11 @@
 import {
   cursorPage,
+  SearchJobHit as SearchJobHitSchema,
   SearchPersonHit as SearchPersonHitSchema,
+  SearchPostHit as SearchPostHitSchema,
+  type SearchJobHit,
   type SearchPersonHit,
+  type SearchPostHit,
 } from "@baydar/shared";
 import {
   AppHeader,
@@ -9,10 +13,11 @@ import {
   RecordCard,
   RecordCardSkeleton,
   SearchField,
+  SegmentedControl,
   nativeTokens,
 } from "@baydar/ui-native";
 import { router } from "expo-router";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { FlatList, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -23,19 +28,34 @@ import { apiErrorMessage } from "@/lib/api-errors";
 import { getAccessToken } from "@/lib/session";
 
 const PeoplePage = cursorPage(SearchPersonHitSchema);
+const PostsPage = cursorPage(SearchPostHitSchema);
+const JobsPage = cursorPage(SearchJobHitSchema);
+
+type SearchType = "people" | "posts" | "jobs";
+type SearchHit = SearchPersonHit | SearchPostHit | SearchJobHit;
 
 export default function SearchScreen(): JSX.Element {
   const { t } = useTranslation();
+  const [type, setType] = useState<SearchType>("people");
   const [q, setQ] = useState("");
-  const [hits, setHits] = useState<SearchPersonHit[]>([]);
+  const [hits, setHits] = useState<SearchHit[]>([]);
   const [cursor, setCursor] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(false);
   const [loading, setLoading] = useState(false);
   const [touched, setTouched] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const tabs = useMemo(
+    () => [
+      { key: "people" as const, label: t("search.tabs.people"), testID: "search-tab-people" },
+      { key: "posts" as const, label: t("search.tabs.posts"), testID: "search-tab-posts" },
+      { key: "jobs" as const, label: t("search.tabs.jobs"), testID: "search-tab-jobs" },
+    ],
+    [t],
+  );
+
   const run = useCallback(
-    async (term: string, after: string | null): Promise<void> => {
+    async (nextType: SearchType, term: string, after: string | null): Promise<void> => {
       const trimmed = term.trim();
       if (!trimmed) {
         setHits([]);
@@ -51,7 +71,7 @@ export default function SearchScreen(): JSX.Element {
         const token = (await getAccessToken()) ?? undefined;
         const qs = new URLSearchParams({ q: trimmed, limit: "20" });
         if (after) qs.set("after", after);
-        const page = await apiFetchPage(`/search/people?${qs.toString()}`, PeoplePage, { token });
+        const page = await fetchSearchPage(nextType, qs.toString(), token);
         setHits((prev) => (after ? [...prev, ...page.data] : page.data));
         setCursor(page.meta.nextCursor);
         setHasMore(page.meta.hasMore);
@@ -76,10 +96,18 @@ export default function SearchScreen(): JSX.Element {
     }
     setTouched(true);
     const timeout = setTimeout(() => {
-      void run(trimmed, null);
+      void run(type, trimmed, null);
     }, 250);
     return () => clearTimeout(timeout);
-  }, [q, run]);
+  }, [q, run, type]);
+
+  function changeType(nextType: SearchType): void {
+    setType(nextType);
+    setHits([]);
+    setCursor(null);
+    setHasMore(false);
+    setError(null);
+  }
 
   return (
     <SafeAreaView style={styles.screen}>
@@ -98,21 +126,29 @@ export default function SearchScreen(): JSX.Element {
               inputDirection="auto"
               onSubmitEditing={() => {
                 setTouched(true);
-                void run(q, null);
+                void run(type, q, null);
               }}
             />
           }
         />
 
+        <SegmentedControl
+          items={tabs}
+          selectedKey={type}
+          onChange={changeType}
+          style={styles.tabs}
+          testID="search-tabs"
+        />
+
         <FlatList
           data={hits}
-          keyExtractor={(p) => p.userId}
+          keyExtractor={(item) => ("userId" in item ? item.userId : item.id)}
           contentContainerStyle={styles.listContent}
           ItemSeparatorComponent={() => <View style={styles.separator} />}
-          renderItem={({ item }) => <SearchRow item={item} />}
+          renderItem={({ item }) => <SearchRow type={type} item={item} />}
           onEndReachedThreshold={0.5}
           onEndReached={() => {
-            if (!loading && hasMore && cursor) void run(q, cursor);
+            if (!loading && hasMore && cursor) void run(type, q, cursor);
           }}
           ListEmptyComponent={
             loading ? (
@@ -126,11 +162,11 @@ export default function SearchScreen(): JSX.Element {
                 message={error}
                 actionLabel={t("common.retry")}
                 busy={loading}
-                onAction={() => void run(q, null)}
+                onAction={() => void run(type, q, null)}
               />
             ) : (
               <StateMessage
-                message={touched ? t("search.noResults") : t("search.prompt")}
+                message={touched ? t(`search.empty.${type}`) : t("search.prompt")}
                 role="text"
               />
             )
@@ -141,7 +177,20 @@ export default function SearchScreen(): JSX.Element {
   );
 }
 
-function SearchRow({ item }: { item: SearchPersonHit }): JSX.Element {
+async function fetchSearchPage(type: SearchType, qs: string, token: string | undefined) {
+  const path = `/search/${type}?${qs}`;
+  if (type === "people") return apiFetchPage(path, PeoplePage, { token });
+  if (type === "posts") return apiFetchPage(path, PostsPage, { token });
+  return apiFetchPage(path, JobsPage, { token });
+}
+
+function SearchRow({ type, item }: { type: SearchType; item: SearchHit }): JSX.Element {
+  if (type === "posts") return <PostRow item={item as SearchPostHit} />;
+  if (type === "jobs") return <JobRow item={item as SearchJobHit} />;
+  return <PersonRow item={item as SearchPersonHit} />;
+}
+
+function PersonRow({ item }: { item: SearchPersonHit }): JSX.Element {
   const name = `${item.firstName} ${item.lastName}`.trim();
   return (
     <RecordCard
@@ -167,6 +216,44 @@ function SearchRow({ item }: { item: SearchPersonHit }): JSX.Element {
   );
 }
 
+function PostRow({ item }: { item: SearchPostHit }): JSX.Element {
+  return (
+    <RecordCard
+      onPress={() => router.push(`/(app)/in/${item.authorHandle}`)}
+      accessibilityLabel={item.authorDisplayName}
+      leading={
+        <Avatar
+          user={{
+            id: item.authorId,
+            handle: item.authorHandle,
+            firstName: item.authorDisplayName,
+            lastName: "",
+            avatarUrl: item.authorAvatarUrl,
+          }}
+          size="md"
+        />
+      }
+      title={item.authorDisplayName}
+      subtitle={item.bodyExcerpt}
+      meta={`/${item.authorHandle}`}
+      metaDirection="ltr"
+    />
+  );
+}
+
+function JobRow({ item }: { item: SearchJobHit }): JSX.Element {
+  const location = [item.city, item.country].filter(Boolean).join(", ");
+  return (
+    <RecordCard
+      onPress={() => router.push(`/(app)/jobs/${item.id}`)}
+      accessibilityLabel={item.title}
+      title={item.title}
+      subtitle={item.companyName}
+      meta={[location, item.locationMode, item.type].filter(Boolean).join(" · ")}
+    />
+  );
+}
+
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
@@ -176,6 +263,9 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: nativeTokens.space[4],
     paddingTop: nativeTokens.space[3],
+  },
+  tabs: {
+    marginBottom: nativeTokens.space[3],
   },
   listContent: {
     paddingBottom: nativeTokens.space[6],

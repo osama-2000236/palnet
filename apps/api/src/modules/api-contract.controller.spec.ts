@@ -22,6 +22,8 @@ import { NotificationsController } from "./notifications/notifications.controlle
 import { NotificationsService } from "./notifications/notifications.service";
 import { SafetyController } from "./safety/safety.controller";
 import { SafetyService } from "./safety/safety.service";
+import { SearchController } from "./search/search.controller";
+import { SearchService } from "./search/search.service";
 
 const authUser: AuthUser = {
   id: "cm00000000000000000000001",
@@ -309,10 +311,13 @@ describe("API controller contract", () => {
           },
         });
 
-      await request(app.getHttpServer()).get("/blocks").expect(200).expect({
-        data: [],
-        meta: { nextCursor: null, hasMore: false, limit: 20 },
-      });
+      await request(app.getHttpServer())
+        .get("/blocks")
+        .expect(200)
+        .expect({
+          data: [],
+          meta: { nextCursor: null, hasMore: false, limit: 20 },
+        });
 
       await request(app.getHttpServer())
         .delete("/blocks/cm00000000000000000000002")
@@ -325,4 +330,105 @@ describe("API controller contract", () => {
     }
   });
 
+  it("pins posts search route and cursor envelope", async () => {
+    const search = {
+      searchPosts: jest.fn().mockResolvedValue({
+        data: [
+          {
+            id: "cm00000000000000000000020",
+            authorId: "cm00000000000000000000021",
+            authorHandle: "muna",
+            authorDisplayName: "Muna Saleh",
+            authorAvatarUrl: null,
+            bodyExcerpt: "Hiring search is now broader.",
+            matchStart: 0,
+            matchEnd: 6,
+            createdAt: "2026-05-05T00:00:00.000Z",
+          },
+        ],
+        meta: { nextCursor: null, hasMore: false, limit: 20 },
+      }),
+    };
+    const app = await createApp({
+      controllers: [SearchController],
+      providers: [{ provide: SearchService, useValue: search }],
+      overrideJwt: true,
+    });
+
+    try {
+      await request(app.getHttpServer())
+        .get("/search/posts?q=hiring")
+        .expect(200)
+        .expect({
+          data: [
+            {
+              id: "cm00000000000000000000020",
+              authorId: "cm00000000000000000000021",
+              authorHandle: "muna",
+              authorDisplayName: "Muna Saleh",
+              authorAvatarUrl: null,
+              bodyExcerpt: "Hiring search is now broader.",
+              matchStart: 0,
+              matchEnd: 6,
+              createdAt: "2026-05-05T00:00:00.000Z",
+            },
+          ],
+          meta: { nextCursor: null, hasMore: false, limit: 20 },
+        });
+      expect(search.searchPosts).toHaveBeenCalledWith(authUser.id, { q: "hiring", limit: 20 });
+    } finally {
+      await app.close();
+    }
+  });
+
+  it("pins jobs search route and cursor envelope", async () => {
+    const search = {
+      searchJobs: jest.fn().mockResolvedValue({
+        data: [
+          {
+            id: "cm00000000000000000000030",
+            title: "Product Engineer",
+            companyName: "Baydar",
+            companyLogoUrl: null,
+            locationMode: JobLocationMode.HYBRID,
+            city: "Ramallah",
+            country: "PS",
+            type: JobType.FULL_TIME,
+            createdAt: "2026-05-05T00:00:00.000Z",
+          },
+        ],
+        meta: { nextCursor: null, hasMore: false, limit: 20 },
+      }),
+    };
+    const app = await createApp({
+      controllers: [SearchController],
+      providers: [{ provide: SearchService, useValue: search }],
+      overrideJwt: true,
+    });
+
+    try {
+      await request(app.getHttpServer())
+        .get("/search/jobs?q=engineer")
+        .expect(200)
+        .expect({
+          data: [
+            {
+              id: "cm00000000000000000000030",
+              title: "Product Engineer",
+              companyName: "Baydar",
+              companyLogoUrl: null,
+              locationMode: JobLocationMode.HYBRID,
+              city: "Ramallah",
+              country: "PS",
+              type: JobType.FULL_TIME,
+              createdAt: "2026-05-05T00:00:00.000Z",
+            },
+          ],
+          meta: { nextCursor: null, hasMore: false, limit: 20 },
+        });
+      expect(search.searchJobs).toHaveBeenCalledWith(authUser.id, { q: "engineer", limit: 20 });
+    } finally {
+      await app.close();
+    }
+  });
 });

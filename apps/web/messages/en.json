@@ -154,8 +154,18 @@
   },
   "search": {
     "title": "Search",
-    "placeholder": "Search people by name, handle, or headline…",
+    "placeholder": "Search people, posts, or jobs…",
     "submit": "Search",
+    "tabs": {
+      "people": "People",
+      "posts": "Posts",
+      "jobs": "Jobs"
+    },
+    "empty": {
+      "people": "No people match that search.",
+      "posts": "No posts match that search.",
+      "jobs": "No jobs match that search."
+    },
     "noResults": "No people match that search.",
     "prompt": "Try a name or handle to find people.",
     "loadMore": "Load more",

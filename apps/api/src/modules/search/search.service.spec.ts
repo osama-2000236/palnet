@@ -7,10 +7,16 @@ import { SearchService } from "./search.service";
 
 type PrismaStub = {
   profile: { findMany: jest.Mock };
+  post: { findMany: jest.Mock };
+  job: { findMany: jest.Mock };
 };
 
 function buildPrisma(): PrismaStub {
-  return { profile: { findMany: jest.fn() } };
+  return {
+    profile: { findMany: jest.fn() },
+    post: { findMany: jest.fn() },
+    job: { findMany: jest.fn() },
+  };
 }
 
 const hit = (overrides: Partial<{ id: string; handle: string }> = {}) => ({
@@ -22,6 +28,32 @@ const hit = (overrides: Partial<{ id: string; handle: string }> = {}) => ({
   headline: null,
   location: null,
   avatarUrl: null,
+});
+
+const postHit = (overrides: Partial<{ id: string; authorId: string; body: string }> = {}) => ({
+  id: overrides.id ?? "post_1",
+  authorId: overrides.authorId ?? "author_1",
+  body: overrides.body ?? "Building better hiring search in Arabic.",
+  createdAt: new Date("2026-05-05T10:00:00.000Z"),
+  author: {
+    profile: {
+      handle: "muna",
+      firstName: "Muna",
+      lastName: "Saleh",
+      avatarUrl: null,
+    },
+  },
+});
+
+const jobHit = (overrides: Partial<{ id: string }> = {}) => ({
+  id: overrides.id ?? "job_1",
+  title: "Product Engineer",
+  type: "FULL_TIME",
+  locationMode: "HYBRID",
+  city: "Ramallah",
+  country: "PS",
+  createdAt: new Date("2026-05-05T10:00:00.000Z"),
+  company: { name: "Baydar", logoUrl: null },
 });
 
 describe("SearchService", () => {
@@ -92,5 +124,76 @@ describe("SearchService", () => {
         where: expect.objectContaining({ userId: { notIn: ["blocked_1"] } }),
       }),
     );
+  });
+
+  it("searches posts and maps author metadata plus body excerpt", async () => {
+    prisma.post.findMany.mockResolvedValue([postHit()]);
+
+    const page = await service.searchPosts("viewer", { q: "hiring", limit: 20 });
+
+    expect(prisma.post.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          body: { contains: "hiring", mode: "insensitive" },
+          deletedAt: null,
+        }),
+      }),
+    );
+    expect(page.data).toEqual([
+      expect.objectContaining({
+        id: "post_1",
+        authorId: "author_1",
+        authorHandle: "muna",
+        authorDisplayName: "Muna Saleh",
+        bodyExcerpt: "Building better hiring search in Arabic.",
+        createdAt: "2026-05-05T10:00:00.000Z",
+      }),
+    ]);
+  });
+
+  it("excludes blocked post authors at the Prisma query layer", async () => {
+    safety.getBlockedEitherIds.mockResolvedValue(["blocked_author"]);
+    prisma.post.findMany.mockResolvedValue([]);
+
+    await service.searchPosts("viewer", { q: "x", limit: 20 });
+
+    expect(prisma.post.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ authorId: { notIn: ["blocked_author"] } }),
+      }),
+    );
+  });
+
+  it("searches only active and unexpired jobs", async () => {
+    prisma.job.findMany.mockResolvedValue([jobHit()]);
+
+    const page = await service.searchJobs("viewer", { q: "engineer", limit: 20 });
+
+    expect(prisma.job.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          isActive: true,
+          deletedAt: null,
+          AND: [
+            {
+              OR: [
+                { title: { contains: "engineer", mode: "insensitive" } },
+                { description: { contains: "engineer", mode: "insensitive" } },
+              ],
+            },
+            { OR: [{ expiresAt: null }, { expiresAt: { gt: expect.any(Date) } }] },
+          ],
+        }),
+      }),
+    );
+    expect(page.data).toEqual([
+      expect.objectContaining({
+        id: "job_1",
+        title: "Product Engineer",
+        companyName: "Baydar",
+        locationMode: "HYBRID",
+        type: "FULL_TIME",
+      }),
+    ]);
   });
 });

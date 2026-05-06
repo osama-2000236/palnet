@@ -274,9 +274,19 @@
   },
   "search": {
     "title": "Search",
-    "placeholder": "Search people or jobs",
+    "placeholder": "Search people, posts, or jobs",
     "submit": "Search",
     "filters": "Filters",
+    "tabs": {
+      "people": "People",
+      "posts": "Posts",
+      "jobs": "Jobs"
+    },
+    "empty": {
+      "people": "No people match that search.",
+      "posts": "No posts match that search.",
+      "jobs": "No jobs match that search."
+    },
     "noResults": "No people match that search.",
     "prompt": "Try a name or handle to find people.",
     "loadMore": "Load more",
