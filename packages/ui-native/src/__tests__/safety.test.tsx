@@ -1,4 +1,4 @@
-import { render } from "@testing-library/react-native";
+import { fireEvent, render, screen } from "@testing-library/react-native";
 
 import { BlockButton, BlockedListItem, ReportSheet } from "../safety";
 
@@ -12,51 +12,55 @@ const reasons = {
   OTHER: "Other",
 };
 
+const blockLabels = {
+  block: "Block",
+  unblock: "Unblock",
+  confirmTitle: "Confirm block",
+  confirmBody: "This hides the member.",
+  confirmCta: "Confirm",
+  cancel: "Cancel",
+};
+
+const reportLabels = {
+  title: "Report content",
+  detailsLabel: "Details",
+  cancel: "Cancel",
+  submit: "Submit",
+  close: "Close",
+  reasons,
+};
+
 describe("safety primitives", () => {
   it("renders ReportSheet content", () => {
-    const screen = render(
+    const rendered = render(
       <ReportSheet
         open
         onOpenChange={jest.fn()}
         target={{ kind: "post", id: "post_1" }}
         onSubmit={jest.fn()}
-        labels={{
-          title: "Report content",
-          detailsLabel: "Details",
-          cancel: "Cancel",
-          submit: "Submit",
-          close: "Close",
-          reasons,
-        }}
+        labels={reportLabels}
       />,
     );
 
-    expect(screen.toJSON()).toMatchSnapshot();
-    expect(screen.getByText("Report content")).toBeTruthy();
+    expect(rendered.toJSON()).toMatchSnapshot();
+    expect(rendered.getByText("Report content")).toBeTruthy();
   });
 
   it("renders BlockButton resting state", () => {
-    const screen = render(
+    const rendered = render(
       <BlockButton
         userId="user_1"
         isBlocked={false}
         onChange={jest.fn()}
-        labels={{
-          block: "Block",
-          unblock: "Unblock",
-          confirmTitle: "Confirm",
-          confirmBody: "Body",
-          confirmCta: "Confirm",
-          cancel: "Cancel",
-        }}
+        labels={blockLabels}
       />,
     );
 
-    expect(screen.toJSON()).toMatchSnapshot();
+    expect(rendered.toJSON()).toMatchSnapshot();
   });
 
   it("renders BlockedListItem identity", () => {
-    const screen = render(
+    const rendered = render(
       <BlockedListItem
         item={{
           id: "block_1",
@@ -71,7 +75,115 @@ describe("safety primitives", () => {
       />,
     );
 
-    expect(screen.toJSON()).toMatchSnapshot();
-    expect(screen.getByText("Blocked User")).toBeTruthy();
+    expect(rendered.toJSON()).toMatchSnapshot();
+    expect(rendered.getByText("Blocked User")).toBeTruthy();
+  });
+
+  it("confirms a block change and closes the confirmation", () => {
+    const onChange = jest.fn();
+
+    render(
+      <BlockButton
+        userId="user_1"
+        isBlocked={false}
+        onChange={onChange}
+        labels={blockLabels}
+      />,
+    );
+
+    fireEvent.press(screen.getByText("Block"));
+    expect(screen.getByText("Confirm block")).toBeTruthy();
+
+    fireEvent.press(screen.getByText("Confirm"));
+
+    expect(onChange).toHaveBeenCalledWith(true, "user_1");
+    expect(screen.queryByText("Confirm block")).toBeNull();
+  });
+
+  it("cancels a block confirmation without changing state", () => {
+    const onChange = jest.fn();
+
+    render(
+      <BlockButton
+        userId="user_1"
+        isBlocked={false}
+        onChange={onChange}
+        labels={blockLabels}
+      />,
+    );
+
+    fireEvent.press(screen.getByText("Block"));
+    fireEvent.press(screen.getByText("Cancel"));
+
+    expect(onChange).not.toHaveBeenCalled();
+    expect(screen.queryByText("Confirm block")).toBeNull();
+  });
+
+  it("shows the unblock variant when initially blocked", () => {
+    render(
+      <BlockButton userId="user_1" isBlocked onChange={jest.fn()} labels={blockLabels} />,
+    );
+
+    expect(screen.getByText("Unblock")).toBeTruthy();
+    expect(screen.queryByText("Block")).toBeNull();
+  });
+
+  it("submits the selected report reason and trimmed details", () => {
+    const onSubmit = jest.fn();
+    const target = { kind: "post" as const, id: "post_1" };
+
+    render(
+      <ReportSheet
+        open
+        onOpenChange={jest.fn()}
+        target={target}
+        onSubmit={onSubmit}
+        labels={reportLabels}
+      />,
+    );
+
+    fireEvent.press(screen.getByLabelText("Harassment"));
+    fireEvent.changeText(screen.getByLabelText("Details"), "  abusive reply  ");
+    fireEvent.press(screen.getByText("Submit"));
+
+    expect(onSubmit).toHaveBeenCalledWith({
+      target,
+      reason: "HARASSMENT",
+      details: "abusive reply",
+    });
+  });
+
+  it("cancels a report without submitting", () => {
+    const onOpenChange = jest.fn();
+    const onSubmit = jest.fn();
+
+    render(
+      <ReportSheet
+        open
+        onOpenChange={onOpenChange}
+        target={{ kind: "post", id: "post_1" }}
+        onSubmit={onSubmit}
+        labels={reportLabels}
+      />,
+    );
+
+    fireEvent.press(screen.getByText("Cancel"));
+
+    expect(onSubmit).not.toHaveBeenCalled();
+    expect(onOpenChange).toHaveBeenCalledWith(false);
+  });
+
+  it("sets initial focus intent inside the report sheet", () => {
+    render(
+      <ReportSheet
+        open
+        onOpenChange={jest.fn()}
+        target={{ kind: "post", id: "post_1" }}
+        onSubmit={jest.fn()}
+        labels={reportLabels}
+      />,
+    );
+
+    expect(screen.getByLabelText("Details").props.autoFocus).toBe(true);
   });
 });

@@ -13,7 +13,7 @@
     "clean": "rimraf dist",
     "lint": "eslint .",
     "type-check": "tsc --noEmit",
-    "test": "pnpm run build && node -e \"const cp=require('child_process');const jest=require.resolve('jest/bin/jest',{paths:['../../apps/web']});const out=cp.spawnSync(process.execPath,[jest,'--config','jest.config.cjs','--runInBand'],{stdio:'inherit'});process.exit(out.status ?? 1)\""
+    "test": "tsc -p tsconfig.json && node ../../apps/web/node_modules/jest/bin/jest.js --config jest.config.cjs --runInBand"
   },
   "dependencies": {
     "@baydar/ui-tokens": "workspace:*",
@@ -27,6 +27,8 @@
     "@baydar/config": "workspace:*",
     "@types/react": "~19.1.10",
     "@types/react-dom": "~19.1.10",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "rimraf": "^6.0.1",

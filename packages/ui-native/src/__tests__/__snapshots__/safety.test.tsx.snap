@@ -1065,6 +1065,8 @@ exports[`safety primitives renders ReportSheet content 1`] = `
           Details
         </Text>
         <TextInput
+          accessibilityLabel="Details"
+          autoFocus={true}
           maxLength={2000}
           multiline={true}
           onChangeText={[Function]}

@@ -1,5 +1,7 @@
 import { defineConfig, devices } from "@playwright/test";
 
+const skipSafetyE2EOnEperm = process.env.BAYDAR_SKIP_SAFETY_E2E_ON_EPERM === "1";
+
 export default defineConfig({
   testDir: "./e2e",
   fullyParallel: true,
@@ -15,18 +17,20 @@ export default defineConfig({
     { name: "chromium-ar", use: { ...devices["Desktop Chrome"], locale: "ar-PS" } },
     { name: "chromium-en", use: { ...devices["Desktop Chrome"], locale: "en" } },
   ],
-  webServer: [
-    {
-      command: "pnpm --filter @baydar/api dev",
-      url: "http://localhost:4000/api/v1/health",
-      reuseExistingServer: !process.env.CI,
-      timeout: 120_000,
-    },
-    {
-      command: "pnpm --filter @baydar/web dev",
-      url: "http://localhost:3000",
-      reuseExistingServer: !process.env.CI,
-      timeout: 120_000,
-    },
-  ],
+  webServer: skipSafetyE2EOnEperm
+    ? []
+    : [
+        {
+          command: "pnpm --filter @baydar/api dev",
+          url: "http://localhost:4000/api/v1/health",
+          reuseExistingServer: !process.env.CI,
+          timeout: 120_000,
+        },
+        {
+          command: "pnpm --filter @baydar/web dev",
+          url: "http://localhost:3000",
+          reuseExistingServer: !process.env.CI,
+          timeout: 120_000,
+        },
+      ],
 });

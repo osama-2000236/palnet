@@ -4,6 +4,11 @@ import { ensureA11yStorageState } from "../tests/fixtures/auth";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000/api/v1";
 
+test.skip(
+  process.env.BAYDAR_SKIP_SAFETY_E2E_ON_EPERM === "1",
+  "Windows spawn EPERM guard: run without BAYDAR_SKIP_SAFETY_E2E_ON_EPERM on a machine that can spawn Playwright webServer/browser processes.",
+);
+
 test("safety: block from profile, view blocked list, unblock", async ({ page, request }) => {
   const auth = await ensureA11yStorageState(request);
   const session = JSON.parse(auth.session) as { tokens: { accessToken: string } };

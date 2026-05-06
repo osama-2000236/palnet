@@ -28,6 +28,7 @@
 - EAS project id and production Sentry/PostHog values remain environment-level release tasks.
 - Admin moderation queue / report resolution UI remains a separate follow-up sprint.
 - Safety-related privacy/legal copy still needs counsel review before launch.
+- Sprint 15 safety test follow-ups are closed by Sprint 16: ui-web/ui-native safety primitives now have behavior coverage, mutation spot-check evidence was captured, and the Playwright safety e2e has an explicit Windows EPERM guard for invocable local runs.
 
 ## Verification Snapshot
 

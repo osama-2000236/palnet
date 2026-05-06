@@ -101,6 +101,8 @@ export function ReportSheet({
 
       <Text style={styles.label}>{labels.detailsLabel}</Text>
       <TextInput
+        accessibilityLabel={labels.detailsLabel}
+        autoFocus={open}
         value={details}
         onChangeText={setDetails}
         maxLength={2000}
