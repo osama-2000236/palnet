@@ -37,14 +37,13 @@ import { z } from "zod";
 import { apiCall, apiFetch, ApiRequestError, apiFetchPage } from "@/lib/api";
 import { useReport } from "@/lib/api/safety";
 import { readSession } from "@/lib/session";
+import { openStream } from "@/lib/sse";
 
 const RoomsEnvelope = z.object({ data: z.array(ChatRoomSchema) });
 const MessagesPageEnvelope = z.object({
   data: z.array(MessageSchema),
   meta: CursorPageMeta,
 });
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000/api/v1";
 
 // Presence threshold — considered "online" if lastSeenAt is within this window.
 const ONLINE_WINDOW_MS = 2 * 60 * 1000;
@@ -160,19 +159,29 @@ export default function MessagesPage(): JSX.Element {
   // ───────── SSE ─────────
   useEffect(() => {
     if (!token) return;
-    const url = `${API_BASE}/messaging/stream?access_token=${encodeURIComponent(token)}`;
-    const es = new EventSource(url);
-    es.onmessage = (evt): void => {
-      try {
-        const parsed = WsChatEvent.safeParse(JSON.parse(evt.data));
-        if (!parsed.success) return;
-        handleEvent(parsed.data);
-      } catch {
-        // ignore malformed
-      }
-    };
+    let es: EventSource | null = null;
+    let cancelled = false;
+    void openStream("messaging", token)
+      .then((source) => {
+        if (cancelled) {
+          source.close();
+          return;
+        }
+        es = source;
+        source.onmessage = (evt): void => {
+          try {
+            const parsed = WsChatEvent.safeParse(JSON.parse(evt.data));
+            if (!parsed.success) return;
+            handleEvent(parsed.data);
+          } catch {
+            // ignore malformed
+          }
+        };
+      })
+      .catch(() => {});
     return (): void => {
-      es.close();
+      cancelled = true;
+      es?.close();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);

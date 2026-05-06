@@ -23,6 +23,7 @@ import { RequireCompleteProfile } from "../../common/require-complete-profile.de
 import { ZodValidationPipe } from "../../common/zod-pipe";
 import { CurrentUser, type AuthUser } from "../auth/decorators/current-user.decorator";
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
+import { RateLimit } from "../rate-limit/rate-limit.decorator";
 
 import { SafetyService } from "./safety.service";
 
@@ -35,6 +36,7 @@ export class SafetyController {
   constructor(private readonly safety: SafetyService) {}
 
   @Post("reports")
+  @RateLimit("safetyAction")
   async report(
     @CurrentUser() user: AuthUser,
     @Body(new ZodValidationPipe(ReportBody)) body: ReportBody,
@@ -44,6 +46,7 @@ export class SafetyController {
   }
 
   @Post("blocks")
+  @RateLimit("safetyAction")
   async block(
     @CurrentUser() user: AuthUser,
     @Body(new ZodValidationPipe(BlockBody)) body: BlockBody,

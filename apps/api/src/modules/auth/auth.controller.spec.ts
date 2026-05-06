@@ -36,6 +36,50 @@ async function createApp(mocks: {
 }
 
 describe("AuthController email verification and password reset", () => {
+  it("POST /auth/stream-token returns a scoped one-time token envelope", async () => {
+    const authTokens = {
+      issueStreamToken: jest.fn().mockResolvedValue({
+        token: "stream-token",
+        expiresAt: "2026-05-06T12:00:00.000Z",
+      }),
+    };
+    const app = await createApp({ authTokens });
+
+    try {
+      await request(app.getHttpServer())
+        .post("/auth/stream-token")
+        .send({ scope: "messaging" })
+        .expect(200)
+        .expect({
+          data: {
+            token: "stream-token",
+            expiresAt: "2026-05-06T12:00:00.000Z",
+          },
+        });
+      expect(authTokens.issueStreamToken).toHaveBeenCalledWith("user-1", "messaging");
+    } finally {
+      await app.close();
+    }
+  });
+
+  it("POST /auth/stream-token rejects invalid scope", async () => {
+    const authTokens = { issueStreamToken: jest.fn() };
+    const app = await createApp({ authTokens });
+
+    try {
+      await request(app.getHttpServer())
+        .post("/auth/stream-token")
+        .send({ scope: "feed" })
+        .expect(400)
+        .expect((res) => {
+          expect(res.body.error.code).toBe("VALIDATION_FAILED");
+        });
+      expect(authTokens.issueStreamToken).not.toHaveBeenCalled();
+    } finally {
+      await app.close();
+    }
+  });
+
   it("POST /auth/verify-email/send returns 202 and queues for existing users", async () => {
     const auth = { findUserForEmailToken: jest.fn().mockResolvedValue({ id: "user-1" }) };
     const authTokens = { issueVerifyEmail: jest.fn().mockResolvedValue(undefined) };

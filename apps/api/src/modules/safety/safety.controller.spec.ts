@@ -12,6 +12,7 @@ import { DomainException } from "../../common/domain-exception";
 import { AllExceptionsFilter } from "../../common/exception.filter";
 import type { AuthUser } from "../auth/decorators/current-user.decorator";
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
+import { RateLimitModule } from "../rate-limit/rate-limit.module";
 
 import { SafetyController } from "./safety.controller";
 import { SafetyService } from "./safety.service";
@@ -28,6 +29,7 @@ async function createApp(options: {
   authenticated?: boolean;
 }): Promise<INestApplication> {
   const builder = Test.createTestingModule({
+    imports: [RateLimitModule],
     controllers: [SafetyController],
     providers: [{ provide: SafetyService, useValue: options.safety }],
   });
@@ -100,9 +102,7 @@ describe("SafetyController", () => {
 
   it("preserves forbidden service errors as 403", async () => {
     const safety = {
-      block: jest
-        .fn()
-        .mockRejectedValue(new DomainException(ErrorCode.BLOCKED, "Blocked.", 403)),
+      block: jest.fn().mockRejectedValue(new DomainException(ErrorCode.BLOCKED, "Blocked.", 403)),
     };
     const app = await createApp({ safety });
     try {
@@ -158,9 +158,7 @@ describe("SafetyController", () => {
     const safety = { unblock: jest.fn().mockResolvedValue(undefined) };
     const app = await createApp({ safety });
     try {
-      await request(app.getHttpServer())
-        .delete("/blocks/cm00000000000000000000002")
-        .expect(204);
+      await request(app.getHttpServer()).delete("/blocks/cm00000000000000000000002").expect(204);
       expect(safety.unblock).toHaveBeenCalledWith(
         "cm00000000000000000000001",
         "cm00000000000000000000002",
@@ -179,10 +177,13 @@ describe("SafetyController", () => {
     };
     const app = await createApp({ safety });
     try {
-      await request(app.getHttpServer()).get("/blocks").expect(200).expect({
-        data: [],
-        meta: { nextCursor: null, hasMore: false, limit: 20 },
-      });
+      await request(app.getHttpServer())
+        .get("/blocks")
+        .expect(200)
+        .expect({
+          data: [],
+          meta: { nextCursor: null, hasMore: false, limit: 20 },
+        });
     } finally {
       await app.close();
     }

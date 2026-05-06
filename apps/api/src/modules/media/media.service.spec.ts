@@ -25,7 +25,7 @@ const FULL_ENV = {
 };
 
 describe("MediaService", () => {
-  it("throws MEDIA_NOT_CONFIGURED (503) when R2 env is missing", async () => {
+  it("throws INTERNAL (503) when R2 env is missing", async () => {
     const moduleRef = await Test.createTestingModule({
       providers: [MediaService, { provide: ConfigService, useValue: makeConfig({}) }],
     }).compile();
@@ -58,11 +58,29 @@ describe("MediaService", () => {
         sizeBytes: 1024,
       }),
     ).rejects.toMatchObject({
-      code: ErrorCode.VALIDATION_FAILED,
+      code: ErrorCode.MEDIA_TYPE_REJECTED,
     });
   });
 
-  it("rejects files over the purpose size cap", async () => {
+  it("rejects MIME types outside the allowlist", async () => {
+    const moduleRef = await Test.createTestingModule({
+      providers: [MediaService, { provide: ConfigService, useValue: makeConfig(FULL_ENV) }],
+    }).compile();
+    const svc = moduleRef.get(MediaService);
+
+    await expect(
+      svc.presign("u_1", {
+        purpose: "POST_MEDIA",
+        kind: MediaKind.VIDEO,
+        mimeType: "video/webm",
+        sizeBytes: 1024,
+      }),
+    ).rejects.toMatchObject({
+      code: ErrorCode.MEDIA_TYPE_REJECTED,
+    });
+  });
+
+  it("rejects files over the MIME family size cap", async () => {
     const moduleRef = await Test.createTestingModule({
       providers: [MediaService, { provide: ConfigService, useValue: makeConfig(FULL_ENV) }],
     }).compile();
@@ -73,11 +91,30 @@ describe("MediaService", () => {
         purpose: "AVATAR",
         kind: MediaKind.IMAGE,
         mimeType: "image/png",
-        sizeBytes: 10 * 1024 * 1024, // 10MB > 2MB AVATAR cap
+        sizeBytes: 11 * 1024 * 1024,
       }),
     ).rejects.toMatchObject({
-      code: ErrorCode.VALIDATION_FAILED,
+      code: ErrorCode.MEDIA_SIZE_REJECTED,
     });
+  });
+
+  it("allows PDFs up to 25MB for post media", async () => {
+    const moduleRef = await Test.createTestingModule({
+      providers: [MediaService, { provide: ConfigService, useValue: makeConfig(FULL_ENV) }],
+    }).compile();
+    const svc = moduleRef.get(MediaService);
+
+    const out = await svc.presign("u_1", {
+      purpose: "POST_MEDIA",
+      kind: MediaKind.DOCUMENT,
+      mimeType: "application/pdf",
+      sizeBytes: 25 * 1024 * 1024,
+      filename: "resume.pdf",
+    });
+
+    expect(out.key).toMatch(/^post_media\/u_1\/[0-9a-f-]+\.pdf$/);
+    expect(out.headers["Content-Type"]).toBe("application/pdf");
+    expect(out.blurhash).toBeNull();
   });
 
   it("returns a signed upload URL + deterministic key + public URL on happy path", async () => {

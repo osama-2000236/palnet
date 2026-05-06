@@ -45,8 +45,11 @@ All other JSON success responses should use `{ data, meta? }` unless a future de
 - `POST /auth/verify-email/confirm` returns `{ data: { emailVerified: true } }`.
 - `POST /auth/forgot-password` returns `202 Accepted` with no body. The response is enumeration-safe.
 - `POST /auth/reset-password` returns `{ data: { reset: true } }`.
+- `POST /auth/stream-token` is protected and accepts `{ scope: "messaging" | "notifications" }`. It returns `{ data: { token, expiresAt } }`.
 
 Email verification and password reset tokens are opaque 64-character client tokens. The API stores only SHA-256 token hashes, applies expiry and single-use consumption, and never returns raw tokens in API responses.
+
+SSE stream tokens are opaque, SHA-256 hashed at rest, scoped to one stream, expire within 60 seconds, and are consumed exactly once. Browser clients that cannot set EventSource headers call `/auth/stream-token`, then open `/messaging/stream?token=<token>` or `/notifications/stream?token=<token>`. Mobile clients may keep using `Authorization: Bearer <accessToken>` for SSE because their EventSource implementation supports headers. `?access_token=` is not accepted.
 
 Login for a soft-deleted account returns `403`. Within the 30-day restore grace period the error code is `ACCOUNT_DELETED_PENDING_RESTORE` and includes `{ restorePath: "/account/restore" }` details; after grace the code is `ACCOUNT_DELETED`.
 
@@ -98,6 +101,19 @@ Login for a soft-deleted account returns `403`. Within the 30-day restore grace 
 
 Returns signed upload data and media metadata. Current blurhash support is a deterministic API placeholder, not image-byte decoding.
 
+Presign requests are rejected before signing unless MIME type, declared kind, and size fit this allowlist:
+
+| MIME type         | Kind       | Max size |
+| ----------------- | ---------- | -------- |
+| `image/jpeg`      | `IMAGE`    | 10 MB    |
+| `image/png`       | `IMAGE`    | 10 MB    |
+| `image/webp`      | `IMAGE`    | 10 MB    |
+| `image/gif`       | `IMAGE`    | 10 MB    |
+| `application/pdf` | `DOCUMENT` | 25 MB    |
+| `video/mp4`       | `VIDEO`    | 100 MB   |
+
+Rejected MIME/kind combinations return `400 MEDIA_TYPE_REJECTED`; oversize files return `400 MEDIA_SIZE_REJECTED`.
+
 ### Safety
 
 - `POST /reports`
@@ -136,6 +152,8 @@ Blocking is bidirectional for visibility: feed, people search, comments, post ac
 
 The stream sends events such as new messages, read state, typing state, and room updates for the authenticated user.
 
+Browser flow: call `POST /auth/stream-token` with `{ scope: "messaging" }`, then connect with `GET /messaging/stream?token=<one-time-token>`.
+
 ### Notifications
 
 - `GET /notifications`
@@ -145,6 +163,8 @@ The stream sends events such as new messages, read state, typing state, and room
 - `GET /notifications/stream`
 
 The notification stream sends authenticated in-app notification events. Push fanout is best-effort via Expo for registered devices.
+
+Browser flow: call `POST /auth/stream-token` with `{ scope: "notifications" }`, then connect with `GET /notifications/stream?token=<one-time-token>`.
 
 ### Jobs And Applications
 
@@ -162,9 +182,25 @@ The current shipped UI supports job listing, detail, filters, optimistic apply, 
 
 `/search/companies` is deferred until the company admin/management surface ships.
 
+## Rate Limits
+
+Route-level rate limits are per authenticated user. Related endpoints share the same bucket when listed together.
+
+| Class                | Routes                                                        | Limit                 |
+| -------------------- | ------------------------------------------------------------- | --------------------- |
+| Media presign        | `POST /media/presign`                                         | 30/hour/user          |
+| Search               | `GET /search/people`, `GET /search/posts`, `GET /search/jobs` | 60/min/user combined  |
+| Content create       | `POST /posts`, `POST /posts/:id/comments`                     | 30/hour/user combined |
+| Messaging send       | `POST /messaging/rooms/:id/messages`                          | 120/min/user          |
+| Push device register | `POST /notifications/devices`                                 | 10/hour/user          |
+| Safety action        | `POST /reports`, `POST /blocks`                               | 30/hour/user combined |
+
+Over-limit responses use `429` with `error.code = "RATE_LIMITED"` and a `Retry-After` header.
+
 ## Security Invariants
 
 - Never return password hashes, refresh token hashes, or private email addresses to non-owners.
 - Validate every controller boundary with shared schemas or equivalent Zod validation.
 - Keep auth, ownership, suspension, and role checks in guards/services, not UI-only logic.
-- Do not expose access tokens in query strings; mobile SSE sends bearer headers.
+- Do not expose access tokens in query strings; browser SSE uses one-time stream tokens and mobile SSE sends bearer headers.
+- Production CORS must name allowed origins explicitly. `*` and missing origins are boot-time failures.

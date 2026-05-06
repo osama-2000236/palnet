@@ -15,11 +15,19 @@ import { encode } from "blurhash";
 import { DomainException } from "../../common/domain-exception";
 import type { Env } from "../../config/env";
 
-// Per-purpose size caps. Keeping this explicit discourages drift.
-const PURPOSE_LIMITS: Record<MediaPurpose, { maxBytes: number; kinds: string[] }> = {
-  AVATAR: { maxBytes: 2 * 1024 * 1024, kinds: ["IMAGE"] },
-  COVER: { maxBytes: 5 * 1024 * 1024, kinds: ["IMAGE"] },
-  POST_MEDIA: { maxBytes: 25 * 1024 * 1024, kinds: ["IMAGE", "VIDEO"] },
+const PURPOSE_ALLOWED_KINDS: Record<MediaPurpose, string[]> = {
+  AVATAR: ["IMAGE"],
+  COVER: ["IMAGE"],
+  POST_MEDIA: ["IMAGE", "VIDEO", "DOCUMENT"],
+};
+
+const MIME_RULES: Record<string, { kind: string; maxBytes: number; extension: string }> = {
+  "image/jpeg": { kind: "IMAGE", maxBytes: 10 * 1024 * 1024, extension: ".jpg" },
+  "image/png": { kind: "IMAGE", maxBytes: 10 * 1024 * 1024, extension: ".png" },
+  "image/webp": { kind: "IMAGE", maxBytes: 10 * 1024 * 1024, extension: ".webp" },
+  "image/gif": { kind: "IMAGE", maxBytes: 10 * 1024 * 1024, extension: ".gif" },
+  "application/pdf": { kind: "DOCUMENT", maxBytes: 25 * 1024 * 1024, extension: ".pdf" },
+  "video/mp4": { kind: "VIDEO", maxBytes: 100 * 1024 * 1024, extension: ".mp4" },
 };
 
 const PRESIGN_TTL_SECONDS = 60 * 5; // 5 minutes
@@ -64,29 +72,37 @@ export class MediaService {
       );
     }
 
-    const limits = PURPOSE_LIMITS[body.purpose];
-    if (!limits.kinds.includes(body.kind)) {
+    const mimeType = body.mimeType.toLowerCase();
+    const rule = MIME_RULES[mimeType];
+    if (!rule || rule.kind !== body.kind) {
       throw new DomainException(
-        ErrorCode.VALIDATION_FAILED,
+        ErrorCode.MEDIA_TYPE_REJECTED,
+        `MIME type ${body.mimeType} is not allowed.`,
+        400,
+      );
+    }
+    if (!PURPOSE_ALLOWED_KINDS[body.purpose].includes(body.kind)) {
+      throw new DomainException(
+        ErrorCode.MEDIA_TYPE_REJECTED,
         `Kind ${body.kind} not allowed for purpose ${body.purpose}.`,
         400,
       );
     }
-    if (body.sizeBytes > limits.maxBytes) {
+    if (body.sizeBytes > rule.maxBytes) {
       throw new DomainException(
-        ErrorCode.VALIDATION_FAILED,
-        `File exceeds ${limits.maxBytes} bytes for purpose ${body.purpose}.`,
+        ErrorCode.MEDIA_SIZE_REJECTED,
+        `File exceeds ${rule.maxBytes} bytes for ${mimeType}.`,
         400,
       );
     }
 
-    const ext = extensionFor(body.filename, body.mimeType);
+    const ext = extensionFor(body.filename, rule.extension);
     const key = `${body.purpose.toLowerCase()}/${userId}/${randomUUID()}${ext}`;
 
     const command = new PutObjectCommand({
       Bucket: this.bucket,
       Key: key,
-      ContentType: body.mimeType,
+      ContentType: mimeType,
       ContentLength: body.sizeBytes,
     });
 
@@ -98,30 +114,20 @@ export class MediaService {
       uploadUrl,
       publicUrl: `${this.publicBase}/${key}`,
       key,
-      headers: { "Content-Type": body.mimeType },
+      headers: { "Content-Type": mimeType },
       expiresAt: new Date(Date.now() + PRESIGN_TTL_SECONDS * 1000).toISOString(),
-      blurhash: body.mimeType.startsWith("image/") ? blurhashFor(key) : null,
+      blurhash: mimeType.startsWith("image/") ? blurhashFor(key) : null,
     };
   }
 }
 
-// Preserve extension from filename if provided; otherwise derive from MIME.
-function extensionFor(filename: string | undefined, mimeType: string): string {
+// Preserve a safe matching extension from filename if provided; otherwise use the MIME extension.
+function extensionFor(filename: string | undefined, fallback: string): string {
   if (filename) {
     const m = /(\.[a-zA-Z0-9]{1,8})$/.exec(filename);
-    if (m) return m[1]!.toLowerCase();
+    if (m && m[1]!.toLowerCase() === fallback) return fallback;
   }
-  const lookup: Record<string, string> = {
-    "image/jpeg": ".jpg",
-    "image/png": ".png",
-    "image/webp": ".webp",
-    "image/gif": ".gif",
-    "video/mp4": ".mp4",
-    "video/quicktime": ".mov",
-    "video/webm": ".webm",
-    "application/pdf": ".pdf",
-  };
-  return lookup[mimeType.toLowerCase()] ?? "";
+  return fallback;
 }
 
 function blurhashFor(seed: string): string {

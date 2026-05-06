@@ -8,8 +8,7 @@ import { z } from "zod";
 
 import { apiFetch } from "@/lib/api";
 import { getAccessToken } from "@/lib/session";
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000/api/v1";
+import { openStream } from "@/lib/sse";
 
 const CountEnvelope = z.object({ count: z.number().int().nonnegative() });
 
@@ -40,24 +39,34 @@ export function NotificationsBell(): JSX.Element | null {
   // Live updates via SSE.
   useEffect(() => {
     if (!token) return;
-    const url = `${API_BASE}/notifications/stream?access_token=${encodeURIComponent(token)}`;
-    const es = new EventSource(url);
-    es.onmessage = (evt): void => {
-      try {
-        const parsed = WsNotificationEvent.safeParse(JSON.parse(evt.data));
-        if (!parsed.success) return;
-        const ev = parsed.data;
-        if (ev.type === "notification.unread-count") {
-          setCount(ev.payload.count);
-        } else if (ev.type === "notification.new") {
-          setCount((c) => c + 1);
+    let es: EventSource | null = null;
+    let cancelled = false;
+    void openStream("notifications", token)
+      .then((source) => {
+        if (cancelled) {
+          source.close();
+          return;
         }
-      } catch {
-        /* ignore */
-      }
-    };
+        es = source;
+        source.onmessage = (evt): void => {
+          try {
+            const parsed = WsNotificationEvent.safeParse(JSON.parse(evt.data));
+            if (!parsed.success) return;
+            const ev = parsed.data;
+            if (ev.type === "notification.unread-count") {
+              setCount(ev.payload.count);
+            } else if (ev.type === "notification.new") {
+              setCount((c) => c + 1);
+            }
+          } catch {
+            /* ignore */
+          }
+        };
+      })
+      .catch(() => {});
     return (): void => {
-      es.close();
+      cancelled = true;
+      es?.close();
     };
   }, [token]);
 

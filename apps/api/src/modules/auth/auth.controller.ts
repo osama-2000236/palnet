@@ -8,6 +8,8 @@ import {
   RegisterBody,
   ResetPasswordBody,
   SendVerifyEmailBody,
+  StreamTokenRequest,
+  type StreamTokenResponse,
 } from "@baydar/shared";
 import {
   Body,
@@ -55,7 +57,7 @@ export class AuthController {
   @Public()
   @Post("register")
   @HttpCode(HttpStatus.CREATED)
-  @Throttle({ auth: { limit: authRouteLimit, ttl: 60_000 } })
+  @Throttle({ default: { limit: authRouteLimit, ttl: 60_000 } })
   @UsePipes(new ZodValidationPipe(RegisterBody))
   @ApiCreatedResponse({ description: "Account created; returns tokens." })
   async register(@Body() body: RegisterBody): Promise<{ data: AuthSession }> {
@@ -66,7 +68,7 @@ export class AuthController {
   @Public()
   @Post("login")
   @HttpCode(HttpStatus.OK)
-  @Throttle({ auth: { limit: authRouteLimit, ttl: 60_000 } })
+  @Throttle({ default: { limit: authRouteLimit, ttl: 60_000 } })
   @UsePipes(new ZodValidationPipe(LoginBody))
   @ApiOkResponse({ description: "Authenticated; returns tokens." })
   async login(@Body() body: LoginBody): Promise<{ data: AuthSession }> {
@@ -77,7 +79,7 @@ export class AuthController {
   @Public()
   @Post("refresh")
   @HttpCode(HttpStatus.OK)
-  @Throttle({ auth: { limit: authRefreshLimit, ttl: 60_000 } })
+  @Throttle({ default: { limit: authRefreshLimit, ttl: 60_000 } })
   @UsePipes(new ZodValidationPipe(RefreshBody))
   @ApiOkResponse({ description: "Rotated refresh + new access token." })
   async refresh(@Body() body: RefreshBody): Promise<{ data: AuthSession }> {
@@ -88,7 +90,7 @@ export class AuthController {
   @Public()
   @Post("verify-email/send")
   @HttpCode(HttpStatus.ACCEPTED)
-  @Throttle({ auth: { limit: 5, ttl: 3_600_000 } })
+  @Throttle({ default: { limit: 5, ttl: 3_600_000 } })
   @UsePipes(new ZodValidationPipe(SendVerifyEmailBody))
   async sendVerifyEmail(@Body() body: SendVerifyEmailBody, @Req() req: Request): Promise<void> {
     this.emailThrottle.check(body.email, "verify-email");
@@ -115,7 +117,7 @@ export class AuthController {
   @Public()
   @Post("forgot-password")
   @HttpCode(HttpStatus.ACCEPTED)
-  @Throttle({ auth: { limit: 5, ttl: 3_600_000 } })
+  @Throttle({ default: { limit: 5, ttl: 3_600_000 } })
   @UsePipes(new ZodValidationPipe(ForgotPasswordBody))
   async forgotPassword(@Body() body: ForgotPasswordBody, @Req() req: Request): Promise<void> {
     this.emailThrottle.check(body.email, "forgot-password");
@@ -149,6 +151,17 @@ export class AuthController {
   @ApiOkResponse({ description: "Current authenticated user summary." })
   async me(@CurrentUser() user: AuthUser): Promise<{ data: AuthSession["user"] }> {
     const data = await this.auth.me(user.id);
+    return { data };
+  }
+
+  @Post("stream-token")
+  @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth()
+  async streamToken(
+    @CurrentUser() user: AuthUser,
+    @Body(new ZodValidationPipe(StreamTokenRequest)) body: StreamTokenRequest,
+  ): Promise<{ data: StreamTokenResponse }> {
+    const data = await this.authTokens.issueStreamToken(user.id, body.scope);
     return { data };
   }
 }

@@ -4,6 +4,7 @@ import { ApiBearerAuth, ApiOkResponse, ApiTags } from "@nestjs/swagger";
 
 import { ZodValidationPipe } from "../../common/zod-pipe";
 import { CurrentUser, type AuthUser } from "../auth/decorators/current-user.decorator";
+import { RateLimit } from "../rate-limit/rate-limit.decorator";
 
 import { DevicesService, type RegisteredDeviceToken } from "./devices.service";
 
@@ -14,6 +15,7 @@ export class DevicesController {
   constructor(private readonly devices: DevicesService) {}
 
   @Post()
+  @RateLimit("pushDeviceRegister")
   @HttpCode(HttpStatus.OK)
   @ApiOkResponse({ description: "Registered the caller's Expo push token." })
   async register(

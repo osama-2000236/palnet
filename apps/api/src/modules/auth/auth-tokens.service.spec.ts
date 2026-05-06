@@ -23,6 +23,11 @@ type PrismaStub = {
     findFirst: jest.Mock;
     updateMany: jest.Mock;
   };
+  sseStreamToken: {
+    create: jest.Mock;
+    findFirst: jest.Mock;
+    updateMany: jest.Mock;
+  };
   refreshToken: {
     updateMany: jest.Mock;
   };
@@ -40,6 +45,11 @@ function buildPrisma(): PrismaStub {
       updateMany: jest.fn(),
     },
     passwordResetToken: {
+      create: jest.fn(),
+      findFirst: jest.fn(),
+      updateMany: jest.fn(),
+    },
+    sseStreamToken: {
       create: jest.fn(),
       findFirst: jest.fn(),
       updateMany: jest.fn(),
@@ -186,6 +196,72 @@ describe("AuthTokensService", () => {
       where: { userId: "user-1", revokedAt: null },
       data: { revokedAt: expect.any(Date) },
     });
+  });
+
+  it("issues a short-lived stream token as a hash", async () => {
+    prisma.sseStreamToken.create.mockResolvedValue({});
+
+    const out = await service.issueStreamToken("user-1", "messaging");
+
+    expect(out.token).toMatch(/^[a-f0-9]{64}$/);
+    expect(Date.parse(out.expiresAt)).toBeLessThanOrEqual(Date.now() + 60_000);
+    expect(prisma.sseStreamToken.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        userId: "user-1",
+        scope: "messaging",
+        tokenHash: hashToken(out.token),
+        expiresAt: expect.any(Date),
+      }),
+    });
+  });
+
+  it("consumes a stream token once and returns the token user", async () => {
+    const token = "e".repeat(64);
+    const user = { id: "user-1", email: "demo@baydar.ps", role: "USER", locale: "ar-PS" };
+    prisma.sseStreamToken.findFirst.mockResolvedValue({
+      id: "sst-1",
+      userId: "user-1",
+      scope: "messaging",
+      expiresAt: new Date(Date.now() + 60_000),
+      consumedAt: null,
+      user,
+    });
+    prisma.sseStreamToken.updateMany.mockResolvedValue({ count: 1 });
+
+    await expect(service.consumeStreamToken(token, "messaging")).resolves.toEqual(user);
+    expect(prisma.sseStreamToken.findFirst).toHaveBeenCalledWith({
+      where: { tokenHash: hashToken(token), scope: "messaging" },
+      select: {
+        id: true,
+        userId: true,
+        expiresAt: true,
+        consumedAt: true,
+        scope: true,
+        user: { select: { id: true, email: true, role: true, locale: true } },
+      },
+    });
+    expect(prisma.sseStreamToken.updateMany).toHaveBeenCalledWith({
+      where: { id: "sst-1", consumedAt: null },
+      data: { consumedAt: expect.any(Date) },
+    });
+  });
+
+  it("rejects stream token replay when the single-use update loses the race", async () => {
+    prisma.sseStreamToken.findFirst.mockResolvedValue({
+      id: "sst-1",
+      userId: "user-1",
+      scope: "notifications",
+      expiresAt: new Date(Date.now() + 60_000),
+      consumedAt: null,
+      user: { id: "user-1", email: "demo@baydar.ps", role: "USER", locale: "ar-PS" },
+    });
+    prisma.sseStreamToken.updateMany.mockResolvedValue({ count: 0 });
+
+    await expect(service.consumeStreamToken("f".repeat(64), "notifications")).rejects.toMatchObject(
+      {
+        code: ErrorCode.STREAM_TOKEN_INVALID,
+      },
+    );
   });
 
   it("rejects reset replay when single-use update loses the race", async () => {

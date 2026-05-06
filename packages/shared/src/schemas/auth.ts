@@ -38,6 +38,20 @@ export const LogoutBody = z.object({
 });
 export type LogoutBody = z.infer<typeof LogoutBody>;
 
+export const StreamTokenScope = z.enum(["messaging", "notifications"]);
+export type StreamTokenScope = z.infer<typeof StreamTokenScope>;
+
+export const StreamTokenRequest = z.object({
+  scope: StreamTokenScope,
+});
+export type StreamTokenRequest = z.infer<typeof StreamTokenRequest>;
+
+export const StreamTokenResponse = z.object({
+  token: z.string().min(1),
+  expiresAt: z.string().datetime(),
+});
+export type StreamTokenResponse = z.infer<typeof StreamTokenResponse>;
+
 export const SendVerifyEmailBody = z.object({
   email: Email,
 });

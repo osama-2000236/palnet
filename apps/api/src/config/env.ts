@@ -33,9 +33,30 @@ export type Env = z.infer<typeof EnvSchema>;
 export function loadEnv(): Env {
   const parsed = EnvSchema.safeParse(process.env);
   if (!parsed.success) {
-    // eslint-disable-next-line no-console
-    console.error("[env] invalid configuration:", parsed.error.flatten().fieldErrors);
-    process.exit(1);
+    failEnv(parsed.error.flatten().fieldErrors);
   }
-  return parsed.data;
+  const data = parsed.data;
+
+  if (data.NODE_ENV === "production") {
+    const rawCorsOrigins = process.env.CORS_ORIGINS;
+    const origins = rawCorsOrigins
+      ?.split(",")
+      .map((origin) => origin.trim())
+      .filter(Boolean);
+
+    if (!origins || origins.length === 0) {
+      failEnv({ CORS_ORIGINS: ["CORS_ORIGINS is required in production."] });
+    }
+    if (origins.includes("*")) {
+      failEnv({ CORS_ORIGINS: ["Wildcard CORS origins are forbidden in production."] });
+    }
+  }
+
+  return data;
+}
+
+function failEnv(errors: Record<string, string[] | undefined>): never {
+  // eslint-disable-next-line no-console
+  console.error("[env] invalid configuration:", errors);
+  process.exit(1);
 }

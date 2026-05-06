@@ -129,6 +129,7 @@ model User {
   refreshTokens           RefreshToken[]
   emailVerificationTokens EmailVerificationToken[]
   passwordResetTokens     PasswordResetToken[]
+  sseStreamTokens         SseStreamToken[]
   sentConnections         Connection[]             @relation("ConnectionRequester")
   recvConnections         Connection[]             @relation("ConnectionReceiver")
   posts                   Post[]
@@ -195,6 +196,21 @@ model PasswordResetToken {
 
   @@index([tokenHash])
   @@index([userId])
+}
+
+model SseStreamToken {
+  id         String    @id @default(cuid())
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     String
+  tokenHash  String
+  expiresAt  DateTime
+  consumedAt DateTime?
+  scope      String
+  createdAt  DateTime  @default(now())
+
+  @@index([tokenHash])
+  @@index([userId])
+  @@index([expiresAt])
 }
 
 // ──────────────────────────────────────────────────────────────────────────

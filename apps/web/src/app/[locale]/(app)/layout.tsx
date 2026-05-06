@@ -31,8 +31,7 @@ import { z } from "zod";
 
 import { apiFetch, apiFetchPage } from "@/lib/api";
 import { clearSession, readSession } from "@/lib/session";
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000/api/v1";
+import { openStream } from "@/lib/sse";
 
 const UnreadCount = z.object({ count: z.number().int().nonnegative() });
 const RoomsEnvelope = z.object({ data: z.array(ChatRoomSchema) });
@@ -115,24 +114,34 @@ export default function AppLayout({ children }: { children: ReactNode }): JSX.El
     void apiFetch("/notifications/unread-count", UnreadCount, { token })
       .then((out) => setNotificationsUnread(out.count))
       .catch(() => {});
-    const url = `${API_BASE}/notifications/stream?access_token=${encodeURIComponent(token)}`;
-    const es = new EventSource(url);
-    es.onmessage = (evt): void => {
-      try {
-        const parsed = WsNotificationEvent.safeParse(JSON.parse(evt.data));
-        if (!parsed.success) return;
-        const ev = parsed.data;
-        if (ev.type === "notification.unread-count") {
-          setNotificationsUnread(ev.payload.count);
-        } else if (ev.type === "notification.new") {
-          setNotificationsUnread((c) => c + 1);
+    let es: EventSource | null = null;
+    let cancelled = false;
+    void openStream("notifications", token)
+      .then((source) => {
+        if (cancelled) {
+          source.close();
+          return;
         }
-      } catch {
-        // ignore
-      }
-    };
+        es = source;
+        source.onmessage = (evt): void => {
+          try {
+            const parsed = WsNotificationEvent.safeParse(JSON.parse(evt.data));
+            if (!parsed.success) return;
+            const ev = parsed.data;
+            if (ev.type === "notification.unread-count") {
+              setNotificationsUnread(ev.payload.count);
+            } else if (ev.type === "notification.new") {
+              setNotificationsUnread((c) => c + 1);
+            }
+          } catch {
+            // ignore
+          }
+        };
+      })
+      .catch(() => {});
     return (): void => {
-      es.close();
+      cancelled = true;
+      es?.close();
     };
   }, [token]);
 
@@ -153,24 +162,34 @@ export default function AppLayout({ children }: { children: ReactNode }): JSX.El
   useEffect(() => {
     if (!token) return;
     void refetchRooms(token);
-    const url = `${API_BASE}/messaging/stream?access_token=${encodeURIComponent(token)}`;
-    const es = new EventSource(url);
-    es.onmessage = (evt): void => {
-      try {
-        const parsed = WsChatEvent.safeParse(JSON.parse(evt.data));
-        if (!parsed.success) return;
-        const ev = parsed.data;
-        if (ev.type === "message.new" || ev.type === "message.read") {
-          // Coalesce bursts (e.g. mass-read) into one refetch.
-          if (refetchTimer.current) clearTimeout(refetchTimer.current);
-          refetchTimer.current = setTimeout(() => void refetchRooms(token), 150);
+    let es: EventSource | null = null;
+    let cancelled = false;
+    void openStream("messaging", token)
+      .then((source) => {
+        if (cancelled) {
+          source.close();
+          return;
         }
-      } catch {
-        // ignore
-      }
-    };
+        es = source;
+        source.onmessage = (evt): void => {
+          try {
+            const parsed = WsChatEvent.safeParse(JSON.parse(evt.data));
+            if (!parsed.success) return;
+            const ev = parsed.data;
+            if (ev.type === "message.new" || ev.type === "message.read") {
+              // Coalesce bursts (e.g. mass-read) into one refetch.
+              if (refetchTimer.current) clearTimeout(refetchTimer.current);
+              refetchTimer.current = setTimeout(() => void refetchRooms(token), 150);
+            }
+          } catch {
+            // ignore
+          }
+        };
+      })
+      .catch(() => {});
     return (): void => {
-      es.close();
+      cancelled = true;
+      es?.close();
       if (refetchTimer.current) clearTimeout(refetchTimer.current);
     };
   }, [token, refetchRooms]);

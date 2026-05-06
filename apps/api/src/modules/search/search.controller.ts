@@ -14,6 +14,7 @@ import { RequireCompleteProfile } from "../../common/require-complete-profile.de
 import { ZodValidationPipe } from "../../common/zod-pipe";
 import { CurrentUser, type AuthUser } from "../auth/decorators/current-user.decorator";
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
+import { RateLimit } from "../rate-limit/rate-limit.decorator";
 
 import { SearchService } from "./search.service";
 
@@ -26,6 +27,7 @@ export class SearchController {
   constructor(private readonly search: SearchService) {}
 
   @Get("people")
+  @RateLimit("search")
   async people(
     @CurrentUser() user: AuthUser,
     @Query(new ZodValidationPipe(PeopleSearchQuery))
@@ -35,6 +37,7 @@ export class SearchController {
   }
 
   @Get("posts")
+  @RateLimit("search")
   async posts(
     @CurrentUser() user: AuthUser,
     @Query(new ZodValidationPipe(PostsSearchQuery))
@@ -44,6 +47,7 @@ export class SearchController {
   }
 
   @Get("jobs")
+  @RateLimit("search")
   async jobs(
     @CurrentUser() user: AuthUser,
     @Query(new ZodValidationPipe(JobsSearchQuery))

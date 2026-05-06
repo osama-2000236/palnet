@@ -20,12 +20,12 @@ export const PresignUploadBody = z.object({
     .string()
     .regex(/^[\w.+-]+\/[\w.+-]+$/, { message: "INVALID_MIME" })
     .max(100),
-  // Client-declared size guardrail. Server enforces a hard cap per purpose.
+  // Client-declared size guardrail. Server enforces hard caps by MIME family.
   sizeBytes: z
     .number()
     .int()
     .positive()
-    .max(25 * 1024 * 1024), // 25 MB ceiling
+    .max(100 * 1024 * 1024), // 100 MB ceiling for video/mp4
   // Optional filename hint — used only to preserve extension in the key.
   filename: z.string().max(255).optional(),
 });

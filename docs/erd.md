@@ -8,6 +8,7 @@ Authoritative schema: [`packages/db/prisma/schema.prisma`](../packages/db/prisma
 erDiagram
   User ||--o| Profile : has
   User ||--o{ RefreshToken : owns
+  User ||--o{ SseStreamToken : owns
   User ||--o{ Post : authors
   User ||--o{ Comment : writes
   User ||--o{ Reaction : places
@@ -46,6 +47,8 @@ erDiagram
 ### 1. `User` is the identity root
 
 Everything owned by a person cascades on user delete **except** where audit matters (`Report`, `Notification.actorId` uses `SetNull`). The cascade list is enforced in the Prisma schema; do not relax it.
+
+Short-lived auth support tables such as `RefreshToken`, `EmailVerificationToken`, `PasswordResetToken`, and `SseStreamToken` store only hashes for client-presented secrets.
 
 ### 2. `Profile` is separate from `User`
 
@@ -96,6 +99,7 @@ The `@@unique([userId, postId])` enforces the LinkedIn behavior: replacing a rea
 | Profile                               | Cascade                              | No (soft-delete via `User.deletedAt`) |
 | Experience / Education / ProfileSkill | Cascade via Profile                  | No                                    |
 | RefreshToken                          | Cascade                              | No                                    |
+| SseStreamToken                        | Cascade                              | No                                    |
 | Post                                  | Cascade                              | Yes                                   |
 | Comment                               | Cascade                              | Yes                                   |
 | Reaction / Repost                     | Cascade                              | No                                    |

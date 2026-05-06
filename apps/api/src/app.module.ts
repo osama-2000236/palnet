@@ -19,6 +19,7 @@ import { NotificationsModule } from "./modules/notifications/notifications.modul
 import { PostsModule } from "./modules/posts/posts.module";
 import { PrismaModule } from "./modules/prisma/prisma.module";
 import { ProfilesModule } from "./modules/profiles/profiles.module";
+import { RateLimitModule } from "./modules/rate-limit/rate-limit.module";
 import { ReactionsModule } from "./modules/reactions/reactions.module";
 import { RepostsModule } from "./modules/reposts/reposts.module";
 import { SafetyModule } from "./modules/safety/safety.module";
@@ -27,8 +28,6 @@ import { SearchModule } from "./modules/search/search.module";
 const env = loadEnv();
 const defaultThrottleLimit =
   env.NODE_ENV === "production" ? 100 : (env.BAYDAR_DEV_RATE_LIMIT ?? 1_000);
-const authThrottleLimit =
-  env.NODE_ENV === "production" ? 10 : (env.BAYDAR_DEV_AUTH_RATE_LIMIT ?? 100);
 
 @Module({
   imports: [
@@ -45,11 +44,9 @@ const authThrottleLimit =
         }),
       },
     }),
-    ThrottlerModule.forRoot([
-      { name: "default", ttl: 60_000, limit: defaultThrottleLimit },
-      { name: "auth", ttl: 60_000, limit: authThrottleLimit },
-    ]),
+    ThrottlerModule.forRoot([{ name: "default", ttl: 60_000, limit: defaultThrottleLimit }]),
     PrismaModule,
+    RateLimitModule,
     HealthModule,
     AuthModule,
     ProfilesModule,
