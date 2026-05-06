@@ -37,7 +37,13 @@
             { "scheme": "https", "host": "baydar.ps", "pathPrefix": "/u" },
             { "scheme": "https", "host": "baydar.ps", "pathPrefix": "/post" },
             { "scheme": "https", "host": "baydar.ps", "pathPrefix": "/messages" },
-            { "scheme": "https", "host": "baydar.ps", "pathPrefix": "/jobs" }
+            { "scheme": "https", "host": "baydar.ps", "pathPrefix": "/jobs" },
+            { "scheme": "https", "host": "baydar.ps", "pathPrefix": "/auth/verify-email" },
+            { "scheme": "https", "host": "baydar.ps", "pathPrefix": "/auth/reset-password" },
+            { "scheme": "https", "host": "baydar.ps", "pathPrefix": "/ar-PS/auth/verify-email" },
+            { "scheme": "https", "host": "baydar.ps", "pathPrefix": "/ar-PS/auth/reset-password" },
+            { "scheme": "https", "host": "baydar.ps", "pathPrefix": "/en/auth/verify-email" },
+            { "scheme": "https", "host": "baydar.ps", "pathPrefix": "/en/auth/reset-password" }
           ],
           "category": ["BROWSABLE", "DEFAULT"]
         }

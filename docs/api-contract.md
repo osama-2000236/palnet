@@ -41,6 +41,12 @@ All other JSON success responses should use `{ data, meta? }` unless a future de
 - `POST /auth/refresh`
 - `POST /auth/logout`
 - `GET /auth/me`
+- `POST /auth/verify-email/send` returns `202 Accepted` with no body. The response is enumeration-safe.
+- `POST /auth/verify-email/confirm` returns `{ data: { emailVerified: true } }`.
+- `POST /auth/forgot-password` returns `202 Accepted` with no body. The response is enumeration-safe.
+- `POST /auth/reset-password` returns `{ data: { reset: true } }`.
+
+Email verification and password reset tokens are opaque 64-character client tokens. The API stores only SHA-256 token hashes, applies expiry and single-use consumption, and never returns raw tokens in API responses.
 
 ### Profiles
 

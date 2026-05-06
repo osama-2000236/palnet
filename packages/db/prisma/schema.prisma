@@ -124,25 +124,27 @@ model User {
   updatedAt      DateTime  @updatedAt
   deletedAt      DateTime?
 
-  profile           Profile?
-  refreshTokens     RefreshToken[]
-  sentConnections   Connection[]    @relation("ConnectionRequester")
-  recvConnections   Connection[]    @relation("ConnectionReceiver")
-  posts             Post[]
-  reactions         Reaction[]
-  comments          Comment[]
-  reposts           Repost[]
-  sentMessages      Message[]       @relation("MessageAuthor")
-  chatMemberships   ChatRoomMember[]
-  notifications     Notification[]  @relation("NotificationRecipient")
-  notificationsSent Notification[]  @relation("NotificationActor")
-  deviceTokens      DeviceToken[]
-  applications      Application[]
-  companyMemberships CompanyMember[]
-  postedJobs        Job[]           @relation("JobPoster")
-  blockedByMe       BlockedUser[]   @relation("Blocker")
-  blockedMe         BlockedUser[]   @relation("Blocked")
-  reportsFiled      Report[]        @relation("Reporter")
+  profile                 Profile?
+  refreshTokens           RefreshToken[]
+  emailVerificationTokens EmailVerificationToken[]
+  passwordResetTokens     PasswordResetToken[]
+  sentConnections         Connection[]             @relation("ConnectionRequester")
+  recvConnections         Connection[]             @relation("ConnectionReceiver")
+  posts                   Post[]
+  reactions               Reaction[]
+  comments                Comment[]
+  reposts                 Repost[]
+  sentMessages            Message[]                @relation("MessageAuthor")
+  chatMemberships         ChatRoomMember[]
+  notifications           Notification[]           @relation("NotificationRecipient")
+  notificationsSent       Notification[]           @relation("NotificationActor")
+  deviceTokens            DeviceToken[]
+  applications            Application[]
+  companyMemberships      CompanyMember[]
+  postedJobs              Job[]                    @relation("JobPoster")
+  blockedByMe             BlockedUser[]            @relation("Blocker")
+  blockedMe               BlockedUser[]            @relation("Blocked")
+  reportsFiled            Report[]                 @relation("Reporter")
 
   @@index([email])
   @@index([role])
@@ -162,6 +164,36 @@ model RefreshToken {
 
   @@index([userId])
   @@index([expiresAt])
+}
+
+model EmailVerificationToken {
+  id              String    @id @default(cuid())
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId          String
+  tokenHash       String
+  expiresAt       DateTime
+  consumedAt      DateTime?
+  createdAt       DateTime  @default(now())
+  requestedFromIp String?
+  requestedFromUa String?
+
+  @@index([tokenHash])
+  @@index([userId])
+}
+
+model PasswordResetToken {
+  id              String    @id @default(cuid())
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId          String
+  tokenHash       String
+  expiresAt       DateTime
+  consumedAt      DateTime?
+  createdAt       DateTime  @default(now())
+  requestedFromIp String?
+  requestedFromUa String?
+
+  @@index([tokenHash])
+  @@index([userId])
 }
 
 // ──────────────────────────────────────────────────────────────────────────

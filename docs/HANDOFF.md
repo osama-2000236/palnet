@@ -18,6 +18,7 @@
 - API has auth, profiles, feed/posts/comments/reactions/reposts, connections, messages, notifications/devices, jobs/applications, safety reports/blocks, media upload URL generation, health, and supporting shared Zod contracts.
 - UGC safety is wired end-to-end on web and mobile: report, block, unblock, and blocked-users management call the Sprint 14 safety endpoints.
 - Sprint 17 closes F-03 search scope: web, mobile, shared contracts, and API now support people, posts, and jobs search. Companies search remains deferred until the F-04 company admin/management surface exists.
+- Sprint 18 closes F-09 email verification and password recovery with hashed single-use tokens, console-only mail transport, web/mobile reset screens, and universal-link route entries.
 - Sprint 11.5 fixed Expo monorepo bundle resolution, mobile runtime package gaps, API runtime package builds, mobile SSE auth header handling, NetInfo seed state, Sentry release tagging, push locale copy, and authenticated a11y fixture validation.
 
 ## Known Follow-Ups
@@ -29,6 +30,7 @@
 - EAS project id and production Sentry/PostHog values remain environment-level release tasks.
 - Admin moderation queue / report resolution UI remains a separate follow-up sprint.
 - Company admin/management remains open from Sprint 12 audit F-04; do not add companies search until that surface ships.
+- Real email provider integration remains deferred; choose Resend, SES, Postmark, or another provider before replacing the console transport.
 - Safety-related privacy/legal copy still needs counsel review before launch.
 - Sprint 15 safety test follow-ups are closed by Sprint 16: ui-web/ui-native safety primitives now have behavior coverage, mutation spot-check evidence was captured, and the Playwright safety e2e has an explicit Windows EPERM guard for invocable local runs.
 

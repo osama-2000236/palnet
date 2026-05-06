@@ -1,4 +1,14 @@
-import { type AuthSession, LoginBody, LogoutBody, RefreshBody, RegisterBody } from "@baydar/shared";
+import {
+  ConfirmVerifyEmailBody,
+  ForgotPasswordBody,
+  type AuthSession,
+  LoginBody,
+  LogoutBody,
+  RefreshBody,
+  RegisterBody,
+  ResetPasswordBody,
+  SendVerifyEmailBody,
+} from "@baydar/shared";
 import {
   Body,
   Controller,
@@ -6,14 +16,18 @@ import {
   HttpCode,
   HttpStatus,
   Post,
+  Req,
   UseGuards,
   UsePipes,
 } from "@nestjs/common";
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiTags } from "@nestjs/swagger";
 import { Throttle } from "@nestjs/throttler";
+import type { Request } from "express";
 
 import { ZodValidationPipe } from "../../common/zod-pipe";
 
+import { AuthEmailThrottleService } from "./auth-email-throttle.service";
+import { AuthTokensService } from "./auth-tokens.service";
 import { AuthService } from "./auth.service";
 import { CurrentUser, type AuthUser } from "./decorators/current-user.decorator";
 import { Public } from "./decorators/public.decorator";
@@ -32,7 +46,11 @@ const authRefreshLimit =
 @Controller("auth")
 @UseGuards(JwtAuthGuard)
 export class AuthController {
-  constructor(private readonly auth: AuthService) {}
+  constructor(
+    private readonly auth: AuthService,
+    private readonly authTokens: AuthTokensService,
+    private readonly emailThrottle: AuthEmailThrottleService,
+  ) {}
 
   @Public()
   @Post("register")
@@ -65,6 +83,55 @@ export class AuthController {
   async refresh(@Body() body: RefreshBody): Promise<{ data: AuthSession }> {
     const data = await this.auth.refresh(body);
     return { data };
+  }
+
+  @Public()
+  @Post("verify-email/send")
+  @HttpCode(HttpStatus.ACCEPTED)
+  @Throttle({ auth: { limit: 5, ttl: 3_600_000 } })
+  @UsePipes(new ZodValidationPipe(SendVerifyEmailBody))
+  async sendVerifyEmail(@Body() body: SendVerifyEmailBody, @Req() req: Request): Promise<void> {
+    this.emailThrottle.check(body.email, "verify-email");
+    const user = await this.auth.findUserForEmailToken(body.email);
+    if (user) {
+      await this.authTokens.issueVerifyEmail(user.id, {
+        requestedFromIp: req.ip,
+        requestedFromUa: req.get("user-agent"),
+      });
+    }
+  }
+
+  @Public()
+  @Post("verify-email/confirm")
+  @HttpCode(HttpStatus.OK)
+  @UsePipes(new ZodValidationPipe(ConfirmVerifyEmailBody))
+  async confirmVerifyEmail(
+    @Body() body: ConfirmVerifyEmailBody,
+  ): Promise<{ data: { emailVerified: true } }> {
+    await this.authTokens.consumeVerifyEmail(body.token);
+    return { data: { emailVerified: true } };
+  }
+
+  @Public()
+  @Post("forgot-password")
+  @HttpCode(HttpStatus.ACCEPTED)
+  @Throttle({ auth: { limit: 5, ttl: 3_600_000 } })
+  @UsePipes(new ZodValidationPipe(ForgotPasswordBody))
+  async forgotPassword(@Body() body: ForgotPasswordBody, @Req() req: Request): Promise<void> {
+    this.emailThrottle.check(body.email, "forgot-password");
+    await this.authTokens.issuePasswordReset(body.email, {
+      requestedFromIp: req.ip,
+      requestedFromUa: req.get("user-agent"),
+    });
+  }
+
+  @Public()
+  @Post("reset-password")
+  @HttpCode(HttpStatus.OK)
+  @UsePipes(new ZodValidationPipe(ResetPasswordBody))
+  async resetPassword(@Body() body: ResetPasswordBody): Promise<{ data: { reset: true } }> {
+    await this.authTokens.consumePasswordReset(body.token, body.newPassword);
+    return { data: { reset: true } };
   }
 
   @Post("logout")

@@ -1,19 +1,16 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { useLocale } from "next-intl";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 
-import { ApiRequestError, loginAction } from "@/lib/auth-actions";
+import { ApiRequestError, forgotPasswordAction } from "@/lib/auth-actions";
 
-export default function LoginPage(): JSX.Element {
+export default function ForgotPasswordPage(): JSX.Element {
   const t = useTranslations("auth");
   const locale = useLocale();
-  const router = useRouter();
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [status, setStatus] = useState<"idle" | "sent">("idle");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -22,16 +19,11 @@ export default function LoginPage(): JSX.Element {
     setError(null);
     setBusy(true);
     try {
-      await loginAction({ email, password });
-      router.push("/feed");
+      await forgotPasswordAction(email);
+      setStatus("sent");
     } catch (err) {
       if (err instanceof ApiRequestError) {
-        const key = `errors.${err.code}`;
-        try {
-          setError(t(key as Parameters<typeof t>[0]));
-        } catch {
-          setError(t("errors.INTERNAL"));
-        }
+        setError(t(`errors.${err.code}` as Parameters<typeof t>[0]));
       } else {
         setError(t("errors.INTERNAL"));
       }
@@ -43,7 +35,8 @@ export default function LoginPage(): JSX.Element {
   return (
     <main className="mx-auto w-full max-w-md px-6 py-12">
       <form onSubmit={onSubmit} className="flex flex-col gap-4" noValidate>
-        <h1 className="text-ink text-3xl font-bold">{t("login")}</h1>
+        <h1 className="text-ink text-3xl font-bold">{t("forgot.title")}</h1>
+        <p className="text-ink-muted text-sm">{t("forgot.body")}</p>
 
         <label className="flex flex-col gap-1">
           <span className="text-ink-muted text-sm">{t("email")}</span>
@@ -59,25 +52,11 @@ export default function LoginPage(): JSX.Element {
           />
         </label>
 
-        <label className="flex flex-col gap-1">
-          <span className="text-ink-muted text-sm">{t("password")}</span>
-          <input
-            type="password"
-            className="border-ink-muted/30 rounded-md border px-3 py-2"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            autoComplete="current-password"
-            dir="ltr"
-          />
-        </label>
-
-        <Link
-          href={`/${locale}/auth/forgot-password`}
-          className="text-brand-700 hover:text-brand-800 text-sm font-semibold"
-        >
-          {t("forgot.link")}
-        </Link>
+        {status === "sent" ? (
+          <p role="status" className="text-success text-sm">
+            {t("forgot.sent")}
+          </p>
+        ) : null}
 
         {error ? (
           <p role="alert" className="text-danger text-sm">
@@ -90,8 +69,12 @@ export default function LoginPage(): JSX.Element {
           disabled={busy}
           className="bg-brand-600 text-ink-inverse shadow-card hover:bg-brand-700 rounded-md px-4 py-2 disabled:opacity-60"
         >
-          {t("submitLogin")}
+          {t("forgot.submit")}
         </button>
+
+        <Link href={`/${locale}/auth/login`} className="text-brand-700 text-sm font-semibold">
+          {t("forgot.backToLogin")}
+        </Link>
       </form>
     </main>
   );

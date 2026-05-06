@@ -6,6 +6,8 @@ import request from "supertest";
 
 import { AllExceptionsFilter } from "../common/exception.filter";
 
+import { AuthEmailThrottleService } from "./auth/auth-email-throttle.service";
+import { AuthTokensService } from "./auth/auth-tokens.service";
 import { AuthController } from "./auth/auth.controller";
 import { AuthService } from "./auth/auth.service";
 import type { AuthUser } from "./auth/decorators/current-user.decorator";
@@ -68,7 +70,11 @@ describe("API controller contract", () => {
     const auth = { logout: jest.fn().mockResolvedValue(undefined) };
     const app = await createApp({
       controllers: [AuthController],
-      providers: [{ provide: AuthService, useValue: auth }],
+      providers: [
+        { provide: AuthService, useValue: auth },
+        { provide: AuthTokensService, useValue: {} },
+        { provide: AuthEmailThrottleService, useValue: { check: jest.fn() } },
+      ],
       overrideJwt: true,
     });
 
@@ -81,6 +87,52 @@ describe("API controller contract", () => {
           expect(res.body.error.code).toBe(ErrorCode.VALIDATION_FAILED);
         });
       expect(auth.logout).not.toHaveBeenCalled();
+    } finally {
+      await app.close();
+    }
+  });
+
+  it("pins email verification and password reset auth routes", async () => {
+    const auth = { findUserForEmailToken: jest.fn().mockResolvedValue(null) };
+    const authTokens = {
+      consumeVerifyEmail: jest.fn().mockResolvedValue(undefined),
+      issuePasswordReset: jest.fn().mockResolvedValue(undefined),
+      consumePasswordReset: jest.fn().mockResolvedValue(undefined),
+    };
+    const app = await createApp({
+      controllers: [AuthController],
+      providers: [
+        { provide: AuthService, useValue: auth },
+        { provide: AuthTokensService, useValue: authTokens },
+        { provide: AuthEmailThrottleService, useValue: { check: jest.fn() } },
+      ],
+      overrideJwt: true,
+    });
+
+    try {
+      await request(app.getHttpServer())
+        .post("/auth/verify-email/send")
+        .send({ email: "demo@baydar.ps" })
+        .expect(202)
+        .expect("");
+
+      await request(app.getHttpServer())
+        .post("/auth/verify-email/confirm")
+        .send({ token: "a".repeat(64) })
+        .expect(200)
+        .expect({ data: { emailVerified: true } });
+
+      await request(app.getHttpServer())
+        .post("/auth/forgot-password")
+        .send({ email: "missing@baydar.ps" })
+        .expect(202)
+        .expect("");
+
+      await request(app.getHttpServer())
+        .post("/auth/reset-password")
+        .send({ token: "b".repeat(64), newPassword: "NewPassword1" })
+        .expect(200)
+        .expect({ data: { reset: true } });
     } finally {
       await app.close();
     }

@@ -38,6 +38,35 @@ export const LogoutBody = z.object({
 });
 export type LogoutBody = z.infer<typeof LogoutBody>;
 
+export const SendVerifyEmailBody = z.object({
+  email: Email,
+});
+export type SendVerifyEmailBody = z.infer<typeof SendVerifyEmailBody>;
+
+export const ConfirmVerifyEmailBody = z.object({
+  token: z.string().length(64),
+});
+export type ConfirmVerifyEmailBody = z.infer<typeof ConfirmVerifyEmailBody>;
+
+export const ForgotPasswordBody = z.object({
+  email: Email,
+});
+export type ForgotPasswordBody = z.infer<typeof ForgotPasswordBody>;
+
+export const ResetPassword = z
+  .string()
+  .min(10, { message: "PASSWORD_TOO_SHORT" })
+  .max(200, { message: "PASSWORD_TOO_LONG" })
+  .regex(/[a-z]/, { message: "PASSWORD_NEEDS_LOWERCASE" })
+  .regex(/[A-Z]/, { message: "PASSWORD_NEEDS_UPPERCASE" })
+  .regex(/\d/, { message: "PASSWORD_NEEDS_DIGIT" });
+
+export const ResetPasswordBody = z.object({
+  token: z.string().length(64),
+  newPassword: ResetPassword,
+});
+export type ResetPasswordBody = z.infer<typeof ResetPasswordBody>;
+
 export const AuthTokens = z.object({
   accessToken: z.string(),
   refreshToken: z.string(),

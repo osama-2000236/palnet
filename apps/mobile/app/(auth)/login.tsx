@@ -1,6 +1,6 @@
 import { Button, Surface, nativeTokens } from "@baydar/ui-native";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { router } from "expo-router";
+import { router, type Href } from "expo-router";
 import { useState } from "react";
 import { Controller, useForm, type Resolver } from "react-hook-form";
 import { useTranslation } from "react-i18next";
@@ -123,6 +123,16 @@ export default function LoginScreen(): JSX.Element {
           />
         )}
       />
+
+      <Button
+        variant="ghost"
+        size="md"
+        testID="login-forgot-password-link"
+        accessibilityLabel={t("auth.forgot.link")}
+        onPress={() => router.push("/(auth)/forgot-password" as Href)}
+      >
+        {t("auth.forgot.link")}
+      </Button>
 
       {error ? <AuthError message={error} /> : null}
 

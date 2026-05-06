@@ -8,7 +8,13 @@
           { "/": "/u/*", "comment": "Baydar profile links" },
           { "/": "/post/*", "comment": "Baydar post links" },
           { "/": "/messages/*", "comment": "Baydar message room links" },
-          { "/": "/jobs/*", "comment": "Baydar job links" }
+          { "/": "/jobs/*", "comment": "Baydar job links" },
+          { "/": "/auth/verify-email/*", "comment": "Baydar email verification links" },
+          { "/": "/auth/reset-password/*", "comment": "Baydar password reset links" },
+          { "/": "/ar-PS/auth/verify-email/*", "comment": "Baydar email verification links" },
+          { "/": "/ar-PS/auth/reset-password/*", "comment": "Baydar password reset links" },
+          { "/": "/en/auth/verify-email/*", "comment": "Baydar email verification links" },
+          { "/": "/en/auth/reset-password/*", "comment": "Baydar password reset links" }
         ]
       }
     ]

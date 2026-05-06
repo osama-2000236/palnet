@@ -12,6 +12,12 @@ export const LinkingOptions = {
           "jobs/[id]": "jobs/:id",
         },
       },
+      "(auth)": {
+        screens: {
+          "verify-email/[token]": "auth/verify-email/:token",
+          "reset-password/[token]": "auth/reset-password/:token",
+        },
+      },
     },
   },
 } as const;
@@ -30,7 +36,11 @@ export function routeFromUrl(url: string): Href | null {
 
   const pathParts = parsed.pathname.split("/").filter(Boolean);
   const parts = isAppLink && parsed.hostname ? [parsed.hostname, ...pathParts] : pathParts;
-  const [resource, id] = parts;
+  const [first, second, third, fourth] = parts;
+  if (!first) return null;
+
+  const hasLocalePrefix = first === "ar-PS" || first === "en";
+  const [resource, id, token] = hasLocalePrefix ? [second, third, fourth] : [first, second, third];
   if (!resource || !id) return null;
 
   if (resource === "u") {
@@ -44,6 +54,12 @@ export function routeFromUrl(url: string): Href | null {
   }
   if (resource === "jobs") {
     return { pathname: "/(app)/jobs/[id]", params: { id } } as Href;
+  }
+  if (resource === "auth" && id === "verify-email" && token) {
+    return { pathname: "/(auth)/verify-email/[token]", params: { token } } as unknown as Href;
+  }
+  if (resource === "auth" && id === "reset-password" && token) {
+    return { pathname: "/(auth)/reset-password/[token]", params: { token } } as unknown as Href;
   }
 
   return null;

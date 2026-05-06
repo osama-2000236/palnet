@@ -114,6 +114,13 @@ export class AuthService {
     };
   }
 
+  async findUserForEmailToken(email: string): Promise<{ id: string } | null> {
+    return this.prisma.user.findUnique({
+      where: { email },
+      select: { id: true },
+    });
+  }
+
   // --- internals ---
 
   private badCredentials(): UnauthorizedException {

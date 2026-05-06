@@ -40,9 +40,45 @@
     "errors": {
       "CONFLICT": "An account with this email already exists.",
       "AUTH_UNAUTHORIZED": "Invalid email or password.",
+      "AUTH_TOKEN_EXPIRED": "This link has expired. Request a new one.",
+      "AUTH_TOKEN_INVALID": "This link is invalid or was already used.",
       "VALIDATION_FAILED": "Please check the fields and try again.",
       "RATE_LIMITED": "Too many attempts. Try again later.",
       "INTERNAL": "An unexpected error occurred."
+    },
+    "verify": {
+      "kicker": "Email verification",
+      "title": "Verify your email",
+      "loading": "Checking your verification link…",
+      "success": "Your email is verified. You can continue using Baydar.",
+      "error": "This verification link is invalid or expired.",
+      "backToLogin": "Back to sign in"
+    },
+    "forgot": {
+      "kicker": "Password recovery",
+      "link": "Forgot password?",
+      "title": "Reset your password",
+      "body": "Enter your email and we will send a reset link if an account exists.",
+      "submit": "Send reset link",
+      "sent": "If an account exists for that email, a reset link has been sent.",
+      "backToLogin": "Back to sign in"
+    },
+    "reset": {
+      "kicker": "Password recovery",
+      "title": "Choose a new password",
+      "body": "Use at least 10 characters with uppercase, lowercase, and a number.",
+      "newPassword": "New password",
+      "confirmPassword": "Confirm password",
+      "submit": "Reset password",
+      "success": "Your password has been reset. Sign in with the new password.",
+      "passwordMismatch": "Passwords do not match.",
+      "backToLogin": "Back to sign in",
+      "validation": {
+        "passwordMin": "Password must be at least 10 characters.",
+        "passwordLower": "Add at least one lowercase letter.",
+        "passwordUpper": "Add at least one uppercase letter.",
+        "passwordDigit": "Add at least one number."
+      }
     }
   },
   "onboarding": {
