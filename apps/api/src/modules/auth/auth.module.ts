@@ -1,4 +1,4 @@
-import { Module } from "@nestjs/common";
+import { Global, Module } from "@nestjs/common";
 import { APP_GUARD } from "@nestjs/core";
 
 import { ProfileCompletionGuard } from "../../common/profile-completion.guard";
@@ -11,6 +11,7 @@ import { AuthController } from "./auth.controller";
 import { AuthService } from "./auth.service";
 import { JwtAuthGuard } from "./guards/jwt-auth.guard";
 
+@Global()
 @Module({
   imports: [PrismaModule, MailModule],
   controllers: [AuthController],
@@ -18,10 +19,11 @@ import { JwtAuthGuard } from "./guards/jwt-auth.guard";
     AuthService,
     AuthTokensService,
     AuthEmailThrottleService,
+    JwtAuthGuard,
     // Register JwtAuthGuard as a global guard; @Public() opts routes out.
     { provide: APP_GUARD, useClass: JwtAuthGuard },
     { provide: APP_GUARD, useClass: ProfileCompletionGuard },
   ],
-  exports: [AuthService, AuthTokensService],
+  exports: [AuthService, AuthTokensService, JwtAuthGuard],
 })
 export class AuthModule {}
