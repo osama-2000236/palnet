@@ -259,8 +259,7 @@ export default function AppLayout({ children }: { children: ReactNode }): JSX.El
   }, [router, me?.handle]);
 
   const onOpenSettings = useCallback(() => {
-    // No dedicated Settings screen yet — profile edit is the closest.
-    router.push("/me/edit");
+    router.push("/settings/blocked");
   }, [router]);
 
   const onSignOut = useCallback(() => {

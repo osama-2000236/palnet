@@ -6,6 +6,7 @@ import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
 
 import { locales, localeDir, type Locale } from "@/i18n";
+import { QueryProvider } from "@/lib/query-provider";
 
 import "../globals.css";
 
@@ -48,7 +49,7 @@ export default async function RootLayout(props: {
     <html lang={locale} dir={dir} className={`${sansArabic.variable} ${bodyArabic.variable}`}>
       <body>
         <NextIntlClientProvider messages={messages} locale={locale}>
-          {props.children}
+          <QueryProvider>{props.children}</QueryProvider>
         </NextIntlClientProvider>
       </body>
     </html>

@@ -52,6 +52,8 @@ export interface PostCardLabels {
   authorLabel: string;
   /** Accessible name for the overflow menu button. */
   moreOptions: string;
+  /** Visible/action label for reporting this post. */
+  report?: string;
   /** e.g. "منشور عام" — audience line under the timestamp. */
   publicAudience: string;
 }
@@ -78,6 +80,7 @@ export interface PostCardProps {
   onRepost?(): void;
   /** Share action. */
   onShare?(): void;
+  onReport?(): void;
   /**
    * When the viewer expands comments, the host mounts the Comments region
    * here. The button just toggles; the node decides what to render.
@@ -102,6 +105,7 @@ export function PostCard({
   onToggleReaction,
   onRepost,
   onShare,
+  onReport,
   commentsSlot,
   commentsOpen,
   onToggleComments,
@@ -153,6 +157,7 @@ export function PostCard({
         <button
           type="button"
           aria-label={labels.moreOptions}
+          onClick={onReport}
           className="text-ink-muted hover:bg-surface-subtle hover:text-ink focus-visible:ring-brand-600 inline-flex h-8 w-8 items-center justify-center rounded-md focus:outline-none focus-visible:ring-2"
         >
           <Icon name="more" size={18} />

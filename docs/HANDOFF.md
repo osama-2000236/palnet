@@ -15,7 +15,8 @@
 - `@baydar/ui-web` and `@baydar/ui-native` contain the core atoms and row/card primitives used by current screens.
 - Web app has AppShell, feed, profile, network, messages, notifications, search, jobs list/detail, authenticated layouts, public auth routes, and accessibility smoke coverage for public pages.
 - Mobile app boots in RTL with bundled Arabic fonts, Expo Router, bottom tabs, tokenized shared UI primitives, feed/profile/network/search/messages/notifications/jobs flows, deep links, push-device registration, haptics, offline banner, pull-to-refresh, and Expo Go guardrails.
-- API has auth, profiles, feed/posts/comments/reactions/reposts, connections, messages, notifications/devices, jobs/applications, media upload URL generation, health, and supporting shared Zod contracts.
+- API has auth, profiles, feed/posts/comments/reactions/reposts, connections, messages, notifications/devices, jobs/applications, safety reports/blocks, media upload URL generation, health, and supporting shared Zod contracts.
+- UGC safety is wired end-to-end on web and mobile: report, block, unblock, and blocked-users management call the Sprint 14 safety endpoints.
 - Sprint 11.5 fixed Expo monorepo bundle resolution, mobile runtime package gaps, API runtime package builds, mobile SSE auth header handling, NetInfo seed state, Sentry release tagging, push locale copy, and authenticated a11y fixture validation.
 
 ## Known Follow-Ups
@@ -25,7 +26,8 @@
 - Arabic copy received AI-assisted cleanup but still needs a native human review before launch.
 - Universal-link files are committed as drafts; replace Apple team ID and Android release SHA256 before production hosting.
 - EAS project id and production Sentry/PostHog values remain environment-level release tasks.
-- Sprint 14 should pick up UGC safety: report/block flows, moderation queue behavior, and any related privacy/legal copy after counsel review.
+- Admin moderation queue / report resolution UI remains a separate follow-up sprint.
+- Safety-related privacy/legal copy still needs counsel review before launch.
 
 ## Verification Snapshot
 

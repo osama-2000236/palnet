@@ -12,7 +12,8 @@
     "dev": "tsc -p tsconfig.json --watch",
     "clean": "rimraf dist",
     "lint": "eslint .",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "test": "pnpm run build && node -e \"const cp=require('child_process');const jest=require.resolve('jest/bin/jest',{paths:['../../apps/web']});const out=cp.spawnSync(process.execPath,[jest,'--config','jest.config.cjs','--runInBand'],{stdio:'inherit'});process.exit(out.status ?? 1)\""
   },
   "dependencies": {
     "@baydar/ui-tokens": "workspace:*",

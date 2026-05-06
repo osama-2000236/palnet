@@ -14,6 +14,8 @@ module.exports = {
   ],
   env: {
     browser: true,
+    node: true,
+    jest: true,
     es2022: true,
   },
   rules: {
@@ -32,5 +34,5 @@ module.exports = {
       },
     ],
   },
-  ignorePatterns: ["dist/", ".turbo/", "node_modules/"],
+  ignorePatterns: ["dist/", ".turbo/", "node_modules/", "src/**/__tests__/**"],
 };

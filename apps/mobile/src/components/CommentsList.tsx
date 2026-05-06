@@ -1,14 +1,17 @@
 import {
   Comment as CommentSchema,
   CreateCommentBody,
+  ReportReason,
   cursorPage,
   type Comment,
 } from "@baydar/shared";
 import { router } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { ReportSheet, type ReportSheetLabels } from "@baydar/ui-native";
 import { ActivityIndicator, Pressable, Text, TextInput, View } from "react-native";
 
+import { useReport } from "@/api/safety";
 import { apiFetch, apiFetchPage } from "@/lib/api";
 import { getAccessToken } from "@/lib/session";
 
@@ -28,6 +31,8 @@ export function CommentsList({
   const [loading, setLoading] = useState(false);
   const [draft, setDraft] = useState("");
   const [busy, setBusy] = useState(false);
+  const [reportTargetId, setReportTargetId] = useState<string | null>(null);
+  const report = useReport();
 
   const load = useCallback(
     async (after: string | null): Promise<void> => {
@@ -75,15 +80,42 @@ export function CommentsList({
     }
   }
 
+  const reportLabels: ReportSheetLabels = {
+    title: t("safety.report.title"),
+    detailsLabel: t("safety.report.details_label"),
+    cancel: t("common.cancel"),
+    submit: t("safety.report.submit"),
+    close: t("safety.report.close"),
+    reasons: {
+      [ReportReason.SPAM]: t("safety.report.reason.spam"),
+      [ReportReason.HARASSMENT]: t("safety.report.reason.harassment"),
+      [ReportReason.HATE]: t("safety.report.reason.hate"),
+      [ReportReason.MISINFORMATION]: t("safety.report.reason.misinformation"),
+      [ReportReason.NUDITY]: t("safety.report.reason.nudity"),
+      [ReportReason.VIOLENCE]: t("safety.report.reason.violence"),
+      [ReportReason.OTHER]: t("safety.report.reason.other"),
+    },
+  };
+
   return (
     <View className="border-ink-muted/10 mt-3 gap-2 border-t pt-3">
       {items.map((c) => (
         <View key={c.id} className="bg-surface-muted rounded-md px-3 py-2">
-          <Pressable onPress={() => router.push(`/(app)/in/${c.author.handle}`)}>
-            <Text className="text-ink font-semibold">
-              {c.author.firstName} {c.author.lastName}
-            </Text>
-          </Pressable>
+          <View className="flex-row items-center justify-between gap-2">
+            <Pressable onPress={() => router.push(`/(app)/in/${c.author.handle}`)}>
+              <Text className="text-ink font-semibold">
+                {c.author.firstName} {c.author.lastName}
+              </Text>
+            </Pressable>
+            <Pressable
+              onPress={() => setReportTargetId(c.id)}
+              accessibilityRole="button"
+              accessibilityLabel={t("safety.report.action")}
+              className="min-h-11 justify-center rounded-md px-2"
+            >
+              <Text className="text-ink-muted text-xs">{t("safety.report.action")}</Text>
+            </Pressable>
+          </View>
           <Text className="text-ink">{c.body}</Text>
         </View>
       ))}
@@ -112,6 +144,22 @@ export function CommentsList({
           <Text className="text-ink-inverse text-xs font-semibold">{t("post.commentSubmit")}</Text>
         </Pressable>
       </View>
+      {reportTargetId ? (
+        <ReportSheet
+          open
+          onOpenChange={(next) => {
+            if (!next) setReportTargetId(null);
+          }}
+          target={{ kind: "comment", id: reportTargetId }}
+          labels={reportLabels}
+          submitting={report.isPending}
+          onSubmit={(input) => {
+            report.mutate(input, {
+              onSuccess: () => setReportTargetId(null),
+            });
+          }}
+        />
+      ) : null}
     </View>
   );
 }

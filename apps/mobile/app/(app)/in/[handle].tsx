@@ -1,8 +1,23 @@
 // Mobile profile screen. Uses ui-native atoms (Surface, Avatar, Button) +
 // nativeTokens so styling stays in lockstep with the web twin.
 
-import { ChatRoom as ChatRoomSchema, Profile as ProfileSchema, type Profile } from "@baydar/shared";
-import { Avatar, Button, SegmentedControl, Surface, nativeTokens } from "@baydar/ui-native";
+import {
+  ChatRoom as ChatRoomSchema,
+  Profile as ProfileSchema,
+  ReportReason,
+  type Profile,
+} from "@baydar/shared";
+import {
+  Avatar,
+  BlockButton,
+  Button,
+  ReportSheet,
+  SegmentedControl,
+  Surface,
+  nativeTokens,
+  type BlockButtonLabels,
+  type ReportSheetLabels,
+} from "@baydar/ui-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -12,6 +27,7 @@ import { z } from "zod";
 
 import { FieldCover } from "@/components/FieldCover";
 import { StateMessage } from "@/components/StateMessage";
+import { useBlock, useReport, useUnblock } from "@/api/safety";
 import { apiFetch } from "@/lib/api";
 import { apiErrorMessage } from "@/lib/api-errors";
 import { successHaptic, tapHaptic } from "@/lib/haptics";
@@ -37,6 +53,10 @@ export default function ProfileScreen(): JSX.Element {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<ProfileTab>("about");
+  const [reportOpen, setReportOpen] = useState(false);
+  const block = useBlock();
+  const unblock = useUnblock();
+  const report = useReport();
 
   useEffect(() => {
     if (!handle) return;
@@ -146,6 +166,40 @@ export default function ProfileScreen(): JSX.Element {
   }
 
   const conn = profile.viewer?.connection;
+  const isBlocked = conn?.status === "BLOCKED";
+  const blockLabels: BlockButtonLabels = isBlocked
+    ? {
+        block: t("safety.block.button"),
+        unblock: t("safety.unblock.button"),
+        confirmTitle: t("safety.unblock.confirm.title"),
+        confirmBody: t("safety.unblock.confirm.body"),
+        confirmCta: t("safety.unblock.confirm.cta"),
+        cancel: t("common.cancel"),
+      }
+    : {
+        block: t("safety.block.button"),
+        unblock: t("safety.unblock.button"),
+        confirmTitle: t("safety.block.confirm.title"),
+        confirmBody: t("safety.block.confirm.body"),
+        confirmCta: t("safety.block.confirm.cta"),
+        cancel: t("common.cancel"),
+      };
+  const reportLabels: ReportSheetLabels = {
+    title: t("safety.report.title"),
+    detailsLabel: t("safety.report.details_label"),
+    cancel: t("common.cancel"),
+    submit: t("safety.report.submit"),
+    close: t("safety.report.close"),
+    reasons: {
+      [ReportReason.SPAM]: t("safety.report.reason.spam"),
+      [ReportReason.HARASSMENT]: t("safety.report.reason.harassment"),
+      [ReportReason.HATE]: t("safety.report.reason.hate"),
+      [ReportReason.MISINFORMATION]: t("safety.report.reason.misinformation"),
+      [ReportReason.NUDITY]: t("safety.report.reason.nudity"),
+      [ReportReason.VIOLENCE]: t("safety.report.reason.violence"),
+      [ReportReason.OTHER]: t("safety.report.reason.other"),
+    },
+  };
 
   return (
     <SafeAreaView style={profileStyles.screen}>
@@ -264,6 +318,29 @@ export default function ProfileScreen(): JSX.Element {
               >
                 {t("messaging.newMessage")}
               </Button>
+              <Button variant="secondary" size="md" onPress={() => setReportOpen(true)}>
+                {t("safety.report.action")}
+              </Button>
+              <BlockButton
+                userId={profile.userId}
+                isBlocked={isBlocked}
+                variant={isBlocked ? "unblock" : "block"}
+                labels={blockLabels}
+                loading={block.isPending || unblock.isPending}
+                onChange={(nextBlocked, userId) => {
+                  if (nextBlocked) {
+                    block.mutate(
+                      { blockedUserId: userId },
+                      { onSuccess: () => router.replace("/(app)/feed") },
+                    );
+                  } else {
+                    unblock.mutate(userId, {
+                      onSuccess: () =>
+                        setProfile({ ...profile, viewer: { isSelf: false, connection: null } }),
+                    });
+                  }
+                }}
+              />
             </View>
           ) : null}
         </Surface>
@@ -360,6 +437,16 @@ export default function ProfileScreen(): JSX.Element {
             {t("common.back")}
           </Button>
         </View>
+        <ReportSheet
+          open={reportOpen}
+          onOpenChange={setReportOpen}
+          target={{ kind: "user", id: profile.userId }}
+          labels={reportLabels}
+          submitting={report.isPending}
+          onSubmit={(input) => {
+            report.mutate(input, { onSuccess: () => setReportOpen(false) });
+          }}
+        />
       </ScrollView>
     </SafeAreaView>
   );

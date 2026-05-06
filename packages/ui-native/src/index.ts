@@ -31,3 +31,13 @@ export { ComposerEntry } from "./ComposerEntry";
 export type { ComposerEntryProps } from "./ComposerEntry";
 export { PostCard } from "./PostCard";
 export type { PostCardAction, PostCardProps } from "./PostCard";
+export { ReportSheet, BlockButton, BlockedListItem } from "./safety";
+export type {
+  ReportSheetLabels,
+  ReportSheetProps,
+  ReportTarget,
+  BlockButtonLabels,
+  BlockButtonProps,
+  BlockedListItemLabels,
+  BlockedListItemProps,
+} from "./safety";

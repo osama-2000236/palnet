@@ -11,6 +11,7 @@ import {
   ChatRoom as ChatRoomSchema,
   CursorPageMeta,
   Message as MessageSchema,
+  ReportReason,
   WsChatEvent,
   type ChatRoom,
   type Message,
@@ -19,11 +20,13 @@ import {
   Avatar,
   Icon,
   MessageBubble,
+  ReportDialog,
   RoomRow,
   Surface,
   TypingIndicator,
   groupMessages,
   type MessageStatus,
+  type ReportDialogLabels,
 } from "@baydar/ui-web";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -32,6 +35,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { z } from "zod";
 
 import { apiCall, apiFetch, ApiRequestError, apiFetchPage } from "@/lib/api";
+import { useReport } from "@/lib/api/safety";
 import { readSession } from "@/lib/session";
 
 const RoomsEnvelope = z.object({ data: z.array(ChatRoomSchema) });
@@ -51,6 +55,8 @@ const TYPING_POST_THROTTLE_MS = 3 * 1000;
 
 export default function MessagesPage(): JSX.Element {
   const t = useTranslations("messaging");
+  const tCommon = useTranslations("common");
+  const tSafety = useTranslations("safety");
   const locale = useLocale();
   const router = useRouter();
   const [viewerId, setViewerId] = useState<string | null>(null);
@@ -69,6 +75,7 @@ export default function MessagesPage(): JSX.Element {
   const [failedClientIds, setFailedClientIds] = useState<Set<string>>(() => new Set());
   const [error, setError] = useState<string | null>(null);
   const [actionMessage, setActionMessage] = useState<Message | null>(null);
+  const [reportMessage, setReportMessage] = useState<Message | null>(null);
   const [editingBody, setEditingBody] = useState("");
   const threadRef = useRef<HTMLDivElement | null>(null);
   const firstUnreadRef = useRef<HTMLDivElement | null>(null);
@@ -77,6 +84,7 @@ export default function MessagesPage(): JSX.Element {
     roomId: null,
     at: 0,
   });
+  const report = useReport();
 
   // ───────── Session bootstrap ─────────
   useEffect(() => {
@@ -492,6 +500,22 @@ export default function MessagesPage(): JSX.Element {
 
   const activeTyping =
     activeRoomId && typingUserByRoom[activeRoomId] ? typingUserByRoom[activeRoomId] : null;
+  const reportLabels: ReportDialogLabels = {
+    title: tSafety("report.title"),
+    detailsLabel: tSafety("report.details_label"),
+    cancel: tCommon("cancel"),
+    submit: tSafety("report.submit"),
+    close: tSafety("report.close"),
+    reasons: {
+      [ReportReason.SPAM]: tSafety("report.reason.spam"),
+      [ReportReason.HARASSMENT]: tSafety("report.reason.harassment"),
+      [ReportReason.HATE]: tSafety("report.reason.hate"),
+      [ReportReason.MISINFORMATION]: tSafety("report.reason.misinformation"),
+      [ReportReason.NUDITY]: tSafety("report.reason.nudity"),
+      [ReportReason.VIOLENCE]: tSafety("report.reason.violence"),
+      [ReportReason.OTHER]: tSafety("report.reason.other"),
+    },
+  };
 
   // ───────── Render ─────────
   return (
@@ -712,25 +736,37 @@ export default function MessagesPage(): JSX.Element {
                           >
                             {m.body}
                           </MessageBubble>
-                          {mine && !m.id.startsWith("pending-") && !m.deletedAt ? (
+                          {!m.id.startsWith("pending-") && !m.deletedAt ? (
                             <div className="absolute end-0 top-0 hidden gap-1 group-focus-within:flex group-hover:flex">
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setActionMessage(m);
-                                  setEditingBody(m.body);
-                                }}
-                                className="border-line-soft bg-surface text-ink-muted hover:text-ink rounded-full border px-2 py-1 text-[11px]"
-                              >
-                                {t("edit.action")}
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => void deleteMessage(m)}
-                                className="border-danger/40 bg-surface text-danger rounded-full border px-2 py-1 text-[11px]"
-                              >
-                                {t("delete.action")}
-                              </button>
+                              {mine ? (
+                                <>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setActionMessage(m);
+                                      setEditingBody(m.body);
+                                    }}
+                                    className="border-line-soft bg-surface text-ink-muted hover:text-ink rounded-full border px-2 py-1 text-[11px]"
+                                  >
+                                    {t("edit.action")}
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => void deleteMessage(m)}
+                                    className="border-danger/40 bg-surface text-danger rounded-full border px-2 py-1 text-[11px]"
+                                  >
+                                    {t("delete.action")}
+                                  </button>
+                                </>
+                              ) : (
+                                <button
+                                  type="button"
+                                  onClick={() => setReportMessage(m)}
+                                  className="border-line-soft bg-surface text-ink-muted hover:text-ink rounded-full border px-2 py-1 text-[11px]"
+                                >
+                                  {tSafety("report.action")}
+                                </button>
+                              )}
                             </div>
                           ) : null}
                         </div>
@@ -827,6 +863,23 @@ export default function MessagesPage(): JSX.Element {
                     </div>
                   </div>
                 </div>
+              ) : null}
+              {reportMessage ? (
+                <ReportDialog
+                  open
+                  onOpenChange={(next) => {
+                    if (!next) setReportMessage(null);
+                  }}
+                  target={{ kind: "message", id: reportMessage.id }}
+                  labels={reportLabels}
+                  submitting={report.isPending}
+                  onSubmit={(input) => {
+                    report.mutate(input, {
+                      onSuccess: () => setReportMessage(null),
+                      onError: () => setError(tSafety("report.error")),
+                    });
+                  }}
+                />
               ) : null}
             </>
           )}

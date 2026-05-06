@@ -281,6 +281,7 @@ export default function AppTabsLayout(): JSX.Element {
         }}
       />
       <Tabs.Screen name="me/edit" options={{ href: null }} />
+      <Tabs.Screen name="settings/blocked" options={{ href: null }} />
       <Tabs.Screen name="in/[handle]" options={{ href: null }} />
       <Tabs.Screen name="jobs/[id]" options={{ href: null }} />
       <Tabs.Screen name="messages/new" options={{ href: null }} />

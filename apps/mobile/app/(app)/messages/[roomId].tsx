@@ -10,6 +10,7 @@ import {
   ChatRoom as ChatRoomSchema,
   CursorPageMeta,
   Message as MessageSchema,
+  ReportReason,
   WsChatEvent,
   type ChatRoom,
   type Message,
@@ -19,11 +20,13 @@ import {
   Button,
   Icon,
   MessageBubble,
+  ReportSheet,
   Sheet,
   Surface,
   nativeTokens,
   type MessageBubbleLabels,
   type MessageStatus,
+  type ReportSheetLabels,
 } from "@baydar/ui-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -42,6 +45,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { z } from "zod";
 
 import { apiCall, apiFetch, apiFetchPage } from "@/lib/api";
+import { useReport } from "@/api/safety";
 import { apiErrorMessage } from "@/lib/api-errors";
 import { track } from "@/lib/analytics";
 import { successHaptic, tapHaptic } from "@/lib/haptics";
@@ -69,10 +73,12 @@ export default function MessageThreadScreen(): JSX.Element {
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [actionMessage, setActionMessage] = useState<Message | null>(null);
+  const [reportMessage, setReportMessage] = useState<Message | null>(null);
   const [editingBody, setEditingBody] = useState("");
   const listRef = useRef<FlatList<Message> | null>(null);
   const didInitialScrollRef = useRef(false);
   const isConnected = useNetworkStore((state) => state.isConnected);
+  const report = useReport();
 
   useEffect(() => {
     void (async () => {
@@ -336,6 +342,25 @@ export default function MessageThreadScreen(): JSX.Element {
     }),
     [t],
   );
+  const reportLabels: ReportSheetLabels = useMemo(
+    () => ({
+      title: t("safety.report.title"),
+      detailsLabel: t("safety.report.details_label"),
+      cancel: t("common.cancel"),
+      submit: t("safety.report.submit"),
+      close: t("safety.report.close"),
+      reasons: {
+        [ReportReason.SPAM]: t("safety.report.reason.spam"),
+        [ReportReason.HARASSMENT]: t("safety.report.reason.harassment"),
+        [ReportReason.HATE]: t("safety.report.reason.hate"),
+        [ReportReason.MISINFORMATION]: t("safety.report.reason.misinformation"),
+        [ReportReason.NUDITY]: t("safety.report.reason.nudity"),
+        [ReportReason.VIOLENCE]: t("safety.report.reason.violence"),
+        [ReportReason.OTHER]: t("safety.report.reason.other"),
+      },
+    }),
+    [t],
+  );
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: nativeTokens.color.surfaceMuted }}>
@@ -409,9 +434,10 @@ export default function MessageThreadScreen(): JSX.Element {
             return (
               <View style={{ marginTop: prevSameAuthor ? 0 : nativeTokens.space[2] }}>
                 <Pressable
-                  disabled={!mine || item.id.startsWith("pending-") || Boolean(item.deletedAt)}
-                  onLongPress={() => openMessageActions(item)}
-                  accessibilityRole={mine ? "button" : "text"}
+                  disabled={item.id.startsWith("pending-") || Boolean(item.deletedAt)}
+                  onLongPress={() => (mine ? openMessageActions(item) : setReportMessage(item))}
+                  accessibilityRole="button"
+                  accessibilityLabel={mine ? t("messaging.edit.action") : t("safety.report.action")}
                 >
                   <MessageBubble
                     side={mine ? "mine" : "theirs"}
@@ -616,6 +642,23 @@ export default function MessageThreadScreen(): JSX.Element {
             </Text>
           </Pressable>
         </Sheet>
+        {reportMessage ? (
+          <ReportSheet
+            open
+            onOpenChange={(next) => {
+              if (!next) setReportMessage(null);
+            }}
+            target={{ kind: "message", id: reportMessage.id }}
+            labels={reportLabels}
+            submitting={report.isPending}
+            onSubmit={(input) => {
+              report.mutate(input, {
+                onSuccess: () => setReportMessage(null),
+                onError: (caught) => setError(apiErrorMessage(t, caught)),
+              });
+            }}
+          />
+        ) : null}
       </KeyboardAvoidingView>
     </SafeAreaView>
   );

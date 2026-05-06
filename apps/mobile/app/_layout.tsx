@@ -20,6 +20,7 @@ import { initAnalytics } from "@/lib/analytics";
 import { routeFromUrl } from "@/lib/linking";
 import { initObservability, wrapApp } from "@/lib/observability";
 import { installNotificationHandlers } from "@/lib/push";
+import { QueryProvider } from "@/lib/query-provider";
 import { useNetworkStore } from "@/store/network";
 
 import "../global.css";
@@ -107,9 +108,11 @@ function RootLayout(): JSX.Element | null {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
         <StatusBar style="dark" />
-        <ErrorBoundary>
-          <Stack screenOptions={{ headerShown: false }} />
-        </ErrorBoundary>
+        <QueryProvider>
+          <ErrorBoundary>
+            <Stack screenOptions={{ headerShown: false }} />
+          </ErrorBoundary>
+        </QueryProvider>
         <OfflineBanner />
       </SafeAreaProvider>
     </GestureHandlerRootView>

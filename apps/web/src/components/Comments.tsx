@@ -3,15 +3,17 @@
 import {
   Comment as CommentSchema,
   CreateCommentBody,
+  ReportReason,
   cursorPage,
   type Comment,
 } from "@baydar/shared";
-import { Avatar } from "@baydar/ui-web";
+import { Avatar, ReportDialog, type ReportDialogLabels } from "@baydar/ui-web";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 
 import { apiFetch, apiFetchPage } from "@/lib/api";
+import { useReport } from "@/lib/api/safety";
 import { getAccessToken } from "@/lib/session";
 
 const CommentsPage = cursorPage(CommentSchema);
@@ -24,6 +26,8 @@ export function Comments({
   onCountChange?: (delta: number) => void;
 }): JSX.Element {
   const t = useTranslations("post");
+  const tCommon = useTranslations("common");
+  const tSafety = useTranslations("safety");
   const [items, setItems] = useState<Comment[]>([]);
   const [cursor, setCursor] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(false);
@@ -31,6 +35,8 @@ export function Comments({
   const [draft, setDraft] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [reportTargetId, setReportTargetId] = useState<string | null>(null);
+  const report = useReport();
 
   const load = useCallback(
     async (after: string | null): Promise<void> => {
@@ -82,6 +88,23 @@ export function Comments({
     }
   }
 
+  const reportLabels: ReportDialogLabels = {
+    title: tSafety("report.title"),
+    detailsLabel: tSafety("report.details_label"),
+    cancel: tCommon("cancel"),
+    submit: tSafety("report.submit"),
+    close: tSafety("report.close"),
+    reasons: {
+      [ReportReason.SPAM]: tSafety("report.reason.spam"),
+      [ReportReason.HARASSMENT]: tSafety("report.reason.harassment"),
+      [ReportReason.HATE]: tSafety("report.reason.hate"),
+      [ReportReason.MISINFORMATION]: tSafety("report.reason.misinformation"),
+      [ReportReason.NUDITY]: tSafety("report.reason.nudity"),
+      [ReportReason.VIOLENCE]: tSafety("report.reason.violence"),
+      [ReportReason.OTHER]: tSafety("report.reason.other"),
+    },
+  };
+
   return (
     <div className="border-ink-muted/10 mt-3 flex flex-col gap-3 border-t pt-3">
       {items.length === 0 && !loading ? null : (
@@ -106,6 +129,14 @@ export function Comments({
                 </Link>
                 <p className="text-ink whitespace-pre-wrap">{c.body}</p>
               </div>
+              <button
+                type="button"
+                aria-label={tSafety("report.action")}
+                onClick={() => setReportTargetId(c.id)}
+                className="text-ink-muted hover:bg-surface hover:text-ink focus-visible:ring-brand-600 inline-flex h-10 min-w-10 items-center justify-center rounded-md px-2 text-xs focus:outline-none focus-visible:ring-2"
+              >
+                {tSafety("report.action")}
+              </button>
             </li>
           ))}
         </ul>
@@ -142,6 +173,23 @@ export function Comments({
         <span className="text-danger text-xs" role="alert">
           {error}
         </span>
+      ) : null}
+      {reportTargetId ? (
+        <ReportDialog
+          open
+          onOpenChange={(next) => {
+            if (!next) setReportTargetId(null);
+          }}
+          target={{ kind: "comment", id: reportTargetId }}
+          labels={reportLabels}
+          submitting={report.isPending}
+          onSubmit={(input) => {
+            report.mutate(input, {
+              onSuccess: () => setReportTargetId(null),
+              onError: () => setError(tSafety("report.error")),
+            });
+          }}
+        />
       ) : null}
     </div>
   );

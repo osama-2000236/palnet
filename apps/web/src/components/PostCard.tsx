@@ -5,14 +5,15 @@
 // API call + optimistic reconcile) and mounts our existing Comments region
 // into the shared card via `commentsSlot`.
 
-import { formatRelativeTime, type Post } from "@baydar/shared";
-import { PostCard as PostCardShell } from "@baydar/ui-web";
+import { ReportReason, formatRelativeTime, type Post } from "@baydar/shared";
+import { PostCard as PostCardShell, ReportDialog, type ReportDialogLabels } from "@baydar/ui-web";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { Comments } from "@/components/Comments";
 import { apiCall } from "@/lib/api";
+import { useReport } from "@/lib/api/safety";
 import { getAccessToken } from "@/lib/session";
 
 export function PostCard({
@@ -23,10 +24,15 @@ export function PostCard({
   onChange?: (next: Post) => void;
 }): JSX.Element {
   const t = useTranslations("post");
+  const tCommon = useTranslations("common");
+  const tSafety = useTranslations("safety");
   const locale = useLocale();
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [commentsOpen, setCommentsOpen] = useState(false);
+  const [reportOpen, setReportOpen] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
+  const report = useReport();
 
   async function toggleReaction(): Promise<void> {
     const token = getAccessToken();
@@ -62,8 +68,26 @@ export function PostCard({
     }
   }
 
+  const reportLabels: ReportDialogLabels = {
+    title: tSafety("report.title"),
+    detailsLabel: tSafety("report.details_label"),
+    cancel: tCommon("cancel"),
+    submit: tSafety("report.submit"),
+    close: tSafety("report.close"),
+    reasons: {
+      [ReportReason.SPAM]: tSafety("report.reason.spam"),
+      [ReportReason.HARASSMENT]: tSafety("report.reason.harassment"),
+      [ReportReason.HATE]: tSafety("report.reason.hate"),
+      [ReportReason.MISINFORMATION]: tSafety("report.reason.misinformation"),
+      [ReportReason.NUDITY]: tSafety("report.reason.nudity"),
+      [ReportReason.VIOLENCE]: tSafety("report.reason.violence"),
+      [ReportReason.OTHER]: tSafety("report.reason.other"),
+    },
+  };
+
   return (
-    <PostCardShell
+    <>
+      <PostCardShell
       id={post.id}
       author={{
         id: post.author.id,
@@ -93,11 +117,13 @@ export function PostCard({
         repostsCount: (count) => t("repostsCount", { count }),
         authorLabel: `${post.author.firstName} ${post.author.lastName}`.trim(),
         moreOptions: t("moreOptions"),
+        report: tSafety("report.action"),
         publicAudience: t("publicAudience"),
       }}
       commentsOpen={commentsOpen}
       onToggleComments={setCommentsOpen}
       onToggleReaction={() => void toggleReaction()}
+      onReport={() => setReportOpen(true)}
       onOpenProfile={() => router.push(`/in/${post.author.handle}`)}
       commentsSlot={
         <Comments
@@ -113,6 +139,28 @@ export function PostCard({
           }
         />
       }
-    />
+      />
+      <ReportDialog
+        open={reportOpen}
+        onOpenChange={setReportOpen}
+        target={{ kind: "post", id: post.id }}
+        labels={reportLabels}
+        submitting={report.isPending}
+        onSubmit={(input) => {
+          report.mutate(input, {
+            onSuccess: () => {
+              setReportOpen(false);
+              setNotice(tSafety("report.success"));
+            },
+            onError: () => setNotice(tSafety("report.error")),
+          });
+        }}
+      />
+      {notice ? (
+        <p className="text-ink-muted mt-2 text-sm" role="status">
+          {notice}
+        </p>
+      ) : null}
+    </>
   );
 }

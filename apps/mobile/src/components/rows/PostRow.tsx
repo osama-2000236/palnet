@@ -1,5 +1,11 @@
-import { formatRelativeTime, type Post } from "@baydar/shared";
-import { PostCard, nativeTokens, type PostCardAction } from "@baydar/ui-native";
+import { ReportReason, formatRelativeTime, type Post } from "@baydar/shared";
+import {
+  PostCard,
+  ReportSheet,
+  nativeTokens,
+  type PostCardAction,
+  type ReportSheetLabels,
+} from "@baydar/ui-native";
 import { Image } from "expo-image";
 import { router } from "expo-router";
 import { memo, useState } from "react";
@@ -8,6 +14,7 @@ import { StyleSheet, View } from "react-native";
 
 import { CommentsList } from "@/components/CommentsList";
 import { apiCall } from "@/lib/api";
+import { useReport } from "@/api/safety";
 import { successHaptic, tapHaptic } from "@/lib/haptics";
 import { getAccessToken } from "@/lib/session";
 
@@ -19,7 +26,9 @@ export interface PostRowProps {
 export const PostRow = memo(function PostRow({ post, onChange }: PostRowProps): JSX.Element {
   const { t, i18n } = useTranslation();
   const [showComments, setShowComments] = useState(false);
+  const [reportOpen, setReportOpen] = useState(false);
   const [busy, setBusy] = useState(false);
+  const report = useReport();
 
   async function toggleReaction(): Promise<void> {
     if (busy) return;
@@ -106,45 +115,82 @@ export const PostRow = memo(function PostRow({ post, onChange }: PostRowProps): 
       label: t("post.send"),
       icon: "send",
     },
+    {
+      key: "report",
+      label: t("safety.report.action"),
+      icon: "more",
+      onPress: () => setReportOpen(true),
+    },
   ];
 
+  const reportLabels: ReportSheetLabels = {
+    title: t("safety.report.title"),
+    detailsLabel: t("safety.report.details_label"),
+    cancel: t("common.cancel"),
+    submit: t("safety.report.submit"),
+    close: t("safety.report.close"),
+    reasons: {
+      [ReportReason.SPAM]: t("safety.report.reason.spam"),
+      [ReportReason.HARASSMENT]: t("safety.report.reason.harassment"),
+      [ReportReason.HATE]: t("safety.report.reason.hate"),
+      [ReportReason.MISINFORMATION]: t("safety.report.reason.misinformation"),
+      [ReportReason.NUDITY]: t("safety.report.reason.nudity"),
+      [ReportReason.VIOLENCE]: t("safety.report.reason.violence"),
+      [ReportReason.OTHER]: t("safety.report.reason.other"),
+    },
+  };
+
   return (
-    <PostCard
-      author={{
-        id: post.author.id,
-        handle: post.author.handle,
-        firstName: post.author.firstName,
-        lastName: post.author.lastName,
-        avatarUrl: post.author.avatarUrl,
-      }}
-      authorName={authorName}
-      authorHeadline={post.author.headline}
-      timestamp={formatRelativeTime(post.createdAt, i18n.language)}
-      body={post.body}
-      media={media}
-      reactionCount={post.counts.reactions}
-      commentCount={post.counts.comments}
-      repostCount={post.counts.reposts}
-      actions={actions}
-      onAuthorPress={() => router.push(`/(app)/in/${post.author.handle}`)}
-      authorAccessibilityLabel={authorName}
-      comments={
-        showComments ? (
-          <CommentsList
-            postId={post.id}
-            onCountChange={(delta) =>
-              onChange?.({
-                ...post,
-                counts: {
-                  ...post.counts,
-                  comments: Math.max(0, post.counts.comments + delta),
-                },
-              })
-            }
-          />
-        ) : null
-      }
-    />
+    <>
+      <PostCard
+        author={{
+          id: post.author.id,
+          handle: post.author.handle,
+          firstName: post.author.firstName,
+          lastName: post.author.lastName,
+          avatarUrl: post.author.avatarUrl,
+        }}
+        authorName={authorName}
+        authorHeadline={post.author.headline}
+        timestamp={formatRelativeTime(post.createdAt, i18n.language)}
+        body={post.body}
+        media={media}
+        reactionCount={post.counts.reactions}
+        commentCount={post.counts.comments}
+        repostCount={post.counts.reposts}
+        actions={actions}
+        onAuthorPress={() => router.push(`/(app)/in/${post.author.handle}`)}
+        authorAccessibilityLabel={authorName}
+        comments={
+          showComments ? (
+            <CommentsList
+              postId={post.id}
+              onCountChange={(delta) =>
+                onChange?.({
+                  ...post,
+                  counts: {
+                    ...post.counts,
+                    comments: Math.max(0, post.counts.comments + delta),
+                  },
+                })
+              }
+            />
+          ) : null
+        }
+      />
+      <ReportSheet
+        open={reportOpen}
+        onOpenChange={setReportOpen}
+        target={{ kind: "post", id: post.id }}
+        labels={reportLabels}
+        submitting={report.isPending}
+        onSubmit={(input) => {
+          report.mutate(input, {
+            onSuccess: () => setReportOpen(false),
+          });
+        }}
+      />
+    </>
   );
 }, areEqual);
 

@@ -1,7 +1,21 @@
 "use client";
 
-import { ChatRoom as ChatRoomSchema, Profile as ProfileSchema, type Profile } from "@baydar/shared";
-import { Avatar, Surface, Tab, Tabs } from "@baydar/ui-web";
+import {
+  ChatRoom as ChatRoomSchema,
+  Profile as ProfileSchema,
+  ReportReason,
+  type Profile,
+} from "@baydar/shared";
+import {
+  Avatar,
+  BlockButton,
+  ReportDialog,
+  Surface,
+  Tab,
+  Tabs,
+  type BlockButtonLabels,
+  type ReportDialogLabels,
+} from "@baydar/ui-web";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -9,6 +23,7 @@ import { useEffect, useState } from "react";
 
 import { ConnectButton } from "@/components/ConnectButton";
 import { apiFetch } from "@/lib/api";
+import { useBlock, useReport, useUnblock } from "@/lib/api/safety";
 import { getAccessToken } from "@/lib/session";
 
 type ProfileTab = "about" | "exp" | "edu" | "skills" | "activity";
@@ -17,13 +32,19 @@ export default function ProfileRoute(): JSX.Element {
   const params = useParams<{ handle: string }>();
   const handle = params?.handle;
   const t = useTranslations("profile");
+  const tCommon = useTranslations("common");
   const tMsg = useTranslations("messaging");
+  const tSafety = useTranslations("safety");
   const router = useRouter();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [openingDm, setOpeningDm] = useState(false);
   const [tab, setTab] = useState<ProfileTab>("about");
+  const [reportOpen, setReportOpen] = useState(false);
+  const block = useBlock();
+  const unblock = useUnblock();
+  const report = useReport();
 
   useEffect(() => {
     if (!handle) return;
@@ -53,6 +74,41 @@ export default function ProfileRoute(): JSX.Element {
       </main>
     );
   }
+
+  const isBlocked = profile.viewer?.connection?.status === "BLOCKED";
+  const blockLabels: BlockButtonLabels = isBlocked
+    ? {
+        block: tSafety("block.button"),
+        unblock: tSafety("unblock.button"),
+        confirmTitle: tSafety("unblock.confirm.title"),
+        confirmBody: tSafety("unblock.confirm.body"),
+        confirmCta: tSafety("unblock.confirm.cta"),
+        cancel: tCommon("cancel"),
+      }
+    : {
+        block: tSafety("block.button"),
+        unblock: tSafety("unblock.button"),
+        confirmTitle: tSafety("block.confirm.title"),
+        confirmBody: tSafety("block.confirm.body"),
+        confirmCta: tSafety("block.confirm.cta"),
+        cancel: tCommon("cancel"),
+      };
+  const reportLabels: ReportDialogLabels = {
+    title: tSafety("report.title"),
+    detailsLabel: tSafety("report.details_label"),
+    cancel: tCommon("cancel"),
+    submit: tSafety("report.submit"),
+    close: tSafety("report.close"),
+    reasons: {
+      [ReportReason.SPAM]: tSafety("report.reason.spam"),
+      [ReportReason.HARASSMENT]: tSafety("report.reason.harassment"),
+      [ReportReason.HATE]: tSafety("report.reason.hate"),
+      [ReportReason.MISINFORMATION]: tSafety("report.reason.misinformation"),
+      [ReportReason.NUDITY]: tSafety("report.reason.nudity"),
+      [ReportReason.VIOLENCE]: tSafety("report.reason.violence"),
+      [ReportReason.OTHER]: tSafety("report.reason.other"),
+    },
+  };
 
   return (
     <main className="mx-auto flex w-full max-w-[840px] flex-col gap-6 px-6 py-8">
@@ -119,6 +175,38 @@ export default function ProfileRoute(): JSX.Element {
               >
                 {tMsg("newMessage")}
               </button>
+              <button
+                type="button"
+                onClick={() => setReportOpen(true)}
+                className="border-line-hard text-ink hover:bg-surface-subtle focus-visible:ring-brand-600 rounded-md border px-4 py-2 text-sm focus:outline-none focus-visible:ring-2"
+              >
+                {tSafety("report.action")}
+              </button>
+              <BlockButton
+                userId={profile.userId}
+                isBlocked={isBlocked}
+                variant={isBlocked ? "unblock" : "block"}
+                loading={block.isPending || unblock.isPending}
+                labels={blockLabels}
+                onChange={(nextBlocked, userId) => {
+                  if (nextBlocked) {
+                    block.mutate(
+                      { blockedUserId: userId },
+                      {
+                        onSuccess: () => router.push("/feed"),
+                      },
+                    );
+                  } else {
+                    unblock.mutate(userId, {
+                      onSuccess: () =>
+                        setProfile({
+                          ...profile,
+                          viewer: { isSelf: false, connection: null },
+                        }),
+                    });
+                  }
+                }}
+              />
             </div>
           )}
         </div>
@@ -234,6 +322,18 @@ export default function ProfileRoute(): JSX.Element {
           <p className="text-ink-muted text-sm">{t("postsEmpty")}</p>
         </Surface>
       ) : null}
+      <ReportDialog
+        open={reportOpen}
+        onOpenChange={setReportOpen}
+        target={{ kind: "user", id: profile.userId }}
+        labels={reportLabels}
+        submitting={report.isPending}
+        onSubmit={(input) => {
+          report.mutate(input, {
+            onSuccess: () => setReportOpen(false),
+          });
+        }}
+      />
     </main>
   );
 }
