@@ -126,6 +126,18 @@ describe("SearchService", () => {
     );
   });
 
+  it("excludes deleted users at the people search query layer", async () => {
+    prisma.profile.findMany.mockResolvedValue([]);
+
+    await service.people("viewer", { q: "x", limit: 20 });
+
+    expect(prisma.profile.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ user: { deletedAt: null } }),
+      }),
+    );
+  });
+
   it("searches posts and maps author metadata plus body excerpt", async () => {
     prisma.post.findMany.mockResolvedValue([postHit()]);
 

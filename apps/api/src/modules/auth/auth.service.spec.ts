@@ -11,6 +11,7 @@ import { AuthService } from "./auth.service";
 type PrismaStub = {
   user: {
     findUnique: jest.Mock;
+    findFirst: jest.Mock;
     create: jest.Mock;
     findUniqueOrThrow: jest.Mock;
   };
@@ -26,6 +27,7 @@ function buildPrisma(): PrismaStub {
   return {
     user: {
       findUnique: jest.fn(),
+      findFirst: jest.fn(),
       create: jest.fn(),
       findUniqueOrThrow: jest.fn(),
     },
@@ -146,6 +148,54 @@ describe("AuthService", () => {
         response: {
           error: { code: ErrorCode.AUTH_UNAUTHORIZED },
         },
+      });
+    });
+
+    it("rejects soft-deleted account during grace with restore code", async () => {
+      const passwordHash = await bcrypt.hash("correct-pw", 4);
+      prisma.user.findUnique.mockResolvedValue(null);
+      prisma.user.findFirst.mockResolvedValue({
+        id: "user_1",
+        email: "deleted_user_1@deleted.local",
+        role: "USER",
+        locale: "ar-PS",
+        passwordHash,
+        deletedAt: new Date(),
+      });
+
+      const call = service.login({
+        email: "a@b.co",
+        password: "correct-pw",
+        deviceId: "device-1",
+      });
+
+      await expect(call).rejects.toMatchObject({
+        code: ErrorCode.ACCOUNT_DELETED_PENDING_RESTORE,
+        status: 403,
+      });
+    });
+
+    it("rejects soft-deleted account past grace with deleted code", async () => {
+      const passwordHash = await bcrypt.hash("correct-pw", 4);
+      prisma.user.findUnique.mockResolvedValue(null);
+      prisma.user.findFirst.mockResolvedValue({
+        id: "user_1",
+        email: "deleted_user_1@deleted.local",
+        role: "USER",
+        locale: "ar-PS",
+        passwordHash,
+        deletedAt: new Date(Date.now() - 31 * 24 * 60 * 60 * 1000),
+      });
+
+      const call = service.login({
+        email: "a@b.co",
+        password: "correct-pw",
+        deviceId: "device-1",
+      });
+
+      await expect(call).rejects.toMatchObject({
+        code: ErrorCode.ACCOUNT_DELETED,
+        status: 403,
       });
     });
   });

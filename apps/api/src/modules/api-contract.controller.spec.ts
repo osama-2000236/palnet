@@ -6,6 +6,8 @@ import request from "supertest";
 
 import { AllExceptionsFilter } from "../common/exception.filter";
 
+import { AccountController } from "./account/account.controller";
+import { AccountService } from "./account/account.service";
 import { AuthEmailThrottleService } from "./auth/auth-email-throttle.service";
 import { AuthTokensService } from "./auth/auth-tokens.service";
 import { AuthController } from "./auth/auth.controller";
@@ -66,6 +68,65 @@ async function createApp(options: {
 }
 
 describe("API controller contract", () => {
+  it("pins account deletion/export/restore routes", async () => {
+    const envelope = {
+      exportedAt: "2026-05-06T00:00:00.000Z",
+      userId: authUser.id,
+      profile: null,
+      posts: [],
+      comments: [],
+      reactions: [],
+      reposts: [],
+      chatRoomMembers: [],
+      messages: [],
+      notifications: [],
+      blockedUsers: [],
+      reports: [],
+    };
+    const account = {
+      delete: jest.fn().mockResolvedValue(undefined),
+      export: jest.fn().mockResolvedValue(envelope),
+      restore: jest.fn().mockResolvedValue({
+        user: authUser,
+        tokens: {
+          accessToken: "access",
+          refreshToken: "refresh",
+          accessExpiresAt: "2026-05-06T00:15:00.000Z",
+          refreshExpiresAt: "2026-06-06T00:00:00.000Z",
+        },
+      }),
+    };
+    const app = await createApp({
+      controllers: [AccountController],
+      providers: [{ provide: AccountService, useValue: account }],
+      overrideJwt: true,
+    });
+
+    try {
+      await request(app.getHttpServer())
+        .post("/account/delete")
+        .send({ confirmation: "DELETE_MY_ACCOUNT" })
+        .expect(204)
+        .expect("");
+
+      await request(app.getHttpServer())
+        .get("/account/export")
+        .expect(200)
+        .expect("Content-Disposition", `attachment; filename="baydar-export-${authUser.id}.json"`)
+        .expect(envelope);
+
+      await request(app.getHttpServer())
+        .post("/account/restore")
+        .send({ email: "user@example.com", password: "Password1", deviceId: "device-1" })
+        .expect(200)
+        .expect((res) => {
+          expect(res.body.data.tokens.accessToken).toBe("access");
+        });
+    } finally {
+      await app.close();
+    }
+  });
+
   it("rejects malformed logout bodies through the shared LogoutBody schema", async () => {
     const auth = { logout: jest.fn().mockResolvedValue(undefined) };
     const app = await createApp({

@@ -21,6 +21,7 @@ interface CommentWithAuthor {
   updatedAt: Date;
   author: {
     id: string;
+    deletedAt: Date | null;
     profile: {
       handle: string;
       firstName: string;
@@ -31,6 +32,23 @@ interface CommentWithAuthor {
 }
 
 function toCommentDto(row: CommentWithAuthor): CommentDto {
+  if (row.author.deletedAt) {
+    return {
+      id: row.id,
+      postId: row.postId,
+      parentId: row.parentId,
+      body: row.body,
+      createdAt: row.createdAt.toISOString(),
+      updatedAt: row.updatedAt.toISOString(),
+      author: {
+        id: row.author.id,
+        handle: row.author.id,
+        firstName: "Deleted user",
+        lastName: "",
+        avatarUrl: null,
+      },
+    };
+  }
   if (!row.author.profile) {
     throw new Error(`Comment ${row.id} has an author without a profile; data invariant bug.`);
   }
@@ -55,6 +73,7 @@ const COMMENT_INCLUDE = {
   author: {
     select: {
       id: true,
+      deletedAt: true,
       profile: {
         select: {
           handle: true,

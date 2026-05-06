@@ -29,6 +29,7 @@ interface PostSearchRow {
   body: string;
   createdAt: Date;
   author: {
+    deletedAt: Date | null;
     profile: {
       handle: string;
       firstName: string;
@@ -72,6 +73,7 @@ export class SearchService {
     // trigram/fts indexes yet; we'll layer GIN FTS in a later sprint.
     const where = {
       ...(excludedUserIds.length ? { userId: { notIn: excludedUserIds } } : {}),
+      user: { deletedAt: null },
       OR: [
         { handle: { contains: q, mode: "insensitive" as const } },
         { firstName: { contains: q, mode: "insensitive" as const } },
@@ -150,6 +152,7 @@ export class SearchService {
                 avatarUrl: true,
               },
             },
+            deletedAt: true,
           },
         },
       },
@@ -231,6 +234,20 @@ export class SearchService {
 
 function toPostHit(row: PostSearchRow, q: string): SearchPostHit {
   const profile = row.author.profile;
+  if (row.author.deletedAt) {
+    const excerpt = buildExcerpt(row.body, q);
+    return {
+      id: row.id,
+      authorId: row.authorId,
+      authorHandle: row.authorId,
+      authorDisplayName: "Deleted user",
+      authorAvatarUrl: null,
+      bodyExcerpt: excerpt.text,
+      matchStart: excerpt.matchStart,
+      matchEnd: excerpt.matchEnd,
+      createdAt: row.createdAt.toISOString(),
+    };
+  }
   const displayName = profile ? `${profile.firstName} ${profile.lastName}`.trim() : "Baydar user";
   const excerpt = buildExcerpt(row.body, q);
   return {

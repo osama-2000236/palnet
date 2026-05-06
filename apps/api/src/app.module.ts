@@ -6,6 +6,7 @@ import { LoggerModule } from "nestjs-pino";
 
 import { AllExceptionsFilter } from "./common/exception.filter";
 import { loadEnv } from "./config/env";
+import { AccountModule } from "./modules/account/account.module";
 import { AuthModule } from "./modules/auth/auth.module";
 import { CommentsModule } from "./modules/comments/comments.module";
 import { ConnectionsModule } from "./modules/connections/connections.module";
@@ -64,6 +65,7 @@ const authThrottleLimit =
     MessagingModule,
     NotificationsModule,
     JobsModule,
+    AccountModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },

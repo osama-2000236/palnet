@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useLocale } from "next-intl";
 import { useTranslations } from "next-intl";
@@ -12,6 +12,7 @@ export default function LoginPage(): JSX.Element {
   const t = useTranslations("auth");
   const locale = useLocale();
   const router = useRouter();
+  const params = useSearchParams();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -44,6 +45,11 @@ export default function LoginPage(): JSX.Element {
     <main className="mx-auto w-full max-w-md px-6 py-12">
       <form onSubmit={onSubmit} className="flex flex-col gap-4" noValidate>
         <h1 className="text-ink text-3xl font-bold">{t("login")}</h1>
+        {params.get("deleted") === "grace" ? (
+          <p className="border-brand-600/30 bg-brand-50 text-brand-900 rounded-md border px-3 py-2 text-sm">
+            {t("deletedGraceBanner")}
+          </p>
+        ) : null}
 
         <label className="flex flex-col gap-1">
           <span className="text-ink-muted text-sm">{t("email")}</span>

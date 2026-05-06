@@ -67,6 +67,8 @@
       "AUTH_EMAIL_TAKEN": "An account with this email already exists.",
       "AUTH_INVALID_CREDENTIALS": "Invalid email or password.",
       "AUTH_UNAUTHORIZED": "Invalid email or password.",
+      "ACCOUNT_DELETED_PENDING_RESTORE": "This account is pending deletion. Restore it before signing in.",
+      "ACCOUNT_DELETED": "This account has been deleted.",
       "AUTH_TOKEN_EXPIRED": "This link has expired. Request a new one.",
       "AUTH_TOKEN_INVALID": "This link is invalid or was already used.",
       "PROFILE_HANDLE_TAKEN": "This handle is taken. Choose another one.",
@@ -78,6 +80,7 @@
       "RATE_LIMITED": "Too many attempts. Try again later.",
       "INTERNAL": "An unexpected error occurred."
     },
+    "deletedGraceBanner": "Your account is scheduled for deletion. You can restore it within 30 days.",
     "validation": {
       "required": "This field is required.",
       "email": "Enter a valid email address.",
@@ -493,6 +496,36 @@
       "ONSITE": "On-site",
       "HYBRID": "Hybrid",
       "REMOTE": "Remote"
+    }
+  },
+  "account": {
+    "title": "Account",
+    "export": {
+      "title": "Download my data",
+      "body": "Download a JSON file containing your profile, content, messages, notifications, and safety records.",
+      "button": "Download my data",
+      "downloading": "Preparing download…",
+      "missingSharing": "Data export sharing needs expo-sharing, which is not installed in this app.",
+      "error": "Could not download your data. Try again."
+    },
+    "delete": {
+      "title": "Delete my account",
+      "body": "Deletion anonymizes your profile immediately, revokes active sessions, and keeps a 30-day restore window.",
+      "button": "Delete my account",
+      "confirmTitle": "Confirm account deletion",
+      "confirmBody": "Type DELETE_MY_ACCOUNT to continue.",
+      "confirmInput": "Confirmation phrase",
+      "confirmButton": "Delete account",
+      "cancel": "Cancel",
+      "deleting": "Deleting…",
+      "error": "Could not delete your account. Try again."
+    },
+    "restore": {
+      "title": "Restore account",
+      "body": "Use your original email and password during the 30-day grace period.",
+      "button": "Restore account",
+      "success": "Your account has been restored.",
+      "error": "Could not restore this account."
     }
   },
   "company": {

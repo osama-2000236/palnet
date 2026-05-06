@@ -38,6 +38,7 @@ interface MemberRow {
   userId: string;
   lastReadAt: Date | null;
   user: {
+    deletedAt: Date | null;
     lastSeenAt: Date | null;
     profile: {
       handle: string;
@@ -172,6 +173,7 @@ export class MessagingService {
             user: {
               select: {
                 lastSeenAt: true,
+                deletedAt: true,
                 profile: {
                   select: {
                     handle: true,
@@ -211,6 +213,7 @@ export class MessagingService {
             user: {
               select: {
                 lastSeenAt: true,
+                deletedAt: true,
                 profile: {
                   select: {
                     handle: true,
@@ -274,7 +277,10 @@ export class MessagingService {
       where: { roomId },
       select: { userId: true },
     });
-    await this.rejectBlockedRoomSend(viewerId, members.map((m) => m.userId));
+    await this.rejectBlockedRoomSend(
+      viewerId,
+      members.map((m) => m.userId),
+    );
 
     // Idempotency via (roomId, authorId, clientMessageId) unique.
     const existing = (await this.prisma.message.findFirst({
@@ -495,10 +501,10 @@ export class MessagingService {
       unreadCount,
       members: row.members.map((m) => ({
         userId: m.userId,
-        handle: m.user.profile?.handle ?? m.userId,
-        firstName: m.user.profile?.firstName ?? "",
-        lastName: m.user.profile?.lastName ?? "",
-        avatarUrl: m.user.profile?.avatarUrl ?? null,
+        handle: m.user.deletedAt ? m.userId : (m.user.profile?.handle ?? m.userId),
+        firstName: m.user.deletedAt ? "Deleted user" : (m.user.profile?.firstName ?? ""),
+        lastName: m.user.deletedAt ? "" : (m.user.profile?.lastName ?? ""),
+        avatarUrl: m.user.deletedAt ? null : (m.user.profile?.avatarUrl ?? null),
         lastReadAt: m.lastReadAt ? m.lastReadAt.toISOString() : null,
         lastSeenAt: m.user.lastSeenAt ? m.user.lastSeenAt.toISOString() : null,
       })),
@@ -518,7 +524,11 @@ export class MessagingService {
       },
     });
     if (blocked > 0) {
-      throw new DomainException(ErrorCode.BLOCKED, "Messaging is blocked between these users.", 403);
+      throw new DomainException(
+        ErrorCode.BLOCKED,
+        "Messaging is blocked between these users.",
+        403,
+      );
     }
   }
 }

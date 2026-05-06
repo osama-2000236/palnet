@@ -40,6 +40,8 @@
     "errors": {
       "CONFLICT": "An account with this email already exists.",
       "AUTH_UNAUTHORIZED": "Invalid email or password.",
+      "ACCOUNT_DELETED_PENDING_RESTORE": "This account is pending deletion. Restore it before signing in.",
+      "ACCOUNT_DELETED": "This account has been deleted.",
       "AUTH_TOKEN_EXPIRED": "This link has expired. Request a new one.",
       "AUTH_TOKEN_INVALID": "This link is invalid or was already used.",
       "VALIDATION_FAILED": "Please check the fields and try again.",
@@ -63,6 +65,7 @@
       "sent": "If an account exists for that email, a reset link has been sent.",
       "backToLogin": "Back to sign in"
     },
+    "deletedGraceBanner": "Your account is scheduled for deletion. You can restore it within 30 days by signing in through account restore.",
     "reset": {
       "kicker": "Password recovery",
       "title": "Choose a new password",
@@ -373,6 +376,35 @@
       "ONSITE": "On-site",
       "HYBRID": "Hybrid",
       "REMOTE": "Remote"
+    }
+  },
+  "account": {
+    "title": "Account",
+    "export": {
+      "title": "Download my data",
+      "body": "Download a JSON file containing your profile, content, messages, notifications, and safety records.",
+      "button": "Download my data",
+      "downloading": "Preparing download…",
+      "error": "Could not download your data. Try again."
+    },
+    "delete": {
+      "title": "Delete my account",
+      "body": "Deletion anonymizes your profile immediately, revokes active sessions, and keeps a 30-day restore window.",
+      "button": "Delete my account",
+      "confirmTitle": "Confirm account deletion",
+      "confirmBody": "Type DELETE_MY_ACCOUNT to continue.",
+      "confirmInput": "Confirmation phrase",
+      "confirmButton": "Delete account",
+      "cancel": "Cancel",
+      "deleting": "Deleting…",
+      "error": "Could not delete your account. Try again."
+    },
+    "restore": {
+      "title": "Restore account",
+      "body": "Use your original email and password during the 30-day grace period.",
+      "button": "Restore account",
+      "success": "Your account has been restored.",
+      "error": "Could not restore this account."
     }
   },
   "company": {

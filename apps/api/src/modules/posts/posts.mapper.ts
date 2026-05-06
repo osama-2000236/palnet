@@ -10,6 +10,7 @@ export interface PostWithIncludes {
   updatedAt: Date;
   author: {
     id: string;
+    deletedAt: Date | null;
     profile: {
       handle: string;
       firstName: string;
@@ -39,6 +40,45 @@ export interface PostWithIncludes {
 }
 
 export function toPostDto(post: PostWithIncludes): PostDto {
+  if (post.author.deletedAt) {
+    return {
+      id: post.id,
+      authorId: post.authorId,
+      body: post.body,
+      language: post.language,
+      media: post.media.map((m) => ({
+        id: m.id,
+        url: m.url,
+        kind: m.kind,
+        mimeType: m.mimeType,
+        width: m.width,
+        height: m.height,
+        durationMs: m.durationMs,
+        sizeBytes: m.sizeBytes,
+        blurhash: m.blurhash,
+      })),
+      createdAt: post.createdAt.toISOString(),
+      updatedAt: post.updatedAt.toISOString(),
+      counts: {
+        reactions: post._count.reactions,
+        comments: post._count.comments,
+        reposts: post._count.reposts,
+      },
+      viewer: {
+        reaction: post.reactions[0]?.type ?? null,
+        reposted: post.reposts.length > 0,
+      },
+      author: {
+        id: post.author.id,
+        handle: post.author.id,
+        firstName: "Deleted user",
+        lastName: "",
+        headline: null,
+        avatarUrl: null,
+      },
+    };
+  }
+
   if (!post.author.profile) {
     throw new Error(
       `Post ${post.id} has an author without a profile; this is a data invariant bug.`,
@@ -86,14 +126,13 @@ export function toPostDto(post: PostWithIncludes): PostDto {
 // Standard `include` shape for Prisma post queries. Call-sites override where needed.
 export function postInclude(viewerId: string, excludedUserIds: string[] = []) {
   const visibleUserWhere = excludedUserIds.length ? { userId: { notIn: excludedUserIds } } : {};
-  const visibleAuthorWhere = excludedUserIds.length
-    ? { authorId: { notIn: excludedUserIds } }
-    : {};
+  const visibleAuthorWhere = excludedUserIds.length ? { authorId: { notIn: excludedUserIds } } : {};
 
   return {
     author: {
       select: {
         id: true,
+        deletedAt: true,
         profile: {
           select: {
             handle: true,

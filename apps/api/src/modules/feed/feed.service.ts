@@ -33,6 +33,13 @@ export class FeedService {
     for (const id of excludedUserIds) {
       authorIds.delete(id);
     }
+    const deletedUsers = await this.prisma.user.findMany({
+      where: { id: { in: [...authorIds] }, deletedAt: { not: null } },
+      select: { id: true },
+    });
+    for (const user of deletedUsers) {
+      authorIds.delete(user.id);
+    }
 
     // Fetch limit + 1 for hasMore detection.
     const rows = await this.prisma.post.findMany({

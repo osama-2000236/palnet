@@ -15,6 +15,7 @@ import * as jwt from "jsonwebtoken";
 
 import { DomainException } from "../../common/domain-exception";
 import type { Env } from "../../config/env";
+import { isWithinRestoreGrace } from "../account/account-retention";
 import { PrismaService } from "../prisma/prisma.service";
 
 import type { AuthUser } from "./decorators/current-user.decorator";
@@ -60,13 +61,32 @@ export class AuthService {
   }
 
   async login(body: LoginBody): Promise<AuthSession> {
-    const user = await this.prisma.user.findUnique({
-      where: { email: body.email },
-    });
+    const user =
+      (await this.prisma.user.findUnique({
+        where: { email: body.email },
+      })) ??
+      (await this.prisma.user.findFirst({
+        where: {
+          deletedAt: { not: null },
+          pendingDeletionSnapshot: { path: ["email"], equals: body.email },
+        } as never,
+      }));
     if (!user) throw this.badCredentials();
 
     const ok = await bcrypt.compare(body.password, user.passwordHash);
     if (!ok) throw this.badCredentials();
+
+    if (user.deletedAt) {
+      const inGrace = isWithinRestoreGrace(user.deletedAt, new Date());
+      throw new DomainException(
+        inGrace ? ErrorCode.ACCOUNT_DELETED_PENDING_RESTORE : ErrorCode.ACCOUNT_DELETED,
+        inGrace
+          ? "Account is pending deletion and can be restored within the grace period."
+          : "Account has been deleted.",
+        403,
+        inGrace ? { restorePath: "/account/restore" } : undefined,
+      );
+    }
 
     return this.issueSession(user, body.deviceId);
   }
@@ -132,7 +152,7 @@ export class AuthService {
     });
   }
 
-  private async issueSession(
+  async issueSession(
     user: { id: string; email: string; role: AuthUser["role"]; locale: string },
     deviceId: string,
   ): Promise<AuthSession> {

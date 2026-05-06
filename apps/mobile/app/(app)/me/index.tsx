@@ -148,6 +148,15 @@ export default function MeScreen(): JSX.Element {
         >
           {t("safety.blocked.title")}
         </Button>
+        <Button
+          variant="secondary"
+          size="md"
+          fullWidth
+          onPress={() => router.push("/(app)/settings/account" as never)}
+          accessibilityLabel={t("account.title")}
+        >
+          {t("account.title")}
+        </Button>
 
         <Surface variant="tinted" padding="4" style={styles.progressRail}>
           <Text selectable style={styles.progressTitle}>

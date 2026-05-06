@@ -123,6 +123,7 @@ model User {
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
   deletedAt      DateTime?
+  pendingDeletionSnapshot Json?
 
   profile                 Profile?
   refreshTokens           RefreshToken[]

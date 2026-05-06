@@ -48,6 +48,20 @@ All other JSON success responses should use `{ data, meta? }` unless a future de
 
 Email verification and password reset tokens are opaque 64-character client tokens. The API stores only SHA-256 token hashes, applies expiry and single-use consumption, and never returns raw tokens in API responses.
 
+Login for a soft-deleted account returns `403`. Within the 30-day restore grace period the error code is `ACCOUNT_DELETED_PENDING_RESTORE` and includes `{ restorePath: "/account/restore" }` details; after grace the code is `ACCOUNT_DELETED`.
+
+### Account
+
+- `POST /account/delete`
+- `GET /account/export`
+- `POST /account/restore`
+
+`POST /account/delete` is protected and accepts `{ confirmation: "DELETE_MY_ACCOUNT" }`. It soft-deletes the user with `deletedAt`, snapshots original email/profile PII in `User.pendingDeletionSnapshot`, anonymizes email/profile display fields, revokes active refresh tokens, and returns `204 No Content`.
+
+`GET /account/export` is protected and returns a synchronous JSON export envelope with `Content-Disposition: attachment; filename="baydar-export-<userId>.json"`. The v1 envelope contains profile, posts, comments, reactions, reposts, chat-room memberships, messages, notifications, blocks, and reports.
+
+`POST /account/restore` is public and accepts `{ email, password, deviceId? }`. It verifies the original email against the pending deletion snapshot and the password against the still-present password hash. Restore is allowed only within 30 days of `deletedAt`; success clears `deletedAt`, restores profile/email fields, clears the snapshot, and returns `{ data: AuthSession }`.
+
 ### Profiles
 
 - `POST /profiles/onboard`

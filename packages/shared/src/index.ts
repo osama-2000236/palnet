@@ -16,3 +16,4 @@ export * from "./schemas/company";
 export * from "./schemas/search";
 export * from "./schemas/media";
 export * from "./schemas/safety";
+export * from "./schemas/account";
