@@ -58,6 +58,34 @@ async function prepareA11yStorageState(request: APIRequestContext): Promise<A11y
   }
 
   const session = AuthSession.parse(rawSession);
+  const accessToken = session.tokens.accessToken;
+
+  // Complete the profile so this fixture can hit any RequireCompleteProfile-
+  // guarded endpoint (safety, posts, comments, reactions, connections, jobs,
+  // notifications, search, feed, reposts). The completion guard requires
+  // basics + at least one experience or education — onboard sets basics,
+  // then we add an experience to satisfy the background check.
+  await request.post(`${API_BASE}/profiles/onboard`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+    data: {
+      handle: "a11y-test",
+      firstName: "A11y",
+      lastName: "Test",
+      headline: "Accessibility smoke profile",
+      location: "Ramallah",
+      country: "PS",
+    },
+  });
+  await request.post(`${API_BASE}/profiles/me/experiences`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+    data: {
+      title: "QA Engineer",
+      companyName: "Baydar Test",
+      locationMode: "REMOTE",
+      startDate: new Date("2024-01-01T00:00:00.000Z").toISOString(),
+    },
+  });
+
   const serializedSession = JSON.stringify(session);
 
   await mkdir(path.dirname(AUTH_STORAGE_STATE), { recursive: true });
