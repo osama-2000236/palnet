@@ -602,8 +602,23 @@ export default function MessagesPage(): JSX.Element {
         {/* Active thread */}
         <main className="flex min-h-0 flex-col">
           {!activeRoomId ? (
-            <div className="text-ink-muted flex flex-1 items-center justify-center p-8 text-sm">
-              {t("selectPrompt")}
+            <div className="flex flex-1 items-center justify-center p-8">
+              <div className="flex max-w-sm flex-col items-center gap-3 text-center">
+                <span
+                  aria-hidden="true"
+                  className="bg-brand-50 text-brand-700 inline-flex h-12 w-12 items-center justify-center rounded-full"
+                >
+                  <Icon name="message" size={22} />
+                </span>
+                <p className="text-ink text-sm font-semibold">{t("selectPrompt")}</p>
+                <Link
+                  href={`/${locale}/messages/new`}
+                  className="bg-brand-600 text-ink-inverse hover:bg-brand-700 focus-visible:ring-brand-600 focus-visible:ring-offset-surface inline-flex items-center gap-2 rounded-md px-4 py-2 text-sm font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
+                >
+                  <Icon name="plus" size={14} />
+                  {t("newMessage")}
+                </Link>
+              </div>
             </div>
           ) : (
             <>
