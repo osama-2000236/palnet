@@ -4,11 +4,22 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useLocale } from "next-intl";
 import { useTranslations } from "next-intl";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 
 import { ApiRequestError, loginAction } from "@/lib/auth-actions";
 
 export default function LoginPage(): JSX.Element {
+  // useSearchParams must live below a <Suspense> boundary in Next 15
+  // production builds. Wrap the form in one so the static prerender
+  // can bail to the fallback while keeping the route prerenderable.
+  return (
+    <Suspense fallback={null}>
+      <LoginForm />
+    </Suspense>
+  );
+}
+
+function LoginForm(): JSX.Element {
   const t = useTranslations("auth");
   const locale = useLocale();
   const router = useRouter();
