@@ -8,6 +8,18 @@
     "continue": "Continue",
     "genericError": "Something went wrong. Please try again."
   },
+  "errors": {
+    "PROFILE_ONBOARDING_REQUIRED": "Complete your professional profile before continuing.",
+    "AUTH_UNAUTHORIZED": "You need to sign in.",
+    "UNAUTHORIZED": "You need to sign in.",
+    "FORBIDDEN": "You don't have permission to view this.",
+    "NOT_FOUND": "We couldn't find what you're looking for.",
+    "RATE_LIMITED": "Too many requests. Please try again later.",
+    "VALIDATION_FAILED": "Check the fields and try again.",
+    "INTERNAL": "Something went wrong on our side. Please try again.",
+    "NETWORK": "Couldn't connect to the server.",
+    "fallback": "An unexpected error occurred. Please try again."
+  },
   "toast": {
     "dismiss": {
       "aria": "Dismiss notification"
@@ -389,6 +401,16 @@
       "ONSITE": "On-site",
       "HYBRID": "Hybrid",
       "REMOTE": "Remote"
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "subtitle": "Manage your account, privacy, and security.",
+    "items": {
+      "account": "Account",
+      "accountDesc": "Download your data and delete your account.",
+      "blocked": "Blocked accounts",
+      "blockedDesc": "Manage your blocklist."
     }
   },
   "account": {

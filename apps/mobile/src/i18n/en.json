@@ -511,6 +511,16 @@
       "REMOTE": "Remote"
     }
   },
+  "settings": {
+    "title": "Settings",
+    "subtitle": "Manage your account, privacy, and security.",
+    "items": {
+      "account": "Account",
+      "accountDesc": "Download your data and delete your account.",
+      "blocked": "Blocked accounts",
+      "blockedDesc": "Manage your blocklist."
+    }
+  },
   "account": {
     "title": "Account",
     "export": {
