@@ -155,27 +155,33 @@ function LeftRail({ me }: { me: Profile | null }): JSX.Element {
       <Surface variant="hero" padding="0" className="flex flex-col">
         <div className="from-brand-500 to-brand-700 h-14 bg-gradient-to-br" />
         <div className="-mt-7 px-4 pb-4">
-          <Avatar
-            user={
-              me
-                ? {
-                    id: me.userId,
-                    handle: me.handle,
-                    firstName: me.firstName,
-                    lastName: me.lastName,
-                    avatarUrl: me.avatarUrl ?? null,
-                  }
-                : { id: "pending", firstName: "", lastName: "" }
-            }
-            size="lg"
-            ring
-          />
-          <div className="text-ink mt-2 text-sm font-semibold">
-            {me ? `${me.firstName} ${me.lastName}`.trim() : ""}
-          </div>
-          {me?.headline ? (
-            <div className="text-ink-muted mt-0.5 truncate text-xs">{me.headline}</div>
-          ) : null}
+          {me ? (
+            <>
+              <Avatar
+                user={{
+                  id: me.userId,
+                  handle: me.handle,
+                  firstName: me.firstName,
+                  lastName: me.lastName,
+                  avatarUrl: me.avatarUrl ?? null,
+                }}
+                size="lg"
+                ring
+              />
+              <div className="text-ink mt-2 text-sm font-semibold">
+                {`${me.firstName} ${me.lastName}`.trim()}
+              </div>
+              {me.headline ? (
+                <div className="text-ink-muted mt-0.5 truncate text-xs">{me.headline}</div>
+              ) : null}
+            </>
+          ) : (
+            <div aria-hidden="true">
+              <div className="bg-surface-sunken ring-surface h-14 w-14 animate-pulse rounded-full ring-[3px]" />
+              <div className="bg-surface-sunken mt-3 h-4 w-32 animate-pulse rounded" />
+              <div className="bg-surface-sunken mt-2 h-3 w-24 animate-pulse rounded" />
+            </div>
+          )}
         </div>
         <div className="border-line-soft border-t" />
         {me ? (

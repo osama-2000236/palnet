@@ -96,7 +96,11 @@ export default function NetworkRoute(): JSX.Element {
       </nav>
 
       {loading ? (
-        <p className="text-ink-muted">…</p>
+        <ul aria-busy="true" aria-label={t("title")} className="flex flex-col gap-3">
+          <ConnectionRowSkeleton />
+          <ConnectionRowSkeleton />
+          <ConnectionRowSkeleton />
+        </ul>
       ) : items.length === 0 ? (
         <Surface variant="flat" padding="6" className="text-ink-muted">
           {t("empty")}
@@ -195,5 +199,23 @@ function FilterTab({
     >
       {children}
     </button>
+  );
+}
+
+function ConnectionRowSkeleton(): JSX.Element {
+  return (
+    <li
+      aria-hidden="true"
+      className="border-line-soft bg-surface flex items-center justify-between gap-3 rounded-md border p-4"
+    >
+      <div className="flex min-w-0 items-center gap-3">
+        <div className="bg-surface-sunken h-10 w-10 animate-pulse rounded-full" />
+        <div className="flex flex-col gap-2">
+          <div className="bg-surface-sunken h-3 w-40 animate-pulse rounded" />
+          <div className="bg-surface-sunken h-3 w-24 animate-pulse rounded" />
+        </div>
+      </div>
+      <div className="bg-surface-sunken h-7 w-24 animate-pulse rounded-md" />
+    </li>
   );
 }
