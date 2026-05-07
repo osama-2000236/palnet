@@ -130,7 +130,14 @@ export function Composer({
   if (!expanded) {
     return (
       <Surface as="section" variant="card" padding="3" className="flex items-center gap-3">
-        <Avatar user={me} size="md" />
+        {me ? (
+          <Avatar user={me} size="md" />
+        ) : (
+          <div
+            aria-hidden="true"
+            className="bg-surface-sunken h-10 w-10 shrink-0 animate-pulse rounded-full"
+          />
+        )}
         <button
           type="button"
           onClick={() => setExpanded(true)}
@@ -152,9 +159,20 @@ export function Composer({
   return (
     <Surface as="section" variant="card" padding="4" className="flex flex-col gap-3">
       <div className="flex items-center gap-3">
-        <Avatar user={me} size="md" />
+        {me ? (
+          <Avatar user={me} size="md" />
+        ) : (
+          <div
+            aria-hidden="true"
+            className="bg-surface-sunken h-10 w-10 shrink-0 animate-pulse rounded-full"
+          />
+        )}
         <div className="flex min-w-0 flex-col">
-          <span className="text-ink truncate text-sm font-semibold">{name}</span>
+          {me ? (
+            <span className="text-ink truncate text-sm font-semibold">{name}</span>
+          ) : (
+            <div aria-hidden="true" className="bg-surface-sunken h-3 w-32 animate-pulse rounded" />
+          )}
           <span className="text-ink-muted text-xs">{labels.audienceHint}</span>
         </div>
       </div>
