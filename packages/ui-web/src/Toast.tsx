@@ -117,8 +117,7 @@ export function ToastProvider({
       {children}
       <div
         aria-live="polite"
-        className="pointer-events-none fixed bottom-6 z-[100] flex w-[min(24rem,calc(100vw-2rem))] flex-col gap-2"
-        style={{ insetInlineEnd: "1.5rem" }}
+        className="pointer-events-none fixed bottom-6 z-[100] flex w-[min(24rem,calc(100vw-2rem))] flex-col gap-2 [inset-inline-end:1.5rem]"
       >
         {items.map((item) => (
           <Toast

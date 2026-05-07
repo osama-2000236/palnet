@@ -3,6 +3,7 @@ import { IBM_Plex_Sans_Arabic, Noto_Naskh_Arabic } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
+import { connection } from "next/server";
 import type { ReactNode } from "react";
 
 import { locales, localeDir, type Locale } from "@/i18n";
@@ -38,6 +39,8 @@ export default async function RootLayout(props: {
   children: ReactNode;
   params: Promise<{ locale: Locale }>;
 }): Promise<JSX.Element> {
+  await connection();
+
   const { locale } = await props.params;
   if (!locales.includes(locale)) notFound();
 
