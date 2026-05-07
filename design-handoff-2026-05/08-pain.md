@@ -14,40 +14,30 @@ All 4 launch-blocking bugs in `BUGS-PRECONDITIONS.md` resolved:
 
 ## Surviving design problems (from v1, still real)
 
-- screen: feed
-  area: right-rail / quick-access
-  problem: "وصول سريع" panel surfaces 3 links (المحفوظات/مجموعاتي/الفعاليات) — none are MVP features per `HANDOFF.md`. Still aspirational chrome.
-  severity: med
+- ~~feed quick-access aspirational links~~ — **fixed** (removed in this round; re-add real card per feature when shipping).
 
-- screen: feed
-  area: footer
-  problem: Left-rail "بيدر · 2026" tiny mid-rail. No link, no purpose. Looks afterthought.
-  severity: low
+- ~~feed footer "بيدر · 2026" mid-rail~~ — **fixed** (removed in this round).
 
-- screen: messages
-  area: empty thread pane
-  problem: "اختر محادثة لبدء القراءة." centered in vast empty pane. No illustration, no recent contact suggestions, no compose CTA in body.
-  severity: med
+- ~~messages empty thread bare prompt~~ — **fixed** (icon + prompt + compose CTA linking to `/messages/new`; full empty-state illustration deferred to design pass).
 
 - screen: notifications
   area: empty
-  problem: Per `DESIGN.md §12` mandate, every empty state needs illustration + recoverable action. Still missing.
+  problem: Per `DESIGN.md §12` mandate, every empty state needs illustration + recoverable action. Still missing illustration; current state has `✓` glyph + copy only. Defer to design pass.
   severity: med
 
-- screen: onboarding
-  area: shell
-  problem: Bare onboarding (no AppShell). Per layout `isBareAppRoute()` — intentional. Document the decision in `DESIGN.md` OR restore shell.
-  severity: med
+- ~~onboarding shell decision~~ — **fixed** (documented in `DESIGN.md §11.1`: bare shell intentional because every other tab 403s with `PROFILE_ONBOARDING_REQUIRED` until the form completes).
 
 - screen: all (system)
   area: surface variants
-  problem: "Every section as `card`" anti-pattern partially survives. Right-rail consistency still uneven (feed has 2 rails, jobs 1, network/notifications/settings 0).
+  problem: "Every section as `card`" anti-pattern partially survives. Right-rail consistency still uneven (feed has 1 rail now after quick-access removal, jobs 1, network/notifications/settings 0). Defer to design pass.
   severity: med
 
 - screen: header
   area: avatar dropdown
-  problem: "AT" avatar + "ملفي" + chevron — chevron implies dropdown but tap target unclear. Current snapshots show `?` avatar instead of "AT" — looks broken/loading. Investigate.
+  problem: "AT" avatar + "ملفي" + chevron — chevron implies dropdown but tap target unclear. Defer to design pass.
   severity: low
+
+- ~~notifications read/unread hierarchy~~ — **already fixed** (false positive in v1 walk; `notifications/page.tsx` already styles unread rows with `border-brand-500/30 bg-brand-50` vs read `border-ink-muted/20 bg-surface`).
 
 ## NEW problems found in v2 walk
 
