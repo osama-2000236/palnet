@@ -1,4 +1,4 @@
-import { NotificationType } from "@baydar/shared";
+import { ErrorCode, NotificationType } from "@baydar/shared";
 import { Test } from "@nestjs/testing";
 
 import { PrismaService } from "../prisma/prisma.service";
@@ -171,6 +171,19 @@ describe("NotificationsService", () => {
       expect(out.data.map((n) => n.id)).toEqual(["n_3", "n_2"]);
       expect(out.meta).toMatchObject({ hasMore: true, nextCursor: "n_2", limit: 2 });
     });
+
+    it("excludes dismissed notifications from the list query", async () => {
+      prisma.notification.findMany.mockResolvedValue([]);
+      await service.list("u_rec", null, 20);
+      expect(prisma.notification.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            recipientId: "u_rec",
+            dismissedAt: null,
+          }),
+        }),
+      );
+    });
   });
 
   describe("markRead", () => {
@@ -185,6 +198,7 @@ describe("NotificationsService", () => {
           recipientId: "u_rec",
           id: { in: ["n_1", "n_2"] },
           readAt: null,
+          dismissedAt: null,
         },
         data: expect.objectContaining({ readAt: expect.any(Date) }),
       });
@@ -206,7 +220,7 @@ describe("NotificationsService", () => {
       prisma.notification.count.mockResolvedValue(0);
       await service.markRead("u_rec", { all: true });
       expect(prisma.notification.updateMany).toHaveBeenCalledWith({
-        where: { recipientId: "u_rec", readAt: null },
+        where: { recipientId: "u_rec", readAt: null, dismissedAt: null },
         data: expect.objectContaining({ readAt: expect.any(Date) }),
       });
     });
@@ -218,8 +232,39 @@ describe("NotificationsService", () => {
       const n = await service.countUnread("u_rec");
       expect(n).toBe(7);
       expect(prisma.notification.count).toHaveBeenCalledWith({
-        where: { recipientId: "u_rec", readAt: null },
+        where: { recipientId: "u_rec", readAt: null, dismissedAt: null },
       });
+    });
+  });
+
+  describe("dismiss", () => {
+    it("soft-dismisses an owned notification and republishes unread count", async () => {
+      prisma.notification.updateMany.mockResolvedValue({ count: 1 });
+      prisma.notification.count.mockResolvedValue(3);
+
+      await service.dismiss("u_rec", "n_1");
+
+      expect(prisma.notification.updateMany).toHaveBeenCalledWith({
+        where: { id: "n_1", recipientId: "u_rec" },
+        data: { dismissedAt: expect.any(Date) },
+      });
+      expect(bus.publish).toHaveBeenCalledWith("u_rec", {
+        type: "notification.unread-count",
+        payload: { count: 3 },
+      });
+    });
+
+    it("enforces owner scope by returning not found when no row matches viewer", async () => {
+      prisma.notification.updateMany.mockResolvedValue({ count: 0 });
+
+      await expect(service.dismiss("u_other", "n_1")).rejects.toMatchObject({
+        code: ErrorCode.NOT_FOUND,
+      });
+      expect(prisma.notification.updateMany).toHaveBeenCalledWith({
+        where: { id: "n_1", recipientId: "u_other" },
+        data: { dismissedAt: expect.any(Date) },
+      });
+      expect(bus.publish).not.toHaveBeenCalled();
     });
   });
 });

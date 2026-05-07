@@ -67,13 +67,17 @@ function getButton(container, name) {
 }
 
 function getText(container, text) {
-  const node = [...container.querySelectorAll("*")].find((item) => item.textContent.trim() === text);
+  const node = [...container.querySelectorAll("*")].find(
+    (item) => item.textContent.trim() === text,
+  );
   if (!node) throw new Error(`Text not found: ${text}`);
   return node;
 }
 
 function queryText(container, text) {
-  return [...container.querySelectorAll("*")].find((item) => item.textContent.trim() === text) ?? null;
+  return (
+    [...container.querySelectorAll("*")].find((item) => item.textContent.trim() === text) ?? null
+  );
 }
 
 function click(element) {
@@ -256,7 +260,11 @@ describe("safety primitives", () => {
       return React.createElement(
         React.Fragment,
         null,
-        React.createElement("button", { type: "button", onClick: () => setOpen(true) }, "Open report"),
+        React.createElement(
+          "button",
+          { type: "button", onClick: () => setOpen(true) },
+          "Open report",
+        ),
         React.createElement(ReportDialog, {
           open,
           onOpenChange: setOpen,

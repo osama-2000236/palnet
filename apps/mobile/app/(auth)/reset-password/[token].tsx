@@ -1,12 +1,11 @@
-import { Button } from "@baydar/ui-native";
+import { Button, useToast } from "@baydar/ui-native";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { router, useLocalSearchParams } from "expo-router";
-import { useState } from "react";
 import { Controller, useForm, type Resolver } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import * as yup from "yup";
 
-import { AuthError, AuthScaffold, AuthTextField } from "@/components/auth/AuthScaffold";
+import { AuthScaffold, AuthTextField } from "@/components/auth/AuthScaffold";
 import { ApiRequestError, resetPasswordAction } from "@/lib/auth-actions";
 
 interface ResetPasswordFormValues {
@@ -30,9 +29,8 @@ const resetSchema = yup.object({
 
 export default function ResetPasswordScreen(): JSX.Element {
   const { t } = useTranslation();
+  const { showToast } = useToast();
   const { token } = useLocalSearchParams<{ token: string }>();
-  const [message, setMessage] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
 
   const {
     control,
@@ -45,20 +43,21 @@ export default function ResetPasswordScreen(): JSX.Element {
   });
 
   async function onSubmit(values: ResetPasswordFormValues): Promise<void> {
-    setError(null);
-    setMessage(null);
     if (!token) {
-      setError(t("auth.verify.error"));
+      showToast({ message: t("auth.verify.error"), kind: "error" });
       return;
     }
     try {
       await resetPasswordAction(token, values.newPassword);
-      setMessage(t("auth.reset.success"));
+      showToast({ message: t("auth.reset.success"), kind: "success" });
     } catch (e) {
       if (e instanceof ApiRequestError) {
-        setError(t(`auth.errors.${e.code}`, { defaultValue: t("auth.errors.INTERNAL") }));
+        showToast({
+          message: t(`auth.errors.${e.code}`, { defaultValue: t("auth.errors.INTERNAL") }),
+          kind: "error",
+        });
       } else {
-        setError(t("auth.errors.INTERNAL"));
+        showToast({ message: t("auth.errors.INTERNAL"), kind: "error" });
       }
     }
   }
@@ -85,7 +84,7 @@ export default function ResetPasswordScreen(): JSX.Element {
             autoComplete="password-new"
             textContentType="newPassword"
             editable={!isSubmitting}
-            error={!!errors.newPassword || !!error}
+            error={!!errors.newPassword}
             errorMessage={errors.newPassword?.message ? t(errors.newPassword.message) : undefined}
           />
         )}
@@ -105,16 +104,13 @@ export default function ResetPasswordScreen(): JSX.Element {
             autoComplete="password-new"
             textContentType="newPassword"
             editable={!isSubmitting}
-            error={!!errors.confirmPassword || !!error}
+            error={!!errors.confirmPassword}
             errorMessage={
               errors.confirmPassword?.message ? t(errors.confirmPassword.message) : undefined
             }
           />
         )}
       />
-
-      {message ? <AuthError message={message} /> : null}
-      {error ? <AuthError message={error} /> : null}
 
       <Button
         fullWidth

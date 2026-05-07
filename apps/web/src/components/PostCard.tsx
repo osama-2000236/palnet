@@ -6,7 +6,12 @@
 // into the shared card via `commentsSlot`.
 
 import { ReportReason, formatRelativeTime, type Post } from "@baydar/shared";
-import { PostCard as PostCardShell, ReportDialog, type ReportDialogLabels } from "@baydar/ui-web";
+import {
+  PostCard as PostCardShell,
+  ReportDialog,
+  useToast,
+  type ReportDialogLabels,
+} from "@baydar/ui-web";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -26,12 +31,12 @@ export function PostCard({
   const t = useTranslations("post");
   const tCommon = useTranslations("common");
   const tSafety = useTranslations("safety");
+  const { showToast } = useToast();
   const locale = useLocale();
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [commentsOpen, setCommentsOpen] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
-  const [notice, setNotice] = useState<string | null>(null);
   const report = useReport();
 
   async function toggleReaction(): Promise<void> {
@@ -88,57 +93,57 @@ export function PostCard({
   return (
     <>
       <PostCardShell
-      id={post.id}
-      author={{
-        id: post.author.id,
-        handle: post.author.handle,
-        firstName: post.author.firstName,
-        lastName: post.author.lastName,
-        avatarUrl: post.author.avatarUrl,
-        headline: post.author.headline,
-      }}
-      body={post.body}
-      media={post.media.map((m) => ({
-        id: m.id ?? m.url,
-        url: m.url,
-        kind: m.kind === "IMAGE" ? "IMAGE" : "VIDEO",
-      }))}
-      timestamp={formatRelativeTime(post.createdAt, locale)}
-      counts={post.counts}
-      liked={post.viewer.reaction !== null}
-      busy={busy}
-      labels={{
-        like: t("like"),
-        liked: t("liked"),
-        comment: t("comment"),
-        repost: t("repost"),
-        send: t("send"),
-        commentsCount: (count) => t("commentsCount", { count }),
-        repostsCount: (count) => t("repostsCount", { count }),
-        authorLabel: `${post.author.firstName} ${post.author.lastName}`.trim(),
-        moreOptions: t("moreOptions"),
-        report: tSafety("report.action"),
-        publicAudience: t("publicAudience"),
-      }}
-      commentsOpen={commentsOpen}
-      onToggleComments={setCommentsOpen}
-      onToggleReaction={() => void toggleReaction()}
-      onReport={() => setReportOpen(true)}
-      onOpenProfile={() => router.push(`/in/${post.author.handle}`)}
-      commentsSlot={
-        <Comments
-          postId={post.id}
-          onCountChange={(delta) =>
-            onChange?.({
-              ...post,
-              counts: {
-                ...post.counts,
-                comments: Math.max(0, post.counts.comments + delta),
-              },
-            })
-          }
-        />
-      }
+        id={post.id}
+        author={{
+          id: post.author.id,
+          handle: post.author.handle,
+          firstName: post.author.firstName,
+          lastName: post.author.lastName,
+          avatarUrl: post.author.avatarUrl,
+          headline: post.author.headline,
+        }}
+        body={post.body}
+        media={post.media.map((m) => ({
+          id: m.id ?? m.url,
+          url: m.url,
+          kind: m.kind === "IMAGE" ? "IMAGE" : "VIDEO",
+        }))}
+        timestamp={formatRelativeTime(post.createdAt, locale)}
+        counts={post.counts}
+        liked={post.viewer.reaction !== null}
+        busy={busy}
+        labels={{
+          like: t("like"),
+          liked: t("liked"),
+          comment: t("comment"),
+          repost: t("repost"),
+          send: t("send"),
+          commentsCount: (count) => t("commentsCount", { count }),
+          repostsCount: (count) => t("repostsCount", { count }),
+          authorLabel: `${post.author.firstName} ${post.author.lastName}`.trim(),
+          moreOptions: t("moreOptions"),
+          report: tSafety("report.action"),
+          publicAudience: t("publicAudience"),
+        }}
+        commentsOpen={commentsOpen}
+        onToggleComments={setCommentsOpen}
+        onToggleReaction={() => void toggleReaction()}
+        onReport={() => setReportOpen(true)}
+        onOpenProfile={() => router.push(`/in/${post.author.handle}`)}
+        commentsSlot={
+          <Comments
+            postId={post.id}
+            onCountChange={(delta) =>
+              onChange?.({
+                ...post,
+                counts: {
+                  ...post.counts,
+                  comments: Math.max(0, post.counts.comments + delta),
+                },
+              })
+            }
+          />
+        }
       />
       <ReportDialog
         open={reportOpen}
@@ -150,17 +155,12 @@ export function PostCard({
           report.mutate(input, {
             onSuccess: () => {
               setReportOpen(false);
-              setNotice(tSafety("report.success"));
+              showToast({ message: tSafety("report.success"), kind: "success" });
             },
-            onError: () => setNotice(tSafety("report.error")),
+            onError: () => showToast({ message: tSafety("report.error"), kind: "error" }),
           });
         }}
       />
-      {notice ? (
-        <p className="text-ink-muted mt-2 text-sm" role="status">
-          {notice}
-        </p>
-      ) : null}
     </>
   );
 }

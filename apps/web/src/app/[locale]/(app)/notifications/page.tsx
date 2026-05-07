@@ -8,13 +8,15 @@ import {
   WsNotificationEvent,
   type Notification,
 } from "@baydar/shared";
-import { Avatar, Surface } from "@baydar/ui-web";
+import { Avatar, Surface, useToast } from "@baydar/ui-web";
+import { Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 
 import { apiCall, apiFetchPage } from "@/lib/api";
+import { useDismissNotification } from "@/lib/api/notifications";
 import { readSession } from "@/lib/session";
 import { openStream } from "@/lib/sse";
 
@@ -22,7 +24,9 @@ const NotificationsPage = cursorPage(NotificationSchema);
 
 export default function NotificationsPageRoute(): JSX.Element {
   const t = useTranslations("notifications");
+  const { showToast } = useToast();
   const router = useRouter();
+  const dismissNotification = useDismissNotification();
   const [token, setToken] = useState<string | null>(null);
   const [items, setItems] = useState<Notification[]>([]);
   const [cursor, setCursor] = useState<string | null>(null);
@@ -123,6 +127,22 @@ export default function NotificationsPageRoute(): JSX.Element {
     };
   }, [token]);
 
+  const dismissItem = useCallback(
+    (item: Notification): void => {
+      setItems((prev) => prev.filter((candidate) => candidate.id !== item.id));
+      dismissNotification.mutate(item.id, {
+        onSuccess: () => {
+          showToast({ message: t("dismiss.success"), kind: "success" });
+        },
+        onError: () => {
+          setItems((prev) => restoreNotification(prev, item));
+          showToast({ message: t("dismiss.error"), kind: "error" });
+        },
+      });
+    },
+    [dismissNotification, showToast, t],
+  );
+
   return (
     <main className="mx-auto flex w-full max-w-[720px] flex-col gap-4 px-6 py-8">
       <header className="flex items-center justify-between gap-3">
@@ -159,7 +179,11 @@ export default function NotificationsPageRoute(): JSX.Element {
         <ul className="flex flex-col gap-2">
           {items.map((n) => (
             <li key={n.id}>
-              <NotificationRow item={n} />
+              <NotificationRow
+                item={n}
+                dismissing={dismissNotification.isPending}
+                onDismiss={dismissItem}
+              />
             </li>
           ))}
         </ul>
@@ -179,7 +203,16 @@ export default function NotificationsPageRoute(): JSX.Element {
   );
 }
 
-function NotificationRow({ item }: { item: Notification }): JSX.Element {
+function NotificationRow({
+  item,
+  dismissing,
+  onDismiss,
+}: {
+  item: Notification;
+  dismissing: boolean;
+  onDismiss: (item: Notification) => void;
+}): JSX.Element {
+  const t = useTranslations("notifications");
   const tTemplates = useTranslations("notifications.templates");
   const locale = useLocale();
   const actor = item.actor;
@@ -191,11 +224,7 @@ function NotificationRow({ item }: { item: Notification }): JSX.Element {
   const href = hrefFor(item);
 
   const content = (
-    <div
-      className={`flex items-start gap-3 rounded-md border p-3 transition ${
-        unread ? "border-brand-500/30 bg-brand-50" : "border-ink-muted/20 bg-surface"
-      }`}
-    >
+    <>
       <Avatar user={actor ?? { handle: "system" }} size="md" />
 
       <div className="flex flex-1 flex-col gap-0.5">
@@ -205,15 +234,33 @@ function NotificationRow({ item }: { item: Notification }): JSX.Element {
       {unread ? (
         <span aria-hidden="true" className="bg-accent-600 mt-1 h-2 w-2 flex-none rounded-full" />
       ) : null}
-    </div>
+    </>
   );
 
-  return href ? (
-    <Link href={href} className="block hover:opacity-90">
-      {content}
-    </Link>
-  ) : (
-    content
+  return (
+    <div
+      className={`flex items-start gap-3 rounded-md border p-3 transition ${
+        unread ? "border-brand-500/30 bg-brand-50" : "border-ink-muted/20 bg-surface"
+      }`}
+    >
+      {href ? (
+        <Link href={href} className="flex min-w-0 flex-1 items-start gap-3 hover:opacity-90">
+          {content}
+        </Link>
+      ) : (
+        <div className="flex min-w-0 flex-1 items-start gap-3">{content}</div>
+      )}
+      <button
+        type="button"
+        className="text-ink-muted hover:text-danger hover:bg-danger/10 flex h-9 w-9 flex-none items-center justify-center rounded-md disabled:cursor-not-allowed disabled:opacity-50"
+        aria-label={t("dismiss.aria")}
+        title={t("dismiss.action")}
+        disabled={dismissing}
+        onClick={() => onDismiss(item)}
+      >
+        <Trash2 aria-hidden="true" size={16} strokeWidth={2} />
+      </button>
+    </div>
   );
 }
 
@@ -258,4 +305,11 @@ function hrefFor(n: Notification): string | null {
     return `/in/${n.actor.handle}`;
   }
   return null;
+}
+
+function restoreNotification(items: Notification[], item: Notification): Notification[] {
+  if (items.some((candidate) => candidate.id === item.id)) return items;
+  return [...items, item].sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+  );
 }

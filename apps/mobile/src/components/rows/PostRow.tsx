@@ -3,6 +3,7 @@ import {
   PostCard,
   ReportSheet,
   nativeTokens,
+  useToast,
   type PostCardAction,
   type ReportSheetLabels,
 } from "@baydar/ui-native";
@@ -25,6 +26,7 @@ export interface PostRowProps {
 
 export const PostRow = memo(function PostRow({ post, onChange }: PostRowProps): JSX.Element {
   const { t, i18n } = useTranslation();
+  const { showToast } = useToast();
   const [showComments, setShowComments] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -186,7 +188,13 @@ export const PostRow = memo(function PostRow({ post, onChange }: PostRowProps): 
         submitting={report.isPending}
         onSubmit={(input) => {
           report.mutate(input, {
-            onSuccess: () => setReportOpen(false),
+            onSuccess: () => {
+              setReportOpen(false);
+              showToast({ message: t("safety.report.success"), kind: "success" });
+            },
+            onError: () => {
+              showToast({ message: t("safety.report.error"), kind: "error" });
+            },
           });
         }}
       />

@@ -13,6 +13,7 @@ import {
   Surface,
   Tab,
   Tabs,
+  useToast,
   type BlockButtonLabels,
   type ReportDialogLabels,
 } from "@baydar/ui-web";
@@ -35,6 +36,7 @@ export default function ProfileRoute(): JSX.Element {
   const tCommon = useTranslations("common");
   const tMsg = useTranslations("messaging");
   const tSafety = useTranslations("safety");
+  const { showToast } = useToast();
   const router = useRouter();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -193,16 +195,25 @@ export default function ProfileRoute(): JSX.Element {
                     block.mutate(
                       { blockedUserId: userId },
                       {
-                        onSuccess: () => router.push("/feed"),
+                        onSuccess: () => {
+                          showToast({ message: tSafety("block.success"), kind: "success" });
+                          router.push("/feed");
+                        },
+                        onError: () =>
+                          showToast({ message: tSafety("block.error"), kind: "error" }),
                       },
                     );
                   } else {
                     unblock.mutate(userId, {
-                      onSuccess: () =>
+                      onSuccess: () => {
                         setProfile({
                           ...profile,
                           viewer: { isSelf: false, connection: null },
-                        }),
+                        });
+                        showToast({ message: tSafety("unblock.success"), kind: "success" });
+                      },
+                      onError: () =>
+                        showToast({ message: tSafety("unblock.error"), kind: "error" }),
                     });
                   }
                 }}
@@ -330,7 +341,11 @@ export default function ProfileRoute(): JSX.Element {
         submitting={report.isPending}
         onSubmit={(input) => {
           report.mutate(input, {
-            onSuccess: () => setReportOpen(false),
+            onSuccess: () => {
+              setReportOpen(false);
+              showToast({ message: tSafety("report.success"), kind: "success" });
+            },
+            onError: () => showToast({ message: tSafety("report.error"), kind: "error" }),
           });
         }}
       />

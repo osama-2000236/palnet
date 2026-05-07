@@ -11,6 +11,22 @@ jest.mock("expo-haptics", () => ({
   NotificationFeedbackType: { Success: "success", Warning: "warning", Error: "error" },
 }));
 
+jest.mock("expo-file-system/legacy", () => ({
+  documentDirectory: "file:///documents/",
+  cacheDirectory: "file:///cache/",
+  EncodingType: { UTF8: "utf8" },
+  writeAsStringAsync: jest.fn(async () => undefined),
+}));
+
+jest.mock(
+  "expo-sharing",
+  () => ({
+    isAvailableAsync: jest.fn(async () => true),
+    shareAsync: jest.fn(async () => undefined),
+  }),
+  { virtual: true },
+);
+
 jest.mock("expo-image", () => ({
   Image: (props: { children?: unknown }) => {
     const React = require("react");

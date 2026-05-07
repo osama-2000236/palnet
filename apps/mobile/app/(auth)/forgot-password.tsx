@@ -1,12 +1,11 @@
-import { Button, nativeTokens } from "@baydar/ui-native";
+import { Button, nativeTokens, useToast } from "@baydar/ui-native";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { router } from "expo-router";
-import { useState } from "react";
 import { Controller, useForm, type Resolver } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import * as yup from "yup";
 
-import { AuthError, AuthScaffold, AuthTextField } from "@/components/auth/AuthScaffold";
+import { AuthScaffold, AuthTextField } from "@/components/auth/AuthScaffold";
 import { ApiRequestError, forgotPasswordAction } from "@/lib/auth-actions";
 import { useNetworkStore } from "@/store/network";
 
@@ -20,8 +19,7 @@ const forgotSchema = yup.object({
 
 export default function ForgotPasswordScreen(): JSX.Element {
   const { t } = useTranslation();
-  const [message, setMessage] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const { showToast } = useToast();
   const isConnected = useNetworkStore((state) => state.isConnected);
 
   const {
@@ -35,20 +33,21 @@ export default function ForgotPasswordScreen(): JSX.Element {
   });
 
   async function onSubmit(values: ForgotPasswordFormValues): Promise<void> {
-    setError(null);
-    setMessage(null);
     if (!isConnected) {
-      setError(t("auth.errors.OFFLINE"));
+      showToast({ message: t("auth.errors.OFFLINE"), kind: "error" });
       return;
     }
     try {
       await forgotPasswordAction(values.email.trim().toLowerCase());
-      setMessage(t("auth.forgot.sent"));
+      showToast({ message: t("auth.forgot.sent"), kind: "success" });
     } catch (e) {
       if (e instanceof ApiRequestError) {
-        setError(t(`auth.errors.${e.code}`, { defaultValue: t("auth.errors.INTERNAL") }));
+        showToast({
+          message: t(`auth.errors.${e.code}`, { defaultValue: t("auth.errors.INTERNAL") }),
+          kind: "error",
+        });
       } else {
-        setError(t("auth.errors.INTERNAL"));
+        showToast({ message: t("auth.errors.INTERNAL"), kind: "error" });
       }
     }
   }
@@ -77,14 +76,11 @@ export default function ForgotPasswordScreen(): JSX.Element {
             textContentType="emailAddress"
             inputMode="email"
             editable={!isSubmitting}
-            error={!!errors.email || !!error}
+            error={!!errors.email}
             errorMessage={errors.email?.message ? t(errors.email.message) : undefined}
           />
         )}
       />
-
-      {message ? <AuthError message={message} /> : null}
-      {error ? <AuthError message={error} /> : null}
 
       <Button
         fullWidth

@@ -1,4 +1,6 @@
+import { ToastProvider } from "@baydar/ui-native";
 import { render } from "@testing-library/react-native";
+import type { ReactElement } from "react";
 
 import BlockedUsersScreen from "../../app/(app)/settings/blocked";
 
@@ -22,9 +24,13 @@ jest.mock("@/api/safety", () => ({
   useUnblock: () => ({ isPending: false, mutate: jest.fn() }),
 }));
 
+function renderWithToast(ui: ReactElement) {
+  return render(<ToastProvider>{ui}</ToastProvider>);
+}
+
 describe("BlockedUsersScreen", () => {
   it("renders the blocked users list", () => {
-    const screen = render(<BlockedUsersScreen />);
+    const screen = renderWithToast(<BlockedUsersScreen />);
 
     expect(screen.getByText("Blocked User")).toBeTruthy();
   });

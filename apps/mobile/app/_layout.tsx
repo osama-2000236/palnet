@@ -12,6 +12,8 @@ import { useEffect } from "react";
 import { I18nManager, Linking } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import { ToastProvider } from "@baydar/ui-native";
+import { useTranslation } from "react-i18next";
 
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { LoadingIntro } from "@/components/LoadingIntro";
@@ -42,6 +44,7 @@ void SplashScreen.preventAutoHideAsync().catch(() => {
 });
 
 function RootLayout(): JSX.Element | null {
+  const { t } = useTranslation();
   // Family aliases here match nativeTokens.type.family.* so atoms in ui-native
   // can reference the family by string. See packages/ui-tokens/src/tokens.native.ts.
   const [fontsLoaded, fontError] = useFonts({
@@ -109,9 +112,11 @@ function RootLayout(): JSX.Element | null {
       <SafeAreaProvider>
         <StatusBar style="dark" />
         <QueryProvider>
-          <ErrorBoundary>
-            <Stack screenOptions={{ headerShown: false }} />
-          </ErrorBoundary>
+          <ToastProvider dismissLabel={t("toast.dismiss.aria")}>
+            <ErrorBoundary>
+              <Stack screenOptions={{ headerShown: false }} />
+            </ErrorBoundary>
+          </ToastProvider>
         </QueryProvider>
         <OfflineBanner />
       </SafeAreaProvider>

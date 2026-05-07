@@ -1,11 +1,13 @@
 import { cursorPage, Notification as NotificationSchema, type Notification } from "@baydar/shared";
-import { AppHeader, RecordCardSkeleton, nativeTokens } from "@baydar/ui-native";
+import { AppHeader, Icon, RecordCardSkeleton, nativeTokens, useToast } from "@baydar/ui-native";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { FlatList, RefreshControl, StyleSheet, View } from "react-native";
+import { FlatList, I18nManager, RefreshControl, StyleSheet, Text, View } from "react-native";
+import { Swipeable } from "react-native-gesture-handler";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { useDismissNotification } from "@/api/notifications";
 import { StateMessage } from "@/components/StateMessage";
 import { NotificationRow } from "@/components/rows/NotificationRow";
 import { apiCall, apiFetchPage } from "@/lib/api";
@@ -16,6 +18,8 @@ const NotificationsPage = cursorPage(NotificationSchema);
 
 export default function NotificationsScreen(): JSX.Element {
   const { t } = useTranslation();
+  const { showToast } = useToast();
+  const { mutate: dismissNotification } = useDismissNotification();
   const [items, setItems] = useState<Notification[]>([]);
   const [cursor, setCursor] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(false);
@@ -85,6 +89,22 @@ export default function NotificationsScreen(): JSX.Element {
     }
   }, [load, markAllRead]);
 
+  const dismissItem = useCallback(
+    (item: Notification): void => {
+      setItems((prev) => prev.filter((next) => next.id !== item.id));
+      dismissNotification(item.id, {
+        onSuccess: () => {
+          showToast({ message: t("notifications.dismiss.success"), kind: "success" });
+        },
+        onError: () => {
+          setItems((prev) => restoreNotification(prev, item));
+          showToast({ message: t("notifications.dismiss.error"), kind: "error" });
+        },
+      });
+    },
+    [dismissNotification, showToast, t],
+  );
+
   useEffect(() => {
     void (async () => {
       const session = await readSession();
@@ -110,7 +130,9 @@ export default function NotificationsScreen(): JSX.Element {
         <FlatList
           data={items}
           keyExtractor={(n) => n.id}
-          renderItem={({ item }) => <NotificationRow item={item} />}
+          renderItem={({ item }) => (
+            <DismissibleNotificationRow item={item} onDismiss={dismissItem} />
+          )}
           contentContainerStyle={styles.listContent}
           ItemSeparatorComponent={() => <View style={styles.separator} />}
           onEndReachedThreshold={0.4}
@@ -149,6 +171,42 @@ export default function NotificationsScreen(): JSX.Element {
   );
 }
 
+function DismissibleNotificationRow({
+  item,
+  onDismiss,
+}: {
+  item: Notification;
+  onDismiss(item: Notification): void;
+}): JSX.Element {
+  const { t } = useTranslation();
+  const renderDismissAction = useCallback(
+    () => (
+      <View style={styles.dismissAction}>
+        <Icon name="x" size={nativeTokens.space[5]} color={nativeTokens.color.inkInverse} />
+        <Text style={styles.dismissActionText}>{t("notifications.dismiss.action")}</Text>
+      </View>
+    ),
+    [t],
+  );
+
+  return (
+    <Swipeable
+      overshootLeft={false}
+      overshootRight={false}
+      renderLeftActions={I18nManager.isRTL ? renderDismissAction : undefined}
+      renderRightActions={I18nManager.isRTL ? undefined : renderDismissAction}
+      onSwipeableOpen={() => onDismiss(item)}
+    >
+      <NotificationRow item={item} />
+    </Swipeable>
+  );
+}
+
+function restoreNotification(items: Notification[], item: Notification): Notification[] {
+  if (items.some((next) => next.id === item.id)) return items;
+  return [...items, item].sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt));
+}
+
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
@@ -167,5 +225,22 @@ const styles = StyleSheet.create({
   },
   skeletonStack: {
     gap: nativeTokens.space[2],
+  },
+  dismissAction: {
+    minWidth: nativeTokens.space[24],
+    borderRadius: nativeTokens.radius.md,
+    backgroundColor: nativeTokens.color.danger,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: nativeTokens.space[1],
+    paddingHorizontal: nativeTokens.space[3],
+  },
+  dismissActionText: {
+    color: nativeTokens.color.inkInverse,
+    fontFamily: nativeTokens.type.family.sans,
+    fontSize: nativeTokens.type.scale.caption.size,
+    lineHeight: nativeTokens.type.scale.caption.line,
+    fontWeight: "700",
+    textAlign: "center",
   },
 });

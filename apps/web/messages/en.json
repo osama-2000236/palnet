@@ -8,6 +8,11 @@
     "continue": "Continue",
     "genericError": "Something went wrong. Please try again."
   },
+  "toast": {
+    "dismiss": {
+      "aria": "Dismiss notification"
+    }
+  },
   "nav": {
     "main": "Primary navigation",
     "searchPlaceholder": "Search people, jobs, companies…",
@@ -169,6 +174,7 @@
     "block": {
       "button": "Block",
       "success": "User blocked.",
+      "error": "Could not block this user.",
       "confirm": {
         "title": "Confirm block",
         "body": "This user will not be able to interact with you or message you.",
@@ -178,6 +184,7 @@
     "unblock": {
       "button": "Unblock",
       "success": "User unblocked.",
+      "error": "Could not unblock this user.",
       "confirm": {
         "title": "Confirm unblock",
         "body": "This user can appear and interact with you again.",
@@ -325,6 +332,12 @@
     "loadMore": "Load more",
     "loading": "Loading…",
     "live": "Live",
+    "dismiss": {
+      "action": "Dismiss",
+      "aria": "Dismiss notification",
+      "success": "Notification dismissed.",
+      "error": "Could not dismiss notification."
+    },
     "templates": {
       "CONNECTION_REQUEST": "{actor} wants to connect with you.",
       "CONNECTION_ACCEPTED": "{actor} accepted your connection request.",
@@ -385,6 +398,7 @@
       "body": "Download a JSON file containing your profile, content, messages, notifications, and safety records.",
       "button": "Download my data",
       "downloading": "Preparing download…",
+      "success": "Your export is ready.",
       "error": "Could not download your data. Try again."
     },
     "delete": {

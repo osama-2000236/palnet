@@ -1,6 +1,6 @@
 "use client";
 
-import { BlockedListItem, Surface } from "@baydar/ui-web";
+import { BlockedListItem, Surface, useToast } from "@baydar/ui-web";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 
@@ -9,6 +9,7 @@ import { useBlockedUsers, useUnblock } from "@/lib/api/safety";
 export default function BlockedSettingsPage(): JSX.Element {
   const t = useTranslations("safety");
   const tCommon = useTranslations("common");
+  const { showToast } = useToast();
   const [cursor, setCursor] = useState<string | null>(null);
   const blocked = useBlockedUsers(cursor);
   const unblock = useUnblock();
@@ -30,7 +31,12 @@ export default function BlockedSettingsPage(): JSX.Element {
                 item={item}
                 labels={{ unblock: t("blocked.unblock") }}
                 loading={unblock.isPending}
-                onUnblock={(blockedUserId) => unblock.mutate(blockedUserId)}
+                onUnblock={(blockedUserId) =>
+                  unblock.mutate(blockedUserId, {
+                    onSuccess: () => showToast({ message: t("unblock.success"), kind: "success" }),
+                    onError: () => showToast({ message: t("unblock.error"), kind: "error" }),
+                  })
+                }
               />
             ))}
           </ul>

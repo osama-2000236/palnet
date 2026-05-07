@@ -384,6 +384,29 @@ describe("API controller contract", () => {
     }
   });
 
+  it("pins notifications dismiss route to raw 204", async () => {
+    const notifications = { dismiss: jest.fn().mockResolvedValue(undefined) };
+    const app = await createApp({
+      controllers: [NotificationsController],
+      providers: [
+        { provide: NotificationsService, useValue: notifications },
+        { provide: NotificationsBus, useValue: { subscribe: jest.fn() } },
+      ],
+    });
+
+    try {
+      await request(app.getHttpServer())
+        .delete("/notifications/cm00000000000000000000040")
+        .expect(204)
+        .expect((res) => {
+          expect(res.text).toBe("");
+        });
+      expect(notifications.dismiss).toHaveBeenCalledWith(authUser.id, "cm00000000000000000000040");
+    } finally {
+      await app.close();
+    }
+  });
+
   it("pins safety routes to envelopes and raw 204 unblock", async () => {
     const createdAt = new Date("2026-05-05T00:00:00Z");
     const safety = {

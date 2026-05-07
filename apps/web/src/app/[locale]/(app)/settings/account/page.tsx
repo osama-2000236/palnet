@@ -1,5 +1,6 @@
 "use client";
 
+import { useToast } from "@baydar/ui-web";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -12,18 +13,17 @@ const CONFIRMATION = "DELETE_MY_ACCOUNT";
 
 export default function AccountSettingsPage(): JSX.Element {
   const t = useTranslations("account");
+  const { showToast } = useToast();
   const locale = useLocale();
   const router = useRouter();
   const [confirming, setConfirming] = useState(false);
   const [phrase, setPhrase] = useState("");
   const [busy, setBusy] = useState<"export" | "delete" | null>(null);
-  const [error, setError] = useState<string | null>(null);
 
   async function downloadExport(): Promise<void> {
     const token = getAccessToken();
     if (!token) return;
     setBusy("export");
-    setError(null);
     try {
       const res = await fetch(`${API_BASE}/account/export`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -38,8 +38,9 @@ export default function AccountSettingsPage(): JSX.Element {
       link.click();
       link.remove();
       URL.revokeObjectURL(url);
+      showToast({ message: t("export.success"), kind: "success" });
     } catch {
-      setError(t("export.error"));
+      showToast({ message: t("export.error"), kind: "error" });
     } finally {
       setBusy(null);
     }
@@ -47,7 +48,6 @@ export default function AccountSettingsPage(): JSX.Element {
 
   async function deleteAccount(): Promise<void> {
     setBusy("delete");
-    setError(null);
     try {
       await apiCall("/account/delete", {
         method: "POST",
@@ -57,7 +57,7 @@ export default function AccountSettingsPage(): JSX.Element {
       clearSession();
       router.replace(`/${locale}/auth/login?deleted=grace`);
     } catch {
-      setError(t("delete.error"));
+      showToast({ message: t("delete.error"), kind: "error" });
       setBusy(null);
     }
   }
@@ -90,12 +90,6 @@ export default function AccountSettingsPage(): JSX.Element {
           {t("delete.button")}
         </button>
       </section>
-
-      {error ? (
-        <p role="alert" className="text-danger text-sm">
-          {error}
-        </p>
-      ) : null}
 
       {confirming ? (
         <div className="fixed inset-0 z-50 grid place-items-center bg-black/40 px-4">

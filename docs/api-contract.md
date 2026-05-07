@@ -23,7 +23,7 @@ Current raw response exceptions:
 - `DELETE /blocks/:blockedUserId` returns `204 No Content`.
 - Messaging detail/action routes return raw DTOs: `POST /messaging/rooms`, `GET /messaging/rooms/:id`, `POST /messaging/rooms/:id/messages`, `PATCH /messaging/messages/:id`, and `DELETE /messaging/messages/:id`.
 - Job detail/action routes return raw DTOs: `GET /jobs/:id` returns a `Job`; `POST /jobs/:id/apply` returns `{ id, status }`.
-- Notification counters/actions return raw count DTOs: `GET /notifications/unread-count` and `POST /notifications/read` return `{ count }`.
+- Notification counters/actions return raw count DTOs: `GET /notifications/unread-count` and `POST /notifications/read` return `{ count }`; `DELETE /notifications/:id` returns `204 No Content`.
 - SSE routes stream event frames and do not use JSON response envelopes.
 
 All other JSON success responses should use `{ data, meta? }` unless a future decision record adds a raw exception.
@@ -159,10 +159,13 @@ Browser flow: call `POST /auth/stream-token` with `{ scope: "messaging" }`, then
 - `GET /notifications`
 - `GET /notifications/unread-count`
 - `POST /notifications/read`
+- `DELETE /notifications/:id`
 - `POST /notifications/devices`
 - `GET /notifications/stream`
 
 The notification stream sends authenticated in-app notification events. Push fanout is best-effort via Expo for registered devices.
+
+`GET /notifications` excludes notifications dismissed by the viewer. `DELETE /notifications/:id` is protected, owner-only, soft-dismisses the row by setting `dismissedAt`, and returns `204 No Content`; missing or non-owned notification ids return `404 NOT_FOUND`.
 
 Browser flow: call `POST /auth/stream-token` with `{ scope: "notifications" }`, then connect with `GET /notifications/stream?token=<one-time-token>`.
 

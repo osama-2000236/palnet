@@ -1,6 +1,6 @@
 // Bottom-tab AppShell for the authenticated app. Five visible entries per the
-// mobile design docs: feed, network, raised composer action, messages, profile.
-// Jobs, search, notifications, detail routes, onboarding, and edit screens stay
+// Sprint 21 mobile decision: feed, network, messages, notifications, profile.
+// Jobs, search, composer, detail routes, onboarding, and edit screens stay
 // pushable hidden routes so primary navigation stays focused and touch-safe.
 
 import { WsNotificationEvent } from "@baydar/shared";
@@ -234,15 +234,6 @@ export default function AppTabsLayout(): JSX.Element {
         }}
       />
       <Tabs.Screen
-        name="composer"
-        options={{
-          title: t("nav.compose"),
-          tabBarLabel: (props) => <TabLabel {...props} label={t("nav.compose")} raised />,
-          tabBarButton: (props) => <ComposerTabButton {...props} label={t("nav.compose")} />,
-          tabBarIcon: ({ focused }) => <ComposerIcon focused={focused} />,
-        }}
-      />
-      <Tabs.Screen
         name="messages/index"
         options={{
           title: t("messaging.title"),
@@ -250,6 +241,23 @@ export default function AppTabsLayout(): JSX.Element {
           tabBarButton: (props) => <TabButton {...props} testID="tab-messages" />,
           tabBarIcon: ({ color, focused }) => (
             <TabIcon name="message" color={color} focused={focused} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="notifications"
+        options={{
+          title: t("notifications.title"),
+          tabBarLabel: (props) => <TabLabel {...props} label={t("notifications.title")} />,
+          tabBarButton: (props) => <TabButton {...props} testID="tab-notifications" />,
+          tabBarBadge:
+            notificationBadge > 0
+              ? notificationBadge > 99
+                ? "99+"
+                : notificationBadge
+              : undefined,
+          tabBarIcon: ({ color, focused }) => (
+            <TabIcon name="bell" color={color} focused={focused} />
           ),
         }}
       />
@@ -267,19 +275,8 @@ export default function AppTabsLayout(): JSX.Element {
 
       <Tabs.Screen name="onboarding" options={{ href: null, tabBarStyle: { display: "none" } }} />
       <Tabs.Screen name="jobs/index" options={{ href: null }} />
-      <Tabs.Screen name="notifications" options={{ href: null }} />
-      <Tabs.Screen
-        name="search"
-        options={{
-          href: null,
-          tabBarBadge:
-            notificationBadge > 0
-              ? notificationBadge > 99
-                ? "99+"
-                : notificationBadge
-              : undefined,
-        }}
-      />
+      <Tabs.Screen name="composer" options={{ href: null }} />
+      <Tabs.Screen name="search" options={{ href: null }} />
       <Tabs.Screen name="me/edit" options={{ href: null }} />
       <Tabs.Screen name="settings/blocked" options={{ href: null }} />
       <Tabs.Screen name="in/[handle]" options={{ href: null }} />
@@ -346,28 +343,6 @@ function TabButton({
   return <Pressable {...pressableProps} testID={testID} />;
 }
 
-function ComposerTabButton({
-  label,
-  ...props
-}: BottomTabBarButtonProps & { label: string }): JSX.Element {
-  const { ref: _ref, ...pressableProps } = props as BottomTabBarButtonProps & { ref?: unknown };
-  return (
-    <Pressable
-      {...pressableProps}
-      testID="tab-composer"
-      accessibilityLabel={label}
-      style={[
-        pressableProps.style,
-        {
-          top: -nativeTokens.space[2],
-          alignItems: "center",
-          justifyContent: "center",
-        },
-      ]}
-    />
-  );
-}
-
 function TabIcon({
   name,
   color,
@@ -393,31 +368,6 @@ function TabIcon({
         color={color}
         size={nativeTokens.space[5]}
         strokeWidth={focused ? 2.2 : 1.8}
-      />
-    </View>
-  );
-}
-
-function ComposerIcon({ focused }: { focused: boolean }): JSX.Element {
-  return (
-    <View
-      style={{
-        width: nativeTokens.space[12] + nativeTokens.space[1],
-        height: nativeTokens.space[12] + nativeTokens.space[1],
-        borderRadius: nativeTokens.radius.full,
-        alignItems: "center",
-        justifyContent: "center",
-        backgroundColor: focused ? nativeTokens.color.brand700 : nativeTokens.color.brand600,
-        borderWidth: nativeTokens.space[1],
-        borderColor: nativeTokens.color.surface,
-        ...nativeTokens.shadow.card,
-      }}
-    >
-      <Icon
-        name="plus"
-        color={nativeTokens.color.inkInverse}
-        size={nativeTokens.space[6]}
-        strokeWidth={2.4}
       />
     </View>
   );

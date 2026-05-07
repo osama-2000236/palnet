@@ -1,5 +1,6 @@
 "use client";
 
+import { useToast } from "@baydar/ui-web";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
@@ -9,30 +10,33 @@ import { ApiRequestError, resetPasswordAction } from "@/lib/auth-actions";
 
 export default function ResetPasswordPage(): JSX.Element {
   const t = useTranslations("auth");
+  const { showToast } = useToast();
   const locale = useLocale();
   const params = useParams<{ token: string }>();
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [status, setStatus] = useState<"idle" | "reset">("idle");
-  const [error, setError] = useState<string | null>(null);
+  const [resetComplete, setResetComplete] = useState(false);
   const [busy, setBusy] = useState(false);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>): Promise<void> {
     e.preventDefault();
-    setError(null);
     if (newPassword !== confirmPassword) {
-      setError(t("reset.passwordMismatch"));
+      showToast({ message: t("reset.passwordMismatch"), kind: "error" });
       return;
     }
     setBusy(true);
     try {
       await resetPasswordAction(params.token, newPassword);
-      setStatus("reset");
+      setResetComplete(true);
+      showToast({ message: t("reset.success"), kind: "success" });
     } catch (err) {
       if (err instanceof ApiRequestError) {
-        setError(t(`errors.${err.code}` as Parameters<typeof t>[0]));
+        showToast({
+          message: t(`errors.${err.code}` as Parameters<typeof t>[0]),
+          kind: "error",
+        });
       } else {
-        setError(t("errors.INTERNAL"));
+        showToast({ message: t("errors.INTERNAL"), kind: "error" });
       }
     } finally {
       setBusy(false);
@@ -71,21 +75,9 @@ export default function ResetPasswordPage(): JSX.Element {
           />
         </label>
 
-        {status === "reset" ? (
-          <p role="status" className="text-success text-sm">
-            {t("reset.success")}
-          </p>
-        ) : null}
-
-        {error ? (
-          <p role="alert" className="text-danger text-sm">
-            {error}
-          </p>
-        ) : null}
-
         <button
           type="submit"
-          disabled={busy || status === "reset"}
+          disabled={busy || resetComplete}
           className="bg-brand-600 text-ink-inverse shadow-card hover:bg-brand-700 rounded-md px-4 py-2 disabled:opacity-60"
         >
           {t("reset.submit")}

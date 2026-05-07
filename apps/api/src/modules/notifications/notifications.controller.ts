@@ -4,7 +4,18 @@ import {
   MarkNotificationsReadBody,
   type Notification,
 } from "@baydar/shared";
-import { Body, Controller, Get, Post, Query, Sse } from "@nestjs/common";
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Post,
+  Query,
+  Sse,
+} from "@nestjs/common";
 import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 import { Observable } from "rxjs";
 
@@ -50,6 +61,12 @@ export class NotificationsController {
     @Body(new ZodValidationPipe(MarkNotificationsReadBody)) body: MarkNotificationsReadBody,
   ): Promise<{ count: number }> {
     return this.notifications.markRead(user.id, body);
+  }
+
+  @Delete(":id")
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async dismiss(@CurrentUser() user: AuthUser, @Param("id") id: string): Promise<void> {
+    await this.notifications.dismiss(user.id, id);
   }
 
   @Sse("stream")

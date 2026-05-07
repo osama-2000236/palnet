@@ -28,9 +28,11 @@ test("safety: block from profile, view blocked list, unblock", async ({ page, re
     },
   });
   expect(registered.ok()).toBeTruthy();
-  const targetSession = ((await registered.json()) as {
-    data: { tokens: { accessToken: string } };
-  }).data;
+  const targetSession = (
+    (await registered.json()) as {
+      data: { tokens: { accessToken: string } };
+    }
+  ).data;
   const onboarded = await request.post(`${API_BASE}/profiles/onboard`, {
     headers: { Authorization: `Bearer ${targetSession.tokens.accessToken}` },
     data: {

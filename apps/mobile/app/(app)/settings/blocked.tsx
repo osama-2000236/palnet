@@ -1,4 +1,4 @@
-import { BlockedListItem, Button, Surface, nativeTokens } from "@baydar/ui-native";
+import { BlockedListItem, Button, Surface, nativeTokens, useToast } from "@baydar/ui-native";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { FlatList, Text, View } from "react-native";
@@ -9,6 +9,7 @@ import { StateMessage } from "@/components/StateMessage";
 
 export default function BlockedUsersScreen(): JSX.Element {
   const { t } = useTranslation();
+  const { showToast } = useToast();
   const [cursor, setCursor] = useState<string | null>(null);
   const blocked = useBlockedUsers(cursor);
   const unblock = useUnblock();
@@ -39,7 +40,13 @@ export default function BlockedUsersScreen(): JSX.Element {
                 item={item}
                 labels={{ unblock: t("safety.blocked.unblock") }}
                 loading={unblock.isPending}
-                onUnblock={(blockedUserId) => unblock.mutate(blockedUserId)}
+                onUnblock={(blockedUserId) =>
+                  unblock.mutate(blockedUserId, {
+                    onSuccess: () =>
+                      showToast({ message: t("safety.unblock.success"), kind: "success" }),
+                    onError: () => showToast({ message: t("safety.unblock.error"), kind: "error" }),
+                  })
+                }
               />
             )}
             ListEmptyComponent={

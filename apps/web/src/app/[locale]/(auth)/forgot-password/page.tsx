@@ -1,5 +1,6 @@
 "use client";
 
+import { useToast } from "@baydar/ui-web";
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
@@ -8,24 +9,25 @@ import { ApiRequestError, forgotPasswordAction } from "@/lib/auth-actions";
 
 export default function ForgotPasswordPage(): JSX.Element {
   const t = useTranslations("auth");
+  const { showToast } = useToast();
   const locale = useLocale();
   const [email, setEmail] = useState("");
-  const [status, setStatus] = useState<"idle" | "sent">("idle");
-  const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>): Promise<void> {
     e.preventDefault();
-    setError(null);
     setBusy(true);
     try {
       await forgotPasswordAction(email);
-      setStatus("sent");
+      showToast({ message: t("forgot.sent"), kind: "success" });
     } catch (err) {
       if (err instanceof ApiRequestError) {
-        setError(t(`errors.${err.code}` as Parameters<typeof t>[0]));
+        showToast({
+          message: t(`errors.${err.code}` as Parameters<typeof t>[0]),
+          kind: "error",
+        });
       } else {
-        setError(t("errors.INTERNAL"));
+        showToast({ message: t("errors.INTERNAL"), kind: "error" });
       }
     } finally {
       setBusy(false);
@@ -51,18 +53,6 @@ export default function ForgotPasswordPage(): JSX.Element {
             dir="ltr"
           />
         </label>
-
-        {status === "sent" ? (
-          <p role="status" className="text-success text-sm">
-            {t("forgot.sent")}
-          </p>
-        ) : null}
-
-        {error ? (
-          <p role="alert" className="text-danger text-sm">
-            {error}
-          </p>
-        ) : null}
 
         <button
           type="submit"

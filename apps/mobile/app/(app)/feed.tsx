@@ -7,6 +7,7 @@ import {
 } from "@baydar/shared";
 import {
   Avatar,
+  AppHeader,
   Button,
   ComposerEntry,
   Icon,
@@ -205,52 +206,51 @@ function FeedTopBar({ unread }: { unread: number }): JSX.Element {
   const { t } = useTranslation();
 
   return (
-    <View style={feedStyles.topBar}>
-      <Pressable
-        onPress={() => router.push("/(app)/notifications")}
-        accessibilityRole="button"
-        accessibilityLabel={
-          unread > 0 ? t("nav.unreadNotifications", { count: unread }) : t("notifications.title")
-        }
-        testID="feed-notifications-button"
-        style={({ pressed }) => [
-          feedStyles.iconButton,
-          unread > 0 ? feedStyles.iconButtonActive : null,
-          pressed ? feedStyles.pressed : null,
-        ]}
-      >
-        <Icon
-          name="bell"
-          size={20}
-          color={unread > 0 ? nativeTokens.color.inkInverse : nativeTokens.color.ink}
-        />
-        {unread > 0 ? (
-          <View style={feedStyles.unreadDot}>
-            <Text style={feedStyles.unreadText}>{unread > 99 ? "99+" : String(unread)}</Text>
-          </View>
-        ) : null}
-      </Pressable>
-
-      <Pressable
-        onPress={() => router.push("/(app)/search")}
-        accessibilityRole="button"
-        accessibilityLabel={t("search.placeholder")}
-        testID="feed-search-button"
-        style={({ pressed }) => [feedStyles.searchEntry, pressed ? feedStyles.pressed : null]}
-      >
-        <Icon name="search" size={18} color={nativeTokens.color.inkMuted} />
-        <Text numberOfLines={1} style={feedStyles.searchText}>
-          {t("search.placeholder")}
-        </Text>
-      </Pressable>
-
-      <View style={feedStyles.brandLockup} accessibilityRole="header">
-        <Text selectable style={feedStyles.brandText}>
-          {t("common.appName")}
-        </Text>
-        <Icon name="logo" size={28} />
-      </View>
-    </View>
+    <AppHeader
+      compact
+      title={t("common.appName")}
+      leading={<Icon name="logo" size={28} />}
+      trailing={
+        <Pressable
+          onPress={() => router.push("/(app)/notifications")}
+          accessibilityRole="button"
+          accessibilityLabel={
+            unread > 0 ? t("nav.unreadNotifications", { count: unread }) : t("notifications.title")
+          }
+          testID="feed-notifications-button"
+          style={({ pressed }) => [
+            feedStyles.iconButton,
+            unread > 0 ? feedStyles.iconButtonActive : null,
+            pressed ? feedStyles.pressed : null,
+          ]}
+        >
+          <Icon
+            name="bell"
+            size={20}
+            color={unread > 0 ? nativeTokens.color.inkInverse : nativeTokens.color.ink}
+          />
+          {unread > 0 ? (
+            <View style={feedStyles.unreadDot}>
+              <Text style={feedStyles.unreadText}>{unread > 99 ? "99+" : String(unread)}</Text>
+            </View>
+          ) : null}
+        </Pressable>
+      }
+      search={
+        <Pressable
+          onPress={() => router.push("/(app)/search")}
+          accessibilityRole="button"
+          accessibilityLabel={t("search.placeholder")}
+          testID="feed-search-button"
+          style={({ pressed }) => [feedStyles.searchEntry, pressed ? feedStyles.pressed : null]}
+        >
+          <Icon name="search" size={18} color={nativeTokens.color.inkMuted} />
+          <Text numberOfLines={1} style={feedStyles.searchText}>
+            {t("search.placeholder")}
+          </Text>
+        </Pressable>
+      }
+    />
   );
 }
 
@@ -350,27 +350,6 @@ const feedStyles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: nativeTokens.space[4],
     paddingTop: nativeTokens.space[3],
-  },
-  topBar: {
-    minHeight: nativeTokens.chrome.minHit,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: nativeTokens.space[2],
-    paddingBottom: nativeTokens.space[2],
-  },
-  brandLockup: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: nativeTokens.space[1],
-    minWidth: nativeTokens.space[20],
-    justifyContent: "flex-end",
-  },
-  brandText: {
-    color: nativeTokens.color.brand700,
-    fontFamily: nativeTokens.type.family.sans,
-    fontSize: nativeTokens.type.scale.h2.size,
-    lineHeight: nativeTokens.type.scale.h2.line,
-    fontWeight: "800",
   },
   iconButton: {
     width: nativeTokens.chrome.minHit,

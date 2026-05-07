@@ -76,7 +76,8 @@ export function ReportDialog({
 
   useEffect(() => {
     if (!open) return;
-    restoreRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    restoreRef.current =
+      document.activeElement instanceof HTMLElement ? document.activeElement : null;
     const timer = window.setTimeout(() => panelRef.current?.focus(), 0);
     return () => {
       window.clearTimeout(timer);
@@ -89,7 +90,7 @@ export function ReportDialog({
   return (
     <div
       role="presentation"
-      className="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 p-4"
+      className="bg-ink/40 fixed inset-0 z-50 flex items-center justify-center p-4"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) onOpenChange(false);
       }}

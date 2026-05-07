@@ -46,11 +46,7 @@ describe("Sheet", () => {
     const onApply = jest.fn();
     const screen = render(
       <Sheet open onClose={jest.fn()} title="خيارات البحث" closeLabel="إغلاق اللوحة" scroll={false}>
-        <Pressable
-          onPress={onApply}
-          accessibilityRole="button"
-          accessibilityLabel="تطبيق المرشحات"
-        >
+        <Pressable onPress={onApply} accessibilityRole="button" accessibilityLabel="تطبيق المرشحات">
           <Text>تطبيق</Text>
         </Pressable>
       </Sheet>,

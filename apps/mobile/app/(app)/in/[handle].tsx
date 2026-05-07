@@ -15,6 +15,7 @@ import {
   SegmentedControl,
   Surface,
   nativeTokens,
+  useToast,
   type BlockButtonLabels,
   type ReportSheetLabels,
 } from "@baydar/ui-native";
@@ -47,6 +48,7 @@ const TABS: { key: ProfileTab; i18n: string }[] = [
 export default function ProfileScreen(): JSX.Element {
   const { handle } = useLocalSearchParams<{ handle: string }>();
   const { t } = useTranslation();
+  const { showToast } = useToast();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
@@ -331,12 +333,23 @@ export default function ProfileScreen(): JSX.Element {
                   if (nextBlocked) {
                     block.mutate(
                       { blockedUserId: userId },
-                      { onSuccess: () => router.replace("/(app)/feed") },
+                      {
+                        onSuccess: () => {
+                          showToast({ message: t("safety.block.success"), kind: "success" });
+                          router.replace("/(app)/feed");
+                        },
+                        onError: () =>
+                          showToast({ message: t("safety.block.error"), kind: "error" }),
+                      },
                     );
                   } else {
                     unblock.mutate(userId, {
-                      onSuccess: () =>
-                        setProfile({ ...profile, viewer: { isSelf: false, connection: null } }),
+                      onSuccess: () => {
+                        setProfile({ ...profile, viewer: { isSelf: false, connection: null } });
+                        showToast({ message: t("safety.unblock.success"), kind: "success" });
+                      },
+                      onError: () =>
+                        showToast({ message: t("safety.unblock.error"), kind: "error" }),
                     });
                   }
                 }}
@@ -444,7 +457,13 @@ export default function ProfileScreen(): JSX.Element {
           labels={reportLabels}
           submitting={report.isPending}
           onSubmit={(input) => {
-            report.mutate(input, { onSuccess: () => setReportOpen(false) });
+            report.mutate(input, {
+              onSuccess: () => {
+                setReportOpen(false);
+                showToast({ message: t("safety.report.success"), kind: "success" });
+              },
+              onError: () => showToast({ message: t("safety.report.error"), kind: "error" }),
+            });
           }}
         />
       </ScrollView>

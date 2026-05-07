@@ -478,16 +478,18 @@ model Notification {
   actorId     String?
   type        NotificationType
   // polymorphic reference — one of these is set
-  postId      String?
-  commentId   String?
+  postId       String?
+  commentId    String?
   connectionId String?
-  messageId   String?
-  jobId       String?
-  data        Json?
-  readAt      DateTime?
-  createdAt   DateTime         @default(now())
+  messageId    String?
+  jobId        String?
+  data         Json?
+  readAt       DateTime?
+  dismissedAt  DateTime?
+  createdAt    DateTime         @default(now())
 
   @@index([recipientId, readAt])
+  @@index([recipientId, dismissedAt])
   @@index([recipientId, createdAt])
 }
 

@@ -1,4 +1,6 @@
+import { ToastProvider } from "@baydar/ui-native";
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
+import type { ReactElement } from "react";
 
 import ForgotPasswordScreen from "../../app/(auth)/forgot-password";
 import { useNetworkStore } from "../store/network";
@@ -46,6 +48,10 @@ jest.mock("react-i18next", () => ({
   }),
 }));
 
+function renderWithToast(ui: ReactElement) {
+  return render(<ToastProvider>{ui}</ToastProvider>);
+}
+
 describe("ForgotPasswordScreen", () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -54,7 +60,7 @@ describe("ForgotPasswordScreen", () => {
   });
 
   it("submits email and shows enumeration-safe confirmation", async () => {
-    const screen = render(<ForgotPasswordScreen />);
+    const screen = renderWithToast(<ForgotPasswordScreen />);
 
     fireEvent.changeText(screen.getByTestId("forgot-email-input"), "Demo@Baydar.ps");
     fireEvent.press(screen.getByTestId("forgot-password-submit"));

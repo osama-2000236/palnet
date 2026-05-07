@@ -21,6 +21,7 @@
 - Sprint 18 closes F-09 email verification and password recovery with hashed single-use tokens, console-only mail transport, web/mobile reset screens, and universal-link route entries.
 - Sprint 19 closes the privacy HIGH gap for account deletion and data export with soft-delete, 30-day restore, anonymization, refresh-token revocation, synchronous JSON export, web settings UI, and a mobile settings surface.
 - Sprint 20 closes the security hardening slice for one-time SSE stream tokens, web CSP/security headers, route-level rate-limit decorators, strict media presign MIME/size checks, and production CORS origin validation.
+- Sprint 21 closes F-10 notification dismissal with owner-only soft-dismiss and F-11 mobile tab polish with five visible tabs, AppHeader search access, web/mobile dismiss UI, account export sharing, and shared toast primitives.
 - Sprint 11.5 fixed Expo monorepo bundle resolution, mobile runtime package gaps, API runtime package builds, mobile SSE auth header handling, NetInfo seed state, Sentry release tagging, push locale copy, and authenticated a11y fixture validation.
 
 ## Known Follow-Ups
@@ -35,7 +36,6 @@
 - Real email provider integration remains deferred; choose Resend, SES, Postmark, or another provider before replacing the console transport.
 - Safety-related privacy/legal copy still needs counsel review before launch.
 - Account hard-delete after the 30-day restore grace period remains a follow-up scheduled job.
-- Mobile account export sharing is blocked until `expo-sharing` is approved and installed.
 - Redis-backed SSE fanout/rate-limit storage, virus/NSFW scanning, orphaned media lifecycle cleanup, WebAuthn/2FA, and httpOnly refresh cookies remain deferred after Sprint 20.
 - Sprint 15 safety test follow-ups are closed by Sprint 16: ui-web/ui-native safety primitives now have behavior coverage, mutation spot-check evidence was captured, and the Playwright safety e2e has an explicit Windows EPERM guard for invocable local runs.
 

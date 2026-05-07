@@ -48,12 +48,7 @@ describe("safety primitives", () => {
 
   it("renders BlockButton resting state", () => {
     const rendered = render(
-      <BlockButton
-        userId="user_1"
-        isBlocked={false}
-        onChange={jest.fn()}
-        labels={blockLabels}
-      />,
+      <BlockButton userId="user_1" isBlocked={false} onChange={jest.fn()} labels={blockLabels} />,
     );
 
     expect(rendered.toJSON()).toMatchSnapshot();
@@ -83,12 +78,7 @@ describe("safety primitives", () => {
     const onChange = jest.fn();
 
     render(
-      <BlockButton
-        userId="user_1"
-        isBlocked={false}
-        onChange={onChange}
-        labels={blockLabels}
-      />,
+      <BlockButton userId="user_1" isBlocked={false} onChange={onChange} labels={blockLabels} />,
     );
 
     fireEvent.press(screen.getByText("Block"));
@@ -104,12 +94,7 @@ describe("safety primitives", () => {
     const onChange = jest.fn();
 
     render(
-      <BlockButton
-        userId="user_1"
-        isBlocked={false}
-        onChange={onChange}
-        labels={blockLabels}
-      />,
+      <BlockButton userId="user_1" isBlocked={false} onChange={onChange} labels={blockLabels} />,
     );
 
     fireEvent.press(screen.getByText("Block"));
@@ -120,9 +105,7 @@ describe("safety primitives", () => {
   });
 
   it("shows the unblock variant when initially blocked", () => {
-    render(
-      <BlockButton userId="user_1" isBlocked onChange={jest.fn()} labels={blockLabels} />,
-    );
+    render(<BlockButton userId="user_1" isBlocked onChange={jest.fn()} labels={blockLabels} />);
 
     expect(screen.getByText("Unblock")).toBeTruthy();
     expect(screen.queryByText("Block")).toBeNull();

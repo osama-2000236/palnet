@@ -1,24 +1,36 @@
 import { ErrorCode } from "@baydar/shared";
-import type { ExecutionContext, HttpException } from "@nestjs/common";
+import {
+  HttpStatus,
+  type ExecutionContext,
+  type HttpException,
+  type INestApplication,
+} from "@nestjs/common";
 import type { ConfigService } from "@nestjs/config";
 import { Reflector } from "@nestjs/core";
-import type { Request } from "express";
+import { Test } from "@nestjs/testing";
+import type { NextFunction, Request, Response } from "express";
+import request from "supertest";
 
+import { AllExceptionsFilter } from "../../common/exception.filter";
+import { DomainException } from "../../common/domain-exception";
 import type { Env } from "../../config/env";
+import type { AuthUser } from "../auth/decorators/current-user.decorator";
 import type { AuthTokensService, StreamTokenUser } from "../auth/auth-tokens.service";
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 
-import type { NotificationsBus } from "./notifications.bus";
+import { NotificationsBus } from "./notifications.bus";
 import { NotificationsController } from "./notifications.controller";
-import type { NotificationsService } from "./notifications.service";
+import { NotificationsService } from "./notifications.service";
+
+const authUser: AuthUser = {
+  id: "user-1",
+  email: "demo@baydar.ps",
+  role: "USER",
+  locale: "ar-PS",
+};
 
 describe("NotificationsController stream auth", () => {
-  const user: StreamTokenUser = {
-    id: "user-1",
-    email: "demo@baydar.ps",
-    role: "USER",
-    locale: "ar-PS",
-  };
+  const user: StreamTokenUser = authUser;
 
   it("rejects legacy ?access_token= on /notifications/stream", async () => {
     const authTokens = { consumeStreamToken: jest.fn() };
@@ -57,6 +69,63 @@ describe("NotificationsController stream auth", () => {
     expect(bus.subscribe).toHaveBeenCalledWith("user-1", expect.any(Function));
     sub.unsubscribe();
     expect(unsubscribe).toHaveBeenCalled();
+  });
+});
+
+describe("NotificationsController dismiss", () => {
+  async function createApp(
+    notifications: Partial<NotificationsService>,
+  ): Promise<INestApplication> {
+    const moduleRef = await Test.createTestingModule({
+      controllers: [NotificationsController],
+      providers: [
+        { provide: NotificationsService, useValue: notifications },
+        { provide: NotificationsBus, useValue: { subscribe: jest.fn() } },
+      ],
+    }).compile();
+    const app = moduleRef.createNestApplication();
+    app.useGlobalFilters(new AllExceptionsFilter());
+    app.use((req: Request & { user?: AuthUser }, _res: Response, next: NextFunction) => {
+      req.user = authUser;
+      next();
+    });
+    await app.init();
+    return app;
+  }
+
+  it("returns 204 when the service dismisses the owned notification", async () => {
+    const notifications = { dismiss: jest.fn().mockResolvedValue(undefined) };
+    const app = await createApp(notifications as Partial<NotificationsService>);
+
+    try {
+      await request(app.getHttpServer()).delete("/notifications/n_1").expect(204).expect("");
+      expect(notifications.dismiss).toHaveBeenCalledWith("user-1", "n_1");
+    } finally {
+      await app.close();
+    }
+  });
+
+  it("returns 404 when the notification does not exist or is not owned by the viewer", async () => {
+    const notifications = {
+      dismiss: jest
+        .fn()
+        .mockRejectedValue(
+          new DomainException(ErrorCode.NOT_FOUND, "Notification not found.", HttpStatus.NOT_FOUND),
+        ),
+    };
+    const app = await createApp(notifications as Partial<NotificationsService>);
+
+    try {
+      await request(app.getHttpServer())
+        .delete("/notifications/missing")
+        .expect(404)
+        .expect((res) => {
+          expect(res.body.error.code).toBe(ErrorCode.NOT_FOUND);
+        });
+      expect(notifications.dismiss).toHaveBeenCalledWith("user-1", "missing");
+    } finally {
+      await app.close();
+    }
   });
 });
 

@@ -105,12 +105,12 @@ describe("AppTabsLayout", () => {
     expect([...new Set(visibleScreens)]).toEqual([
       "feed",
       "network",
-      "composer",
       "messages/index",
+      "notifications",
       "me/index",
     ]);
     expect(hiddenScreens).toEqual(
-      expect.arrayContaining(["jobs/index", "notifications", "search", "me/edit"]),
+      expect.arrayContaining(["jobs/index", "composer", "search", "me/edit"]),
     );
   });
 

@@ -5,7 +5,7 @@ import {
   type Notification as NotificationDto,
   type NotificationType,
 } from "@baydar/shared";
-import { Injectable, Logger } from "@nestjs/common";
+import { HttpStatus, Injectable, Logger } from "@nestjs/common";
 
 import { DomainException } from "../../common/domain-exception";
 import { PrismaService } from "../prisma/prisma.service";
@@ -108,7 +108,8 @@ export class NotificationsService {
             messageId: input.messageId ?? null,
             jobId: input.jobId ?? null,
             readAt: null,
-          },
+            dismissedAt: null,
+          } as never,
           select: { id: true },
         });
         if (existing) return;
@@ -165,8 +166,9 @@ export class NotificationsService {
     const rows = (await this.prisma.notification.findMany({
       where: {
         recipientId: viewerId,
+        dismissedAt: null,
         ...(excludedUserIds.length ? { actorId: { notIn: excludedUserIds } } : {}),
-      },
+      } as never,
       orderBy: { createdAt: "desc" },
       take: take + 1,
       ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
@@ -186,7 +188,7 @@ export class NotificationsService {
 
   async countUnread(viewerId: string): Promise<number> {
     return this.prisma.notification.count({
-      where: { recipientId: viewerId, readAt: null },
+      where: { recipientId: viewerId, readAt: null, dismissedAt: null } as never,
     });
   }
 
@@ -200,11 +202,12 @@ export class NotificationsService {
     }
     const at = new Date();
     const where = body.all
-      ? { recipientId: viewerId, readAt: null }
+      ? { recipientId: viewerId, readAt: null, dismissedAt: null }
       : {
           recipientId: viewerId,
           id: { in: body.ids ?? [] },
           readAt: null,
+          dismissedAt: null,
         };
     const result = await this.prisma.notification.updateMany({
       where,
@@ -221,6 +224,27 @@ export class NotificationsService {
       payload: { count },
     });
     return { count: result.count };
+  }
+
+  async dismiss(viewerId: string, notificationId: string): Promise<void> {
+    const at = new Date();
+    const result = await this.prisma.notification.updateMany({
+      where: { id: notificationId, recipientId: viewerId },
+      data: { dismissedAt: at } as never,
+    });
+    if (result.count === 0) {
+      throw new DomainException(
+        ErrorCode.NOT_FOUND,
+        "Notification not found.",
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    const count = await this.countUnread(viewerId);
+    this.bus.publish(viewerId, {
+      type: "notification.unread-count",
+      payload: { count },
+    });
   }
 }
 

@@ -7,6 +7,7 @@ import type { ReactNode } from "react";
 
 import { locales, localeDir, type Locale } from "@/i18n";
 import { QueryProvider } from "@/lib/query-provider";
+import { ToastBridge } from "@/components/ToastBridge";
 
 import "../globals.css";
 
@@ -49,7 +50,9 @@ export default async function RootLayout(props: {
     <html lang={locale} dir={dir} className={`${sansArabic.variable} ${bodyArabic.variable}`}>
       <body>
         <NextIntlClientProvider messages={messages} locale={locale}>
-          <QueryProvider>{props.children}</QueryProvider>
+          <QueryProvider>
+            <ToastBridge>{props.children}</ToastBridge>
+          </QueryProvider>
         </NextIntlClientProvider>
       </body>
     </html>
