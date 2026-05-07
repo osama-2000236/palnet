@@ -21,7 +21,6 @@ import { readSession } from "@/lib/session";
 
 export default function JobDetailPage(): JSX.Element {
   const t = useTranslations("jobs");
-  const tCommon = useTranslations("common");
   const tErr = useTranslations("errors");
   const locale = useLocale();
   const params = useParams<{ id: string }>();
