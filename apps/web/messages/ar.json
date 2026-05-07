@@ -8,6 +8,18 @@
     "continue": "متابعة",
     "genericError": "حدث خطأ ما. حاول مرة أخرى."
   },
+  "errors": {
+    "PROFILE_ONBOARDING_REQUIRED": "أكمل ملفك المهني أولًا حتى تتابع.",
+    "AUTH_UNAUTHORIZED": "يجب تسجيل الدخول.",
+    "UNAUTHORIZED": "يجب تسجيل الدخول.",
+    "FORBIDDEN": "ليس لديك صلاحية للوصول إلى هذا المحتوى.",
+    "NOT_FOUND": "لم نعثر على ما تبحث عنه.",
+    "RATE_LIMITED": "تم تجاوز الحد. حاول لاحقًا.",
+    "VALIDATION_FAILED": "تحقق من الحقول ثم حاول مرة أخرى.",
+    "INTERNAL": "حدث خطأ في الخادم. حاول مرة أخرى.",
+    "NETWORK": "تعذّر الاتصال بالخادم.",
+    "fallback": "حدث خطأ غير متوقع. حاول مرة أخرى."
+  },
   "toast": {
     "dismiss": {
       "aria": "إغلاق التنبيه"
@@ -272,6 +284,16 @@
     "coverLetterPlaceholder": "اكتب لماذا أنت مناسب لهذا الدور…",
     "coverLetterHint": "حتى 8,000 حرف.",
     "submitApplication": "أرسل الطلب"
+  },
+  "settings": {
+    "title": "الإعدادات",
+    "subtitle": "إدارة حسابك والخصوصية والأمان.",
+    "items": {
+      "account": "الحساب",
+      "accountDesc": "تنزيل بياناتك وحذف حسابك.",
+      "blocked": "الحسابات المحظورة",
+      "blockedDesc": "إدارة قائمة المحظورين."
+    }
   },
   "account": {
     "title": "الحساب",

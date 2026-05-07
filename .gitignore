@@ -44,6 +44,9 @@ test-results/
 e2e-results/
 apps/web/tests/.auth/
 
+# AgentFlow runtime artifacts
+.agentflow/
+
 # Mobile native
 apps/mobile/ios/
 apps/mobile/android/

@@ -64,86 +64,84 @@ export default function OnboardingPage(): JSX.Element {
   }
 
   return (
-    <form
-      onSubmit={onSubmit}
-      className="mx-auto flex w-full max-w-md flex-col gap-4 px-6 py-12"
-      noValidate
-    >
-      <header className="flex flex-col gap-1">
-        <h1 className="text-ink text-3xl font-bold">{t("title")}</h1>
-        <p className="text-ink-muted">{t("subtitle")}</p>
-      </header>
+    <main className="mx-auto w-full max-w-md px-6 py-12">
+      <form onSubmit={onSubmit} className="flex flex-col gap-4" noValidate>
+        <header className="flex flex-col gap-1">
+          <h1 className="text-ink text-3xl font-bold">{t("title")}</h1>
+          <p className="text-ink-muted">{t("subtitle")}</p>
+        </header>
 
-      <label className="flex flex-col gap-1">
-        <span className="text-ink-muted text-sm">{tAuth("firstName")}</span>
-        <input
-          className="border-ink-muted/30 rounded-md border px-3 py-2"
-          value={state.firstName}
-          onChange={(e) => setState({ ...state, firstName: e.target.value })}
-          required
-        />
-      </label>
+        <label className="flex flex-col gap-1">
+          <span className="text-ink-muted text-sm">{tAuth("firstName")}</span>
+          <input
+            className="border-ink-muted/30 rounded-md border px-3 py-2"
+            value={state.firstName}
+            onChange={(e) => setState({ ...state, firstName: e.target.value })}
+            required
+          />
+        </label>
 
-      <label className="flex flex-col gap-1">
-        <span className="text-ink-muted text-sm">{tAuth("lastName")}</span>
-        <input
-          className="border-ink-muted/30 rounded-md border px-3 py-2"
-          value={state.lastName}
-          onChange={(e) => setState({ ...state, lastName: e.target.value })}
-          required
-        />
-      </label>
+        <label className="flex flex-col gap-1">
+          <span className="text-ink-muted text-sm">{tAuth("lastName")}</span>
+          <input
+            className="border-ink-muted/30 rounded-md border px-3 py-2"
+            value={state.lastName}
+            onChange={(e) => setState({ ...state, lastName: e.target.value })}
+            required
+          />
+        </label>
 
-      <label className="flex flex-col gap-1">
-        <span className="text-ink-muted text-sm">{t("handle")}</span>
-        <input
-          dir="ltr"
-          className="border-ink-muted/30 rounded-md border px-3 py-2"
-          value={state.handle}
-          onChange={(e) => setState({ ...state, handle: e.target.value.toLowerCase() })}
-          required
-          pattern="[a-z0-9][a-z0-9-]+[a-z0-9]"
-          minLength={3}
-          maxLength={30}
-        />
-        <span className="text-ink-muted text-xs">
-          {t("handleHint", { handle: state.handle || "your-handle" })}
-        </span>
-      </label>
+        <label className="flex flex-col gap-1">
+          <span className="text-ink-muted text-sm">{t("handle")}</span>
+          <input
+            dir="ltr"
+            className="border-ink-muted/30 rounded-md border px-3 py-2"
+            value={state.handle}
+            onChange={(e) => setState({ ...state, handle: e.target.value.toLowerCase() })}
+            required
+            pattern="[a-z0-9][a-z0-9-]+[a-z0-9]"
+            minLength={3}
+            maxLength={30}
+          />
+          <span className="text-ink-muted text-xs">
+            {t("handleHint", { handle: state.handle || "your-handle" })}
+          </span>
+        </label>
 
-      <label className="flex flex-col gap-1">
-        <span className="text-ink-muted text-sm">{t("headline")}</span>
-        <input
-          className="border-ink-muted/30 rounded-md border px-3 py-2"
-          value={state.headline}
-          onChange={(e) => setState({ ...state, headline: e.target.value })}
-          maxLength={220}
-        />
-      </label>
+        <label className="flex flex-col gap-1">
+          <span className="text-ink-muted text-sm">{t("headline")}</span>
+          <input
+            className="border-ink-muted/30 rounded-md border px-3 py-2"
+            value={state.headline}
+            onChange={(e) => setState({ ...state, headline: e.target.value })}
+            maxLength={220}
+          />
+        </label>
 
-      <label className="flex flex-col gap-1">
-        <span className="text-ink-muted text-sm">{t("location")}</span>
-        <input
-          className="border-ink-muted/30 rounded-md border px-3 py-2"
-          value={state.location}
-          onChange={(e) => setState({ ...state, location: e.target.value })}
-          maxLength={120}
-        />
-      </label>
+        <label className="flex flex-col gap-1">
+          <span className="text-ink-muted text-sm">{t("location")}</span>
+          <input
+            className="border-ink-muted/30 rounded-md border px-3 py-2"
+            value={state.location}
+            onChange={(e) => setState({ ...state, location: e.target.value })}
+            maxLength={120}
+          />
+        </label>
 
-      {error ? (
-        <p role="alert" className="text-danger text-sm">
-          {error}
-        </p>
-      ) : null}
+        {error ? (
+          <p role="alert" className="text-danger text-sm">
+            {error}
+          </p>
+        ) : null}
 
-      <button
-        type="submit"
-        disabled={busy}
-        className="bg-brand-600 text-ink-inverse shadow-card hover:bg-brand-700 rounded-md px-4 py-2 disabled:opacity-60"
-      >
-        {t("submit")}
-      </button>
-    </form>
+        <button
+          type="submit"
+          disabled={busy}
+          className="bg-brand-600 text-ink-inverse shadow-card hover:bg-brand-700 rounded-md px-4 py-2 disabled:opacity-60"
+        >
+          {t("submit")}
+        </button>
+      </form>
+    </main>
   );
 }

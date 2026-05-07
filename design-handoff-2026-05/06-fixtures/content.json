@@ -1,0 +1,31 @@
+{
+  "names": {
+    "short_ar": "سارة",
+    "long_ar": "عبد الرحمن بن عبد العزيز",
+    "single_letter_ar": "ن",
+    "mixed": "Layla خالد"
+  },
+  "headlines": {
+    "short_ar": "مهندسة برمجيات",
+    "medium_ar": "مهندسة برمجيات أولى في شركة تقنية فلسطينية",
+    "long_ar": "قائدة فريق المنتج والتصميم والتجربة في إحدى الشركات الناشئة في رام الله، أعمل على بناء منتجات للسوق العربي",
+    "mixed": "Full Stack Engineer · React · Node.js · PostgreSQL"
+  },
+  "post_bodies": {
+    "one_line_ar": "اليوم انضممتُ إلى فريق جديد. شكراً لكل من دعمني.",
+    "paragraph_ar": "بعد سنتين من العمل عن بُعد، عدتُ إلى المكتب اليوم. الفرق محسوس: اللقاءات العفوية، والنقاشات السريعة على فنجان قهوة، والشعور بأنك جزء من فريق حقيقي. لا أقول إن العمل عن بُعد سيّئ، لكن للحضور قيمته.",
+    "mixed": "جربتُ Next.js 15 هذا الأسبوع. الـ App Router أصبح أكثر استقراراً، والـ Server Actions أنظف من قبل. لكن TypeScript لا يزال يشتكي من types/* في بعض الحالات."
+  },
+  "numerals": {
+    "arabic_indic": "١٢٣٤٥",
+    "western": "12345",
+    "in_sentence_ar": "شارك ١٢٤ شخصاً",
+    "in_sentence_mixed": "شارك 124 شخصاً"
+  },
+  "edge_cases": {
+    "long_handle": "@abdulrahman-product-designer-ramallah",
+    "url_in_arabic": "زوروا الموقع https://baydar.app للمزيد",
+    "rtl_then_ltr_then_rtl": "نشرتُ مقالاً عن React في مجلة العربية",
+    "very_long_post": "[HUMAN: native speaker pastes 500-word Arabic post here]"
+  }
+}

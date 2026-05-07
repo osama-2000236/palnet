@@ -233,6 +233,18 @@ Single column, edge-to-edge cards with 16px horizontal padding, bottom tab bar 6
 
 Per-screen recipes (Feed, Profile, Network, Jobs, Messages, Notifications, Search, Auth/Onboarding) — surfaces used, components composed, copy stance, loading/empty/error/offline states, mobile divergences — live in [docs/design/SCREENS.md](docs/design/SCREENS.md).
 
+### 11.1 Onboarding shell (decision)
+
+Onboarding (`/onboarding` web · `OnboardingScreen` native) renders **without `AppShell`** — no top nav, no bottom tab bar, no search pill. Decision rationale:
+
+- It's the only authenticated screen a user must complete before the rest of the app is usable. Showing the full chrome implies "feel free to navigate away" — but most other tabs 403 with `PROFILE_ONBOARDING_REQUIRED` until onboarding finishes, so navigating away is a dead end.
+- The focused single-purpose layout (centered form, no nav) makes the verb obvious: complete this, then continue.
+- Reverting to the shell would require either routing exceptions on every other tab (clumsy) or letting users hit dead ends (worse).
+
+Implementation: web layout flags onboarding via `isBareAppRoute()` in `apps/web/src/app/[locale]/(app)/layout.tsx` and skips `<AppShell>`. Mobile uses a similar flag on the bottom tab bar.
+
+When onboarding gets multiple steps (signup → verify → profile → first connect), keep the bare shell for every step but add a **progress strip** at the top so the user knows how many steps remain. Introduce that strip via a new `OnboardingProgress` primitive in both UI kits when the multi-step flow ships.
+
 ## 12. Interaction patterns
 
 - **Hover** (web): `surface-subtle` background fill, 120ms ease.

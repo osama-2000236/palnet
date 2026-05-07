@@ -347,13 +347,20 @@ export function AppShell({
                 aria-controls={menuId}
                 aria-current={currentRoute === "profile" ? "page" : undefined}
                 className={cx(
-                  "focus-visible:ring-brand-600 focus-visible:ring-offset-surface relative -mb-px inline-flex flex-col items-center gap-0.5 border-b-2 px-3 py-1.5 text-[11px] font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
+                  "focus-visible:ring-brand-600 focus-visible:ring-offset-surface relative -mb-px inline-flex flex-col items-center gap-0.5 rounded-t-md border-b-2 px-3 py-1.5 text-[11px] font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
                   currentRoute === "profile"
                     ? "border-brand-600 text-ink"
-                    : "text-ink-muted hover:text-ink border-transparent",
+                    : "text-ink-muted hover:bg-surface-subtle hover:text-ink border-transparent",
                 )}
               >
-                <Avatar user={me} size="sm" />
+                {me ? (
+                  <Avatar user={me} size="sm" />
+                ) : (
+                  <span
+                    aria-hidden="true"
+                    className="bg-surface-sunken h-8 w-8 animate-pulse rounded-full"
+                  />
+                )}
                 <span className="inline-flex items-center gap-0.5">
                   {labels.myProfile}
                   <Icon name="chevron-down" size={12} />

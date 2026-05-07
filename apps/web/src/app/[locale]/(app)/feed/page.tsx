@@ -18,7 +18,7 @@ import {
   Profile,
   cursorPage,
 } from "@baydar/shared";
-import { Avatar, Icon, PostCardSkeleton, Surface, type IconName } from "@baydar/ui-web";
+import { Avatar, Icon, PostCardSkeleton, Surface } from "@baydar/ui-web";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -155,27 +155,33 @@ function LeftRail({ me }: { me: Profile | null }): JSX.Element {
       <Surface variant="hero" padding="0" className="flex flex-col">
         <div className="from-brand-500 to-brand-700 h-14 bg-gradient-to-br" />
         <div className="-mt-7 px-4 pb-4">
-          <Avatar
-            user={
-              me
-                ? {
-                    id: me.userId,
-                    handle: me.handle,
-                    firstName: me.firstName,
-                    lastName: me.lastName,
-                    avatarUrl: me.avatarUrl ?? null,
-                  }
-                : { id: "pending", firstName: "", lastName: "" }
-            }
-            size="lg"
-            ring
-          />
-          <div className="text-ink mt-2 text-sm font-semibold">
-            {me ? `${me.firstName} ${me.lastName}`.trim() : ""}
-          </div>
-          {me?.headline ? (
-            <div className="text-ink-muted mt-0.5 truncate text-xs">{me.headline}</div>
-          ) : null}
+          {me ? (
+            <>
+              <Avatar
+                user={{
+                  id: me.userId,
+                  handle: me.handle,
+                  firstName: me.firstName,
+                  lastName: me.lastName,
+                  avatarUrl: me.avatarUrl ?? null,
+                }}
+                size="lg"
+                ring
+              />
+              <div className="text-ink mt-2 text-sm font-semibold">
+                {`${me.firstName} ${me.lastName}`.trim()}
+              </div>
+              {me.headline ? (
+                <div className="text-ink-muted mt-0.5 truncate text-xs">{me.headline}</div>
+              ) : null}
+            </>
+          ) : (
+            <div aria-hidden="true">
+              <div className="bg-surface-sunken ring-surface h-14 w-14 animate-pulse rounded-full ring-[3px]" />
+              <div className="bg-surface-sunken mt-3 h-4 w-32 animate-pulse rounded" />
+              <div className="bg-surface-sunken mt-2 h-3 w-24 animate-pulse rounded" />
+            </div>
+          )}
         </div>
         <div className="border-line-soft border-t" />
         {me ? (
@@ -188,32 +194,14 @@ function LeftRail({ me }: { me: Profile | null }): JSX.Element {
           </Link>
         ) : null}
       </Surface>
-
-      <Surface variant="flat" padding="3">
-        <div className="text-ink-muted mb-2 text-xs">{t("quickAccess")}</div>
-        <ul className="flex flex-col">
-          <QuickLink icon="bookmark" label={t("saved")} />
-          <QuickLink icon="users" label={t("groups")} />
-          <QuickLink icon="calendar" label={t("events")} />
-        </ul>
-      </Surface>
     </aside>
   );
 }
-
-function QuickLink({ icon, label }: { icon: IconName; label: string }): JSX.Element {
-  return (
-    <li>
-      <button
-        type="button"
-        className="text-ink-muted hover:bg-surface-subtle hover:text-ink focus-visible:ring-brand-600 flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-start text-sm focus:outline-none focus-visible:ring-2"
-      >
-        <Icon name={icon} size={14} />
-        {label}
-      </button>
-    </li>
-  );
-}
+//
+// Quick-access rail (Bookmarks / Groups / Events) was intentionally removed:
+// none of those are MVP features per `docs/HANDOFF.md`, and aspirational
+// links shipped in the chrome read as broken UX. Re-add a real card here
+// when the corresponding feature ships, not before.
 
 // ────────────────────────────────────────────────────────────────────────
 // Right rail — people you may know + jobs placeholder + footer caption
@@ -333,8 +321,6 @@ function RightRail({
           <div className="text-ink-muted px-4 py-3 text-xs">{t("jobsComingSoon")}</div>
         )}
       </Surface>
-
-      <p className="text-ink-muted text-center text-[11px]">{t("footer")}</p>
     </aside>
   );
 }
