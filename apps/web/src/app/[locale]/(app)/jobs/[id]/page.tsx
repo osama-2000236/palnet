@@ -16,11 +16,13 @@ import { useLocale, useTranslations } from "next-intl";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 
 import { apiCall, apiFetch } from "@/lib/api";
+import { getErrorCode, toErrorMessage } from "@/lib/error-message";
 import { readSession } from "@/lib/session";
 
 export default function JobDetailPage(): JSX.Element {
   const t = useTranslations("jobs");
   const tCommon = useTranslations("common");
+  const tErr = useTranslations("errors");
   const locale = useLocale();
   const params = useParams<{ id: string }>();
   const router = useRouter();
@@ -47,9 +49,15 @@ export default function JobDetailPage(): JSX.Element {
     setError(null);
     apiFetch(`/jobs/${jobId}`, JobSchema, { token })
       .then((j) => setJob(j))
-      .catch((e: Error) => setError(e.message || tCommon("genericError")))
+      .catch((e) => {
+        if (getErrorCode(e) === "PROFILE_ONBOARDING_REQUIRED") {
+          router.replace(`/${locale}/onboarding?return=${encodeURIComponent(`/jobs/${jobId}`)}`);
+          return;
+        }
+        setError(toErrorMessage(e, tErr));
+      })
       .finally(() => setLoading(false));
-  }, [token, jobId, tCommon]);
+  }, [token, jobId, tErr, router, locale]);
 
   const handleApplied = useCallback(() => {
     setJob((j) => (j ? { ...j, viewer: { ...j.viewer, hasApplied: true } } : j));
@@ -200,6 +208,7 @@ interface ApplyDialogProps {
 function ApplyDialog({ job, token, onClose, onApplied }: ApplyDialogProps): JSX.Element {
   const t = useTranslations("jobs");
   const tCommon = useTranslations("common");
+  const tErr = useTranslations("errors");
   const [coverLetter, setCoverLetter] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -246,7 +255,7 @@ function ApplyDialog({ job, token, onClose, onApplied }: ApplyDialogProps): JSX.
       });
       onApplied();
     } catch (e) {
-      setSubmitError((e as Error).message || tCommon("genericError"));
+      setSubmitError(toErrorMessage(e, tErr));
     } finally {
       setSubmitting(false);
     }

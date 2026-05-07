@@ -25,6 +25,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 
 import { apiFetchPage } from "@/lib/api";
+import { getErrorCode, toErrorMessage } from "@/lib/error-message";
 import { readSession } from "@/lib/session";
 
 const JobsPage = cursorPage(JobSchema);
@@ -64,6 +65,7 @@ function formatSalary(job: Job, t: (k: string) => string, locale: string): strin
 export default function JobsPageRoute(): JSX.Element {
   const t = useTranslations("jobs");
   const tCommon = useTranslations("common");
+  const tErr = useTranslations("errors");
   const locale = useLocale();
   const router = useRouter();
 
@@ -96,13 +98,17 @@ export default function JobsPageRoute(): JSX.Element {
         setCursor(page.meta.nextCursor);
         setHasMore(page.meta.hasMore);
       } catch (e) {
-        setError((e as Error).message || tCommon("genericError"));
+        if (getErrorCode(e) === "PROFILE_ONBOARDING_REQUIRED") {
+          router.replace(`/${locale}/onboarding?return=${encodeURIComponent("/jobs")}`);
+          return;
+        }
+        setError(toErrorMessage(e, tErr));
       } finally {
         setLoading(false);
         setFirstLoad(false);
       }
     },
-    [tCommon],
+    [tErr, router, locale],
   );
 
   // Initial + re-run whenever filters change. Debounce query + city.
