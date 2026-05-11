@@ -159,7 +159,41 @@ Mobile has no right rails — single column. The mobile divergence is documented
 
 Bare shell (no `AppShell`). One verb per page. See `DESIGN.md` §11.1 for the shell decision.
 
-R3 in `design-handoff-2026-05/10-ask.md` covers the multi-step onboarding flow and will land per-step recipes here in a separate PR.
+### Auth pages
+
+`/login`, `/register`, `/forgot-password`, `/reset-password/[token]`, `/verify-email/[token]` — all centered single-column max-width 480, one form per page.
+
+### Onboarding flow — 5 steps
+
+Bare shell + `OnboardingProgress` strip at the top of each step. State machine:
+
+```
+SIGNED_UP        → step 1 → email sent → step 2
+VERIFIED         → step 2 → /onboarding → step 3
+PROFILE_COMPLETE → step 3 → /onboarding/connect → step 4
+CONNECTIONS_SENT → step 4 → /feed?welcome=1
+```
+
+| Step | Route | Surfaces | Action |
+| --- | --- | --- | --- |
+| 1. Sign up | `/register` | Form fields | `Create account` |
+| 2. Verify email | `/verify-email/[token]` | `tinted` callout, single line | (token in email) |
+| 3. Profile | `/onboarding` | Form fields, `OnboardingProgress` step=3 | `Continue` → step 4 |
+| 4. First connect | `/onboarding/connect` *(new)* | `flat` list of suggestion cards, `OnboardingProgress` step=4 | `Connect with N` → `/feed?welcome=1` |
+| 5. Land in feed | `/feed?welcome=1` | Feed (normal `AppShell`) + welcome `Toast` | — |
+
+Per-step recipes, copy direction, and the rejected alternatives are in [`design-out/onboarding/`](../../design-out/onboarding/).
+
+**Mobile** uses the same flow with a single screen (`apps/mobile/app/(app)/onboarding.tsx`) that walks the user through steps 3 and 4 in-place. The bottom tab bar is hidden for the duration via `_layout.tsx`.
+
+### `OnboardingProgress` primitive
+
+- [`packages/ui-web/src/OnboardingProgress.tsx`](../../packages/ui-web/src/OnboardingProgress.tsx)
+- [`packages/ui-native/src/OnboardingProgress.tsx`](../../packages/ui-native/src/OnboardingProgress.tsx)
+
+Props: `{ step, totalSteps, ariaLabel | accessibilityLabel, stepLabels?, className | style? }`. Renders a row of numbered dots with connectors. Current step = filled + ringed; completed steps = filled with check; upcoming = `surface-sunken`.
+
+Use sparingly: only on onboarding step screens. Not a general-purpose stepper.
 
 ## When to deviate
 
