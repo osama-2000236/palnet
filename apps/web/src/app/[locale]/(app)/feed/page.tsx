@@ -330,11 +330,5 @@ function RightRail({
 // ────────────────────────────────────────────────────────────────────────
 
 function FeedEmpty({ title, desc }: { title: string; desc: string }): JSX.Element {
-  return (
-    <EmptyState
-      illustration={<WheatSheaf size={128} />}
-      title={title}
-      description={desc}
-    />
-  );
+  return <EmptyState illustration={<WheatSheaf size={128} />} title={title} description={desc} />;
 }

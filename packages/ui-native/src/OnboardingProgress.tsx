@@ -57,10 +57,7 @@ export function OnboardingProgress({
             </View>
             {n < totalSteps ? (
               <View
-                style={[
-                  styles.connector,
-                  isDone ? styles.connectorDone : styles.connectorPending,
-                ]}
+                style={[styles.connector, isDone ? styles.connectorDone : styles.connectorPending]}
               />
             ) : null}
           </View>

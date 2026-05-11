@@ -2,16 +2,21 @@
 // like the web `/messages` left rail instead of the raw-RN cards.
 
 import { ChatRoom as ChatRoomSchema, type ChatRoom } from "@baydar/shared";
-import { AppHeader, Button, Icon, RecordCardSkeleton, nativeTokens } from "@baydar/ui-native";
+import {
+  AppHeader,
+  Button,
+  EmptyState,
+  EnvelopeFolded,
+  Icon,
+  RecordCardSkeleton,
+  nativeTokens,
+} from "@baydar/ui-native";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { FlatList, RefreshControl, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { z } from "zod";
-
-import { EmptyState, EnvelopeFolded } from "@baydar/ui-native";
-import { router } from "expo-router";
 
 import { StateMessage } from "@/components/StateMessage";
 import { RoomRow } from "@/components/rows/RoomRow";

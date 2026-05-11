@@ -166,16 +166,14 @@ export default function SearchScreen(): JSX.Element {
                 busy={loading}
                 onAction={() => void run(type, q, null)}
               />
+            ) : touched ? (
+              <EmptyState
+                illustration={<WinnowingTray size={128} />}
+                title={t(`search.empty.${type}` as never)}
+                description={t("search.emptyDesc")}
+              />
             ) : (
-              touched ? (
-                <EmptyState
-                  illustration={<WinnowingTray size={128} />}
-                  title={t(`search.empty.${type}` as never)}
-                  description={t("search.emptyDesc")}
-                />
-              ) : (
-                <StateMessage message={t("search.prompt")} role="text" />
-              )
+              <StateMessage message={t("search.prompt")} role="text" />
             )
           }
         />

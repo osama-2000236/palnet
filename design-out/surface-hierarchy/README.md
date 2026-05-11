@@ -4,11 +4,11 @@ Scope from [`design-handoff-2026-05/10-ask.md`](../../design-handoff-2026-05/10-
 
 ## Files
 
-| File | Purpose |
-| --- | --- |
-| [`audit.md`](audit.md) | Per-screen surface map before/after, with the "every-card" hits called out. |
-| [`rail-policy.md`](rail-policy.md) | When a screen gets a right rail and what goes in it. |
-| [`rationale.md`](rationale.md) | Why these refactors, what was rejected. |
+| File                               | Purpose                                                                     |
+| ---------------------------------- | --------------------------------------------------------------------------- |
+| [`audit.md`](audit.md)             | Per-screen surface map before/after, with the "every-card" hits called out. |
+| [`rail-policy.md`](rail-policy.md) | When a screen gets a right rail and what goes in it.                        |
+| [`rationale.md`](rationale.md)     | Why these refactors, what was rejected.                                     |
 
 The promoted recipe doc lives in the main tree, not here:
 
@@ -18,8 +18,8 @@ The promoted recipe doc lives in the main tree, not here:
 
 Refactors applied this pass:
 
-- [`apps/web/src/app/[locale]/(app)/network/page.tsx`](../../apps/web/src/app/[locale]/(app)/network/page.tsx) — list wrapped in one `flat` `Surface`; each row is a `row`-variant Surface. Was: one `flat` Surface *per row*.
-- [`apps/web/src/app/[locale]/(app)/jobs/page.tsx`](../../apps/web/src/app/[locale]/(app)/jobs/page.tsx) — same fix. `JobListRow` now renders `variant="row"`. Skeleton matches.
+- [`apps/web/src/app/[locale]/(app)/network/page.tsx`](<../../apps/web/src/app/[locale]/(app)/network/page.tsx>) — list wrapped in one `flat` `Surface`; each row is a `row`-variant Surface. Was: one `flat` Surface _per row_.
+- [`apps/web/src/app/[locale]/(app)/jobs/page.tsx`](<../../apps/web/src/app/[locale]/(app)/jobs/page.tsx>) — same fix. `JobListRow` now renders `variant="row"`. Skeleton matches.
 
 Mobile FlatList lists already use `RecordCard` items without the per-row card antipattern, so no mobile refactor was required.
 

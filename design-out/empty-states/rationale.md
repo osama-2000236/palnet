@@ -8,7 +8,7 @@ Why agrarian-geometric, not photographic or 3D-isometric: Baydar's metaphor is t
 
 Why one component, not separate `EmptyFeed` / `EmptyMessages` / etc: the shape is identical — illustration + title + description + optional action. Splitting per screen would duplicate the Surface and Button wiring, drift between platforms, and triple the i18n surface. The illustration is passed in as a `ReactNode`, so screens choose their motif without an enum. Same trade-off the existing `Surface` makes.
 
-Why `EmptyState` is distinct from native `StateMessage`: `StateMessage` is doing two jobs today — empty *and* error/offline banners. Splitting the two means error states keep their alert role and danger/warning tones, and empties get the comfortable padding + illustration slot they actually need. Both stay alive in the kit.
+Why `EmptyState` is distinct from native `StateMessage`: `StateMessage` is doing two jobs today — empty _and_ error/offline banners. Splitting the two means error states keep their alert role and danger/warning tones, and empties get the comfortable padding + illustration slot they actually need. Both stay alive in the kit.
 
 Tradeoff considered and rejected: extending `StateMessage` with an `illustration` prop instead of shipping a new component. Rejected because the layout differs (centered comfortable padding vs. row layout for banners), the semantic role differs (status vs. alert), and the prop surface diverges (action with `href` makes sense for an empty state, not for an error banner).
 

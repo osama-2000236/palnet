@@ -18,6 +18,8 @@ jest.mock("react-i18next", () => ({
       const translations: Record<string, string> = {
         "feed.title": "الخلاصة",
         "feed.empty": "ابدأ بنشر أول منشور لك.",
+        "feed.emptyTitle": "خلاصتك هادية…",
+        "feed.emptyDesc": "ابدأ منشورًا، أو تواصل مع زملاء جدد لتظهر منشوراتهم هنا.",
         "feed.welcome": `أهلًا ${String(values?.name ?? "")}`,
         "feed.profileCompletion": `اكتمال الملف ${String(values?.completed ?? "")} من ${String(
           values?.total ?? "",
@@ -96,7 +98,7 @@ describe("FeedScreen empty state", () => {
     const screen = render(<FeedScreen />);
 
     await waitFor(() => {
-      expect(screen.getByText("ابدأ بنشر أول منشور لك.")).toBeTruthy();
+      expect(screen.getByText("خلاصتك هادية…")).toBeTruthy();
       expect(screen.getByText("ليان خليل")).toBeTruthy();
       expect(screen.getByTestId("feed-search-button")).toBeTruthy();
       expect(screen.getByTestId("feed-notifications-button")).toBeTruthy();

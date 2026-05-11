@@ -10,17 +10,17 @@ If the rail is empty for a given user, the rail does not render — the column c
 
 ## Per-screen ruling
 
-| Screen | Rail? | Contents | Why |
-| --- | --- | --- | --- |
-| **Feed** | yes — **two rails** | Left: mini-profile hero + connections count. Right: PYMK + suggested jobs. | Feed is the only screen where the user is actively *browsing*. The rails accelerate browsing — "who's in my orbit" + "what else can I do here". |
-| **Network** | no | — | The page *is* discovery. A right rail would compete with the result list. Left rail filters are the only secondary surface. |
-| **Jobs** | no | — | Same as Network. Left filters do the work; right is the result. Adding a "saved jobs" rail later means deferring this rule for that one rail — defer it. |
-| **Messages** | no | — | Focus screen. Two-pane already (room list + thread). A third column would crowd a 1100-px max. |
-| **Notifications** | no | — | Single-task read-once stream. |
-| **Search** | no | — | Filters are inline tabs. Results are the page. |
-| **Profile** (own + others) | no | — | Hero + tabs are the page. A "people also viewed" rail would lift LinkedIn directly — out per `BRAND.md`. |
-| **Settings** | no | — | Routes do the work. |
-| **Onboarding** | no | — | Bare shell, one verb. See `DESIGN.md §11.1`. |
+| Screen                     | Rail?               | Contents                                                                   | Why                                                                                                                                                      |
+| -------------------------- | ------------------- | -------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Feed**                   | yes — **two rails** | Left: mini-profile hero + connections count. Right: PYMK + suggested jobs. | Feed is the only screen where the user is actively _browsing_. The rails accelerate browsing — "who's in my orbit" + "what else can I do here".          |
+| **Network**                | no                  | —                                                                          | The page _is_ discovery. A right rail would compete with the result list. Left rail filters are the only secondary surface.                              |
+| **Jobs**                   | no                  | —                                                                          | Same as Network. Left filters do the work; right is the result. Adding a "saved jobs" rail later means deferring this rule for that one rail — defer it. |
+| **Messages**               | no                  | —                                                                          | Focus screen. Two-pane already (room list + thread). A third column would crowd a 1100-px max.                                                           |
+| **Notifications**          | no                  | —                                                                          | Single-task read-once stream.                                                                                                                            |
+| **Search**                 | no                  | —                                                                          | Filters are inline tabs. Results are the page.                                                                                                           |
+| **Profile** (own + others) | no                  | —                                                                          | Hero + tabs are the page. A "people also viewed" rail would lift LinkedIn directly — out per `BRAND.md`.                                                 |
+| **Settings**               | no                  | —                                                                          | Routes do the work.                                                                                                                                      |
+| **Onboarding**             | no                  | —                                                                          | Bare shell, one verb. See `DESIGN.md §11.1`.                                                                                                             |
 
 ## What goes in a feed rail
 
@@ -41,5 +41,5 @@ No right rails. Single column, edge-to-edge cards, 64pt bottom tab bar. Rail con
 
 Revisit this policy when:
 
-- A new screen wants a right rail. Default: refuse unless the screen has clear *secondary discovery* (not a stats card, not a help widget).
+- A new screen wants a right rail. Default: refuse unless the screen has clear _secondary discovery_ (not a stats card, not a help widget).
 - A rail block hits 3 use cases (PYMK on Feed, Profile, and one more) — at that point promote it to a shared component in `@baydar/ui-web`.

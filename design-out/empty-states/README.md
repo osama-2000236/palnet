@@ -4,12 +4,12 @@ Scope from [`design-handoff-2026-05/10-ask.md`](../../design-handoff-2026-05/10-
 
 ## Files
 
-| File | Purpose |
-| --- | --- |
-| [`style-direction.md`](style-direction.md) | Illustration style stance, recipe, list of the eight motifs, acceptance rules. |
-| [`token-diff.md`](token-diff.md) | Tokens added (`illustration.size`, `illustration.stroke`) — TS, CSS, native. |
+| File                                           | Purpose                                                                                     |
+| ---------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| [`style-direction.md`](style-direction.md)     | Illustration style stance, recipe, list of the eight motifs, acceptance rules.              |
+| [`token-diff.md`](token-diff.md)               | Tokens added (`illustration.size`, `illustration.stroke`) — TS, CSS, native.                |
 | [`component-changes.md`](component-changes.md) | `EmptyState` component spec (web + native), illustration kit, screen call sites, i18n keys. |
-| [`rationale.md`](rationale.md) | Why a new primitive, why these motifs, what was rejected. |
+| [`rationale.md`](rationale.md)                 | Why a new primitive, why these motifs, what was rejected.                                   |
 
 ## Code (the mock)
 

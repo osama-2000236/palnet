@@ -6,13 +6,13 @@ Findings from walking the shipped web screens against the `DESIGN.md §5.6` reci
 
 **Before:**
 
-| Block | Surface |
-| --- | --- |
-| Left mini-profile | `hero` |
-| Composer | inline tinted pill |
-| Posts list | bare list of `card` posts |
-| Right PYMK | `card` |
-| Right Jobs | `card` |
+| Block             | Surface                   |
+| ----------------- | ------------------------- |
+| Left mini-profile | `hero`                    |
+| Composer          | inline tinted pill        |
+| Posts list        | bare list of `card` posts |
+| Right PYMK        | `card`                    |
+| Right Jobs        | `card`                    |
 
 **Verdict:** correct. The eye sees: one hero up top (you), a column of distinct content cards in the middle (posts), and a rail of secondary cards on the side (discovery). No nesting, no flat-spam.
 
@@ -22,62 +22,62 @@ Findings from walking the shipped web screens against the `DESIGN.md §5.6` reci
 
 **Before:**
 
-| Block | Surface |
-| --- | --- |
-| H1 + filter tabs | bare |
+| Block               | Surface                                  |
+| ------------------- | ---------------------------------------- |
+| H1 + filter tabs    | bare                                     |
 | Each connection row | individual `flat` Surface with padding 4 |
-| List separator | 12px gap |
+| List separator      | 12px gap                                 |
 
 **Anti-pattern:** every row is its own bordered container. The eye reads ten bounded units instead of one list. Skeleton already used this same pattern, reinforcing the drift.
 
 **After:**
 
-| Block | Surface |
-| --- | --- |
-| H1 + filter tabs | bare |
-| List wrapper | one `flat` `Surface` `as="section"` |
-| Each row | `row`-variant Surface, `last:border-b-0` |
+| Block            | Surface                                  |
+| ---------------- | ---------------------------------------- |
+| H1 + filter tabs | bare                                     |
+| List wrapper     | one `flat` `Surface` `as="section"`      |
+| Each row         | `row`-variant Surface, `last:border-b-0` |
 
 **Result:** one outlined list, internal hairlines between rows. The eye reads "one list of N people," and the action buttons inside each row no longer compete with the row's own border.
 
-**File touched:** [`apps/web/src/app/[locale]/(app)/network/page.tsx`](../../apps/web/src/app/[locale]/(app)/network/page.tsx).
+**File touched:** [`apps/web/src/app/[locale]/(app)/network/page.tsx`](<../../apps/web/src/app/[locale]/(app)/network/page.tsx>).
 
 ## Jobs — `apps/web/src/app/[locale]/(app)/jobs/page.tsx`
 
 **Before:**
 
-| Block | Surface |
-| --- | --- |
-| Left filters | `card` with `<fieldset>` blocks |
+| Block                       | Surface                                      |
+| --------------------------- | -------------------------------------------- |
+| Left filters                | `card` with `<fieldset>` blocks              |
 | Each job row (`JobListRow`) | `card` with shadow, separated by `space-y-3` |
-| Empty | `EmptyState` (after Pass 1) |
-| Skeleton | `card` (matched the row pattern) |
+| Empty                       | `EmptyState` (after Pass 1)                  |
+| Skeleton                    | `card` (matched the row pattern)             |
 
 **Anti-pattern:** same as Network — every row is its own shadowed card. Combined with the left-rail card, the page has 1 + N cards floating in a single result column.
 
 **After:**
 
-| Block | Surface |
-| --- | --- |
-| Left filters | `card` (unchanged) |
-| List wrapper | one `flat` `Surface` `as="section"` |
-| Each row | `row`-variant Surface (hover → `bg-surface-subtle`) |
-| Skeleton | `row` variant (matches) |
+| Block        | Surface                                             |
+| ------------ | --------------------------------------------------- |
+| Left filters | `card` (unchanged)                                  |
+| List wrapper | one `flat` `Surface` `as="section"`                 |
+| Each row     | `row`-variant Surface (hover → `bg-surface-subtle`) |
+| Skeleton     | `row` variant (matches)                             |
 
 **Result:** the filter card on the left, the result list on the right. Two surfaces, not eleven. The filter card still earns its shadow because it sits visually higher in the column hierarchy (controls the page).
 
-**File touched:** [`apps/web/src/app/[locale]/(app)/jobs/page.tsx`](../../apps/web/src/app/[locale]/(app)/jobs/page.tsx).
+**File touched:** [`apps/web/src/app/[locale]/(app)/jobs/page.tsx`](<../../apps/web/src/app/[locale]/(app)/jobs/page.tsx>).
 
 ## Messages — `apps/web/src/app/[locale]/(app)/messages/page.tsx`
 
 **Before:**
 
-| Block | Surface |
-| --- | --- |
-| Outer container | `card` with grid `320 | 1fr` |
-| Room list pane | bare flex column, `RoomRow` items as bare rows |
-| Thread pane | bare, `surface-subtle` bg for the body |
-| Composer | bordered row at the bottom |
+| Block           | Surface                                        |
+| --------------- | ---------------------------------------------- | ---- |
+| Outer container | `card` with grid `320                          | 1fr` |
+| Room list pane  | bare flex column, `RoomRow` items as bare rows |
+| Thread pane     | bare, `surface-subtle` bg for the body         |
+| Composer        | bordered row at the bottom                     |
 
 **Verdict:** correct. The whole screen is one `card`; everything inside is `row`s and `flat` surfaces. No nesting. The Pass 1 empty-state work already replaced the inline "No active room" CTA with a proper `EmptyState`.
 

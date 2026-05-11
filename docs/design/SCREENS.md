@@ -2,7 +2,7 @@
 
 Per-screen composition rules: which `Surface` variant goes where, which rail (if any) belongs on the right column, which states the screen owes the user. Promoted from stub in Design Pass 1 R2.
 
-> `DESIGN.md` remains the source of truth for *visual* decisions. This file is the source of truth for *composition* decisions per screen. When the two disagree, `DESIGN.md` wins — and open a PR to bring this file into line.
+> `DESIGN.md` remains the source of truth for _visual_ decisions. This file is the source of truth for _composition_ decisions per screen. When the two disagree, `DESIGN.md` wins — and open a PR to bring this file into line.
 
 ## Vocabulary
 
@@ -18,19 +18,19 @@ Rule: **never nest `card` inside `card`**. A list of records is one `flat` conta
 
 ## Right-rail policy
 
-A right rail is justified only when the screen has *secondary discovery* — content the user might pivot to without leaving the verb of the page.
+A right rail is justified only when the screen has _secondary discovery_ — content the user might pivot to without leaving the verb of the page.
 
-| Screen | Right rail? | What goes in it |
-| --- | --- | --- |
-| Feed | **yes — 2 rails** | Left: mini-profile hero + connections snapshot. Right: PYMK + suggested jobs. |
-| Network | no | Left filters justify themselves; the page *is* discovery. A right rail would compete. |
-| Jobs | no | Left filters do the work. Right is the result. Don't fight the result column. |
-| Messages | no | Focus screen. Room list is the only secondary surface. |
-| Notifications | no | Read-once stream. |
-| Search | no | Filters are inline tabs; results are the page. |
-| Profile (own and others) | no | Hero + tabs do the work. |
-| Settings | no | Sub-routes do the work. |
-| Onboarding | no | Bare shell, one verb. See §11.1 in `DESIGN.md`. |
+| Screen                   | Right rail?       | What goes in it                                                                       |
+| ------------------------ | ----------------- | ------------------------------------------------------------------------------------- |
+| Feed                     | **yes — 2 rails** | Left: mini-profile hero + connections snapshot. Right: PYMK + suggested jobs.         |
+| Network                  | no                | Left filters justify themselves; the page _is_ discovery. A right rail would compete. |
+| Jobs                     | no                | Left filters do the work. Right is the result. Don't fight the result column.         |
+| Messages                 | no                | Focus screen. Room list is the only secondary surface.                                |
+| Notifications            | no                | Read-once stream.                                                                     |
+| Search                   | no                | Filters are inline tabs; results are the page.                                        |
+| Profile (own and others) | no                | Hero + tabs do the work.                                                              |
+| Settings                 | no                | Sub-routes do the work.                                                               |
+| Onboarding               | no                | Bare shell, one verb. See §11.1 in `DESIGN.md`.                                       |
 
 Mobile has no right rails — single column. The mobile divergence is documented per-screen below.
 
@@ -174,13 +174,13 @@ PROFILE_COMPLETE → step 3 → /onboarding/connect → step 4
 CONNECTIONS_SENT → step 4 → /feed?welcome=1
 ```
 
-| Step | Route | Surfaces | Action |
-| --- | --- | --- | --- |
-| 1. Sign up | `/register` | Form fields | `Create account` |
-| 2. Verify email | `/verify-email/[token]` | `tinted` callout, single line | (token in email) |
-| 3. Profile | `/onboarding` | Form fields, `OnboardingProgress` step=3 | `Continue` → step 4 |
-| 4. First connect | `/onboarding/connect` *(new)* | `flat` list of suggestion cards, `OnboardingProgress` step=4 | `Connect with N` → `/feed?welcome=1` |
-| 5. Land in feed | `/feed?welcome=1` | Feed (normal `AppShell`) + welcome `Toast` | — |
+| Step             | Route                         | Surfaces                                                     | Action                               |
+| ---------------- | ----------------------------- | ------------------------------------------------------------ | ------------------------------------ |
+| 1. Sign up       | `/register`                   | Form fields                                                  | `Create account`                     |
+| 2. Verify email  | `/verify-email/[token]`       | `tinted` callout, single line                                | (token in email)                     |
+| 3. Profile       | `/onboarding`                 | Form fields, `OnboardingProgress` step=3                     | `Continue` → step 4                  |
+| 4. First connect | `/onboarding/connect` _(new)_ | `flat` list of suggestion cards, `OnboardingProgress` step=4 | `Connect with N` → `/feed?welcome=1` |
+| 5. Land in feed  | `/feed?welcome=1`             | Feed (normal `AppShell`) + welcome `Toast`                   | —                                    |
 
 Per-step recipes, copy direction, and the rejected alternatives are in [`design-out/onboarding/`](../../design-out/onboarding/).
 

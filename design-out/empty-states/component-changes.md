@@ -18,17 +18,17 @@ interface EmptyStateProps {
   description?: ReactNode;
   action?: {
     label: string;
-    onClick?: () => void;  // web
-    onPress?: () => void;  // native
+    onClick?: () => void; // web
+    onPress?: () => void; // native
     variant?: ButtonVariant;
     loading?: boolean;
-    href?: string;  // web-only — renders <a> instead of <button>
+    href?: string; // web-only — renders <a> instead of <button>
   };
-  density?: "comfortable" | "compact";  // default: comfortable
+  density?: "comfortable" | "compact"; // default: comfortable
   // web-only:
   as?: "section" | "div";
   className?: string;
-  live?: boolean;  // role=status + aria-live=polite
+  live?: boolean; // role=status + aria-live=polite
   // native-only:
   style?: StyleProp<ViewStyle>;
   testID?: string;
@@ -57,16 +57,16 @@ Files (single module per platform, eight named exports each):
 
 Eight illustrations, all 128×128 viewBox, two-tone geometric. Style direction in [design-out/empty-states/style-direction.md](design-out/empty-states/style-direction.md).
 
-| Export | Screen |
-| --- | --- |
-| `WheatSheaf` | feed |
-| `DoorArch` | network |
-| `EnvelopeFolded` | messages |
-| `Lantern` | notifications |
-| `WinnowingTray` | search |
-| `BriefcaseTied` | jobs |
-| `FieldRows` | profile activity |
-| `LowWall` | settings/blocked |
+| Export           | Screen           |
+| ---------------- | ---------------- |
+| `WheatSheaf`     | feed             |
+| `DoorArch`       | network          |
+| `EnvelopeFolded` | messages         |
+| `Lantern`        | notifications    |
+| `WinnowingTray`  | search           |
+| `BriefcaseTied`  | jobs             |
+| `FieldRows`      | profile activity |
+| `LowWall`        | settings/blocked |
 
 Each web component accepts `SVGProps<SVGSVGElement> & { size?: number }`. Native component accepts `SvgProps & { size?: number; color?: string }`. Default size = 128 (token `illustration.size.md`).
 
@@ -84,8 +84,14 @@ Added to `packages/ui-web/src/index.ts` and `packages/ui-native/src/index.ts`:
 export { EmptyState } from "./EmptyState";
 export type { EmptyStateProps, EmptyStateAction } from "./EmptyState";
 export {
-  WheatSheaf, DoorArch, EnvelopeFolded, Lantern,
-  WinnowingTray, BriefcaseTied, FieldRows, LowWall,
+  WheatSheaf,
+  DoorArch,
+  EnvelopeFolded,
+  Lantern,
+  WinnowingTray,
+  BriefcaseTied,
+  FieldRows,
+  LowWall,
 } from "./illustrations";
 ```
 
@@ -93,30 +99,30 @@ export {
 
 ### Web (`apps/web/src/app/[locale]/(app)/`)
 
-| Screen file | Illustration | Action |
-| --- | --- | --- |
-| `feed/page.tsx` | `WheatSheaf` | — (composer is one click above) |
-| `network/page.tsx` | `DoorArch` | `ACCEPTED` filter only → `href="/search"` |
-| `messages/page.tsx` (room list) | `EnvelopeFolded` | `href="/{locale}/messages/new"` |
-| `messages/page.tsx` (no-active-room pane) | `EnvelopeFolded` | `href="/{locale}/messages/new"` |
-| `notifications/page.tsx` | `Lantern` | — (notifications arrive on their own) |
-| `search/page.tsx` | `WinnowingTray` | — (user re-types in the existing input) |
-| `jobs/page.tsx` | `BriefcaseTied` | when filters are active → `Clear filters` |
-| `in/[handle]/page.tsx` (activity tab) | `FieldRows` | — (compact density inside the section) |
-| `settings/blocked/page.tsx` | `LowWall` | — (blocking is reactive) |
+| Screen file                               | Illustration     | Action                                    |
+| ----------------------------------------- | ---------------- | ----------------------------------------- |
+| `feed/page.tsx`                           | `WheatSheaf`     | — (composer is one click above)           |
+| `network/page.tsx`                        | `DoorArch`       | `ACCEPTED` filter only → `href="/search"` |
+| `messages/page.tsx` (room list)           | `EnvelopeFolded` | `href="/{locale}/messages/new"`           |
+| `messages/page.tsx` (no-active-room pane) | `EnvelopeFolded` | `href="/{locale}/messages/new"`           |
+| `notifications/page.tsx`                  | `Lantern`        | — (notifications arrive on their own)     |
+| `search/page.tsx`                         | `WinnowingTray`  | — (user re-types in the existing input)   |
+| `jobs/page.tsx`                           | `BriefcaseTied`  | when filters are active → `Clear filters` |
+| `in/[handle]/page.tsx` (activity tab)     | `FieldRows`      | — (compact density inside the section)    |
+| `settings/blocked/page.tsx`               | `LowWall`        | — (blocking is reactive)                  |
 
 ### Mobile (`apps/mobile/app/(app)/`)
 
-| Screen file | Illustration | Action |
-| --- | --- | --- |
-| `feed.tsx` | `WheatSheaf` | — |
-| `network.tsx` | `DoorArch` | `ACCEPTED` → `router.push("/(app)/search")` |
-| `messages/index.tsx` | `EnvelopeFolded` | `router.push("/(app)/messages/new")` |
-| `notifications.tsx` | `Lantern` | — |
-| `search.tsx` | `WinnowingTray` | — |
-| `jobs/index.tsx` | `BriefcaseTied` | Clear filters |
-| `me/index.tsx` (about tab) | `FieldRows` (size 96, compact) | — |
-| `settings/blocked.tsx` | `LowWall` (compact) | — |
+| Screen file                | Illustration                   | Action                                      |
+| -------------------------- | ------------------------------ | ------------------------------------------- |
+| `feed.tsx`                 | `WheatSheaf`                   | —                                           |
+| `network.tsx`              | `DoorArch`                     | `ACCEPTED` → `router.push("/(app)/search")` |
+| `messages/index.tsx`       | `EnvelopeFolded`               | `router.push("/(app)/messages/new")`        |
+| `notifications.tsx`        | `Lantern`                      | —                                           |
+| `search.tsx`               | `WinnowingTray`                | —                                           |
+| `jobs/index.tsx`           | `BriefcaseTied`                | Clear filters                               |
+| `me/index.tsx` (about tab) | `FieldRows` (size 96, compact) | —                                           |
+| `settings/blocked.tsx`     | `LowWall` (compact)            | —                                           |
 
 ## i18n keys added
 

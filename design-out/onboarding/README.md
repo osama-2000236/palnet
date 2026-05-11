@@ -4,11 +4,11 @@ Scope from [`design-handoff-2026-05/10-ask.md`](../../design-handoff-2026-05/10-
 
 ## Files
 
-| File | Purpose |
-| --- | --- |
-| [`flow.md`](flow.md) | The 5-step flow, per-step content direction, state-machine boundaries. |
-| [`shell-decision.md`](shell-decision.md) | Bare shell vs `AppShell`. Decision and alternatives. |
-| [`rationale.md`](rationale.md) | Why a primitive, why dots-not-bar, what's deferred. |
+| File                                     | Purpose                                                                |
+| ---------------------------------------- | ---------------------------------------------------------------------- |
+| [`flow.md`](flow.md)                     | The 5-step flow, per-step content direction, state-machine boundaries. |
+| [`shell-decision.md`](shell-decision.md) | Bare shell vs `AppShell`. Decision and alternatives.                   |
+| [`rationale.md`](rationale.md)           | Why a primitive, why dots-not-bar, what's deferred.                    |
 
 The onboarding section in [`docs/design/SCREENS.md`](../../docs/design/SCREENS.md) covers per-step recipes and is the implementer-facing doc.
 

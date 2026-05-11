@@ -13,7 +13,7 @@ This direction is the deliberate opposite of:
 - Photographic empty states.
 - Decorative blobs / orbs / mesh gradients.
 
-It is also the deliberate opposite of *complex hand-drawn SVG*, which `DESIGN.md` §13 forbids.
+It is also the deliberate opposite of _complex hand-drawn SVG_, which `DESIGN.md` §13 forbids.
 
 ## The recipe
 
@@ -29,16 +29,16 @@ Each illustration is:
 
 ## The eight illustrations
 
-| Slug | Used by | Motif | Notes |
-| --- | --- | --- | --- |
-| `wheat-sheaf` | feed | Two stylised wheat stalks tied at the base | Threshing metaphor. Vertical, symmetric. |
-| `door-arch` | network | An open Levantine arch | Two-tone — arch outline, threshold tint. Mirrored under RTL. |
-| `envelope-folded` | messages | A simple folded envelope, flap open | Symmetric. |
-| `lantern` | notifications | A hanging lantern with three soft rays | Soft, not aggressive. |
-| `winnowing-tray` | search | An empty winnowing basket from above | Two concentric circles + interior weave hint. |
-| `briefcase-tied` | jobs | A flat briefcase with a single tie cord | Restrained — not a corporate suitcase. |
-| `field-rows` | profile (own) | Three plowed rows receding | Used as the "your profile is empty" cue. Vertical, symmetric. |
-| `low-wall` | settings/blocked | A short stone wall with one gap | Quiet, not threatening. |
+| Slug              | Used by          | Motif                                      | Notes                                                         |
+| ----------------- | ---------------- | ------------------------------------------ | ------------------------------------------------------------- |
+| `wheat-sheaf`     | feed             | Two stylised wheat stalks tied at the base | Threshing metaphor. Vertical, symmetric.                      |
+| `door-arch`       | network          | An open Levantine arch                     | Two-tone — arch outline, threshold tint. Mirrored under RTL.  |
+| `envelope-folded` | messages         | A simple folded envelope, flap open        | Symmetric.                                                    |
+| `lantern`         | notifications    | A hanging lantern with three soft rays     | Soft, not aggressive.                                         |
+| `winnowing-tray`  | search           | An empty winnowing basket from above       | Two concentric circles + interior weave hint.                 |
+| `briefcase-tied`  | jobs             | A flat briefcase with a single tie cord    | Restrained — not a corporate suitcase.                        |
+| `field-rows`      | profile (own)    | Three plowed rows receding                 | Used as the "your profile is empty" cue. Vertical, symmetric. |
+| `low-wall`        | settings/blocked | A short stone wall with one gap            | Quiet, not threatening.                                       |
 
 ## Tokens added
 

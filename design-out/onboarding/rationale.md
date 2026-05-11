@@ -8,7 +8,7 @@ R3 in this PR delivers:
 
 - `OnboardingProgress` primitive (web + native) — the one shared piece across every step.
 - Flow design end-to-end with state-machine boundaries (`flow.md`).
-- Shell decision restated, with the *why-not* alternatives (`shell-decision.md`).
+- Shell decision restated, with the _why-not_ alternatives (`shell-decision.md`).
 - Per-step content direction in `flow.md` (not separate mock PNGs — the code-first agreement says code-and-screenshots are the mock format).
 - Onboarding section in `docs/design/SCREENS.md`.
 

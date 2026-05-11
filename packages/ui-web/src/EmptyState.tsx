@@ -5,7 +5,7 @@
 // custom node. Illustration color inherits from the wrapping text color
 // (text-brand-700 here), so SVGs only need `stroke="currentColor"`.
 
-import type { JSX, ReactNode } from "react";
+import { useId, type JSX, type ReactNode } from "react";
 
 import { Button, type ButtonVariant } from "./Button";
 import { cx } from "./cx";
@@ -27,7 +27,7 @@ export interface EmptyStateProps {
   action?: EmptyStateAction;
   /** Tighter vertical padding for dense lists / right rails. */
   density?: "comfortable" | "compact";
-  /** Override the rendered semantic — defaults to section. */
+  /** Override the rendered semantic. Default `div` (in-flow block). Use `section` only when this is the sole content of a region. */
   as?: "section" | "div";
   className?: string;
   /** Set when EmptyState is the only content of a labelled region (sets role=status). */
@@ -45,21 +45,21 @@ export function EmptyState({
   description,
   action,
   density = "comfortable",
-  as = "section",
+  as = "div",
   className,
   live = false,
 }: EmptyStateProps): JSX.Element {
+  const titleId = useId();
+  const isLandmark = as === "section";
   return (
     <Surface
       as={as}
       variant="tinted"
       padding={PADDING[density]}
-      className={cx(
-        "text-brand-700 flex flex-col items-center gap-3 text-center",
-        className,
-      )}
+      className={cx("text-brand-700 flex flex-col items-center gap-3 text-center", className)}
       role={live ? "status" : undefined}
       aria-live={live ? "polite" : undefined}
+      aria-labelledby={isLandmark ? titleId : undefined}
     >
       {illustration ? (
         <div
@@ -70,7 +70,9 @@ export function EmptyState({
         </div>
       ) : null}
       <div className="flex flex-col gap-1">
-        <h3 className="text-ink text-base font-semibold">{title}</h3>
+        <h3 id={titleId} className="text-ink text-base font-semibold">
+          {title}
+        </h3>
         {description ? (
           <p className="text-ink-muted mx-auto max-w-md text-sm">{description}</p>
         ) : null}

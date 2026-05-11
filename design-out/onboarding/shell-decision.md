@@ -30,7 +30,7 @@ Considered: a new `OnboardingShell` primitive in `@baydar/ui-web` / `@baydar/ui-
 
 - It would be a thin wrapper over `<main>` with a centered column. The page route already does this.
 - The only piece that is genuinely shared across steps is the progress strip — and that lives in `OnboardingProgress`, which is the actual new primitive in this PR.
-- A new shell would tempt later contributors to add chrome ("just one little quick-help link in the top-right"). The bare shell stays bare *because* nothing wraps it.
+- A new shell would tempt later contributors to add chrome ("just one little quick-help link in the top-right"). The bare shell stays bare _because_ nothing wraps it.
 
 ## When this decision could change
 
