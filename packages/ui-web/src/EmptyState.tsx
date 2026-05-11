@@ -29,6 +29,8 @@ export interface EmptyStateProps {
   density?: "comfortable" | "compact";
   /** Override the rendered semantic. Default `div` (in-flow block). Use `section` only when this is the sole content of a region. */
   as?: "section" | "div";
+  /** Heading level for the title — must match the page's heading order. Default 2 (use 3 when this empty sits inside an h2 section). */
+  headingLevel?: 2 | 3;
   className?: string;
   /** Set when EmptyState is the only content of a labelled region (sets role=status). */
   live?: boolean;
@@ -46,11 +48,13 @@ export function EmptyState({
   action,
   density = "comfortable",
   as = "div",
+  headingLevel = 2,
   className,
   live = false,
 }: EmptyStateProps): JSX.Element {
   const titleId = useId();
   const isLandmark = as === "section";
+  const Heading = headingLevel === 3 ? "h3" : "h2";
   return (
     <Surface
       as={as}
@@ -70,9 +74,9 @@ export function EmptyState({
         </div>
       ) : null}
       <div className="flex flex-col gap-1">
-        <h3 id={titleId} className="text-ink text-base font-semibold">
+        <Heading id={titleId} className="text-ink text-base font-semibold">
           {title}
-        </h3>
+        </Heading>
         {description ? (
           <p className="text-ink-muted mx-auto max-w-md text-sm">{description}</p>
         ) : null}

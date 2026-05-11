@@ -337,6 +337,7 @@ export default function ProfileRoute(): JSX.Element {
             title={t("postsEmpty")}
             description={t("postsEmptyDesc")}
             density="compact"
+            headingLevel={3}
           />
         </Surface>
       ) : null}
