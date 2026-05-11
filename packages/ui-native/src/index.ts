@@ -41,6 +41,8 @@ export { PostCard } from "./PostCard";
 export type { PostCardAction, PostCardProps } from "./PostCard";
 export { EmptyState } from "./EmptyState";
 export type { EmptyStateProps, EmptyStateAction } from "./EmptyState";
+export { OnboardingProgress } from "./OnboardingProgress";
+export type { OnboardingProgressProps } from "./OnboardingProgress";
 export {
   WheatSheaf,
   DoorArch,
