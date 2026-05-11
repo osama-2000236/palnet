@@ -73,6 +73,12 @@
   --dur-fast: 80ms;
   --dur-base: 120ms;
   --dur-slow: 240ms;
+
+  /* Empty-state illustrations */
+  --illustration-sm: 96px;
+  --illustration-md: 128px;
+  --illustration-lg: 160px;
+  --illustration-stroke: 2px;
 }
 
 /* No dark mode yet — do not add. */

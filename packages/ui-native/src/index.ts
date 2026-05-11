@@ -39,6 +39,18 @@ export { ComposerEntry } from "./ComposerEntry";
 export type { ComposerEntryProps } from "./ComposerEntry";
 export { PostCard } from "./PostCard";
 export type { PostCardAction, PostCardProps } from "./PostCard";
+export { EmptyState } from "./EmptyState";
+export type { EmptyStateProps, EmptyStateAction } from "./EmptyState";
+export {
+  WheatSheaf,
+  DoorArch,
+  EnvelopeFolded,
+  Lantern,
+  WinnowingTray,
+  BriefcaseTied,
+  FieldRows,
+  LowWall,
+} from "./illustrations";
 export { ReportSheet, BlockButton, BlockedListItem } from "./safety";
 export type {
   ReportSheetLabels,

@@ -22,6 +22,8 @@ import { useTranslation } from "react-i18next";
 import { FlatList, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { EmptyState, WinnowingTray } from "@baydar/ui-native";
+
 import { StateMessage } from "@/components/StateMessage";
 import { apiFetchPage } from "@/lib/api";
 import { apiErrorMessage } from "@/lib/api-errors";
@@ -165,10 +167,15 @@ export default function SearchScreen(): JSX.Element {
                 onAction={() => void run(type, q, null)}
               />
             ) : (
-              <StateMessage
-                message={touched ? t(`search.empty.${type}`) : t("search.prompt")}
-                role="text"
-              />
+              touched ? (
+                <EmptyState
+                  illustration={<WinnowingTray size={128} />}
+                  title={t(`search.empty.${type}` as never)}
+                  description={t("search.emptyDesc")}
+                />
+              ) : (
+                <StateMessage message={t("search.prompt")} role="text" />
+              )
             )
           }
         />

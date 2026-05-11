@@ -206,6 +206,7 @@
     "blocked": {
       "title": "Blocked accounts",
       "empty": "No blocked accounts.",
+      "emptyDesc": "When you block someone, they appear here. You can unblock at any time.",
       "unblock": "Unblock",
       "loadMore": "Load more"
     }
@@ -224,6 +225,7 @@
       "posts": "No posts match that search.",
       "jobs": "No jobs match that search."
     },
+    "emptyDesc": "Try a different keyword, or check the spelling.",
     "noResults": "No people match that search.",
     "prompt": "Try a name or handle to find people.",
     "loadMore": "Load more",
@@ -262,7 +264,8 @@
     "eduEmpty": "No education added.",
     "skillsEmpty": "No skills added yet.",
     "posts": "Activity",
-    "postsEmpty": "No posts yet."
+    "postsEmpty": "No posts yet.",
+    "postsEmptyDesc": "Posts you publish from the feed will show here."
   },
   "network": {
     "title": "My network",
@@ -270,6 +273,12 @@
     "invitations": "Invitations",
     "sent": "Sent",
     "empty": "Nothing here yet.",
+    "emptyDesc": {
+      "ACCEPTED": "Connect with colleagues to build your network here.",
+      "INCOMING": "When someone invites you to connect, the invitation will show up here.",
+      "OUTGOING": "Requests you send will appear here while they wait to be accepted."
+    },
+    "emptyAction": "Discover people",
     "connect": "Connect",
     "withdraw": "Withdraw",
     "accept": "Accept",
@@ -283,11 +292,13 @@
     "searchPlaceholder": "Search messages",
     "searchNoResults": "No matching conversations.",
     "emptyList": "No conversations yet.",
+    "emptyListDesc": "Start a new conversation with someone in your network.",
     "emptyThread": "No messages yet — say hi.",
     "composePlaceholder": "Write a message…",
     "send": "Send",
     "sendFailed": "Could not send message.",
     "selectPrompt": "Pick a conversation to start reading.",
+    "selectPromptDesc": "Choose a conversation from the list, or start a new one.",
     "loadOlder": "Load older messages",
     "you": "You",
     "online": "Live",
@@ -341,6 +352,7 @@
   "notifications": {
     "title": "Notifications",
     "empty": "You're all caught up.",
+    "emptyDesc": "New invitations, comments, and messages will arrive here.",
     "loadMore": "Load more",
     "loading": "Loading…",
     "live": "Live",
@@ -384,6 +396,7 @@
     "loadMore": "Load more",
     "emptyTitle": "No jobs match those filters.",
     "emptyDesc": "Try widening your search or clearing a filter.",
+    "emptyAction": "Clear filters",
     "notFound": "This job is no longer available.",
     "countSummary": "{count} jobs",
     "noneSummary": "No results",

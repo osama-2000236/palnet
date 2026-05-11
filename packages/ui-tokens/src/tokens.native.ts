@@ -97,6 +97,10 @@ export const nativeTokens = {
     tabHeight: 64,
     minHit: 44, // Apple HIG + Material minimum touch target
   },
+  illustration: {
+    size: { sm: 96, md: 128, lg: 160 },
+    stroke: 2,
+  },
 } as const;
 
 export type NativeTokens = typeof nativeTokens;

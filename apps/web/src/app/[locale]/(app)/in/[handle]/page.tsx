@@ -9,6 +9,8 @@ import {
 import {
   Avatar,
   BlockButton,
+  EmptyState,
+  FieldRows,
   ReportDialog,
   Surface,
   Tab,
@@ -330,7 +332,12 @@ export default function ProfileRoute(): JSX.Element {
       {tab === "activity" ? (
         <Surface as="section" variant="flat" padding="6">
           <h2 className="text-ink mb-4 text-xl font-semibold">{t("posts")}</h2>
-          <p className="text-ink-muted text-sm">{t("postsEmpty")}</p>
+          <EmptyState
+            illustration={<FieldRows size={128} />}
+            title={t("postsEmpty")}
+            description={t("postsEmptyDesc")}
+            density="compact"
+          />
         </Surface>
       ) : null}
       <ReportDialog

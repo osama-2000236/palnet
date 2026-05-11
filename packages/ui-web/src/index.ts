@@ -38,6 +38,18 @@ export type {
   ToastProps,
   ToastProviderProps,
 } from "./Toast";
+export { EmptyState } from "./EmptyState";
+export type { EmptyStateProps, EmptyStateAction } from "./EmptyState";
+export {
+  WheatSheaf,
+  DoorArch,
+  EnvelopeFolded,
+  Lantern,
+  WinnowingTray,
+  BriefcaseTied,
+  FieldRows,
+  LowWall,
+} from "./illustrations";
 export { ReportDialog, BlockButton, BlockedListItem } from "./safety";
 export type {
   ReportDialogLabels,

@@ -4,7 +4,7 @@ import {
   ConnectionListItem as ConnectionListItemSchema,
   type ConnectionListItem,
 } from "@baydar/shared";
-import { Avatar, Surface } from "@baydar/ui-web";
+import { Avatar, DoorArch, EmptyState, Surface } from "@baydar/ui-web";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -102,9 +102,16 @@ export default function NetworkRoute(): JSX.Element {
           <ConnectionRowSkeleton />
         </ul>
       ) : items.length === 0 ? (
-        <Surface variant="flat" padding="6" className="text-ink-muted">
-          {t("empty")}
-        </Surface>
+        <EmptyState
+          illustration={<DoorArch size={128} />}
+          title={t("empty")}
+          description={t(`emptyDesc.${filter}`)}
+          action={
+            filter === "ACCEPTED"
+              ? { label: t("emptyAction"), href: "/search", onClick: () => {} }
+              : undefined
+          }
+        />
       ) : (
         <ul className="flex flex-col gap-3">
           {items.map((c) => (

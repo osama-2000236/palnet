@@ -18,6 +18,8 @@ import { FlatList, RefreshControl, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { z } from "zod";
 
+import { DoorArch, EmptyState } from "@baydar/ui-native";
+
 import { StateMessage } from "@/components/StateMessage";
 import { apiFetch } from "@/lib/api";
 import { apiErrorMessage } from "@/lib/api-errors";
@@ -216,7 +218,19 @@ export default function NetworkScreen(): JSX.Element {
                 onAction={() => void load(filter)}
               />
             ) : (
-              <StateMessage message={t("network.empty")} role="text" />
+              <EmptyState
+                illustration={<DoorArch size={128} />}
+                title={t("network.empty")}
+                description={t(`network.emptyDesc.${filter}` as never)}
+                action={
+                  filter === "ACCEPTED"
+                    ? {
+                        label: t("network.emptyAction"),
+                        onPress: () => router.push("/(app)/search" as never),
+                      }
+                    : undefined
+                }
+              />
             )
           }
           renderItem={({ item }) => (

@@ -18,7 +18,7 @@ import {
   Profile,
   cursorPage,
 } from "@baydar/shared";
-import { Avatar, Icon, PostCardSkeleton, Surface } from "@baydar/ui-web";
+import { Avatar, EmptyState, Icon, PostCardSkeleton, Surface, WheatSheaf } from "@baydar/ui-web";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -331,12 +331,10 @@ function RightRail({
 
 function FeedEmpty({ title, desc }: { title: string; desc: string }): JSX.Element {
   return (
-    <Surface variant="tinted" padding="6" className="flex flex-col items-center gap-2 text-center">
-      <span className="bg-brand-50 text-brand-700 inline-flex h-10 w-10 items-center justify-center rounded-full">
-        <Icon name="home" size={20} />
-      </span>
-      <h2 className="text-ink text-base font-semibold">{title}</h2>
-      <p className="text-ink-muted max-w-md text-sm">{desc}</p>
-    </Surface>
+    <EmptyState
+      illustration={<WheatSheaf size={128} />}
+      title={title}
+      description={desc}
+    />
   );
 }

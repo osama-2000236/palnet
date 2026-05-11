@@ -10,6 +10,9 @@ import { FlatList, RefreshControl, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { z } from "zod";
 
+import { EmptyState, EnvelopeFolded } from "@baydar/ui-native";
+import { router } from "expo-router";
+
 import { StateMessage } from "@/components/StateMessage";
 import { RoomRow } from "@/components/rows/RoomRow";
 import { apiCall, apiFetchPage } from "@/lib/api";
@@ -159,7 +162,15 @@ export default function MessagesListScreen(): JSX.Element {
                 testID="messages-list-error"
               />
             ) : (
-              <StateMessage message={t("messaging.emptyList")} role="text" />
+              <EmptyState
+                illustration={<EnvelopeFolded size={128} />}
+                title={t("messaging.emptyList")}
+                description={t("messaging.emptyListDesc")}
+                action={{
+                  label: t("messaging.newMessage"),
+                  onPress: () => router.push("/(app)/messages/new" as never),
+                }}
+              />
             )
           }
         />

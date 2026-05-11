@@ -16,6 +16,8 @@ import { useTranslation } from "react-i18next";
 import { FlatList, Pressable, RefreshControl, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { BriefcaseTied, EmptyState } from "@baydar/ui-native";
+
 import { StateMessage } from "@/components/StateMessage";
 import { JobRow } from "@/components/rows/JobRow";
 import { apiFetchPage } from "@/lib/api";
@@ -204,7 +206,23 @@ export default function JobsScreen(): JSX.Element {
                     onAction={() => void load(null, filters)}
                   />
                 ) : (
-                  <StateMessage message={t("jobs.emptyTitle")} role="text" />
+                  <EmptyState
+                    illustration={<BriefcaseTied size={128} />}
+                    title={t("jobs.emptyTitle")}
+                    description={t("jobs.emptyDesc")}
+                    action={
+                      filters.q !== "" ||
+                      filters.city !== "" ||
+                      filters.type !== "" ||
+                      filters.locationMode !== ""
+                        ? {
+                            label: t("jobs.emptyAction"),
+                            onPress: () =>
+                              setFilters({ q: "", city: "", type: "", locationMode: "" }),
+                          }
+                        : undefined
+                    }
+                  />
                 )
               }
               ListFooterComponent={

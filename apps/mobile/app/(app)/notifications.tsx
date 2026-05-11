@@ -8,6 +8,8 @@ import { Swipeable } from "react-native-gesture-handler";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { useDismissNotification } from "@/api/notifications";
+import { EmptyState, Lantern } from "@baydar/ui-native";
+
 import { StateMessage } from "@/components/StateMessage";
 import { NotificationRow } from "@/components/rows/NotificationRow";
 import { apiCall, apiFetchPage } from "@/lib/api";
@@ -162,7 +164,11 @@ export default function NotificationsScreen(): JSX.Element {
                 onAction={() => void load(null)}
               />
             ) : (
-              <StateMessage message={t("notifications.empty")} role="text" />
+              <EmptyState
+                illustration={<Lantern size={128} />}
+                title={t("notifications.empty")}
+                description={t("notifications.emptyDesc")}
+              />
             )
           }
         />

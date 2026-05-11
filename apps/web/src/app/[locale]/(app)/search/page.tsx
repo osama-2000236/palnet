@@ -9,7 +9,7 @@ import {
   type SearchPersonHit,
   type SearchPostHit,
 } from "@baydar/shared";
-import { Avatar, Surface } from "@baydar/ui-web";
+import { Avatar, EmptyState, Surface, WinnowingTray } from "@baydar/ui-web";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -166,9 +166,11 @@ function SearchInner(): JSX.Element {
           {t("prompt")}
         </Surface>
       ) : hits[type].length === 0 ? (
-        <Surface variant="flat" padding="6" className="text-ink-muted">
-          {t(`empty.${type}`)}
-        </Surface>
+        <EmptyState
+          illustration={<WinnowingTray size={128} />}
+          title={t(`empty.${type}`)}
+          description={t("emptyDesc")}
+        />
       ) : (
         <ul className="flex flex-col gap-3">
           {type === "people" ? hits.people.map((p) => <PeopleRow key={p.userId} item={p} />) : null}

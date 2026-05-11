@@ -110,6 +110,12 @@ export const tokens = {
     maxContentWidth: 1128,
     mobileTabHeight: 64,
   },
+  // Empty-state illustrations — see design-out/empty-states/style-direction.md.
+  // Sizes are intrinsic SVG dimensions; the EmptyState component picks one per surface density.
+  illustration: {
+    size: { sm: 96, md: 128, lg: 160 },
+    stroke: 2,
+  },
 } as const;
 
 export type Tokens = typeof tokens;

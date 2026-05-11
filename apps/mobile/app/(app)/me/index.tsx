@@ -7,6 +7,8 @@ import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { FieldCover } from "@/components/FieldCover";
+import { EmptyState, FieldRows } from "@baydar/ui-native";
+
 import { StateMessage } from "@/components/StateMessage";
 import { apiFetch } from "@/lib/api";
 import { apiErrorMessage } from "@/lib/api-errors";
@@ -182,7 +184,12 @@ export default function MeScreen(): JSX.Element {
               </Text>
             </Section>
           ) : (
-            <StateMessage message={t("profile.aboutEmpty")} role="text" />
+            <EmptyState
+              illustration={<FieldRows size={96} />}
+              title={t("profile.aboutEmpty")}
+              description={t("profile.aboutEmptyDesc")}
+              density="compact"
+            />
           )
         ) : null}
 

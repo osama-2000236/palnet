@@ -18,6 +18,8 @@ import {
 } from "@baydar/shared";
 import {
   Avatar,
+  EmptyState,
+  EnvelopeFolded,
   Icon,
   MessageBubble,
   ReportDialog,
@@ -561,9 +563,23 @@ export default function MessagesPage(): JSX.Element {
           </div>
           <div className="flex-1 overflow-y-auto">
             {filteredRooms.length === 0 ? (
-              <p className="text-ink-muted p-4 text-sm">
-                {searchTerm ? t("searchNoResults") : t("emptyList")}
-              </p>
+              searchTerm ? (
+                <p className="text-ink-muted p-4 text-sm">{t("searchNoResults")}</p>
+              ) : (
+                <div className="p-4">
+                  <EmptyState
+                    illustration={<EnvelopeFolded size={96} />}
+                    title={t("emptyList")}
+                    description={t("emptyListDesc")}
+                    action={{
+                      label: t("newMessage"),
+                      href: `/${locale}/messages/new`,
+                      onClick: () => {},
+                    }}
+                    density="compact"
+                  />
+                </div>
+              )
             ) : (
               filteredRooms.map((room) => {
                 const other = viewerId ? room.members.find((m) => m.userId !== viewerId) : null;
@@ -603,22 +619,17 @@ export default function MessagesPage(): JSX.Element {
         <main className="flex min-h-0 flex-col">
           {!activeRoomId ? (
             <div className="flex flex-1 items-center justify-center p-8">
-              <div className="flex max-w-sm flex-col items-center gap-3 text-center">
-                <span
-                  aria-hidden="true"
-                  className="bg-brand-50 text-brand-700 inline-flex h-12 w-12 items-center justify-center rounded-full"
-                >
-                  <Icon name="message" size={22} />
-                </span>
-                <p className="text-ink text-sm font-semibold">{t("selectPrompt")}</p>
-                <Link
-                  href={`/${locale}/messages/new`}
-                  className="bg-brand-600 text-ink-inverse hover:bg-brand-700 focus-visible:ring-brand-600 focus-visible:ring-offset-surface inline-flex items-center gap-2 rounded-md px-4 py-2 text-sm font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
-                >
-                  <Icon name="plus" size={14} />
-                  {t("newMessage")}
-                </Link>
-              </div>
+              <EmptyState
+                illustration={<EnvelopeFolded size={128} />}
+                title={t("selectPrompt")}
+                description={t("selectPromptDesc")}
+                action={{
+                  label: t("newMessage"),
+                  href: `/${locale}/messages/new`,
+                  onClick: () => {},
+                }}
+                className="max-w-sm"
+              />
             </div>
           ) : (
             <>

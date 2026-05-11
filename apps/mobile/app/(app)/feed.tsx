@@ -22,6 +22,8 @@ import { useTranslation } from "react-i18next";
 import { FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { EmptyState, WheatSheaf } from "@baydar/ui-native";
+
 import { StateMessage } from "@/components/StateMessage";
 import { PostRow } from "@/components/rows/PostRow";
 import { apiFetch, apiFetchPage } from "@/lib/api";
@@ -186,7 +188,11 @@ export default function FeedScreen(): JSX.Element {
                 <PostCardSkeleton />
               </View>
             ) : (
-              <StateMessage message={t("feed.empty")} role="text" />
+              <EmptyState
+                illustration={<WheatSheaf size={128} />}
+                title={t("feed.emptyTitle")}
+                description={t("feed.emptyDesc")}
+              />
             )
           }
           ListFooterComponent={

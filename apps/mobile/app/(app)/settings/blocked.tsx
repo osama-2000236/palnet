@@ -5,6 +5,8 @@ import { FlatList, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { useBlockedUsers, useUnblock } from "@/api/safety";
+import { EmptyState, LowWall } from "@baydar/ui-native";
+
 import { StateMessage } from "@/components/StateMessage";
 
 export default function BlockedUsersScreen(): JSX.Element {
@@ -50,10 +52,16 @@ export default function BlockedUsersScreen(): JSX.Element {
               />
             )}
             ListEmptyComponent={
-              <StateMessage
-                message={blocked.isLoading ? t("common.loading") : t("safety.blocked.empty")}
-                role="text"
-              />
+              blocked.isLoading ? (
+                <StateMessage message={t("common.loading")} role="text" />
+              ) : (
+                <EmptyState
+                  illustration={<LowWall size={128} />}
+                  title={t("safety.blocked.empty")}
+                  description={t("safety.blocked.emptyDesc")}
+                  density="compact"
+                />
+              )
             }
             ListFooterComponent={
               blocked.data?.meta.hasMore ? (

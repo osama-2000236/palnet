@@ -1,6 +1,6 @@
 "use client";
 
-import { BlockedListItem, Surface, useToast } from "@baydar/ui-web";
+import { BlockedListItem, EmptyState, LowWall, Surface, useToast } from "@baydar/ui-web";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 
@@ -22,7 +22,12 @@ export default function BlockedSettingsPage(): JSX.Element {
         {blocked.isLoading ? (
           <p className="text-ink-muted text-sm">{tCommon("loading")}</p>
         ) : items.length === 0 ? (
-          <p className="text-ink-muted text-sm">{t("blocked.empty")}</p>
+          <EmptyState
+            illustration={<LowWall size={128} />}
+            title={t("blocked.empty")}
+            description={t("blocked.emptyDesc")}
+            density="compact"
+          />
         ) : (
           <ul>
             {items.map((item) => (

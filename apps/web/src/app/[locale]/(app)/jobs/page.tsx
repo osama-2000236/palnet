@@ -18,7 +18,7 @@ import {
   JobType,
   type Job,
 } from "@baydar/shared";
-import { Surface } from "@baydar/ui-web";
+import { BriefcaseTied, EmptyState, Surface } from "@baydar/ui-web";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
@@ -77,6 +77,8 @@ export default function JobsPageRoute(): JSX.Element {
   const [loading, setLoading] = useState(false);
   const [firstLoad, setFirstLoad] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const hasActiveFilters =
+    filters.q !== "" || filters.city !== "" || filters.type !== "" || filters.locationMode !== "";
 
   // Session bootstrap.
   useEffect(() => {
@@ -211,18 +213,19 @@ export default function JobsPageRoute(): JSX.Element {
             <p className="text-ink-muted text-sm">{error}</p>
           </Surface>
         ) : items.length === 0 ? (
-          <Surface variant="tinted" padding="8">
-            <div className="mx-auto max-w-sm text-center">
-              <div
-                aria-hidden="true"
-                className="bg-brand-50 text-brand-700 mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full text-lg"
-              >
-                ▦
-              </div>
-              <p className="text-ink text-sm font-semibold">{t("emptyTitle")}</p>
-              <p className="text-ink-muted mt-1 text-sm">{t("emptyDesc")}</p>
-            </div>
-          </Surface>
+          <EmptyState
+            illustration={<BriefcaseTied size={128} />}
+            title={t("emptyTitle")}
+            description={t("emptyDesc")}
+            action={
+              hasActiveFilters
+                ? {
+                    label: t("emptyAction"),
+                    onClick: () => setFilters(EMPTY_FILTERS),
+                  }
+                : undefined
+            }
+          />
         ) : (
           <>
             <ul className="space-y-3">
