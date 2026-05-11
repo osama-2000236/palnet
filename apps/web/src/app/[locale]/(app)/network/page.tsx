@@ -113,16 +113,17 @@ export default function NetworkRoute(): JSX.Element {
           }
         />
       ) : (
-        <ul className="flex flex-col gap-3">
-          {items.map((c) => (
-            <Surface
-              as="li"
-              key={c.connectionId}
-              variant="flat"
-              padding="4"
-              className="flex flex-wrap items-center justify-between gap-3"
-            >
-              <Link href={`/in/${c.user.handle}`} className="flex min-w-0 items-center gap-3">
+        <Surface variant="flat" padding="0" as="section" aria-label={t("title")}>
+          <ul className="flex flex-col">
+            {items.map((c) => (
+              <Surface
+                as="li"
+                key={c.connectionId}
+                variant="row"
+                padding="4"
+                className="flex flex-wrap items-center justify-between gap-3 last:border-b-0"
+              >
+                <Link href={`/in/${c.user.handle}`} className="flex min-w-0 items-center gap-3">
                 <Avatar
                   user={{
                     id: c.user.userId,
@@ -177,9 +178,10 @@ export default function NetworkRoute(): JSX.Element {
                   {t("removeConnection")}
                 </button>
               )}
-            </Surface>
-          ))}
-        </ul>
+              </Surface>
+            ))}
+          </ul>
+        </Surface>
       )}
     </main>
   );
