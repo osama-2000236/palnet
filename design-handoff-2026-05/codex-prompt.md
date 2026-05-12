@@ -29,9 +29,9 @@ Finish your run by writing a review packet to `design-handoff-2026-05/02-codex-i
 {
   "goal": "one paragraph",
   "plan_source": "design-handoff-2026-05/codex-plan.md",
-  "changed_files": [{"path": "...", "subsystem": "...", "note": "optional"}],
+  "changed_files": [{ "path": "...", "subsystem": "...", "note": "optional" }],
   "diff_summary": "behavior-level, not raw patch",
-  "qa": [{"command": "...", "result": "pass|fail|skipped", "evidence": "optional"}],
+  "qa": [{ "command": "...", "result": "pass|fail|skipped", "evidence": "optional" }],
   "risks": ["..."],
   "questions": ["only blockers you could not resolve"]
 }
