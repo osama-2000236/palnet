@@ -7,7 +7,7 @@ import {
   type PersonSuggestion as PersonSuggestionDto,
   type Profile,
 } from "@baydar/shared";
-import { Avatar, Button, Icon, Surface, nativeTokens } from "@baydar/ui-native";
+import { Avatar, Button, Icon, OnboardingProgress, Surface, nativeTokens } from "@baydar/ui-native";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { Image } from "expo-image";
 import * as ImagePicker from "expo-image-picker";
@@ -429,20 +429,16 @@ export default function OnboardingScreen(): JSX.Element {
             gap: nativeTokens.space[4],
           }}
         >
+          <OnboardingProgress
+            steps={steps}
+            active={stepIndex}
+            accessibilityLabel={t("onboarding.progress", {
+              current: stepIndex + 1,
+              total: steps.length,
+            })}
+          />
+
           <View style={{ gap: nativeTokens.space[2] }}>
-            <Text
-              selectable
-              style={{
-                color: nativeTokens.color.brand600,
-                fontFamily: nativeTokens.type.family.sans,
-                fontSize: nativeTokens.type.scale.caption.size,
-                fontWeight: "700",
-                lineHeight: nativeTokens.type.scale.caption.line,
-                textAlign: "right",
-              }}
-            >
-              {t("onboarding.progress", { current: stepIndex + 1, total: steps.length })}
-            </Text>
             <Text
               selectable
               style={{
@@ -469,8 +465,6 @@ export default function OnboardingScreen(): JSX.Element {
               {t(`onboarding.stepCopy.${step.key}`)}
             </Text>
           </View>
-
-          <StepDots count={steps.length} active={stepIndex} />
 
           {!isConnected ? <StateMessage tone="warning" message={t("onboarding.offline")} /> : null}
 
@@ -1176,28 +1170,6 @@ function FieldError({ message }: { message: string }): JSX.Element {
     >
       {t(message)}
     </Text>
-  );
-}
-
-function StepDots({ count, active }: { count: number; active: number }): JSX.Element {
-  return (
-    <View
-      accessibilityElementsHidden
-      style={{ flexDirection: "row", justifyContent: "center", gap: nativeTokens.space[1] }}
-    >
-      {Array.from({ length: count }).map((_, index) => (
-        <View
-          key={index}
-          style={{
-            width: index === active ? nativeTokens.space[6] : nativeTokens.space[2],
-            height: nativeTokens.space[2],
-            borderRadius: nativeTokens.radius.full,
-            backgroundColor:
-              index === active ? nativeTokens.color.brand600 : nativeTokens.color.surfaceSunken,
-          }}
-        />
-      ))}
-    </View>
   );
 }
 
