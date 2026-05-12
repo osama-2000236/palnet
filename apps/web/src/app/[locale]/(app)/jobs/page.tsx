@@ -301,7 +301,7 @@ function JobListRow({ job, salary }: { job: Job; salary: string | null }): JSX.E
           <div className="min-w-0 flex-1">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <h3 className="text-ink truncate text-base font-semibold">{job.title}</h3>
+                <p className="text-ink truncate text-base font-semibold">{job.title}</p>
                 <p className="text-ink-muted truncate text-sm">{job.company.name}</p>
               </div>
               {job.viewer.hasApplied ? (
