@@ -170,6 +170,7 @@ Truth: what exists in `packages/ui-web/src/` and `packages/ui-native/src/` today
 | `Skeleton`         | 🟡 (Tailwind utility) | ✅             | [docs/components/Skeleton.md](docs/components/Skeleton.md)                 |
 | `RoomRow`          | ✅                    | 🟡 (app-local) | [docs/components/RoomRow.md](docs/components/RoomRow.md)                   |
 | `TypingIndicator`  | ✅                    | 🟡 (app-local) | [docs/components/TypingIndicator.md](docs/components/TypingIndicator.md)   |
+| `Toast`            | ✅                    | ✅             | shared transient feedback primitive                                        |
 | `ConnectionRow`    | 🟡 (app-local)        | 🟡 (app-local) | — promote to shared kit                                                    |
 
 ### 7.3 Organisms
