@@ -30,6 +30,8 @@ export { Button } from "./Button";
 export type { ButtonProps, ButtonVariant, ButtonSize } from "./Button";
 export { Tabs, Tab } from "./Tabs";
 export type { TabsProps, TabProps } from "./Tabs";
+export { OnboardingProgress } from "./OnboardingProgress";
+export type { OnboardingProgressProps, OnboardingProgressStep } from "./OnboardingProgress";
 export { Toast, ToastHost, ToastProvider, useToast } from "./Toast";
 export type {
   ShowToastInput,

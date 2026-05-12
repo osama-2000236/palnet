@@ -23,6 +23,8 @@ export { SearchField } from "./SearchField";
 export type { SearchFieldProps } from "./SearchField";
 export { SegmentedControl } from "./SegmentedControl";
 export type { SegmentedControlItem, SegmentedControlProps } from "./SegmentedControl";
+export { OnboardingProgress } from "./OnboardingProgress";
+export type { OnboardingProgressProps, OnboardingProgressStep } from "./OnboardingProgress";
 export { StateMessage } from "./StateMessage";
 export type { StateMessageProps } from "./StateMessage";
 export { Toast, ToastHost, ToastProvider, useToast } from "./Toast";
