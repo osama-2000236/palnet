@@ -92,6 +92,64 @@ Still `[HUMAN]` — no simulator captures. See `04-screens/MOBILE-SNAPSHOTS.md` 
 | med  | 7     | feed quick-access, messages empty, notifications empty + hierarchy, onboarding shell decision, surface variants, feed hero loading |
 | low  | 4     | feed footer, header avatar, network floating dots, messages rail crammed, composer placeholder                                     |
 
-## Lead additions
+## Lead additions (AI-assisted; lead review pending)
 
-[HUMAN: lead adds findings from manual walk + mobile inspection]
+- screen: feed
+  area: dev-status badge
+  problem: A red `1 error` badge is still visible in the lower-left corner, so the refreshed snapshot still carries debugging chrome into the design handoff.
+  severity: high
+  snapshot: 04-screens/feed/web/desktop-ar-PS-default.png
+
+- screen: feed
+  area: mobile top navigation
+  problem: The full desktop navigation is squeezed into the mobile viewport, making the icon row and search affordance feel cramped instead of switching to a mobile navigation pattern.
+  severity: high
+  snapshot: 04-screens/feed/web/mobile-en-default.png
+
+- screen: jobs
+  area: empty state
+  problem: The no-results state is a thin muted strip with no title, illustration, or recovery action, so the largest content area reads as abandoned.
+  severity: med
+  snapshot: 04-screens/jobs/web/desktop-en-default.png
+
+- screen: jobs
+  area: filters
+  problem: Desktop filters carry many tiny pill controls with equal visual weight, but the mobile capture drops that filtering affordance entirely instead of offering a compact filter entry point.
+  severity: med
+  snapshot: 04-screens/jobs/web/mobile-ar-PS-default.png
+
+- screen: messages
+  area: mobile layout
+  problem: The desktop two-pane inbox survives on mobile, leaving a narrow conversation list and a compressed empty-state panel rather than a stacked mobile reading flow.
+  severity: high
+  snapshot: 04-screens/messages/web/mobile-en-default.png
+
+- screen: network
+  area: empty state
+  problem: The network page has tabs and a bare "Nothing here yet" row only; it lacks the illustration, explanatory copy, and connect action expected for a relationship-building screen.
+  severity: high
+  snapshot: 04-screens/network/web/tablet-en-default.png
+
+- screen: notifications
+  area: empty state
+  problem: The empty state relies on a checkmark glyph inside a tinted card and does not offer a recoverable action or richer illustration, so the page has almost no design signal.
+  severity: med
+  snapshot: 04-screens/notifications/web/desktop-ar-PS-default.png
+
+- screen: onboarding
+  area: first-run form
+  problem: The onboarding form is a bare centered stack with no progress, product context, or shell decision visible, making the first-run path feel like a generic settings form.
+  severity: high
+  snapshot: 04-screens/onboarding/web/desktop-ar-PS-default.png
+
+- screen: search
+  area: mobile search controls
+  problem: The search input, submit button, and result-type tabs compress into a small horizontal cluster on mobile, leaving the primary task visually secondary to surrounding whitespace.
+  severity: med
+  snapshot: 04-screens/search/web/mobile-ar-PS-default.png
+
+- screen: auth-register
+  area: terms consent row
+  problem: The consent checkbox and legal copy are very small and visually detached from the primary CTA, which weakens the trust moment in account creation.
+  severity: low
+  snapshot: 04-screens/auth-register/web/mobile-en-default.png

@@ -39,12 +39,45 @@ Plan: `design-handoff-2026-05/codex-plan.md`. Items 1-3 from `08-problems.md` re
 
 **Review status:** `STATUS: APPROVED` (Items 1+3 implemented and verified; Item 2 resolved as not-a-bug with evidence). Commit authorization not yet given.
 
-## Residual gaps (unchanged from 2026-05-07)
+**2026-05-12 round 2 correction.** Item 2 was reopened. Round 1's dev-log scan was inconclusive — Codex round 2's vision pass over the refreshed PNGs caught the `1 error` badge still rendered in `04-screens/feed/web/desktop-ar-PS-default.png`. A Playwright console-error probe confirmed the source: `apps/web/src/app/[locale]/(app)/feed/page.tsx` throws `ApiRequestError: API 401 AUTH_UNAUTHORIZED` unhandled when the access token expires. Round 1's reasoning ("dev log was clean") was wrong because next-dev surfaces page-throw and console.error in the overlay regardless of terminal-log content. The 08-problems.md addenda now lists Item 2 with a concrete fix candidate.
 
-- T-B.7 mobile snapshots — `[HUMAN]`, iOS sim + Android emu, ~30 min.
-- T-B.9 moodboard images — `[HUMAN]`, 5 refs pre-curated, capture each, ~30 min.
-- T-F.1 ask scope — `[HUMAN]`, AI pre-picked 3 items in `10-ask.md`, confirm or override, ~10 min.
-- 08-pain.md "Lead additions" section — `[HUMAN]` manual walk + mobile inspection.
+## 2026-05-12 round 2 — design pre-pass closeout
+
+Plan: `design-handoff-2026-05/codex-plan-round2.md`. Target: close the 4 `[HUMAN]` gates.
+
+**Implemented (Codex):**
+
+- Item 3 — `10-ask.md` Round 2 scope re-audit appended. Original 3 picks (empty-state system, surface hierarchy, onboarding flow) confirmed as highest-leverage with concrete reasons tied to refreshed snapshots.
+- Item 4 — `08-pain.md` Lead additions filled with 10 AI-assisted findings, each tied to a specific `04-screens/*/web/*.png` path. Marked "AI-assisted, lead review pending".
+- `scripts/capture-mobile-snapshots.mjs` — Expo Web capture script (iPhone 15 + Pixel 7 viewports, ar-PS + en, `expo-web-` filename prefix to disclaim native fidelity).
+
+**Codex sandbox blocked (run unsandboxed by Claude):**
+
+- Mobile capture run — Playwright `spawn EPERM` in Codex sandbox. Claude ran `node scripts/capture-mobile-snapshots.mjs` in this worktree → `captured=40 failed=0 tooSmall=0`.
+- Moodboard capture — same `spawn EPERM`. Claude wrote `scripts/capture-moodboard.mjs` + ran it: 5 refs captured (tabby 428 KB, tamara 218 KB, linear 140 KB, raseef22 920 KB, careem 97 KB), all ≥ 50 KB. `09-moodboard/{ref}/screen.png` + `notes.md` for each.
+
+**Round 1 correction surfaced by Codex:**
+
+- Item 2 reopened. Codex's vision pass spotted the `1 error` badge still rendered in the 07:43 feed PNG. Root cause confirmed via Playwright console-error probe: `apps/web/src/app/[locale]/(app)/feed/page.tsx:67` throws `ApiRequestError: API 401 AUTH_UNAUTHORIZED` unhandled when the access token expires. Round 1's "dev log clean → resolved" conclusion was wrong. Re-captured all 60 web PNGs + 40 mobile PNGs at 12:05 with a freshly-regenerated auth fixture (15-min TTL); fresh feed snapshot is clean. The underlying bug (feed must catch 401) is documented in `08-problems.md` repo-specific addenda with a fix candidate.
+
+**Out-of-scope drift reverted:**
+
+- `apps/mobile/expo-env.d.ts` — Codex's `pnpm` invocations stripped a trailing newline. Reverted via `git checkout HEAD --`.
+
+**Verification:**
+
+- `pnpm format:check` — see commit run.
+- `pnpm lint:tokens` — clean (no source changes outside scripts).
+- A11y re-run during auth-fixture regen: 26 passed, 16 skipped, 0 failed.
+- Web snapshot capture: 60 / 0.
+- Mobile snapshot capture: 40 / 0.
+- Moodboard: 5 / 5 above threshold.
+
+## Residual gaps (after round 2)
+
+- Item 2 (feed 401 handling) — code fix candidate documented in `08-problems.md`; tracked for future round / engineering pass, not for the design pass itself.
+- Real iOS sim / Android emu native captures remain `[HUMAN]`. Expo Web mobile PNGs are the proxy in the bundle.
+- Lead human review of the AI-assisted `08-pain.md` additions remains optional but recommended before final handoff.
 
 | Task                   | Status  | Notes                                                                                                                                                   |
 | ---------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |

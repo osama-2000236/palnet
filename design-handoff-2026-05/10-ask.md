@@ -89,3 +89,16 @@ For each in-scope item, deliver under `design-out/{problem-slug}/`:
 ## Review loop
 
 Lead reviews → APPROVED | CHANGES_REQUESTED. CHANGES_REQUESTED returns concrete fixes; Claude Design reworks. Max 3 rounds per pass.
+
+## Round 2 scope re-audit (2026-05-12)
+
+Re-audited against current `08-problems.md` after round 1 resolved Items 1-3 and after the AI-assisted `08-pain.md` lead additions reviewed the refreshed `04-screens/*/web/` PNGs.
+
+The original 3 picks (empty-state system, surface hierarchy, onboarding flow) remain highest-leverage. Reasons:
+
+- Empty states are still the most repeated user-visible weakness. Jobs, network, notifications, search, messages, and feed all show bare rows or icon-only placeholders without the illustration plus recoverable action required by `DESIGN.md §12`.
+- Surface hierarchy still needs a system pass, not one-off screen fixes. The refreshed snapshots show thin tinted strips, right-rail skeleton/profile cards, dense filter pills, and mobile layouts that inherit desktop structures without a clear surface policy.
+- Onboarding remains the first impression with the least design context. The current form is a centered stack with no progress model, shell decision, or product explanation, and `08-problems.md` still lists the flow as undocumented in `DESIGN.md`.
+- The new findings do not outrank those three picks. Auth/register trust polish, mobile web nav compression, and the visible dev `1 error` badge are real issues, but they either fold into the surface/mobile treatment or should be handled as engineering cleanup before final snapshot handoff.
+
+No scope change recommended for the design pass.
