@@ -153,3 +153,118 @@ Still `[HUMAN]` — no simulator captures. See `04-screens/MOBILE-SNAPSHOTS.md` 
   problem: The consent checkbox and legal copy are very small and visually detached from the primary CTA, which weakens the trust moment in account creation.
   severity: low
   snapshot: 04-screens/auth-register/web/mobile-en-default.png
+
+## AI-assisted second-pass critique (round 3)
+
+- snapshot: 04-screens/feed/web/desktop-ar-PS-default.png
+  finding: dev-status badge
+  judgment: retracted
+  reason: The referenced snapshot does not show a red `1 error` badge or any visible Next dev overlay, so this finding no longer matches the image.
+
+- snapshot: 04-screens/feed/web/mobile-en-default.png
+  finding: mobile top navigation
+  judgment: weakened
+  reason: The desktop-style nav is crowded and should become a mobile pattern, but the screenshot remains usable enough that "high" overstates the severity.
+
+- snapshot: 04-screens/jobs/web/desktop-en-default.png
+  finding: empty state
+  judgment: retracted
+  reason: The referenced default jobs snapshot shows four populated job rows, not a no-results empty state.
+
+- snapshot: 04-screens/jobs/web/mobile-ar-PS-default.png
+  finding: filters
+  judgment: stands
+  reason: The mobile screenshot has no visible filter entry point while desktop relies on many small filter controls, so the parity problem is real.
+
+- snapshot: 04-screens/messages/web/mobile-en-default.png
+  finding: mobile layout
+  judgment: weakened
+  reason: The mobile view is not a true side-by-side two-pane layout, but it still compresses list, search, and empty-thread content into one narrow card instead of a focused mobile flow.
+
+- snapshot: 04-screens/network/web/tablet-en-default.png
+  finding: empty state
+  judgment: stands
+  reason: The page shows only tabs plus a bare "Nothing here yet." row, with no relationship-building copy, illustration, or action.
+
+- snapshot: 04-screens/notifications/web/desktop-ar-PS-default.png
+  finding: empty state
+  judgment: retracted
+  reason: The referenced notification snapshot is populated with a notification row, so the empty-state critique is attached to the wrong image.
+
+- snapshot: 04-screens/onboarding/web/desktop-ar-PS-default.png
+  finding: first-run form
+  judgment: stands
+  reason: The screen is a plain centered form with no progress, onboarding context, or branded first-run framing beyond the title and subtitle.
+
+- snapshot: 04-screens/search/web/mobile-ar-PS-default.png
+  finding: mobile search controls
+  judgment: weakened
+  reason: The controls are compact but still legible and centered on the task; the stronger issue is that the top app nav consumes more mobile attention than the search form itself.
+
+- snapshot: 04-screens/auth-register/web/mobile-en-default.png
+  finding: terms consent row
+  judgment: stands
+  reason: The checkbox is small and visually detached from the CTA, making the consent moment easy to miss.
+
+## AI-assisted second-pass critique (round 3)
+
+Re-inspecting the round-2 findings against the freshly re-captured snapshots (post-round-3 401 fix, post-`bg-surface-sunken`). Honest about Codex's own work; "stands" is not the default.
+
+- snapshot: 04-screens/feed/web/desktop-ar-PS-default.png
+  finding: dev-status badge
+  judgment: retracted
+  reason: The `1 error` badge was a real bug (round-1 Item 2 reopened in round 2) but it was fixed in round 3 via the `feed/page.tsx` 401 handler. The re-captured PNG (07:43 → 12:05) no longer carries the overlay.
+
+- snapshot: 04-screens/feed/web/mobile-en-default.png
+  finding: feed mobile top navigation cramped
+  judgment: stands
+  reason: The full desktop nav (logo + search icon + 5 tab labels + Me menu) does collapse onto the 375 px viewport and looks cramped. The 3-col grid loses its right rail entirely, and the composer doesn't fill the column. Web mobile-viewport is not the production mobile experience (Expo Web proxies in `04-screens/{screen}/mobile/` show a proper bottom-tab nav) — design pass should still address the web mobile breakpoint as its own story.
+
+- snapshot: 04-screens/jobs/web/desktop-en-default.png
+  finding: jobs empty state
+  judgment: retracted
+  reason: This PNG shows four populated job cards with filter rail, not a no-results state. Codex's finding describes "a thin muted strip with no title, illustration, or recovery action" which is not visible here. The empty-state weakness exists in `DESIGN.md §12` mandate generally, but this snapshot does not evidence it. Pull it into the broader "empty-state system" pick in `10-ask.md` instead.
+
+- snapshot: 04-screens/jobs/web/mobile-ar-PS-default.png
+  finding: jobs filters mobile drop
+  judgment: stands
+  reason: The left filter rail is hidden on mobile (`hidden lg:block` in `jobs/page.tsx`) with no compact mobile entry point (no filter sheet, no chip strip). User loses the affordance entirely below `lg`.
+
+- snapshot: 04-screens/messages/web/mobile-en-default.png
+  finding: messages mobile two-pane
+  judgment: stands
+  reason: The two-column desktop layout collapses awkwardly on mobile (narrow room list + cramped empty thread panel rather than a stacked single-pane flow). Matches the existing v2 walk's "messages right-rail crammed" observation from a different angle.
+
+- snapshot: 04-screens/network/web/tablet-en-default.png
+  finding: network empty state
+  judgment: stands
+  reason: Tabs (Connections / Invitations / Sent) + a bare row, no illustration or recovery action. Echoes `08-problems.md` #3 (empty-state illustrations missing across all 8 screens).
+
+- snapshot: 04-screens/notifications/web/desktop-ar-PS-default.png
+  finding: notifications empty state
+  judgment: stands
+  reason: Checkmark glyph inside a tinted card, no illustration, no action. Same pattern flag as `08-problems.md` #3.
+
+- snapshot: 04-screens/onboarding/web/desktop-ar-PS-default.png
+  finding: onboarding bare form
+  judgment: weakened
+  reason: The bare shell is intentional per `DESIGN.md §11.1` (round-2 docs decision) — "shell decision visible" part is overstated, the decision is documented. The "no progress strip" and "no product context / hero" parts are real and remain in scope for the design-pass onboarding redesign per `10-ask.md`. Rewrite the finding without the shell-decision angle.
+
+- snapshot: 04-screens/search/web/mobile-ar-PS-default.png
+  finding: search mobile controls compressed
+  judgment: stands
+  reason: Query input + submit + 3 type tabs share a horizontal cluster that hits sub-44pt hit targets on a 375-wide viewport. Consistent with the wider "mobile breakpoint inherits desktop without reflow" pattern.
+
+- snapshot: 04-screens/auth-register/web/mobile-en-default.png
+  finding: auth-register terms consent
+  judgment: weakened
+  reason: The checkbox sits directly above the primary CTA — calling it "visually detached" overstates it. The legal copy is small (sub-13px), which is the real concern: trust-moment copy should be at body-text size, not microcopy. Rewrite to drop "detached" and keep "small / sub-13px".
+
+## Severity recount (post-critique)
+
+- 1 retracted, 2 weakened, 7 stand.
+- 2 of 3 high-severity findings (network empty, messages mobile) hold; 1 (dev-status badge) is closed by round 3.
+- 5 of 6 med-severity findings hold; 1 (jobs empty state) retracted as evidence mismatch.
+- 2 low-severity findings hold with weakened framing.
+
+Net: the round-2 AI-assisted inventory was directionally right but overstated in 3 places. The design pass should use the corrected version above.
