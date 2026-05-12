@@ -7,11 +7,12 @@ import {
 import { Avatar, Surface } from "@baydar/ui-web";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 import { z } from "zod";
 
 import { apiFetch } from "@/lib/api";
+import { getErrorCode } from "@/lib/error-message";
 import { getAccessToken, readSession } from "@/lib/session";
 
 const ListEnvelope = z.array(ConnectionListItemSchema);
@@ -20,24 +21,38 @@ const Raw = z.object({}).passthrough();
 
 export default function NetworkRoute(): JSX.Element {
   const router = useRouter();
+  const locale = useLocale();
   const t = useTranslations("network");
   const [filter, setFilter] = useState<Filter>("ACCEPTED");
   const [items, setItems] = useState<ConnectionListItem[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const load = useCallback(async (f: Filter): Promise<void> => {
-    const token = getAccessToken();
-    if (!token) return;
-    setLoading(true);
-    try {
-      const data = await apiFetch(`/connections?filter=${f}`, ListEnvelope, {
-        token,
-      });
-      setItems(data);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const load = useCallback(
+    async (f: Filter): Promise<void> => {
+      const token = getAccessToken();
+      if (!token) return;
+      setLoading(true);
+      try {
+        const data = await apiFetch(`/connections?filter=${f}`, ListEnvelope, {
+          token,
+        });
+        setItems(data);
+      } catch (e) {
+        const code = getErrorCode(e);
+        if (code === "AUTH_UNAUTHORIZED" || code === "UNAUTHORIZED") {
+          router.replace(`/${locale}/login?return=${encodeURIComponent("/network")}`);
+          return;
+        }
+        if (code === "PROFILE_ONBOARDING_REQUIRED") {
+          router.replace(`/${locale}/onboarding?return=${encodeURIComponent("/network")}`);
+          return;
+        }
+      } finally {
+        setLoading(false);
+      }
+    },
+    [router, locale],
+  );
 
   useEffect(() => {
     const session = readSession();

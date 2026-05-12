@@ -20,15 +20,16 @@ import {
 } from "@baydar/shared";
 import { Avatar, Icon, PostCardSkeleton, Surface } from "@baydar/ui-web";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { usePathname, useRouter } from "next/navigation";
+import { useLocale, useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 
 import { z } from "zod";
 
 import { Composer } from "@/components/Composer";
 import { PostCard } from "@/components/PostCard";
-import { apiFetch, apiFetchPage } from "@/lib/api";
+import { ApiRequestError, apiFetch, apiFetchPage } from "@/lib/api";
+import { getErrorCode, toErrorMessage } from "@/lib/error-message";
 import { getAccessToken, readSession } from "@/lib/session";
 
 const FeedPage = cursorPage(PostSchema);
@@ -39,7 +40,10 @@ const SuggestionsEnvelope = z.object({
 
 export default function FeedPageRoute(): JSX.Element {
   const t = useTranslations("feed");
+  const tErr = useTranslations("errors");
   const router = useRouter();
+  const locale = useLocale();
+  const pathname = usePathname();
   const [me, setMe] = useState<Profile | null>(null);
   const [suggestions, setSuggestions] = useState<PersonSuggestion[]>([]);
   const [jobSuggestions, setJobSuggestions] = useState<Job[]>([]);
@@ -48,25 +52,46 @@ export default function FeedPageRoute(): JSX.Element {
   const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(false);
   const [firstLoad, setFirstLoad] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const load = useCallback(async (after: string | null): Promise<void> => {
-    const token = getAccessToken();
-    if (!token) return;
-    setLoading(true);
-    try {
-      const qs = new URLSearchParams({ limit: "20" });
-      if (after) qs.set("after", after);
-      const page = await apiFetchPage(`/feed?${qs.toString()}`, FeedPage, {
-        token,
-      });
-      setPosts((prev) => (after ? [...prev, ...page.data] : page.data));
-      setCursor(page.meta.nextCursor);
-      setHasMore(page.meta.hasMore);
-    } finally {
-      setLoading(false);
-      if (!after) setFirstLoad(false);
-    }
-  }, []);
+  const load = useCallback(
+    async (after: string | null): Promise<void> => {
+      const token = getAccessToken();
+      if (!token) return;
+      setLoading(true);
+      setError(null);
+      try {
+        const qs = new URLSearchParams({ limit: "20" });
+        if (after) qs.set("after", after);
+        const page = await apiFetchPage(`/feed?${qs.toString()}`, FeedPage, {
+          token,
+        });
+        setPosts((prev) => (after ? [...prev, ...page.data] : page.data));
+        setCursor(page.meta.nextCursor);
+        setHasMore(page.meta.hasMore);
+      } catch (e) {
+        const code = getErrorCode(e);
+        const returnPath = pathname ?? "/feed";
+        if (code === "PROFILE_ONBOARDING_REQUIRED") {
+          router.replace(`/${locale}/onboarding?return=${encodeURIComponent(returnPath)}`);
+          return;
+        }
+        if (
+          code === "AUTH_UNAUTHORIZED" ||
+          code === "UNAUTHORIZED" ||
+          (e instanceof ApiRequestError && e.status === 401)
+        ) {
+          router.replace(`/login?return=${encodeURIComponent(returnPath)}`);
+          return;
+        }
+        setError(toErrorMessage(e, tErr));
+      } finally {
+        setLoading(false);
+        if (!after) setFirstLoad(false);
+      }
+    },
+    [locale, pathname, router, tErr],
+  );
 
   useEffect(() => {
     const session = readSession();
@@ -107,6 +132,10 @@ export default function FeedPageRoute(): JSX.Element {
             <PostCardSkeleton />
             <PostCardSkeleton />
           </>
+        ) : error ? (
+          <Surface variant="tinted" padding="6">
+            <p className="text-ink-muted text-sm">{error}</p>
+          </Surface>
         ) : posts.length === 0 ? (
           <FeedEmpty title={t("emptyTitle")} desc={t("emptyDesc")} />
         ) : (

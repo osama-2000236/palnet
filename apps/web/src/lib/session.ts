@@ -1,6 +1,6 @@
 "use client";
 
-import type { AuthSession } from "@baydar/shared";
+import { AuthSession as AuthSessionSchema, type AuthSession } from "@baydar/shared";
 
 // Stable Baydar session storage key; no migration needed before launch.
 const KEY = "baydar.session.v1";
@@ -10,7 +10,8 @@ export function readSession(): AuthSession | null {
   const raw = window.localStorage.getItem(KEY);
   if (!raw) return null;
   try {
-    return JSON.parse(raw) as AuthSession;
+    const parsed = AuthSessionSchema.safeParse(JSON.parse(raw));
+    return parsed.success ? parsed.data : null;
   } catch {
     return null;
   }

@@ -15,8 +15,9 @@ import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 
-import { apiCall, apiFetchPage } from "@/lib/api";
+import { apiCall, ApiRequestError, apiFetchPage } from "@/lib/api";
 import { useDismissNotification } from "@/lib/api/notifications";
+import { getErrorCode, toErrorMessage } from "@/lib/error-message";
 import { readSession } from "@/lib/session";
 import { openStream } from "@/lib/sse";
 
@@ -24,6 +25,8 @@ const NotificationsPage = cursorPage(NotificationSchema);
 
 export default function NotificationsPageRoute(): JSX.Element {
   const t = useTranslations("notifications");
+  const tErr = useTranslations("errors");
+  const locale = useLocale();
   const { showToast } = useToast();
   const router = useRouter();
   const dismissNotification = useDismissNotification();
@@ -33,6 +36,7 @@ export default function NotificationsPageRoute(): JSX.Element {
   const [hasMore, setHasMore] = useState(false);
   const [loading, setLoading] = useState(false);
   const [firstLoad, setFirstLoad] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [sseLive, setSseLive] = useState(false);
 
   // Session bootstrap.
@@ -45,22 +49,41 @@ export default function NotificationsPageRoute(): JSX.Element {
     setToken(session.tokens.accessToken);
   }, [router]);
 
-  const load = useCallback(async (after: string | null, tk: string): Promise<void> => {
-    setLoading(true);
-    try {
-      const qs = new URLSearchParams({ limit: "30" });
-      if (after) qs.set("after", after);
-      const page = await apiFetchPage(`/notifications?${qs.toString()}`, NotificationsPage, {
-        token: tk,
-      });
-      setItems((prev) => (after ? [...prev, ...page.data] : page.data));
-      setCursor(page.meta.nextCursor);
-      setHasMore(page.meta.hasMore);
-    } finally {
-      setLoading(false);
-      setFirstLoad(false);
-    }
-  }, []);
+  const load = useCallback(
+    async (after: string | null, tk: string): Promise<void> => {
+      setLoading(true);
+      setError(null);
+      try {
+        const qs = new URLSearchParams({ limit: "30" });
+        if (after) qs.set("after", after);
+        const page = await apiFetchPage(`/notifications?${qs.toString()}`, NotificationsPage, {
+          token: tk,
+        });
+        setItems((prev) => (after ? [...prev, ...page.data] : page.data));
+        setCursor(page.meta.nextCursor);
+        setHasMore(page.meta.hasMore);
+      } catch (e) {
+        const code = getErrorCode(e);
+        if (
+          code === "AUTH_UNAUTHORIZED" ||
+          code === "UNAUTHORIZED" ||
+          (e instanceof ApiRequestError && e.status === 401)
+        ) {
+          router.replace(`/login?return=${encodeURIComponent("/notifications")}`);
+          return;
+        }
+        if (code === "PROFILE_ONBOARDING_REQUIRED") {
+          router.replace(`/${locale}/onboarding?return=${encodeURIComponent("/notifications")}`);
+          return;
+        }
+        setError(toErrorMessage(e, tErr));
+      } finally {
+        setLoading(false);
+        setFirstLoad(false);
+      }
+    },
+    [router, locale, tErr],
+  );
 
   // Initial load + mark-all-read on open.
   useEffect(() => {
@@ -163,6 +186,10 @@ export default function NotificationsPageRoute(): JSX.Element {
             </li>
           ))}
         </ul>
+      ) : error ? (
+        <Surface variant="tinted" padding="6">
+          <p className="text-ink-muted text-sm">{error}</p>
+        </Surface>
       ) : items.length === 0 ? (
         <Surface variant="tinted" padding="8">
           <div className="mx-auto max-w-sm text-center">

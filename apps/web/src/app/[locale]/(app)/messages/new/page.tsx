@@ -8,17 +8,20 @@ import {
 import { Avatar, Button, Surface } from "@baydar/ui-web";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useMemo, useState } from "react";
 import { z } from "zod";
 
-import { apiFetch, apiFetchPage } from "@/lib/api";
+import { apiFetch, ApiRequestError, apiFetchPage } from "@/lib/api";
+import { getErrorCode, toErrorMessage } from "@/lib/error-message";
 import { readSession } from "@/lib/session";
 
 const ConnectionsEnvelope = z.object({ data: z.array(ConnectionListItem) });
 
 export default function NewMessagePage(): JSX.Element {
   const t = useTranslations("messaging");
+  const tErr = useTranslations("errors");
+  const locale = useLocale();
   const router = useRouter();
   const [token, setToken] = useState<string | null>(null);
   const [connections, setConnections] = useState<ConnectionListItemType[]>([]);
@@ -35,13 +38,30 @@ export default function NewMessagePage(): JSX.Element {
       router.replace("/login");
       return;
     }
+    const returnPath = "/messages/new";
     setToken(session.tokens.accessToken);
     void apiFetchPage("/connections?filter=ACCEPTED", ConnectionsEnvelope, {
       token: session.tokens.accessToken,
     })
       .then((out) => setConnections(out.data))
+      .catch((e) => {
+        const code = getErrorCode(e);
+        if (
+          code === "AUTH_UNAUTHORIZED" ||
+          code === "UNAUTHORIZED" ||
+          (e instanceof ApiRequestError && e.status === 401)
+        ) {
+          router.replace(`/login?return=${encodeURIComponent(returnPath)}`);
+          return;
+        }
+        if (code === "PROFILE_ONBOARDING_REQUIRED") {
+          router.replace(`/${locale}/onboarding?return=${encodeURIComponent(returnPath)}`);
+          return;
+        }
+        setError(toErrorMessage(e, tErr));
+      })
       .finally(() => setLoading(false));
-  }, [router]);
+  }, [router, locale, tErr]);
 
   const filtered = useMemo(() => {
     const needle = query.trim().toLocaleLowerCase();

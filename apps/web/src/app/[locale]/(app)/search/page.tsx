@@ -13,10 +13,11 @@ import { Avatar, Surface } from "@baydar/ui-web";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Suspense, useEffect, useMemo, useState } from "react";
 
-import { apiFetchPage } from "@/lib/api";
+import { ApiRequestError, apiFetchPage } from "@/lib/api";
+import { getErrorCode, toErrorMessage } from "@/lib/error-message";
 import { getAccessToken } from "@/lib/session";
 
 const PeoplePage = cursorPage(SearchPersonHitSchema);
@@ -47,6 +48,8 @@ export default function SearchPage(): JSX.Element {
 
 function SearchInner(): JSX.Element {
   const t = useTranslations("search");
+  const tErr = useTranslations("errors");
+  const locale = useLocale();
   const router = useRouter();
   const params = useSearchParams();
   const initialQ = params?.get("q") ?? "";
@@ -58,11 +61,37 @@ function SearchInner(): JSX.Element {
   const [cursors, setCursors] = useState<CursorState>(emptyCursor);
   const [hasMore, setHasMore] = useState<MoreState>(emptyMore);
   const [requestAfter, setRequestAfter] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const query = useQuery({
     queryKey: ["search", type, term, requestAfter],
     enabled: term.length > 0,
-    queryFn: async () => fetchSearchPage(type, term, requestAfter),
+    queryFn: async () => {
+      const returnPath =
+        typeof window === "undefined"
+          ? "/search"
+          : `${window.location.pathname}${window.location.search}`;
+      setError(null);
+      try {
+        return await fetchSearchPage(type, term, requestAfter);
+      } catch (e) {
+        const code = getErrorCode(e);
+        if (
+          code === "AUTH_UNAUTHORIZED" ||
+          code === "UNAUTHORIZED" ||
+          (e instanceof ApiRequestError && e.status === 401)
+        ) {
+          router.replace(`/login?return=${encodeURIComponent(returnPath)}`);
+          return emptySearchPage();
+        }
+        if (code === "PROFILE_ONBOARDING_REQUIRED") {
+          router.replace(`/${locale}/onboarding?return=${encodeURIComponent(returnPath)}`);
+          return emptySearchPage();
+        }
+        setError(toErrorMessage(e, tErr));
+        return emptySearchPage();
+      }
+    },
     staleTime: 30_000,
   });
 
@@ -161,6 +190,10 @@ function SearchInner(): JSX.Element {
             </li>
           ))}
         </ul>
+      ) : error ? (
+        <Surface variant="flat" padding="6" className="text-ink-muted">
+          {error}
+        </Surface>
       ) : showPrompt ? (
         <Surface variant="flat" padding="6" className="text-ink-muted">
           {t("prompt")}
@@ -199,6 +232,13 @@ async function fetchSearchPage(type: SearchType, term: string, after: string | n
   if (type === "people") return apiFetchPage(path, PeoplePage, { token });
   if (type === "posts") return apiFetchPage(path, PostsPage, { token });
   return apiFetchPage(path, JobsPage, { token });
+}
+
+function emptySearchPage(): Awaited<ReturnType<typeof fetchSearchPage>> {
+  return {
+    data: [],
+    meta: { nextCursor: null, hasMore: false, limit: 20 },
+  } as Awaited<ReturnType<typeof fetchSearchPage>>;
 }
 
 function parseSearchType(value: string | null | undefined): SearchType {

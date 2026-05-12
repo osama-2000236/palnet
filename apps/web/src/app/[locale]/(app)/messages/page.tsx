@@ -36,6 +36,7 @@ import { z } from "zod";
 
 import { apiCall, apiFetch, ApiRequestError, apiFetchPage } from "@/lib/api";
 import { useReport } from "@/lib/api/safety";
+import { getErrorCode, toErrorMessage } from "@/lib/error-message";
 import { readSession } from "@/lib/session";
 import { openStream } from "@/lib/sse";
 
@@ -55,6 +56,7 @@ const TYPING_POST_THROTTLE_MS = 3 * 1000;
 export default function MessagesPage(): JSX.Element {
   const t = useTranslations("messaging");
   const tCommon = useTranslations("common");
+  const tErr = useTranslations("errors");
   const tSafety = useTranslations("safety");
   const locale = useLocale();
   const router = useRouter();
@@ -97,13 +99,35 @@ export default function MessagesPage(): JSX.Element {
   }, [router]);
 
   // ───────── Initial room list ─────────
-  const loadRooms = useCallback(async (tk: string): Promise<ChatRoom[]> => {
-    const out = await apiFetchPage("/messaging/rooms", RoomsEnvelope, {
-      token: tk,
-    });
-    setRooms(out.data);
-    return out.data;
-  }, []);
+  const loadRooms = useCallback(
+    async (tk: string): Promise<ChatRoom[]> => {
+      setError(null);
+      try {
+        const out = await apiFetchPage("/messaging/rooms", RoomsEnvelope, {
+          token: tk,
+        });
+        setRooms(out.data);
+        return out.data;
+      } catch (e) {
+        const code = getErrorCode(e);
+        if (
+          code === "AUTH_UNAUTHORIZED" ||
+          code === "UNAUTHORIZED" ||
+          (e instanceof ApiRequestError && e.status === 401)
+        ) {
+          router.replace(`/login?return=${encodeURIComponent("/messages")}`);
+          return [];
+        }
+        if (code === "PROFILE_ONBOARDING_REQUIRED") {
+          router.replace(`/${locale}/onboarding?return=${encodeURIComponent("/messages")}`);
+          return [];
+        }
+        setError(toErrorMessage(e, tErr));
+        return [];
+      }
+    },
+    [router, locale, tErr],
+  );
 
   useEffect(() => {
     if (!token) return;
@@ -124,20 +148,38 @@ export default function MessagesPage(): JSX.Element {
   const loadMessages = useCallback(
     async (roomId: string, after: string | null): Promise<void> => {
       if (!token) return;
-      const qs = new URLSearchParams({ limit: "30" });
-      if (after) qs.set("after", after);
-      const page = await apiFetchPage(
-        `/messaging/rooms/${roomId}/messages?${qs.toString()}`,
-        MessagesPageEnvelope,
-        { token },
-      );
-      // API returns newest-first; display oldest-first.
-      const asc = [...page.data].reverse();
-      setMessages((prev) => (after ? [...asc, ...prev] : asc));
-      setNextCursor(page.meta.nextCursor);
-      setHasMore(page.meta.hasMore);
+      setError(null);
+      try {
+        const qs = new URLSearchParams({ limit: "30" });
+        if (after) qs.set("after", after);
+        const page = await apiFetchPage(
+          `/messaging/rooms/${roomId}/messages?${qs.toString()}`,
+          MessagesPageEnvelope,
+          { token },
+        );
+        // API returns newest-first; display oldest-first.
+        const asc = [...page.data].reverse();
+        setMessages((prev) => (after ? [...asc, ...prev] : asc));
+        setNextCursor(page.meta.nextCursor);
+        setHasMore(page.meta.hasMore);
+      } catch (e) {
+        const code = getErrorCode(e);
+        if (
+          code === "AUTH_UNAUTHORIZED" ||
+          code === "UNAUTHORIZED" ||
+          (e instanceof ApiRequestError && e.status === 401)
+        ) {
+          router.replace(`/login?return=${encodeURIComponent("/messages")}`);
+          return;
+        }
+        if (code === "PROFILE_ONBOARDING_REQUIRED") {
+          router.replace(`/${locale}/onboarding?return=${encodeURIComponent("/messages")}`);
+          return;
+        }
+        setError(toErrorMessage(e, tErr));
+      }
     },
-    [token],
+    [token, router, locale, tErr],
   );
 
   useEffect(() => {
