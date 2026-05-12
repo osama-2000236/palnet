@@ -1,5 +1,5 @@
 
-> baydar@0.0.1 lint:tokens C:\LinkedIn\.claude\worktrees\eloquent-yonath-6c4db3
+> baydar@0.0.1 lint:tokens C:\LinkedIn\.claude\worktrees\adoring-pare-2bf794
 > node scripts/lint-tokens.mjs
 
 lint:tokens — clean.

@@ -1,6 +1,50 @@
 # Bundle Status
 
+Refresh: 2026-05-12. Branch: `claude/adoring-pare-2bf794` @ `6ef6a7d`.
 Generated: 2026-05-07. Branch: `claude/eloquent-yonath-6c4db3` @ `78b97a2`.
+
+## 2026-05-12 refresh notes
+
+Re-ran from scratch in this worktree. Findings vs prior bundle:
+
+- **Token drift regression caught + fixed.** `apps/web/src/app/[locale]/(auth)/login/page.tsx:8` used `bg-gray-100` in the Suspense fallback added by `7d8ff74`/`e2d3ef5`. Replaced with `bg-surface-sunken` (convention used everywhere else for skeleton placeholders). `pnpm lint:tokens` → clean after fix.
+- **Phase A re-copied.** 8 dirs, 10 system files, 6 spec md + 14 web tsx + 18 native tsx, full prototype tree, 24 screen tsx across 8 screens × 2 platforms.
+- **Hex sweep re-run.** Same 2 hits in `apps/web/src/app/manifest.ts` (PWA — accepted).
+- **Parity matrix re-generated.** 22 components.
+- **Tokens quickref re-copied.**
+- **Snapshots refreshed.** Re-ran `node scripts/capture-snapshots.mjs` 2026-05-12 06:22. Result: `captured=60 failed=0`. All 60 web PNGs in `04-screens/*/web/` now reflect post-`6ef6a7d` state including Login Suspense (`e2d3ef5`/`7d8ff74`), a11y fixture (`541eb50`), onboarding main landmark (`edda6ee`), composer/header skeletons (`7543107`/`3e79808`), avatar state fixes (`b3a29c2`), and the `bg-gray-100` → `bg-surface-sunken` fix this session.
+- **A11y baseline.** Re-ran `pnpm --filter @baydar/web exec playwright test e2e/a11y.spec.ts`. Result: 15 passed, 14 skipped (sequential gate after first failure), 1 failed — `axe heading-order [moderate]` on `/ar-PS/jobs`: H3 follows H1 in the jobs list card title (skips H2). Log: see test output. Fix candidate: drop the H3 a level or insert an H2 section header above the list. Not launch-blocking, but should be in `08-problems.md` addenda.
+- **Infra notes for next run.** Scoop PostgreSQL 18 on `:5433` (PG16 service occupies `:5432`). Root `.env.local` has DB URL + JWT secrets. `pnpm --filter @baydar/shared build` + `pnpm --filter @baydar/db build` + `pnpm --filter @baydar/db generate` are pre-req for cold start. Migrations already deployed (8 applied, 0 pending). Auth fixture at `apps/web/tests/.auth/storageState.json` regenerated.
+
+## 2026-05-12 07:30 — Codex handoff round complete
+
+Plan: `design-handoff-2026-05/codex-plan.md`. Items 1-3 from `08-problems.md` repo-specific addenda.
+
+**Implemented (Codex):**
+
+- Item 1 — `apps/web/src/app/[locale]/(app)/jobs/page.tsx:304` job-card `<h3>` → `<p>`.
+- Item 3 — `DESIGN.md §7` Toast row added (web ✅, native ✅).
+
+**Verified (Claude, post-Codex, in this worktree):**
+
+- `pnpm lint:tokens` — clean.
+- `pnpm --filter @baydar/web type-check` + `@baydar/api type-check` — clean (Codex output).
+- `pnpm --filter @baydar/web exec playwright test e2e/a11y.spec.ts` — 26 passed, 16 skipped (job-detail conditional), 0 failed.
+- `node scripts/capture-snapshots.mjs` — `captured=60 failed=0`. Refreshed at 07:43 after jobs fix.
+- Dev logs: zero runtime errors during capture across `/feed`, `/jobs`, `/notifications`, `/search`, `/messages`, `/in/{handle}` in `ar-PS` + `en`. Item 2 ("1 error" overlay) was a stale-snapshot artifact, not a live bug — resolved by the `6ef6a7d`/`541eb50` cascade. Marked accordingly in `08-problems.md`.
+
+**Out-of-scope drift reverted:**
+
+- Codex modified 4 bundle component snapshot copies (`design-handoff-2026-05/03-components/src-web/{AppShell,Composer,Toast,TypingIndicator}.tsx`) — inline-style → Tailwind arbitrary refactor. Reverted via `git checkout HEAD --`. Bundle now mirrors source again. The refactor itself is a sensible follow-up if applied to `packages/ui-web/src/` source; not landing in this round.
+
+**Review status:** `STATUS: APPROVED` (Items 1+3 implemented and verified; Item 2 resolved as not-a-bug with evidence). Commit authorization not yet given.
+
+## Residual gaps (unchanged from 2026-05-07)
+
+- T-B.7 mobile snapshots — `[HUMAN]`, iOS sim + Android emu, ~30 min.
+- T-B.9 moodboard images — `[HUMAN]`, 5 refs pre-curated, capture each, ~30 min.
+- T-F.1 ask scope — `[HUMAN]`, AI pre-picked 3 items in `10-ask.md`, confirm or override, ~10 min.
+- 08-pain.md "Lead additions" section — `[HUMAN]` manual walk + mobile inspection.
 
 | Task                   | Status  | Notes                                                                                                                                                   |
 | ---------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |

@@ -18,7 +18,10 @@ System-level weak spots identified in repo analysis. Independent of `08-pain.md`
 - **PWA manifest hardcodes `#f4f6ef` and `#526030`** ([apps/web/src/app/manifest.ts:13-14](apps/web/src/app/manifest.ts:13)). Mirrors brand tokens but bypasses them. Tokenize.
 - **2 hex literals** flagged in `07-audits/hex-hits.json` — both PWA manifest above.
 - **Toast** primitive landed Sprint 21 ([packages/ui-web/src/Toast.tsx](packages/ui-web/src/Toast.tsx), [packages/ui-native/src/Toast.tsx](packages/ui-native/src/Toast.tsx)) — not yet added to component spec inventory or `DESIGN.md §7`.
-- **Authenticated dev mode shows "1 error" overlay** in feed snapshot — runtime error in dev that doesn't surface on home page. Worth investigating before design pass.
+- ~~**Authenticated dev mode shows "1 error" overlay** in feed snapshot.~~ **Resolved.** Flag was based on snapshots captured before the i18n + error-mapping cascade fixes in `6ef6a7d`/`541eb50`. Re-verified 2026-05-12 06:22 + 07:43: fresh `/feed`, `/jobs`, `/notifications`, `/search`, `/messages`, `/in/{handle}` captures return 200 with no dev error badge; web + API dev logs are clean across `ar-PS` + `en`.
+- ~~**A11y heading-order on `/ar-PS/jobs`** — H3 follows H1, skips H2.~~ **Fixed 2026-05-12** ([apps/web/src/app/[locale]/(app)/jobs/page.tsx:304](apps/web/src/app/%5Blocale%5D/%28app%29/jobs/page.tsx:304)). Job card title `<h3>` → `<p>` with same typography classes (card lives inside a labeled list, no heading needed). Re-ran `pnpm --filter @baydar/web exec playwright test e2e/a11y.spec.ts`: 26 passed, 16 skipped (job-detail conditional, no seeded jobs), 0 failed.
+- ~~**Token drift regression** `bg-gray-100` in login Suspense fallback.~~ **Fixed 2026-05-12** → `bg-surface-sunken`. `pnpm lint:tokens` clean.
+- **`Toast` row added to `DESIGN.md §7`** (2026-05-12) — was missing despite Sprint 21 ship.
 
 ## See also
 
