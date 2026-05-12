@@ -44,7 +44,9 @@ export default function OnboardingConnectPage(): JSX.Element {
     setLoading(true);
     setLoadError(null);
     try {
-      const out = await apiFetch("/connections/suggestions?limit=8", SuggestionsEnvelope, { token });
+      const out = await apiFetch("/connections/suggestions?limit=8", SuggestionsEnvelope, {
+        token,
+      });
       setSuggestions(out.data);
     } catch {
       setLoadError(t("connect.error"));
@@ -209,9 +211,7 @@ export default function OnboardingConnectPage(): JSX.Element {
           {t("connect.skip")}
         </Button>
       </div>
-      <p className="text-ink-muted text-xs">
-        {t("connect.selected", { count: selectedIds.size })}
-      </p>
+      <p className="text-ink-muted text-xs">{t("connect.selected", { count: selectedIds.size })}</p>
     </main>
   );
 }

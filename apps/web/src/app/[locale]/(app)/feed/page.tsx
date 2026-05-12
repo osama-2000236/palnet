@@ -106,7 +106,7 @@ export default function FeedPageRoute(): JSX.Element {
     const next = new URLSearchParams(searchParams.toString());
     next.delete("welcome");
     const qs = next.toString();
-    router.replace(qs ? `${pathname}?${qs}` : pathname ?? "/feed");
+    router.replace(qs ? `${pathname}?${qs}` : (pathname ?? "/feed"));
   }, [pathname, router, searchParams, showToast, tOnboarding]);
 
   return (

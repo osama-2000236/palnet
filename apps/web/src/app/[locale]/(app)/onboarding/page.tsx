@@ -52,7 +52,8 @@ export default function OnboardingPage(): JSX.Element {
   const isLast = stepIndex === STEP_ORDER.length - 1;
 
   function isStepValid(step: StepKey): boolean {
-    if (step === "identity") return state.firstName.trim().length > 0 && state.lastName.trim().length > 0;
+    if (step === "identity")
+      return state.firstName.trim().length > 0 && state.lastName.trim().length > 0;
     if (step === "profile")
       return /^[a-z0-9][a-z0-9-]+[a-z0-9]$/.test(state.handle) && state.headline.trim().length >= 2;
     return state.location.trim().length >= 2 && /^[A-Z]{2}$/.test(state.country.trim());
@@ -114,11 +115,7 @@ export default function OnboardingPage(): JSX.Element {
 
   return (
     <main className="mx-auto flex w-full max-w-md flex-col gap-6 px-6 py-12">
-      <OnboardingProgress
-        steps={steps}
-        active={stepIndex}
-        ariaLabel={t("progressAria")}
-      />
+      <OnboardingProgress steps={steps} active={stepIndex} ariaLabel={t("progressAria")} />
 
       <header className="flex flex-col gap-1">
         <p className="text-brand-700 text-xs font-bold uppercase tracking-wide">
@@ -194,12 +191,7 @@ export default function OnboardingPage(): JSX.Element {
         ) : null}
 
         <div className="flex flex-row-reverse gap-2">
-          <Button
-            type="submit"
-            disabled={busy}
-            loading={busy}
-            className="flex-1"
-          >
+          <Button type="submit" disabled={busy} loading={busy} className="flex-1">
             {t("submit")}
           </Button>
           {stepIndex > 0 ? (
