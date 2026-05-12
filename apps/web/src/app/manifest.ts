@@ -1,8 +1,7 @@
 import type { MetadataRoute } from "next";
 
-// PWA manifest. Brand hex literals here are the canonical token values
-// (brand-50 cream, brand-600 olive). Manifest cannot reference Tailwind
-// classes — these are duplicated by necessity, not by drift.
+import { tokens } from "@baydar/ui-tokens";
+
 export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "Baydar — بيدر",
@@ -10,8 +9,8 @@ export default function manifest(): MetadataRoute.Manifest {
     description: "شبكتك المهنية العربية",
     start_url: "/ar-PS/feed",
     display: "standalone",
-    background_color: "#f4f6ef",
-    theme_color: "#526030",
+    background_color: tokens.color.brand[50],
+    theme_color: tokens.color.brand[600],
     dir: "rtl",
     lang: "ar-PS",
     icons: [
