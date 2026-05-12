@@ -18,11 +18,11 @@ import {
   Profile,
   cursorPage,
 } from "@baydar/shared";
-import { Avatar, Icon, PostCardSkeleton, Surface } from "@baydar/ui-web";
+import { Avatar, Icon, PostCardSkeleton, Surface, useToast } from "@baydar/ui-web";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { z } from "zod";
 
@@ -39,7 +39,12 @@ const SuggestionsEnvelope = z.object({
 
 export default function FeedPageRoute(): JSX.Element {
   const t = useTranslations("feed");
+  const tOnboarding = useTranslations("onboarding");
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const { showToast } = useToast();
+  const welcomeShown = useRef(false);
   const [me, setMe] = useState<Profile | null>(null);
   const [suggestions, setSuggestions] = useState<PersonSuggestion[]>([]);
   const [jobSuggestions, setJobSuggestions] = useState<Job[]>([]);
@@ -92,6 +97,17 @@ export default function FeedPageRoute(): JSX.Element {
 
     void load(null);
   }, [router, load]);
+
+  useEffect(() => {
+    if (welcomeShown.current) return;
+    if (searchParams?.get("welcome") !== "1") return;
+    welcomeShown.current = true;
+    showToast({ message: tOnboarding("welcomeToast"), kind: "success" });
+    const next = new URLSearchParams(searchParams.toString());
+    next.delete("welcome");
+    const qs = next.toString();
+    router.replace(qs ? `${pathname}?${qs}` : pathname ?? "/feed");
+  }, [pathname, router, searchParams, showToast, tOnboarding]);
 
   return (
     <main className="mx-auto grid w-full max-w-[1128px] grid-cols-1 items-start gap-6 px-4 py-6 lg:grid-cols-[225px_minmax(0,1fr)_300px] lg:gap-6 lg:px-6">

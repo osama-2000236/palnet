@@ -108,7 +108,37 @@
     "handleHint": "Appears as /in/{handle}",
     "headline": "Headline",
     "location": "Location (city)",
-    "submit": "Save and continue"
+    "country": "Country (2-letter code)",
+    "submit": "Save and continue",
+    "back": "Back",
+    "progress": "Step {current} of {total}",
+    "progressAria": "Onboarding progress",
+    "steps": {
+      "identity": "Your name",
+      "profile": "Your profile",
+      "location": "Your location",
+      "connect": "Start connecting"
+    },
+    "stepCopy": {
+      "identity": "Start with the name colleagues know you by.",
+      "profile": "Pick a handle and a short professional headline.",
+      "location": "Help others find you by location.",
+      "connect": "Pick at least two people to seed your network."
+    },
+    "connect": {
+      "title": "Start your network",
+      "subtitle": "Pick at least two people so you don't land on an empty feed.",
+      "requireTwo": "Pick at least two people to continue.",
+      "selected": "{count} selected",
+      "loading": "Loading suggestions…",
+      "empty": "No suggestions are available right now.",
+      "error": "Couldn't load suggestions.",
+      "select": "Connect",
+      "deselect": "Selected",
+      "submit": "Send requests and continue",
+      "skip": "Skip for now"
+    },
+    "welcomeToast": "Welcome to Baydar!"
   },
   "feed": {
     "title": "Feed",
