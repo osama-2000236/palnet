@@ -2,6 +2,18 @@ export { nativeTokens } from "./tokens";
 export type { NativeTokens } from "./tokens";
 export { Surface } from "./Surface";
 export type { SurfaceProps, SurfaceVariant, SurfacePadding } from "./Surface";
+export { Illustration, ILLUSTRATION_MOTIFS, ILLUSTRATION_DIRECTIONS } from "./Illustration";
+export type {
+  IllustrationProps,
+  IllustrationMotif,
+  IllustrationDirection,
+  IllustrationSize,
+  IllustrationTint,
+} from "./Illustration";
+export { EmptyState } from "./EmptyState";
+export type { EmptyStateProps } from "./EmptyState";
+export { OnboardingProgress } from "./OnboardingProgress";
+export type { OnboardingProgressProps, OnboardingProgressStyle } from "./OnboardingProgress";
 export { Avatar } from "./Avatar";
 export type { AvatarProps, AvatarSize, AvatarUser } from "./Avatar";
 export { Button } from "./Button";
@@ -23,8 +35,6 @@ export { SearchField } from "./SearchField";
 export type { SearchFieldProps } from "./SearchField";
 export { SegmentedControl } from "./SegmentedControl";
 export type { SegmentedControlItem, SegmentedControlProps } from "./SegmentedControl";
-export { OnboardingProgress } from "./OnboardingProgress";
-export type { OnboardingProgressProps, OnboardingProgressStep } from "./OnboardingProgress";
 export { StateMessage } from "./StateMessage";
 export type { StateMessageProps } from "./StateMessage";
 export { Toast, ToastHost, ToastProvider, useToast } from "./Toast";

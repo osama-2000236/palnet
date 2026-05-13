@@ -173,7 +173,7 @@ const onboardingSchema = yup.object({
 });
 
 export default function OnboardingScreen(): JSX.Element {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const params = useLocalSearchParams<{ firstName?: string; lastName?: string }>();
   const isConnected = useNetworkStore((state) => state.isConnected);
   const [stepIndex, setStepIndex] = useState(0);
@@ -430,12 +430,10 @@ export default function OnboardingScreen(): JSX.Element {
           }}
         >
           <OnboardingProgress
-            steps={steps}
-            active={stepIndex}
-            accessibilityLabel={t("onboarding.progress", {
-              current: stepIndex + 1,
-              total: steps.length,
-            })}
+            current={stepIndex + 1}
+            total={steps.length}
+            labels={steps.map((s) => s.label)}
+            locale={i18n.language.startsWith("ar") ? "ar" : "en"}
           />
 
           <View style={{ gap: nativeTokens.space[2] }}>

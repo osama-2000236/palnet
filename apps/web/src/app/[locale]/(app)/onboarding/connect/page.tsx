@@ -3,8 +3,8 @@
 import { PersonSuggestion as PersonSuggestionSchema, type PersonSuggestion } from "@baydar/shared";
 import { Avatar, Button, OnboardingProgress, Surface } from "@baydar/ui-web";
 import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useLocale, useTranslations } from "next-intl";
+import { useCallback, useEffect, useState } from "react";
 import { z } from "zod";
 
 import { apiCall, apiFetch, ApiRequestError } from "@/lib/api";
@@ -18,6 +18,8 @@ export default function OnboardingConnectPage(): JSX.Element {
   const tAuth = useTranslations("auth");
   const tCommon = useTranslations("common");
   const router = useRouter();
+  const locale = useLocale();
+  const isAr = locale.startsWith("ar");
   const [suggestions, setSuggestions] = useState<PersonSuggestion[]>([]);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
@@ -25,15 +27,10 @@ export default function OnboardingConnectPage(): JSX.Element {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
-  const steps = useMemo(
-    () => [
-      { key: "identity", label: t("steps.identity") },
-      { key: "profile", label: t("steps.profile") },
-      { key: "location", label: t("steps.location") },
-      { key: "connect", label: t("steps.connect") },
-    ],
-    [t],
-  );
+  // 5-step flow per design pass: signup → verify → profile → connect → feed.
+  const stepLabels = isAr
+    ? ["إنشاء الحساب", "تأكيد البريد", "إكمال الملف", "أول تواصل", "ابدأ"]
+    : ["Sign up", "Verify email", "Complete profile", "First connect", "Start"];
 
   const load = useCallback(async (): Promise<void> => {
     const token = getAccessToken();
@@ -110,12 +107,11 @@ export default function OnboardingConnectPage(): JSX.Element {
 
   return (
     <main className="mx-auto flex w-full max-w-xl flex-col gap-6 px-6 py-12">
-      <OnboardingProgress steps={steps} active={3} ariaLabel={t("progressAria")} />
+      <Surface variant="hero" padding="0" className="overflow-hidden">
+        <OnboardingProgress current={4} total={5} labels={stepLabels} locale={isAr ? "ar" : "en"} />
+      </Surface>
 
       <header className="flex flex-col gap-1">
-        <p className="text-brand-700 text-xs font-bold uppercase tracking-wide">
-          {t("progress", { current: 4, total: steps.length })}
-        </p>
         <h1 className="text-ink text-3xl font-bold">{t("connect.title")}</h1>
         <p className="text-ink-muted text-sm">{t("connect.subtitle")}</p>
       </header>
