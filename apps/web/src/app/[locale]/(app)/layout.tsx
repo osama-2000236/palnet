@@ -311,10 +311,6 @@ export default function AppLayout({ children }: { children: ReactNode }): JSX.El
     [tCommon, tNav, tFeed, tNetwork, tMsg, tNotif, tSearch, tProfile, tAuth],
   );
 
-  if (bare) {
-    return <>{children}</>;
-  }
-
   const meUser = me
     ? {
         id: me.userId,
@@ -327,6 +323,7 @@ export default function AppLayout({ children }: { children: ReactNode }): JSX.El
 
   return (
     <AppShell
+      bare={bare}
       currentRoute={currentRoute}
       me={meUser}
       meHeadline={me?.headline ?? null}

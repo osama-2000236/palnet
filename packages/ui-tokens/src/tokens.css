@@ -73,6 +73,21 @@
   --dur-fast: 80ms;
   --dur-base: 120ms;
   --dur-slow: 240ms;
+
+  /* Illustration scale (EmptyState / Illustration primitive) */
+  --illus-size-sm: 96px;
+  --illus-size-md: 140px;
+  --illus-size-lg: 180px;
+
+  /* Illustration backdrop tints — map to existing surface tokens */
+  --illus-tint-sand:   var(--surface-subtle);
+  --illus-tint-olive:  var(--brand-50);
+  --illus-tint-sunken: var(--surface-sunken);
+
+  /* Named breakpoints. Right rail is xl-only. */
+  --bp-md: 768px;
+  --bp-lg: 1024px;
+  --bp-xl: 1280px;
 }
 
 /* No dark mode yet — do not add. */

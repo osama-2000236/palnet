@@ -1,8 +1,9 @@
 "use client";
 
 import { OnboardProfileBody, Profile } from "@baydar/shared";
+import { OnboardingProgress, Surface } from "@baydar/ui-web";
 import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 
 import { apiFetch, ApiRequestError } from "@/lib/api";
@@ -12,6 +13,8 @@ export default function OnboardingPage(): JSX.Element {
   const t = useTranslations("onboarding");
   const tAuth = useTranslations("auth");
   const router = useRouter();
+  const locale = useLocale();
+  const isAr = locale.startsWith("ar");
   const [state, setState] = useState({
     handle: "",
     firstName: "",
@@ -63,9 +66,24 @@ export default function OnboardingPage(): JSX.Element {
     }
   }
 
+  // 5-step flow per design pass: signup → verify → profile → connect → feed.
+  // The user is on step 3 (profile complete) by the time this route runs;
+  // steps 1+2 happen in /(auth)/* before this page is reachable.
+  const stepLabels = isAr
+    ? ["إنشاء الحساب", "تأكيد البريد", "إكمال الملف", "أول تواصل", "ابدأ"]
+    : ["Sign up", "Verify email", "Complete profile", "First connect", "Start"];
+
   return (
     <main className="mx-auto w-full max-w-md px-6 py-12">
-      <form onSubmit={onSubmit} className="flex flex-col gap-4" noValidate>
+      <Surface variant="hero" padding="0" className="overflow-hidden">
+        <OnboardingProgress
+          current={3}
+          total={5}
+          labels={stepLabels}
+          locale={isAr ? "ar" : "en"}
+        />
+      </Surface>
+      <form onSubmit={onSubmit} className="mt-6 flex flex-col gap-4" noValidate>
         <header className="flex flex-col gap-1">
           <h1 className="text-ink text-3xl font-bold">{t("title")}</h1>
           <p className="text-ink-muted">{t("subtitle")}</p>

@@ -110,6 +110,24 @@ export const tokens = {
     maxContentWidth: 1128,
     mobileTabHeight: 64,
   },
+  // Illustration scale + backdrop tint — used by EmptyState / Illustration.
+  // Three nominal sizes locked here so screens don't drift. Tints map to
+  // existing surface tokens; no new colour is introduced.
+  illustration: {
+    size: { sm: 96, md: 140, lg: 180 },
+    tint: {
+      sand: "surface.subtle",
+      olive: "brand.50",
+      sunken: "surface.sunken",
+    },
+  },
+  // Named breakpoints (px). The web app collapses 3-col → 2-col → 1-col
+  // along these. Right rail is XL-only.
+  breakpoint: {
+    md: 768,
+    lg: 1024,
+    xl: 1280,
+  },
 } as const;
 
 export type Tokens = typeof tokens;
