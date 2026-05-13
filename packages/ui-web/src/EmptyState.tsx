@@ -67,14 +67,17 @@ export function EmptyState({
     >
       <Illustration motif={motif} direction={direction} tint={tint} size={resolvedSize} />
       <div className={cx("flex flex-col", inline ? "gap-1" : "gap-1.5")}>
-        <h3
+        {/* Intentionally not a heading — EmptyState appears inside arbitrary
+         * sections; emitting an <h*> would force a heading-order audit on
+         * every host. Style as a semibold paragraph instead. */}
+        <p
           className={cx(
             "text-ink font-semibold",
             inline ? "text-base leading-snug" : "text-[19px] leading-snug",
           )}
         >
           {title}
-        </h3>
+        </p>
         {body ? (
           <p
             className={cx(
