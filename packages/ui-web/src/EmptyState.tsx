@@ -87,12 +87,7 @@ export function EmptyState({
         ) : null}
       </div>
       {cta || altCta ? (
-        <div
-          className={cx(
-            "flex flex-col items-center",
-            inline ? "mt-0 gap-1" : "mt-1 gap-1.5",
-          )}
-        >
+        <div className={cx("flex flex-col items-center", inline ? "mt-0 gap-1" : "mt-1 gap-1.5")}>
           {cta ? (
             <Button variant="primary" size={inline ? "sm" : "md"} onClick={onAction}>
               {cta}

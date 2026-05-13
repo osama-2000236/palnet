@@ -308,13 +308,7 @@ function HarvestSet({ motif }: { motif: IllustrationMotif }): JSX.Element {
       break;
     case "notifications":
       symbol = (
-        <g
-          fill="none"
-          stroke={ink}
-          strokeWidth={1.8}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
+        <g fill="none" stroke={ink} strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
           <path d="M60 50 a10 10 0 0 1 20 0 v12 q0 6 4 8 h-28 q4 -2 4 -8 z" />
           <path d="M66 72 q4 6 8 0" />
           <circle cx="84" cy="50" r="4" fill={accent} stroke="none" />

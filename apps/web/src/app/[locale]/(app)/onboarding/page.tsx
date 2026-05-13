@@ -76,12 +76,7 @@ export default function OnboardingPage(): JSX.Element {
   return (
     <main className="mx-auto w-full max-w-md px-6 py-12">
       <Surface variant="hero" padding="0" className="overflow-hidden">
-        <OnboardingProgress
-          current={3}
-          total={5}
-          labels={stepLabels}
-          locale={isAr ? "ar" : "en"}
-        />
+        <OnboardingProgress current={3} total={5} labels={stepLabels} locale={isAr ? "ar" : "en"} />
       </Surface>
       <form onSubmit={onSubmit} className="mt-6 flex flex-col gap-4" noValidate>
         <header className="flex flex-col gap-1">

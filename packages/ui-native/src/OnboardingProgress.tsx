@@ -50,7 +50,13 @@ export function OnboardingProgress({
       <View
         {...a11y}
         style={[
-          { flexDirection: "row", alignItems: "center", gap: 8, paddingHorizontal: 16, paddingVertical: 10 },
+          {
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 8,
+            paddingHorizontal: 16,
+            paddingVertical: 10,
+          },
           containerStyle,
         ]}
       >
@@ -64,7 +70,12 @@ export function OnboardingProgress({
                 ? nativeTokens.color.brand300
                 : nativeTokens.color.surfaceSunken;
           const w = state === "now" ? 24 : 8;
-          return <View key={n} style={{ width: w, height: 8, borderRadius: 9999, backgroundColor: bg }} />;
+          return (
+            <View
+              key={n}
+              style={{ width: w, height: 8, borderRadius: 9999, backgroundColor: bg }}
+            />
+          );
         })}
         <Text style={[styles.counter, { marginStart: "auto" }]}>{counter}</Text>
       </View>
@@ -75,7 +86,10 @@ export function OnboardingProgress({
     return (
       <View
         {...a11y}
-        style={[{ flexDirection: "row", gap: 4, paddingHorizontal: 16, paddingTop: 12 }, containerStyle]}
+        style={[
+          { flexDirection: "row", gap: 4, paddingHorizontal: 16, paddingTop: 12 },
+          containerStyle,
+        ]}
       >
         {Array.from({ length: total }, (_, i) => {
           const n = i + 1;
@@ -86,7 +100,9 @@ export function OnboardingProgress({
                 style={{
                   height: 4,
                   borderRadius: 2,
-                  backgroundColor: filled ? nativeTokens.color.brand600 : nativeTokens.color.surfaceSunken,
+                  backgroundColor: filled
+                    ? nativeTokens.color.brand600
+                    : nativeTokens.color.surfaceSunken,
                 }}
               />
               {labels?.[i] ? (
@@ -114,7 +130,9 @@ export function OnboardingProgress({
       {...a11y}
       style={[{ gap: 8, paddingHorizontal: 20, paddingVertical: 12 }, containerStyle]}
     >
-      <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "baseline" }}>
+      <View
+        style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "baseline" }}
+      >
         {label ? (
           <Text
             style={{
