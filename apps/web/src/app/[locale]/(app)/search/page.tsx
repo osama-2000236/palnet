@@ -9,7 +9,7 @@ import {
   type SearchPersonHit,
   type SearchPostHit,
 } from "@baydar/shared";
-import { Avatar, Surface } from "@baydar/ui-web";
+import { Avatar, EmptyState, Surface } from "@baydar/ui-web";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -162,12 +162,12 @@ function SearchInner(): JSX.Element {
           ))}
         </ul>
       ) : showPrompt ? (
-        <Surface variant="flat" padding="6" className="text-ink-muted">
-          {t("prompt")}
+        <Surface variant="card" padding="0">
+          <EmptyState motif="search" title={t("noResults")} body={t("prompt")} />
         </Surface>
       ) : hits[type].length === 0 ? (
-        <Surface variant="flat" padding="6" className="text-ink-muted">
-          {t(`empty.${type}`)}
+        <Surface variant="card" padding="0">
+          <EmptyState motif="search" title={t("noResults")} body={t(`empty.${type}`)} />
         </Surface>
       ) : (
         <ul className="flex flex-col gap-3">

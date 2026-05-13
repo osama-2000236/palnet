@@ -2,6 +2,18 @@ export { nativeTokens } from "./tokens";
 export type { NativeTokens } from "./tokens";
 export { Surface } from "./Surface";
 export type { SurfaceProps, SurfaceVariant, SurfacePadding } from "./Surface";
+export { Illustration, ILLUSTRATION_MOTIFS, ILLUSTRATION_DIRECTIONS } from "./Illustration";
+export type {
+  IllustrationProps,
+  IllustrationMotif,
+  IllustrationDirection,
+  IllustrationSize,
+  IllustrationTint,
+} from "./Illustration";
+export { EmptyState } from "./EmptyState";
+export type { EmptyStateProps } from "./EmptyState";
+export { OnboardingProgress } from "./OnboardingProgress";
+export type { OnboardingProgressProps, OnboardingProgressStyle } from "./OnboardingProgress";
 export { Avatar } from "./Avatar";
 export type { AvatarProps, AvatarSize, AvatarUser } from "./Avatar";
 export { Button } from "./Button";

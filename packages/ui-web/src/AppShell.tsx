@@ -63,6 +63,12 @@ export interface AppShellLabels {
 }
 
 export interface AppShellProps {
+  /**
+   * Render children with no chrome (header, search, nav, profile menu).
+   * Used by onboarding / auth flows that ratify the bare shell per
+   * DESIGN.md §11.1. When true, all other shell props are ignored.
+   */
+  bare?: boolean;
   /** Current pathname (already mapped to a route key by the host). */
   currentRoute: AppShellRoute | null;
   /** Signed-in user used for the profile avatar. Null during hydration. */
@@ -114,6 +120,7 @@ function formatBadge(count: number): string {
 }
 
 export function AppShell({
+  bare = false,
   currentRoute,
   me,
   meHeadline,
@@ -244,6 +251,10 @@ export function AppShell({
     },
     [onSearchSubmit],
   );
+
+  if (bare) {
+    return <div className="bg-surface-muted min-h-screen">{children}</div>;
+  }
 
   return (
     <div className="bg-surface-muted min-h-screen">
