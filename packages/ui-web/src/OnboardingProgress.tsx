@@ -26,8 +26,8 @@ function toAr(n: number): string {
   return String(n).replace(/[0-9]/g, (d) => AR_DIGITS[+d] ?? d);
 }
 function fraction(current: number, total: number, locale: "ar" | "en"): string {
-  if (locale === "ar") return `${toAr(current)} / ${toAr(total)}`;
-  return `${current} / ${total}`;
+  if (locale === "ar") return `${toAr(current)} / ${toAr(total)}`;
+  return `${current} / ${total}`;
 }
 
 export function OnboardingProgress({
