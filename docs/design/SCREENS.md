@@ -1,18 +1,204 @@
-# Screen Recipes
+# Screen recipes
 
-Minimum Sprint 13 stub. `DESIGN.md` remains the source of truth.
+Per-screen composition rules: which `Surface` variant goes where, which rail (if any) belongs on the right column, which states the screen owes the user. Promoted from stub in Design Pass 1 R2.
 
-## Current Rule
+> `DESIGN.md` remains the source of truth for _visual_ decisions. This file is the source of truth for _composition_ decisions per screen. When the two disagree, `DESIGN.md` wins — and open a PR to bring this file into line.
 
-Screens compose the field-row pattern: compact header, search or filter entry, segmented control where useful, dense rows/cards, and one commit action at most.
+## Vocabulary
 
-## Current Sources
+The five surface variants, from `DESIGN.md` §5.6:
 
-- Screen and route matrix: `DESIGN.md` section 7.4.
-- Mobile routes: `apps/mobile/app/(app)/`.
-- Web routes: `apps/web/app/[locale]/(app)/`.
-- Prototype reference: `docs/_archive/prototype-2025/Baydar Prototype.html`.
+- **`flat`** — list containers, sidebar groupings. Border only, no shadow.
+- **`card`** — feed posts, main content blocks. Border + soft shadow.
+- **`hero`** — profile header, mini-profile rail. Border + shadow, radius xl.
+- **`tinted`** — inputs, own-message bubbles, empty states. Tint bg, no border.
+- **`row`** — list items inside a `flat` container. Transparent bg, bottom border.
 
-## Tracking Notes
+Rule: **never nest `card` inside `card`**. A list of records is one `flat` container with `row` items, not a stack of free-floating `card`s.
 
-Add per-screen loading, empty, offline, error, and success-state notes here when a screen is materially changed.
+## Right-rail policy
+
+A right rail is justified only when the screen has _secondary discovery_ — content the user might pivot to without leaving the verb of the page.
+
+| Screen                   | Right rail?       | What goes in it                                                                       |
+| ------------------------ | ----------------- | ------------------------------------------------------------------------------------- |
+| Feed                     | **yes — 2 rails** | Left: mini-profile hero + connections snapshot. Right: PYMK + suggested jobs.         |
+| Network                  | no                | Left filters justify themselves; the page _is_ discovery. A right rail would compete. |
+| Jobs                     | no                | Left filters do the work. Right is the result. Don't fight the result column.         |
+| Messages                 | no                | Focus screen. Room list is the only secondary surface.                                |
+| Notifications            | no                | Read-once stream.                                                                     |
+| Search                   | no                | Filters are inline tabs; results are the page.                                        |
+| Profile (own and others) | no                | Hero + tabs do the work.                                                              |
+| Settings                 | no                | Sub-routes do the work.                                                               |
+| Onboarding               | no                | Bare shell, one verb. See §11.1 in `DESIGN.md`.                                       |
+
+Mobile has no right rails — single column. The mobile divergence is documented per-screen below.
+
+## Feed — `apps/web/src/app/[locale]/(app)/feed/page.tsx`
+
+**Web layout**: 3-column grid `225 | 1fr | 300`, gap 24, max 1128.
+
+**Surfaces:**
+
+- Left rail: single `hero` (mini-profile + cover gradient + quick links). Padding 0.
+- Middle: bare list of `card` posts (`PostCard` already renders `card`). No outer wrapper.
+- Composer: `tinted` collapsed pill.
+- Right rail: two `card` blocks (PYMK + suggested jobs). Padding 0.
+
+**States:**
+
+- Loading: 3× `PostCardSkeleton`.
+- Empty: `EmptyState motif="feed"`, no action (composer is one click above).
+- Error: `tinted` retry banner.
+
+**Mobile**: same posts as bare cards. No rails. Composer entry as a row above the feed.
+
+## Network — `apps/web/src/app/[locale]/(app)/network/page.tsx`
+
+**Web layout**: 2-column grid `220 | 1fr`, max 840.
+
+**Surfaces:**
+
+- Top: `h1` + filter tab strip (custom buttons; will move to shared `Tabs` when the segmented control gets adopted).
+- List: one outer `flat` `<Surface>` containing `<li>` rows with `variant="row"` and `last:border-b-0`. **Do not give each row its own `card`** — that's the anti-pattern this pass fixed.
+
+**States:**
+
+- Loading: 3× `ConnectionRowSkeleton` directly (no wrapper).
+- Empty: `EmptyState motif="network"`. Action `Discover people → /search` on the ACCEPTED filter; no action on INCOMING / OUTGOING.
+
+**Mobile**: `FlatList` of `ConnectionRow` cards. Header has filter buttons + count.
+
+## Jobs — `apps/web/src/app/[locale]/(app)/jobs/page.tsx`
+
+**Web layout**: 2-column grid `260 | 1fr`, max 1128.
+
+**Surfaces:**
+
+- Left filters: single `card` `<aside>` with `<label>` blocks + `FilterChip` rows.
+- Right list: one outer `flat` `<Surface>` containing `<li>` rows; each row is a `row`-variant `Surface` rendered by `JobListRow`. Hover sets `bg-surface-subtle`. **No per-row card.**
+- Empty: `EmptyState motif="jobs"`. Action `Clear filters` when any filter is active.
+
+**States:**
+
+- Loading: 3× `JobRowSkeleton` (still as bare rows; transient).
+- Error: `tinted` banner.
+
+**Mobile**: same vertical list, FlatList renders `RecordCard` items.
+
+## Messages — `apps/web/src/app/[locale]/(app)/messages/page.tsx`
+
+**Web layout**: single column max 1128, inside one outer `card` `<Surface>` that owns both panes.
+
+**Surfaces:**
+
+- Outer: `card`, padding 0, grid `320 | minmax(0, 1fr)`.
+- Left pane: `RoomRow` items in a `row` strip.
+- Right pane: thread inside the same `card`. Tinted `surface-subtle` thread bg.
+- Composer: input + send button along the bottom border of the right pane.
+
+**States:**
+
+- No-room-selected: `EmptyState motif="messages"`, `Start new` action.
+- Empty room list: `EmptyState motif="messages"` (compact density), `New message` action.
+- Empty thread (room open, zero messages): one-line text (`emptyThread`) — full empty-state would be too heavy inside an active conversation.
+
+**Mobile**: room list and thread are separate routes (`/messages/index.tsx`, `/messages/[roomId].tsx`).
+
+## Notifications — `apps/web/src/app/[locale]/(app)/notifications/page.tsx`
+
+**Web layout**: single column, max 720.
+
+**Surfaces:**
+
+- `h1` header + optional `live` indicator.
+- List: bare flex column of inline-styled rows (unread = `brand-50` bg, read = `surface` bg). This is one of the few places `Surface` is not used directly because the unread/read tint differs per row.
+- Empty: `EmptyState motif="notifications"` (live region — `role=status`, `aria-live=polite`).
+
+**Mobile**: `FlatList` of `RecordCard` items + same empty illustration.
+
+## Search — `apps/web/src/app/[locale]/(app)/search/page.tsx`
+
+**Web layout**: single column, max 840.
+
+**Surfaces:**
+
+- `h1` + search input + segmented tabs.
+- Prompt state (before any typing): `flat` `Surface` with `t("prompt")`.
+- Empty results state: `EmptyState motif="search"`.
+- Results: bare list of `PeopleRow` / `PostRow` / `JobsRow`.
+
+**Mobile**: same — uses `SegmentedControl` from `@baydar/ui-native` for the type tabs.
+
+## Profile — `apps/web/src/app/[locale]/(app)/in/[handle]/page.tsx`
+
+**Web layout**: single column, max 880.
+
+**Surfaces:**
+
+- Hero header: `hero` Surface with cover gradient, avatar, name, headline, action buttons.
+- Tabs: shared `Tabs` primitive (segmented underline).
+- Each section (`About`, `Experience`, `Education`, `Skills`): individual `flat` `Surface` blocks.
+- Activity tab: `flat` Surface with `h2` and `EmptyState motif="feed"` (compact density).
+
+**Mobile**: own profile (`/me/index.tsx`) uses `SegmentedControl` and stacked sections.
+
+## Settings — `apps/web/src/app/[locale]/(app)/settings/`
+
+**Web layout**: single column, max 720 (hub) / 760 (sub-routes).
+
+**Surfaces:**
+
+- Hub: list of `flat` link rows.
+- Account: `flat` sections (export / delete / restore) inside the page.
+- Blocked: one outer `flat` Surface containing `BlockedListItem` rows. Empty: `EmptyState motif="settings"` (compact).
+
+**Mobile**: same structure, single column.
+
+## Auth & Onboarding
+
+Bare shell (no `AppShell`). One verb per page. See `DESIGN.md` §11.1 for the shell decision.
+
+### Auth pages
+
+`/login`, `/register`, `/forgot-password`, `/reset-password/[token]`, `/verify-email/[token]` — all centered single-column max-width 480, one form per page.
+
+### Onboarding flow — 5 steps
+
+Bare shell + `OnboardingProgress` strip at the top of each step. State machine:
+
+```
+SIGNED_UP        → step 1 → email sent → step 2
+VERIFIED         → step 2 → /onboarding → step 3
+PROFILE_COMPLETE → step 3 → /onboarding/connect → step 4
+CONNECTIONS_SENT → step 4 → /feed?welcome=1
+```
+
+| Step             | Route                         | Surfaces                                                                    | Action                               |
+| ---------------- | ----------------------------- | --------------------------------------------------------------------------- | ------------------------------------ |
+| 1. Sign up       | `/register`                   | Form fields                                                                 | `Create account`                     |
+| 2. Verify email  | `/verify-email/[token]`       | `tinted` callout, single line                                               | (token in email)                     |
+| 3. Profile       | `/onboarding`                 | Form fields, `OnboardingProgress current={3} total={5}`                     | `Continue` → step 4                  |
+| 4. First connect | `/onboarding/connect` _(new)_ | `flat` list of suggestion cards, `OnboardingProgress current={4} total={5}` | `Connect with N` → `/feed?welcome=1` |
+| 5. Land in feed  | `/feed?welcome=1`             | Feed (normal `AppShell`) + welcome `Toast`                                  | —                                    |
+
+Per-step recipes, copy direction, and the rejected alternatives are in [`design-out/onboarding/`](../../design-out/onboarding/).
+
+**Mobile** uses the same flow with a single screen (`apps/mobile/app/(app)/onboarding.tsx`) that walks the user through steps 3 and 4 in-place. The bottom tab bar is hidden for the duration via `_layout.tsx`.
+
+### `OnboardingProgress` primitive
+
+- [`packages/ui-web/src/OnboardingProgress.tsx`](../../packages/ui-web/src/OnboardingProgress.tsx)
+- [`packages/ui-native/src/OnboardingProgress.tsx`](../../packages/ui-native/src/OnboardingProgress.tsx)
+
+Props: `{ current, total, style?, labels?, locale?, className? }`. Three visual styles share one `role="progressbar"` contract: `bar` (default — filled track + Arabic-Indic tabular fraction), `dots`, `segmented`. Use sparingly: only on onboarding step screens. Not a general-purpose stepper.
+
+## When to deviate
+
+If a screen needs a sixth composition pattern, the answer is almost always one of:
+
+1. Use `tinted` to mark a quiet inset block inside a `flat` container.
+2. Use a wider gap between sections in the column.
+3. Promote the block to a real component and document it in [`docs/components/`](../components/).
+
+Do **not** invent a sixth `Surface` variant.

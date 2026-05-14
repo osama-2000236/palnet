@@ -216,13 +216,15 @@ export default function JobsPageRoute(): JSX.Element {
           </Surface>
         ) : (
           <>
-            <ul className="space-y-3">
-              {items.map((job) => (
-                <li key={job.id}>
-                  <JobListRow job={job} salary={formatSalary(job, t, locale)} />
-                </li>
-              ))}
-            </ul>
+            <Surface variant="flat" padding="0" as="section" aria-label={t("title")}>
+              <ul className="flex flex-col">
+                {items.map((job) => (
+                  <li key={job.id}>
+                    <JobListRow job={job} salary={formatSalary(job, t, locale)} />
+                  </li>
+                ))}
+              </ul>
+            </Surface>
             {hasMore ? (
               <div className="mt-4 flex justify-center">
                 <button
@@ -276,7 +278,11 @@ function JobListRow({ job, salary }: { job: Job; salary: string | null }): JSX.E
 
   return (
     <Link href={`/jobs/${job.id}`} className="block">
-      <Surface variant="card" padding="4" className="hover:border-brand-400 transition-colors">
+      <Surface
+        variant="row"
+        padding="4"
+        className="hover:bg-surface-subtle transition-colors last:border-b-0"
+      >
         <div className="flex items-start gap-3">
           <div
             className="bg-surface-sunken text-ink-muted flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-md text-sm font-semibold"
@@ -324,7 +330,7 @@ function JobListRow({ job, salary }: { job: Job; salary: string | null }): JSX.E
 
 function JobRowSkeleton(): JSX.Element {
   return (
-    <Surface variant="card" padding="4" aria-hidden="true">
+    <Surface variant="row" padding="4" aria-hidden="true">
       <div className="flex items-start gap-3">
         <div className="bg-surface-sunken h-12 w-12 shrink-0 animate-pulse rounded-md" />
         <div className="flex-1 space-y-2">

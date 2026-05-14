@@ -116,73 +116,75 @@ export default function NetworkRoute(): JSX.Element {
           />
         </Surface>
       ) : (
-        <ul className="flex flex-col gap-3">
-          {items.map((c) => (
-            <Surface
-              as="li"
-              key={c.connectionId}
-              variant="flat"
-              padding="4"
-              className="flex flex-wrap items-center justify-between gap-3"
-            >
-              <Link href={`/in/${c.user.handle}`} className="flex min-w-0 items-center gap-3">
-                <Avatar
-                  user={{
-                    id: c.user.userId,
-                    handle: c.user.handle,
-                    firstName: c.user.firstName,
-                    lastName: c.user.lastName,
-                    avatarUrl: c.user.avatarUrl ?? null,
-                  }}
-                  size="md"
-                />
-                <div className="flex min-w-0 flex-col">
-                  <span className="text-ink font-semibold">
-                    {c.user.firstName} {c.user.lastName}
-                  </span>
-                  {c.user.headline ? (
-                    <span className="text-ink-muted text-sm">{c.user.headline}</span>
-                  ) : null}
-                </div>
-              </Link>
+        <Surface variant="flat" padding="0" as="section" aria-label={t("title")}>
+          <ul className="flex flex-col">
+            {items.map((c) => (
+              <Surface
+                as="li"
+                key={c.connectionId}
+                variant="row"
+                padding="4"
+                className="flex flex-wrap items-center justify-between gap-3 last:border-b-0"
+              >
+                <Link href={`/in/${c.user.handle}`} className="flex min-w-0 items-center gap-3">
+                  <Avatar
+                    user={{
+                      id: c.user.userId,
+                      handle: c.user.handle,
+                      firstName: c.user.firstName,
+                      lastName: c.user.lastName,
+                      avatarUrl: c.user.avatarUrl ?? null,
+                    }}
+                    size="md"
+                  />
+                  <div className="flex min-w-0 flex-col">
+                    <span className="text-ink font-semibold">
+                      {c.user.firstName} {c.user.lastName}
+                    </span>
+                    {c.user.headline ? (
+                      <span className="text-ink-muted text-sm">{c.user.headline}</span>
+                    ) : null}
+                  </div>
+                </Link>
 
-              {filter === "INCOMING" ? (
-                <div className="flex gap-2">
+                {filter === "INCOMING" ? (
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => void respond(c.connectionId, "ACCEPT")}
+                      className="bg-brand-600 text-ink-inverse rounded-md px-3 py-1.5 text-sm font-semibold"
+                    >
+                      {t("accept")}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => void respond(c.connectionId, "DECLINE")}
+                      className="border-ink-muted/30 text-ink rounded-md border px-3 py-1.5 text-sm"
+                    >
+                      {t("decline")}
+                    </button>
+                  </div>
+                ) : filter === "OUTGOING" ? (
                   <button
                     type="button"
-                    onClick={() => void respond(c.connectionId, "ACCEPT")}
-                    className="bg-brand-600 text-ink-inverse rounded-md px-3 py-1.5 text-sm font-semibold"
-                  >
-                    {t("accept")}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => void respond(c.connectionId, "DECLINE")}
+                    onClick={() => void withdraw(c.connectionId)}
                     className="border-ink-muted/30 text-ink rounded-md border px-3 py-1.5 text-sm"
                   >
-                    {t("decline")}
+                    {t("withdraw")}
                   </button>
-                </div>
-              ) : filter === "OUTGOING" ? (
-                <button
-                  type="button"
-                  onClick={() => void withdraw(c.connectionId)}
-                  className="border-ink-muted/30 text-ink rounded-md border px-3 py-1.5 text-sm"
-                >
-                  {t("withdraw")}
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => void remove(c.connectionId)}
-                  className="border-ink-muted/30 text-ink rounded-md border px-3 py-1.5 text-sm"
-                >
-                  {t("removeConnection")}
-                </button>
-              )}
-            </Surface>
-          ))}
-        </ul>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => void remove(c.connectionId)}
+                    className="border-ink-muted/30 text-ink rounded-md border px-3 py-1.5 text-sm"
+                  >
+                    {t("removeConnection")}
+                  </button>
+                )}
+              </Surface>
+            ))}
+          </ul>
+        </Surface>
       )}
     </main>
   );
