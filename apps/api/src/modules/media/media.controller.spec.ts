@@ -7,6 +7,7 @@ import request from "supertest";
 import type { AuthUser } from "../auth/decorators/current-user.decorator";
 import { RateLimitModule } from "../rate-limit/rate-limit.module";
 
+import { MediaScanService } from "./media-scan.service";
 import { MediaController } from "./media.controller";
 import { MediaService } from "./media.service";
 
@@ -24,7 +25,13 @@ describe("MediaController rate limits", () => {
     const moduleRef = await Test.createTestingModule({
       imports: [RateLimitModule],
       controllers: [MediaController],
-      providers: [{ provide: MediaService, useValue: media }],
+      providers: [
+        { provide: MediaService, useValue: media },
+        {
+          provide: MediaScanService,
+          useValue: { scanObject: jest.fn() },
+        },
+      ],
     }).compile();
     const app: INestApplication = moduleRef.createNestApplication();
     app.use((req: Request & { user?: AuthUser }, _res: Response, next: NextFunction) => {

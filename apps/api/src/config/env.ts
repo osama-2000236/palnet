@@ -43,6 +43,21 @@ const EnvSchema = z.object({
   HYPERPAY_BASE_URL: z.string().url().optional(),
   BANK_TRANSFER_IBAN: z.string().optional(),
   BANK_TRANSFER_BENEFICIARY: z.string().optional(),
+  // Local-wallet providers (Palestinian market). All optional — wallet
+  // checkout stays in "Coming soon" mode until a merchant_id + api_key pair
+  // is set for at least one provider.
+  JAWWALPAY_MERCHANT_ID: z.string().optional(),
+  JAWWALPAY_API_KEY: z.string().optional(),
+  JAWWALPAY_WEBHOOK_SECRET: z.string().optional(),
+  JAWWALPAY_BASE_URL: z.string().url().optional(),
+  PALPAY_MERCHANT_ID: z.string().optional(),
+  PALPAY_API_KEY: z.string().optional(),
+  PALPAY_WEBHOOK_SECRET: z.string().optional(),
+  PALPAY_BASE_URL: z.string().url().optional(),
+  REFLECT_MERCHANT_ID: z.string().optional(),
+  REFLECT_API_KEY: z.string().optional(),
+  REFLECT_WEBHOOK_SECRET: z.string().optional(),
+  REFLECT_BASE_URL: z.string().url().optional(),
   // Observability.
   SENTRY_DSN: z.string().url().optional(),
   SENTRY_RELEASE: z.string().min(7).optional(),

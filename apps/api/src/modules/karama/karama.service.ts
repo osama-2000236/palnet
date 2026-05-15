@@ -101,6 +101,45 @@ export class KaramaService {
     }
   }
 
+  // Idempotent variant for one-time earns (PROFILE_COMPLETE, FIRST_POST, etc.)
+  // and capped earns (ENDORSEMENT). Caller must supply both refType and refId
+  // so duplicate fires (e.g., repeated profile saves) become no-ops.
+  async awardOnce(input: AwardInput & { refType: string; refId: string }): Promise<boolean> {
+    const existing = await this.prisma.karamaLedger.findFirst({
+      where: {
+        userId: input.userId,
+        reason: input.reason,
+        refType: input.refType,
+        refId: input.refId,
+      },
+      select: { id: true },
+    });
+    if (existing) return false;
+    await this.award(input);
+    return true;
+  }
+
+  // Returns the absolute sum of positive ledger deltas for a single reason in
+  // the current UTC month. Used by ENDORSEMENT to enforce the +200/month cap.
+  async getMonthlyEarnings(
+    userId: string,
+    reason: KaramaReason,
+    now: Date = new Date(),
+  ): Promise<number> {
+    const start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+    const end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1));
+    const rows = await this.prisma.karamaLedger.findMany({
+      where: {
+        userId,
+        reason,
+        createdAt: { gte: start, lt: end },
+        delta: { gt: 0 },
+      },
+      select: { delta: true },
+    });
+    return rows.reduce((sum, r) => sum + r.delta, 0);
+  }
+
   // ───── Spend / redeem ─────
 
   async redeem(userId: string, body: RedeemKaramaBody): Promise<KaramaRedeemResult> {

@@ -134,6 +134,9 @@ enum PaymentMethod {
   CARD
   BANK_TRANSFER
   POINTS
+  JAWWALPAY
+  PALPAY
+  REFLECT
 }
 
 enum EmployerCreditKind {

@@ -7,6 +7,7 @@ import {
 import { Injectable } from "@nestjs/common";
 
 import { DomainException } from "../../common/domain-exception";
+import { KaramaService } from "../karama/karama.service";
 import { PrismaService } from "../prisma/prisma.service";
 import { SafetyService } from "../safety/safety.service";
 
@@ -17,6 +18,7 @@ export class PostsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly safety: SafetyService,
+    private readonly karama: KaramaService,
   ) {}
 
   async create(authorId: string, body: CreatePostBody): Promise<PostDto> {
@@ -42,7 +44,29 @@ export class PostsService {
       },
       include: postInclude(authorId),
     });
+
+    // FIRST_POST karama (+15) — awarded once per user on their first
+    // non-deleted post. Fire-and-forget; never blocks the publish path.
+    void this.maybeAwardFirstPost(authorId, post.id);
+
     return toPostDto(post as unknown as PostWithIncludes);
+  }
+
+  private async maybeAwardFirstPost(authorId: string, createdPostId: string): Promise<void> {
+    try {
+      const otherPosts = await this.prisma.post.count({
+        where: { authorId, id: { not: createdPostId }, deletedAt: null },
+      });
+      if (otherPosts > 0) return;
+      await this.karama.awardOnce({
+        userId: authorId,
+        reason: "FIRST_POST",
+        refType: "first-post",
+        refId: authorId,
+      });
+    } catch {
+      // best-effort
+    }
   }
 
   async getById(viewerId: string, postId: string): Promise<PostDto> {

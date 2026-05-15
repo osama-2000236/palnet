@@ -59,6 +59,25 @@ export class CompaniesService {
       await tx.companyMember.create({
         data: { companyId: created.id, userId: creatorId, role: "OWNER" },
       });
+
+      // Auto-mint a 30-day rolling EMPLOYER_FREE subscription so entitlements
+      // checks always find an explicit plan rather than falling back to the
+      // implicit "no subscription = limit 1" path.
+      const freePlan = await tx.plan.findUnique({ where: { code: "EMPLOYER_FREE" } });
+      if (freePlan) {
+        const now = new Date();
+        const periodEnd = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+        await tx.subscription.create({
+          data: {
+            companyId: created.id,
+            planId: freePlan.id,
+            status: "ACTIVE",
+            currentPeriodStart: now,
+            currentPeriodEnd: periodEnd,
+          },
+        });
+      }
+
       return created;
     });
     return toCompanyDto(company);

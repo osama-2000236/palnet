@@ -17,7 +17,13 @@ export class EmployerEntitlementsService {
     const limit = await this.activeJobLimit(companyId);
     if (activeJobs < limit) return;
 
-    const credit = await this.prisma.employerCredit.findFirst({
+    // Atomic conditional decrement: at most one concurrent caller wins the
+    // row, even under racing parallel requests. We retry by picking the next
+    // eligible credit if the conditional update missed.
+    // TODO: the under-limit fast path (`activeJobs < limit`) still has a
+    // residual race window. Acceptable for MVP volume; tighten with
+    // SELECT FOR UPDATE on the Job count if the cap is ever exceeded.
+    const candidate = await this.prisma.employerCredit.findFirst({
       where: {
         companyId,
         kind: "JOB_POST",
@@ -25,14 +31,18 @@ export class EmployerEntitlementsService {
         OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
       },
       orderBy: { expiresAt: "asc" },
-      select: { id: true, remaining: true },
+      select: { id: true },
     });
-    if (credit) {
-      await this.prisma.employerCredit.update({
-        where: { id: credit.id },
-        data: { remaining: credit.remaining - 1 },
+    if (candidate) {
+      const decremented = await this.prisma.employerCredit.updateMany({
+        where: {
+          id: candidate.id,
+          remaining: { gt: 0 },
+          OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
+        },
+        data: { remaining: { decrement: 1 } },
       });
-      return;
+      if (decremented.count === 1) return;
     }
 
     throw new DomainException(

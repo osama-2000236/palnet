@@ -1,10 +1,12 @@
 import { Test } from "@nestjs/testing";
 import { ConfigService } from "@nestjs/config";
 
+import { KaramaService } from "../karama/karama.service";
 import { PrismaService } from "../prisma/prisma.service";
 
 import { BillingService } from "./billing.service";
 import { HyperPayClient } from "./hyperpay.client";
+import { WalletRegistry } from "./wallets/wallet-registry";
 
 type PrismaStub = {
   plan: { upsert: jest.Mock };
@@ -76,6 +78,29 @@ describe("BillingService", () => {
               (key: string) =>
                 ({ BANK_TRANSFER_IBAN: "PS00TEST", BANK_TRANSFER_BENEFICIARY: "Baydar" })[key],
             ),
+          },
+        },
+        {
+          provide: KaramaService,
+          useValue: {
+            redeem: jest.fn(),
+            award: jest.fn(),
+            awardOnce: jest.fn(),
+            getMonthlyEarnings: jest.fn(),
+            getBalance: jest.fn(),
+          },
+        },
+        {
+          provide: WalletRegistry,
+          useValue: {
+            get: jest.fn(() => ({
+              provider: "JAWWALPAY",
+              isConfigured: () => false,
+              createCheckout: jest.fn().mockResolvedValue({
+                provider: "JAWWALPAY",
+                instructions: "Coming soon",
+              }),
+            })),
           },
         },
       ],

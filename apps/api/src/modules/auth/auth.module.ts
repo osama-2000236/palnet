@@ -10,6 +10,7 @@ import { AuthTokensService } from "./auth-tokens.service";
 import { AuthController } from "./auth.controller";
 import { AuthService } from "./auth.service";
 import { JwtAuthGuard } from "./guards/jwt-auth.guard";
+import { LastSeenTracker } from "./last-seen.tracker";
 
 @Global()
 @Module({
@@ -19,6 +20,7 @@ import { JwtAuthGuard } from "./guards/jwt-auth.guard";
     AuthService,
     AuthTokensService,
     AuthEmailThrottleService,
+    LastSeenTracker,
     JwtAuthGuard,
     // Register JwtAuthGuard as a global guard; @Public() opts routes out.
     { provide: APP_GUARD, useClass: JwtAuthGuard },

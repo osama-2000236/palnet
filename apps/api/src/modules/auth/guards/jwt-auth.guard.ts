@@ -10,6 +10,7 @@ import { AuthTokensService } from "../auth-tokens.service";
 import type { AuthUser } from "../decorators/current-user.decorator";
 import { IS_OPTIONAL_AUTH_KEY } from "../decorators/optional-auth.decorator";
 import { IS_PUBLIC_KEY } from "../decorators/public.decorator";
+import { LastSeenTracker } from "../last-seen.tracker";
 
 interface AccessTokenPayload {
   sub: string;
@@ -24,6 +25,7 @@ export class JwtAuthGuard implements CanActivate {
     private readonly reflector: Reflector,
     private readonly config: ConfigService<Env, true>,
     private readonly authTokens: AuthTokensService,
+    private readonly lastSeen: LastSeenTracker,
   ) {}
 
   async canActivate(ctx: ExecutionContext): Promise<boolean> {
@@ -53,6 +55,7 @@ export class JwtAuthGuard implements CanActivate {
       if (!scope) throw streamTokenInvalid();
       const user = await this.authTokens.consumeStreamToken(streamToken, scope);
       req.user = user;
+      this.lastSeen.touch(user.id);
       return true;
     }
 
@@ -75,6 +78,7 @@ export class JwtAuthGuard implements CanActivate {
         role: payload.role,
         locale: payload.locale,
       };
+      this.lastSeen.touch(payload.sub);
       return true;
     } catch {
       if (isOptional) return true;

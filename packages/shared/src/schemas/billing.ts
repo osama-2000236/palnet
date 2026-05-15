@@ -31,8 +31,18 @@ export const PaymentMethod = {
   CARD: "CARD",
   BANK_TRANSFER: "BANK_TRANSFER",
   POINTS: "POINTS",
+  JAWWALPAY: "JAWWALPAY",
+  PALPAY: "PALPAY",
+  REFLECT: "REFLECT",
 } as const;
 export type PaymentMethod = (typeof PaymentMethod)[keyof typeof PaymentMethod];
+
+export const WalletProvider = {
+  JAWWALPAY: "JAWWALPAY",
+  PALPAY: "PALPAY",
+  REFLECT: "REFLECT",
+} as const;
+export type WalletProvider = (typeof WalletProvider)[keyof typeof WalletProvider];
 
 export const Plan = z.object({
   id: z.string().cuid(),
@@ -103,6 +113,24 @@ export const CheckoutSession = z.object({
       currency: z.string().length(3),
     })
     .nullable(),
+  // Local wallet (JawwalPay / PalPay / Reflect). Populated only when a real
+  // provider client is configured; otherwise `instructions` carries a human
+  // explanation that wallet support is coming soon.
+  wallet: z
+    .object({
+      provider: z.nativeEnum(WalletProvider),
+      deepLink: z.string().optional(),
+      ussd: z.string().optional(),
+      voucherId: z.string().optional(),
+      instructions: z.string(),
+    })
+    .nullable()
+    .default(null),
+  // Display layer: server localizes amount into the viewer's preferred
+  // currency (ILS for ar-PS, JOD for jo, USD fallback). UI shows the display
+  // amount + currency and optionally a parenthetical original USD amount.
+  displayAmountCents: z.number().int().nonnegative(),
+  displayCurrency: z.string().length(3),
 });
 export type CheckoutSession = z.infer<typeof CheckoutSession>;
 

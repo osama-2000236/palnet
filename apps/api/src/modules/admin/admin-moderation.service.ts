@@ -2,13 +2,17 @@ import { ErrorCode } from "@baydar/shared";
 import { Injectable } from "@nestjs/common";
 
 import { DomainException } from "../../common/domain-exception";
+import { KaramaService } from "../karama/karama.service";
 import { PrismaService } from "../prisma/prisma.service";
 
 export type ModerationActionKind = "DISMISS" | "WARN" | "SUSPEND" | "HARD_DELETE";
 
 @Injectable()
 export class AdminModerationService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly karama: KaramaService,
+  ) {}
 
   async listReports(status: "open" | "resolved" | "all", limit: number) {
     return this.prisma.report.findMany({
@@ -64,6 +68,17 @@ export class AdminModerationService {
         data: { resolvedAt: new Date(), resolvedNote: `${input.action}${note ? `: ${note}` : ""}` },
       });
     });
+
+    // Reward the reporter when the report led to a real moderator action.
+    // DISMISS does not reward — would invite false-report spam.
+    if (input.action !== "DISMISS") {
+      void this.karama.award({
+        userId: report.reporterId,
+        reason: "REPORT_UPHELD",
+        refType: "report",
+        refId: report.id,
+      });
+    }
 
     return this.getReport(input.reportId);
   }

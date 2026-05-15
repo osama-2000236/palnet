@@ -15,6 +15,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { StateMessage } from "@/components/StateMessage";
 import { apiFetch } from "@/lib/api";
 import { apiErrorMessage } from "@/lib/api-errors";
+import { makeIdempotencyKey } from "@/lib/idempotency";
 
 const REWARDS: { reward: KaramaRewardDto; key: string; cost: number }[] = [
   { reward: KaramaReward.BOOST_APPLICATION, key: "boost", cost: 100 },
@@ -47,7 +48,7 @@ export default function KaramaScreen(): JSX.Element {
   async function redeem(reward: KaramaRewardDto): Promise<void> {
     const body = RedeemKaramaBody.parse({
       reward,
-      idempotencyKey: `${reward}-${Date.now()}`,
+      idempotencyKey: makeIdempotencyKey(reward),
     });
     setBusyReward(reward);
     setError(null);
