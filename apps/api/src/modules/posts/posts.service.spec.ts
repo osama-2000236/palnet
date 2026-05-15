@@ -2,10 +2,17 @@ import { ErrorCode } from "@baydar/shared";
 import { Test } from "@nestjs/testing";
 
 import { DomainException } from "../../common/domain-exception";
+import { KaramaService } from "../karama/karama.service";
 import { PrismaService } from "../prisma/prisma.service";
 import { SafetyService } from "../safety/safety.service";
 
 import { PostsService } from "./posts.service";
+
+const karamaStub = {
+  award: jest.fn(),
+  awardOnce: jest.fn().mockResolvedValue(true),
+  getMonthlyEarnings: jest.fn().mockResolvedValue(0),
+} as unknown as KaramaService;
 
 type PrismaStub = {
   post: {
@@ -61,6 +68,7 @@ describe("PostsService", () => {
         PostsService,
         { provide: PrismaService, useValue: prisma },
         { provide: SafetyService, useValue: safety },
+        { provide: KaramaService, useValue: karamaStub },
       ],
     }).compile();
     service = moduleRef.get(PostsService);

@@ -446,5 +446,69 @@
   "company": {
     "about": "About",
     "jobs": "Jobs"
+  },
+  "employer": {
+    "title": "Employer workspace",
+    "subtitle": "Manage your company pages, jobs, and applicants.",
+    "empty": "You don't belong to any company yet.",
+    "createCompany": "Create a company",
+    "viewerRole": {
+      "OWNER": "Owner",
+      "ADMIN": "Admin",
+      "EDITOR": "Editor"
+    },
+    "form": {
+      "slug": "Slug",
+      "slugHelp": "Lowercase letters, numbers, and dashes. Used in the URL.",
+      "name": "Company name",
+      "tagline": "Short tagline",
+      "website": "Website",
+      "industry": "Industry",
+      "city": "City",
+      "country": "Country",
+      "size": "Team size",
+      "submit": "Save",
+      "submitting": "Saving…"
+    },
+    "dashboard": {
+      "activeJobs": "Active jobs",
+      "totalApplicants": "Total applicants",
+      "openShortlist": "Open shortlist",
+      "createJob": "Post a job",
+      "noJobs": "Your company hasn't posted a job yet.",
+      "filterActive": "Active",
+      "filterArchived": "Archived",
+      "viewApplicants": "View applicants",
+      "archive": "Archive",
+      "archived": "Archived"
+    },
+    "applicants": {
+      "title": "Applicants",
+      "empty": "No applicants yet.",
+      "applied": "Applied on",
+      "openResume": "Open resume",
+      "status": {
+        "SUBMITTED": "New",
+        "REVIEWING": "Reviewing",
+        "SHORTLISTED": "Shortlisted",
+        "REJECTED": "Rejected",
+        "HIRED": "Hired",
+        "WITHDRAWN": "Withdrew"
+      }
+    },
+    "newJob": {
+      "title": "New job",
+      "fieldTitle": "Job title",
+      "description": "Description",
+      "type": "Employment type",
+      "locationMode": "Location mode",
+      "city": "City",
+      "salaryMin": "Salary min",
+      "salaryMax": "Salary max",
+      "salaryCurrency": "Currency",
+      "expiresAt": "Expires on",
+      "submit": "Publish",
+      "submitting": "Publishing…"
+    }
   }
 }

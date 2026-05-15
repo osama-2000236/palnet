@@ -557,5 +557,21 @@
   "company": {
     "about": "عن الشركة",
     "jobs": "الوظائف"
+  },
+  "employer": {
+    "title": "صاحب العمل",
+    "empty": "لا توجد شركات.",
+    "jobsTitle": "الوظائف",
+    "applicantsTitle": "المتقدمون",
+    "applicantsEmpty": "لا يوجد متقدمون بعد.",
+    "applicantCount": "{{count}} متقدم",
+    "status": {
+      "SUBMITTED": "جديد",
+      "REVIEWING": "قيد المراجعة",
+      "SHORTLISTED": "قائمة مختصرة",
+      "REJECTED": "مرفوض",
+      "HIRED": "تمّ التوظيف",
+      "WITHDRAWN": "منسحب"
+    }
   }
 }

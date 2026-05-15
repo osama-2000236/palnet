@@ -44,6 +44,8 @@ async function main() {
     });
   }
 
+  await seedPlans();
+
   const passwordHash = await bcrypt.hash("Password123", 12);
   const demoUser = await upsertSeedUser({
     email: "demo@baydar.ps",
@@ -281,6 +283,72 @@ async function upsertJob(input: {
   }
 
   return prisma.job.create({ data });
+}
+
+async function seedPlans() {
+  const plans = [
+    {
+      code: "EMPLOYER_FREE",
+      name: "Employer Free",
+      priceCents: 0,
+      currency: "USD",
+      intervalDays: 30,
+      features: { activeJobs: 1, applicantInbox: true, featuredSlots: 0 },
+    },
+    {
+      code: "EMPLOYER_BASIC",
+      name: "Employer Basic",
+      priceCents: 2900,
+      currency: "USD",
+      intervalDays: 30,
+      features: { activeJobs: 5, applicantInbox: true, basicAnalytics: true, featuredSlots: 0 },
+    },
+    {
+      code: "EMPLOYER_PRO",
+      name: "Employer Pro",
+      priceCents: 9900,
+      currency: "USD",
+      intervalDays: 30,
+      features: {
+        activeJobs: 25,
+        applicantInbox: true,
+        advancedAnalytics: true,
+        csvExport: true,
+        featuredSlots: 1,
+      },
+    },
+    {
+      code: "FEATURED_SLOT",
+      name: "Featured Job Slot",
+      priceCents: 4900,
+      currency: "USD",
+      intervalDays: null,
+      features: { featuredSlots: 1, durationDays: 7 },
+    },
+    {
+      code: "USER_PREMIUM",
+      name: "Diaspora Premium User",
+      priceCents: 500,
+      currency: "USD",
+      intervalDays: 30,
+      features: { profileAnalytics: true, whoViewedMe: true, diasporaBadge: true },
+    },
+  ] as const;
+
+  for (const plan of plans) {
+    await prisma.plan.upsert({
+      where: { code: plan.code },
+      update: {
+        name: plan.name,
+        priceCents: plan.priceCents,
+        currency: plan.currency,
+        intervalDays: plan.intervalDays,
+        features: plan.features,
+        isActive: true,
+      },
+      create: plan,
+    });
+  }
 }
 
 function loadRootEnvLocal(): void {

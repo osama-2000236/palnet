@@ -16,6 +16,7 @@ import type { AuthUser } from "./auth/decorators/current-user.decorator";
 import { JwtAuthGuard } from "./auth/guards/jwt-auth.guard";
 import { JobsController } from "./jobs/jobs.controller";
 import { JobsService } from "./jobs/jobs.service";
+import { MediaScanService } from "./media/media-scan.service";
 import { MediaController } from "./media/media.controller";
 import { MediaService } from "./media/media.service";
 import { MessagingBus } from "./messaging/messaging.bus";
@@ -259,7 +260,10 @@ describe("API controller contract", () => {
     const media = { presign: jest.fn().mockResolvedValue(presigned) };
     const app = await createApp({
       controllers: [MediaController],
-      providers: [{ provide: MediaService, useValue: media }],
+      providers: [
+        { provide: MediaService, useValue: media },
+        { provide: MediaScanService, useValue: { scanObject: jest.fn() } },
+      ],
     });
 
     try {

@@ -1,0 +1,245 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      target:
+        description: "Deploy target"
+        required: true
+        default: "staging"
+        type: choice
+        options:
+          - staging
+          - production
+      submit_mobile:
+        description: "Submit mobile builds to EAS (production only)"
+        required: false
+        default: "false"
+        type: choice
+        options:
+          - "false"
+          - "true"
+
+concurrency:
+  group: deploy-${{ github.ref }}-${{ github.event.inputs.target || 'staging' }}
+  cancel-in-progress: false
+
+env:
+  NODE_VERSION: "20"
+  PNPM_VERSION: "9.12.0"
+  # Dummy values so Zod env validation passes during build steps — real secrets live in Render/Vercel.
+  DATABASE_URL: "postgresql://ci:ci@localhost:5432/baydar_ci?schema=public"
+  DIRECT_URL: "postgresql://ci:ci@localhost:5432/baydar_ci?schema=public"
+  JWT_ACCESS_SECRET: "ci-access-secret-at-least-32-characters-long"
+  JWT_REFRESH_SECRET: "ci-refresh-secret-at-least-32-characters-long"
+  CORS_ORIGINS: "http://localhost:3000"
+
+jobs:
+  gate:
+    name: Gate (lint + type-check + test)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: ci
+          POSTGRES_PASSWORD: ci
+          POSTGRES_DB: baydar_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @baydar/db db:generate
+      - run: pnpm lint:tokens
+      - run: pnpm lint
+      - run: pnpm type-check
+      - run: pnpm --filter @baydar/db db:deploy
+      - run: pnpm test
+      - run: pnpm --filter @baydar/mobile test
+
+  migrate-staging:
+    name: Migrate Neon (staging)
+    needs: gate
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Run Prisma migrate deploy against staging
+        env:
+          DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
+          DIRECT_URL: ${{ secrets.STAGING_DIRECT_URL }}
+        run: pnpm --filter @baydar/db db:deploy
+
+  deploy-api-staging:
+    name: Deploy API (staging) — Render
+    needs: migrate-staging
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - name: Trigger Render staging deploy
+        env:
+          DEPLOY_HOOK: ${{ secrets.RENDER_STAGING_DEPLOY_HOOK }}
+        run: |
+          if [ -z "$DEPLOY_HOOK" ]; then
+            echo "::error::RENDER_STAGING_DEPLOY_HOOK is not set."
+            exit 1
+          fi
+          curl -fsS -X POST "$DEPLOY_HOOK"
+
+  deploy-web-staging:
+    name: Deploy Web (staging) — Vercel
+    needs: gate
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @baydar/db db:generate
+      - name: Install Vercel CLI
+        run: npm install -g vercel@latest
+      - name: Pull Vercel staging env
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID_WEB }}
+        run: vercel pull --yes --environment=preview --token="$VERCEL_TOKEN"
+        working-directory: apps/web
+      - name: Build Web (Vercel)
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: vercel build --token="$VERCEL_TOKEN"
+        working-directory: apps/web
+      - name: Deploy Web to staging
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: vercel deploy --prebuilt --token="$VERCEL_TOKEN" > deploy-url.txt
+        working-directory: apps/web
+
+  migrate-production:
+    name: Migrate Neon (production)
+    needs: [deploy-api-staging, deploy-web-staging]
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.target == 'production'
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Run Prisma migrate deploy against production
+        env:
+          DATABASE_URL: ${{ secrets.PROD_DATABASE_URL }}
+          DIRECT_URL: ${{ secrets.PROD_DIRECT_URL }}
+        run: pnpm --filter @baydar/db db:deploy
+
+  deploy-api-production:
+    name: Deploy API (production) — Render
+    needs: migrate-production
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Trigger Render production deploy
+        env:
+          DEPLOY_HOOK: ${{ secrets.RENDER_PROD_DEPLOY_HOOK }}
+        run: |
+          if [ -z "$DEPLOY_HOOK" ]; then
+            echo "::error::RENDER_PROD_DEPLOY_HOOK is not set."
+            exit 1
+          fi
+          curl -fsS -X POST "$DEPLOY_HOOK"
+
+  deploy-web-production:
+    name: Deploy Web (production) — Vercel
+    needs: migrate-production
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @baydar/db db:generate
+      - name: Install Vercel CLI
+        run: npm install -g vercel@latest
+      - name: Pull Vercel production env
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID_WEB }}
+        run: vercel pull --yes --environment=production --token="$VERCEL_TOKEN"
+        working-directory: apps/web
+      - name: Build Web (Vercel)
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: vercel build --prod --token="$VERCEL_TOKEN"
+        working-directory: apps/web
+      - name: Deploy Web to production
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: vercel deploy --prebuilt --prod --token="$VERCEL_TOKEN"
+        working-directory: apps/web
+
+  submit-mobile-production:
+    name: Submit Mobile builds (production) — EAS
+    needs: deploy-api-production
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.target == 'production' && github.event.inputs.submit_mobile == 'true'
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Install EAS CLI
+        run: npm install -g eas-cli@latest
+      - name: EAS build + submit
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: |
+          eas build --platform all --profile production --non-interactive --auto-submit
+        working-directory: apps/mobile
