@@ -106,6 +106,61 @@ enum CompanyMemberRole {
   EDITOR
 }
 
+enum PlanCode {
+  EMPLOYER_FREE
+  EMPLOYER_BASIC
+  EMPLOYER_PRO
+  FEATURED_SLOT
+  USER_PREMIUM
+}
+
+enum SubscriptionStatus {
+  TRIALING
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  INCOMPLETE
+}
+
+enum InvoiceStatus {
+  DRAFT
+  OPEN
+  PAID
+  VOID
+  UNCOLLECTIBLE
+}
+
+enum PaymentMethod {
+  CARD
+  BANK_TRANSFER
+  POINTS
+}
+
+enum EmployerCreditKind {
+  FEATURED_SLOT
+  JOB_POST
+  APPLICATION_BOOST
+}
+
+enum KaramaReason {
+  PROFILE_COMPLETE
+  ENDORSEMENT
+  VERIFIED_HIRE
+  RATING_RECEIVED
+  REPORT_UPHELD
+  FIRST_POST
+  REDEEM_BOOST_APPLICATION
+  REDEEM_PREMIUM
+  REDEEM_FEATURED_PROFILE
+  DECAY
+  ADJUSTMENT
+}
+
+enum RatingContext {
+  CANDIDATE_RATES_EMPLOYER
+  EMPLOYER_RATES_CANDIDATE
+}
+
 // ──────────────────────────────────────────────────────────────────────────
 // Identity & Auth
 // ──────────────────────────────────────────────────────────────────────────
@@ -120,6 +175,7 @@ model User {
   locale         String    @default("ar-PS")
   isActive       Boolean   @default(true)
   lastSeenAt     DateTime?
+  karamaBalance  Int       @default(0)
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
   deletedAt      DateTime?
@@ -147,6 +203,11 @@ model User {
   blockedByMe             BlockedUser[]            @relation("Blocker")
   blockedMe               BlockedUser[]            @relation("Blocked")
   reportsFiled            Report[]                 @relation("Reporter")
+  subscriptions           Subscription[]
+  invoices                Invoice[]
+  karamaLedger            KaramaLedger[]
+  ratingsGiven            UserRating[]             @relation("RatingRater")
+  ratingsReceived         UserRating[]             @relation("RatingRatee")
 
   @@index([email])
   @@index([role])
@@ -529,6 +590,9 @@ model Company {
   members      CompanyMember[]
   jobs         Job[]
   experiences  Experience[]
+  subscriptions Subscription[]
+  invoices     Invoice[]
+  credits      EmployerCredit[]
 
   @@index([name])
 }
@@ -612,4 +676,151 @@ model Report {
 
   @@index([reporterId])
   @@index([resolvedAt])
+}
+
+model ModerationAction {
+  id           String   @id @default(cuid())
+  actorId      String
+  reportId     String?
+  action       String
+  note         String?  @db.Text
+  targetUserId String?
+  createdAt    DateTime @default(now())
+
+  @@index([reportId])
+  @@index([actorId])
+  @@index([targetUserId])
+  @@index([createdAt])
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// Monetization — plans, subscriptions, invoices, payments, Karama Points,
+// peer ratings. Source of truth is the ledger / invoice tables; balances
+// denormalize for fast reads.
+// ──────────────────────────────────────────────────────────────────────────
+
+model Plan {
+  id            String        @id @default(cuid())
+  code          PlanCode      @unique
+  name          String
+  priceCents    Int           @default(0)
+  currency      String        @default("USD")
+  intervalDays  Int?          // null = one-off (e.g. featured slot)
+  features      Json
+  isActive      Boolean       @default(true)
+  createdAt     DateTime      @default(now())
+
+  subscriptions Subscription[]
+  invoices      Invoice[]
+}
+
+model Subscription {
+  id                     String              @id @default(cuid())
+  user                   User?               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId                 String?
+  company                Company?            @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  companyId              String?
+  plan                   Plan                @relation(fields: [planId], references: [id])
+  planId                 String
+  status                 SubscriptionStatus  @default(INCOMPLETE)
+  currentPeriodStart     DateTime?
+  currentPeriodEnd       DateTime?
+  providerSubscriptionId String?
+  cancelAtPeriodEnd      Boolean             @default(false)
+  createdAt              DateTime            @default(now())
+  updatedAt              DateTime            @updatedAt
+
+  invoices               Invoice[]
+
+  @@index([userId])
+  @@index([companyId])
+  @@index([status])
+}
+
+model Invoice {
+  id                String         @id @default(cuid())
+  subscription      Subscription?  @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
+  subscriptionId    String?
+  plan              Plan?          @relation(fields: [planId], references: [id])
+  planId            String?
+  user              User?          @relation(fields: [userId], references: [id], onDelete: SetNull)
+  userId            String?
+  company           Company?       @relation(fields: [companyId], references: [id], onDelete: SetNull)
+  companyId         String?
+  amountCents       Int
+  currency          String         @default("USD")
+  status            InvoiceStatus  @default(OPEN)
+  method            PaymentMethod  @default(CARD)
+  providerInvoiceId String?
+  bankReceiptUrl    String?
+  dueAt             DateTime?
+  paidAt            DateTime?
+  pdfUrl            String?
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  payments          Payment[]
+
+  @@index([userId])
+  @@index([companyId])
+  @@index([status])
+}
+
+model Payment {
+  id                String   @id @default(cuid())
+  invoice           Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  invoiceId         String
+  providerPaymentId String?
+  amountCents       Int
+  currency          String   @default("USD")
+  status            String   // provider-specific status string
+  rawPayload        Json?
+  createdAt         DateTime @default(now())
+
+  @@index([invoiceId])
+}
+
+model EmployerCredit {
+  id          String              @id @default(cuid())
+  company     Company             @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  companyId   String
+  kind        EmployerCreditKind
+  remaining   Int                 @default(0)
+  expiresAt   DateTime?
+  createdAt   DateTime            @default(now())
+
+  @@index([companyId, kind])
+}
+
+model KaramaLedger {
+  id            String        @id @default(cuid())
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId        String
+  delta         Int
+  balanceAfter  Int
+  reason        KaramaReason
+  refType       String?
+  refId         String?
+  createdAt     DateTime      @default(now())
+
+  @@index([userId, createdAt])
+  @@index([reason])
+}
+
+model UserRating {
+  id            String         @id @default(cuid())
+  rater         User           @relation("RatingRater", fields: [raterId], references: [id], onDelete: Cascade)
+  raterId       String
+  ratee         User           @relation("RatingRatee", fields: [rateeId], references: [id], onDelete: Cascade)
+  rateeId       String
+  context       RatingContext
+  score         Int            // 1–5
+  comment       String?        @db.Text
+  jobId         String?
+  applicationId String?
+  createdAt     DateTime       @default(now())
+
+  @@unique([raterId, rateeId, context, jobId])
+  @@index([rateeId, context])
+  @@index([raterId])
 }

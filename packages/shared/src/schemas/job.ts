@@ -68,3 +68,46 @@ export const JobSearchQuery = z.object({
   skills: z.array(z.string()).max(10).optional(),
 });
 export type JobSearchQuery = z.infer<typeof JobSearchQuery>;
+
+export const EmployerJob = z.object({
+  id: z.string().cuid(),
+  companyId: z.string().cuid(),
+  title: z.string(),
+  type: z.nativeEnum(JobType),
+  locationMode: z.nativeEnum(JobLocationMode),
+  city: z.string().nullable(),
+  isActive: z.boolean(),
+  expiresAt: z.string().datetime().nullable(),
+  createdAt: z.string().datetime(),
+  updatedAt: z.string().datetime(),
+  applicantCount: z.number().int().nonnegative(),
+  shortlistCount: z.number().int().nonnegative(),
+});
+export type EmployerJob = z.infer<typeof EmployerJob>;
+
+export const EmployerApplicant = z.object({
+  id: z.string().cuid(),
+  jobId: z.string().cuid(),
+  applicantId: z.string().cuid(),
+  status: z.nativeEnum(ApplicationStatus),
+  resumeUrl: z.string().url().nullable(),
+  coverLetter: z.string().nullable(),
+  createdAt: z.string().datetime(),
+  updatedAt: z.string().datetime(),
+  applicant: z.object({
+    id: z.string().cuid(),
+    email: z.string().email(),
+    profile: z
+      .object({
+        handle: z.string(),
+        firstName: z.string(),
+        lastName: z.string(),
+        headline: z.string().nullable(),
+        avatarUrl: z.string().url().nullable(),
+        location: z.string().nullable(),
+        country: z.string().nullable(),
+      })
+      .nullable(),
+  }),
+});
+export type EmployerApplicant = z.infer<typeof EmployerApplicant>;

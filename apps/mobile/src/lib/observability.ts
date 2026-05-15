@@ -39,7 +39,10 @@ export function initObservability(): void {
   Sentry.init({
     dsn,
     environment: runtimeEnvironment(),
-    release: process.env.EXPO_PUBLIC_APP_VERSION?.trim() || undefined,
+    release:
+      process.env.EXPO_PUBLIC_SENTRY_RELEASE?.trim() ||
+      process.env.EXPO_PUBLIC_APP_VERSION?.trim() ||
+      undefined,
     tracesSampleRate: 0.1,
   });
   initialized = true;

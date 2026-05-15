@@ -47,3 +47,31 @@ export const PresignedUpload = z.object({
   blurhash: z.string().min(6).nullable(),
 });
 export type PresignedUpload = z.infer<typeof PresignedUpload>;
+
+export const MediaScanRequest = z.object({
+  key: z.string().min(1).max(1024),
+  publicUrl: z.string().url(),
+  kind: z.nativeEnum(MediaKind),
+  mimeType: z
+    .string()
+    .regex(/^[\w.+-]+\/[\w.+-]+$/, { message: "INVALID_MIME" })
+    .max(100),
+});
+export type MediaScanRequest = z.infer<typeof MediaScanRequest>;
+
+export const MediaScanStatus = z.enum(["READY", "BLOCKED", "REVIEW_REQUIRED", "SKIPPED"]);
+export type MediaScanStatus = z.infer<typeof MediaScanStatus>;
+
+export const MediaScannerResult = z.object({
+  status: z.enum(["clean", "blocked", "skipped", "error"]),
+  reason: z.string().optional(),
+});
+export type MediaScannerResult = z.infer<typeof MediaScannerResult>;
+
+export const MediaScanResult = z.object({
+  key: z.string(),
+  status: MediaScanStatus,
+  reasons: z.array(z.string()),
+  scanners: z.record(MediaScannerResult),
+});
+export type MediaScanResult = z.infer<typeof MediaScanResult>;

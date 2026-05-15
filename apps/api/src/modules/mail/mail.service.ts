@@ -1,10 +1,11 @@
-import { Injectable } from "@nestjs/common";
+import { Inject, Injectable } from "@nestjs/common";
 
-import { ConsoleMailTransport, type MailData, type MailTemplate } from "./console-mail.transport";
+import type { MailData, MailTemplate, MailTransport } from "./console-mail.transport";
+import { MAIL_TRANSPORT } from "./mail.module";
 
 @Injectable()
 export class MailService {
-  constructor(private readonly transport: ConsoleMailTransport) {}
+  constructor(@Inject(MAIL_TRANSPORT) private readonly transport: MailTransport) {}
 
   async send(template: MailTemplate, to: string, data: MailData): Promise<void> {
     await this.transport.send(template, to, data);

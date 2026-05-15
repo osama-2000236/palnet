@@ -56,7 +56,7 @@ interface AuthTokenPrisma {
   $executeRaw?: RawCommand;
   $queryRaw?: RawCommand;
   user: {
-    findUnique(args: unknown): Promise<{ id: string; email: string } | null>;
+    findUnique(args: unknown): Promise<{ id: string; email: string; locale?: string } | null>;
     update(args: unknown): Promise<unknown>;
   };
   emailVerificationToken: {
@@ -95,7 +95,7 @@ export class AuthTokensService {
   async issueVerifyEmail(userId: string, meta: RequestMeta = {}): Promise<void> {
     const user = await this.db.user.findUnique({
       where: { id: userId },
-      select: { id: true, email: true },
+      select: { id: true, email: true, locale: true },
     });
     if (!user) return;
 
@@ -110,8 +110,10 @@ export class AuthTokensService {
       },
     });
 
+    const locale = normalizeLocale(user.locale);
     await this.mail.send("verify-email", user.email, {
-      url: this.buildWebUrl(`/auth/verify-email/${plain}`),
+      url: this.buildWebUrl(`/auth/verify-email/${plain}`, locale),
+      locale,
     });
   }
 
@@ -139,7 +141,7 @@ export class AuthTokensService {
   async issuePasswordReset(email: string, meta: RequestMeta = {}): Promise<void> {
     const user = await this.db.user.findUnique({
       where: { email },
-      select: { id: true, email: true },
+      select: { id: true, email: true, locale: true },
     });
     if (!user) {
       this.logger.log(`Password reset requested for non-existent account: ${email}`);
@@ -157,8 +159,10 @@ export class AuthTokensService {
       },
     });
 
+    const locale = normalizeLocale(user.locale);
     await this.mail.send("password-reset", user.email, {
-      url: this.buildWebUrl(`/auth/reset-password/${plain}`),
+      url: this.buildWebUrl(`/auth/reset-password/${plain}`, locale),
+      locale,
     });
   }
 
@@ -345,10 +349,10 @@ export class AuthTokensService {
     return queryRaw;
   }
 
-  private buildWebUrl(path: string): string {
+  private buildWebUrl(path: string, locale: "ar-PS" | "en" = "ar-PS"): string {
     const base =
       process.env.BAYDAR_WEB_URL ?? process.env.NEXT_PUBLIC_WEB_URL ?? "http://localhost:3000";
-    return `${base.replace(/\/$/, "")}/ar-PS${path}`;
+    return `${base.replace(/\/$/, "")}/${locale}${path}`;
   }
 
   private getBcryptCost(): number {
@@ -365,4 +369,8 @@ export function hashToken(token: string): string {
 
 function createPlainToken(): string {
   return crypto.randomBytes(TOKEN_BYTES).toString("hex");
+}
+
+function normalizeLocale(value: string | null | undefined): "ar-PS" | "en" {
+  return value === "en" ? "en" : "ar-PS";
 }

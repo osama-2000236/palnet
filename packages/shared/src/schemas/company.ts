@@ -40,3 +40,39 @@ export const AddCompanyMemberBody = z.object({
   role: z.nativeEnum(CompanyMemberRole).default("EDITOR"),
 });
 export type AddCompanyMemberBody = z.infer<typeof AddCompanyMemberBody>;
+
+export const UpdateCompanyMemberBody = z.object({
+  role: z.nativeEnum(CompanyMemberRole),
+});
+export type UpdateCompanyMemberBody = z.infer<typeof UpdateCompanyMemberBody>;
+
+export const CompanyMember = z.object({
+  id: z.string().cuid(),
+  companyId: z.string().cuid(),
+  userId: z.string().cuid(),
+  role: z.nativeEnum(CompanyMemberRole),
+  createdAt: z.string().datetime(),
+  user: z.object({
+    id: z.string().cuid(),
+    email: z.string().email().nullable(),
+    profile: z
+      .object({
+        handle: z.string(),
+        firstName: z.string(),
+        lastName: z.string(),
+        avatarUrl: z.string().url().nullable(),
+      })
+      .nullable(),
+  }),
+});
+export type CompanyMember = z.infer<typeof CompanyMember>;
+
+export const CompanySummary = z.object({
+  id: z.string().cuid(),
+  slug: z.string(),
+  name: z.string(),
+  logoUrl: z.string().url().nullable(),
+  verified: z.boolean(),
+  viewerRole: z.nativeEnum(CompanyMemberRole).nullable(),
+});
+export type CompanySummary = z.infer<typeof CompanySummary>;
