@@ -26,6 +26,6 @@ import { LastSeenTracker } from "./last-seen.tracker";
     { provide: APP_GUARD, useClass: JwtAuthGuard },
     { provide: APP_GUARD, useClass: ProfileCompletionGuard },
   ],
-  exports: [AuthService, AuthTokensService, JwtAuthGuard],
+  exports: [AuthService, AuthTokensService, JwtAuthGuard, LastSeenTracker],
 })
 export class AuthModule {}
