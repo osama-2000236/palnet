@@ -135,7 +135,9 @@ export class KaramaService {
 
   // ───── Internal cron: inactive monthly decay ─────
 
-  async runMonthlyDecay(options: { now?: Date; dryRun?: boolean } = {}): Promise<KaramaDecayReport> {
+  async runMonthlyDecay(
+    options: { now?: Date; dryRun?: boolean } = {},
+  ): Promise<KaramaDecayReport> {
     const now = options.now ?? new Date();
     const cutoff = new Date(now.getTime() - KARAMA_DECAY_INACTIVITY_MS);
     const period = decayPeriod(now);
@@ -145,10 +147,7 @@ export class KaramaService {
       where: {
         deletedAt: null,
         karamaBalance: { gt: 0 },
-        OR: [
-          { lastSeenAt: { lt: cutoff } },
-          { lastSeenAt: null, createdAt: { lt: cutoff } },
-        ],
+        OR: [{ lastSeenAt: { lt: cutoff } }, { lastSeenAt: null, createdAt: { lt: cutoff } }],
       },
       orderBy: { id: "asc" },
       select: { id: true, karamaBalance: true },

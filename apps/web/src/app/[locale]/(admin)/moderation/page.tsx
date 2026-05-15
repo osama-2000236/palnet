@@ -36,7 +36,9 @@ export default function ModerationPage(): JSX.Element {
     }
     setError(null);
     try {
-      setReports(await apiFetch("/admin/moderation/reports?status=open", z.array(Report), { token }));
+      setReports(
+        await apiFetch("/admin/moderation/reports?status=open", z.array(Report), { token }),
+      );
     } catch {
       setError("Could not load moderation queue.");
     }
@@ -75,7 +77,12 @@ export default function ModerationPage(): JSX.Element {
                   {new Date(report.createdAt).toLocaleString()} · reporter {report.reporterId}
                 </p>
                 <p className="text-ink-muted mt-2 text-sm">
-                  Target: {report.targetUserId ?? report.targetPostId ?? report.targetCommentId ?? report.targetMessageId ?? "unknown"}
+                  Target:{" "}
+                  {report.targetUserId ??
+                    report.targetPostId ??
+                    report.targetCommentId ??
+                    report.targetMessageId ??
+                    "unknown"}
                 </p>
                 {report.details ? <p className="text-ink mt-2 text-sm">{report.details}</p> : null}
               </div>

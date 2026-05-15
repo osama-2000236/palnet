@@ -11,7 +11,13 @@ type PrismaStub = {
   user: { findUnique: jest.Mock };
   companyMember: { findFirst: jest.Mock; findMany: jest.Mock };
   subscription: { create: jest.Mock };
-  invoice: { create: jest.Mock; update: jest.Mock; findMany: jest.Mock; findUnique: jest.Mock; findUniqueOrThrow: jest.Mock };
+  invoice: {
+    create: jest.Mock;
+    update: jest.Mock;
+    findMany: jest.Mock;
+    findUnique: jest.Mock;
+    findUniqueOrThrow: jest.Mock;
+  };
   payment: { create: jest.Mock };
   $transaction: jest.Mock;
 };
@@ -65,7 +71,12 @@ describe("BillingService", () => {
         { provide: HyperPayClient, useValue: hyperpay },
         {
           provide: ConfigService,
-          useValue: { get: jest.fn((key: string) => ({ BANK_TRANSFER_IBAN: "PS00TEST", BANK_TRANSFER_BENEFICIARY: "Baydar" })[key]) },
+          useValue: {
+            get: jest.fn(
+              (key: string) =>
+                ({ BANK_TRANSFER_IBAN: "PS00TEST", BANK_TRANSFER_BENEFICIARY: "Baydar" })[key],
+            ),
+          },
         },
       ],
     }).compile();
@@ -137,7 +148,11 @@ describe("BillingService", () => {
       subscription: { id: "sub-1" },
     };
     prisma.invoice.findUnique.mockResolvedValue(invoice);
-    tx.invoice.update.mockResolvedValue({ ...invoice, status: "PAID", paidAt: new Date("2026-05-15T00:00:00Z") });
+    tx.invoice.update.mockResolvedValue({
+      ...invoice,
+      status: "PAID",
+      paidAt: new Date("2026-05-15T00:00:00Z"),
+    });
 
     const result = await service.handleHyperPayWebhook({
       merchantTransactionId: "inv-1",
@@ -151,7 +166,11 @@ describe("BillingService", () => {
       data: expect.objectContaining({ status: "ACTIVE" }),
     });
     expect(tx.employerCredit.create).toHaveBeenCalledWith({
-      data: expect.objectContaining({ companyId: "company-1", kind: "FEATURED_SLOT", remaining: 1 }),
+      data: expect.objectContaining({
+        companyId: "company-1",
+        kind: "FEATURED_SLOT",
+        remaining: 1,
+      }),
     });
 
     prisma.invoice.findUnique.mockResolvedValue({ ...invoice, status: "PAID" });
@@ -184,7 +203,11 @@ describe("BillingService", () => {
       subscription: { id: "sub-2" },
     };
     prisma.invoice.findUnique.mockResolvedValue(invoice);
-    tx.invoice.update.mockResolvedValue({ ...invoice, status: "PAID", paidAt: new Date("2026-05-15T00:00:00Z") });
+    tx.invoice.update.mockResolvedValue({
+      ...invoice,
+      status: "PAID",
+      paidAt: new Date("2026-05-15T00:00:00Z"),
+    });
 
     const result = await service.adminInvoiceAction("inv-2", { action: "MARK_PAID" });
 

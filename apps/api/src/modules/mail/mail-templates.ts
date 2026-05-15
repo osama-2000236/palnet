@@ -18,7 +18,13 @@ const BRAND = {
   signoff: { "ar-PS": "فريق بيدر", en: "The Baydar team" },
 } as const;
 
-const COPY: Record<MailTemplate, Record<MailLocale, { subject: string; heading: string; body: string; cta: string; fallback: string }>> = {
+const COPY: Record<
+  MailTemplate,
+  Record<
+    MailLocale,
+    { subject: string; heading: string; body: string; cta: string; fallback: string }
+  >
+> = {
   "verify-email": {
     "ar-PS": {
       subject: "أكّد بريدك في بيدر",
@@ -72,7 +78,11 @@ function escapeHtml(value: string): string {
     .replace(/'/g, "&#39;");
 }
 
-function renderHtml(locale: MailLocale, url: string, copy: { heading: string; body: string; cta: string; fallback: string }): string {
+function renderHtml(
+  locale: MailLocale,
+  url: string,
+  copy: { heading: string; body: string; cta: string; fallback: string },
+): string {
   const dir = locale === "ar-PS" ? "rtl" : "ltr";
   const lang = locale === "ar-PS" ? "ar" : "en";
   const brandName = BRAND.name[locale];
@@ -128,7 +138,11 @@ function renderHtml(locale: MailLocale, url: string, copy: { heading: string; bo
 </html>`;
 }
 
-function renderText(locale: MailLocale, url: string, copy: { heading: string; body: string; cta: string; fallback: string }): string {
+function renderText(
+  locale: MailLocale,
+  url: string,
+  copy: { heading: string; body: string; cta: string; fallback: string },
+): string {
   return [
     BRAND.name[locale],
     BRAND.tagline[locale],

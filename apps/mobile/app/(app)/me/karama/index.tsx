@@ -56,9 +56,7 @@ export default function KaramaScreen(): JSX.Element {
         method: "POST",
         body,
       });
-      setBalance((current) =>
-        current ? { ...current, balance: result.balance } : current,
-      );
+      setBalance((current) => (current ? { ...current, balance: result.balance } : current));
       await load();
     } catch (caught) {
       setError(apiErrorMessage(t, caught));
@@ -126,7 +124,9 @@ export default function KaramaScreen(): JSX.Element {
           {(balance?.recent ?? []).map((entry) => (
             <View key={entry.id} style={styles.ledgerRow}>
               <Text style={styles.ledgerReason}>{entry.reason.replaceAll("_", " ")}</Text>
-              <Text style={[styles.ledgerDelta, entry.delta < 0 ? styles.negative : styles.positive]}>
+              <Text
+                style={[styles.ledgerDelta, entry.delta < 0 ? styles.negative : styles.positive]}
+              >
                 {entry.delta > 0 ? "+" : ""}
                 {entry.delta}
               </Text>

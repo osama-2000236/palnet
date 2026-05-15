@@ -19,10 +19,7 @@ describe("EmployerEntitlementsService", () => {
       employerCredit: { findFirst: jest.fn(), update: jest.fn() },
     };
     const moduleRef = await Test.createTestingModule({
-      providers: [
-        EmployerEntitlementsService,
-        { provide: PrismaService, useValue: prisma },
-      ],
+      providers: [EmployerEntitlementsService, { provide: PrismaService, useValue: prisma }],
     }).compile();
     service = moduleRef.get(EmployerEntitlementsService);
   });

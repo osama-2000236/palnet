@@ -12,7 +12,12 @@ export class AdminModerationService {
 
   async listReports(status: "open" | "resolved" | "all", limit: number) {
     return this.prisma.report.findMany({
-      where: status === "all" ? {} : status === "open" ? { resolvedAt: null } : { resolvedAt: { not: null } },
+      where:
+        status === "all"
+          ? {}
+          : status === "open"
+            ? { resolvedAt: null }
+            : { resolvedAt: { not: null } },
       orderBy: { createdAt: "desc" },
       take: Math.min(Math.max(limit, 1), 100),
     });

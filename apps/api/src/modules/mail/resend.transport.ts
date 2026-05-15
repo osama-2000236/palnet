@@ -55,7 +55,9 @@ export class ResendTransport implements MailTransport {
       throw new Error(`Resend send failed with status ${response.status}`);
     }
 
-    this.logger.log(`Sent ${template} email to ${to} via Resend (locale=${data.locale ?? "ar-PS"}).`);
+    this.logger.log(
+      `Sent ${template} email to ${to} via Resend (locale=${data.locale ?? "ar-PS"}).`,
+    );
   }
 
   private async readError(response: Response): Promise<ResendErrorBody> {

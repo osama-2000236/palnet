@@ -1,11 +1,6 @@
 "use client";
 
-import {
-  Company,
-  EmployerJob,
-  JobLocationMode,
-  JobType,
-} from "@baydar/shared";
+import { Company, EmployerJob, JobLocationMode, JobType } from "@baydar/shared";
 import { Surface } from "@baydar/ui-web";
 import { useParams, useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
@@ -94,15 +89,9 @@ export default function NewJobPage(): JSX.Element {
         ...(form.salaryMax ? { salaryMax: Number(form.salaryMax) } : {}),
         salaryCurrency: form.salaryCurrency || "ILS",
         skillsRequired: [],
-        ...(form.expiresAt
-          ? { expiresAt: new Date(form.expiresAt).toISOString() }
-          : {}),
+        ...(form.expiresAt ? { expiresAt: new Date(form.expiresAt).toISOString() } : {}),
       };
-      await apiFetch(
-        `/companies/${companyId}/jobs`,
-        EmployerJob,
-        { method: "POST", body, token },
-      );
+      await apiFetch(`/companies/${companyId}/jobs`, EmployerJob, { method: "POST", body, token });
       router.replace(`/${locale}/employer/${slug}`);
     } catch (err) {
       setError(toErrorMessage(err, tErr));
@@ -139,9 +128,7 @@ export default function NewJobPage(): JSX.Element {
             <Field label={t("type")}>
               <select
                 value={form.type}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, type: e.target.value as JobType }))
-                }
+                onChange={(e) => setForm((f) => ({ ...f, type: e.target.value as JobType }))}
                 className="border-line-hard bg-surface text-ink w-full rounded-md border px-3 py-1.5 text-sm"
               >
                 {Object.values(JobType).map((v) => (
@@ -226,11 +213,7 @@ export default function NewJobPage(): JSX.Element {
             >
               {submitting ? t("submitting") : t("submit")}
             </button>
-            <button
-              type="button"
-              onClick={() => router.back()}
-              className="text-ink-muted text-sm"
-            >
+            <button type="button" onClick={() => router.back()} className="text-ink-muted text-sm">
               {tCommon("cancel")}
             </button>
           </div>

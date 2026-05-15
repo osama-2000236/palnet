@@ -48,7 +48,10 @@ export class HyperPayClient {
       },
       body: params.toString(),
     });
-    const body = (await response.json().catch(() => ({}))) as { id?: unknown; result?: { code?: string; description?: string } };
+    const body = (await response.json().catch(() => ({}))) as {
+      id?: unknown;
+      result?: { code?: string; description?: string };
+    };
     if (!response.ok || typeof body.id !== "string") {
       throw new Error(`HyperPay checkout failed: ${body.result?.description ?? response.status}`);
     }

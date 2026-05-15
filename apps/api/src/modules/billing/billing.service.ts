@@ -38,7 +38,11 @@ export class BillingService {
     await this.assertScope(userId, body.planCode, body.companyId ?? null);
 
     if (body.method === "POINTS") {
-      throw new DomainException(ErrorCode.VALIDATION_FAILED, "Use Karama redemption for points.", 400);
+      throw new DomainException(
+        ErrorCode.VALIDATION_FAILED,
+        "Use Karama redemption for points.",
+        400,
+      );
     }
 
     const user = await this.prisma.user.findUnique({
@@ -70,7 +74,8 @@ export class BillingService {
         status: plan.priceCents === 0 ? "PAID" : "OPEN",
         method: body.method,
         paidAt: plan.priceCents === 0 ? new Date() : null,
-        dueAt: body.method === "BANK_TRANSFER" ? new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) : null,
+        dueAt:
+          body.method === "BANK_TRANSFER" ? new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) : null,
       },
     });
 
@@ -122,7 +127,9 @@ export class BillingService {
     });
     const companyIds = memberships.map((m) => m.companyId);
     const rows = await this.prisma.invoice.findMany({
-      where: { OR: [{ userId }, ...(companyIds.length ? [{ companyId: { in: companyIds } }] : [])] },
+      where: {
+        OR: [{ userId }, ...(companyIds.length ? [{ companyId: { in: companyIds } }] : [])],
+      },
       orderBy: { createdAt: "desc" },
       take: 100,
     });
@@ -167,7 +174,10 @@ export class BillingService {
     return toInvoiceDto(row);
   }
 
-  async handleHyperPayWebhook(payload: HyperPayWebhookPayload, signature?: string): Promise<InvoiceDto> {
+  async handleHyperPayWebhook(
+    payload: HyperPayWebhookPayload,
+    signature?: string,
+  ): Promise<InvoiceDto> {
     if (!this.hyperpay.verifyWebhookSignature(payload, signature)) {
       throw new DomainException(ErrorCode.AUTH_UNAUTHORIZED, "Invalid webhook signature.", 401);
     }
@@ -235,7 +245,9 @@ export class BillingService {
           data: {
             status: "ACTIVE",
             currentPeriodStart: now,
-            currentPeriodEnd: new Date(now.getTime() + invoice.plan.intervalDays * 24 * 60 * 60 * 1000),
+            currentPeriodEnd: new Date(
+              now.getTime() + invoice.plan.intervalDays * 24 * 60 * 60 * 1000,
+            ),
             providerSubscriptionId: invoice.providerInvoiceId,
           },
         });
@@ -281,7 +293,11 @@ export class BillingService {
     });
   }
 
-  private async assertScope(userId: string, planCode: PlanCode, companyId: string | null): Promise<void> {
+  private async assertScope(
+    userId: string,
+    planCode: PlanCode,
+    companyId: string | null,
+  ): Promise<void> {
     const isEmployerPlan = planCode.startsWith("EMPLOYER_") || planCode === "FEATURED_SLOT";
     if (isEmployerPlan && !companyId) {
       throw new DomainException(ErrorCode.VALIDATION_FAILED, "companyId is required.", 400);
@@ -296,7 +312,11 @@ export class BillingService {
       select: { id: true },
     });
     if (!member) {
-      throw new DomainException(ErrorCode.AUTH_FORBIDDEN, "Only company owners/admins can buy plans.", 403);
+      throw new DomainException(
+        ErrorCode.AUTH_FORBIDDEN,
+        "Only company owners/admins can buy plans.",
+        403,
+      );
     }
   }
 

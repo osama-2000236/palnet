@@ -1,11 +1,6 @@
 "use client";
 
-import {
-  ApplicationStatus,
-  Company,
-  cursorPage,
-  EmployerApplicant,
-} from "@baydar/shared";
+import { ApplicationStatus, Company, cursorPage, EmployerApplicant } from "@baydar/shared";
 import { Surface } from "@baydar/ui-web";
 import { useParams, useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
@@ -83,10 +78,7 @@ export default function EmployerApplicantsPage(): JSX.Element {
     void load(companyId, token, filter);
   }, [token, companyId, filter, load]);
 
-  const changeStatus = async (
-    applicationId: string,
-    status: ApplicationStatus,
-  ): Promise<void> => {
+  const changeStatus = async (applicationId: string, status: ApplicationStatus): Promise<void> => {
     if (!token || !companyId) return;
     try {
       const updated = await apiFetch(
@@ -169,9 +161,7 @@ export default function EmployerApplicantsPage(): JSX.Element {
                 <div className="flex flex-col items-end gap-2">
                   <select
                     value={a.status}
-                    onChange={(e) =>
-                      void changeStatus(a.id, e.target.value as ApplicationStatus)
-                    }
+                    onChange={(e) => void changeStatus(a.id, e.target.value as ApplicationStatus)}
                     className="border-line-hard bg-surface text-ink rounded-md border px-2 py-1 text-xs"
                   >
                     {(Object.values(ApplicationStatus) as ApplicationStatus[]).map((s) => (

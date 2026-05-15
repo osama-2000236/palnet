@@ -1,7 +1,7 @@
 import { Inject, Injectable } from "@nestjs/common";
 
 import type { MailData, MailTemplate, MailTransport } from "./console-mail.transport";
-import { MAIL_TRANSPORT } from "./mail.module";
+import { MAIL_TRANSPORT } from "./mail.tokens";
 
 @Injectable()
 export class MailService {

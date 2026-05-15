@@ -5,9 +5,8 @@ import type { Env } from "../../config/env";
 
 import { ConsoleMailTransport, type MailTransport } from "./console-mail.transport";
 import { MailService } from "./mail.service";
+import { MAIL_TRANSPORT } from "./mail.tokens";
 import { ResendTransport } from "./resend.transport";
-
-export const MAIL_TRANSPORT = Symbol("MAIL_TRANSPORT");
 
 const transportProvider: Provider = {
   provide: MAIL_TRANSPORT,

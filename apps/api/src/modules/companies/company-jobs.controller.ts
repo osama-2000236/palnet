@@ -56,7 +56,12 @@ export class CompanyJobsController {
     @Param("companyId") companyId: string,
     @Query(new ZodValidationPipe(CompanyJobListQuery)) query: CompanyJobListQuery,
   ): Promise<{ data: EmployerJob[]; meta: CursorPageMeta }> {
-    return this.companies.listCompanyJobs(companyId, query.after ?? null, query.limit, query.status);
+    return this.companies.listCompanyJobs(
+      companyId,
+      query.after ?? null,
+      query.limit,
+      query.status,
+    );
   }
 
   @Post()
@@ -64,7 +69,8 @@ export class CompanyJobsController {
   async create(
     @CurrentUser() user: AuthUser,
     @Param("companyId") companyId: string,
-    @Body(new ZodValidationPipe(CreateJobBodyForCompany)) body: z.infer<typeof CreateJobBodyForCompany>,
+    @Body(new ZodValidationPipe(CreateJobBodyForCompany))
+    body: z.infer<typeof CreateJobBodyForCompany>,
   ): Promise<EmployerJob> {
     return this.companies.createJob(companyId, user.id, body);
   }

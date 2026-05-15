@@ -159,7 +159,7 @@ export default function CompanyDashboardPage(): JSX.Element {
                 <div className="flex flex-col items-end gap-2">
                   <Link
                     href={`/${locale}/employer/${slug}/jobs/${j.id}/applicants`}
-                    className="text-brand-600 hover:underline text-sm"
+                    className="text-brand-600 text-sm hover:underline"
                   >
                     {t("viewApplicants")}
                   </Link>

@@ -1,9 +1,4 @@
-import {
-  ApplicationStatus,
-  Company,
-  cursorPage,
-  EmployerApplicant,
-} from "@baydar/shared";
+import { ApplicationStatus, Company, cursorPage, EmployerApplicant } from "@baydar/shared";
 import { Surface, nativeTokens } from "@baydar/ui-native";
 import { Stack, useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
@@ -143,7 +138,9 @@ export default function ApplicantsInboxScreen(): JSX.Element {
                     paddingHorizontal: nativeTokens.space[3],
                     borderRadius: nativeTokens.radius.full,
                     backgroundColor:
-                      item.status === s ? nativeTokens.color.brand500 : nativeTokens.color.surfaceMuted,
+                      item.status === s
+                        ? nativeTokens.color.brand500
+                        : nativeTokens.color.surfaceMuted,
                   }}
                 >
                   <Text

@@ -28,10 +28,7 @@ describe("AccountRetentionService", () => {
   beforeEach(async () => {
     prisma = buildPrisma();
     const moduleRef = await Test.createTestingModule({
-      providers: [
-        AccountRetentionService,
-        { provide: PrismaService, useValue: prisma },
-      ],
+      providers: [AccountRetentionService, { provide: PrismaService, useValue: prisma }],
     }).compile();
     service = moduleRef.get(AccountRetentionService);
   });

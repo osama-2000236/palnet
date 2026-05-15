@@ -35,10 +35,7 @@ describe("KaramaService", () => {
     };
     prisma.$transaction.mockImplementation(async (fn) => fn(tx as never));
     const moduleRef = await Test.createTestingModule({
-      providers: [
-        KaramaService,
-        { provide: PrismaService, useValue: prisma },
-      ],
+      providers: [KaramaService, { provide: PrismaService, useValue: prisma }],
     }).compile();
     service = moduleRef.get(KaramaService);
   });

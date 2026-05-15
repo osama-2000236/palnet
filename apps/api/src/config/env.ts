@@ -72,7 +72,9 @@ export function loadEnv(): Env {
     }
     if (!data.RESEND_API_KEY || !data.MAIL_FROM) {
       failEnv({
-        RESEND_API_KEY: !data.RESEND_API_KEY ? ["RESEND_API_KEY is required in production."] : undefined,
+        RESEND_API_KEY: !data.RESEND_API_KEY
+          ? ["RESEND_API_KEY is required in production."]
+          : undefined,
         MAIL_FROM: !data.MAIL_FROM ? ["MAIL_FROM is required in production."] : undefined,
       });
     }
@@ -84,7 +86,9 @@ export function loadEnv(): Env {
     }
     if (!data.HYPERPAY_ENTITY_ID || !data.HYPERPAY_ACCESS_TOKEN || !data.HYPERPAY_WEBHOOK_SECRET) {
       failEnv({
-        HYPERPAY_ENTITY_ID: !data.HYPERPAY_ENTITY_ID ? ["HYPERPAY_ENTITY_ID is required in production."] : undefined,
+        HYPERPAY_ENTITY_ID: !data.HYPERPAY_ENTITY_ID
+          ? ["HYPERPAY_ENTITY_ID is required in production."]
+          : undefined,
         HYPERPAY_ACCESS_TOKEN: !data.HYPERPAY_ACCESS_TOKEN
           ? ["HYPERPAY_ACCESS_TOKEN is required in production."]
           : undefined,
@@ -105,7 +109,9 @@ export function loadEnv(): Env {
     }
     if (!data.CLAMAV_SCAN_URL || !data.CLOUDFLARE_IMAGES_SCAN_URL) {
       failEnv({
-        CLAMAV_SCAN_URL: !data.CLAMAV_SCAN_URL ? ["CLAMAV_SCAN_URL is required in production."] : undefined,
+        CLAMAV_SCAN_URL: !data.CLAMAV_SCAN_URL
+          ? ["CLAMAV_SCAN_URL is required in production."]
+          : undefined,
         CLOUDFLARE_IMAGES_SCAN_URL: !data.CLOUDFLARE_IMAGES_SCAN_URL
           ? ["CLOUDFLARE_IMAGES_SCAN_URL is required in production."]
           : undefined,
@@ -114,7 +120,9 @@ export function loadEnv(): Env {
     if (!data.SENTRY_DSN || !data.SENTRY_RELEASE) {
       failEnv({
         SENTRY_DSN: !data.SENTRY_DSN ? ["SENTRY_DSN is required in production."] : undefined,
-        SENTRY_RELEASE: !data.SENTRY_RELEASE ? ["SENTRY_RELEASE is required in production."] : undefined,
+        SENTRY_RELEASE: !data.SENTRY_RELEASE
+          ? ["SENTRY_RELEASE is required in production."]
+          : undefined,
       });
     }
   }

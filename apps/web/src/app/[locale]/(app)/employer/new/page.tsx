@@ -91,9 +91,7 @@ export default function NewCompanyPage(): JSX.Element {
             <input
               required
               value={form.slug}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, slug: e.target.value.toLowerCase() }))
-              }
+              onChange={(e) => setForm((f) => ({ ...f, slug: e.target.value.toLowerCase() }))}
               pattern="[a-z0-9][a-z0-9-]*[a-z0-9]"
               className="border-line-hard bg-surface text-ink w-full rounded-md border px-3 py-1.5 text-sm"
             />
@@ -148,11 +146,7 @@ export default function NewCompanyPage(): JSX.Element {
             >
               {submitting ? t("submitting") : t("submit")}
             </button>
-            <button
-              type="button"
-              onClick={() => router.back()}
-              className="text-ink-muted text-sm"
-            >
+            <button type="button" onClick={() => router.back()} className="text-ink-muted text-sm">
               {tCommon("cancel")}
             </button>
           </div>

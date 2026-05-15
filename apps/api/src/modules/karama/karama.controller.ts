@@ -1,8 +1,4 @@
-import {
-  type KaramaBalance,
-  type KaramaRedeemResult,
-  RedeemKaramaBody,
-} from "@baydar/shared";
+import { type KaramaBalance, type KaramaRedeemResult, RedeemKaramaBody } from "@baydar/shared";
 import { Body, Controller, Get, Post } from "@nestjs/common";
 import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 

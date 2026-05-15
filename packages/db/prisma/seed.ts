@@ -309,7 +309,13 @@ async function seedPlans() {
       priceCents: 9900,
       currency: "USD",
       intervalDays: 30,
-      features: { activeJobs: 25, applicantInbox: true, advancedAnalytics: true, csvExport: true, featuredSlots: 1 },
+      features: {
+        activeJobs: 25,
+        applicantInbox: true,
+        advancedAnalytics: true,
+        csvExport: true,
+        featuredSlots: 1,
+      },
     },
     {
       code: "FEATURED_SLOT",

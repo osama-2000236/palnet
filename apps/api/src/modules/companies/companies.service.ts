@@ -229,7 +229,11 @@ export class CompaniesService {
     posterId: string,
     body: Omit<CreateJobBody, "companyId">,
   ): Promise<EmployerJob> {
-    if (body.salaryMin !== undefined && body.salaryMax !== undefined && body.salaryMax < body.salaryMin) {
+    if (
+      body.salaryMin !== undefined &&
+      body.salaryMax !== undefined &&
+      body.salaryMax < body.salaryMin
+    ) {
       throw new DomainException(
         ErrorCode.VALIDATION_FAILED,
         "salaryMax must be greater than or equal to salaryMin.",
@@ -258,11 +262,7 @@ export class CompaniesService {
     return this.attachJobCounts(job);
   }
 
-  async updateJob(
-    companyId: string,
-    jobId: string,
-    body: UpdateJobBody,
-  ): Promise<EmployerJob> {
+  async updateJob(companyId: string, jobId: string, body: UpdateJobBody): Promise<EmployerJob> {
     const existing = await this.prisma.job.findFirst({
       where: { id: jobId, companyId, deletedAt: null },
       select: { id: true },

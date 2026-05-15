@@ -134,7 +134,10 @@ export default function KaramaPage(): JSX.Element {
         <h2 className="text-ink mb-3 text-lg font-semibold">Recent activity</h2>
         <ul className="flex flex-col gap-2">
           {(balance?.recent ?? []).map((entry) => (
-            <li key={entry.id} className="border-line-soft flex justify-between gap-3 border-b pb-2 text-sm">
+            <li
+              key={entry.id}
+              className="border-line-soft flex justify-between gap-3 border-b pb-2 text-sm"
+            >
               <span className="text-ink">{entry.reason.replaceAll("_", " ")}</span>
               <span className={entry.delta >= 0 ? "text-brand-700" : "text-danger"}>
                 {entry.delta > 0 ? "+" : ""}
