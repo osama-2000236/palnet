@@ -195,6 +195,19 @@ describe("BillingService", () => {
     });
   });
 
+  it("rejects HyperPay webhook with an invalid signature", async () => {
+    hyperpay.verifyWebhookSignature.mockReturnValue(false);
+
+    await expect(
+      service.handleHyperPayWebhook(
+        { merchantTransactionId: "inv-1", result: { code: "000.000.000" } },
+        "bogus-signature",
+      ),
+    ).rejects.toMatchObject({ code: "AUTH_UNAUTHORIZED" });
+    expect(prisma.invoice.findUnique).not.toHaveBeenCalled();
+    expect(prisma.$transaction).not.toHaveBeenCalled();
+  });
+
   it("lists bank-transfer receipts waiting for admin review", async () => {
     prisma.invoice.findMany.mockResolvedValue([
       {
