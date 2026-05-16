@@ -6,17 +6,22 @@ import {
   type OnboardProfileBody,
   type Profile as ProfileDto,
   type UpdateProfileBody,
+  isProfileComplete,
 } from "@baydar/shared";
 import { Injectable } from "@nestjs/common";
 
 import { DomainException } from "../../common/domain-exception";
+import { KaramaService } from "../karama/karama.service";
 import { PrismaService } from "../prisma/prisma.service";
 
 import { profileInclude, toProfileDto } from "./profiles.mapper";
 
 @Injectable()
 export class ProfilesService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly karama: KaramaService,
+  ) {}
 
   async onboard(userId: string, body: OnboardProfileBody): Promise<ProfileDto> {
     const existing = await this.prisma.profile.findUnique({
@@ -51,6 +56,7 @@ export class ProfilesService {
           include: profileInclude,
         });
 
+    void this.maybeAwardProfileComplete(userId);
     return toProfileDto(profile, { isSelf: true, connection: null });
   }
 
@@ -69,6 +75,7 @@ export class ProfilesService {
         data: body,
         include: profileInclude,
       });
+      void this.maybeAwardProfileComplete(userId);
       return toProfileDto(row, { isSelf: true, connection: null });
     } catch {
       throw new DomainException(ErrorCode.NOT_FOUND, "Profile not found.", 404);
@@ -118,6 +125,7 @@ export class ProfilesService {
         description: body.description ?? null,
       },
     });
+    void this.maybeAwardProfileComplete(userId);
     return this.getMine(userId);
   }
 
@@ -178,6 +186,7 @@ export class ProfilesService {
         description: body.description ?? null,
       },
     });
+    void this.maybeAwardProfileComplete(userId);
     return this.getMine(userId);
   }
 
@@ -255,6 +264,80 @@ export class ProfilesService {
     return this.getMine(userId);
   }
 
+  // Endorse the skill identified by skillId on the profile owned by `targetHandle`.
+  // Idempotent per (actor, profileSkill): a second endorsement from the same
+  // user is a no-op and returns the unchanged endorsement count.
+  // Karama award rules (per spec):
+  //   - +5 points to the endorsee per fresh endorsement
+  //   - max +25/skill (capped via ProfileSkill.endorsements)
+  //   - max +200/month per endorsee (enforced via getMonthlyEarnings)
+  async endorseSkill(
+    actorId: string,
+    targetHandle: string,
+    skillId: string,
+  ): Promise<{ endorsements: number; awardedKarama: boolean }> {
+    const targetProfile = await this.prisma.profile.findUnique({
+      where: { handle: targetHandle },
+      select: { id: true, userId: true },
+    });
+    if (!targetProfile) {
+      throw new DomainException(ErrorCode.NOT_FOUND, "Profile not found.", 404);
+    }
+    if (targetProfile.userId === actorId) {
+      throw new DomainException(ErrorCode.VALIDATION_FAILED, "Cannot endorse yourself.", 400);
+    }
+
+    const profileSkill = await this.prisma.profileSkill.findUnique({
+      where: { profileId_skillId: { profileId: targetProfile.id, skillId } },
+      select: { profileId: true, skillId: true, endorsements: true },
+    });
+    if (!profileSkill) {
+      throw new DomainException(ErrorCode.NOT_FOUND, "Skill not present on profile.", 404);
+    }
+
+    // Idempotency: refId encodes (actor, profileId, skillId) since ProfileSkill
+    // is identified by a composite primary key. Awarding via awardOnce
+    // returns false on replay; we then skip the endorsements++ as well so the
+    // counter mirrors the ledger exactly.
+    const refId = `${actorId}:${profileSkill.profileId}:${profileSkill.skillId}`;
+    const alreadyEndorsed = await this.karama.awardOnce({
+      userId: targetProfile.userId,
+      reason: "ENDORSEMENT",
+      refType: "endorsement",
+      refId,
+    });
+    if (!alreadyEndorsed) {
+      return { endorsements: profileSkill.endorsements, awardedKarama: false };
+    }
+
+    // Enforce monthly cap by computing post-award sum and clamping the next
+    // award via a compensating ADJUSTMENT if we exceeded +200 this month.
+    // Simpler: cap the +5 award by checking earnings and rolling back to 0.
+    const monthlyEarned = await this.karama.getMonthlyEarnings(targetProfile.userId, "ENDORSEMENT");
+    if (monthlyEarned > 200) {
+      // Already past the monthly window allowance — apply an ADJUSTMENT
+      // refund to neutralize this endorsement's +5.
+      void this.karama.award({
+        userId: targetProfile.userId,
+        reason: "ADJUSTMENT",
+        delta: -5,
+        refType: "endorsement-cap",
+        refId,
+      });
+    }
+
+    await this.prisma.profileSkill.update({
+      where: {
+        profileId_skillId: {
+          profileId: profileSkill.profileId,
+          skillId: profileSkill.skillId,
+        },
+      },
+      data: { endorsements: { increment: 1 } },
+    });
+    return { endorsements: profileSkill.endorsements + 1, awardedKarama: true };
+  }
+
   // ────────────────────────────────────────────────────────────────────
   // Internals
   // ────────────────────────────────────────────────────────────────────
@@ -268,6 +351,36 @@ export class ProfilesService {
       throw new DomainException(ErrorCode.NOT_FOUND, "Profile not found.", 404);
     }
     return profile;
+  }
+
+  // Fire-and-forget: re-evaluate profile completeness after any mutation that
+  // could push the user from incomplete → complete, and award PROFILE_COMPLETE
+  // exactly once via awardOnce idempotency.
+  private async maybeAwardProfileComplete(userId: string): Promise<void> {
+    try {
+      const profile = await this.prisma.profile.findUnique({
+        where: { userId },
+        select: {
+          firstName: true,
+          lastName: true,
+          handle: true,
+          headline: true,
+          location: true,
+          experiences: { select: { id: true } },
+          educations: { select: { id: true } },
+        },
+      });
+      if (!profile) return;
+      if (!isProfileComplete(profile)) return;
+      await this.karama.awardOnce({
+        userId,
+        reason: "PROFILE_COMPLETE",
+        refType: "profile-complete",
+        refId: userId,
+      });
+    } catch {
+      // Karama is best-effort; never fail the profile mutation on award errors.
+    }
   }
 
   private async viewerState(

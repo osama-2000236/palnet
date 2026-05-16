@@ -9,6 +9,11 @@ export default function SettingsLandingPage(): JSX.Element {
   const locale = useLocale();
   const items = [
     {
+      href: `/${locale}/me/karama`,
+      label: "Karama Points",
+      desc: "Balance, ledger, and reputation rewards.",
+    },
+    {
       href: `/${locale}/settings/account`,
       label: t("items.account"),
       desc: t("items.accountDesc"),

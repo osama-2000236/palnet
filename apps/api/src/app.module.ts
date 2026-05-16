@@ -7,8 +7,13 @@ import { LoggerModule } from "nestjs-pino";
 import { AllExceptionsFilter } from "./common/exception.filter";
 import { loadEnv } from "./config/env";
 import { AccountModule } from "./modules/account/account.module";
+import { AdminInternalModule } from "./modules/admin/admin-internal.module";
 import { AuthModule } from "./modules/auth/auth.module";
+import { BillingModule } from "./modules/billing/billing.module";
 import { CommentsModule } from "./modules/comments/comments.module";
+import { CompaniesModule } from "./modules/companies/companies.module";
+import { KaramaModule } from "./modules/karama/karama.module";
+import { RatingsModule } from "./modules/ratings/ratings.module";
 import { ConnectionsModule } from "./modules/connections/connections.module";
 import { FeedModule } from "./modules/feed/feed.module";
 import { HealthModule } from "./modules/health/health.module";
@@ -62,7 +67,12 @@ const defaultThrottleLimit =
     MessagingModule,
     NotificationsModule,
     JobsModule,
+    BillingModule,
+    CompaniesModule,
+    KaramaModule,
+    RatingsModule,
     AccountModule,
+    AdminInternalModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },

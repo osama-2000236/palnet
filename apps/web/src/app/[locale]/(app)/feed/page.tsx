@@ -18,7 +18,7 @@ import {
   Profile,
   cursorPage,
 } from "@baydar/shared";
-import { Avatar, Icon, PostCardSkeleton, Surface } from "@baydar/ui-web";
+import { Avatar, EmptyState, Icon, PostCardSkeleton, Surface } from "@baydar/ui-web";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
@@ -119,7 +119,7 @@ export default function FeedPageRoute(): JSX.Element {
   }, [router, load]);
 
   return (
-    <main className="mx-auto grid w-full max-w-[1128px] grid-cols-1 items-start gap-6 px-4 py-6 lg:grid-cols-[225px_minmax(0,1fr)_300px] lg:gap-6 lg:px-6">
+    <main className="mx-auto grid w-full max-w-[1128px] grid-cols-1 items-start gap-6 px-4 py-6 lg:grid-cols-[225px_minmax(0,1fr)] lg:gap-6 lg:px-6 xl:grid-cols-[225px_minmax(0,1fr)_300px]">
       <h1 className="sr-only">{t("title")}</h1>
       <LeftRail me={me} />
 
@@ -246,7 +246,7 @@ function RightRail({
   const t = useTranslations("feed.rail");
   const tJobs = useTranslations("jobs");
   return (
-    <aside aria-label={t("pymk")} className="hidden flex-col gap-3 lg:sticky lg:top-20 lg:flex">
+    <aside aria-label={t("pymk")} className="hidden flex-col gap-3 xl:sticky xl:top-20 xl:flex">
       <Surface variant="card" padding="0">
         <div className="flex items-center justify-between px-4 pt-3">
           <span className="text-ink text-sm font-semibold">{t("pymk")}</span>
@@ -360,12 +360,8 @@ function RightRail({
 
 function FeedEmpty({ title, desc }: { title: string; desc: string }): JSX.Element {
   return (
-    <Surface variant="tinted" padding="6" className="flex flex-col items-center gap-2 text-center">
-      <span className="bg-brand-50 text-brand-700 inline-flex h-10 w-10 items-center justify-center rounded-full">
-        <Icon name="home" size={20} />
-      </span>
-      <h2 className="text-ink text-base font-semibold">{title}</h2>
-      <p className="text-ink-muted max-w-md text-sm">{desc}</p>
+    <Surface variant="card" padding="0">
+      <EmptyState motif="feed" title={title} body={desc} />
     </Surface>
   );
 }

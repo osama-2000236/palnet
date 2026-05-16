@@ -61,6 +61,7 @@ function buildGuard(authTokens: Partial<AuthTokensService>): JwtAuthGuard {
     new Reflector(),
     { getOrThrow: jest.fn() } as unknown as ConfigService<Env, true>,
     authTokens as AuthTokensService,
+    { touch: jest.fn() } as unknown as import("../auth/last-seen.tracker").LastSeenTracker,
   );
 }
 

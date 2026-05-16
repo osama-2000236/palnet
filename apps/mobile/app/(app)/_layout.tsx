@@ -277,10 +277,14 @@ export default function AppTabsLayout(): JSX.Element {
       <Tabs.Screen name="jobs/index" options={{ href: null }} />
       <Tabs.Screen name="composer" options={{ href: null }} />
       <Tabs.Screen name="search" options={{ href: null }} />
+      <Tabs.Screen name="me/karama/index" options={{ href: null }} />
       <Tabs.Screen name="me/edit" options={{ href: null }} />
       <Tabs.Screen name="settings/blocked" options={{ href: null }} />
       <Tabs.Screen name="in/[handle]" options={{ href: null }} />
       <Tabs.Screen name="jobs/[id]" options={{ href: null }} />
+      <Tabs.Screen name="employer/index" options={{ href: null }} />
+      <Tabs.Screen name="employer/[slug]/index" options={{ href: null }} />
+      <Tabs.Screen name="employer/[slug]/[jobId]" options={{ href: null }} />
       <Tabs.Screen name="messages/new" options={{ href: null }} />
       <Tabs.Screen
         name="messages/[roomId]"

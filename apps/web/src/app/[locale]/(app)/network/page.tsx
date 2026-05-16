@@ -4,7 +4,7 @@ import {
   ConnectionListItem as ConnectionListItemSchema,
   type ConnectionListItem,
 } from "@baydar/shared";
-import { Avatar, Surface } from "@baydar/ui-web";
+import { Avatar, EmptyState, Surface } from "@baydar/ui-web";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
@@ -117,8 +117,18 @@ export default function NetworkRoute(): JSX.Element {
           <ConnectionRowSkeleton />
         </ul>
       ) : items.length === 0 ? (
-        <Surface variant="flat" padding="6" className="text-ink-muted">
-          {t("empty")}
+        <Surface variant="card" padding="0">
+          <EmptyState
+            motif="network"
+            title={
+              filter === "INCOMING"
+                ? t("invitations")
+                : filter === "OUTGOING"
+                  ? t("sent")
+                  : t("myConnections")
+            }
+            body={t("empty")}
+          />
         </Surface>
       ) : (
         <ul className="flex flex-col gap-3">

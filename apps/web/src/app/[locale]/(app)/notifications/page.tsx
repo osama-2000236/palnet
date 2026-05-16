@@ -8,7 +8,7 @@ import {
   WsNotificationEvent,
   type Notification,
 } from "@baydar/shared";
-import { Avatar, Surface, useToast } from "@baydar/ui-web";
+import { Avatar, EmptyState, Surface, useToast } from "@baydar/ui-web";
 import { Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -191,16 +191,8 @@ export default function NotificationsPageRoute(): JSX.Element {
           <p className="text-ink-muted text-sm">{error}</p>
         </Surface>
       ) : items.length === 0 ? (
-        <Surface variant="tinted" padding="8">
-          <div className="mx-auto max-w-sm text-center">
-            <div
-              aria-hidden="true"
-              className="bg-brand-50 text-brand-700 mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full text-lg"
-            >
-              ✓
-            </div>
-            <p className="text-ink text-sm font-semibold">{t("empty")}</p>
-          </div>
+        <Surface variant="card" padding="0">
+          <EmptyState motif="notifications" title={t("empty")} />
         </Surface>
       ) : (
         <ul className="flex flex-col gap-2">

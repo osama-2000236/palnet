@@ -83,7 +83,11 @@ describe("AuthTokensService", () => {
   });
 
   it("issues a verify email token as a hash and queues mail", async () => {
-    prisma.user.findUnique.mockResolvedValue({ id: "user-1", email: "demo@baydar.ps" });
+    prisma.user.findUnique.mockResolvedValue({
+      id: "user-1",
+      email: "demo@baydar.ps",
+      locale: "ar-PS",
+    });
     prisma.emailVerificationToken.create.mockResolvedValue({});
 
     await service.issueVerifyEmail("user-1", {
@@ -103,9 +107,14 @@ describe("AuthTokensService", () => {
     const url = mail.send.mock.calls[0][2].url as string;
     const plain = url.split("/").pop() ?? "";
     expect(hashToken(plain)).toBe(tokenHash);
-    expect(mail.send).toHaveBeenCalledWith("verify-email", "demo@baydar.ps", {
-      url: expect.stringContaining("/auth/verify-email/"),
-    });
+    expect(mail.send).toHaveBeenCalledWith(
+      "verify-email",
+      "demo@baydar.ps",
+      expect.objectContaining({
+        url: expect.stringContaining("/auth/verify-email/"),
+        locale: "ar-PS",
+      }),
+    );
   });
 
   it("consumes a verify token once and marks the user verified", async () => {

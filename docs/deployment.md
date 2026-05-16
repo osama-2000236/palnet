@@ -25,20 +25,28 @@ SSE is the active realtime transport for current app flows.
 - `JWT_ACCESS_SECRET`
 - `JWT_REFRESH_SECRET`
 - `CORS_ORIGINS`
+- `INTERNAL_CRON_TOKEN`
+- `RESEND_API_KEY`, `MAIL_FROM`, `MAIL_REPLY_TO`, `BAYDAR_WEB_URL`
 - `R2_*`
+- `CLAMAV_SCAN_URL`, `CLOUDFLARE_IMAGES_SCAN_URL`
+- `HYPERPAY_ENTITY_ID`, `HYPERPAY_ACCESS_TOKEN`, `HYPERPAY_WEBHOOK_SECRET`
+- `BANK_TRANSFER_IBAN`, `BANK_TRANSFER_BENEFICIARY`
+- `SENTRY_DSN`, `SENTRY_RELEASE`
 - Expo push and observability keys where enabled
 
 ### Web
 
 - `NEXT_PUBLIC_API_URL`
 - `NEXT_PUBLIC_DEFAULT_LOCALE`
-- Sentry/PostHog public keys where enabled
+- `NEXT_PUBLIC_SENTRY_DSN`, `NEXT_PUBLIC_SENTRY_RELEASE`
+- PostHog public keys where enabled
 
 ### Mobile
 
 - `EXPO_PUBLIC_API_URL`
 - `EXPO_PUBLIC_DEFAULT_LOCALE`
 - `EXPO_PUBLIC_SENTRY_DSN`
+- `EXPO_PUBLIC_SENTRY_RELEASE`
 - `EXPO_PUBLIC_POSTHOG_KEY`
 - `EXPO_PUBLIC_POSTHOG_HOST`
 
@@ -59,6 +67,18 @@ SSE is the active realtime transport for current app flows.
 - Start: `pnpm --filter @baydar/api start`
 - Health: `/api/v1/health`
 
+### Render Cron Jobs
+
+Use the same `INTERNAL_CRON_TOKEN` as the API service and send it as `X-Internal-Token`.
+
+```powershell
+curl -X POST $API_URL/admin/internal/account-retention/run -H "X-Internal-Token: $INTERNAL_CRON_TOKEN"
+curl -X POST $API_URL/admin/internal/karama-decay/run -H "X-Internal-Token: $INTERNAL_CRON_TOKEN"
+curl -X POST $API_URL/admin/internal/media/scan -H "X-Internal-Token: $INTERNAL_CRON_TOKEN" -H "Content-Type: application/json" -d '{"key":"post_media/u_1/example.png","publicUrl":"https://media.baydar.ps/post_media/u_1/example.png","kind":"IMAGE","mimeType":"image/png"}'
+```
+
+For a no-write Karama preview, post JSON `{"dryRun":true}` to `/admin/internal/karama-decay/run`.
+
 ### Vercel Web
 
 - Root directory: `apps/web`.
@@ -76,6 +96,7 @@ SSE is the active realtime transport for current app flows.
 - Private buckets for media.
 - Public reads should go through the approved media domain.
 - API mints signed PUT URLs only after MIME and size validation.
+- Post-upload scanner calls `POST /admin/internal/media/scan`; ClamAV and Cloudflare Images adapters decide `READY`, `BLOCKED`, or `REVIEW_REQUIRED`.
 
 ## CI/CD Gate
 

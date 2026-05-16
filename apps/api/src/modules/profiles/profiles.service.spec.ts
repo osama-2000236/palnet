@@ -2,9 +2,16 @@ import { ErrorCode, JobLocationMode } from "@baydar/shared";
 import { Test } from "@nestjs/testing";
 
 import type { DomainException } from "../../common/domain-exception";
+import { KaramaService } from "../karama/karama.service";
 import { PrismaService } from "../prisma/prisma.service";
 
 import { ProfilesService } from "./profiles.service";
+
+const karamaStub = {
+  award: jest.fn(),
+  awardOnce: jest.fn().mockResolvedValue(true),
+  getMonthlyEarnings: jest.fn().mockResolvedValue(0),
+} as unknown as KaramaService;
 
 type PrismaStub = {
   profile: { create: jest.Mock; findUnique: jest.Mock; update: jest.Mock };
@@ -84,7 +91,11 @@ describe("ProfilesService (edit)", () => {
       return null;
     });
     const moduleRef = await Test.createTestingModule({
-      providers: [ProfilesService, { provide: PrismaService, useValue: prisma }],
+      providers: [
+        ProfilesService,
+        { provide: PrismaService, useValue: prisma },
+        { provide: KaramaService, useValue: karamaStub },
+      ],
     }).compile();
     service = moduleRef.get(ProfilesService);
   });
