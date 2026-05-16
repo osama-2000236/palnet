@@ -9,7 +9,7 @@ import {
   type SearchPersonHit,
   type SearchPostHit,
 } from "@baydar/shared";
-import { Avatar, EmptyState, Surface } from "@baydar/ui-web";
+import { Avatar, EmptyState, RetryChip, Surface } from "@baydar/ui-web";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -71,7 +71,6 @@ function SearchInner(): JSX.Element {
         typeof window === "undefined"
           ? "/search"
           : `${window.location.pathname}${window.location.search}`;
-      setError(null);
       try {
         return await fetchSearchPage(type, term, requestAfter);
       } catch (e) {
@@ -88,16 +87,19 @@ function SearchInner(): JSX.Element {
           router.replace(`/${locale}/onboarding?return=${encodeURIComponent(returnPath)}`);
           return emptySearchPage();
         }
-        setError(toErrorMessage(e, tErr));
-        return emptySearchPage();
+        // Re-throw so React Query's isError fires and the useEffect below
+        // sets a generic error message via t("errorBody").
+        throw e;
       }
     },
+    retry: false,
     staleTime: 30_000,
   });
 
   useEffect(() => {
     if (!query.data) return;
     const page = query.data;
+    setError(null);
     setHits((prev) => ({
       ...prev,
       [type]: requestAfter ? [...prev[type], ...page.data] : page.data,
@@ -105,6 +107,16 @@ function SearchInner(): JSX.Element {
     setCursors((prev) => ({ ...prev, [type]: page.meta.nextCursor }));
     setHasMore((prev) => ({ ...prev, [type]: page.meta.hasMore }));
   }, [query.data, requestAfter, type]);
+
+  useEffect(() => {
+    if (!query.isError) return;
+    setError(t("errorBody"));
+    if (!requestAfter) {
+      setHits((prev) => ({ ...prev, [type]: [] }));
+      setCursors((prev) => ({ ...prev, [type]: null }));
+      setHasMore((prev) => ({ ...prev, [type]: false }));
+    }
+  }, [query.isError, requestAfter, t, type]);
 
   const tabs = useMemo(
     () =>
@@ -132,17 +144,20 @@ function SearchInner(): JSX.Element {
     setCursors(emptyCursor);
     setHasMore(emptyMore);
     setRequestAfter(null);
+    setError(null);
     updateUrl(type, nextTerm);
   }
 
   function selectType(nextType: SearchType): void {
     setType(nextType);
     setRequestAfter(null);
+    setError(null);
     updateUrl(nextType, term);
   }
 
-  const loadingInitial = query.isFetching && hits[type].length === 0;
+  const loadingInitial = query.isFetching && hits[type].length === 0 && !error;
   const showPrompt = !term;
+  const showError = Boolean(error) && term.length > 0 && !query.isFetching;
 
   return (
     <main className="mx-auto flex w-full max-w-[840px] flex-col gap-4 px-6 py-8">
@@ -190,15 +205,19 @@ function SearchInner(): JSX.Element {
             </li>
           ))}
         </ul>
-      ) : error ? (
-        <Surface variant="flat" padding="6" className="text-ink-muted">
-          {error}
-        </Surface>
+      ) : showError && hits[type].length === 0 ? (
+        <SearchErrorState
+          title={t("errorTitle")}
+          body={error ?? t("errorBody")}
+          retryLabel={t("retry")}
+          onRetry={() => void query.refetch()}
+          loading={query.isFetching}
+        />
       ) : showPrompt ? (
         <Surface variant="card" padding="0">
           <EmptyState motif="search" title={t("noResults")} body={t("prompt")} />
         </Surface>
-      ) : hits[type].length === 0 ? (
+      ) : hits[type].length === 0 && !error ? (
         <Surface variant="card" padding="0">
           <EmptyState motif="search" title={t("noResults")} body={t(`empty.${type}`)} />
         </Surface>
@@ -219,6 +238,16 @@ function SearchInner(): JSX.Element {
         >
           {query.isFetching ? t("loadingMore") : t("loadMore")}
         </button>
+      ) : null}
+
+      {showError && hits[type].length > 0 ? (
+        <SearchErrorState
+          title={t("errorTitle")}
+          body={error ?? t("errorBody")}
+          retryLabel={t("retry")}
+          onRetry={() => void query.refetch()}
+          loading={query.isFetching}
+        />
       ) : null}
     </main>
   );
@@ -316,6 +345,28 @@ function JobRow({ item }: { item: SearchJobHit }): JSX.Element {
           </span>
         </div>
       </Link>
+    </Surface>
+  );
+}
+
+function SearchErrorState({
+  title,
+  body,
+  retryLabel,
+  onRetry,
+  loading,
+}: {
+  title: string;
+  body: string;
+  retryLabel: string;
+  onRetry: () => void;
+  loading: boolean;
+}): JSX.Element {
+  return (
+    <Surface variant="tinted" padding="6" className="flex flex-col items-start gap-2">
+      <h2 className="text-ink text-sm font-semibold">{title}</h2>
+      <p className="text-ink-muted text-sm">{body}</p>
+      <RetryChip onRetry={onRetry} label={retryLabel} loading={loading} />
     </Surface>
   );
 }

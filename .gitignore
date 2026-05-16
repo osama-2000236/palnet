@@ -69,6 +69,7 @@ packages/db/prisma/*.db-journal
 # Local agent / worktree scratch
 .claude/worktrees/
 .codex-run/
+.codex-live/
 .codex-logs/
 .artifacts/
 apps/Users/

@@ -9,11 +9,12 @@
 // logical corner properties yet, so we reverse the ends under RTL via
 // I18nManager.isRTL at render time.
 
-import { I18nManager, Pressable, Text, View } from "react-native";
 import type { ReactNode } from "react";
+import { I18nManager, Pressable, Text, View } from "react-native";
 
 import { Avatar, type AvatarUser } from "./Avatar";
 import { Icon } from "./Icon";
+import { RetryChip } from "./RetryChip";
 import { nativeTokens } from "./tokens";
 
 export type MessageStatus = "sending" | "sent" | "delivered" | "read" | "failed";
@@ -209,22 +210,21 @@ export function MessageBubble({
       ) : null}
 
       {status === "failed" ? (
-        <Pressable
-          onPress={onRetry}
-          accessibilityRole="button"
-          hitSlop={8}
-          style={{ marginTop: 2 }}
-        >
-          <Text
-            style={{
-              fontSize: 11,
-              color: nativeTokens.color.danger,
-              fontFamily: nativeTokens.type.family.sans,
-            }}
-          >
-            {labels.failedHint}
-          </Text>
-        </Pressable>
+        <View style={{ marginTop: 2 }}>
+          {onRetry ? (
+            <RetryChip onRetry={onRetry} label={labels.failedHint} inline />
+          ) : (
+            <Text
+              style={{
+                fontSize: 11,
+                color: nativeTokens.color.danger,
+                fontFamily: nativeTokens.type.family.sans,
+              }}
+            >
+              {labels.failedHint}
+            </Text>
+          )}
+        </View>
       ) : null}
     </View>
   );

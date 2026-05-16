@@ -16,6 +16,7 @@ import type { ReactNode } from "react";
 import { Avatar, type AvatarUser } from "./Avatar";
 import { cx } from "./cx";
 import { Icon } from "./Icon";
+import { RetryChip } from "./RetryChip";
 
 /** Outgoing message delivery state. Used only on `side="mine"`. */
 export type MessageStatus = "sending" | "sent" | "delivered" | "read" | "failed";
@@ -135,13 +136,13 @@ export function MessageBubble({
       ) : null}
 
       {status === "failed" ? (
-        <button
-          type="button"
-          onClick={onRetry}
-          className="text-danger focus-visible:ring-danger mt-0.5 text-[11px] hover:underline focus:outline-none focus-visible:ring-2"
-        >
-          {labels.failedHint}
-        </button>
+        <div className="mt-0.5">
+          {onRetry ? (
+            <RetryChip onRetry={onRetry} label={labels.failedHint} inline />
+          ) : (
+            <span className="text-danger text-[11px]">{labels.failedHint}</span>
+          )}
+        </div>
       ) : null}
     </li>
   );
