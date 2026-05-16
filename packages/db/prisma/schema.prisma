@@ -183,6 +183,7 @@ model User {
   updatedAt      DateTime  @updatedAt
   deletedAt      DateTime?
   pendingDeletionSnapshot Json?
+  notificationPreferences Json?
 
   profile                 Profile?
   refreshTokens           RefreshToken[]

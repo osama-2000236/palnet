@@ -1,7 +1,7 @@
 "use client";
 
 import { OnboardProfileBody, Profile } from "@baydar/shared";
-import { OnboardingProgress, Surface } from "@baydar/ui-web";
+import { Banner, OnboardingProgress, Surface } from "@baydar/ui-web";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
@@ -25,6 +25,11 @@ export default function OnboardingPage(): JSX.Element {
   });
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+
+  function updateField(field: keyof typeof state, value: string): void {
+    setState((prev) => ({ ...prev, [field]: value }));
+    setError(null);
+  }
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>): Promise<void> {
     e.preventDefault();
@@ -89,7 +94,7 @@ export default function OnboardingPage(): JSX.Element {
           <input
             className="border-ink-muted/30 rounded-md border px-3 py-2"
             value={state.firstName}
-            onChange={(e) => setState({ ...state, firstName: e.target.value })}
+            onChange={(e) => updateField("firstName", e.target.value)}
             required
           />
         </label>
@@ -99,7 +104,7 @@ export default function OnboardingPage(): JSX.Element {
           <input
             className="border-ink-muted/30 rounded-md border px-3 py-2"
             value={state.lastName}
-            onChange={(e) => setState({ ...state, lastName: e.target.value })}
+            onChange={(e) => updateField("lastName", e.target.value)}
             required
           />
         </label>
@@ -110,7 +115,7 @@ export default function OnboardingPage(): JSX.Element {
             dir="ltr"
             className="border-ink-muted/30 rounded-md border px-3 py-2"
             value={state.handle}
-            onChange={(e) => setState({ ...state, handle: e.target.value.toLowerCase() })}
+            onChange={(e) => updateField("handle", e.target.value.toLowerCase())}
             required
             pattern="[a-z0-9][a-z0-9-]+[a-z0-9]"
             minLength={3}
@@ -126,7 +131,7 @@ export default function OnboardingPage(): JSX.Element {
           <input
             className="border-ink-muted/30 rounded-md border px-3 py-2"
             value={state.headline}
-            onChange={(e) => setState({ ...state, headline: e.target.value })}
+            onChange={(e) => updateField("headline", e.target.value)}
             maxLength={220}
           />
         </label>
@@ -136,15 +141,15 @@ export default function OnboardingPage(): JSX.Element {
           <input
             className="border-ink-muted/30 rounded-md border px-3 py-2"
             value={state.location}
-            onChange={(e) => setState({ ...state, location: e.target.value })}
+            onChange={(e) => updateField("location", e.target.value)}
             maxLength={120}
           />
         </label>
 
         {error ? (
-          <p role="alert" className="text-danger text-sm">
+          <Banner kind="danger" live="polite">
             {error}
-          </p>
+          </Banner>
         ) : null}
 
         <button

@@ -7,6 +7,8 @@ import { DevicesService } from "./devices.service";
 import { NotificationsBus } from "./notifications.bus";
 import { NotificationsController } from "./notifications.controller";
 import { NotificationsService } from "./notifications.service";
+import { NotificationPreferencesController } from "./preferences.controller";
+import { NotificationPreferencesService } from "./preferences.service";
 import { PushService } from "./push.service";
 
 // Global so domain modules (reactions, comments, connections, messaging) can
@@ -14,8 +16,14 @@ import { PushService } from "./push.service";
 @Global()
 @Module({
   imports: [SafetyModule],
-  controllers: [NotificationsController, DevicesController],
-  providers: [NotificationsService, NotificationsBus, DevicesService, PushService],
-  exports: [NotificationsService, NotificationsBus, PushService],
+  controllers: [NotificationsController, DevicesController, NotificationPreferencesController],
+  providers: [
+    NotificationsService,
+    NotificationsBus,
+    DevicesService,
+    PushService,
+    NotificationPreferencesService,
+  ],
+  exports: [NotificationsService, NotificationsBus, PushService, NotificationPreferencesService],
 })
 export class NotificationsModule {}

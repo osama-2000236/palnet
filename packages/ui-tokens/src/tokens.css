@@ -45,6 +45,38 @@
   --danger:  #a83232;
   --info:    #2f6d8a;
 
+  /* Semantic soft (tinted backgrounds for badges, banners, dead-end pills) */
+  --success-soft: rgba(59, 122, 59, 0.10);
+  --warning-soft: rgba(176, 122, 26, 0.10);
+  --danger-soft:  rgba(168, 50, 50, 0.08);
+  --info-soft:    rgba(47, 109, 138, 0.08);
+  --scrim:         rgba(26, 26, 23, 0.40);
+
+  /* Spacing scale — px values match Tailwind preset. */
+  --space-0:  0;
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  20px;
+  --space-6:  24px;
+  --space-8:  32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-24: 96px;
+
+  /* Focus ring (single source) */
+  --focus-ring:        0 0 0 2px var(--brand-500);
+  --focus-ring-offset: 2px;
+
+  /* Avatar palettes — Avatar.tsx no longer owns these in TS. */
+  --avatar-palette-1-bg: #e6ebd6; --avatar-palette-1-fg: #2e371d;
+  --avatar-palette-2-bg: #f4dbce; --avatar-palette-2-fg: #8b3a22;
+  --avatar-palette-3-bg: #ebe8dc; --avatar-palette-3-fg: #5c5a52;
+  --avatar-palette-4-bg: #ccd6a8; --avatar-palette-4-fg: #3f4a26;
+  --avatar-palette-5-bg: #f4f6ef; --avatar-palette-5-fg: #687a3a;
+
   /* Radius */
   --radius-xs: 4px;
   --radius-sm: 6px;
@@ -54,8 +86,10 @@
   --radius-full: 9999px;
 
   /* Shadow */
-  --shadow-card: 0 1px 2px rgba(26,26,23,0.04), 0 1px 3px rgba(26,26,23,0.05);
-  --shadow-pop:  0 10px 28px rgba(26,26,23,0.12);
+  --shadow-card:  0 1px 2px rgba(26,26,23,0.04), 0 1px 3px rgba(26,26,23,0.05);
+  --shadow-pop:   0 10px 28px rgba(26,26,23,0.12);
+  --shadow-nav:   0 1px 0 rgba(26,26,23,0.06);
+  --shadow-modal: 0 24px 60px rgba(26,26,23,0.20), 0 4px 12px rgba(26,26,23,0.08);
 
   /* Type */
   --font-sans: "IBM Plex Sans Arabic", "IBM Plex Sans", system-ui, sans-serif;
@@ -85,6 +119,7 @@
   --illus-tint-sunken: var(--surface-sunken);
 
   /* Named breakpoints. Right rail is xl-only. */
+  --bp-sm: 640px;
   --bp-md: 768px;
   --bp-lg: 1024px;
   --bp-xl: 1280px;
