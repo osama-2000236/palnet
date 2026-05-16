@@ -74,12 +74,14 @@ export default function AppLayout({ children }: { children: ReactNode }): JSX.El
   const tSearch = useTranslations("search");
   const tMsg = useTranslations("messaging");
   const tNotif = useTranslations("notifications");
+  const tBell = useTranslations("chrome.bell");
   const tProfile = useTranslations("profile");
   const tAuth = useTranslations("auth");
 
   const [token, setToken] = useState<string | null>(null);
   const [me, setMe] = useState<Profile | null>(null);
   const [notificationsUnread, setNotificationsUnread] = useState(0);
+  const [notificationsConnectionDropped, setNotificationsConnectionDropped] = useState(false);
   const [messagesUnread, setMessagesUnread] = useState(0);
 
   // Session bootstrap — redirect to /login if missing.
@@ -116,6 +118,7 @@ export default function AppLayout({ children }: { children: ReactNode }): JSX.El
       .catch(() => {});
     let es: EventSource | null = null;
     let cancelled = false;
+    setNotificationsConnectionDropped(false);
     void openStream("notifications", token)
       .then((source) => {
         if (cancelled) {
@@ -123,7 +126,14 @@ export default function AppLayout({ children }: { children: ReactNode }): JSX.El
           return;
         }
         es = source;
+        source.onopen = (): void => {
+          setNotificationsConnectionDropped(false);
+        };
+        source.onerror = (): void => {
+          setNotificationsConnectionDropped(true);
+        };
         source.onmessage = (evt): void => {
+          setNotificationsConnectionDropped(false);
           try {
             const parsed = WsNotificationEvent.safeParse(JSON.parse(evt.data));
             if (!parsed.success) return;
@@ -138,7 +148,7 @@ export default function AppLayout({ children }: { children: ReactNode }): JSX.El
           }
         };
       })
-      .catch(() => {});
+      .catch(() => setNotificationsConnectionDropped(true));
     return (): void => {
       cancelled = true;
       es?.close();
@@ -307,8 +317,9 @@ export default function AppLayout({ children }: { children: ReactNode }): JSX.El
         messages: tNav("unreadMessages", { count: "{count}" }),
         notifications: tNav("unreadNotifications", { count: "{count}" }),
       },
+      bellDisconnected: tBell("disconnected"),
     }),
-    [tCommon, tNav, tFeed, tNetwork, tMsg, tNotif, tSearch, tProfile, tAuth],
+    [tCommon, tNav, tFeed, tNetwork, tMsg, tNotif, tSearch, tBell, tProfile, tAuth],
   );
 
   const meUser = me
@@ -330,6 +341,7 @@ export default function AppLayout({ children }: { children: ReactNode }): JSX.El
       labels={labels}
       messagesUnread={messagesUnread}
       notificationsUnread={notificationsUnread}
+      notificationsConnectionDropped={notificationsConnectionDropped}
       searchValue={searchValue}
       onSearchChange={onSearchChange}
       onSearchSubmit={onSearchSubmit}

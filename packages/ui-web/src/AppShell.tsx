@@ -60,6 +60,8 @@ export interface AppShellLabels {
    * formatted number (e.g. "3 رسائل غير مقروءة"). Keep it short.
    */
   unreadTemplate: Record<Exclude<AppShellRoute, "profile" | "feed" | "network" | "jobs">, string>;
+  /** Tooltip/screen-reader text when the notifications SSE stream disconnects. */
+  bellDisconnected: string;
 }
 
 export interface AppShellProps {
@@ -81,6 +83,7 @@ export interface AppShellProps {
   /** Unread counts. Undefined means "don't show a badge". */
   messagesUnread?: number;
   notificationsUnread?: number;
+  notificationsConnectionDropped?: boolean;
 
   /** Controlled search value. If omitted, input is uncontrolled. */
   searchValue?: string;
@@ -127,6 +130,7 @@ export function AppShell({
   labels,
   messagesUnread,
   notificationsUnread,
+  notificationsConnectionDropped = false,
   searchValue,
   onSearchChange,
   onSearchSubmit,
@@ -311,6 +315,7 @@ export function AppShell({
                       String(count),
                     )
                   : undefined;
+              const disconnected = item.key === "notifications" && notificationsConnectionDropped;
 
               return (
                 <button
@@ -319,6 +324,7 @@ export function AppShell({
                   data-nav-item
                   onClick={() => onNavigate(item.key)}
                   aria-current={active ? "page" : undefined}
+                  title={disconnected ? labels.bellDisconnected : undefined}
                   className={cx(
                     "focus-visible:ring-brand-600 focus-visible:ring-offset-surface relative -mb-px inline-flex min-w-[64px] flex-col items-center gap-0.5 border-b-2 px-3 py-2 text-[11px] font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
                     active
@@ -336,7 +342,16 @@ export function AppShell({
                         {badgeText}
                       </span>
                     ) : null}
+                    {disconnected ? (
+                      <span
+                        aria-hidden="true"
+                        className="ring-surface absolute -bottom-0.5 h-2 w-2 rounded-full bg-[var(--warning-soft)] ring-2 ltr:-end-1 rtl:-start-1"
+                      />
+                    ) : null}
                     {srUnread ? <span className="sr-only">{srUnread}</span> : null}
+                    {disconnected ? (
+                      <span className="sr-only">{labels.bellDisconnected}</span>
+                    ) : null}
                   </span>
                   <span>{labels.nav[item.key]}</span>
                 </button>

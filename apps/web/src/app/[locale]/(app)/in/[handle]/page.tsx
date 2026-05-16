@@ -9,6 +9,7 @@ import {
 import {
   Avatar,
   BlockButton,
+  Button,
   ReportDialog,
   Surface,
   Tab,
@@ -18,13 +19,14 @@ import {
   type ReportDialogLabels,
 } from "@baydar/ui-web";
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
+import { notFound, useParams, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { ConnectButton } from "@/components/ConnectButton";
-import { apiFetch } from "@/lib/api";
+import { ApiRequestError, apiFetch } from "@/lib/api";
 import { useBlock, useReport, useUnblock } from "@/lib/api/safety";
+import { toErrorMessage } from "@/lib/error-message";
 import { getAccessToken } from "@/lib/session";
 
 type ProfileTab = "about" | "exp" | "edu" | "skills" | "activity";
@@ -34,12 +36,14 @@ export default function ProfileRoute(): JSX.Element {
   const handle = params?.handle;
   const t = useTranslations("profile");
   const tCommon = useTranslations("common");
+  const tErr = useTranslations("errors");
   const tMsg = useTranslations("messaging");
   const tSafety = useTranslations("safety");
   const { showToast } = useToast();
   const router = useRouter();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [missing, setMissing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [openingDm, setOpeningDm] = useState(false);
   const [tab, setTab] = useState<ProfileTab>("about");
@@ -48,16 +52,31 @@ export default function ProfileRoute(): JSX.Element {
   const unblock = useUnblock();
   const report = useReport();
 
-  useEffect(() => {
+  const loadProfile = useCallback((): void => {
     if (!handle) return;
     const token = getAccessToken() ?? undefined;
     setLoading(true);
     setError(null);
+    setMissing(false);
     apiFetch(`/profiles/${handle}`, ProfileSchema, { token })
       .then((p) => setProfile(p))
-      .catch(() => setError(t("notFound")))
+      .catch((caught: unknown) => {
+        if (caught instanceof ApiRequestError && caught.status === 404) {
+          setMissing(true);
+          return;
+        }
+        setError(toErrorMessage(caught, tErr));
+      })
       .finally(() => setLoading(false));
-  }, [handle, t]);
+  }, [handle, tErr]);
+
+  useEffect(() => {
+    loadProfile();
+  }, [loadProfile]);
+
+  if (missing) {
+    notFound();
+  }
 
   if (loading) {
     return (
@@ -70,9 +89,18 @@ export default function ProfileRoute(): JSX.Element {
 
   if (error || !profile) {
     return (
-      <main className="mx-auto max-w-[840px] px-6 py-10">
-        <h1 className="text-ink sr-only">{t("title")}</h1>
-        <p className="text-ink-muted">{error ?? t("notFound")}</p>
+      <main className="mx-auto flex max-w-[840px] flex-col px-6 py-10">
+        <Surface
+          variant="tinted"
+          padding="6"
+          className="flex flex-col items-center gap-3 text-center"
+        >
+          <h1 className="text-ink sr-only">{t("title")}</h1>
+          <p className="text-ink-muted text-sm">{error ?? tErr("fallback")}</p>
+          <Button variant="secondary" size="sm" onClick={loadProfile}>
+            {tCommon("retry")}
+          </Button>
+        </Surface>
       </main>
     );
   }

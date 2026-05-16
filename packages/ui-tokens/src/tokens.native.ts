@@ -41,6 +41,8 @@ export const nativeTokens = {
     danger: "#a83232",
     dangerSoft: "rgba(168, 50, 50, 0.10)",
     info: "#2f6d8a",
+    infoSoft: "rgba(47, 109, 138, 0.08)",
+    scrim: "rgba(26, 26, 23, 0.40)",
   },
   radius: { xs: 4, sm: 6, md: 10, lg: 14, xl: 20, full: 9999 },
   shadow: {

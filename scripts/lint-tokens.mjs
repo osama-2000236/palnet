@@ -64,7 +64,11 @@ const SKIP_FILE = (p) =>
   p.includes(`${sep}ui-tokens${sep}assets${sep}`) ||
   // PWA manifest cannot reference Tailwind classes — brand_color / theme_color
   // must be raw hex by spec. Treat as a sanctioned token consumer.
-  p.endsWith(`${sep}app${sep}manifest.ts`);
+  p.endsWith(`${sep}app${sep}manifest.ts`) ||
+  // global-error.tsx renders outside the locale layout's CSS shell, so it
+  // cannot use Tailwind utilities or CSS variables loaded by globals.css.
+  // Inline tokens here mirror canonical values from ui-tokens/tokens.css.
+  p.endsWith(`${sep}app${sep}global-error.tsx`);
 
 // ───────────────────────────────────────────────────────────────────────────
 

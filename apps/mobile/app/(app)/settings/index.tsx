@@ -19,6 +19,11 @@ export default function SettingsLandingScreen(): JSX.Element {
       desc: t("settings.items.accountDesc"),
     },
     {
+      href: "/settings/notifications",
+      label: t("settings.items.notifications"),
+      desc: t("settings.items.notificationsDesc"),
+    },
+    {
       href: "/settings/blocked",
       label: t("settings.items.blocked"),
       desc: t("settings.items.blockedDesc"),

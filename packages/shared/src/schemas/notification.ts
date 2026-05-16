@@ -42,6 +42,40 @@ export const RegisterDeviceTokenBody = z.object({
 });
 export type RegisterDeviceTokenBody = z.infer<typeof RegisterDeviceTokenBody>;
 
+// Notification preferences — per-event × per-channel opt-in matrix.
+// Surfaced at /settings/notifications. moderationAction is always-on (server
+// ignores client values for it).
+export const NotificationChannelPrefs = z.object({
+  email: z.boolean(),
+  push: z.boolean(),
+});
+export type NotificationChannelPrefs = z.infer<typeof NotificationChannelPrefs>;
+
+export const NotificationPreferences = z.object({
+  newConnection: NotificationChannelPrefs,
+  newMessage: NotificationChannelPrefs,
+  newComment: NotificationChannelPrefs,
+  newReaction: NotificationChannelPrefs,
+  jobMatch: NotificationChannelPrefs,
+  applicationStatus: NotificationChannelPrefs,
+  weeklyDigest: NotificationChannelPrefs,
+  karamaUpdate: NotificationChannelPrefs,
+  moderationAction: NotificationChannelPrefs,
+});
+export type NotificationPreferences = z.infer<typeof NotificationPreferences>;
+
+export const DEFAULT_NOTIFICATION_PREFERENCES: NotificationPreferences = {
+  newConnection: { email: true, push: true },
+  newMessage: { email: false, push: true },
+  newComment: { email: true, push: true },
+  newReaction: { email: false, push: true },
+  jobMatch: { email: true, push: false },
+  applicationStatus: { email: true, push: true },
+  weeklyDigest: { email: true, push: false },
+  karamaUpdate: { email: false, push: true },
+  moderationAction: { email: true, push: true },
+};
+
 // Server-sent event shapes for the /notifications/stream endpoint.
 export const WsNotificationEvent = z.discriminatedUnion("type", [
   z.object({ type: z.literal("notification.new"), payload: Notification }),

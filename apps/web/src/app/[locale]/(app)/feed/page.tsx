@@ -18,10 +18,18 @@ import {
   Profile,
   cursorPage,
 } from "@baydar/shared";
-import { Avatar, EmptyState, Icon, PostCardSkeleton, Surface } from "@baydar/ui-web";
+import {
+  Avatar,
+  Button,
+  EmptyState,
+  Icon,
+  PostCardSkeleton,
+  RetryChip,
+  Surface,
+} from "@baydar/ui-web";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 
 import { z } from "zod";
@@ -29,6 +37,7 @@ import { z } from "zod";
 import { Composer } from "@/components/Composer";
 import { PostCard } from "@/components/PostCard";
 import { apiFetch, apiFetchPage } from "@/lib/api";
+import { toErrorMessage } from "@/lib/error-message";
 import { getAccessToken, readSession } from "@/lib/session";
 
 const FeedPage = cursorPage(PostSchema);
@@ -36,36 +45,74 @@ const JobsSuggestionsPage = cursorPage(JobSchema);
 const SuggestionsEnvelope = z.object({
   data: z.array(PersonSuggestionSchema),
 });
+const ConnectionCountsEnvelope = z.object({
+  accepted: z.number().int().nonnegative(),
+  incoming: z.number().int().nonnegative(),
+  outgoing: z.number().int().nonnegative(),
+});
 
 export default function FeedPageRoute(): JSX.Element {
   const t = useTranslations("feed");
+  const tErr = useTranslations("errors");
   const router = useRouter();
   const [me, setMe] = useState<Profile | null>(null);
+  const [connectionCount, setConnectionCount] = useState<number | null>(null);
   const [suggestions, setSuggestions] = useState<PersonSuggestion[]>([]);
+  const [suggestionsError, setSuggestionsError] = useState(false);
   const [jobSuggestions, setJobSuggestions] = useState<Job[]>([]);
+  const [jobSuggestionsError, setJobSuggestionsError] = useState(false);
   const [posts, setPosts] = useState<Post[]>([]);
   const [cursor, setCursor] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(false);
   const [firstLoad, setFirstLoad] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const load = useCallback(async (after: string | null): Promise<void> => {
-    const token = getAccessToken();
-    if (!token) return;
-    setLoading(true);
-    try {
-      const qs = new URLSearchParams({ limit: "20" });
-      if (after) qs.set("after", after);
-      const page = await apiFetchPage(`/feed?${qs.toString()}`, FeedPage, {
-        token,
+  const load = useCallback(
+    async (after: string | null): Promise<void> => {
+      const token = getAccessToken();
+      if (!token) return;
+      setLoading(true);
+      if (!after) setError(null);
+      try {
+        const qs = new URLSearchParams({ limit: "20" });
+        if (after) qs.set("after", after);
+        const page = await apiFetchPage(`/feed?${qs.toString()}`, FeedPage, {
+          token,
+        });
+        setPosts((prev) => (after ? [...prev, ...page.data] : page.data));
+        setCursor(page.meta.nextCursor);
+        setHasMore(page.meta.hasMore);
+      } catch (e) {
+        if (!after) setError(toErrorMessage(e, tErr));
+      } finally {
+        setLoading(false);
+        if (!after) setFirstLoad(false);
+      }
+    },
+    [tErr],
+  );
+
+  const loadSuggestions = useCallback((token: string): void => {
+    setSuggestionsError(false);
+    void apiFetch("/connections/suggestions?limit=6", SuggestionsEnvelope, { token })
+      .then((out) => setSuggestions(out.data))
+      .catch(() => {
+        setSuggestions([]);
+        setSuggestionsError(true);
       });
-      setPosts((prev) => (after ? [...prev, ...page.data] : page.data));
-      setCursor(page.meta.nextCursor);
-      setHasMore(page.meta.hasMore);
-    } finally {
-      setLoading(false);
-      if (!after) setFirstLoad(false);
-    }
+  }, []);
+
+  const loadJobSuggestions = useCallback((token: string): void => {
+    setJobSuggestionsError(false);
+    // Right-rail jobs — top 3 newest active jobs. Not personalized yet; a
+    // real "suggested" endpoint that factors in skills + location is deferred.
+    void apiFetchPage("/jobs?limit=3", JobsSuggestionsPage, { token })
+      .then((page) => setJobSuggestions(page.data))
+      .catch(() => {
+        setJobSuggestions([]);
+        setJobSuggestionsError(true);
+      });
   }, []);
 
   useEffect(() => {
@@ -80,23 +127,20 @@ export default function FeedPageRoute(): JSX.Element {
       .then(setMe)
       .catch(() => {});
 
-    void apiFetch("/connections/suggestions?limit=6", SuggestionsEnvelope, { token })
-      .then((out) => setSuggestions(out.data))
-      .catch(() => setSuggestions([]));
+    void apiFetch("/connections/counts", ConnectionCountsEnvelope, { token })
+      .then((counts) => setConnectionCount(counts.accepted))
+      .catch(() => setConnectionCount(null));
 
-    // Right-rail jobs — top 3 newest active jobs. Not personalized yet; a
-    // real "suggested" endpoint that factors in skills + location is deferred.
-    void apiFetchPage("/jobs?limit=3", JobsSuggestionsPage, { token })
-      .then((page) => setJobSuggestions(page.data))
-      .catch(() => setJobSuggestions([]));
+    loadSuggestions(token);
+    loadJobSuggestions(token);
 
     void load(null);
-  }, [router, load]);
+  }, [router, load, loadSuggestions, loadJobSuggestions]);
 
   return (
     <main className="mx-auto grid w-full max-w-[1128px] grid-cols-1 items-start gap-6 px-4 py-6 lg:grid-cols-[225px_minmax(0,1fr)] lg:gap-6 lg:px-6 xl:grid-cols-[225px_minmax(0,1fr)_300px]">
       <h1 className="sr-only">{t("title")}</h1>
-      <LeftRail me={me} />
+      <LeftRail me={me} connectionCount={connectionCount} />
 
       <div className="flex min-w-0 flex-col gap-3">
         <Composer me={me} onPosted={(p) => setPosts((prev) => [p, ...prev])} />
@@ -107,6 +151,8 @@ export default function FeedPageRoute(): JSX.Element {
             <PostCardSkeleton />
             <PostCardSkeleton />
           </>
+        ) : error && posts.length === 0 ? (
+          <FeedErrorState message={error} onRetry={() => void load(null)} loading={loading} />
         ) : posts.length === 0 ? (
           <FeedEmpty title={t("emptyTitle")} desc={t("emptyDesc")} />
         ) : (
@@ -136,7 +182,20 @@ export default function FeedPageRoute(): JSX.Element {
         ) : null}
       </div>
 
-      <RightRail suggestions={suggestions} jobs={jobSuggestions} />
+      <RightRail
+        suggestions={suggestions}
+        suggestionsError={suggestionsError}
+        onRetrySuggestions={() => {
+          const token = getAccessToken();
+          if (token) loadSuggestions(token);
+        }}
+        jobs={jobSuggestions}
+        jobSuggestionsError={jobSuggestionsError}
+        onRetryJobs={() => {
+          const token = getAccessToken();
+          if (token) loadJobSuggestions(token);
+        }}
+      />
     </main>
   );
 }
@@ -145,8 +204,15 @@ export default function FeedPageRoute(): JSX.Element {
 // Left rail — mini profile hero + quick links
 // ────────────────────────────────────────────────────────────────────────
 
-function LeftRail({ me }: { me: Profile | null }): JSX.Element {
+function LeftRail({
+  me,
+  connectionCount,
+}: {
+  me: Profile | null;
+  connectionCount: number | null;
+}): JSX.Element {
   const t = useTranslations("feed.rail");
+  const locale = useLocale();
   return (
     <aside
       aria-label={t("quickAccess")}
@@ -186,11 +252,13 @@ function LeftRail({ me }: { me: Profile | null }): JSX.Element {
         <div className="border-line-soft border-t" />
         {me ? (
           <Link
-            href={`/in/${me.handle}`}
+            href={`/${locale}/network`}
             className="text-ink-muted hover:bg-surface-subtle focus-visible:bg-surface-subtle flex items-center justify-between px-4 py-2.5 text-xs focus:outline-none"
           >
             <span>{t("connections")}</span>
-            <span className="text-brand-700 font-semibold tabular-nums">—</span>
+            <span className="text-brand-700 font-semibold tabular-nums">
+              {connectionCount ?? "—"}
+            </span>
           </Link>
         ) : null}
       </Surface>
@@ -209,13 +277,23 @@ function LeftRail({ me }: { me: Profile | null }): JSX.Element {
 
 function RightRail({
   suggestions,
+  suggestionsError,
+  onRetrySuggestions,
   jobs,
+  jobSuggestionsError,
+  onRetryJobs,
 }: {
   suggestions: PersonSuggestion[];
+  suggestionsError: boolean;
+  onRetrySuggestions: () => void;
   jobs: Job[];
+  jobSuggestionsError: boolean;
+  onRetryJobs: () => void;
 }): JSX.Element {
   const t = useTranslations("feed.rail");
+  const tCommon = useTranslations("common");
   const tJobs = useTranslations("jobs");
+  const locale = useLocale();
   return (
     <aside aria-label={t("pymk")} className="hidden flex-col gap-3 xl:sticky xl:top-20 xl:flex">
       <Surface variant="card" padding="0">
@@ -264,6 +342,10 @@ function RightRail({
               </li>
             ))}
           </ul>
+        ) : suggestionsError ? (
+          <div className="flex items-center justify-end px-4 py-3">
+            <RetryChip onRetry={onRetrySuggestions} label={tCommon("retry")} />
+          </div>
         ) : (
           <div className="text-ink-muted px-4 py-3 text-xs">—</div>
         )}
@@ -272,7 +354,7 @@ function RightRail({
       <Surface variant="card" padding="0">
         <div className="flex items-center justify-between px-4 pt-3">
           <span className="text-ink text-sm font-semibold">{t("jobs")}</span>
-          <Link href="/jobs" className="text-ink-muted hover:text-brand-700 text-xs">
+          <Link href={`/${locale}/jobs`} className="text-ink-muted hover:text-brand-700 text-xs">
             {t("pymkAll")}
           </Link>
         </div>
@@ -317,8 +399,16 @@ function RightRail({
               );
             })}
           </ul>
+        ) : jobSuggestionsError ? (
+          <div className="flex items-center justify-end px-4 py-3">
+            <RetryChip onRetry={onRetryJobs} label={tCommon("retry")} />
+          </div>
         ) : (
-          <div className="text-ink-muted px-4 py-3 text-xs">{t("jobsComingSoon")}</div>
+          <div className="px-4 py-3 text-xs">
+            <Link href={`/${locale}/jobs`} className="text-ink-muted hover:text-brand-700">
+              {t("jobsEmpty")}
+            </Link>
+          </div>
         )}
       </Surface>
     </aside>
@@ -333,6 +423,28 @@ function FeedEmpty({ title, desc }: { title: string; desc: string }): JSX.Elemen
   return (
     <Surface variant="card" padding="0">
       <EmptyState motif="feed" title={title} body={desc} />
+    </Surface>
+  );
+}
+
+// Shown only when the initial /feed fetch fails AND there are no posts to
+// render. Subsequent paginate-on-scroll failures are silent.
+function FeedErrorState({
+  message,
+  onRetry,
+  loading,
+}: {
+  message: string;
+  onRetry: () => void;
+  loading: boolean;
+}): JSX.Element {
+  const tCommon = useTranslations("common");
+  return (
+    <Surface variant="tinted" padding="6" className="flex flex-col items-center gap-3 text-center">
+      <p className="text-ink-muted text-sm">{message}</p>
+      <Button variant="secondary" size="sm" onClick={onRetry} disabled={loading}>
+        {tCommon("retry")}
+      </Button>
     </Surface>
   );
 }

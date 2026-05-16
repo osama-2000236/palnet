@@ -50,6 +50,14 @@ export type {
   ToastProps,
   ToastProviderProps,
 } from "./Toast";
+export { Switch } from "./Switch";
+export type { SwitchProps } from "./Switch";
+export { Dialog } from "./Dialog";
+export type { DialogProps } from "./Dialog";
+export { Banner } from "./Banner";
+export type { BannerProps, BannerKind } from "./Banner";
+export { RetryChip } from "./RetryChip";
+export type { RetryChipProps } from "./RetryChip";
 export { ReportDialog, BlockButton, BlockedListItem } from "./safety";
 export type {
   ReportDialogLabels,
