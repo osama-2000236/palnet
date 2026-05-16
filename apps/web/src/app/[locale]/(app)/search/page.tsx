@@ -17,7 +17,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { Suspense, useEffect, useMemo, useState } from "react";
 
 import { ApiRequestError, apiFetchPage } from "@/lib/api";
-import { getErrorCode, toErrorMessage } from "@/lib/error-message";
+import { getErrorCode } from "@/lib/error-message";
 import { getAccessToken } from "@/lib/session";
 
 const PeoplePage = cursorPage(SearchPersonHitSchema);
@@ -48,7 +48,6 @@ export default function SearchPage(): JSX.Element {
 
 function SearchInner(): JSX.Element {
   const t = useTranslations("search");
-  const tErr = useTranslations("errors");
   const locale = useLocale();
   const router = useRouter();
   const params = useSearchParams();
