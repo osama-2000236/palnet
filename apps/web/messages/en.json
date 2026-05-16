@@ -5,6 +5,8 @@
     "retry": "Retry",
     "cancel": "Cancel",
     "save": "Save",
+    "saving": "Saving…",
+    "revert": "Revert",
     "continue": "Continue",
     "genericError": "Something went wrong. Please try again."
   },
@@ -18,7 +20,16 @@
     "VALIDATION_FAILED": "Check the fields and try again.",
     "INTERNAL": "Something went wrong on our side. Please try again.",
     "NETWORK": "Couldn't connect to the server.",
-    "fallback": "An unexpected error occurred. Please try again."
+    "fallback": "An unexpected error occurred. Please try again.",
+    "boundary": {
+      "title": "Something went wrong",
+      "body": "We hit an unexpected error rendering this page. Try again."
+    },
+    "notFound": {
+      "title": "We couldn't find this page",
+      "body": "The link may be outdated or incorrect.",
+      "home": "Back to home"
+    }
   },
   "toast": {
     "dismiss": {
@@ -33,6 +44,11 @@
     "settings": "Settings",
     "unreadMessages": "{count} unread messages",
     "unreadNotifications": "{count} unread notifications"
+  },
+  "chrome": {
+    "bell": {
+      "disconnected": "Live notification connection lost. Updates may be delayed."
+    }
   },
   "landing": {
     "title": "The professional network for the Arab world.",
@@ -130,6 +146,7 @@
       "pymkReason": "Suggested for you",
       "jobs": "Suggested jobs",
       "jobsComingSoon": "Coming soon — we'll suggest jobs that match your experience.",
+      "jobsEmpty": "Browse open roles →",
       "connect": "Connect",
       "footer": "Baydar · 2026"
     }
@@ -226,6 +243,9 @@
     },
     "noResults": "No people match that search.",
     "prompt": "Try a name or handle to find people.",
+    "errorTitle": "Search is unavailable",
+    "errorBody": "We could not load these results. Try again.",
+    "retry": "Retry search",
     "loadMore": "Load more",
     "loadingMore": "Loading…"
   },
@@ -338,6 +358,12 @@
       "failed": "Could not delete message."
     }
   },
+  "messages": {
+    "send": {
+      "retry": "Retry send",
+      "failed": "Send failed"
+    }
+  },
   "notifications": {
     "title": "Notifications",
     "empty": "You're all caught up.",
@@ -410,7 +436,73 @@
       "account": "Account",
       "accountDesc": "Download your data and delete your account.",
       "blocked": "Blocked accounts",
-      "blockedDesc": "Manage your blocklist."
+      "blockedDesc": "Manage your blocklist.",
+      "notifications": "Notifications",
+      "notificationsDesc": "Choose how we reach you over email and push."
+    },
+    "notifications": {
+      "title": "Notifications",
+      "subtitle": "Choose how we reach you. Preferences apply to email and push.",
+      "allEvents": "All notifications",
+      "setAllDesc": "Toggle every event on or off in one move",
+      "setAllEmail": "Toggle email for all events",
+      "setAllPush": "Toggle push for all events",
+      "emailHeader": "Email",
+      "pushHeader": "Push",
+      "unsavedChanges": "You have unsaved changes",
+      "savedToast": "Notification preferences saved.",
+      "groups": {
+        "social": {
+          "title": "Social activity",
+          "desc": "When people engage with you or send connection requests"
+        },
+        "career": {
+          "title": "Career",
+          "desc": "Job opportunities matched to your skills"
+        },
+        "account": {
+          "title": "Account",
+          "desc": "Digests and administrative alerts"
+        }
+      },
+      "events": {
+        "newConnection": {
+          "title": "New connection request",
+          "desc": "When someone sends you a connection request"
+        },
+        "newMessage": {
+          "title": "New message",
+          "desc": "When someone starts a conversation with you"
+        },
+        "newComment": {
+          "title": "Comment on your post",
+          "desc": "When someone comments on a post you published"
+        },
+        "newReaction": {
+          "title": "Reaction on your post",
+          "desc": "Likes or reposts — delivered as a daily digest"
+        },
+        "jobMatch": {
+          "title": "Matched job for you",
+          "desc": "Weekly digest of recommended roles"
+        },
+        "applicationStatus": {
+          "title": "Application status update",
+          "desc": "When your application is viewed or replied to"
+        },
+        "weeklyDigest": {
+          "title": "Weekly digest",
+          "desc": "What you missed in posts and connections"
+        },
+        "karamaUpdate": {
+          "title": "Karama points change",
+          "desc": "When you earn or lose points"
+        },
+        "moderationAction": {
+          "title": "Moderation action",
+          "desc": "Cannot be disabled — we always notify you about actions on your account"
+        }
+      }
     }
   },
   "account": {

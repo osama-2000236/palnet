@@ -55,6 +55,7 @@ const TYPING_POST_THROTTLE_MS = 3 * 1000;
 
 export default function MessagesPage(): JSX.Element {
   const t = useTranslations("messaging");
+  const tSend = useTranslations("messages.send");
   const tCommon = useTranslations("common");
   const tSafety = useTranslations("safety");
   const locale = useLocale();
@@ -741,12 +742,12 @@ export default function MessagesPage(): JSX.Element {
                             labels={{
                               ownPrefix: (time) => t("ownPrefix", { time }),
                               otherPrefix: (name, time) => t("otherPrefix", { name, time }),
-                              failedHint: t("failedHint"),
+                              failedHint: tSend("retry"),
                               statusSending: t("statusSending"),
                               statusSent: t("statusSent"),
                               statusDelivered: t("statusDelivered"),
                               statusRead: t("statusRead"),
-                              statusFailed: t("statusFailed"),
+                              statusFailed: tSend("failed"),
                               editedSuffix: t("editedSuffix"),
                               deletedBody: t("deletedBody"),
                             }}

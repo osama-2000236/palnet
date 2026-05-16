@@ -19,6 +19,11 @@ export default function SettingsLandingPage(): JSX.Element {
       desc: t("items.accountDesc"),
     },
     {
+      href: `/${locale}/settings/notifications`,
+      label: t("items.notifications"),
+      desc: t("items.notificationsDesc"),
+    },
+    {
       href: `/${locale}/settings/blocked`,
       label: t("items.blocked"),
       desc: t("items.blockedDesc"),
