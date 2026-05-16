@@ -143,6 +143,15 @@ export default function MeScreen(): JSX.Element {
           variant="secondary"
           size="md"
           fullWidth
+          onPress={() => router.push("/(app)/me/karama" as never)}
+          accessibilityLabel="Karama Points"
+        >
+          Karama Points
+        </Button>
+        <Button
+          variant="secondary"
+          size="md"
+          fullWidth
           onPress={() => router.push("/(app)/settings/blocked" as never)}
           accessibilityLabel={t("safety.blocked.title")}
         >

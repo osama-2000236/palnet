@@ -555,5 +555,21 @@
   "company": {
     "about": "About",
     "jobs": "Jobs"
+  },
+  "employer": {
+    "title": "Employer",
+    "empty": "No companies yet.",
+    "jobsTitle": "Jobs",
+    "applicantsTitle": "Applicants",
+    "applicantsEmpty": "No applicants yet.",
+    "applicantCount": "{{count}} applicants",
+    "status": {
+      "SUBMITTED": "New",
+      "REVIEWING": "Reviewing",
+      "SHORTLISTED": "Shortlisted",
+      "REJECTED": "Rejected",
+      "HIRED": "Hired",
+      "WITHDRAWN": "Withdrew"
+    }
   }
 }

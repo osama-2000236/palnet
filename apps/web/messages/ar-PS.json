@@ -476,5 +476,69 @@
   "company": {
     "about": "عن الشركة",
     "jobs": "الوظائف"
+  },
+  "employer": {
+    "title": "مساحة صاحب العمل",
+    "subtitle": "أدِر صفحات شركتك ووظائفها ومتقدميها.",
+    "empty": "لا تنتمي إلى أي شركة بعد.",
+    "createCompany": "أنشئ صفحة شركة",
+    "viewerRole": {
+      "OWNER": "مالك",
+      "ADMIN": "مدير",
+      "EDITOR": "محرر"
+    },
+    "form": {
+      "slug": "المعرّف",
+      "slugHelp": "أحرف لاتينية صغيرة وأرقام وشَرطات. سيظهر في الرابط.",
+      "name": "اسم الشركة",
+      "tagline": "وصف قصير",
+      "website": "الموقع",
+      "industry": "القطاع",
+      "city": "المدينة",
+      "country": "الدولة",
+      "size": "حجم الفريق",
+      "submit": "حفظ",
+      "submitting": "جارٍ الحفظ…"
+    },
+    "dashboard": {
+      "activeJobs": "الوظائف النشطة",
+      "totalApplicants": "إجمالي المتقدمين",
+      "openShortlist": "القائمة المختصرة المفتوحة",
+      "createJob": "أضف وظيفة",
+      "noJobs": "لم تنشر شركتك أي وظيفة بعد.",
+      "filterActive": "نشطة",
+      "filterArchived": "مؤرشفة",
+      "viewApplicants": "عرض المتقدمين",
+      "archive": "أرشفة",
+      "archived": "مؤرشفة"
+    },
+    "applicants": {
+      "title": "المتقدمون",
+      "empty": "لا يوجد متقدمون بعد.",
+      "applied": "قدّم في",
+      "openResume": "افتح السيرة الذاتية",
+      "status": {
+        "SUBMITTED": "جديد",
+        "REVIEWING": "قيد المراجعة",
+        "SHORTLISTED": "قائمة مختصرة",
+        "REJECTED": "مرفوض",
+        "HIRED": "تمّ التوظيف",
+        "WITHDRAWN": "منسحب"
+      }
+    },
+    "newJob": {
+      "title": "وظيفة جديدة",
+      "fieldTitle": "عنوان الوظيفة",
+      "description": "الوصف",
+      "type": "نوع التعاقد",
+      "locationMode": "مكان العمل",
+      "city": "المدينة",
+      "salaryMin": "الحد الأدنى للراتب",
+      "salaryMax": "الحد الأعلى للراتب",
+      "salaryCurrency": "العملة",
+      "expiresAt": "تنتهي في",
+      "submit": "انشر",
+      "submitting": "جارٍ النشر…"
+    }
   }
 }

@@ -22,10 +22,45 @@ const EnvSchema = z.object({
   R2_SECRET_ACCESS_KEY: z.string().optional(),
   R2_BUCKET: z.string().optional(),
   R2_PUBLIC_URL: z.string().url().optional(),
+  CLAMAV_SCAN_URL: z.string().url().optional(),
+  CLOUDFLARE_IMAGES_SCAN_URL: z.string().url().optional(),
   // Google OAuth — optional until Sprint 1.5.
   GOOGLE_CLIENT_ID: z.string().optional(),
   GOOGLE_CLIENT_SECRET: z.string().optional(),
   GOOGLE_REDIRECT_URI: z.string().url().optional(),
+  // Mail — Resend in production, console in dev/test.
+  RESEND_API_KEY: z.string().min(1).optional(),
+  MAIL_FROM: z.string().min(3).optional(),
+  MAIL_REPLY_TO: z.string().email().optional(),
+  // Web URL used for transactional email links (verify, reset).
+  BAYDAR_WEB_URL: z.string().url().optional(),
+  // Cron endpoint shared secret.
+  INTERNAL_CRON_TOKEN: z.string().min(24).optional(),
+  // Billing — HyperPay cards + manual bank transfer.
+  HYPERPAY_ENTITY_ID: z.string().optional(),
+  HYPERPAY_ACCESS_TOKEN: z.string().optional(),
+  HYPERPAY_WEBHOOK_SECRET: z.string().optional(),
+  HYPERPAY_BASE_URL: z.string().url().optional(),
+  BANK_TRANSFER_IBAN: z.string().optional(),
+  BANK_TRANSFER_BENEFICIARY: z.string().optional(),
+  // Local-wallet providers (Palestinian market). All optional — wallet
+  // checkout stays in "Coming soon" mode until a merchant_id + api_key pair
+  // is set for at least one provider.
+  JAWWALPAY_MERCHANT_ID: z.string().optional(),
+  JAWWALPAY_API_KEY: z.string().optional(),
+  JAWWALPAY_WEBHOOK_SECRET: z.string().optional(),
+  JAWWALPAY_BASE_URL: z.string().url().optional(),
+  PALPAY_MERCHANT_ID: z.string().optional(),
+  PALPAY_API_KEY: z.string().optional(),
+  PALPAY_WEBHOOK_SECRET: z.string().optional(),
+  PALPAY_BASE_URL: z.string().url().optional(),
+  REFLECT_MERCHANT_ID: z.string().optional(),
+  REFLECT_API_KEY: z.string().optional(),
+  REFLECT_WEBHOOK_SECRET: z.string().optional(),
+  REFLECT_BASE_URL: z.string().url().optional(),
+  // Observability.
+  SENTRY_DSN: z.string().url().optional(),
+  SENTRY_RELEASE: z.string().min(7).optional(),
 });
 
 export type Env = z.infer<typeof EnvSchema>;
@@ -49,6 +84,61 @@ export function loadEnv(): Env {
     }
     if (origins.includes("*")) {
       failEnv({ CORS_ORIGINS: ["Wildcard CORS origins are forbidden in production."] });
+    }
+    if (!data.RESEND_API_KEY || !data.MAIL_FROM) {
+      failEnv({
+        RESEND_API_KEY: !data.RESEND_API_KEY
+          ? ["RESEND_API_KEY is required in production."]
+          : undefined,
+        MAIL_FROM: !data.MAIL_FROM ? ["MAIL_FROM is required in production."] : undefined,
+      });
+    }
+    if (!data.BAYDAR_WEB_URL) {
+      failEnv({ BAYDAR_WEB_URL: ["BAYDAR_WEB_URL is required in production."] });
+    }
+    if (!data.INTERNAL_CRON_TOKEN) {
+      failEnv({ INTERNAL_CRON_TOKEN: ["INTERNAL_CRON_TOKEN is required in production."] });
+    }
+    if (!data.HYPERPAY_ENTITY_ID || !data.HYPERPAY_ACCESS_TOKEN || !data.HYPERPAY_WEBHOOK_SECRET) {
+      failEnv({
+        HYPERPAY_ENTITY_ID: !data.HYPERPAY_ENTITY_ID
+          ? ["HYPERPAY_ENTITY_ID is required in production."]
+          : undefined,
+        HYPERPAY_ACCESS_TOKEN: !data.HYPERPAY_ACCESS_TOKEN
+          ? ["HYPERPAY_ACCESS_TOKEN is required in production."]
+          : undefined,
+        HYPERPAY_WEBHOOK_SECRET: !data.HYPERPAY_WEBHOOK_SECRET
+          ? ["HYPERPAY_WEBHOOK_SECRET is required in production."]
+          : undefined,
+      });
+    }
+    if (!data.BANK_TRANSFER_IBAN || !data.BANK_TRANSFER_BENEFICIARY) {
+      failEnv({
+        BANK_TRANSFER_IBAN: !data.BANK_TRANSFER_IBAN
+          ? ["BANK_TRANSFER_IBAN is required in production."]
+          : undefined,
+        BANK_TRANSFER_BENEFICIARY: !data.BANK_TRANSFER_BENEFICIARY
+          ? ["BANK_TRANSFER_BENEFICIARY is required in production."]
+          : undefined,
+      });
+    }
+    if (!data.CLAMAV_SCAN_URL || !data.CLOUDFLARE_IMAGES_SCAN_URL) {
+      failEnv({
+        CLAMAV_SCAN_URL: !data.CLAMAV_SCAN_URL
+          ? ["CLAMAV_SCAN_URL is required in production."]
+          : undefined,
+        CLOUDFLARE_IMAGES_SCAN_URL: !data.CLOUDFLARE_IMAGES_SCAN_URL
+          ? ["CLOUDFLARE_IMAGES_SCAN_URL is required in production."]
+          : undefined,
+      });
+    }
+    if (!data.SENTRY_DSN || !data.SENTRY_RELEASE) {
+      failEnv({
+        SENTRY_DSN: !data.SENTRY_DSN ? ["SENTRY_DSN is required in production."] : undefined,
+        SENTRY_RELEASE: !data.SENTRY_RELEASE
+          ? ["SENTRY_RELEASE is required in production."]
+          : undefined,
+      });
     }
   }
 
