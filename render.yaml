@@ -1,0 +1,63 @@
+# Render blueprint for Baydar API.
+# Deploy with: connect this repo in Render → New → Blueprint, then set the secrets
+# listed in .github/SECRETS.md and `docs/deployment.md` per environment.
+#
+# `pnpm` builds run from the monorepo root because Render's default builder
+# doesn't understand pnpm workspaces from a sub-directory.
+
+services:
+  - type: web
+    name: baydar-api
+    env: node
+    plan: starter
+    region: frankfurt
+    branch: main
+    rootDir: .
+    autoDeploy: false
+    buildCommand: corepack enable && pnpm install --frozen-lockfile && pnpm --filter @baydar/db db:generate && pnpm --filter @baydar/api build
+    startCommand: pnpm --filter @baydar/api start
+    healthCheckPath: /api/v1/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: "20"
+      - key: PNPM_VERSION
+        value: "9.12.0"
+      - key: API_PORT
+        value: "10000"
+      # Required — set via Render dashboard (do not commit values).
+      - key: DATABASE_URL
+        sync: false
+      - key: DIRECT_URL
+        sync: false
+      - key: JWT_ACCESS_SECRET
+        sync: false
+      - key: JWT_REFRESH_SECRET
+        sync: false
+      - key: CORS_ORIGINS
+        sync: false
+      - key: INTERNAL_CRON_TOKEN
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
+      - key: MAIL_FROM
+        sync: false
+      - key: MAIL_REPLY_TO
+        sync: false
+      - key: BAYDAR_WEB_URL
+        sync: false
+      - key: R2_ACCOUNT_ID
+        sync: false
+      - key: R2_ACCESS_KEY_ID
+        sync: false
+      - key: R2_SECRET_ACCESS_KEY
+        sync: false
+      - key: R2_BUCKET
+        sync: false
+      - key: R2_PUBLIC_BASE_URL
+        sync: false
+      - key: SENTRY_DSN
+        sync: false
+      - key: SENTRY_RELEASE
+        sync: false
