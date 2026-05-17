@@ -9,7 +9,7 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "build": "echo \"Mobile builds run in EAS — nothing to build locally.\" && exit 0",
-    "lint": "eslint \"app/**/*.{ts,tsx}\" \"src/**/*.{ts,tsx}\"",
+    "lint": "eslint \"app/**/*.{ts,tsx}\" \"src/**/*.{ts,tsx}\" --cache --cache-location node_modules/.cache/eslint/",
     "type-check": "tsc --noEmit",
     "test": "jest --coverage"
   },

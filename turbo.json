@@ -1,25 +1,51 @@
 {
   "$schema": "https://turbo.build/schema.json",
-  "globalDependencies": [".env", ".env.local", "project-spec.md"],
+  "globalDependencies": [".env", ".env.local", "project-spec.md", "tsconfig.base.json"],
+  "globalEnv": ["NODE_ENV"],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
+      "inputs": [
+        "src/**",
+        "app/**",
+        "scripts/**",
+        "prisma/**",
+        "public/**",
+        "package.json",
+        "tsconfig.json",
+        "tsconfig.*.json",
+        "next.config.*",
+        "tailwind.config.*",
+        "postcss.config.*",
+        "babel.config.*",
+        "metro.config.*",
+        "nest-cli.json"
+      ],
       "outputs": [".next/**", "!.next/cache/**", "dist/**", "build/**"],
-      "env": ["NODE_ENV", "DATABASE_URL", "NEXT_PUBLIC_API_URL"]
+      "env": [
+        "NODE_ENV",
+        "DATABASE_URL",
+        "NEXT_PUBLIC_API_URL",
+        "NEXT_PUBLIC_WS_URL",
+        "NEXT_PUBLIC_DEFAULT_LOCALE"
+      ]
     },
     "dev": {
       "cache": false,
       "persistent": true
     },
     "lint": {
-      "outputs": []
+      "inputs": ["src/**", "app/**", "test/**", ".eslintrc*", ".eslintignore", "package.json"],
+      "outputs": ["node_modules/.cache/eslint/**"]
     },
     "type-check": {
       "dependsOn": ["^build"],
-      "outputs": []
+      "inputs": ["src/**", "app/**", "test/**", "tsconfig.json", "tsconfig.*.json"],
+      "outputs": ["**/*.tsbuildinfo"]
     },
     "test": {
       "dependsOn": ["^build"],
+      "inputs": ["src/**", "app/**", "test/**", "jest.config.*", "jest.setup.*", "package.json"],
       "outputs": ["coverage/**"],
       "env": ["NODE_ENV"]
     },

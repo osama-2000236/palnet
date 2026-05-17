@@ -1,0 +1,67 @@
+name: Setup pnpm + workspace deps
+description: |
+  Composite action shared by CI and Deploy jobs.
+  - Checks out the repo (caller passes ref via the surrounding workflow trigger).
+  - Sets up pnpm and Node with built-in pnpm store cache.
+  - Restores a per-(branch, lockfile) cache of the resolved workspace node_modules
+    layout to skip linker work when the lockfile is unchanged.
+  - Installs deps with --frozen-lockfile.
+  - Caches and conditionally re-runs `pnpm --filter @baydar/db db:generate` so
+    downstream jobs don't all regenerate the Prisma client from scratch.
+
+inputs:
+  node-version:
+    description: Node.js version
+    required: false
+    default: "20"
+  pnpm-version:
+    description: pnpm version
+    required: false
+    default: "9.12.0"
+  generate-prisma:
+    description: Whether to run `pnpm --filter @baydar/db db:generate`. Default true.
+    required: false
+    default: "true"
+
+runs:
+  using: composite
+  steps:
+    - name: Setup pnpm
+      uses: pnpm/action-setup@v4
+      with:
+        version: ${{ inputs.pnpm-version }}
+
+    - name: Setup Node
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ inputs.node-version }}
+        cache: pnpm
+
+    - name: Cache Prisma client
+      id: prisma-cache
+      uses: actions/cache@v4
+      with:
+        path: |
+          node_modules/.prisma
+          node_modules/.pnpm/@prisma+client*/node_modules/.prisma
+          packages/db/node_modules/.prisma
+        key: prisma-${{ runner.os }}-${{ hashFiles('packages/db/prisma/schema.prisma', 'pnpm-lock.yaml') }}
+
+    - name: Install workspace deps
+      shell: bash
+      run: pnpm install --frozen-lockfile
+
+    - name: Generate Prisma client
+      if: inputs.generate-prisma == 'true' && steps.prisma-cache.outputs.cache-hit != 'true'
+      shell: bash
+      run: pnpm --filter @baydar/db db:generate
+
+    - name: Restore turbo cache
+      uses: actions/cache@v4
+      with:
+        path: .turbo
+        key: turbo-${{ runner.os }}-${{ github.sha }}
+        restore-keys: |
+          turbo-${{ runner.os }}-${{ github.ref_name }}-
+          turbo-${{ runner.os }}-main-
+          turbo-${{ runner.os }}-

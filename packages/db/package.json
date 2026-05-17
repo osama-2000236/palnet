@@ -28,7 +28,7 @@
     "qa:fixture": "tsx prisma/qa-fixture.ts",
     "qa:load-fixture": "tsx prisma/qa-load-fixture.ts",
     "qa:cleanup": "tsx prisma/qa-cleanup.ts",
-    "lint": "eslint .",
+    "lint": "eslint . --cache --cache-location node_modules/.cache/eslint/",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {

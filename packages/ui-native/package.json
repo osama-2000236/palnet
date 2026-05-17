@@ -6,7 +6,7 @@
   "types": "./src/index.ts",
   "scripts": {
     "build": "tsc -p tsconfig.json --noEmit",
-    "lint": "eslint \"src/**/*.{ts,tsx}\" --ignore-pattern \"src/**/__tests__/**\"",
+    "lint": "eslint \"src/**/*.{ts,tsx}\" --ignore-pattern \"src/**/__tests__/**\" --cache --cache-location node_modules/.cache/eslint/",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
