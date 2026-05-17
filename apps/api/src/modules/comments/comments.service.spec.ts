@@ -71,9 +71,9 @@ describe("CommentsService", () => {
   describe("create", () => {
     it("404s when the post is missing or soft-deleted", async () => {
       prisma.post.findFirst.mockResolvedValue(null);
-      await expect(
-        service.create("u_me", "p_missing", { body: "hi" }),
-      ).rejects.toMatchObject({ code: ErrorCode.NOT_FOUND });
+      await expect(service.create("u_me", "p_missing", { body: "hi" })).rejects.toMatchObject({
+        code: ErrorCode.NOT_FOUND,
+      });
     });
 
     it("404s when a parentId is passed but the parent comment does not belong to the post", async () => {

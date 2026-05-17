@@ -1,4 +1,4 @@
-import { ApplicationStatus, ErrorCode } from "@baydar/shared";
+import { type ApplicationStatus, ErrorCode } from "@baydar/shared";
 import { Test } from "@nestjs/testing";
 
 import { EmployerEntitlementsService } from "../billing/employer-entitlements.service";
