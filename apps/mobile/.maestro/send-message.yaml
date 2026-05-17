@@ -1,0 +1,27 @@
+appId: ps.baydar.app
+name: "send message"
+tags:
+  - smoke
+---
+- runFlow: login-to-feed.yaml
+
+- tapOn:
+    id: "tab-messages"
+- assertVisible:
+    id: "room-list"
+    timeout: 5000
+
+# Pick the first room in the list — the QA fixture seeds at least one DM
+# with the messaging companion so this is stable across runs.
+- tapOn:
+    id: "room-list-row-0"
+
+- tapOn:
+    id: "message-composer"
+- inputText: "Maestro smoke ping"
+- tapOn:
+    id: "message-send"
+
+- assertVisible:
+    text: "Maestro smoke ping"
+    timeout: 10000
