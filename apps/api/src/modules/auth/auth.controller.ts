@@ -1,5 +1,6 @@
 import {
   ConfirmVerifyEmailBody,
+  ErrorCode,
   ForgotPasswordBody,
   type AuthSession,
   LoginBody,
@@ -19,13 +20,21 @@ import {
   HttpStatus,
   Post,
   Req,
+  Res,
   UseGuards,
   UsePipes,
 } from "@nestjs/common";
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiTags } from "@nestjs/swagger";
 import { Throttle } from "@nestjs/throttler";
-import type { Request } from "express";
+import type { Request, Response } from "express";
 
+import {
+  parseCookieHeader,
+  REFRESH_COOKIE_NAME,
+  serializeClearedRefreshCookie,
+  serializeRefreshCookie,
+} from "../../common/cookies";
+import { DomainException } from "../../common/domain-exception";
 import { ZodValidationPipe } from "../../common/zod-pipe";
 
 import { AuthEmailThrottleService } from "./auth-email-throttle.service";
@@ -43,6 +52,18 @@ const authRefreshLimit =
   process.env.NODE_ENV === "production"
     ? 30
     : Number.parseInt(process.env.BAYDAR_DEV_AUTH_RATE_LIMIT ?? "300", 10);
+const authTokenConsumeLimit =
+  process.env.NODE_ENV === "production"
+    ? 30
+    : Number.parseInt(process.env.BAYDAR_DEV_AUTH_RATE_LIMIT ?? "300", 10);
+
+const TRANSPORT_HEADER = "x-auth-transport";
+type Transport = "body" | "cookie";
+
+function readTransport(req: Request): Transport {
+  const value = req.header(TRANSPORT_HEADER);
+  return value === "body" ? "body" : "cookie";
+}
 
 @ApiTags("auth")
 @Controller("auth")
@@ -60,9 +81,13 @@ export class AuthController {
   @Throttle({ default: { limit: authRouteLimit, ttl: 60_000 } })
   @UsePipes(new ZodValidationPipe(RegisterBody))
   @ApiCreatedResponse({ description: "Account created; returns tokens." })
-  async register(@Body() body: RegisterBody): Promise<{ data: AuthSession }> {
-    const data = await this.auth.register(body, body.deviceId ?? "register-bootstrap");
-    return { data };
+  async register(
+    @Body() body: RegisterBody,
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<{ data: AuthSession }> {
+    const session = await this.auth.register(body, body.deviceId ?? "register-bootstrap");
+    return { data: this.applyTransport(req, res, session) };
   }
 
   @Public()
@@ -71,20 +96,60 @@ export class AuthController {
   @Throttle({ default: { limit: authRouteLimit, ttl: 60_000 } })
   @UsePipes(new ZodValidationPipe(LoginBody))
   @ApiOkResponse({ description: "Authenticated; returns tokens." })
-  async login(@Body() body: LoginBody): Promise<{ data: AuthSession }> {
-    const data = await this.auth.login(body);
-    return { data };
+  async login(
+    @Body() body: LoginBody,
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<{ data: AuthSession }> {
+    const session = await this.auth.login(body);
+    return { data: this.applyTransport(req, res, session) };
   }
 
+  /**
+   * Refresh accepts the rotated token via either:
+   *   1. Body (mobile / SDKs that opt in with `X-Auth-Transport: body`).
+   *   2. HttpOnly cookie (the default; web). In this case the request body
+   *      only needs `{ deviceId }`.
+   *
+   * The body schema (`RefreshBody`) still requires both fields; for the
+   * cookie path we splice the token in before validation so the rest of the
+   * pipeline stays unchanged.
+   */
   @Public()
   @Post("refresh")
   @HttpCode(HttpStatus.OK)
   @Throttle({ default: { limit: authRefreshLimit, ttl: 60_000 } })
-  @UsePipes(new ZodValidationPipe(RefreshBody))
   @ApiOkResponse({ description: "Rotated refresh + new access token." })
-  async refresh(@Body() body: RefreshBody): Promise<{ data: AuthSession }> {
-    const data = await this.auth.refresh(body);
-    return { data };
+  async refresh(
+    @Body() rawBody: unknown,
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<{ data: AuthSession }> {
+    const transport = readTransport(req);
+    const candidate = (rawBody ?? {}) as { deviceId?: unknown; refreshToken?: unknown };
+
+    if (transport === "cookie") {
+      const cookieToken = parseCookieHeader(req.headers.cookie, REFRESH_COOKIE_NAME);
+      if (!cookieToken) {
+        throw new DomainException(
+          ErrorCode.AUTH_UNAUTHORIZED,
+          "Missing refresh cookie.",
+          HttpStatus.UNAUTHORIZED,
+        );
+      }
+      candidate.refreshToken = cookieToken;
+    }
+
+    const parsed = RefreshBody.safeParse(candidate);
+    if (!parsed.success) {
+      throw new DomainException(
+        ErrorCode.VALIDATION_FAILED,
+        parsed.error.issues[0]?.message ?? "Invalid refresh payload.",
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    const session = await this.auth.refresh(parsed.data);
+    return { data: this.applyTransport(req, res, session) };
   }
 
   @Public()
@@ -106,6 +171,7 @@ export class AuthController {
   @Public()
   @Post("verify-email/confirm")
   @HttpCode(HttpStatus.OK)
+  @Throttle({ default: { limit: authTokenConsumeLimit, ttl: 60_000 } })
   @UsePipes(new ZodValidationPipe(ConfirmVerifyEmailBody))
   async confirmVerifyEmail(
     @Body() body: ConfirmVerifyEmailBody,
@@ -130,6 +196,7 @@ export class AuthController {
   @Public()
   @Post("reset-password")
   @HttpCode(HttpStatus.OK)
+  @Throttle({ default: { limit: authTokenConsumeLimit, ttl: 60_000 } })
   @UsePipes(new ZodValidationPipe(ResetPasswordBody))
   async resetPassword(@Body() body: ResetPasswordBody): Promise<{ data: { reset: true } }> {
     await this.authTokens.consumePasswordReset(body.token, body.newPassword);
@@ -142,8 +209,18 @@ export class AuthController {
   async logout(
     @CurrentUser() user: AuthUser,
     @Body(new ZodValidationPipe(LogoutBody)) body: LogoutBody,
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
   ): Promise<void> {
     await this.auth.logout(user.id, body.deviceId);
+    if (readTransport(req) === "cookie") {
+      res.setHeader(
+        "Set-Cookie",
+        serializeClearedRefreshCookie({
+          secure: req.secure || process.env.NODE_ENV === "production",
+        }),
+      );
+    }
   }
 
   @Get("me")
@@ -163,5 +240,29 @@ export class AuthController {
   ): Promise<{ data: StreamTokenResponse }> {
     const data = await this.authTokens.issueStreamToken(user.id, body.scope);
     return { data };
+  }
+
+  /**
+   * For the cookie transport (web), the refresh token must NEVER reach the
+   * JSON response body — that's the entire point of HttpOnly. We set the
+   * cookie and return the session with the refresh field redacted to an
+   * empty string (clients shouldn't read it; the cookie is the source of
+   * truth). The mobile transport leaves the body intact.
+   */
+  private applyTransport(req: Request, res: Response, session: AuthSession): AuthSession {
+    if (readTransport(req) === "body") return session;
+    const refreshExpiresMs = Date.parse(session.tokens.refreshExpiresAt) - Date.now();
+    const maxAgeSeconds = Math.max(0, Math.floor(refreshExpiresMs / 1000));
+    res.setHeader(
+      "Set-Cookie",
+      serializeRefreshCookie(session.tokens.refreshToken, {
+        maxAgeSeconds,
+        secure: req.secure || process.env.NODE_ENV === "production",
+      }),
+    );
+    return {
+      ...session,
+      tokens: { ...session.tokens, refreshToken: "" },
+    };
   }
 }

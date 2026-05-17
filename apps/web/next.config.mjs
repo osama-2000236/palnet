@@ -26,6 +26,11 @@ const nextConfig = {
     return [
       {
         source: "/:path*",
+        // CSP is intentionally omitted here — the per-request middleware
+        // (src/middleware.ts) is the single source of truth so each request
+        // can carry a fresh `nonce`. Setting CSP here too would race with
+        // the middleware header and the last-write-wins semantics in
+        // Next.js can flip between deploys.
         headers: buildSecurityHeaders(process.env, { includeContentSecurityPolicy: false }),
       },
     ];

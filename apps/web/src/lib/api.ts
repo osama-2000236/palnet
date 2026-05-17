@@ -30,6 +30,7 @@ export async function apiFetch<T extends z.ZodTypeAny>(
   const res = await fetch(`${BASE}${path}`, {
     ...opts,
     headers,
+    credentials: opts.credentials ?? "include",
     body: opts.body === undefined ? undefined : JSON.stringify(opts.body),
   });
 
@@ -55,6 +56,7 @@ export async function apiCall(path: string, opts: ApiFetchOptions = {}): Promise
   const res = await fetch(`${BASE}${path}`, {
     ...opts,
     headers,
+    credentials: opts.credentials ?? "include",
     body: opts.body === undefined ? undefined : JSON.stringify(opts.body),
   });
   if (res.ok) return;
@@ -78,6 +80,7 @@ export async function apiFetchPage<T extends z.ZodTypeAny>(
   const res = await fetch(`${BASE}${path}`, {
     ...opts,
     headers,
+    credentials: opts.credentials ?? "include",
     body: opts.body === undefined ? undefined : JSON.stringify(opts.body),
   });
   const json = (await res.json().catch(() => ({}))) as unknown;
