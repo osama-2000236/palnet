@@ -2,6 +2,7 @@
 
 import { CompanySummary } from "@baydar/shared";
 import { Surface } from "@baydar/ui-web";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
@@ -80,11 +81,13 @@ export default function EmployerHomePage(): JSX.Element {
               <Surface variant="card" padding="4">
                 <div className="flex items-center gap-3">
                   {c.logoUrl ? (
-                    /* eslint-disable-next-line @next/next/no-img-element */
-                    <img
+                    <Image
                       src={c.logoUrl}
                       alt=""
+                      width={48}
+                      height={48}
                       className="bg-surface-muted h-12 w-12 rounded-md object-cover"
+                      sizes="48px"
                     />
                   ) : (
                     <div className="bg-surface-muted h-12 w-12 rounded-md" />

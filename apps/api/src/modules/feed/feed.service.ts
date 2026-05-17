@@ -17,35 +17,32 @@ export class FeedService {
     cursor: string | null,
     limit: number,
   ): Promise<{ data: PostDto[]; meta: CursorPageMeta }> {
-    // Authors whose posts we want: self + ACCEPTED connections in either direction.
-    const connections = await this.prisma.connection.findMany({
-      where: {
-        status: "ACCEPTED",
-        OR: [{ requesterId: viewerId }, { receiverId: viewerId }],
-      },
-      select: { requesterId: true, receiverId: true },
-    });
-    const authorIds = new Set<string>([viewerId]);
-    for (const c of connections) {
-      authorIds.add(c.requesterId === viewerId ? c.receiverId : c.requesterId);
-    }
     const excludedUserIds = await this.safety.getBlockedEitherIds(viewerId);
-    for (const id of excludedUserIds) {
-      authorIds.delete(id);
-    }
-    const deletedUsers = await this.prisma.user.findMany({
-      where: { id: { in: [...authorIds] }, deletedAt: { not: null } },
-      select: { id: true },
-    });
-    for (const user of deletedUsers) {
-      authorIds.delete(user.id);
-    }
 
-    // Fetch limit + 1 for hasMore detection.
+    // Single query: posts whose author is viewer OR an ACCEPTED-connected
+    // peer (in either direction), excluding blocked-either users and
+    // soft-deleted authors. Replaces four round-trips with one indexed scan
+    // backed by Post(authorId, deletedAt, createdAt) and Connection(status,…).
     const rows = await this.prisma.post.findMany({
       where: {
         deletedAt: null,
-        authorId: { in: [...authorIds] },
+        author: {
+          deletedAt: null,
+          ...(excludedUserIds.length ? { id: { notIn: excludedUserIds } } : {}),
+          OR: [
+            { id: viewerId },
+            {
+              sentConnections: {
+                some: { receiverId: viewerId, status: "ACCEPTED" },
+              },
+            },
+            {
+              recvConnections: {
+                some: { requesterId: viewerId, status: "ACCEPTED" },
+              },
+            },
+          ],
+        },
       },
       orderBy: [{ createdAt: "desc" }, { id: "desc" }],
       take: limit + 1,

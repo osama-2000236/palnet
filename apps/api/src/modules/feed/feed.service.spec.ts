@@ -6,9 +6,7 @@ import { SafetyService } from "../safety/safety.service";
 import { FeedService } from "./feed.service";
 
 type PrismaStub = {
-  connection: { findMany: jest.Mock };
   post: { findMany: jest.Mock };
-  user: { findMany: jest.Mock };
 };
 
 describe("FeedService", () => {
@@ -18,9 +16,7 @@ describe("FeedService", () => {
 
   beforeEach(async () => {
     prisma = {
-      connection: { findMany: jest.fn() },
-      post: { findMany: jest.fn() },
-      user: { findMany: jest.fn().mockResolvedValue([]) },
+      post: { findMany: jest.fn().mockResolvedValue([]) },
     };
     safety = { getBlockedEitherIds: jest.fn().mockResolvedValue([]) };
     const moduleRef = await Test.createTestingModule({
@@ -33,47 +29,51 @@ describe("FeedService", () => {
     service = moduleRef.get(FeedService);
   });
 
-  it("filters blocked and blocker authors at the Prisma query layer", async () => {
-    prisma.connection.findMany.mockResolvedValue([
-      { requesterId: "viewer", receiverId: "blocked_by_viewer" },
-      { requesterId: "blocked_viewer", receiverId: "viewer" },
-      { requesterId: "viewer", receiverId: "visible" },
-    ]);
+  it("filters blocked authors via the single-query author predicate", async () => {
     safety.getBlockedEitherIds.mockResolvedValue(["blocked_by_viewer", "blocked_viewer"]);
-    prisma.post.findMany.mockResolvedValue([]);
 
     await service.getFeed("viewer", null, 20);
 
     expect(prisma.post.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: {
+        where: expect.objectContaining({
           deletedAt: null,
-          authorId: { in: ["viewer", "visible"] },
-        },
+          author: expect.objectContaining({
+            deletedAt: null,
+            id: { notIn: ["blocked_by_viewer", "blocked_viewer"] },
+            OR: [
+              { id: "viewer" },
+              { sentConnections: { some: { receiverId: "viewer", status: "ACCEPTED" } } },
+              { recvConnections: { some: { requesterId: "viewer", status: "ACCEPTED" } } },
+            ],
+          }),
+        }),
       }),
     );
   });
 
-  it("excludes deleted connected authors from the feed query", async () => {
-    prisma.connection.findMany.mockResolvedValue([
-      { requesterId: "viewer", receiverId: "deleted_author" },
-      { requesterId: "viewer", receiverId: "visible" },
-    ]);
-    prisma.user.findMany.mockResolvedValue([{ id: "deleted_author" }]);
-    prisma.post.findMany.mockResolvedValue([]);
-
+  it("omits the blocked-id predicate when nothing is blocked", async () => {
     await service.getFeed("viewer", null, 20);
 
-    expect(prisma.user.findMany).toHaveBeenCalledWith({
-      where: { id: { in: ["viewer", "deleted_author", "visible"] }, deletedAt: { not: null } },
-      select: { id: true },
+    const call = prisma.post.findMany.mock.calls[0]![0] as {
+      where: { author: Record<string, unknown> };
+    };
+    expect(call.where.author).not.toHaveProperty("id");
+    expect(call.where.author).toMatchObject({
+      deletedAt: null,
+      OR: expect.any(Array),
     });
+  });
+
+  it("excludes soft-deleted authors via the author relation filter", async () => {
+    await service.getFeed("viewer", null, 20);
+
     expect(prisma.post.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: {
+        where: expect.objectContaining({
           deletedAt: null,
-          authorId: { in: ["viewer", "visible"] },
-        },
+          author: expect.objectContaining({ deletedAt: null }),
+        }),
       }),
     );
   });

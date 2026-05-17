@@ -384,6 +384,7 @@ model Connection {
   @@unique([requesterId, receiverId])
   @@index([receiverId, status])
   @@index([requesterId, status])
+  @@index([status, createdAt])
 }
 
 model BlockedUser {
@@ -419,6 +420,7 @@ model Post {
 
   @@index([authorId, createdAt])
   @@index([createdAt])
+  @@index([authorId, deletedAt, createdAt])
   // FTS: raw SQL GIN index on body added in a later migration.
 }
 
@@ -499,18 +501,22 @@ model ChatRoom {
 }
 
 model ChatRoomMember {
-  id          String   @id @default(cuid())
-  room        ChatRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
-  roomId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId      String
-  joinedAt    DateTime @default(now())
-  lastReadAt  DateTime?
-  mutedUntil  DateTime?
-  archivedAt  DateTime?
+  id                String   @id @default(cuid())
+  room              ChatRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  roomId            String
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId            String
+  joinedAt          DateTime @default(now())
+  lastReadAt        DateTime?
+  // Denormalized cursor for O(1) unread counts. Updated whenever the user
+  // reads or sends a message in the room. NULL = never read anything.
+  lastReadMessageId String?
+  mutedUntil        DateTime?
+  archivedAt        DateTime?
 
   @@unique([roomId, userId])
   @@index([userId])
+  @@index([userId, roomId])
 }
 
 model Message {
@@ -551,11 +557,17 @@ model Notification {
   data         Json?
   readAt       DateTime?
   dismissedAt  DateTime?
+  // Stable hash of (type, actorId, postId, commentId, connectionId, messageId,
+  // jobId) used to collapse duplicate unread notifications without a 10-field
+  // findFirst. NULL when dedupe is disabled for the emit call.
+  dedupeKey    String?
   createdAt    DateTime         @default(now())
 
   @@index([recipientId, readAt])
   @@index([recipientId, dismissedAt])
   @@index([recipientId, createdAt])
+  @@index([recipientId, readAt, createdAt])
+  @@index([recipientId, dedupeKey, readAt, dismissedAt])
 }
 
 model DeviceToken {

@@ -24,10 +24,36 @@
 - Sprint 21 closes F-10 notification dismissal with owner-only soft-dismiss and F-11 mobile tab polish with five visible tabs, AppHeader search access, web/mobile dismiss UI, account export sharing, and shared toast primitives.
 - Sprint 11.5 fixed Expo monorepo bundle resolution, mobile runtime package gaps, API runtime package builds, mobile SSE auth header handling, NetInfo seed state, Sentry release tagging, push locale copy, and authenticated a11y fixture validation.
 
+## Repo Optimization (Phases 3–7)
+
+Tracked separately in PR #30 against `main`.
+
+- Phase 3 (DB + Prisma hot paths): composite indexes on `Notification`,
+  `Post`, `Connection`, `ChatRoomMember`; `dedupeKey` column on
+  `Notification`; `lastReadMessageId` cursor on `ChatRoomMember`; GIN
+  tsvector FTS indexes on Profile/Post/Job using the `simple`
+  dictionary (closes #7). Feed, messaging, notifications, and search
+  rewritten to single batched queries.
+- Phase 4 (API correctness + security): httpOnly refresh cookie path
+  for web (mobile keeps body transport via `X-Auth-Transport: body`);
+  `compression` middleware over JSON; production CORS hard-fail on
+  empty `CORS_ORIGINS`; `@Throttle` on every public auth route;
+  `RateLimitBackend` interface + lazy TTL sweep; strict media
+  extension whitelist; explicit single-source CSP via middleware.
+- Phase 5 (web perf): `next/image` migration (5 raw `<img>`),
+  `QueryClient` singleton pattern, `(auth)/loading.tsx`, Tailwind
+  content glob narrowed to `ui-web/dist` in production.
+- Phase 6 (test coverage + Maestro): seven API service spec backfills
+  (Reactions, Reposts, Comments, Ratings, Companies, AdminModeration,
+  Mail) + minimal web Jest via `next/jest`; mobile Maestro scaffold
+  with three smoke flows and an opt-in `workflow_dispatch` CI job.
+  Test total now 285 across the repo.
+- Phase 7 (cleanup): `typescript` pinned to `~5.9.2` across every
+  package; `pnpm dedupe` applied; docs refreshed.
+
 ## Known Follow-Ups
 
 - Real-device manual smoke evidence is still owed for refresh, deep links, push, haptics, offline/SSE resume, swipe archive, and cross-device messaging.
-- Native Jest coverage now runs in the root test gate on Windows; branch coverage remains thin for `Icon`, `MessageBubble`, `Sheet`, `Skeleton`, and `PostCardSkeleton`.
 - Arabic copy received AI-assisted cleanup but still needs a native human review before launch.
 - Universal-link files are committed as drafts; replace Apple team ID and Android release SHA256 before production hosting.
 - EAS project id and production Sentry/PostHog values remain environment-level release tasks.
@@ -36,7 +62,8 @@
 - Real email provider integration remains deferred; choose Resend, SES, Postmark, or another provider before replacing the console transport.
 - Safety-related privacy/legal copy still needs counsel review before launch.
 - Account hard-delete after the 30-day restore grace period remains a follow-up scheduled job.
-- Redis-backed SSE fanout/rate-limit storage, virus/NSFW scanning, orphaned media lifecycle cleanup, WebAuthn/2FA, and httpOnly refresh cookies remain deferred after Sprint 20.
+- Redis-backed SSE fanout + rate-limit storage and virus/NSFW scanning remain deferred; the `RateLimitBackend` interface introduced in Phase 4 lets a Redis impl drop in without further consumer churn.
+- Cross-package dead-export sweep is intentionally deferred: `ts-prune` against a single tsconfig flags every `@baydar/shared` export as unused because cross-package usage isn't visible; revisit with a workspace-aware tool (e.g. `knip --workspaces`).
 - Sprint 15 safety test follow-ups are closed by Sprint 16: ui-web/ui-native safety primitives now have behavior coverage, mutation spot-check evidence was captured, and the Playwright safety e2e has an explicit Windows EPERM guard for invocable local runs.
 
 ## Verification Snapshot

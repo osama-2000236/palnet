@@ -114,6 +114,89 @@ pnpm test
 
 Web build and mobile Expo export checks should run before release candidates.
 
+## Auth Transport (Phase 4 — new)
+
+The API serves two auth-token transports off the same endpoints:
+
+- **Cookie transport (default; web).** Login/register/refresh return
+  the refresh token via `Set-Cookie: baydar_refresh=…; HttpOnly;
+SameSite=Lax; Secure (prod); Path=/api/v1/auth`. The JSON body still
+  contains a `refreshToken` field but it is redacted to an empty
+  string — the cookie is the source of truth. Web `apiFetch` defaults
+  to `credentials: 'include'`.
+- **Body transport (mobile).** Clients send `X-Auth-Transport: body`
+  on every request and receive the refresh token in the JSON body
+  exactly as before. Mobile sets this header in
+  `apps/mobile/src/lib/api.ts` so the existing SecureStore flow keeps
+  working without a cookie jar.
+
+`POST /api/v1/auth/logout` clears the cookie when the transport is
+cookie; mobile logout stays a no-op against the cookie.
+
+## Required Secrets at a Glance
+
+Add `MOBILE_PREVIEW_BUILD_URL` to the GitHub Actions secrets when
+enabling the opt-in `mobile-e2e` workflow (Maestro). Without it the job
+fails fast with a clear error. See `.github/SECRETS.md` for the full
+list.
+
+## Migrations
+
+Run `pnpm --filter @baydar/db db:deploy` against each environment in
+order: staging → production. The Phase 3 migrations
+(`202605170001_perf_indexes_and_dedupe_key`,
+`202605170002_fts_gin_indexes`) are forward-only and additive — every
+new column is nullable + backfilled, every new index is created
+without `CONCURRENTLY` and so will take a brief write lock proportional
+to table size. For the launch dataset (< 100k rows in any table) the
+lock window is sub-second.
+
+## Production Pre-Flight Checklist
+
+Before promoting a branch to production:
+
+1. `pnpm install --frozen-lockfile && pnpm --filter @baydar/db generate`
+2. `pnpm lint:tokens && pnpm format:check && pnpm lint && pnpm type-check`
+3. `pnpm test` — expect 285+ passing tests (API + mobile + web).
+4. `pnpm turbo run build --filter @baydar/web` — verify the bundle
+   topology hasn't regressed.
+5. Apply DB migrations to staging first, run `pnpm load:api:baseline`
+   against staging, and compare p95 to the most recent
+   `docs/perf-baseline-*.md` snapshot.
+6. Smoke `/api/v1/auth/login` with and without `X-Auth-Transport: body`
+   on the staging URL; confirm:
+   - Without the header: `Set-Cookie: baydar_refresh=…` present,
+     response body has `refreshToken: ""`.
+   - With the header: no `Set-Cookie`, response body has the real
+     refresh token.
+7. Tag `v0.1.0-beta.1` only after the Deploy workflow has been green
+   twice in a row on the target branch.
+8. Open a manual `workflow_dispatch` deploy run with `target=production`
+   and watch:
+   - Migrate job: green.
+   - Render API redeploy: `/api/v1/health` returns 200 within 60s.
+   - Vercel web deploy: `/` returns 200 within 60s.
+   - Sentry error rate flat for the first 15 minutes.
+
+## Rollback
+
+- **Web (Vercel).** `vercel rollback` to the previous deployment via
+  the dashboard or CLI; DNS is not in the loop so this is instant.
+- **API (Render).** Promote the previous successful deploy from the
+  Render dashboard. The Phase 3 migrations are additive so rolling the
+  code back without rolling the DB is safe.
+- **Migrations.** Forward-only by policy. To undo, write a follow-up
+  migration that drops or compensates rather than `prisma migrate
+resolve --rolled-back`.
+
+## On-Call Contacts
+
+TBD before launch. Placeholder slots:
+
+- API on-call: \<name / Slack handle\>
+- Mobile on-call: \<name / Slack handle\>
+- Status page: \<URL\>
+
 ## Current Release Caveats
 
 - Universal-link files contain placeholders until Apple team ID and Android release fingerprint are set.

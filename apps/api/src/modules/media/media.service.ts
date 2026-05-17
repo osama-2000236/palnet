@@ -121,11 +121,18 @@ export class MediaService {
   }
 }
 
+// Allow-list of extensions we ever write. Even though `extensionFor`
+// double-checks against the MIME-derived fallback, a strict regex stops a
+// crafted filename like `evil.php` (still 1–8 alphanumeric chars) from
+// reaching the comparison branch, which is the belt-and-suspenders the
+// security audit asked for.
+const ALLOWED_EXTENSION_RE = /\.(jpg|jpeg|png|webp|gif|pdf|mp4|mov|webm)$/i;
+
 // Preserve a safe matching extension from filename if provided; otherwise use the MIME extension.
 function extensionFor(filename: string | undefined, fallback: string): string {
   if (filename) {
-    const m = /(\.[a-zA-Z0-9]{1,8})$/.exec(filename);
-    if (m && m[1]!.toLowerCase() === fallback) return fallback;
+    const m = ALLOWED_EXTENSION_RE.exec(filename);
+    if (m && `.${m[1]!.toLowerCase()}` === fallback) return fallback;
   }
   return fallback;
 }

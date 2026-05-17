@@ -1,0 +1,29 @@
+appId: ps.baydar.app
+name: "login → feed"
+tags:
+  - smoke
+---
+- launchApp:
+    clearState: true
+# Onboarding may pre-empt the login screen on first launch — skip past it.
+- runFlow:
+    when:
+      visible: "تخطي"
+    commands:
+      - tapOn: "تخطي"
+
+- assertVisible: "بريد إلكتروني"
+- tapOn:
+    id: "email-input"
+- inputText: "qa@baydar.ps"
+- tapOn:
+    id: "password-input"
+- inputText: "qa-fixture-pass"
+- tapOn:
+    id: "submit-login"
+
+# Feed shell is the success criterion — the home composer entry is the most
+# reliable visible anchor across locales.
+- assertVisible:
+    id: "composer-entry"
+    timeout: 15000

@@ -10,12 +10,19 @@ const intlMiddleware = createMiddleware({
   localePrefix: "always",
 });
 
+// This middleware is the SINGLE source of truth for the Content-Security-Policy
+// response header. `next.config.mjs` deliberately passes
+// `{ includeContentSecurityPolicy: false }` to `buildSecurityHeaders` so the
+// static `headers()` block never sets CSP — that way the nonce minted here
+// never gets clobbered by a stale value.
 export default function middleware(request: NextRequest) {
   const nonce = generateNonce();
   const csp = buildContentSecurityPolicy(process.env, nonce);
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set("x-nonce", nonce);
-  requestHeaders.set("Content-Security-Policy", csp);
+  // `x-csp` is the value Server Components can read via `headers()` for
+  // inline-script nonces. The response header is set below.
+  requestHeaders.set("x-csp", csp);
 
   const response = intlMiddleware(new NextRequest(request, { headers: requestHeaders }));
   response.headers.set(

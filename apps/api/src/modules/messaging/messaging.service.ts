@@ -1,3 +1,4 @@
+import { Prisma } from "@baydar/db";
 import {
   type ChatRoom as ChatRoomDto,
   type CreateGroupRoomBody,
@@ -37,6 +38,7 @@ interface MessageWithRoomRow extends MessageRow {
 interface MemberRow {
   userId: string;
   lastReadAt: Date | null;
+  lastReadMessageId: string | null;
   user: {
     deletedAt: Date | null;
     lastSeenAt: Date | null;
@@ -194,7 +196,13 @@ export class MessagingService {
       },
     })) as unknown as RoomRow[];
 
-    return Promise.all(rooms.map((row) => this.toChatRoomDto(row, viewerId, excludedUserIds)));
+    const unreadByRoom = await this.getUnreadCounts(
+      viewerId,
+      rooms.map((r) => r.id),
+      excludedUserIds,
+    );
+
+    return rooms.map((row) => this.toChatRoomDto(row, viewerId, unreadByRoom.get(row.id) ?? 0));
   }
 
   async getRoomDto(roomId: string, viewerId: string): Promise<ChatRoomDto> {
@@ -236,7 +244,8 @@ export class MessagingService {
     if (!row) {
       throw new DomainException(ErrorCode.NOT_FOUND, "Room not found.", 404);
     }
-    return this.toChatRoomDto(row, viewerId, excludedUserIds);
+    const unreadByRoom = await this.getUnreadCounts(viewerId, [row.id], excludedUserIds);
+    return this.toChatRoomDto(row, viewerId, unreadByRoom.get(row.id) ?? 0);
   }
 
   // ─────────────────────────────────────────────────────────────────────
@@ -304,11 +313,21 @@ export class MessagingService {
       },
     })) as unknown as MessageRow;
 
-    // Bump room.updatedAt so listings re-sort.
-    await this.prisma.chatRoom.update({
-      where: { id: roomId },
-      data: { updatedAt: new Date() },
-    });
+    // Bump room.updatedAt so listings re-sort, and mark the sender as having
+    // "read" their own message so their unread count doesn't tick.
+    await Promise.all([
+      this.prisma.chatRoom.update({
+        where: { id: roomId },
+        data: { updatedAt: new Date() },
+      }),
+      this.prisma.chatRoomMember.updateMany({
+        where: { roomId, userId: viewerId },
+        data: {
+          lastReadAt: created.createdAt,
+          lastReadMessageId: created.id,
+        } as never,
+      }),
+    ]);
 
     const dto = toMessageDto(created);
 
@@ -432,9 +451,17 @@ export class MessagingService {
   async markRead(viewerId: string, roomId: string): Promise<void> {
     await this.requireMembership(viewerId, roomId);
     const at = new Date();
+    const latest = await this.prisma.message.findFirst({
+      where: { roomId },
+      orderBy: { createdAt: "desc" },
+      select: { id: true },
+    });
     await this.prisma.chatRoomMember.updateMany({
       where: { roomId, userId: viewerId },
-      data: { lastReadAt: at },
+      data: {
+        lastReadAt: at,
+        lastReadMessageId: latest?.id ?? null,
+      } as never,
     });
 
     // Tell the room that this user has read up to `at`.
@@ -472,27 +499,47 @@ export class MessagingService {
     }
   }
 
-  private async toChatRoomDto(
-    row: RoomRow,
+  /**
+   * Batched unread-count lookup. One SQL round trip resolves every room's
+   * unread count using each member's denormalized `lastReadMessageId` as the
+   * cutoff (falling back to "all messages" when the user has never read).
+   * Replaces the per-room `message.count()` loop that scaled O(rooms).
+   */
+  private async getUnreadCounts(
     viewerId: string,
+    roomIds: string[],
     excludedUserIds: string[],
-  ): Promise<ChatRoomDto> {
+  ): Promise<Map<string, number>> {
+    if (roomIds.length === 0) return new Map();
+    const excluded = [viewerId, ...excludedUserIds];
+    const rows = await this.prisma.$queryRaw<Array<{ roomId: string; unread: bigint }>>(Prisma.sql`
+      WITH cursors AS (
+        SELECT
+          m."roomId",
+          (
+            SELECT msg."createdAt"
+            FROM   "Message" msg
+            WHERE  msg."id" = m."lastReadMessageId"
+          ) AS cutoff_at
+        FROM   "ChatRoomMember" m
+        WHERE  m."userId" = ${viewerId}
+          AND  m."roomId" IN (${Prisma.join(roomIds)})
+      )
+      SELECT
+        msg."roomId"          AS "roomId",
+        COUNT(*)::bigint      AS "unread"
+      FROM   "Message" msg
+      JOIN   cursors    c     ON c."roomId" = msg."roomId"
+      WHERE  msg."deletedAt" IS NULL
+        AND  msg."authorId" NOT IN (${Prisma.join(excluded)})
+        AND  (c.cutoff_at IS NULL OR msg."createdAt" > c.cutoff_at)
+      GROUP  BY msg."roomId"
+    `);
+    return new Map(rows.map((r) => [r.roomId, Number(r.unread)]));
+  }
+
+  private toChatRoomDto(row: RoomRow, viewerId: string, unreadCount: number): ChatRoomDto {
     const lastMessage = row.messages[0] ? toMessageDto(row.messages[0]) : null;
-
-    // Unread count = messages authored by others after this member's lastReadAt.
-    const me = row.members.find((m) => m.userId === viewerId);
-    const lastReadAt = me?.lastReadAt ?? null;
-    const unreadCount = await this.prisma.message.count({
-      where: {
-        roomId: row.id,
-        deletedAt: null,
-        authorId: excludedUserIds.length
-          ? { notIn: [viewerId, ...excludedUserIds] }
-          : { not: viewerId },
-        ...(lastReadAt ? { createdAt: { gt: lastReadAt } } : {}),
-      },
-    });
-
     return {
       id: row.id,
       isGroup: row.isGroup,

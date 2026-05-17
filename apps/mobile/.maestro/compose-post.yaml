@@ -1,0 +1,21 @@
+appId: ps.baydar.app
+name: "compose post"
+tags:
+  - smoke
+---
+- runFlow: login-to-feed.yaml
+
+- tapOn:
+    id: "composer-entry"
+- assertVisible:
+    id: "post-body-input"
+    timeout: 5000
+- inputText: "Maestro smoke post — $(uuid)"
+- tapOn:
+    id: "post-submit"
+
+# Optimistic insert should land in the feed within a few seconds; assert on
+# the visible composer entry coming back (modal dismissed = success).
+- assertVisible:
+    id: "composer-entry"
+    timeout: 15000

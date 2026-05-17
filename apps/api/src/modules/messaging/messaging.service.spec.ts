@@ -33,6 +33,7 @@ type PrismaStub = {
     count: jest.Mock;
   };
   blockedUser: { count: jest.Mock };
+  $queryRaw: jest.Mock;
 };
 
 function buildPrisma(): PrismaStub {
@@ -61,6 +62,9 @@ function buildPrisma(): PrismaStub {
       count: jest.fn(),
     },
     blockedUser: { count: jest.fn() },
+    // Unread-counts batched query. Default to empty (zero unread) — specific
+    // tests override per case.
+    $queryRaw: jest.fn().mockResolvedValue([]),
   };
 }
 
@@ -261,7 +265,7 @@ describe("MessagingService", () => {
   });
 
   describe("listMyRooms unread count", () => {
-    it("counts messages from others created after the viewer's lastReadAt", async () => {
+    it("returns the batched unread count produced by the single $queryRaw call", async () => {
       const lastRead = new Date("2026-04-18T09:00:00Z");
       prisma.chatRoom.findMany.mockResolvedValue([
         roomRow({
@@ -269,6 +273,7 @@ describe("MessagingService", () => {
             {
               userId: "u_me",
               lastReadAt: lastRead,
+              lastReadMessageId: "msg_last",
               user: {
                 profile: { handle: "me", firstName: "M", lastName: "E", avatarUrl: null },
               },
@@ -276,6 +281,7 @@ describe("MessagingService", () => {
             {
               userId: "u_them",
               lastReadAt: null,
+              lastReadMessageId: null,
               user: {
                 profile: { handle: "them", firstName: "T", lastName: "M", avatarUrl: null },
               },
@@ -283,18 +289,21 @@ describe("MessagingService", () => {
           ],
         }),
       ]);
-      prisma.message.count.mockResolvedValue(3);
+      prisma.$queryRaw.mockResolvedValue([{ roomId: "room_1", unread: 3n }]);
 
       const out = await service.listMyRooms("u_me");
       expect(out[0]?.unreadCount).toBe(3);
-      expect(prisma.message.count).toHaveBeenCalledWith({
-        where: {
-          roomId: "room_1",
-          deletedAt: null,
-          authorId: { not: "u_me" },
-          createdAt: { gt: lastRead },
-        },
-      });
+      // The per-room loop was replaced with one batched SQL call.
+      expect(prisma.message.count).not.toHaveBeenCalled();
+      expect(prisma.$queryRaw).toHaveBeenCalledTimes(1);
+    });
+
+    it("defaults unread to 0 when the batched query returns nothing for a room", async () => {
+      prisma.chatRoom.findMany.mockResolvedValue([roomRow()]);
+      prisma.$queryRaw.mockResolvedValue([]);
+
+      const out = await service.listMyRooms("u_me");
+      expect(out[0]?.unreadCount).toBe(0);
     });
 
     it("hides rooms archived by the viewer", async () => {

@@ -1,6 +1,7 @@
 import { NestFactory } from "@nestjs/core";
 import type { NestExpressApplication } from "@nestjs/platform-express";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
+import compression from "compression";
 import helmet from "helmet";
 import { Logger } from "nestjs-pino";
 
@@ -16,8 +17,21 @@ async function bootstrap(): Promise<void> {
 
   app.setGlobalPrefix("api/v1");
   app.use(helmet());
+  // gzip JSON responses above 1KB. The threshold keeps tiny payloads
+  // (health, mark-read, 204s) uncompressed so we don't pay handshake cost.
+  app.use(compression({ threshold: 1024 }));
+
+  const corsOrigins = env.CORS_ORIGINS.split(",")
+    .map((o) => o.trim())
+    .filter(Boolean);
+  if (env.NODE_ENV === "production" && corsOrigins.length === 0) {
+    throw new Error(
+      "[baydar/api] CORS_ORIGINS must list at least one origin in production. " +
+        "Set CORS_ORIGINS=https://baydar.ps,https://www.baydar.ps or similar.",
+    );
+  }
   app.enableCors({
-    origin: env.CORS_ORIGINS.split(",").map((o) => o.trim()),
+    origin: corsOrigins.length > 0 ? corsOrigins : false,
     credentials: true,
   });
 

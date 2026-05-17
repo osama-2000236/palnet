@@ -100,6 +100,10 @@ async function request(
   const headers = new Headers(opts.headers);
   if (opts.body !== undefined) headers.set("Content-Type", "application/json");
   if (token) headers.set("Authorization", `Bearer ${token}`);
+  // Mobile has no cookie jar — opt the API into returning refresh tokens in
+  // the JSON body (the default transport on the server is now httpOnly
+  // cookie for the web client).
+  headers.set("X-Auth-Transport", "body");
 
   const { body, token: _token, skipAuth: _skipAuth, ...init } = opts;
   void _token;
