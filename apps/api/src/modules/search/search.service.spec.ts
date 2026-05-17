@@ -6,20 +6,22 @@ import { SafetyService } from "../safety/safety.service";
 import { SearchService } from "./search.service";
 
 type PrismaStub = {
-  profile: { findMany: jest.Mock };
-  post: { findMany: jest.Mock };
-  job: { findMany: jest.Mock };
+  profile: { findUnique: jest.Mock };
+  post: { findUnique: jest.Mock };
+  job: { findUnique: jest.Mock };
+  $queryRaw: jest.Mock;
 };
 
 function buildPrisma(): PrismaStub {
   return {
-    profile: { findMany: jest.fn() },
-    post: { findMany: jest.fn() },
-    job: { findMany: jest.fn() },
+    profile: { findUnique: jest.fn() },
+    post: { findUnique: jest.fn() },
+    job: { findUnique: jest.fn() },
+    $queryRaw: jest.fn().mockResolvedValue([]),
   };
 }
 
-const hit = (overrides: Partial<{ id: string; handle: string }> = {}) => ({
+const personRow = (overrides: Partial<{ id: string; handle: string }> = {}) => ({
   id: overrides.id ?? "p_1",
   userId: `u_${overrides.id ?? "1"}`,
   handle: overrides.handle ?? "osama",
@@ -30,22 +32,19 @@ const hit = (overrides: Partial<{ id: string; handle: string }> = {}) => ({
   avatarUrl: null,
 });
 
-const postHit = (overrides: Partial<{ id: string; authorId: string; body: string }> = {}) => ({
+const postRow = (overrides: Partial<{ id: string; authorId: string; body: string }> = {}) => ({
   id: overrides.id ?? "post_1",
   authorId: overrides.authorId ?? "author_1",
   body: overrides.body ?? "Building better hiring search in Arabic.",
   createdAt: new Date("2026-05-05T10:00:00.000Z"),
-  author: {
-    profile: {
-      handle: "muna",
-      firstName: "Muna",
-      lastName: "Saleh",
-      avatarUrl: null,
-    },
-  },
+  authorDeletedAt: null,
+  authorHandle: "muna",
+  authorFirstName: "Muna",
+  authorLastName: "Saleh",
+  authorAvatarUrl: null,
 });
 
-const jobHit = (overrides: Partial<{ id: string }> = {}) => ({
+const jobRow = (overrides: Partial<{ id: string }> = {}) => ({
   id: overrides.id ?? "job_1",
   title: "Product Engineer",
   type: "FULL_TIME",
@@ -53,8 +52,23 @@ const jobHit = (overrides: Partial<{ id: string }> = {}) => ({
   city: "Ramallah",
   country: "PS",
   createdAt: new Date("2026-05-05T10:00:00.000Z"),
-  company: { name: "Baydar", logoUrl: null },
+  companyName: "Baydar",
+  companyLogoUrl: null,
 });
+
+/**
+ * Pulls the SQL string fragments handed to $queryRaw out of the
+ * `Prisma.sql` template object so tests can assert on substrings without
+ * caring about whitespace. The Prisma helper exposes the literal pieces as
+ * `.strings` plus a `.values` array — we only need the strings here.
+ */
+function rawSqlFromCall(call: unknown[]): string {
+  const arg = call[0] as { strings?: ArrayLike<string> } | { sql?: string };
+  if ("strings" in arg && arg.strings) {
+    return Array.from(arg.strings).join(" ");
+  }
+  return ("sql" in arg ? arg.sql : "") ?? "";
+}
 
 describe("SearchService", () => {
   let service: SearchService;
@@ -75,7 +89,7 @@ describe("SearchService", () => {
   });
 
   it("returns hits with pagination metadata (happy path)", async () => {
-    prisma.profile.findMany.mockResolvedValue([hit()]);
+    prisma.$queryRaw.mockResolvedValue([personRow()]);
 
     const page = await service.people("viewer", { q: "osama", limit: 20 });
 
@@ -86,11 +100,10 @@ describe("SearchService", () => {
   });
 
   it("detects hasMore by overfetching limit + 1 and trims", async () => {
-    // limit=2 + 1 overfetch = 3 rows back
-    prisma.profile.findMany.mockResolvedValue([
-      hit({ id: "p_1", handle: "a" }),
-      hit({ id: "p_2", handle: "b" }),
-      hit({ id: "p_3", handle: "c" }),
+    prisma.$queryRaw.mockResolvedValue([
+      personRow({ id: "p_1", handle: "a" }),
+      personRow({ id: "p_2", handle: "b" }),
+      personRow({ id: "p_3", handle: "c" }),
     ]);
 
     const page = await service.people("viewer", { q: "z", limit: 2 });
@@ -100,57 +113,49 @@ describe("SearchService", () => {
     expect(page.meta.nextCursor).toBe("p_2");
   });
 
-  it("forwards cursor + skip when `after` is provided", async () => {
-    prisma.profile.findMany.mockResolvedValue([]);
+  it("resolves the cursor row when `after` is provided", async () => {
+    prisma.profile.findUnique.mockResolvedValue({ handle: "prev", id: "p_prev" });
+    prisma.$queryRaw.mockResolvedValue([]);
 
     await service.people("viewer", { q: "x", limit: 20, after: "p_prev" });
 
-    expect(prisma.profile.findMany).toHaveBeenCalledWith(
-      expect.objectContaining({
-        cursor: { id: "p_prev" },
-        skip: 1,
-      }),
-    );
+    expect(prisma.profile.findUnique).toHaveBeenCalledWith({
+      where: { id: "p_prev" },
+      select: { handle: true, id: true },
+    });
+    expect(prisma.$queryRaw).toHaveBeenCalled();
   });
 
-  it("excludes blocked users at the Prisma query layer", async () => {
+  it("uses a tsquery FTS predicate for people search", async () => {
+    prisma.$queryRaw.mockResolvedValue([]);
+
+    await service.people("viewer", { q: "ramallah", limit: 20 });
+
+    const sql = rawSqlFromCall(prisma.$queryRaw.mock.calls[0]!);
+    expect(sql).toMatch(/to_tsvector\(/);
+    expect(sql).toMatch(/plainto_tsquery\(/);
+    expect(sql).toMatch(/"User"/);
+    expect(sql).toMatch(/"deletedAt" IS NULL/);
+  });
+
+  it("appends the blocked-id NOT IN predicate when safety reports blocks", async () => {
     safety.getBlockedEitherIds.mockResolvedValue(["blocked_1"]);
-    prisma.profile.findMany.mockResolvedValue([]);
+    prisma.$queryRaw.mockResolvedValue([]);
 
     await service.people("viewer", { q: "x", limit: 20 });
 
-    expect(prisma.profile.findMany).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: expect.objectContaining({ userId: { notIn: ["blocked_1"] } }),
-      }),
-    );
+    const sql = rawSqlFromCall(prisma.$queryRaw.mock.calls[0]!);
+    expect(sql).toMatch(/NOT IN/);
   });
 
-  it("excludes deleted users at the people search query layer", async () => {
-    prisma.profile.findMany.mockResolvedValue([]);
-
-    await service.people("viewer", { q: "x", limit: 20 });
-
-    expect(prisma.profile.findMany).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: expect.objectContaining({ user: { deletedAt: null } }),
-      }),
-    );
-  });
-
-  it("searches posts and maps author metadata plus body excerpt", async () => {
-    prisma.post.findMany.mockResolvedValue([postHit()]);
+  it("searches posts via tsquery and maps author metadata + excerpt", async () => {
+    prisma.$queryRaw.mockResolvedValue([postRow()]);
 
     const page = await service.searchPosts("viewer", { q: "hiring", limit: 20 });
 
-    expect(prisma.post.findMany).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: expect.objectContaining({
-          body: { contains: "hiring", mode: "insensitive" },
-          deletedAt: null,
-        }),
-      }),
-    );
+    const sql = rawSqlFromCall(prisma.$queryRaw.mock.calls[0]!);
+    expect(sql).toMatch(/to_tsvector\('simple', COALESCE\(po\."body"/);
+    expect(sql).toMatch(/plainto_tsquery/);
     expect(page.data).toEqual([
       expect.objectContaining({
         id: "post_1",
@@ -163,41 +168,25 @@ describe("SearchService", () => {
     ]);
   });
 
-  it("excludes blocked post authors at the Prisma query layer", async () => {
+  it("excludes blocked post authors via a NOT IN clause", async () => {
     safety.getBlockedEitherIds.mockResolvedValue(["blocked_author"]);
-    prisma.post.findMany.mockResolvedValue([]);
+    prisma.$queryRaw.mockResolvedValue([]);
 
     await service.searchPosts("viewer", { q: "x", limit: 20 });
 
-    expect(prisma.post.findMany).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: expect.objectContaining({ authorId: { notIn: ["blocked_author"] } }),
-      }),
-    );
+    const sql = rawSqlFromCall(prisma.$queryRaw.mock.calls[0]!);
+    expect(sql).toMatch(/NOT IN/);
   });
 
   it("searches only active and unexpired jobs", async () => {
-    prisma.job.findMany.mockResolvedValue([jobHit()]);
+    prisma.$queryRaw.mockResolvedValue([jobRow()]);
 
     const page = await service.searchJobs("viewer", { q: "engineer", limit: 20 });
 
-    expect(prisma.job.findMany).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: expect.objectContaining({
-          isActive: true,
-          deletedAt: null,
-          AND: [
-            {
-              OR: [
-                { title: { contains: "engineer", mode: "insensitive" } },
-                { description: { contains: "engineer", mode: "insensitive" } },
-              ],
-            },
-            { OR: [{ expiresAt: null }, { expiresAt: { gt: expect.any(Date) } }] },
-          ],
-        }),
-      }),
-    );
+    const sql = rawSqlFromCall(prisma.$queryRaw.mock.calls[0]!);
+    expect(sql).toMatch(/"isActive"\s+=\s+TRUE/);
+    expect(sql).toMatch(/"deletedAt" IS NULL/);
+    expect(sql).toMatch(/"expiresAt" IS NULL OR/);
     expect(page.data).toEqual([
       expect.objectContaining({
         id: "job_1",

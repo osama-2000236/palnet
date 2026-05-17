@@ -1,3 +1,4 @@
+import { Prisma } from "@baydar/db";
 import type {
   CursorPageMeta,
   JobsSearchQuery,
@@ -12,6 +13,9 @@ import { Injectable } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
 import { SafetyService } from "../safety/safety.service";
 
+// Raw rows returned by the $queryRaw helpers below. Mirrors the shape the
+// previous Prisma `findMany` calls produced so the downstream mappers stay
+// untouched.
 interface ProfileSearchRow {
   id: string;
   userId: string;
@@ -28,15 +32,11 @@ interface PostSearchRow {
   authorId: string;
   body: string;
   createdAt: Date;
-  author: {
-    deletedAt: Date | null;
-    profile: {
-      handle: string;
-      firstName: string;
-      lastName: string;
-      avatarUrl: string | null;
-    } | null;
-  };
+  authorDeletedAt: Date | null;
+  authorHandle: string | null;
+  authorFirstName: string | null;
+  authorLastName: string | null;
+  authorAvatarUrl: string | null;
 }
 
 interface JobSearchRow {
@@ -47,10 +47,8 @@ interface JobSearchRow {
   city: string | null;
   country: string;
   createdAt: Date;
-  company: {
-    name: string;
-    logoUrl: string | null;
-  };
+  companyName: string;
+  companyLogoUrl: string | null;
 }
 
 @Injectable()
@@ -68,36 +66,47 @@ export class SearchService {
     const limit = query.limit;
     const excludedUserIds = await this.safety.getBlockedEitherIds(viewerId);
 
-    // Substring match across handle/firstName/lastName/headline. Postgres
-    // `mode: "insensitive"` keeps us case-insensitive without needing
-    // trigram/fts indexes yet; we'll layer GIN FTS in a later sprint.
-    const where = {
-      ...(excludedUserIds.length ? { userId: { notIn: excludedUserIds } } : {}),
-      user: { deletedAt: null },
-      OR: [
-        { handle: { contains: q, mode: "insensitive" as const } },
-        { firstName: { contains: q, mode: "insensitive" as const } },
-        { lastName: { contains: q, mode: "insensitive" as const } },
-        { headline: { contains: q, mode: "insensitive" as const } },
-      ],
-    };
+    // Cursor: paginate by (handle ASC, id ASC). When a cursor id is given we
+    // look up its handle so the SQL keyset condition can apply.
+    const cursorRow = query.after
+      ? await this.prisma.profile.findUnique({
+          where: { id: query.after },
+          select: { handle: true, id: true },
+        })
+      : null;
 
-    const rows = (await this.prisma.profile.findMany({
-      where,
-      orderBy: [{ handle: "asc" }, { id: "asc" }],
-      take: limit + 1,
-      ...(query.after ? { cursor: { id: query.after }, skip: 1 } : {}),
-      select: {
-        id: true,
-        userId: true,
-        handle: true,
-        firstName: true,
-        lastName: true,
-        headline: true,
-        location: true,
-        avatarUrl: true,
-      },
-    })) as unknown as ProfileSearchRow[];
+    const excludedClause = excludedUserIds.length
+      ? Prisma.sql`AND p."userId" NOT IN (${Prisma.join(excludedUserIds)})`
+      : Prisma.empty;
+    const cursorClause = cursorRow
+      ? Prisma.sql`AND (p."handle", p."id") > (${cursorRow.handle}, ${cursorRow.id})`
+      : Prisma.empty;
+
+    const rows = await this.prisma.$queryRaw<ProfileSearchRow[]>(Prisma.sql`
+      SELECT
+        p."id"        AS "id",
+        p."userId"    AS "userId",
+        p."handle"    AS "handle",
+        p."firstName" AS "firstName",
+        p."lastName"  AS "lastName",
+        p."headline"  AS "headline",
+        p."location"  AS "location",
+        p."avatarUrl" AS "avatarUrl"
+      FROM   "Profile" p
+      JOIN   "User"    u ON u."id" = p."userId"
+      WHERE  u."deletedAt" IS NULL
+        AND  to_tsvector(
+               'simple',
+               COALESCE(p."handle",    '') || ' ' ||
+               COALESCE(p."firstName", '') || ' ' ||
+               COALESCE(p."lastName",  '') || ' ' ||
+               COALESCE(p."headline",  '')
+             ) @@ plainto_tsquery('simple', ${q})
+        ${excludedClause}
+        ${cursorClause}
+      ORDER  BY p."handle" ASC, p."id" ASC
+      LIMIT  ${limit + 1}
+    `);
 
     const hasMore = rows.length > limit;
     const trimmed = hasMore ? rows.slice(0, limit) : rows;
@@ -128,35 +137,42 @@ export class SearchService {
     const limit = query.limit;
     const excludedUserIds = await this.safety.getBlockedEitherIds(viewerId);
 
-    const rows = (await this.prisma.post.findMany({
-      where: {
-        body: { contains: q, mode: "insensitive" as const },
-        deletedAt: null,
-        ...(excludedUserIds.length ? { authorId: { notIn: excludedUserIds } } : {}),
-      },
-      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
-      take: limit + 1,
-      ...(query.after ? { cursor: { id: query.after }, skip: 1 } : {}),
-      select: {
-        id: true,
-        authorId: true,
-        body: true,
-        createdAt: true,
-        author: {
-          select: {
-            profile: {
-              select: {
-                handle: true,
-                firstName: true,
-                lastName: true,
-                avatarUrl: true,
-              },
-            },
-            deletedAt: true,
-          },
-        },
-      },
-    })) as unknown as PostSearchRow[];
+    const cursorRow = query.after
+      ? await this.prisma.post.findUnique({
+          where: { id: query.after },
+          select: { createdAt: true, id: true },
+        })
+      : null;
+
+    const excludedClause = excludedUserIds.length
+      ? Prisma.sql`AND po."authorId" NOT IN (${Prisma.join(excludedUserIds)})`
+      : Prisma.empty;
+    // Posts are ordered DESC, so a "next page" condition is strictly LESS THAN.
+    const cursorClause = cursorRow
+      ? Prisma.sql`AND (po."createdAt", po."id") < (${cursorRow.createdAt}, ${cursorRow.id})`
+      : Prisma.empty;
+
+    const rows = await this.prisma.$queryRaw<PostSearchRow[]>(Prisma.sql`
+      SELECT
+        po."id"          AS "id",
+        po."authorId"    AS "authorId",
+        po."body"        AS "body",
+        po."createdAt"   AS "createdAt",
+        au."deletedAt"   AS "authorDeletedAt",
+        pr."handle"      AS "authorHandle",
+        pr."firstName"   AS "authorFirstName",
+        pr."lastName"    AS "authorLastName",
+        pr."avatarUrl"   AS "authorAvatarUrl"
+      FROM   "Post"    po
+      JOIN   "User"    au ON au."id"     = po."authorId"
+      LEFT JOIN "Profile" pr ON pr."userId" = au."id"
+      WHERE  po."deletedAt" IS NULL
+        AND  to_tsvector('simple', COALESCE(po."body", '')) @@ plainto_tsquery('simple', ${q})
+        ${excludedClause}
+        ${cursorClause}
+      ORDER  BY po."createdAt" DESC, po."id" DESC
+      LIMIT  ${limit + 1}
+    `);
 
     const hasMore = rows.length > limit;
     const trimmed = hasMore ? rows.slice(0, limit) : rows;
@@ -179,34 +195,42 @@ export class SearchService {
     const limit = query.limit;
     const now = new Date();
 
-    const rows = (await this.prisma.job.findMany({
-      where: {
-        isActive: true,
-        deletedAt: null,
-        AND: [
-          {
-            OR: [
-              { title: { contains: q, mode: "insensitive" as const } },
-              { description: { contains: q, mode: "insensitive" as const } },
-            ],
-          },
-          { OR: [{ expiresAt: null }, { expiresAt: { gt: now } }] },
-        ],
-      },
-      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
-      take: limit + 1,
-      ...(query.after ? { cursor: { id: query.after }, skip: 1 } : {}),
-      select: {
-        id: true,
-        title: true,
-        type: true,
-        locationMode: true,
-        city: true,
-        country: true,
-        createdAt: true,
-        company: { select: { name: true, logoUrl: true } },
-      },
-    })) as unknown as JobSearchRow[];
+    const cursorRow = query.after
+      ? await this.prisma.job.findUnique({
+          where: { id: query.after },
+          select: { createdAt: true, id: true },
+        })
+      : null;
+
+    const cursorClause = cursorRow
+      ? Prisma.sql`AND (j."createdAt", j."id") < (${cursorRow.createdAt}, ${cursorRow.id})`
+      : Prisma.empty;
+
+    const rows = await this.prisma.$queryRaw<JobSearchRow[]>(Prisma.sql`
+      SELECT
+        j."id"           AS "id",
+        j."title"        AS "title",
+        j."type"         AS "type",
+        j."locationMode" AS "locationMode",
+        j."city"         AS "city",
+        j."country"      AS "country",
+        j."createdAt"    AS "createdAt",
+        c."name"         AS "companyName",
+        c."logoUrl"      AS "companyLogoUrl"
+      FROM   "Job"     j
+      JOIN   "Company" c ON c."id" = j."companyId"
+      WHERE  j."isActive"  = TRUE
+        AND  j."deletedAt" IS NULL
+        AND  (j."expiresAt" IS NULL OR j."expiresAt" > ${now})
+        AND  to_tsvector(
+               'simple',
+               COALESCE(j."title",       '') || ' ' ||
+               COALESCE(j."description", '')
+             ) @@ plainto_tsquery('simple', ${q})
+        ${cursorClause}
+      ORDER  BY j."createdAt" DESC, j."id" DESC
+      LIMIT  ${limit + 1}
+    `);
 
     const hasMore = rows.length > limit;
     const trimmed = hasMore ? rows.slice(0, limit) : rows;
@@ -215,8 +239,8 @@ export class SearchService {
       data: trimmed.map<SearchJobHit>((j) => ({
         id: j.id,
         title: j.title,
-        companyName: j.company.name,
-        companyLogoUrl: j.company.logoUrl,
+        companyName: j.companyName,
+        companyLogoUrl: j.companyLogoUrl,
         locationMode: j.locationMode,
         city: j.city,
         country: j.country,
@@ -233,9 +257,8 @@ export class SearchService {
 }
 
 function toPostHit(row: PostSearchRow, q: string): SearchPostHit {
-  const profile = row.author.profile;
-  if (row.author.deletedAt) {
-    const excerpt = buildExcerpt(row.body, q);
+  const excerpt = buildExcerpt(row.body, q);
+  if (row.authorDeletedAt) {
     return {
       id: row.id,
       authorId: row.authorId,
@@ -248,14 +271,16 @@ function toPostHit(row: PostSearchRow, q: string): SearchPostHit {
       createdAt: row.createdAt.toISOString(),
     };
   }
-  const displayName = profile ? `${profile.firstName} ${profile.lastName}`.trim() : "Baydar user";
-  const excerpt = buildExcerpt(row.body, q);
+  const displayName =
+    row.authorFirstName || row.authorLastName
+      ? `${row.authorFirstName ?? ""} ${row.authorLastName ?? ""}`.trim()
+      : "Baydar user";
   return {
     id: row.id,
     authorId: row.authorId,
-    authorHandle: profile?.handle ?? row.authorId,
+    authorHandle: row.authorHandle ?? row.authorId,
     authorDisplayName: displayName,
-    authorAvatarUrl: profile?.avatarUrl ?? null,
+    authorAvatarUrl: row.authorAvatarUrl,
     bodyExcerpt: excerpt.text,
     matchStart: excerpt.matchStart,
     matchEnd: excerpt.matchEnd,

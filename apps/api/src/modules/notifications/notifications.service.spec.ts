@@ -16,17 +16,23 @@ type PrismaStub = {
     updateMany: jest.Mock;
     count: jest.Mock;
   };
+  $transaction: jest.Mock;
 };
 
 function buildPrisma(): PrismaStub {
+  const notification = {
+    create: jest.fn(),
+    findFirst: jest.fn(),
+    findMany: jest.fn(),
+    updateMany: jest.fn(),
+    count: jest.fn(),
+  };
   return {
-    notification: {
-      create: jest.fn(),
-      findFirst: jest.fn(),
-      findMany: jest.fn(),
-      updateMany: jest.fn(),
-      count: jest.fn(),
-    },
+    notification,
+    // Default: resolve to whatever the per-test mock returns by treating each
+    // operation as a no-op. Specific specs override this to return the
+    // (updateMany.result, count) tuple the service expects.
+    $transaction: jest.fn(async (ops: Array<Promise<unknown>>) => Promise.all(ops)),
   };
 }
 
@@ -96,9 +102,8 @@ describe("NotificationsService", () => {
       expect(bus.publish).not.toHaveBeenCalled();
     });
 
-    it("creates a notification and publishes new + unread-count events", async () => {
+    it("creates a notification and broadcasts the new event (count handled by client)", async () => {
       prisma.notification.create.mockResolvedValue(row());
-      prisma.notification.count.mockResolvedValue(1);
 
       await service.notify({
         type: NotificationType.POST_REACTION,
@@ -115,16 +120,16 @@ describe("NotificationsService", () => {
         "u_rec",
         expect.objectContaining({ id: "n_1" }),
       );
-      expect(bus.publish).toHaveBeenCalledWith(
+      // The post-create unread-count broadcast was removed in favour of
+      // having the client increment locally; the next markRead/dismiss
+      // resync provides the authoritative number.
+      expect(bus.publish).not.toHaveBeenCalledWith(
         "u_rec",
-        expect.objectContaining({
-          type: "notification.unread-count",
-          payload: { count: 1 },
-        }),
+        expect.objectContaining({ type: "notification.unread-count" }),
       );
     });
 
-    it("dedupes when an equivalent unread row already exists", async () => {
+    it("dedupes by stable key lookup instead of a 10-field findFirst", async () => {
       prisma.notification.findFirst.mockResolvedValue({ id: "already" });
 
       await service.notify({
@@ -134,8 +139,38 @@ describe("NotificationsService", () => {
         postId: "p_1",
         dedupe: true,
       });
+      expect(prisma.notification.findFirst).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            recipientId: "u_rec",
+            dedupeKey: "POST_REACTION:u_actor:p_1::::",
+            readAt: null,
+            dismissedAt: null,
+          }),
+        }),
+      );
       expect(prisma.notification.create).not.toHaveBeenCalled();
       expect(bus.publish).not.toHaveBeenCalled();
+    });
+
+    it("persists dedupeKey on the created row when dedupe is enabled", async () => {
+      prisma.notification.findFirst.mockResolvedValue(null);
+      prisma.notification.create.mockResolvedValue(row());
+
+      await service.notify({
+        type: NotificationType.POST_REACTION,
+        recipientId: "u_rec",
+        actorId: "u_actor",
+        postId: "p_1",
+        dedupe: true,
+      });
+      expect(prisma.notification.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            dedupeKey: "POST_REACTION:u_actor:p_1::::",
+          }),
+        }),
+      );
     });
 
     it("does not create notifications between blocked users", async () => {
@@ -187,21 +222,12 @@ describe("NotificationsService", () => {
   });
 
   describe("markRead", () => {
-    it("marks the given ids as read and publishes a read event", async () => {
-      prisma.notification.updateMany.mockResolvedValue({ count: 2 });
-      prisma.notification.count.mockResolvedValue(0);
+    it("marks the given ids as read in a single transaction and re-counts unread", async () => {
+      prisma.$transaction.mockResolvedValue([{ count: 2 }, 0]);
 
       const out = await service.markRead("u_rec", { ids: ["n_1", "n_2"] });
       expect(out.count).toBe(2);
-      expect(prisma.notification.updateMany).toHaveBeenCalledWith({
-        where: {
-          recipientId: "u_rec",
-          id: { in: ["n_1", "n_2"] },
-          readAt: null,
-          dismissedAt: null,
-        },
-        data: expect.objectContaining({ readAt: expect.any(Date) }),
-      });
+      expect(prisma.$transaction).toHaveBeenCalledTimes(1);
       expect(bus.publish).toHaveBeenCalledWith(
         "u_rec",
         expect.objectContaining({ type: "notification.read" }),
@@ -216,13 +242,9 @@ describe("NotificationsService", () => {
     });
 
     it("supports all=true to mark every unread as read", async () => {
-      prisma.notification.updateMany.mockResolvedValue({ count: 5 });
-      prisma.notification.count.mockResolvedValue(0);
+      prisma.$transaction.mockResolvedValue([{ count: 5 }, 0]);
       await service.markRead("u_rec", { all: true });
-      expect(prisma.notification.updateMany).toHaveBeenCalledWith({
-        where: { recipientId: "u_rec", readAt: null, dismissedAt: null },
-        data: expect.objectContaining({ readAt: expect.any(Date) }),
-      });
+      expect(prisma.$transaction).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -239,15 +261,11 @@ describe("NotificationsService", () => {
 
   describe("dismiss", () => {
     it("soft-dismisses an owned notification and republishes unread count", async () => {
-      prisma.notification.updateMany.mockResolvedValue({ count: 1 });
-      prisma.notification.count.mockResolvedValue(3);
+      prisma.$transaction.mockResolvedValue([{ count: 1 }, 3]);
 
       await service.dismiss("u_rec", "n_1");
 
-      expect(prisma.notification.updateMany).toHaveBeenCalledWith({
-        where: { id: "n_1", recipientId: "u_rec" },
-        data: { dismissedAt: expect.any(Date) },
-      });
+      expect(prisma.$transaction).toHaveBeenCalledTimes(1);
       expect(bus.publish).toHaveBeenCalledWith("u_rec", {
         type: "notification.unread-count",
         payload: { count: 3 },
@@ -255,14 +273,10 @@ describe("NotificationsService", () => {
     });
 
     it("enforces owner scope by returning not found when no row matches viewer", async () => {
-      prisma.notification.updateMany.mockResolvedValue({ count: 0 });
+      prisma.$transaction.mockResolvedValue([{ count: 0 }, 0]);
 
       await expect(service.dismiss("u_other", "n_1")).rejects.toMatchObject({
         code: ErrorCode.NOT_FOUND,
-      });
-      expect(prisma.notification.updateMany).toHaveBeenCalledWith({
-        where: { id: "n_1", recipientId: "u_other" },
-        data: { dismissedAt: expect.any(Date) },
       });
       expect(bus.publish).not.toHaveBeenCalled();
     });

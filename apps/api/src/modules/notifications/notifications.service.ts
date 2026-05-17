@@ -14,6 +14,31 @@ import { SafetyService } from "../safety/safety.service";
 import { NotificationsBus } from "./notifications.bus";
 import { PushService } from "./push.service";
 
+/**
+ * Stable hash for collapsing duplicate unread notifications. Same value-tuple
+ * yields same key so the indexed (recipientId, dedupeKey, readAt, dismissedAt)
+ * lookup replaces the 10-field findFirst that previously walked the table.
+ */
+function buildDedupeKey(input: {
+  type: NotificationType;
+  actorId?: string | null;
+  postId?: string | null;
+  commentId?: string | null;
+  connectionId?: string | null;
+  messageId?: string | null;
+  jobId?: string | null;
+}): string {
+  return [
+    input.type,
+    input.actorId ?? "",
+    input.postId ?? "",
+    input.commentId ?? "",
+    input.connectionId ?? "",
+    input.messageId ?? "",
+    input.jobId ?? "",
+  ].join(":");
+}
+
 interface NotificationRow {
   id: string;
   type: NotificationType;
@@ -96,17 +121,12 @@ export class NotificationsService {
         return;
       }
 
-      if (input.dedupe) {
+      const dedupeKey = input.dedupe ? buildDedupeKey(input) : null;
+      if (dedupeKey) {
         const existing = await this.prisma.notification.findFirst({
           where: {
             recipientId: input.recipientId,
-            type: input.type,
-            actorId: input.actorId ?? null,
-            postId: input.postId ?? null,
-            commentId: input.commentId ?? null,
-            connectionId: input.connectionId ?? null,
-            messageId: input.messageId ?? null,
-            jobId: input.jobId ?? null,
+            dedupeKey,
             readAt: null,
             dismissedAt: null,
           } as never,
@@ -125,8 +145,9 @@ export class NotificationsService {
           connectionId: input.connectionId ?? null,
           messageId: input.messageId ?? null,
           jobId: input.jobId ?? null,
+          dedupeKey,
           data: (input.data ?? null) as never,
-        },
+        } as never,
         include: ACTOR_INCLUDE,
       })) as unknown as NotificationRow;
 
@@ -140,11 +161,10 @@ export class NotificationsService {
           `Failed to enqueue push notification (type=${input.type}, recipient=${input.recipientId}): ${(err as Error).message}`,
         );
       });
-      const count = await this.countUnread(input.recipientId);
-      this.bus.publish(input.recipientId, {
-        type: "notification.unread-count",
-        payload: { count },
-      });
+      // We just inserted exactly one unread row — `countUnread` would
+      // re-scan to discover the same delta. Skip the round trip and let the
+      // client increment locally; the next markRead/dismiss broadcasts the
+      // authoritative count.
     } catch (err) {
       this.log.warn(
         `Failed to create notification (type=${input.type}, recipient=${input.recipientId}): ${(err as Error).message}`,
@@ -209,29 +229,37 @@ export class NotificationsService {
           readAt: null,
           dismissedAt: null,
         };
-    const result = await this.prisma.notification.updateMany({
-      where,
-      data: { readAt: at },
-    });
+    // One DB round trip: mutate + re-count in the same transaction so the
+    // returned `unread` reflects post-update state.
+    const [result, unread] = await this.prisma.$transaction([
+      this.prisma.notification.updateMany({ where, data: { readAt: at } }),
+      this.prisma.notification.count({
+        where: { recipientId: viewerId, readAt: null, dismissedAt: null } as never,
+      }),
+    ]);
 
     this.bus.publish(viewerId, {
       type: "notification.read",
       payload: { ids: body.ids ?? [], at: at.toISOString() },
     });
-    const count = await this.countUnread(viewerId);
     this.bus.publish(viewerId, {
       type: "notification.unread-count",
-      payload: { count },
+      payload: { count: unread },
     });
     return { count: result.count };
   }
 
   async dismiss(viewerId: string, notificationId: string): Promise<void> {
     const at = new Date();
-    const result = await this.prisma.notification.updateMany({
-      where: { id: notificationId, recipientId: viewerId },
-      data: { dismissedAt: at } as never,
-    });
+    const [result, unread] = await this.prisma.$transaction([
+      this.prisma.notification.updateMany({
+        where: { id: notificationId, recipientId: viewerId },
+        data: { dismissedAt: at } as never,
+      }),
+      this.prisma.notification.count({
+        where: { recipientId: viewerId, readAt: null, dismissedAt: null } as never,
+      }),
+    ]);
     if (result.count === 0) {
       throw new DomainException(
         ErrorCode.NOT_FOUND,
@@ -240,10 +268,9 @@ export class NotificationsService {
       );
     }
 
-    const count = await this.countUnread(viewerId);
     this.bus.publish(viewerId, {
       type: "notification.unread-count",
-      payload: { count },
+      payload: { count: unread },
     });
   }
 }
