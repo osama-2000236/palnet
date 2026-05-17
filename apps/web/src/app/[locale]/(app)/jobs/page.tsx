@@ -19,6 +19,7 @@ import {
   type Job,
 } from "@baydar/shared";
 import { EmptyState, Surface } from "@baydar/ui-web";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
@@ -283,8 +284,14 @@ function JobListRow({ job, salary }: { job: Job; salary: string | null }): JSX.E
             aria-hidden="true"
           >
             {job.company.logoUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={job.company.logoUrl} alt="" className="h-full w-full object-cover" />
+              <Image
+                src={job.company.logoUrl}
+                alt=""
+                width={48}
+                height={48}
+                className="h-full w-full object-cover"
+                sizes="48px"
+              />
             ) : (
               (job.company.name[0] ?? "?").toUpperCase()
             )}

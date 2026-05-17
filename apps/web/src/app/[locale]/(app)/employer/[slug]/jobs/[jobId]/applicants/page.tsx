@@ -2,6 +2,7 @@
 
 import { ApplicationStatus, Company, cursorPage, EmployerApplicant } from "@baydar/shared";
 import { Surface } from "@baydar/ui-web";
+import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
@@ -126,11 +127,13 @@ export default function EmployerApplicantsPage(): JSX.Element {
             <Surface variant="card" padding="4">
               <div className="flex items-start gap-3">
                 {a.applicant.profile?.avatarUrl ? (
-                  /* eslint-disable-next-line @next/next/no-img-element */
-                  <img
+                  <Image
                     src={a.applicant.profile.avatarUrl}
                     alt=""
+                    width={48}
+                    height={48}
                     className="bg-surface-muted h-12 w-12 rounded-full object-cover"
+                    sizes="48px"
                   />
                 ) : (
                   <div className="bg-surface-muted h-12 w-12 rounded-full" />

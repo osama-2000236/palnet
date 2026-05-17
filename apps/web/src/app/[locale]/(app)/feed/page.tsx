@@ -27,6 +27,7 @@ import {
   RetryChip,
   Surface,
 } from "@baydar/ui-web";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
@@ -375,11 +376,13 @@ function RightRail({
                       aria-hidden="true"
                     >
                       {j.company.logoUrl ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
+                        <Image
                           src={j.company.logoUrl}
                           alt=""
+                          width={36}
+                          height={36}
                           className="h-full w-full object-cover"
+                          sizes="36px"
                         />
                       ) : (
                         (j.company.name[0] ?? "?").toUpperCase()

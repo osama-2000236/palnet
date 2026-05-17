@@ -10,6 +10,7 @@
 
 import { ApplyToJobBody, formatSalaryRange, Job as JobSchema, type Job } from "@baydar/shared";
 import { Button, Surface } from "@baydar/ui-web";
+import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
@@ -125,8 +126,14 @@ export default function JobDetailPage(): JSX.Element {
             aria-hidden="true"
           >
             {job.company.logoUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={job.company.logoUrl} alt="" className="h-full w-full object-cover" />
+              <Image
+                src={job.company.logoUrl}
+                alt=""
+                width={56}
+                height={56}
+                className="h-full w-full object-cover"
+                sizes="56px"
+              />
             ) : (
               (job.company.name[0] ?? "?").toUpperCase()
             )}
