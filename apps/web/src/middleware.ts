@@ -1,7 +1,7 @@
 import createMiddleware from "next-intl/middleware";
 import { NextRequest } from "next/server";
 
-import { defaultLocale, locales } from "./i18n";
+import { defaultLocale, localeDir, locales, type Locale } from "./i18n";
 import { buildContentSecurityPolicy } from "./lib/security-headers.mjs";
 
 const intlMiddleware = createMiddleware({
@@ -19,10 +19,13 @@ export default function middleware(request: NextRequest) {
   const nonce = generateNonce();
   const csp = buildContentSecurityPolicy(process.env, nonce);
   const requestHeaders = new Headers(request.headers);
+  const locale = localeFromPath(request.nextUrl.pathname);
   requestHeaders.set("x-nonce", nonce);
   // `x-csp` is the value Server Components can read via `headers()` for
   // inline-script nonces. The response header is set below.
   requestHeaders.set("x-csp", csp);
+  requestHeaders.set("x-baydar-locale", locale);
+  requestHeaders.set("x-baydar-dir", localeDir[locale]);
 
   const response = intlMiddleware(new NextRequest(request, { headers: requestHeaders }));
   response.headers.set(
@@ -40,6 +43,11 @@ function generateNonce(): string {
   let value = "";
   for (const byte of bytes) value += String.fromCharCode(byte);
   return btoa(value);
+}
+
+function localeFromPath(pathname: string): Locale {
+  const firstSegment = pathname.split("/").filter(Boolean)[0];
+  return locales.includes(firstSegment as Locale) ? (firstSegment as Locale) : defaultLocale;
 }
 
 export const config = {

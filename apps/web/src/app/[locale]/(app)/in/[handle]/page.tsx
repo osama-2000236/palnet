@@ -32,7 +32,8 @@ import { getAccessToken } from "@/lib/session";
 type ProfileTab = "about" | "exp" | "edu" | "skills" | "activity";
 
 export default function ProfileRoute(): JSX.Element {
-  const params = useParams<{ handle: string }>();
+  const params = useParams<{ locale?: string; handle: string }>();
+  const locale = params?.locale ?? "ar-PS";
   const handle = params?.handle;
   const t = useTranslations("profile");
   const tCommon = useTranslations("common");
@@ -225,7 +226,7 @@ export default function ProfileRoute(): JSX.Element {
                       {
                         onSuccess: () => {
                           showToast({ message: tSafety("block.success"), kind: "success" });
-                          router.push("/feed");
+                          router.replace(`/${locale}/feed`);
                         },
                         onError: () =>
                           showToast({ message: tSafety("block.error"), kind: "error" }),
