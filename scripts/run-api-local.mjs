@@ -4,17 +4,15 @@ import { spawn } from "node:child_process";
 
 const root = process.cwd();
 const envFile = resolve(root, process.argv[2] ?? ".env.local");
-
-if (!existsSync(envFile)) {
-  console.error(`[api:dev:local] Missing ${envFile}. Copy .env.example to .env.local first.`);
-  process.exit(1);
-}
-
-const env = cleanSpawnEnv({ ...process.env, ...parseEnvFile(readFileSync(envFile, "utf8")) });
+const fileEnv = existsSync(envFile) ? parseEnvFile(readFileSync(envFile, "utf8")) : {};
+const env = cleanSpawnEnv({ ...process.env, ...fileEnv });
 const required = ["DATABASE_URL", "JWT_ACCESS_SECRET", "JWT_REFRESH_SECRET"];
 const missing = required.filter((key) => !env[key]?.trim());
 
 if (missing.length > 0) {
+  if (!existsSync(envFile)) {
+    console.error(`[api:dev:local] Missing ${envFile}. Copy .env.example to .env.local first.`);
+  }
   console.error(`[api:dev:local] Missing required env vars: ${missing.join(", ")}`);
   process.exit(1);
 }
