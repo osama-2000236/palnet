@@ -38,18 +38,24 @@ Deleted locally:
 
 - Worktree `C:/LinkedIn/.claude/worktrees/charming-kirch-7d8d02`.
 - Local branch `claude/charming-kirch-7d8d02` because it was clean and merged at `main`.
+- After explicit approval, removed all remaining stale registered worktrees and stale `.claude/worktrees` folders.
+- Removed the stale detached Codex worktree at `C:/Users/osama/.codex/worktrees/39c4/LinkedIn`.
 
-Retained locally because worktree has uncommitted changes:
+Deleted local stale branches after approval:
 
-- `worktree-audit-nplusone` at `C:/LinkedIn/.claude/worktrees/audit-nplusone`.
-
-Retained locally because branches are gone upstream but not merged into `main`:
-
+- `claude/adoring-pare-2bf794`
+- `claude/amazing-swanson-8e9f62`
+- `claude/angry-almeida-9dc83e`
 - `claude/cranky-bardeen-7812e4`
+- `claude/design-pass1-r2-surface-hierarchy`
+- `claude/design-pass1-r3-onboarding`
+- `claude/heuristic-kirch-17a295`
+- `claude/hopeful-proskuriakova-7f6dc8`
 - `claude/nostalgic-wu-0d4ff9`
 - `claude/wizardly-thompson-38c641`
+- `worktree-audit-nplusone`
 
-Open GitHub PRs retained pending explicit cleanup-manifest approval:
+Closed superseded GitHub PRs and deleted their branches after approval:
 
 - #21 `claude/angry-almeida-9dc83e` → `main`
 - #22 `claude/adoring-pare-2bf794` → `main`
@@ -57,3 +63,19 @@ Open GitHub PRs retained pending explicit cleanup-manifest approval:
 - #27 `ci/composite-action-turbo-cache` → `main`
 - #28 `deploy/guard-and-blueprints` → `ci/composite-action-turbo-cache`
 - #29 `claude/heuristic-kirch-17a295` → `main`
+
+Deleted additional stale remote branches without open PRs after approval:
+
+- `claude/amazing-swanson-8e9f62`
+- `claude/design-pass1-r2-surface-hierarchy`
+- `claude/design-pass1-r3-onboarding`
+- `claude/eloquent-yonath-6c4db3`
+- `codex/baydar-ui-gate-fix`
+- `docs/design-md-restructure`
+
+Final repository state:
+
+- Local branches: `main`, `codex/repo-stabilization-cleanup`.
+- Remote branches: `main`, `codex/repo-stabilization-cleanup`.
+- Registered worktrees: `C:/LinkedIn`.
+- Open GitHub PRs: #31 only.
