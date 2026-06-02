@@ -1,8 +1,8 @@
 import type { AuthSession as AuthSessionType } from "@baydar/shared";
 import { z } from "zod";
 
-import { apiCall, apiFetch, apiFetchPage } from "../api";
-import { readSession, writeSession, clearAccessToken } from "../session";
+import { apiCall, apiFetch, apiFetchPage, getValidAccessToken } from "../api";
+import { clearAccessToken, getAccessToken, readSession, writeSession } from "../session";
 
 const OkPayload = z.object({ ok: z.literal(true) });
 const OkPage = z.object({
@@ -99,6 +99,17 @@ describe("api refresh handling", () => {
     expect((fetchMock.mock.calls[0]?.[1]?.headers as Headers).get("Authorization")).toBe(
       "Bearer fresh-access",
     );
+  });
+
+  it("hydrates memory from a usable stored access token after a reload", async () => {
+    window.localStorage.setItem("baydar.session.v1", JSON.stringify(makeSession("stored-access")));
+    clearAccessToken();
+    const fetchMock = jest.mocked(global.fetch);
+
+    await expect(getValidAccessToken()).resolves.toBe("stored-access");
+
+    expect(getAccessToken()).toBe("stored-access");
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 
   it("refreshes apiFetchPage after a reload leaves only the blank stored access token", async () => {

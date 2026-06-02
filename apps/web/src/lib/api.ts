@@ -25,11 +25,16 @@ function usableToken(token: string | null | undefined): string | null {
 }
 
 function currentToken(opts: ApiFetchOptions): string | null {
-  return (
-    usableToken(getAccessToken()) ??
-    usableToken(readSession()?.tokens.accessToken) ??
-    usableToken(opts.token)
-  );
+  const memoryToken = usableToken(getAccessToken());
+  if (memoryToken) return memoryToken;
+
+  const sessionToken = usableToken(readSession()?.tokens.accessToken);
+  if (sessionToken) {
+    setAccessToken(sessionToken);
+    return sessionToken;
+  }
+
+  return usableToken(opts.token);
 }
 
 async function refreshAccessToken(): Promise<string | null> {

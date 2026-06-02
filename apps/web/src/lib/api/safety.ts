@@ -10,8 +10,7 @@ import {
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
 
-import { apiCall, apiFetch, apiFetchPage } from "@/lib/api";
-import { getAccessToken } from "@/lib/session";
+import { apiCall, apiFetch, apiFetchPage, getValidAccessToken } from "@/lib/api";
 
 export type ReportTarget =
   | { kind: "user"; id: string }
@@ -62,7 +61,7 @@ function reportBody(input: ReportInput): ReportBody {
 }
 
 async function token(): Promise<string> {
-  const value = getAccessToken();
+  const value = await getValidAccessToken();
   if (!value) throw new Error("AUTH_UNAUTHORIZED");
   return value;
 }
