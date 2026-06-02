@@ -6,6 +6,7 @@ import AppTabsLayout from "../../app/(app)/_layout";
 const visibleScreens: string[] = [];
 const hiddenScreens: string[] = [];
 let mockIsConnected = true;
+let mockPathname = "/feed";
 
 jest.mock("expo-router", () => {
   const Tabs = function MockTabs({ children }: { children: ReactNode }) {
@@ -25,12 +26,15 @@ jest.mock("expo-router", () => {
   return {
     Tabs,
     router: { replace: jest.fn(), push: jest.fn() },
-    usePathname: () => "/feed",
+    usePathname: () => mockPathname,
   };
 });
 
 jest.mock("@/components/LoadingIntro", () => ({
-  LoadingIntro: () => null,
+  LoadingIntro: ({ testID }: { testID?: string }) => {
+    const { Text } = jest.requireActual("react-native") as typeof import("react-native");
+    return <Text testID={testID}>Loading</Text>;
+  },
 }));
 
 jest.mock("@/lib/profile-state", () => ({
@@ -89,6 +93,7 @@ describe("AppTabsLayout", () => {
   beforeEach(() => {
     visibleScreens.length = 0;
     hiddenScreens.length = 0;
+    mockPathname = "/feed";
     mockIsConnected = true;
     jest.clearAllMocks();
     mockCachedProfileStatus.mockResolvedValue({ status: "complete" });
@@ -110,7 +115,15 @@ describe("AppTabsLayout", () => {
       "me/index",
     ]);
     expect(hiddenScreens).toEqual(
-      expect.arrayContaining(["jobs/index", "composer", "search", "me/edit"]),
+      expect.arrayContaining([
+        "jobs/index",
+        "composer",
+        "search",
+        "me/edit",
+        "settings/index",
+        "settings/account",
+        "settings/notifications",
+      ]),
     );
   });
 
@@ -136,5 +149,22 @@ describe("AppTabsLayout", () => {
       expect(mockFetchProfileStatus).toHaveBeenCalledWith("access-token");
       expect(mockRouter.replace).toHaveBeenCalledWith("/(app)/onboarding");
     });
+  });
+
+  it("keeps the app shell mounted while rechecking secondary app routes", async () => {
+    const view = render(<AppTabsLayout />);
+
+    await waitFor(() => {
+      expect(view.queryByTestId("app-gate-loading")).toBeNull();
+    });
+
+    mockFetchProfileStatus.mockImplementationOnce(() => new Promise(() => undefined));
+    mockPathname = "/composer";
+    view.rerender(<AppTabsLayout />);
+
+    await waitFor(() => {
+      expect(mockFetchProfileStatus).toHaveBeenCalledTimes(2);
+    });
+    expect(view.queryByTestId("app-gate-loading")).toBeNull();
   });
 });

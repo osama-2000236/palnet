@@ -6,6 +6,7 @@
 import type { ReactElement, ReactNode } from "react";
 import { Modal, Pressable, Text, View } from "react-native";
 
+import { shadowStyle } from "./shadow";
 import { nativeTokens } from "./tokens";
 
 export interface DialogProps {
@@ -49,7 +50,7 @@ export function Dialog({ open, onClose, title, blocking, children }: DialogProps
             maxWidth: 420,
             backgroundColor: c.surface,
             borderRadius: nativeTokens.radius.lg,
-            ...nativeTokens.shadow.pop,
+            ...shadowStyle("pop"),
           }}
         >
           <View

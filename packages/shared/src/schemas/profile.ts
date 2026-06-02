@@ -1,4 +1,5 @@
 import { z } from "zod";
+
 import { JobLocationMode } from "../enums";
 
 // Handle: /in/<handle> — lowercase ascii, digits, dash; 3-30 chars; unique.

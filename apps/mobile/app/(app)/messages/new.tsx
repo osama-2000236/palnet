@@ -7,23 +7,19 @@ import {
   AppHeader,
   Avatar,
   Button,
+  Chip,
+  EmptyState,
   Icon,
+  Input,
   SearchField,
+  Skeleton,
   Surface,
   nativeTokens,
 } from "@baydar/ui-native";
 import { router } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import {
-  ActivityIndicator,
-  FlatList,
-  Pressable,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from "react-native";
+import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { z } from "zod";
 
@@ -136,12 +132,13 @@ export default function NewGroupRoomScreen(): JSX.Element {
 
         <Surface variant="card" padding="4">
           <Text style={styles.label}>{t("messaging.newGroup.roomTitle")}</Text>
-          <TextInput
+          <Input
+            fullWidth
+            size="lg"
             value={title}
             onChangeText={setTitle}
             placeholder={t("messaging.newGroup.roomTitlePlaceholder")}
-            placeholderTextColor={nativeTokens.color.inkMuted}
-            style={styles.input}
+            style={styles.inputSpacing}
           />
           <Text style={[styles.label, styles.spaced]}>{t("messaging.newGroup.search")}</Text>
           <SearchField
@@ -165,11 +162,26 @@ export default function NewGroupRoomScreen(): JSX.Element {
           keyExtractor={(item) => item.user.userId}
           ListEmptyComponent={
             loading ? (
-              <ActivityIndicator />
+              <View style={{ gap: nativeTokens.space[2] }}>
+                {Array.from({ length: 3 }).map((_, index) => (
+                  <Surface key={index} variant="flat" padding="3">
+                    <View style={styles.row}>
+                      <Skeleton kind="circle" width={40} height={40} />
+                      <View style={styles.personText}>
+                        <Skeleton width="48%" height={14} />
+                        <Skeleton
+                          width="74%"
+                          height={12}
+                          style={{ marginTop: nativeTokens.space[2] }}
+                        />
+                      </View>
+                      <Skeleton kind="pill" width={64} height={28} />
+                    </View>
+                  </Surface>
+                ))}
+              </View>
             ) : (
-              <Surface variant="tinted" padding="4">
-                <Text style={styles.empty}>{t("messaging.newGroup.empty")}</Text>
-              </Surface>
+              <EmptyState variant="inline" motif="messages" title={t("messaging.newGroup.empty")} />
             )
           }
           renderItem={({ item }) => {
@@ -202,13 +214,9 @@ export default function NewGroupRoomScreen(): JSX.Element {
                         </Text>
                       ) : null}
                     </View>
-                    <View style={[styles.chip, selected ? styles.chipOn : null]}>
-                      <Text style={[styles.chipText, selected ? styles.chipTextOn : null]}>
-                        {selected
-                          ? t("messaging.newGroup.selected")
-                          : t("messaging.newGroup.select")}
-                      </Text>
-                    </View>
+                    <Chip selected={selected} size="sm">
+                      {selected ? t("messaging.newGroup.selected") : t("messaging.newGroup.select")}
+                    </Chip>
                   </View>
                 </Surface>
               </Pressable>
@@ -255,27 +263,13 @@ const styles = StyleSheet.create({
   spaced: {
     marginTop: nativeTokens.space[3],
   },
-  input: {
+  inputSpacing: {
     marginTop: nativeTokens.space[1],
-    minHeight: 44,
-    borderWidth: 1,
-    borderColor: nativeTokens.color.lineHard,
-    borderRadius: nativeTokens.radius.md,
-    paddingHorizontal: nativeTokens.space[3],
-    color: nativeTokens.color.ink,
-    fontFamily: nativeTokens.type.family.sans,
-    fontSize: nativeTokens.type.scale.body.size,
   },
   error: {
     color: nativeTokens.color.danger,
     fontFamily: nativeTokens.type.family.sans,
     fontSize: nativeTokens.type.scale.small.size,
-  },
-  empty: {
-    textAlign: "center",
-    color: nativeTokens.color.inkMuted,
-    fontFamily: nativeTokens.type.family.sans,
-    fontSize: nativeTokens.type.scale.body.size,
   },
   list: {
     paddingBottom: nativeTokens.space[3],
@@ -299,25 +293,5 @@ const styles = StyleSheet.create({
     color: nativeTokens.color.inkMuted,
     fontFamily: nativeTokens.type.family.sans,
     fontSize: nativeTokens.type.scale.small.size,
-  },
-  chip: {
-    borderWidth: 1,
-    borderColor: nativeTokens.color.lineHard,
-    borderRadius: nativeTokens.radius.full,
-    paddingHorizontal: nativeTokens.space[2],
-    paddingVertical: nativeTokens.space[1],
-  },
-  chipOn: {
-    borderColor: nativeTokens.color.brand600,
-    backgroundColor: nativeTokens.color.brand100,
-  },
-  chipText: {
-    color: nativeTokens.color.inkMuted,
-    fontFamily: nativeTokens.type.family.sans,
-    fontSize: nativeTokens.type.scale.caption.size,
-    fontWeight: "700",
-  },
-  chipTextOn: {
-    color: nativeTokens.color.brand700,
   },
 });

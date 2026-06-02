@@ -29,7 +29,7 @@ import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { z } from "zod";
 
-import { apiFetch, apiFetchPage } from "@/lib/api";
+import { apiFetch, apiFetchPage, getValidAccessToken } from "@/lib/api";
 import { clearSession, readSession } from "@/lib/session";
 import { openStream } from "@/lib/sse";
 
@@ -48,6 +48,8 @@ function routeOf(pathname: string, myHandle: string | null): AppShellRoute | nul
   if (path.startsWith("/jobs")) return "jobs";
   if (path.startsWith("/messages")) return "messages";
   if (path.startsWith("/notifications")) return "notifications";
+  if (path.startsWith("/saved")) return "saved";
+  if (path.startsWith("/employer")) return "employer";
   if (path.startsWith("/me")) return "profile";
   if (myHandle && path === `/in/${myHandle}`) return "profile";
   return null;
@@ -77,6 +79,8 @@ export default function AppLayout({ children }: { children: ReactNode }): JSX.El
   const tBell = useTranslations("chrome.bell");
   const tProfile = useTranslations("profile");
   const tAuth = useTranslations("auth");
+  const tSaved = useTranslations("saved");
+  const tEmployer = useTranslations("employer");
 
   const [token, setToken] = useState<string | null>(null);
   const [me, setMe] = useState<Profile | null>(null);
@@ -86,12 +90,24 @@ export default function AppLayout({ children }: { children: ReactNode }): JSX.El
 
   // Session bootstrap — redirect to /login if missing.
   useEffect(() => {
+    let cancelled = false;
     const session = readSession();
     if (!session) {
       router.replace("/login");
       return;
     }
-    setToken(session.tokens.accessToken);
+    void getValidAccessToken().then((nextToken) => {
+      if (cancelled) return;
+      if (!nextToken) {
+        clearSession();
+        router.replace("/login");
+        return;
+      }
+      setToken(nextToken);
+    });
+    return () => {
+      cancelled = true;
+    };
   }, [router]);
 
   // Fetch me once we have a token.
@@ -308,6 +324,8 @@ export default function AppLayout({ children }: { children: ReactNode }): JSX.El
         jobs: tNav("jobs"),
         messages: tMsg("title"),
         notifications: tNotif("title"),
+        saved: tSaved("title"),
+        employer: tEmployer("title"),
       },
       myProfile: tNav("myProfile"),
       viewProfile: tProfile("viewPublic"),
@@ -316,10 +334,25 @@ export default function AppLayout({ children }: { children: ReactNode }): JSX.El
       unreadTemplate: {
         messages: tNav("unreadMessages", { count: "{count}" }),
         notifications: tNav("unreadNotifications", { count: "{count}" }),
+        saved: "",
+        employer: "",
       },
       bellDisconnected: tBell("disconnected"),
     }),
-    [tCommon, tNav, tFeed, tNetwork, tMsg, tNotif, tSearch, tBell, tProfile, tAuth],
+    [
+      tCommon,
+      tNav,
+      tFeed,
+      tNetwork,
+      tMsg,
+      tNotif,
+      tSearch,
+      tBell,
+      tProfile,
+      tAuth,
+      tEmployer,
+      tSaved,
+    ],
   );
 
   const meUser = me

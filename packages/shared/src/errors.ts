@@ -1,4 +1,5 @@
 import { z } from "zod";
+
 import { ErrorCode } from "./enums";
 
 export const ApiError = z.object({

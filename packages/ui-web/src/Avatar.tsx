@@ -48,12 +48,14 @@ const DOT_CLASSES: Record<AvatarSize, string> = {
   xl: "h-[15px] w-[15px]",
 };
 
-// Three token-backed palettes. Chosen deterministically from user id/handle so
+// Five CSS-token-backed palettes. Chosen deterministically from user id/handle so
 // the same person always gets the same color across the app.
 const PALETTES = [
-  "bg-brand-100 text-brand-700",
-  "bg-accent-50 text-accent-600",
-  "bg-surface-sunken text-ink",
+  "bg-[var(--avatar-palette-1-bg)] text-[var(--avatar-palette-1-fg)]",
+  "bg-[var(--avatar-palette-2-bg)] text-[var(--avatar-palette-2-fg)]",
+  "bg-[var(--avatar-palette-3-bg)] text-[var(--avatar-palette-3-fg)]",
+  "bg-[var(--avatar-palette-4-bg)] text-[var(--avatar-palette-4-fg)]",
+  "bg-[var(--avatar-palette-5-bg)] text-[var(--avatar-palette-5-fg)]",
 ] as const;
 
 function paletteFor(seed: string): string {

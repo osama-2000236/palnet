@@ -7,11 +7,12 @@ tags:
 
 - tapOn:
     id: "tab-messages"
-- assertVisible:
-    id: "room-list"
+- extendedWaitUntil:
+    visible:
+      id: "room-list"
     timeout: 5000
 
-# Pick the first room in the list — the QA fixture seeds at least one DM
+# Pick the first room in the list. The QA fixture seeds at least one DM
 # with the messaging companion so this is stable across runs.
 - tapOn:
     id: "room-list-row-0"
@@ -19,9 +20,15 @@ tags:
 - tapOn:
     id: "message-composer"
 - inputText: "Maestro smoke ping"
+- hideKeyboard
+- extendedWaitUntil:
+    visible:
+      id: "messages-send-button"
+    timeout: 5000
 - tapOn:
-    id: "message-send"
+    id: "messages-send-button"
 
-- assertVisible:
-    text: "Maestro smoke ping"
+- extendedWaitUntil:
+    visible:
+      text: "Maestro smoke ping"
     timeout: 10000

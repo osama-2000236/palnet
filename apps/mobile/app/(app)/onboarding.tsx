@@ -7,7 +7,15 @@ import {
   type PersonSuggestion as PersonSuggestionDto,
   type Profile,
 } from "@baydar/shared";
-import { Avatar, Button, Icon, Surface, nativeTokens } from "@baydar/ui-native";
+import {
+  Avatar,
+  Button,
+  Icon,
+  Input as NativeInput,
+  Surface,
+  nativeTokens,
+  type InputProps,
+} from "@baydar/ui-native";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { Image } from "expo-image";
 import * as ImagePicker from "expo-image-picker";
@@ -31,11 +39,9 @@ import {
   ScrollView,
   Switch,
   Text,
-  TextInput,
   View,
-  type TextInputProps,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import * as yup from "yup";
 import { z } from "zod";
 
@@ -174,6 +180,7 @@ const onboardingSchema = yup.object({
 
 export default function OnboardingScreen(): JSX.Element {
   const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
   const params = useLocalSearchParams<{ firstName?: string; lastName?: string }>();
   const isConnected = useNetworkStore((state) => state.isConnected);
   const [stepIndex, setStepIndex] = useState(0);
@@ -420,110 +427,133 @@ export default function OnboardingScreen(): JSX.Element {
         behavior={Platform.OS === "ios" ? "padding" : undefined}
         style={{ flex: 1 }}
       >
-        <ScrollView
-          contentInsetAdjustmentBehavior="automatic"
-          keyboardShouldPersistTaps="handled"
-          contentContainerStyle={{
-            flexGrow: 1,
-            padding: nativeTokens.space[4],
-            gap: nativeTokens.space[4],
-          }}
-        >
-          <View style={{ gap: nativeTokens.space[2] }}>
-            <Text
-              selectable
-              style={{
-                color: nativeTokens.color.brand600,
-                fontFamily: nativeTokens.type.family.sans,
-                fontSize: nativeTokens.type.scale.caption.size,
-                fontWeight: "700",
-                lineHeight: nativeTokens.type.scale.caption.line,
-                textAlign: "right",
-              }}
-            >
-              {t("onboarding.progress", { current: stepIndex + 1, total: steps.length })}
-            </Text>
-            <Text
-              selectable
-              style={{
-                color: nativeTokens.color.ink,
-                fontFamily: nativeTokens.type.family.sans,
-                fontSize: nativeTokens.type.scale.display.size,
-                fontWeight: "700",
-                lineHeight: nativeTokens.type.scale.display.line,
-                textAlign: "right",
-              }}
-            >
-              {step.label}
-            </Text>
-            <Text
-              selectable
-              style={{
-                color: nativeTokens.color.inkMuted,
-                fontFamily: nativeTokens.type.family.body,
-                fontSize: nativeTokens.type.scale.body.size,
-                lineHeight: nativeTokens.type.scale.body.line,
-                textAlign: "right",
-              }}
-            >
-              {t(`onboarding.stepCopy.${step.key}`)}
-            </Text>
-          </View>
-
-          <StepDots count={steps.length} active={stepIndex} />
-
-          {!isConnected ? <StateMessage tone="warning" message={t("onboarding.offline")} /> : null}
-
-          <Surface variant="hero" padding="5" style={{ gap: nativeTokens.space[4] }}>
-            {step.key === "identity" ? (
-              <IdentityStep control={control} errors={errors} />
-            ) : step.key === "profile" ? (
-              <ProfileStep control={control} errors={errors} />
-            ) : step.key === "location" ? (
-              <LocationStep control={control} errors={errors} />
-            ) : step.key === "background" ? (
-              <BackgroundStep
-                control={control}
-                errors={errors}
-                backgroundKind={backgroundKind}
-                setBackgroundKind={(value) =>
-                  setValue("backgroundKind", value, { shouldDirty: true, shouldValidate: true })
-                }
-              />
-            ) : step.key === "photo" ? (
-              <PhotoStep
-                avatarAsset={avatarAsset}
-                photoError={photoError}
-                onPick={pickAvatar}
-                onRemove={() => {
-                  setPhotoError(null);
-                  setAvatarAsset(null);
+        <View style={{ flex: 1 }}>
+          <ScrollView
+            style={{ flex: 1 }}
+            contentInsetAdjustmentBehavior="automatic"
+            keyboardShouldPersistTaps="handled"
+            contentContainerStyle={{
+              flexGrow: 1,
+              padding: nativeTokens.space[4],
+              paddingBottom: nativeTokens.space[24] + insets.bottom,
+              gap: nativeTokens.space[4],
+            }}
+          >
+            <View style={{ gap: nativeTokens.space[2] }}>
+              <Text
+                selectable
+                style={{
+                  color: nativeTokens.color.brand600,
+                  fontFamily: nativeTokens.type.family.sans,
+                  fontSize: nativeTokens.type.scale.caption.size,
+                  fontWeight: "700",
+                  lineHeight: nativeTokens.type.scale.caption.line,
+                  textAlign: "right",
                 }}
-              />
-            ) : (
-              <NetworkStep
-                control={control}
-                errors={errors}
-                suggestions={suggestions}
-                loading={suggestionsLoading}
-                error={suggestionsError}
-                selectedIds={selectedSuggestionIds}
-                onRetry={loadSuggestions}
-                onToggle={(userId) => {
-                  setSelectedSuggestionIds((current) => {
-                    const next = new Set(current);
-                    if (next.has(userId)) next.delete(userId);
-                    else next.add(userId);
-                    return next;
-                  });
+              >
+                {t("onboarding.progress", { current: stepIndex + 1, total: steps.length })}
+              </Text>
+              <Text
+                selectable
+                style={{
+                  color: nativeTokens.color.ink,
+                  fontFamily: nativeTokens.type.family.sans,
+                  fontSize: nativeTokens.type.scale.display.size,
+                  fontWeight: "700",
+                  lineHeight: nativeTokens.type.scale.display.line,
+                  textAlign: "right",
                 }}
-              />
-            )}
-          </Surface>
+              >
+                {step.label}
+              </Text>
+              <Text
+                selectable
+                style={{
+                  color: nativeTokens.color.inkMuted,
+                  fontFamily: nativeTokens.type.family.body,
+                  fontSize: nativeTokens.type.scale.body.size,
+                  lineHeight: nativeTokens.type.scale.body.line,
+                  textAlign: "right",
+                }}
+              >
+                {t(`onboarding.stepCopy.${step.key}`)}
+              </Text>
+            </View>
 
-          {submitError ? <StateMessage tone="danger" message={submitError} /> : null}
+            <StepDots count={steps.length} active={stepIndex} />
 
-          <View style={{ flexDirection: "row", gap: nativeTokens.space[2] }}>
+            {!isConnected ? (
+              <StateMessage tone="warning" message={t("onboarding.offline")} />
+            ) : null}
+
+            <Surface variant="hero" padding="5" style={{ gap: nativeTokens.space[4] }}>
+              {step.key === "identity" ? (
+                <IdentityStep control={control} errors={errors} />
+              ) : step.key === "profile" ? (
+                <ProfileStep control={control} errors={errors} />
+              ) : step.key === "location" ? (
+                <LocationStep control={control} errors={errors} />
+              ) : step.key === "background" ? (
+                <BackgroundStep
+                  control={control}
+                  errors={errors}
+                  backgroundKind={backgroundKind}
+                  setBackgroundKind={(value) =>
+                    setValue("backgroundKind", value, { shouldDirty: true, shouldValidate: true })
+                  }
+                />
+              ) : step.key === "photo" ? (
+                <PhotoStep
+                  avatarAsset={avatarAsset}
+                  photoError={photoError}
+                  onPick={pickAvatar}
+                  onRemove={() => {
+                    setPhotoError(null);
+                    setAvatarAsset(null);
+                  }}
+                />
+              ) : (
+                <NetworkStep
+                  control={control}
+                  errors={errors}
+                  suggestions={suggestions}
+                  loading={suggestionsLoading}
+                  error={suggestionsError}
+                  selectedIds={selectedSuggestionIds}
+                  onRetry={loadSuggestions}
+                  onToggle={(userId) => {
+                    setSelectedSuggestionIds((current) => {
+                      const next = new Set(current);
+                      if (next.has(userId)) next.delete(userId);
+                      else next.add(userId);
+                      return next;
+                    });
+                  }}
+                />
+              )}
+            </Surface>
+
+            {submitError ? <StateMessage tone="danger" message={submitError} /> : null}
+          </ScrollView>
+
+          <View
+            style={{
+              flexDirection: "row",
+              gap: nativeTokens.space[2],
+              paddingHorizontal: nativeTokens.space[4],
+              paddingTop: nativeTokens.space[3],
+              paddingBottom: Math.max(insets.bottom, nativeTokens.space[4]),
+              borderTopWidth: 1,
+              borderTopColor: nativeTokens.color.lineSoft,
+              backgroundColor: nativeTokens.color.surfaceMuted,
+              position: "absolute",
+              left: 0,
+              right: 0,
+              bottom: 0,
+              zIndex: 20,
+              elevation: 20,
+            }}
+          >
             {stepIndex > 0 ? (
               <Button
                 variant="secondary"
@@ -548,7 +578,7 @@ export default function OnboardingScreen(): JSX.Element {
               {isLastStep ? t("onboarding.submit") : t("common.continue")}
             </Button>
           </View>
-        </ScrollView>
+        </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -1092,7 +1122,10 @@ function ControlledField({
   error?: unknown;
   normalize?: (value: string) => string;
   testID: string;
-} & TextInputProps): JSX.Element {
+} & Omit<
+  InputProps,
+  "value" | "onChangeText" | "error" | "errorMessage" | "helperText"
+>): JSX.Element {
   return (
     <Controller
       control={control}
@@ -1112,48 +1145,31 @@ function ControlledField({
           >
             {label}
           </Text>
-          <TextInput
+          <NativeInput
             {...props}
+            fullWidth
             testID={testID}
             accessibilityLabel={label}
             value={String(value ?? "")}
             onBlur={onBlur}
             onChangeText={(next) => onChange(normalize ? normalize(next) : next)}
             multiline={multiline}
-            placeholderTextColor={nativeTokens.color.inkSubtle}
-            textAlign={props.keyboardType === "email-address" ? "left" : "right"}
-            style={[
+            error={Boolean(error)}
+            errorMessage={error ? String(error) : undefined}
+            helperText={!error ? hint : undefined}
+            inputStyle={[
+              props.keyboardType === "email-address"
+                ? { textAlign: "left", writingDirection: "ltr" }
+                : { textAlign: "right", writingDirection: "rtl" },
               {
                 minHeight: multiline ? nativeTokens.space[20] : nativeTokens.chrome.minHit,
-                borderWidth: 1,
-                borderColor: error ? nativeTokens.color.danger : nativeTokens.color.lineHard,
-                borderRadius: nativeTokens.radius.md,
-                backgroundColor: nativeTokens.color.surface,
                 color: nativeTokens.color.ink,
-                paddingHorizontal: nativeTokens.space[3],
-                paddingVertical: nativeTokens.space[2],
                 fontFamily: nativeTokens.type.family.sans,
                 fontSize: nativeTokens.type.scale.body.size,
                 textAlignVertical: multiline ? "top" : "center",
               },
-              props.style,
             ]}
           />
-          {hint ? (
-            <Text
-              selectable
-              style={{
-                color: nativeTokens.color.inkSubtle,
-                fontFamily: nativeTokens.type.family.sans,
-                fontSize: nativeTokens.type.scale.caption.size,
-                lineHeight: nativeTokens.type.scale.caption.line,
-                textAlign: "right",
-              }}
-            >
-              {hint}
-            </Text>
-          ) : null}
-          {error ? <FieldError message={String(error)} /> : null}
         </View>
       )}
     />

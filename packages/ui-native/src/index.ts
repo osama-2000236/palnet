@@ -2,6 +2,8 @@ export { nativeTokens } from "./tokens";
 export type { NativeTokens } from "./tokens";
 export { Surface } from "./Surface";
 export type { SurfaceProps, SurfaceVariant, SurfacePadding } from "./Surface";
+export { shadowStyle } from "./shadow";
+export type { ShadowKind } from "./shadow";
 export { Illustration, ILLUSTRATION_MOTIFS, ILLUSTRATION_DIRECTIONS } from "./Illustration";
 export type {
   IllustrationProps,
@@ -18,6 +20,10 @@ export { Avatar } from "./Avatar";
 export type { AvatarProps, AvatarSize, AvatarUser } from "./Avatar";
 export { Button } from "./Button";
 export type { ButtonProps, ButtonVariant, ButtonSize } from "./Button";
+export { Chip } from "./Chip";
+export type { ChipProps, ChipSize } from "./Chip";
+export { Input } from "./Input";
+export type { InputProps, InputSize } from "./Input";
 export { Icon } from "./Icon";
 export type { IconName, IconProps } from "./Icon";
 export { Sheet } from "./Sheet";
@@ -37,6 +43,13 @@ export type { SkeletonProps } from "./Skeleton";
 export { RecordCardSkeleton } from "./RecordCardSkeleton";
 export type { RecordCardSkeletonProps } from "./RecordCardSkeleton";
 export { PostCardSkeleton } from "./PostCardSkeleton";
+export { ProfileSkeleton } from "./ProfileSkeleton";
+export { RoomListSkeleton } from "./RoomListSkeleton";
+export type { RoomListSkeletonProps } from "./RoomListSkeleton";
+export { SearchResultSkeleton } from "./SearchResultSkeleton";
+export type { SearchResultSkeletonProps } from "./SearchResultSkeleton";
+export { Table } from "./Table";
+export type { TableProps } from "./Table";
 export { AppHeader } from "./AppHeader";
 export type { AppHeaderProps } from "./AppHeader";
 export { SearchField } from "./SearchField";
@@ -69,3 +82,5 @@ export type {
   BlockedListItemLabels,
   BlockedListItemProps,
 } from "./safety";
+export { AppShell } from "./AppShell";
+export type { AppShellProps, AppShellRoute, AppShellLabels } from "./AppShell";

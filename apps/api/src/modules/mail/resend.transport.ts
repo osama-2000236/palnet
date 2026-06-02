@@ -1,7 +1,7 @@
 import { Injectable, Logger } from "@nestjs/common";
 
-import { renderMail, type MailData, type MailTemplate } from "./mail-templates";
 import type { MailTransport } from "./console-mail.transport";
+import { renderMail, type MailData, type MailTemplate } from "./mail-templates";
 
 export interface ResendTransportConfig {
   apiKey: string;
@@ -21,14 +21,19 @@ export class ResendTransport implements MailTransport {
 
   constructor(private readonly config: ResendTransportConfig) {}
 
+  // Helper to sanitize input for email headers (remove newlines and carriage returns)
+  sanitize = (input: string): string => {
+    return input.replace(/[\r\n]/g, "");
+  };
+
   async send(template: MailTemplate, to: string, data: MailData): Promise<void> {
     const { subject, html, text } = renderMail(template, data);
     const endpoint = this.config.endpoint ?? "https://api.resend.com/emails";
 
     const payload: Record<string, unknown> = {
-      from: this.config.from,
-      to,
-      subject,
+      from: this.sanitize(this.config.from),
+      to: this.sanitize(to),
+      subject: this.sanitize(subject),
       html,
       text,
       tags: [
@@ -36,7 +41,7 @@ export class ResendTransport implements MailTransport {
         { name: "locale", value: data.locale ?? "ar-PS" },
       ],
     };
-    if (this.config.replyTo) payload.reply_to = this.config.replyTo;
+    if (this.config.replyTo) payload.reply_to = this.sanitize(this.config.replyTo);
 
     const response = await fetch(endpoint, {
       method: "POST",

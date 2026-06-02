@@ -4,8 +4,15 @@ import { useTranslation } from "react-i18next";
 import { Pressable, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+type SettingsHref =
+  | "/settings/account"
+  | "/settings/notifications"
+  | "/settings/privacy"
+  | "/settings/security"
+  | "/settings/blocked";
+
 interface Item {
-  href: string;
+  href: SettingsHref;
   label: string;
   desc: string;
 }
@@ -22,6 +29,16 @@ export default function SettingsLandingScreen(): JSX.Element {
       href: "/settings/notifications",
       label: t("settings.items.notifications"),
       desc: t("settings.items.notificationsDesc"),
+    },
+    {
+      href: "/settings/privacy",
+      label: t("settings.items.privacy"),
+      desc: t("settings.items.privacyDesc"),
+    },
+    {
+      href: "/settings/security",
+      label: t("settings.items.security"),
+      desc: t("settings.items.securityDesc"),
     },
     {
       href: "/settings/blocked",

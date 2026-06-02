@@ -1,11 +1,19 @@
 import { ApplicationStatus, Company, cursorPage, EmployerApplicant } from "@baydar/shared";
-import { Surface, nativeTokens } from "@baydar/ui-native";
+import {
+  AppHeader,
+  Chip,
+  EmptyState,
+  RecordCardSkeleton,
+  Surface,
+  nativeTokens,
+} from "@baydar/ui-native";
 import { Stack, useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { FlatList, Pressable, Text, View } from "react-native";
+import { FlatList, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { StateMessage } from "@/components/StateMessage";
 import { apiFetch, apiFetchPage } from "@/lib/api";
 import { apiErrorMessage } from "@/lib/api-errors";
 
@@ -77,88 +85,105 @@ export default function ApplicantsInboxScreen(): JSX.Element {
   );
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: nativeTokens.color.surfaceMuted }}>
-      <Stack.Screen options={{ title: t("employer.applicantsTitle"), headerShown: true }} />
-      <FlatList
-        contentContainerStyle={{ padding: nativeTokens.space[4], gap: nativeTokens.space[3] }}
-        data={items}
-        keyExtractor={(a) => a.id}
-        refreshing={loading}
-        onRefresh={load}
-        ListEmptyComponent={
-          error ? (
-            <Text style={{ color: nativeTokens.color.danger }}>{error}</Text>
-          ) : loading ? (
-            <Text style={{ color: nativeTokens.color.inkMuted }}>{t("common.loading")}</Text>
-          ) : (
-            <Surface variant="card" padding="4">
-              <Text style={{ color: nativeTokens.color.ink }}>{t("employer.applicantsEmpty")}</Text>
-            </Surface>
-          )
-        }
-        renderItem={({ item }) => (
-          <Surface variant="card" padding="4">
-            <Text
-              style={{
-                color: nativeTokens.color.ink,
-                fontFamily: nativeTokens.type.family.sans,
-                fontSize: nativeTokens.type.scale.h3.size,
-                fontWeight: "700",
-              }}
-            >
-              {item.applicant.profile
-                ? `${item.applicant.profile.firstName} ${item.applicant.profile.lastName}`.trim()
-                : item.applicant.email}
-            </Text>
-            {item.applicant.profile?.headline ? (
-              <Text
-                style={{
-                  color: nativeTokens.color.inkMuted,
-                  fontSize: nativeTokens.type.scale.caption.size,
-                  marginTop: nativeTokens.space[1],
-                }}
-              >
-                {item.applicant.profile.headline}
+    <SafeAreaView style={styles.screen}>
+      <Stack.Screen options={{ title: t("employer.applicantsTitle"), headerShown: false }} />
+      <View style={styles.content}>
+        <AppHeader title={t("employer.applicantsTitle")} compact />
+        <FlatList
+          contentContainerStyle={styles.listContent}
+          data={items}
+          keyExtractor={(a) => a.id}
+          refreshing={loading}
+          onRefresh={load}
+          ListEmptyComponent={
+            error ? (
+              <StateMessage
+                message={error}
+                actionLabel={t("common.retry")}
+                busy={loading}
+                onAction={() => void load()}
+              />
+            ) : loading || !companyId ? (
+              <View style={styles.skeletonStack}>
+                <RecordCardSkeleton />
+                <RecordCardSkeleton />
+              </View>
+            ) : (
+              <EmptyState motif="jobs" title={t("employer.applicantsEmpty")} />
+            )
+          }
+          renderItem={({ item }) => (
+            <Surface variant="card" padding="4" style={styles.applicantCard}>
+              <Text selectable style={styles.applicantName}>
+                {item.applicant.profile
+                  ? `${item.applicant.profile.firstName} ${item.applicant.profile.lastName}`.trim()
+                  : item.applicant.email}
               </Text>
-            ) : null}
-            <View
-              style={{
-                flexDirection: "row",
-                flexWrap: "wrap",
-                gap: nativeTokens.space[2],
-                marginTop: nativeTokens.space[3],
-              }}
-            >
-              {STATUSES.map((s) => (
-                <Pressable
-                  key={s}
-                  onPress={() => void changeStatus(item.id, s)}
-                  style={{
-                    paddingVertical: nativeTokens.space[1],
-                    paddingHorizontal: nativeTokens.space[3],
-                    borderRadius: nativeTokens.radius.full,
-                    backgroundColor:
-                      item.status === s
-                        ? nativeTokens.color.brand500
-                        : nativeTokens.color.surfaceMuted,
-                  }}
-                >
-                  <Text
-                    style={{
-                      color:
-                        item.status === s ? nativeTokens.color.inkInverse : nativeTokens.color.ink,
-                      fontSize: nativeTokens.type.scale.caption.size,
-                      fontWeight: "600",
-                    }}
+              {item.applicant.profile?.headline ? (
+                <Text selectable style={styles.applicantHeadline}>
+                  {item.applicant.profile.headline}
+                </Text>
+              ) : null}
+              <View style={styles.statusRow}>
+                {STATUSES.map((s) => (
+                  <Chip
+                    key={s}
+                    onPress={() => void changeStatus(item.id, s)}
+                    selected={item.status === s}
+                    size="sm"
+                    accessibilityLabel={t(`employer.status.${s}`)}
                   >
                     {t(`employer.status.${s}`)}
-                  </Text>
-                </Pressable>
-              ))}
-            </View>
-          </Surface>
-        )}
-      />
+                  </Chip>
+                ))}
+              </View>
+            </Surface>
+          )}
+        />
+      </View>
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+    backgroundColor: nativeTokens.color.surfaceMuted,
+  },
+  content: {
+    flex: 1,
+    paddingHorizontal: nativeTokens.space[4],
+    paddingTop: nativeTokens.space[3],
+  },
+  listContent: {
+    gap: nativeTokens.space[3],
+    paddingBottom: nativeTokens.space[6],
+  },
+  skeletonStack: {
+    gap: nativeTokens.space[3],
+  },
+  applicantCard: {
+    gap: nativeTokens.space[2],
+  },
+  applicantName: {
+    color: nativeTokens.color.ink,
+    fontFamily: nativeTokens.type.family.sans,
+    fontSize: nativeTokens.type.scale.h3.size,
+    lineHeight: nativeTokens.type.scale.h3.line,
+    fontWeight: "700",
+    textAlign: "right",
+  },
+  applicantHeadline: {
+    color: nativeTokens.color.inkMuted,
+    fontFamily: nativeTokens.type.family.sans,
+    fontSize: nativeTokens.type.scale.caption.size,
+    lineHeight: nativeTokens.type.scale.caption.line,
+    textAlign: "right",
+  },
+  statusRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: nativeTokens.space[2],
+    marginTop: nativeTokens.space[1],
+  },
+});

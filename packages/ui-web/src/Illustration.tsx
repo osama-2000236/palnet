@@ -7,6 +7,7 @@
 // fills are tokenised, no raw hex.
 
 import type { JSX } from "react";
+import { useMemo } from "react";
 
 import { cx } from "./cx";
 
@@ -19,6 +20,8 @@ export const ILLUSTRATION_MOTIFS = [
   "jobs",
   "onboarding",
   "settings",
+  "error",
+  "saved",
 ] as const;
 export type IllustrationMotif = (typeof ILLUSTRATION_MOTIFS)[number];
 
@@ -56,23 +59,26 @@ export function Illustration({
 }: IllustrationProps): JSX.Element {
   const px = SIZE_PX[size];
   const h = Math.round((px * VB_H) / VB_W);
-  return (
-    <div
-      aria-hidden="true"
-      className={cx(
-        "inline-flex shrink-0 items-center justify-center",
-        tint !== "none" && "rounded-lg",
-        className,
-      )}
-      style={{ width: px, height: h, background: TINT_BG[tint] }}
-    >
-      <svg width="100%" height="100%" viewBox={`0 0 ${VB_W} ${VB_H}`} role="presentation">
-        {direction === "outline" ? <OutlineSet motif={motif} /> : null}
-        {direction === "block" ? <BlockSet motif={motif} /> : null}
-        {direction === "harvest" ? <HarvestSet motif={motif} /> : null}
-      </svg>
-    </div>
-  );
+
+  return useMemo(() => {
+    return (
+      <div
+        aria-hidden="true"
+        className={cx(
+          "inline-flex shrink-0 items-center justify-center",
+          tint !== "none" && "rounded-lg",
+          className,
+        )}
+        style={{ width: px, height: h, background: TINT_BG[tint] }}
+      >
+        <svg width="100%" height="100%" viewBox={`0 0 ${VB_W} ${VB_H}`} role="presentation">
+          {direction === "outline" ? <OutlineSet motif={motif} /> : null}
+          {direction === "block" ? <BlockSet motif={motif} /> : null}
+          {direction === "harvest" ? <HarvestSet motif={motif} /> : null}
+        </svg>
+      </div>
+    );
+  }, [motif, direction, size, tint, className]);
 }
 
 function OutlineSet({ motif }: { motif: IllustrationMotif }): JSX.Element | null {
@@ -154,6 +160,15 @@ function OutlineSet({ motif }: { motif: IllustrationMotif }): JSX.Element | null
         <g {...common}>
           <path d="M70 26 l22 8 v18 q0 16 -22 26 q-22 -10 -22 -26 v-18 z" />
           <path d="M60 52 l8 8 l16 -16" stroke={accent} strokeWidth="2" />
+        </g>
+      );
+    case "saved":
+      return (
+        <g {...common}>
+          <circle cx="50" cy="40" r="18" />
+          <path d="M32 56 q12 -16 24 0 t24 0" stroke={accent} strokeWidth="2" fill="none" />
+          <line x1="38" y1="64" x2="62" y2="64" />
+          <line x1="50" y1="52" x2="50" y2="76" />
         </g>
       );
     default:

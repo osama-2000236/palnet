@@ -158,36 +158,6 @@ export default function MessagesPage(): JSX.Element {
     });
   }, [activeRoomId, token, loadMessages]);
 
-  // ───────── SSE ─────────
-  useEffect(() => {
-    if (!token) return;
-    let es: EventSource | null = null;
-    let cancelled = false;
-    void openStream("messaging", token)
-      .then((source) => {
-        if (cancelled) {
-          source.close();
-          return;
-        }
-        es = source;
-        source.onmessage = (evt): void => {
-          try {
-            const parsed = WsChatEvent.safeParse(JSON.parse(evt.data));
-            if (!parsed.success) return;
-            handleEvent(parsed.data);
-          } catch {
-            // ignore malformed
-          }
-        };
-      })
-      .catch(() => {});
-    return (): void => {
-      cancelled = true;
-      es?.close();
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [token]);
-
   const handleEvent = useCallback(
     (event: WsChatEvent): void => {
       if (event.type === "message.new") {
@@ -274,6 +244,45 @@ export default function MessagesPage(): JSX.Element {
     },
     [activeRoomId, token, viewerId],
   );
+
+  useEffect(() => {
+    let cancelled = false;
+    let es: EventSource | null = null;
+
+    if (!token) return;
+
+    void openStream("messaging", token)
+      .then((source) => {
+        if (cancelled) {
+          source.close();
+          return;
+        }
+        es = source;
+        source.onmessage = (evt): void => {
+          try {
+            const parsed = WsChatEvent.safeParse(JSON.parse(evt.data));
+            if (!parsed.success) return;
+            handleEvent(parsed.data);
+          } catch {
+            // ignore malformed
+          }
+        };
+        source.onerror = () => {
+          if (cancelled) return;
+          setError(t("connectionLost"));
+          es?.close();
+        };
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setError(t("connectionFailed"));
+      });
+
+    return (): void => {
+      cancelled = true;
+      es?.close();
+    };
+  }, [token, handleEvent, t]);
 
   // ───────── Typing TTL tick — prune expired entries ─────────
   useEffect(() => {

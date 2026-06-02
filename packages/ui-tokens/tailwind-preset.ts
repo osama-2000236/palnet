@@ -42,6 +42,8 @@ const preset: Partial<Config> = {
       boxShadow: {
         card: tokens.shadow.card,
         pop: tokens.shadow.pop,
+        nav: tokens.shadow.nav,
+        modal: tokens.shadow.modal,
       },
       fontFamily: {
         sans: [tokens.type.family.sans],

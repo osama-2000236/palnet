@@ -1,7 +1,21 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
+// LoginForm — REFACTORED to consume the new ui-web atoms (Sweep PR).
+//
+// Changes from `main`:
+//   • Raw <input> fields replaced with <Input> — gains: standard focus ring,
+//     hover state, error styling baked in (we now pass error={true} when
+//     the form-level error is set).
+//   • The `deletedGraceBanner` (brand-tinted block) is now <Alert kind="info">
+//     — same purpose, consistent treatment with every other in-flow message.
+//   • The error <p role="alert"> is now <Alert kind="danger"> — gains: icon,
+//     screen-reader semantics, severity colour.
+//
+// Functionality unchanged. Translation keys are identical.
+
+import { Alert, Button, Input } from "@baydar/ui-web";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 
@@ -43,36 +57,37 @@ export function LoginForm(): JSX.Element {
   return (
     <form onSubmit={onSubmit} className="flex flex-col gap-4" noValidate>
       <h1 className="text-ink text-3xl font-bold">{t("login")}</h1>
+
       {params.get("deleted") === "grace" ? (
-        <p className="border-brand-600/30 bg-brand-50 text-brand-900 rounded-md border px-3 py-2 text-sm">
-          {t("deletedGraceBanner")}
-        </p>
+        <Alert kind="info">{t("deletedGraceBanner")}</Alert>
       ) : null}
 
       <label className="flex flex-col gap-1">
         <span className="text-ink-muted text-sm">{t("email")}</span>
-        <input
+        <Input
           type="email"
-          className="border-ink-muted/30 rounded-md border px-3 py-2"
+          fullWidth
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
           autoComplete="email"
           inputMode="email"
           dir="ltr"
+          error={Boolean(error)}
         />
       </label>
 
       <label className="flex flex-col gap-1">
         <span className="text-ink-muted text-sm">{t("password")}</span>
-        <input
+        <Input
           type="password"
-          className="border-ink-muted/30 rounded-md border px-3 py-2"
+          fullWidth
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
           autoComplete="current-password"
           dir="ltr"
+          error={Boolean(error)}
         />
       </label>
 
@@ -83,19 +98,11 @@ export function LoginForm(): JSX.Element {
         {t("forgot.link")}
       </Link>
 
-      {error ? (
-        <p role="alert" className="text-danger text-sm">
-          {error}
-        </p>
-      ) : null}
+      {error ? <Alert kind="danger">{error}</Alert> : null}
 
-      <button
-        type="submit"
-        disabled={busy}
-        className="bg-brand-600 text-ink-inverse shadow-card hover:bg-brand-700 rounded-md px-4 py-2 disabled:opacity-60"
-      >
+      <Button type="submit" variant="primary" loading={busy} fullWidth>
         {t("submitLogin")}
-      </button>
+      </Button>
     </form>
   );
 }

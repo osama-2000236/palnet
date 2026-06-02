@@ -1,0 +1,33 @@
+name: Setup pnpm dependencies
+description: Set up Node, pnpm, dependency cache, and workspace dependencies.
+
+inputs:
+  node-version:
+    description: Node.js version to install.
+    required: false
+    default: "20"
+  pnpm-version:
+    description: pnpm version to install.
+    required: false
+    default: "9.12.0"
+  install-args:
+    description: Arguments passed to pnpm install.
+    required: false
+    default: "--frozen-lockfile"
+
+runs:
+  using: composite
+  steps:
+    - uses: pnpm/action-setup@v4
+      with:
+        version: ${{ inputs.pnpm-version }}
+
+    - uses: actions/setup-node@v4
+      with:
+        node-version: ${{ inputs.node-version }}
+        cache: pnpm
+        cache-dependency-path: pnpm-lock.yaml
+
+    - name: Install dependencies
+      shell: bash
+      run: pnpm install ${{ inputs.install-args }}

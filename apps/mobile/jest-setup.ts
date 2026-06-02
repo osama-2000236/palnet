@@ -1,3 +1,36 @@
+jest.mock("react-i18next", () => ({
+  useTranslation: () => ({
+    i18n: {
+      language: "ar-PS",
+      changeLanguage: jest.fn(),
+    },
+    t: (key: string, options?: { defaultValue?: string }) => options?.defaultValue ?? key,
+  }),
+}));
+
+jest.mock("expo-router", () => {
+  const React = require("react");
+  const router = {
+    back: jest.fn(),
+    dismissAll: jest.fn(),
+    push: jest.fn(),
+    replace: jest.fn(),
+  };
+  return {
+    Link: ({ children }: { children: unknown }) =>
+      React.createElement(React.Fragment, null, children),
+    Redirect: () => null,
+    Stack: { Screen: () => null },
+    Tabs: { Screen: () => null },
+    router,
+    useFocusEffect: (callback: () => void | (() => void)) => {
+      React.useEffect(() => callback(), [callback]);
+    },
+    useLocalSearchParams: () => ({}),
+    useRouter: () => router,
+  };
+});
+
 jest.mock("expo-secure-store", () => ({
   getItemAsync: jest.fn(),
   setItemAsync: jest.fn(),

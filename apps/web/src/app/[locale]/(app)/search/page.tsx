@@ -65,7 +65,8 @@ function SearchInner(): JSX.Element {
     enabled: term.length > 0,
     queryFn: async () => fetchSearchPage(type, term, requestAfter),
     retry: false,
-    staleTime: 30_000,
+    staleTime: 0,
+    gcTime: 60 * 1000,
   });
 
   useEffect(() => {

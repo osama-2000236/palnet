@@ -12,7 +12,13 @@ import type { ComponentPropsWithoutRef, ReactNode } from "react";
 
 import { cx } from "./cx";
 
-export type ButtonVariant = "primary" | "secondary" | "ghost" | "accent" | "danger-ghost";
+export type ButtonVariant =
+  | "primary"
+  | "secondary"
+  | "ghost"
+  | "accent"
+  | "danger-ghost"
+  | "outline";
 export type ButtonSize = "sm" | "md" | "lg";
 
 export interface ButtonProps extends Omit<ComponentPropsWithoutRef<"button">, "className"> {
@@ -34,6 +40,7 @@ const VARIANT_CLASSES: Record<ButtonVariant, string> = {
   accent:
     "bg-accent-600 text-ink-inverse border border-accent-600 hover:bg-accent-700 hover:border-accent-700",
   "danger-ghost": "bg-transparent text-danger border border-transparent hover:bg-danger/10",
+  outline: "border border-line-hard hover:border-brand-600 hover:text-brand-600",
 };
 
 const SIZE_CLASSES: Record<ButtonSize, string> = {

@@ -12,18 +12,35 @@ tags:
     commands:
       - tapOn: "تخطي"
 
-- assertVisible: "بريد إلكتروني"
+- extendedWaitUntil:
+    visible:
+      id: "landing-login-link"
+    timeout: 30000
 - tapOn:
-    id: "email-input"
-- inputText: "qa@baydar.ps"
+    id: "landing-login-link"
+
+- extendedWaitUntil:
+    visible:
+      id: "login-email-input"
+    timeout: 30000
 - tapOn:
-    id: "password-input"
-- inputText: "qa-fixture-pass"
+    id: "login-email-input"
+- inputText: "qa+qa-android-0520.0000@baydar.test"
 - tapOn:
-    id: "submit-login"
+    id: "login-password-input"
+- inputText: "Password123"
+- hideKeyboard
+- extendedWaitUntil:
+    visible:
+      id: "login-submit"
+    timeout: 10000
+- tapOn:
+    id: "login-submit"
 
 # Feed shell is the success criterion — the home composer entry is the most
-# reliable visible anchor across locales.
-- assertVisible:
-    id: "composer-entry"
-    timeout: 15000
+# reliable visible anchor across locales. This flow uses the completed QA
+# fixture user created by `pnpm --filter @baydar/db qa:load-fixture`.
+- extendedWaitUntil:
+    visible:
+      id: "feed-composer-entry"
+    timeout: 30000

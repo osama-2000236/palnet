@@ -20,7 +20,13 @@ import {
 
 import { nativeTokens } from "./tokens";
 
-export type ButtonVariant = "primary" | "secondary" | "ghost" | "accent" | "danger-ghost";
+export type ButtonVariant =
+  | "primary"
+  | "secondary"
+  | "ghost"
+  | "accent"
+  | "danger-ghost"
+  | "outline";
 export type ButtonSize = "sm" | "md" | "lg";
 
 export interface ButtonProps extends Omit<PressableProps, "style" | "children"> {
@@ -43,6 +49,7 @@ const VARIANT_BG: Record<ButtonVariant, string> = {
   ghost: "transparent",
   accent: c.accent600,
   "danger-ghost": "transparent",
+  outline: "transparent",
 };
 
 const VARIANT_FG: Record<ButtonVariant, string> = {
@@ -51,6 +58,7 @@ const VARIANT_FG: Record<ButtonVariant, string> = {
   ghost: c.ink,
   accent: c.inkInverse,
   "danger-ghost": c.danger,
+  outline: c.ink,
 };
 
 const VARIANT_BORDER: Record<ButtonVariant, string> = {
@@ -59,6 +67,7 @@ const VARIANT_BORDER: Record<ButtonVariant, string> = {
   ghost: "transparent",
   accent: c.accent600,
   "danger-ghost": "transparent",
+  outline: c.lineHard,
 };
 
 // Spec heights: 28 / 36 / 44. Minimum touch target is 44pt on mobile

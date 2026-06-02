@@ -14,6 +14,7 @@
 // swipe the handle area to close. RTL aware: the close button sits at the
 // `end` edge via `writingDirection`/flexDirection flip.
 
+import type { ReactNode } from "react";
 import {
   I18nManager,
   Modal,
@@ -25,8 +26,8 @@ import {
   useWindowDimensions,
   type ScrollViewProps,
 } from "react-native";
-import type { ReactNode } from "react";
 
+import { shadowStyle } from "./shadow";
 import { nativeTokens } from "./tokens";
 
 export interface SheetProps {
@@ -143,7 +144,7 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: nativeTokens.radius.xl,
     borderTopRightRadius: nativeTokens.radius.xl,
     paddingBottom: nativeTokens.space[6],
-    ...nativeTokens.shadow.pop,
+    ...shadowStyle("pop"),
   },
   handleWrap: {
     alignItems: "center",

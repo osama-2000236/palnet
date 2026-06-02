@@ -1,11 +1,11 @@
-import { Button, Surface, nativeTokens, useToast } from "@baydar/ui-native";
+import { Button, Input, Surface, nativeTokens, useToast } from "@baydar/ui-native";
 import * as FileSystem from "expo-file-system/legacy";
 import { router } from "expo-router";
 // eslint-disable-next-line import/no-unresolved -- dependency is pinned for Expo install; absent only in this offline sandbox.
 import * as Sharing from "expo-sharing";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Modal, StyleSheet, Text, TextInput, View } from "react-native";
+import { Modal, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { API_BASE, apiCall } from "@/lib/api";
@@ -109,12 +109,13 @@ export default function AccountSettingsScreen(): JSX.Element {
           <View style={styles.modal}>
             <Text style={styles.sectionTitle}>{t("account.delete.confirmTitle")}</Text>
             <Text style={styles.copy}>{t("account.delete.confirmBody")}</Text>
-            <TextInput
+            <Input
+              fullWidth
               value={phrase}
               onChangeText={setPhrase}
               autoCapitalize="characters"
               autoCorrect={false}
-              style={styles.input}
+              inputStyle={styles.input}
               accessibilityLabel={t("account.delete.confirmInput")}
             />
             <View style={styles.actions}>
@@ -193,7 +194,7 @@ const styles = StyleSheet.create({
   modalBackdrop: {
     flex: 1,
     justifyContent: "center",
-    backgroundColor: "rgba(0,0,0,0.4)",
+    backgroundColor: nativeTokens.color.scrim,
     padding: nativeTokens.space[4],
   },
   modal: {
@@ -203,12 +204,7 @@ const styles = StyleSheet.create({
     padding: nativeTokens.space[4],
   },
   input: {
-    borderWidth: 1,
-    borderColor: nativeTokens.color.lineHard,
-    borderRadius: nativeTokens.radius.md,
     color: nativeTokens.color.ink,
-    paddingHorizontal: nativeTokens.space[3],
-    paddingVertical: nativeTokens.space[2],
     fontFamily: nativeTokens.type.family.mono,
     writingDirection: "ltr",
   },

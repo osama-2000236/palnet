@@ -61,6 +61,20 @@ export const nativeTokens = {
       shadowRadius: 28,
       elevation: 8,
     },
+    nav: {
+      shadowColor: "#1a1a17",
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.06,
+      shadowRadius: 0,
+      elevation: 0,
+    },
+    modal: {
+      shadowColor: "#1a1a17",
+      shadowOffset: { width: 0, height: 24 },
+      shadowOpacity: 0.2,
+      shadowRadius: 60,
+      elevation: 12,
+    },
   },
   type: {
     family: {
@@ -87,11 +101,23 @@ export const nativeTokens = {
     4: 16,
     5: 20,
     6: 24,
+    7: 28,
     8: 32,
+    9: 36,
     10: 40,
+    11: 44,
     12: 48,
+    13: 52,
+    14: 56,
+    15: 60,
     16: 64,
+    17: 68,
+    18: 72,
+    19: 76,
     20: 80,
+    21: 84,
+    22: 88,
+    23: 92,
     24: 96,
   },
   chrome: {
@@ -99,10 +125,25 @@ export const nativeTokens = {
     tabHeight: 64,
     minHit: 44, // Apple HIG + Material minimum touch target
   },
+  focus: {
+    ringColor: "#687a3a",
+    ringWidth: 2,
+    ringOffset: 2,
+  },
+  avatar: {
+    palette: [
+      { bg: "#e6ebd6", fg: "#2e371d" },
+      { bg: "#f4dbce", fg: "#8b3a22" },
+      { bg: "#ebe8dc", fg: "#5c5a52" },
+      { bg: "#ccd6a8", fg: "#3f4a26" },
+      { bg: "#f4f6ef", fg: "#687a3a" },
+    ],
+  },
   illustration: {
     size: { sm: 96, md: 140, lg: 180 },
   },
   breakpoint: {
+    sm: 640,
     md: 768,
     lg: 1024,
     xl: 1280,

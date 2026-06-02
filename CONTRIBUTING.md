@@ -48,11 +48,24 @@ Before requesting merge:
 
 - [ ] Definition of Done in `project-spec.md §7` met.
 - [ ] `pnpm lint:tokens && pnpm format:check && pnpm lint && pnpm type-check && pnpm test` all pass locally.
+- [ ] `pnpm check:release-placeholders` passes before any release/stabilization PR.
+- [ ] Changed web routes pass the relevant Playwright/a11y subset, or the PR explains why it could not run.
 - [ ] No hardcoded strings in components — all via `t()`.
 - [ ] No `left`/`right` CSS — logical properties only.
+- [ ] No fake production pages or placeholder data routes are shipped without a real API-backed contract.
+- [ ] Shared UI packages do not import app frameworks such as Next.js or Expo Router.
+- [ ] Viewer-scoped API responses are not publicly cached.
 - [ ] Every new endpoint is in Swagger and `docs/api-contract.md`.
 - [ ] Prisma migration committed if schema changed.
 - [ ] Zod schema added/updated in `@baydar/shared` if API shape changed.
+
+## Cleanup Branch Protocol
+
+- Use `codex/<scope>` for Codex stabilization branches.
+- Build a branch/PR cleanup manifest before deleting local or remote branches.
+- Delete clean, merged local worktrees/branches directly; keep any worktree with uncommitted changes.
+- Close/delete open GitHub PR branches only after the cleanup manifest is explicitly approved.
+- Final handoff must include validation commands run, retained branches/PRs, deleted branches/worktrees, and any skipped checks.
 
 ## Asking for Help
 

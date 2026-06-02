@@ -8,20 +8,20 @@ import {
   UpdateProfileBody,
   type Profile,
 } from "@baydar/shared";
-import { AppHeader, Avatar, Button, Icon, Surface, nativeTokens } from "@baydar/ui-native";
+import {
+  AppHeader,
+  Avatar,
+  Button,
+  Icon,
+  Input as NativeInput,
+  Surface,
+  nativeTokens,
+} from "@baydar/ui-native";
 import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
 import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
-import {
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from "react-native";
+import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { StateMessage } from "@/components/StateMessage";
@@ -167,32 +167,25 @@ function Input({
   inputDirection?: "rtl" | "ltr" | "auto";
 }): JSX.Element {
   return (
-    <View style={styles.inputWrap}>
-      <TextInput
-        value={value}
-        onChangeText={onChangeText}
-        placeholder={placeholder}
-        placeholderTextColor={nativeTokens.color.inkMuted}
-        multiline={multiline}
-        accessibilityLabel={placeholder}
-        accessibilityHint={error ?? undefined}
-        style={[
-          styles.input,
-          multiline ? styles.multilineInput : null,
-          inputDirection === "ltr"
-            ? styles.inputLtr
-            : inputDirection === "auto"
-              ? styles.inputAuto
-              : null,
-          error ? styles.inputError : null,
-        ]}
-      />
-      {error ? (
-        <Text selectable accessibilityRole="alert" style={styles.fieldError}>
-          {error}
-        </Text>
-      ) : null}
-    </View>
+    <NativeInput
+      fullWidth
+      value={value}
+      onChangeText={onChangeText}
+      placeholder={placeholder}
+      multiline={multiline}
+      accessibilityLabel={placeholder}
+      accessibilityHint={error ?? undefined}
+      error={Boolean(error)}
+      errorMessage={error ?? undefined}
+      inputStyle={[
+        inputDirection === "ltr"
+          ? styles.inputLtr
+          : inputDirection === "auto"
+            ? styles.inputAuto
+            : styles.inputRtl,
+        multiline ? styles.multilineInput : null,
+      ]}
+    />
   );
 }
 
@@ -757,25 +750,23 @@ function SkillsCard({
         ))}
       </View>
       <View style={styles.skillInputRow}>
-        <TextInput
+        <NativeInput
+          fullWidth
           value={name}
           onChangeText={setName}
           placeholder={t("profile.addSkillPlaceholder")}
-          placeholderTextColor={nativeTokens.color.inkMuted}
           maxLength={60}
           accessibilityLabel={t("profile.addSkillPlaceholder")}
           accessibilityHint={fieldError ?? undefined}
-          style={[styles.input, styles.skillInput, fieldError ? styles.inputError : null]}
+          error={Boolean(fieldError)}
+          errorMessage={fieldError ?? undefined}
+          style={styles.skillInput}
+          inputStyle={styles.inputAuto}
         />
         <Button onPress={add} disabled={busy || name.trim().length === 0} loading={busy}>
           {t("profile.add")}
         </Button>
       </View>
-      {fieldError ? (
-        <Text selectable accessibilityRole="alert" style={styles.fieldError}>
-          {fieldError}
-        </Text>
-      ) : null}
     </Card>
   );
 }
@@ -825,23 +816,6 @@ const styles = StyleSheet.create({
     gap: nativeTokens.space[3],
     marginBottom: nativeTokens.space[1],
   },
-  input: {
-    minHeight: nativeTokens.chrome.minHit,
-    borderRadius: nativeTokens.radius.md,
-    borderWidth: 1,
-    borderColor: nativeTokens.color.lineHard,
-    backgroundColor: nativeTokens.color.surface,
-    paddingHorizontal: nativeTokens.space[3],
-    paddingVertical: nativeTokens.space[2],
-    color: nativeTokens.color.ink,
-    fontSize: nativeTokens.type.scale.body.size,
-    fontFamily: nativeTokens.type.family.sans,
-    textAlign: "right",
-    writingDirection: "rtl",
-  },
-  inputWrap: {
-    gap: nativeTokens.space[1],
-  },
   nameGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
@@ -855,18 +829,12 @@ const styles = StyleSheet.create({
     textAlign: "left",
     writingDirection: "ltr",
   },
+  inputRtl: {
+    textAlign: "right",
+    writingDirection: "rtl",
+  },
   inputAuto: {
     writingDirection: "auto",
-  },
-  inputError: {
-    borderColor: nativeTokens.color.danger,
-  },
-  fieldError: {
-    color: nativeTokens.color.danger,
-    fontFamily: nativeTokens.type.family.sans,
-    fontSize: nativeTokens.type.scale.caption.size,
-    lineHeight: nativeTokens.type.scale.caption.line,
-    textAlign: "right",
   },
   multilineInput: {
     minHeight: nativeTokens.space[20],

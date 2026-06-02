@@ -136,7 +136,7 @@ describe("KaramaService", () => {
 
   it("decays inactive balances once for the current UTC month", async () => {
     prisma.user.findMany.mockResolvedValue([{ id: "user-1", karamaBalance: 300 }]);
-    prisma.karamaLedger.findFirst.mockResolvedValue(null);
+    prisma.karamaLedger.findMany.mockResolvedValue([]);
     tx.user.findUnique.mockResolvedValue({ karamaBalance: 300 });
     tx.user.update.mockResolvedValue({ karamaBalance: 297 });
     tx.karamaLedger.create.mockResolvedValue({ createdAt: new Date("2026-05-15T03:00:00Z") });
@@ -157,14 +157,14 @@ describe("KaramaService", () => {
       orderBy: { id: "asc" },
       select: { id: true, karamaBalance: true },
     });
-    expect(prisma.karamaLedger.findFirst).toHaveBeenCalledWith({
+    expect(prisma.karamaLedger.findMany).toHaveBeenCalledWith({
       where: {
-        userId: "user-1",
+        userId: { in: ["user-1"] },
         reason: "DECAY",
         refType: "monthly-inactivity-decay",
         refId: "2026-05",
       },
-      select: { id: true },
+      select: { userId: true, id: true },
     });
     expect(tx.karamaLedger.create).toHaveBeenCalledWith({
       data: expect.objectContaining({
@@ -189,7 +189,7 @@ describe("KaramaService", () => {
 
   it("skips users who already received decay for the month", async () => {
     prisma.user.findMany.mockResolvedValue([{ id: "user-1", karamaBalance: 300 }]);
-    prisma.karamaLedger.findFirst.mockResolvedValue({ id: "ledger-1" });
+    prisma.karamaLedger.findMany.mockResolvedValue([{ id: "ledger-1", userId: "user-1" }]);
 
     const result = await service.runMonthlyDecay({
       now: new Date("2026-05-15T03:00:00Z"),
@@ -202,7 +202,7 @@ describe("KaramaService", () => {
 
   it("reports dry-run decay without writing the ledger", async () => {
     prisma.user.findMany.mockResolvedValue([{ id: "user-1", karamaBalance: 50 }]);
-    prisma.karamaLedger.findFirst.mockResolvedValue(null);
+    prisma.karamaLedger.findMany.mockResolvedValue([]);
 
     const result = await service.runMonthlyDecay({
       now: new Date("2026-05-15T03:00:00Z"),

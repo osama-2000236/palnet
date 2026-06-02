@@ -57,9 +57,10 @@ test("safety: block from profile, view blocked list, unblock", async ({ page, re
   await expect(page).toHaveURL(/\/ar-PS\/feed$/);
 
   await page.goto("/ar-PS/settings/blocked");
-  await expect(page.getByText("Safety Target")).toBeVisible();
-  await page.getByRole("button", { name: "إلغاء الحظر" }).click();
-  await expect(page.getByText("Safety Target")).toHaveCount(0);
+  const targetRow = page.locator("li").filter({ hasText: `@${targetHandle}` });
+  await expect(targetRow).toBeVisible();
+  await targetRow.getByRole("button", { name: "إلغاء الحظر" }).click();
+  await expect(page.getByText(`@${targetHandle}`)).toHaveCount(0);
 
   const list = await request.get(`${API_BASE}/blocks`, {
     headers: { Authorization: `Bearer ${session.tokens.accessToken}` },

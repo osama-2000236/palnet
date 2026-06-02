@@ -3,6 +3,7 @@ import * as SecureStore from "expo-secure-store";
 import { I18nManager, Platform } from "react-native";
 
 export type SupportedLocale = "ar-PS" | "en";
+export type Locale = SupportedLocale;
 
 const KEY = "baydar.locale.v1";
 

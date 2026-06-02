@@ -123,15 +123,17 @@ export default function MessagesListScreen(): JSX.Element {
         />
 
         <FlatList
+          testID="room-list"
           data={rooms}
           keyExtractor={(r) => r.id}
           contentContainerStyle={styles.listContent}
-          renderItem={({ item }) => (
+          renderItem={({ item, index }) => (
             <RoomRow
               room={item}
               viewerId={viewerId}
               archiveLabel={t("messaging.archive")}
               onArchive={(roomId) => void archiveRoom(roomId)}
+              testID={`room-list-row-${index}`}
             />
           )}
           ItemSeparatorComponent={() => <View style={styles.separator} />}
@@ -162,6 +164,10 @@ export default function MessagesListScreen(): JSX.Element {
               <StateMessage message={t("messaging.emptyList")} role="text" />
             )
           }
+          initialNumToRender={10}
+          maxToRenderPerBatch={10}
+          windowSize={7}
+          removeClippedSubviews={true}
         />
       </View>
     </SafeAreaView>

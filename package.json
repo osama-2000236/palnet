@@ -18,6 +18,8 @@
     "clean": "turbo run clean && rimraf node_modules",
     "format": "prettier --write \"**/*.{ts,tsx,js,json,md}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,json,md}\"",
+    "check:release-placeholders": "node scripts/check-release-placeholders.mjs",
+    "check:release-production": "node scripts/check-release-placeholders.mjs --production",
     "check:mobile-imports": "node scripts/check-duplicate-imports.mjs",
     "check:native-versions": "node scripts/check-native-versions.mjs",
     "lint:mobile-routes": "pnpm --filter @baydar/mobile exec eslint \"app/**/*.{ts,tsx}\"",

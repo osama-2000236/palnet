@@ -5,7 +5,9 @@ import { cursorPage, Job as JobSchema, JobLocationMode, JobType, type Job } from
 import {
   AppHeader,
   Button,
+  Chip,
   Icon,
+  Input,
   RecordCardSkeleton,
   SearchField,
   Sheet,
@@ -13,7 +15,7 @@ import {
 } from "@baydar/ui-native";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { FlatList, Pressable, RefreshControl, Text, TextInput, View } from "react-native";
+import { FlatList, RefreshControl, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { StateMessage } from "@/components/StateMessage";
@@ -253,12 +255,12 @@ function FilterSheet({
   return (
     <Sheet open={open} onClose={onClose} title={t("jobs.filters")}>
       <Field label={t("jobs.city")}>
-        <TextInput
+        <Input
+          fullWidth
+          size="lg"
           value={filters.city}
           onChangeText={(v) => set("city", v)}
           placeholder={t("jobs.cityPlaceholder")}
-          placeholderTextColor={nativeTokens.color.inkSubtle}
-          style={inputStyle()}
         />
       </Field>
 
@@ -342,57 +344,16 @@ function ChipRow<T extends string>({
       {values.map((v) => {
         const active = selected === v;
         return (
-          <Pressable
+          <Chip
             key={v}
+            selected={active}
             onPress={() => onSelect(v)}
-            accessibilityRole="button"
-            accessibilityState={{ selected: active }}
-            style={{
-              paddingHorizontal: nativeTokens.space[3],
-              paddingVertical: nativeTokens.space[2],
-              borderRadius: nativeTokens.radius.full,
-              borderWidth: 1,
-              borderColor: active ? nativeTokens.color.brand600 : nativeTokens.color.lineHard,
-              backgroundColor: active ? nativeTokens.color.brand50 : nativeTokens.color.surface,
-            }}
+            accessibilityLabel={labelFor(v)}
           >
-            <Text
-              style={{
-                color: active ? nativeTokens.color.brand700 : nativeTokens.color.ink,
-                fontFamily: nativeTokens.type.family.sans,
-                fontSize: nativeTokens.type.scale.small.size,
-                fontWeight: active ? "700" : "500",
-              }}
-            >
-              {labelFor(v)}
-            </Text>
-          </Pressable>
+            {labelFor(v)}
+          </Chip>
         );
       })}
     </View>
   );
-}
-
-function inputStyle(): {
-  borderWidth: number;
-  borderColor: string;
-  borderRadius: number;
-  paddingHorizontal: number;
-  paddingVertical: number;
-  color: string;
-  fontFamily: string;
-  fontSize: number;
-  backgroundColor: string;
-} {
-  return {
-    borderWidth: 1,
-    borderColor: nativeTokens.color.lineHard,
-    borderRadius: nativeTokens.radius.md,
-    paddingHorizontal: nativeTokens.space[3],
-    paddingVertical: nativeTokens.space[2],
-    color: nativeTokens.color.ink,
-    fontFamily: nativeTokens.type.family.sans,
-    fontSize: nativeTokens.type.scale.body.size,
-    backgroundColor: nativeTokens.color.surface,
-  };
 }

@@ -192,21 +192,25 @@ export class KaramaService {
       select: { id: true, karamaBalance: true },
     });
 
+    // Fetch all existing decay records for this period in a single query to avoid N+1
+    const existingDecays = await this.prisma.karamaLedger.findMany({
+      where: {
+        userId: { in: candidates.map((c) => c.id) },
+        reason: "DECAY",
+        refType: KARAMA_DECAY_REF_TYPE,
+        refId: period,
+      },
+      select: { userId: true, id: true },
+    });
+    const existingDecayUserIds = new Set(existingDecays.map((d) => d.userId));
+
     let skippedAlreadyDecayedCount = 0;
     let totalDelta = 0;
     const decayedUserIds: string[] = [];
 
     for (const user of candidates) {
-      const existing = await this.prisma.karamaLedger.findFirst({
-        where: {
-          userId: user.id,
-          reason: "DECAY",
-          refType: KARAMA_DECAY_REF_TYPE,
-          refId: period,
-        },
-        select: { id: true },
-      });
-      if (existing) {
+      // Check if we already processed a decay for this user in this period
+      if (existingDecayUserIds.has(user.id)) {
         skippedAlreadyDecayedCount += 1;
         continue;
       }

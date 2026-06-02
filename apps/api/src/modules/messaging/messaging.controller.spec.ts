@@ -7,6 +7,7 @@ import type { Request } from "express";
 import type { Env } from "../../config/env";
 import type { AuthTokensService, StreamTokenUser } from "../auth/auth-tokens.service";
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
+import type { LastSeenTracker } from "../auth/last-seen.tracker";
 
 import type { MessagingBus } from "./messaging.bus";
 import { MessagingController } from "./messaging.controller";
@@ -61,7 +62,7 @@ function buildGuard(authTokens: Partial<AuthTokensService>): JwtAuthGuard {
     new Reflector(),
     { getOrThrow: jest.fn() } as unknown as ConfigService<Env, true>,
     authTokens as AuthTokensService,
-    { touch: jest.fn() } as unknown as import("../auth/last-seen.tracker").LastSeenTracker,
+    { touch: jest.fn() } as unknown as LastSeenTracker,
   );
 }
 

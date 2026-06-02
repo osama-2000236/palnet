@@ -10,6 +10,7 @@ export interface RoomRowProps {
   viewerId: string | null;
   archiveLabel: string;
   onArchive: (roomId: string) => void;
+  testID?: string;
 }
 
 export const RoomRow = memo(function RoomRow({
@@ -17,6 +18,7 @@ export const RoomRow = memo(function RoomRow({
   viewerId,
   archiveLabel,
   onArchive,
+  testID,
 }: RoomRowProps): JSX.Element {
   const other = viewerId ? room.members.find((m) => m.userId !== viewerId) : null;
   const label = room.isGroup
@@ -61,7 +63,7 @@ export const RoomRow = memo(function RoomRow({
         }
         accessibilityRole="link"
         accessibilityLabel={label}
-        testID={`room-row-${room.id}`}
+        testID={testID ?? `room-row-${room.id}`}
       >
         <Surface variant="card" padding="3">
           <View style={styles.row}>
@@ -96,7 +98,8 @@ function areEqual(prev: RoomRowProps, next: RoomRowProps): boolean {
     prev.room.updatedAt === next.room.updatedAt &&
     prev.room.unreadCount === next.room.unreadCount &&
     prev.viewerId === next.viewerId &&
-    prev.archiveLabel === next.archiveLabel
+    prev.archiveLabel === next.archiveLabel &&
+    prev.testID === next.testID
   );
 }
 

@@ -6,16 +6,25 @@ tags:
 - runFlow: login-to-feed.yaml
 
 - tapOn:
-    id: "composer-entry"
-- assertVisible:
-    id: "post-body-input"
+    id: "feed-composer-entry"
+- extendedWaitUntil:
+    visible:
+      id: "post-body-input"
     timeout: 5000
-- inputText: "Maestro smoke post — $(uuid)"
+- tapOn:
+    id: "post-body-input"
+- inputText: "Maestro smoke post"
+- hideKeyboard
+- extendedWaitUntil:
+    visible:
+      id: "post-submit"
+    timeout: 5000
 - tapOn:
     id: "post-submit"
 
 # Optimistic insert should land in the feed within a few seconds; assert on
 # the visible composer entry coming back (modal dismissed = success).
-- assertVisible:
-    id: "composer-entry"
+- extendedWaitUntil:
+    visible:
+      id: "feed-composer-entry"
     timeout: 15000

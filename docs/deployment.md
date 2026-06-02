@@ -40,11 +40,15 @@ SSE is the active realtime transport for current app flows.
 - `NEXT_PUBLIC_DEFAULT_LOCALE`
 - `NEXT_PUBLIC_SENTRY_DSN`, `NEXT_PUBLIC_SENTRY_RELEASE`
 - PostHog public keys where enabled
+- `BAYDAR_APPLE_TEAM_ID`
+- `BAYDAR_ANDROID_SHA256_CERT_FINGERPRINTS`
+- Optional overrides: `BAYDAR_IOS_BUNDLE_ID`, `BAYDAR_ANDROID_PACKAGE_NAME`
 
 ### Mobile
 
 - `EXPO_PUBLIC_API_URL`
 - `EXPO_PUBLIC_DEFAULT_LOCALE`
+- `EXPO_PUBLIC_EAS_PROJECT_ID`
 - `EXPO_PUBLIC_SENTRY_DSN`
 - `EXPO_PUBLIC_SENTRY_RELEASE`
 - `EXPO_PUBLIC_POSTHOG_KEY`
@@ -87,7 +91,8 @@ For a no-write Karama preview, post JSON `{"dryRun":true}` to `/admin/internal/k
 
 ### EAS Mobile
 
-- Bind `apps/mobile` to the real EAS project id before release.
+- Store production public env vars in EAS/GitHub secrets; `eas.json` must not contain placeholder values.
+- Bind `apps/mobile` to the real EAS project id through `EXPO_PUBLIC_EAS_PROJECT_ID` before release.
 - Use production profiles only after signing credentials and public env vars are configured.
 - JS-only hotfixes can use EAS Update after project binding is real.
 
@@ -106,6 +111,7 @@ Required confidence commands:
 pnpm install --frozen-lockfile
 pnpm --filter @baydar/db generate
 pnpm lint:tokens
+pnpm check:release-placeholders
 pnpm format:check
 pnpm lint
 pnpm type-check
@@ -158,20 +164,21 @@ Before promoting a branch to production:
 1. `pnpm install --frozen-lockfile && pnpm --filter @baydar/db generate`
 2. `pnpm lint:tokens && pnpm format:check && pnpm lint && pnpm type-check`
 3. `pnpm test` — expect 285+ passing tests (API + mobile + web).
-4. `pnpm turbo run build --filter @baydar/web` — verify the bundle
+4. `pnpm check:release-production` with production release env loaded.
+5. `pnpm turbo run build --filter @baydar/web` — verify the bundle
    topology hasn't regressed.
-5. Apply DB migrations to staging first, run `pnpm load:api:baseline`
+6. Apply DB migrations to staging first, run `pnpm load:api:baseline`
    against staging, and compare p95 to the most recent
    `docs/perf-baseline-*.md` snapshot.
-6. Smoke `/api/v1/auth/login` with and without `X-Auth-Transport: body`
+7. Smoke `/api/v1/auth/login` with and without `X-Auth-Transport: body`
    on the staging URL; confirm:
    - Without the header: `Set-Cookie: baydar_refresh=…` present,
      response body has `refreshToken: ""`.
    - With the header: no `Set-Cookie`, response body has the real
      refresh token.
-7. Tag `v0.1.0-beta.1` only after the Deploy workflow has been green
+8. Tag `v0.1.0-beta.1` only after the Deploy workflow has been green
    twice in a row on the target branch.
-8. Open a manual `workflow_dispatch` deploy run with `target=production`
+9. Open a manual `workflow_dispatch` deploy run with `target=production`
    and watch:
    - Migrate job: green.
    - Render API redeploy: `/api/v1/health` returns 200 within 60s.
@@ -199,6 +206,5 @@ TBD before launch. Placeholder slots:
 
 ## Current Release Caveats
 
-- Universal-link files contain placeholders until Apple team ID and Android release fingerprint are set.
-- EAS project id remains a release binding task.
+- Confirm `/.well-known/apple-app-site-association` and `/.well-known/assetlinks.json` return production metadata before public launch.
 - Real-device push, deep-link, offline, and haptic evidence should be captured before public launch.

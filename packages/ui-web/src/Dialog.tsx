@@ -132,7 +132,7 @@ export function Dialog({
         aria-describedby={describedBy}
         tabIndex={-1}
         onKeyDown={onKeyDown}
-        className="bg-surface text-ink shadow-pop w-full max-w-md rounded-lg focus:outline-none"
+        className="bg-surface text-ink shadow-pop focus-visible:ring-brand-500 w-full max-w-md rounded-lg focus-visible:ring-2 focus-visible:ring-offset-2"
       >
         <div className="border-line-soft border-b px-5 py-4">
           <h2 className="text-ink text-base font-semibold">{title}</h2>

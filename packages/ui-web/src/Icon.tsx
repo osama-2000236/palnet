@@ -20,6 +20,7 @@ export type IconName =
   | "bell"
   | "bookmark"
   | "briefcase"
+  | "building"
   | "calendar"
   | "check"
   | "check-double"
@@ -39,7 +40,8 @@ export type IconName =
   | "thumb"
   | "users"
   | "video"
-  | "x";
+  | "x"
+  | "employer";
 
 export interface IconProps extends Omit<SVGProps<SVGSVGElement>, "name" | "ref"> {
   name: IconName;
@@ -240,6 +242,16 @@ export function Icon({
         <svg {...common}>
           {title ? <title>{title}</title> : null}
           <path d="M6 4h12v17l-6-4-6 4z" />
+        </svg>
+      );
+    case "employer":
+      // Simple building icon for employer
+      return (
+        <svg {...common}>
+          {title ? <title>{title}</title> : null}
+          <rect x="4" y="8" width="16" height="12" rx="2" />
+          <rect x="8" y="12" width="4" height="4" />
+          <rect x="12" y="12" width="4" height="4" />
         </svg>
       );
     case "logo":

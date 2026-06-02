@@ -50,10 +50,6 @@ const EVENT_GROUPS: EventGroup[] = [
   { key: "career", events: ["jobMatch", "applicationStatus"] },
   { key: "account", events: ["weeklyDigest", "karamaUpdate", "moderationAction"] },
 ];
-const LOCKED_EVENTS: ReadonlySet<EventKey> = new Set(["moderationAction"]);
-const MUTABLE_EVENTS = EVENT_GROUPS.flatMap((group) =>
-  group.events.filter((event) => !LOCKED_EVENTS.has(event)),
-);
 
 export default function NotificationsSettingsPage(): JSX.Element {
   const t = useTranslations("settings.notifications");
@@ -106,7 +102,6 @@ export default function NotificationsSettingsPage(): JSX.Element {
 
   // Local mutations — saved as a single PATCH on confirm.
   const setChannel = (event: EventKey, channel: Channel, value: boolean): void => {
-    if (LOCKED_EVENTS.has(event)) return;
     setPrefs((prev) => (prev ? { ...prev, [event]: { ...prev[event], [channel]: value } } : prev));
   };
 
@@ -114,8 +109,10 @@ export default function NotificationsSettingsPage(): JSX.Element {
     setPrefs((prev) => {
       if (!prev) return prev;
       const next: NotificationPreferences = { ...prev };
-      for (const ev of MUTABLE_EVENTS) {
-        next[ev] = { ...next[ev], [channel]: value };
+      for (const group of EVENT_GROUPS) {
+        for (const ev of group.events) {
+          next[ev] = { ...next[ev], [channel]: value };
+        }
       }
       return next;
     });
@@ -127,11 +124,11 @@ export default function NotificationsSettingsPage(): JSX.Element {
   );
 
   const allEmail = useMemo(
-    () => prefs !== null && MUTABLE_EVENTS.every((e) => prefs[e]?.email),
+    () => prefs !== null && EVENT_GROUPS.every((g) => g.events.every((e) => prefs[e]?.email)),
     [prefs],
   );
   const allPush = useMemo(
-    () => prefs !== null && MUTABLE_EVENTS.every((e) => prefs[e]?.push),
+    () => prefs !== null && EVENT_GROUPS.every((g) => g.events.every((e) => prefs[e]?.push)),
     [prefs],
   );
 
@@ -215,44 +212,34 @@ export default function NotificationsSettingsPage(): JSX.Element {
               </header>
               <div className="border-line-soft border-t" />
               <ul>
-                {group.events.map((ev, i) => {
-                  const locked = LOCKED_EVENTS.has(ev);
-                  return (
-                    <li
-                      key={ev}
-                      className={
-                        "grid grid-cols-[1fr_72px_72px] items-center gap-4 px-4 py-3" +
-                        (i > 0 ? " border-line-soft border-t" : "") +
-                        (locked ? " bg-surface-muted/60" : "")
-                      }
-                    >
-                      <div>
-                        <div className="text-ink text-sm font-medium">
-                          {t(`events.${ev}.title`)}
-                        </div>
-                        <div className="text-ink-muted mt-0.5 text-xs">
-                          {t(`events.${ev}.desc`)}
-                        </div>
-                      </div>
-                      <div className="flex justify-center">
-                        <Switch
-                          checked={prefs[ev]?.email ?? false}
-                          onChange={(v) => setChannel(ev, "email", v)}
-                          ariaLabel={`${t(`events.${ev}.title`)} · ${t("emailHeader")}`}
-                          disabled={locked}
-                        />
-                      </div>
-                      <div className="flex justify-center">
-                        <Switch
-                          checked={prefs[ev]?.push ?? false}
-                          onChange={(v) => setChannel(ev, "push", v)}
-                          ariaLabel={`${t(`events.${ev}.title`)} · ${t("pushHeader")}`}
-                          disabled={locked}
-                        />
-                      </div>
-                    </li>
-                  );
-                })}
+                {group.events.map((ev, i) => (
+                  <li
+                    key={ev}
+                    className={
+                      "grid grid-cols-[1fr_72px_72px] items-center gap-4 px-4 py-3" +
+                      (i > 0 ? " border-line-soft border-t" : "")
+                    }
+                  >
+                    <div>
+                      <div className="text-ink text-sm font-medium">{t(`events.${ev}.title`)}</div>
+                      <div className="text-ink-muted mt-0.5 text-xs">{t(`events.${ev}.desc`)}</div>
+                    </div>
+                    <div className="flex justify-center">
+                      <Switch
+                        checked={prefs[ev]?.email ?? false}
+                        onChange={(v) => setChannel(ev, "email", v)}
+                        ariaLabel={t(`events.${ev}.title`) + " · email"}
+                      />
+                    </div>
+                    <div className="flex justify-center">
+                      <Switch
+                        checked={prefs[ev]?.push ?? false}
+                        onChange={(v) => setChannel(ev, "push", v)}
+                        ariaLabel={t(`events.${ev}.title`) + " · push"}
+                      />
+                    </div>
+                  </li>
+                ))}
               </ul>
             </Surface>
           ))}
@@ -279,9 +266,6 @@ export default function NotificationsSettingsPage(): JSX.Element {
   );
 }
 
-// ────────────────────────────────────────────────────────────────────────
-// Switch hoisted to @baydar/ui-web in this revision; consumed via import above.
-// ────────────────────────────────────────────────────────────────────────
 function ChannelHeader({ label }: { label: string }): JSX.Element {
   return (
     <span className="text-ink-subtle text-center font-sans text-[11px] font-semibold uppercase tracking-wider">

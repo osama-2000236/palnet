@@ -19,9 +19,13 @@ You are resuming development of **Baydar** (بيدر) — an Arabic-first profes
 - **No Tailwind blue.** The brand is olive (`--brand-*`). If you see `blue-500` anywhere in a component, it's a bug.
 - **RTL-safe CSS only.** Never `left` / `right` / `margin-left` / `padding-right`. Always `start` / `end` / logical properties. See `docs/design/RTL.md`.
 - **Web and mobile stay in lockstep.** When you build a component in `packages/ui-web`, stub the mobile twin in `packages/ui-native` in the same commit. Same prop names, same variant names. Drift is how design systems rot.
+- **Shared UI is framework-neutral.** Do not import `next/*`, Expo Router, or app-only APIs inside `packages/ui-web` / `packages/ui-native`; app wrappers own framework-specific behavior.
 - **Arabic is the default.** Every string exists in `ar` first. `en` is a second-class fallback during development. Never ship a hardcoded English string in a component.
 - **Differentiate surfaces.** Don't wrap every section in the same `border + rounded + shadow` card. The prototype defines 5 surface variants (`flat`, `card`, `hero`, `tinted`, `row`) — use them intentionally.
 - **Avatars everywhere a person appears.** Non-negotiable on a professional network.
+- **No placeholder production routes.** Do not add fake-data app pages unless clearly marked as non-routed prototypes outside production route trees.
+- **No public cache for viewer-scoped data.** If an API DTO includes `viewer`, `hasApplied`, connection state, unread state, or other user-specific fields, use private/no-store caching.
+- **Validate before handoff.** At minimum run format, lint, type-check, tests, release-placeholder check, and relevant Playwright/a11y checks before declaring work ready.
 
 ## Workflow expectations
 

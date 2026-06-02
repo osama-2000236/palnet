@@ -7,7 +7,7 @@ import {
   JobLocationMode,
   JobType,
 } from "@baydar/shared";
-import { Body, Controller, Get, Param, Post, Query } from "@nestjs/common";
+import { Body, Controller, Get, Header, Param, Post, Query } from "@nestjs/common";
 import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 import { z } from "zod";
 
@@ -46,6 +46,7 @@ export class JobsController {
   }
 
   @Get(":id")
+  @Header("Cache-Control", "private, no-store")
   async getOne(@CurrentUser() user: AuthUser, @Param("id") id: string): Promise<JobDto> {
     return this.jobs.getOne(user.id, id);
   }

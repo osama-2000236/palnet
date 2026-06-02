@@ -119,7 +119,7 @@ exports[`safety primitives renders BlockedListItem identity 1`] = `
         [
           {
             "alignItems": "center",
-            "backgroundColor": "#fbf0ea",
+            "backgroundColor": "#e6ebd6",
             "borderRadius": 20,
             "height": 40,
             "justifyContent": "center",
@@ -134,7 +134,7 @@ exports[`safety primitives renders BlockedListItem identity 1`] = `
         accessibilityElementsHidden={true}
         style={
           {
-            "color": "#a8482c",
+            "color": "#2e371d",
             "fontFamily": "IBMPlexSansArabic",
             "fontSize": 14,
             "fontWeight": "600",

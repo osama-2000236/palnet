@@ -4,6 +4,7 @@ import {
   Avatar,
   Button,
   Icon,
+  Input,
   Surface,
   nativeTokens,
   type AvatarUser,
@@ -13,15 +14,7 @@ import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import {
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from "react-native";
+import { KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { apiFetch } from "@/lib/api";
@@ -164,14 +157,15 @@ export default function ComposerScreen(): JSX.Element {
         </Surface>
 
         <Surface variant="flat" padding="4">
-          <TextInput
+          <Input
+            fullWidth
+            testID="post-body-input"
             value={body}
             onChangeText={setBody}
             placeholder={t("composer.placeholder")}
-            placeholderTextColor={nativeTokens.color.inkMuted}
             multiline
             maxLength={MAX_BODY}
-            style={styles.bodyInput}
+            inputStyle={styles.bodyInput}
             textAlignVertical="top"
           />
         </Surface>
@@ -228,6 +222,7 @@ export default function ComposerScreen(): JSX.Element {
         ) : null}
 
         <Button
+          testID="post-submit"
           variant="accent"
           size="lg"
           fullWidth

@@ -1,11 +1,21 @@
 "use client";
 
+// New message — REFACTORED to consume the new ui-web atoms (Sweep PR).
+//
+// Changes from `main`:
+//   • 2 raw <input> fields (room title, member search) replaced with
+//     <Input>. Search input gains a leading <Icon name="search"/>.
+//   • Inline `<p role="alert">` error replaced with <Alert kind="danger">.
+//   • "Selected" pill on each row now uses <Chip size="sm" active>.
+//
+// Otherwise unchanged.
+
 import {
   ChatRoom as ChatRoomSchema,
   ConnectionListItem,
   type ConnectionListItem as ConnectionListItemType,
 } from "@baydar/shared";
-import { Avatar, Button, Surface } from "@baydar/ui-web";
+import { Alert, Avatar, Button, Chip, Icon, Input, Surface } from "@baydar/ui-web";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -108,29 +118,28 @@ export default function NewMessagePage(): JSX.Element {
       <Surface variant="card" padding="5" className="flex flex-col gap-4">
         <label className="flex flex-col gap-1">
           <span className="text-ink text-sm font-semibold">{t("newGroup.roomTitle")}</span>
-          <input
+          <Input
+            fullWidth
             value={title}
             onChange={(e) => setTitle(e.currentTarget.value)}
             placeholder={t("newGroup.roomTitlePlaceholder")}
-            className="border-line-hard text-ink focus-visible:border-brand-600 focus-visible:ring-brand-600/30 rounded-md border bg-transparent px-3 py-2 text-sm focus:outline-none focus-visible:ring-2"
+            error={error === t("newGroup.validation") && title.trim().length === 0}
           />
         </label>
 
         <label className="flex flex-col gap-1">
           <span className="text-ink text-sm font-semibold">{t("newGroup.search")}</span>
-          <input
+          <Input
+            fullWidth
+            type="search"
             value={query}
             onChange={(e) => setQuery(e.currentTarget.value)}
             placeholder={t("newGroup.searchPlaceholder")}
-            className="border-line-hard text-ink focus-visible:border-brand-600 focus-visible:ring-brand-600/30 rounded-md border bg-transparent px-3 py-2 text-sm focus:outline-none focus-visible:ring-2"
+            leading={<Icon name="search" size={16} />}
           />
         </label>
 
-        {error ? (
-          <p role="alert" className="text-danger text-sm">
-            {error}
-          </p>
-        ) : null}
+        {error ? <Alert kind="danger">{error}</Alert> : null}
 
         <div className="flex flex-col gap-2">
           {loading ? (
@@ -168,15 +177,9 @@ export default function NewMessagePage(): JSX.Element {
                       </span>
                     ) : null}
                   </span>
-                  <span
-                    className={
-                      selected
-                        ? "bg-brand-100 text-brand-700 rounded-full px-2 py-1 text-xs font-semibold"
-                        : "text-ink-muted rounded-full px-2 py-1 text-xs font-semibold"
-                    }
-                  >
+                  <Chip size="sm" active={selected}>
                     {selected ? t("newGroup.selected") : t("newGroup.select")}
-                  </span>
+                  </Chip>
                 </button>
               );
             })
@@ -186,7 +189,8 @@ export default function NewMessagePage(): JSX.Element {
         <div className="flex justify-end">
           <Button
             variant="primary"
-            disabled={submitting || selectedIds.size < 2 || title.trim().length === 0}
+            loading={submitting}
+            disabled={selectedIds.size < 2 || title.trim().length === 0}
             onClick={() => void submit()}
           >
             {t("newGroup.submit")}

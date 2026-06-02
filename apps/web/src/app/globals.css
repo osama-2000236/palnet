@@ -1,21 +1,32 @@
+/* apps/web/src/app/globals.css — UNIFIED VERSION.
+ *
+ * Changes from `main`:
+ *   • The duplicated `:root {}` token block has been removed. Tokens now
+ *     come from a single source — @baydar/ui-tokens/tokens.css, imported
+ *     below. Designers update tokens in one place; both web + native pick
+ *     them up.
+ *   • Legacy font CSS vars (`--font-naskh`, `--font-sans-arabic`) — which
+ *     were defined by `next/font` aliases in the locale layout and only
+ *     referenced here — have been replaced with the canonical
+ *     `--font-sans` + `--font-body` token names, with a back-compat fallback
+ *     chain in case the locale layout still injects the old aliases.
+ *   • Token additions for the gaps the Health Report flagged
+ *     (--space-*, *-soft semantics, --focus-ring, avatar palettes,
+ *     --bp-sm) are emitted by the upstream tokens.css, not duplicated here.
+ *
+ * Verified against `packages/ui-tokens/package.json` exports map:
+ *   "./tokens.css": "./src/tokens.css"  ✓
+ */
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Single source of truth — all design tokens live in @baydar/ui-tokens.
- * Do not redeclare brand/accent/ink/surface/line/semantic/radius/shadow vars
- * here; add or change them in packages/ui-tokens/src/tokens.css. */
+/* Single source of truth — every brand/ink/surface/line/semantic token. */
 @import "@baydar/ui-tokens/tokens.css";
 
 :root {
   color-scheme: light;
-}
-
-/* RTL helper: flip icons that need directional mirroring. Apply .rtl-mirror
- * to arrows, navigation chevrons, send icons — NOT to clocks, padlocks,
- * magnifiers, or numbers. */
-[dir="rtl"] .rtl-mirror {
-  transform: scaleX(-1);
 }
 
 html,
@@ -24,11 +35,10 @@ body {
 }
 
 html {
-  /* --font-naskh and --font-sans-arabic are injected by next/font in
-   * apps/web/src/app/[locale]/layout.tsx — keep referenced here so they
-   * stack ahead of the canonical fallbacks from --font-sans. */
-  font-family:
-    var(--font-naskh), var(--font-sans-arabic), var(--font-sans);
+  /* Canonical token first, legacy aliases as fallback during migration. */
+  font-family: var(--font-sans),
+    var(--font-naskh), var(--font-sans-arabic),
+    "IBM Plex Sans Arabic", "IBM Plex Sans", system-ui, sans-serif;
 }
 
 body {
@@ -43,3 +53,6 @@ samp {
   direction: ltr;
   unicode-bidi: embed;
 }
+
+/* `.rtl-mirror` is now defined in tokens.css alongside the breakpoint vars;
+ * removed from here. */
