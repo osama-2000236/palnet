@@ -8,17 +8,19 @@
 //     cover letter. Submit POSTs to /jobs/:id/apply with `{ coverLetter }`.
 //     The endpoint is idempotent, so retrying after a network error is safe.
 
-import { ApplyToJobBody, formatSalaryRange, Job as JobSchema, type Job } from "@baydar/shared";
+import { formatSalaryRange, Job as JobSchema, type Job } from "@baydar/shared";
 import { Button, Surface } from "@baydar/ui-web";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
-import { useCallback, useEffect, useId, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
-import { apiCall, apiFetch } from "@/lib/api";
+import { apiFetch } from "@/lib/api";
 import { getErrorCode, toErrorMessage } from "@/lib/error-message";
 import { readSession } from "@/lib/session";
+import { ApplyDialog } from "./_components/ApplyDialog";
+import { JobDetailSkeleton } from "./_components/JobDetailSkeleton";
 
 export default function JobDetailPage(): JSX.Element {
   const t = useTranslations("jobs");
@@ -65,24 +67,7 @@ export default function JobDetailPage(): JSX.Element {
   }, []);
 
   if (loading) {
-    return (
-      <div className="mx-auto w-full max-w-[820px] px-4 py-6">
-        <Surface variant="card" padding="6" aria-hidden="true">
-          <div className="mb-4 flex items-start gap-3">
-            <div className="bg-surface-sunken h-14 w-14 animate-pulse rounded-md" />
-            <div className="flex-1 space-y-2">
-              <div className="bg-surface-sunken h-5 w-2/3 animate-pulse rounded" />
-              <div className="bg-surface-sunken h-4 w-1/3 animate-pulse rounded" />
-            </div>
-          </div>
-          <div className="space-y-2">
-            <div className="bg-surface-sunken h-3 w-full animate-pulse rounded" />
-            <div className="bg-surface-sunken h-3 w-[95%] animate-pulse rounded" />
-            <div className="bg-surface-sunken h-3 w-[90%] animate-pulse rounded" />
-          </div>
-        </Surface>
-      </div>
-    );
+    return <JobDetailSkeleton />;
   }
 
   if (error || !job) {
@@ -90,7 +75,10 @@ export default function JobDetailPage(): JSX.Element {
       <div className="mx-auto w-full max-w-[820px] px-4 py-6">
         <Surface variant="tinted" padding="6">
           <p className="text-ink-muted text-sm">{error ?? t("notFound")}</p>
-          <Link href="/jobs" className="text-brand-700 mt-3 inline-block text-sm hover:underline">
+          <Link
+            href="/jobs"
+            className="text-brand-700 mt-3 inline-block text-sm hover:underline focus-visible:[box-shadow:var(--focus-ring)] focus-visible:outline-none"
+          >
             ← {t("title")}
           </Link>
         </Surface>
@@ -114,7 +102,10 @@ export default function JobDetailPage(): JSX.Element {
   return (
     <div className="mx-auto w-full max-w-[820px] px-4 py-6">
       <nav className="mb-3">
-        <Link href="/jobs" className="text-ink-muted hover:text-ink text-sm">
+        <Link
+          href="/jobs"
+          className="text-ink-muted hover:text-ink text-sm focus-visible:[box-shadow:var(--focus-ring)] focus-visible:outline-none"
+        >
           ← {t("title")}
         </Link>
       </nav>
@@ -142,7 +133,7 @@ export default function JobDetailPage(): JSX.Element {
             <h1 className="text-ink truncate text-xl font-semibold">{job.title}</h1>
             <Link
               href={`/companies/${job.company.slug}`}
-              className="text-ink-muted hover:text-ink text-sm"
+              className="text-ink-muted hover:text-ink text-sm focus-visible:[box-shadow:var(--focus-ring)] focus-visible:outline-none"
             >
               {job.company.name}
             </Link>
@@ -194,137 +185,6 @@ export default function JobDetailPage(): JSX.Element {
           onApplied={handleApplied}
         />
       ) : null}
-    </div>
-  );
-}
-
-// ────────────────────────────────────────────────────────────────────────
-// ApplyDialog — centered modal with an optional cover letter field.
-// Focus jumps to the textarea on open; Esc + overlay click close.
-// Not extracted as a ui-web atom yet — we want two consumers first.
-// ────────────────────────────────────────────────────────────────────────
-
-interface ApplyDialogProps {
-  job: Job;
-  token: string;
-  onClose: () => void;
-  onApplied: () => void;
-}
-
-function ApplyDialog({ job, token, onClose, onApplied }: ApplyDialogProps): JSX.Element {
-  const t = useTranslations("jobs");
-  const tCommon = useTranslations("common");
-  const tErr = useTranslations("errors");
-  const [coverLetter, setCoverLetter] = useState("");
-  const [submitting, setSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState<string | null>(null);
-  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
-  const titleId = useId();
-  const hintId = useId();
-
-  // Focus textarea on open; scroll-lock the body while the dialog is up.
-  useEffect(() => {
-    textareaRef.current?.focus();
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return (): void => {
-      document.body.style.overflow = prev;
-    };
-  }, []);
-
-  // Esc closes.
-  useEffect(() => {
-    function onKey(e: KeyboardEvent): void {
-      if (e.key === "Escape") {
-        e.stopPropagation();
-        onClose();
-      }
-    }
-    window.addEventListener("keydown", onKey);
-    return (): void => window.removeEventListener("keydown", onKey);
-  }, [onClose]);
-
-  async function submit(): Promise<void> {
-    setSubmitError(null);
-    const trimmed = coverLetter.trim();
-    const parsed = ApplyToJobBody.safeParse(trimmed ? { coverLetter: trimmed } : {});
-    if (!parsed.success) {
-      setSubmitError(tCommon("genericError"));
-      return;
-    }
-    setSubmitting(true);
-    try {
-      await apiCall(`/jobs/${job.id}/apply`, {
-        method: "POST",
-        token,
-        body: parsed.data,
-      });
-      onApplied();
-    } catch (e) {
-      setSubmitError(toErrorMessage(e, tErr));
-    } finally {
-      setSubmitting(false);
-    }
-  }
-
-  return (
-    <div
-      role="presentation"
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
-      }}
-      className="bg-ink/40 fixed inset-0 z-50 flex items-center justify-center p-4"
-    >
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={titleId}
-        aria-describedby={hintId}
-        className="border-line-soft bg-surface shadow-pop w-full max-w-[560px] rounded-lg border"
-      >
-        <div className="border-line-soft border-b px-5 py-4">
-          <h2 id={titleId} className="text-ink text-base font-semibold">
-            {t("applyTitle", { title: job.title })}
-          </h2>
-          <p id={hintId} className="text-ink-muted mt-1 text-sm">
-            {t("applySubtitle", { company: job.company.name })}
-          </p>
-        </div>
-
-        <div className="px-5 py-4">
-          <label className="flex flex-col gap-1">
-            <span className="text-ink text-sm font-medium">{t("coverLetterLabel")}</span>
-            <textarea
-              ref={textareaRef}
-              value={coverLetter}
-              onChange={(e) => setCoverLetter(e.target.value)}
-              maxLength={8000}
-              rows={6}
-              placeholder={t("coverLetterPlaceholder")}
-              className="border-line-hard bg-surface text-ink focus:ring-brand-600 min-h-[140px] resize-y rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2"
-            />
-            <span className="text-ink-muted text-xs">{t("coverLetterHint")}</span>
-          </label>
-
-          {submitError ? (
-            <p
-              role="alert"
-              className="border-danger/30 bg-danger/10 text-danger mt-3 rounded-md border px-3 py-2 text-xs"
-            >
-              {submitError}
-            </p>
-          ) : null}
-        </div>
-
-        <div className="border-line-soft flex items-center justify-end gap-2 border-t px-5 py-3">
-          <Button variant="ghost" onClick={onClose} disabled={submitting}>
-            {tCommon("cancel")}
-          </Button>
-          <Button variant="accent" onClick={() => void submit()} loading={submitting}>
-            {t("submitApplication")}
-          </Button>
-        </div>
-      </div>
     </div>
   );
 }

@@ -1,5 +1,7 @@
 import type { JSX } from "react";
 
+import { Skeleton } from "@baydar/ui-web";
+
 export default function AppLoading(): JSX.Element {
   return (
     <main
@@ -9,16 +11,16 @@ export default function AppLoading(): JSX.Element {
     >
       <aside className="hidden flex-col gap-3 lg:flex">
         <div className="border-line-soft bg-surface shadow-card overflow-hidden rounded-xl border">
-          <div className="bg-surface-sunken h-14 animate-pulse" />
+          <Skeleton className="h-14 w-full" />
           <div className="-mt-7 px-4 pb-4">
-            <div className="bg-surface-sunken ring-surface h-14 w-14 animate-pulse rounded-full ring-[3px]" />
-            <div className="bg-surface-sunken mt-3 h-4 w-32 animate-pulse rounded" />
-            <div className="bg-surface-sunken mt-2 h-3 w-24 animate-pulse rounded" />
+            <Skeleton kind="circle" className="ring-surface h-14 w-14 ring-[3px]" />
+            <Skeleton className="mt-3 h-4 w-32" />
+            <Skeleton className="mt-2 h-3 w-24" />
           </div>
           <div className="border-line-soft border-t" />
           <div className="flex items-center justify-between px-4 py-2.5">
-            <div className="bg-surface-sunken h-3 w-20 animate-pulse rounded" />
-            <div className="bg-surface-sunken h-3 w-6 animate-pulse rounded" />
+            <Skeleton className="h-3 w-20" />
+            <Skeleton className="h-3 w-6" />
           </div>
         </div>
       </aside>
@@ -31,23 +33,23 @@ export default function AppLoading(): JSX.Element {
             className="border-line-soft bg-surface shadow-card overflow-hidden rounded-lg border"
           >
             <div className="flex items-start gap-3 px-4 pb-2.5 pt-3.5">
-              <div className="bg-surface-subtle h-10 w-10 shrink-0 animate-pulse rounded-full" />
+              <Skeleton kind="circle" className="h-10 w-10 shrink-0 bg-surface-subtle" />
               <div className="flex min-w-0 flex-1 flex-col gap-1.5">
-                <div className="bg-surface-subtle h-3.5 w-32 animate-pulse rounded" />
-                <div className="bg-surface-subtle h-3 w-24 animate-pulse rounded" />
+                <Skeleton className="h-3.5 w-32 bg-surface-subtle" />
+                <Skeleton className="h-3 w-24 bg-surface-subtle" />
               </div>
             </div>
             <div className="flex flex-col gap-2 px-4 pb-3">
-              <div className="bg-surface-subtle h-3.5 w-[92%] animate-pulse rounded" />
-              <div className="bg-surface-subtle h-3.5 w-[78%] animate-pulse rounded" />
-              <div className="bg-surface-subtle h-3.5 w-[60%] animate-pulse rounded" />
+              <Skeleton className="h-3.5 w-[92%] bg-surface-subtle" />
+              <Skeleton className="h-3.5 w-[78%] bg-surface-subtle" />
+              <Skeleton className="h-3.5 w-[60%] bg-surface-subtle" />
             </div>
             <div className="border-line-soft border-t" />
             <div className="flex items-stretch gap-1 p-1">
-              <div className="bg-surface-subtle h-9 flex-1 animate-pulse rounded-md" />
-              <div className="bg-surface-subtle h-9 flex-1 animate-pulse rounded-md" />
-              <div className="bg-surface-subtle h-9 flex-1 animate-pulse rounded-md" />
-              <div className="bg-surface-subtle h-9 flex-1 animate-pulse rounded-md" />
+              <Skeleton radius="var(--radius-md)" className="h-9 flex-1 bg-surface-subtle" />
+              <Skeleton radius="var(--radius-md)" className="h-9 flex-1 bg-surface-subtle" />
+              <Skeleton radius="var(--radius-md)" className="h-9 flex-1 bg-surface-subtle" />
+              <Skeleton radius="var(--radius-md)" className="h-9 flex-1 bg-surface-subtle" />
             </div>
           </article>
         ))}
@@ -56,7 +58,7 @@ export default function AppLoading(): JSX.Element {
       <aside className="hidden flex-col gap-3 xl:flex">
         <div className="border-line-soft bg-surface shadow-card rounded-lg border">
           <div className="px-4 pt-3">
-            <div className="bg-surface-subtle h-3.5 w-32 animate-pulse rounded" />
+            <Skeleton className="h-3.5 w-32 bg-surface-subtle" />
           </div>
           <ul className="flex flex-col">
             {[0, 1, 2].map((i) => (
@@ -64,12 +66,12 @@ export default function AppLoading(): JSX.Element {
                 key={i}
                 className="border-line-soft flex items-start gap-2.5 border-t px-4 py-3 first:border-t-0"
               >
-                <div className="bg-surface-subtle h-9 w-9 shrink-0 animate-pulse rounded-full" />
+                <Skeleton kind="circle" className="h-9 w-9 shrink-0 bg-surface-subtle" />
                 <div className="flex min-w-0 flex-1 flex-col gap-1.5">
-                  <div className="bg-surface-subtle h-3.5 w-28 animate-pulse rounded" />
-                  <div className="bg-surface-subtle h-3 w-20 animate-pulse rounded" />
+                  <Skeleton className="h-3.5 w-28 bg-surface-subtle" />
+                  <Skeleton className="h-3 w-20 bg-surface-subtle" />
                 </div>
-                <div className="bg-surface-subtle h-6 w-16 shrink-0 animate-pulse rounded-full" />
+                <Skeleton kind="pill" className="h-6 w-16 shrink-0 bg-surface-subtle" />
               </li>
             ))}
           </ul>

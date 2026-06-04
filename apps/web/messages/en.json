@@ -2,6 +2,7 @@
   "common": {
     "appName": "Baydar",
     "loading": "Loading…",
+    "redirecting": "Redirecting…",
     "retry": "Retry",
     "cancel": "Cancel",
     "save": "Save",
@@ -180,7 +181,10 @@
   },
   "feed": {
     "title": "Feed",
-    "empty": "Start by publishing your first post.",
+    "noResults": "Nothing in your feed yet",
+    "empty": {
+      "feed": "Start by publishing your first post, or connect with people to see updates here."
+    },
     "emptyTitle": "Your feed is quiet…",
     "emptyDesc": "Start a post, or connect with new people to see their posts here.",
     "welcome": "Welcome {name} — your account is ready.",

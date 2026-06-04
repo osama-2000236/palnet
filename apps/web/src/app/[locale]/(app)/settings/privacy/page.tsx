@@ -17,7 +17,7 @@ import {
   type PrivacySettings,
   type PrivacyVisibility,
 } from "@baydar/shared";
-import { Button, RadioGroup, Surface, Switch, useToast } from "@baydar/ui-web";
+import { Button, RadioGroup, Skeleton, Surface, Switch, useToast } from "@baydar/ui-web";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -238,13 +238,13 @@ function PrefsSkeleton(): JSX.Element {
               }
             >
               <div className="flex flex-col gap-1.5">
-                <div className="bg-surface-sunken h-3.5 w-40 animate-pulse rounded" />
-                <div className="bg-surface-sunken h-3 w-52 animate-pulse rounded" />
+                <Skeleton className="h-3.5 w-40" />
+                <Skeleton className="h-3 w-52" />
               </div>
               <div className="flex gap-2">
-                <div className="bg-surface-sunken h-6 w-20 animate-pulse rounded-full" />
-                <div className="bg-surface-sunken h-6 w-24 animate-pulse rounded-full" />
-                <div className="bg-surface-sunken h-6 w-16 animate-pulse rounded-full" />
+                <Skeleton kind="pill" className="h-6 w-20" />
+                <Skeleton kind="pill" className="h-6 w-24" />
+                <Skeleton kind="pill" className="h-6 w-16" />
               </div>
             </li>
           ))}

@@ -1,0 +1,58 @@
+/* apps/web/src/app/globals.css — UNIFIED VERSION.
+ *
+ * Changes from `main`:
+ *   • The duplicated `:root {}` token block has been removed. Tokens now
+ *     come from a single source — @baydar/ui-tokens/tokens.css, imported
+ *     below. Designers update tokens in one place; both web + native pick
+ *     them up.
+ *   • Legacy font CSS vars (`--font-naskh`, `--font-sans-arabic`) — which
+ *     were defined by `next/font` aliases in the locale layout and only
+ *     referenced here — have been replaced with the canonical
+ *     `--font-sans` + `--font-body` token names, with a back-compat fallback
+ *     chain in case the locale layout still injects the old aliases.
+ *   • Token additions for the gaps the Health Report flagged
+ *     (--space-*, *-soft semantics, --focus-ring, avatar palettes,
+ *     --bp-sm) are emitted by the upstream tokens.css, not duplicated here.
+ *
+ * Verified against `packages/ui-tokens/package.json` exports map:
+ *   "./tokens.css": "./src/tokens.css"  ✓
+ */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Single source of truth — every brand/ink/surface/line/semantic token. */
+@import "@baydar/ui-tokens/tokens.css";
+
+:root {
+  color-scheme: light;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+html {
+  /* Canonical token first, legacy aliases as fallback during migration. */
+  font-family: var(--font-sans),
+    var(--font-naskh), var(--font-sans-arabic),
+    "IBM Plex Sans Arabic", "IBM Plex Sans", system-ui, sans-serif;
+}
+
+body {
+  @apply bg-surface-muted text-ink antialiased font-body;
+}
+
+/* Keep code blocks LTR even in RTL pages. */
+pre,
+code,
+kbd,
+samp {
+  direction: ltr;
+  unicode-bidi: embed;
+}
+
+/* `.rtl-mirror` is now defined in tokens.css alongside the breakpoint vars;
+ * removed from here. */

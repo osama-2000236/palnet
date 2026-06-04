@@ -16,7 +16,7 @@
 // Mutations all funnel through `apiCall` so 204s are handled uniformly.
 
 import { ActiveSession as ActiveSessionSchema, type ActiveSession } from "@baydar/shared";
-import { Alert, Button, Input, Surface, useToast } from "@baydar/ui-web";
+import { Alert, Button, Surface, useToast } from "@baydar/ui-web";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
@@ -25,6 +25,7 @@ import { z } from "zod";
 import { apiCall, apiFetch } from "@/lib/api";
 import { toErrorMessage } from "@/lib/error-message";
 import { clearSession, getDeviceId, readSession } from "@/lib/session";
+import { formatRelative, PasswordField, SessionsSkeleton } from "./_components/SecuritySettingsParts";
 
 const SessionsEnvelope = z.array(ActiveSessionSchema);
 
@@ -280,82 +281,4 @@ export default function SecuritySettingsPage(): JSX.Element {
       </Surface>
     </main>
   );
-}
-
-// ────────────────────────────────────────────────────────────────────────
-function PasswordField({
-  label,
-  value,
-  onChange,
-  autoComplete,
-  helper,
-  required,
-}: {
-  label: string;
-  value: string;
-  onChange(v: string): void;
-  autoComplete: string;
-  helper?: string;
-  required?: boolean;
-}): JSX.Element {
-  const [reveal, setReveal] = useState(false);
-  return (
-    <label className="flex flex-col gap-1">
-      <span className="text-ink text-xs font-semibold">{label}</span>
-      <span className="relative inline-flex w-full">
-        <Input
-          type={reveal ? "text" : "password"}
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          autoComplete={autoComplete}
-          required={required}
-          dir="ltr"
-          fullWidth
-          className="pe-12"
-        />
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          onClick={() => setReveal((r) => !r)}
-          aria-label={reveal ? "Hide password" : "Show password"}
-          className="absolute inset-y-1 end-1 h-auto px-2 text-xs"
-        >
-          {reveal ? "Hide" : "Show"}
-        </Button>
-      </span>
-      {helper ? <span className="text-ink-muted text-xs">{helper}</span> : null}
-    </label>
-  );
-}
-
-function SessionsSkeleton(): JSX.Element {
-  return (
-    <ul aria-hidden="true">
-      {[0, 1].map((i) => (
-        <li
-          key={i}
-          className={
-            "flex items-start justify-between gap-3 px-4 py-3" +
-            (i > 0 ? " border-line-soft border-t" : "")
-          }
-        >
-          <div className="flex flex-col gap-1.5">
-            <div className="bg-surface-sunken h-3.5 w-32 animate-pulse rounded" />
-            <div className="bg-surface-sunken h-3 w-48 animate-pulse rounded" />
-          </div>
-          <div className="bg-surface-sunken h-7 w-20 animate-pulse rounded-md" />
-        </li>
-      ))}
-    </ul>
-  );
-}
-
-function formatRelative(iso: string): string {
-  // Intentionally simple — i18n-aware formatting belongs in a shared util.
-  // For now we render the date directly so the page is functional; future
-  // work: lift `Intl.RelativeTimeFormat` wrapper from messages/page.tsx.
-  const date = new Date(iso);
-  if (Number.isNaN(date.getTime())) return iso;
-  return date.toLocaleString();
 }

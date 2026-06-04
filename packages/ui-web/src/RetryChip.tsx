@@ -26,7 +26,7 @@ export function RetryChip({ onRetry, label, loading, inline }: RetryChipProps): 
       disabled={loading}
       aria-busy={loading || undefined}
       className={
-        "text-brand-700 hover:text-brand-800 focus-visible:ring-brand-600 inline-flex items-center gap-1 rounded-md text-xs font-semibold focus:outline-none focus-visible:ring-2 disabled:cursor-not-allowed disabled:opacity-60 " +
+        "text-brand-700 hover:text-brand-800 inline-flex items-center gap-1 rounded-md text-xs font-semibold focus-visible:[box-shadow:var(--focus-ring)] focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-60 " +
         (inline ? "px-1 py-0.5" : "px-2 py-1")
       }
     >

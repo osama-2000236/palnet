@@ -1,20 +1,28 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { useRouter, useSearchParams } from "next/navigation";
+import { z } from "zod";
 
-import { apiFetchPage } from "@/lib/api";
+import { apiFetch, apiFetchPage } from "@/lib/api";
 import { getAccessToken } from "@/lib/session";
-import { cursorPage, Post as PostSchema } from "@baydar/shared";
-import type { Post } from "@baydar/shared";
+import {
+  cursorPage,
+  Job as JobSchema,
+  PersonSuggestion as PersonSuggestionSchema,
+  Post as PostSchema,
+} from "@baydar/shared";
+import type { Job, PersonSuggestion, Post } from "@baydar/shared";
 import { Button, EmptyState, PostCardSkeleton, RetryChip, Surface } from "@baydar/ui-web";
 import { PostCard } from "@/components/PostCard";
 import { RightRail } from "../components/RightRail";
-import { clearOnboardingHandoff, readOnboardingHandoff } from "@/lib/session";
+import { OnboardingDoneCard } from "./OnboardingDoneCard";
 
 const PostsPage = cursorPage(PostSchema);
+const JobsPage = cursorPage(JobSchema);
+const Suggestions = z.array(PersonSuggestionSchema);
 
 type HitState = {
   posts: Post[];
@@ -40,7 +48,6 @@ export default function FeedPageRoute(): JSX.Element {
 
 function FeedInner(): JSX.Element {
   const t = useTranslations("feed");
-  const tCommon = useTranslations("common");
   const router = useRouter();
   const params = useSearchParams();
   const [posts, setPosts] = useState<HitState>(emptyHits);
@@ -48,7 +55,10 @@ function FeedInner(): JSX.Element {
   const [hasMore, setHasMore] = useState<MoreState>(emptyMore);
   const [requestAfter, setRequestAfter] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [onboardingName, setOnboardingName] = useState<string | null>(null);
+  const [suggestions, setSuggestions] = useState<PersonSuggestion[]>([]);
+  const [suggestionsError, setSuggestionsError] = useState(false);
+  const [jobs, setJobs] = useState<Job[]>([]);
+  const [jobsError, setJobsError] = useState(false);
 
   const query = useQuery({
     queryKey: ["feed", requestAfter],
@@ -83,17 +93,38 @@ function FeedInner(): JSX.Element {
 
   const loadingInitial = query.isFetching && posts.posts.length === 0 && !error;
   const showError = Boolean(error) && !query.isFetching;
+  const onboarded = params?.get("onboarded") === "1";
+
+  const loadSuggestions = useCallback(async (): Promise<void> => {
+    const token = getAccessToken() ?? undefined;
+    try {
+      const next = await apiFetch("/connections/suggestions?limit=4", Suggestions, { token });
+      setSuggestions(next);
+      setSuggestionsError(false);
+    } catch {
+      setSuggestions([]);
+      setSuggestionsError(true);
+    }
+  }, []);
+
+  const loadRailJobs = useCallback(async (): Promise<void> => {
+    const token = getAccessToken() ?? undefined;
+    try {
+      const page = await apiFetchPage("/jobs?limit=3", JobsPage, { token });
+      setJobs(page.data);
+      setJobsError(false);
+    } catch {
+      setJobs([]);
+      setJobsError(true);
+    }
+  }, []);
 
   useEffect(() => {
-    const handoff = readOnboardingHandoff();
-    if (params?.get("onboarded") === "1" || handoff) {
-      setOnboardingName(handoff?.name ?? "");
-    }
-  }, [params]);
+    void loadSuggestions();
+    void loadRailJobs();
+  }, [loadSuggestions, loadRailJobs]);
 
-  function dismissOnboarding(): void {
-    clearOnboardingHandoff();
-    setOnboardingName(null);
+  function clearOnboardingQuery(): void {
     const url = new URL(window.location.href);
     url.searchParams.delete("onboarded");
     router.replace(url.pathname + url.search);
@@ -107,21 +138,7 @@ function FeedInner(): JSX.Element {
           {t("title") === undefined ? null : (
             <h1 className="text-ink mb-4 text-3xl font-bold">{t("title")}</h1>
           )}
-          {onboardingName !== null ? (
-            <Surface variant="hero" padding="4" className="mb-4">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <h2 className="text-ink text-base font-semibold">
-                    {t("onboardingDoneTitle", { name: onboardingName || t("title") })}
-                  </h2>
-                  <p className="text-ink-muted mt-1 text-sm">{t("onboardingDoneBody")}</p>
-                </div>
-                <Button variant="secondary" size="sm" onClick={dismissOnboarding}>
-                  {tCommon("continue")}
-                </Button>
-              </div>
-            </Surface>
-          ) : null}
+          <OnboardingDoneCard forceVisible={onboarded} onDismiss={clearOnboardingQuery} />
           <form
             onSubmit={(e) => {
               e.preventDefault();
@@ -187,12 +204,12 @@ function FeedInner(): JSX.Element {
       {/* Right Rail */}
       <Suspense fallback={null}>
         <RightRail
-          suggestions={[]}
-          suggestionsError={false}
-          onRetrySuggestions={() => void query.refetch()}
-          jobs={[]}
-          jobSuggestionsError={false}
-          onRetryJobs={() => void query.refetch()}
+          suggestions={suggestions}
+          suggestionsError={suggestionsError}
+          onRetrySuggestions={() => void loadSuggestions()}
+          jobs={jobs}
+          jobSuggestionsError={jobsError}
+          onRetryJobs={() => void loadRailJobs()}
         />
       </Suspense>
     </main>

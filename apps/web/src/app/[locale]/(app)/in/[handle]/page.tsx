@@ -12,8 +12,6 @@ import {
   Button,
   ReportDialog,
   Surface,
-  Tab,
-  Tabs,
   useToast,
   type BlockButtonLabels,
   type ReportDialogLabels,
@@ -28,8 +26,7 @@ import { ApiRequestError, apiFetch } from "@/lib/api";
 import { useBlock, useReport, useUnblock } from "@/lib/api/safety";
 import { toErrorMessage } from "@/lib/error-message";
 import { getAccessToken } from "@/lib/session";
-
-type ProfileTab = "about" | "exp" | "edu" | "skills" | "activity";
+import { ProfileTabsContent, type ProfileTab } from "./_components/ProfileTabsContent";
 
 export default function ProfileRoute(): JSX.Element {
   const params = useParams<{ locale?: string; handle: string }>();
@@ -171,7 +168,7 @@ export default function ProfileRoute(): JSX.Element {
           {profile.viewer?.isSelf ? (
             <Link
               href="/me/edit"
-              className="border-ink-muted/30 text-ink hover:bg-ink-muted/5 rounded-md border px-4 py-2 text-sm"
+              className="border-ink-muted/30 text-ink hover:bg-ink-muted/5 rounded-md border px-4 py-2 text-sm focus-visible:[box-shadow:var(--focus-ring)] focus-visible:outline-none"
             >
               {t("edit")}
             </Link>
@@ -202,14 +199,14 @@ export default function ProfileRoute(): JSX.Element {
                     setOpeningDm(false);
                   }
                 }}
-                className="border-ink-muted/30 text-ink hover:bg-ink-muted/5 rounded-md border px-4 py-2 text-sm disabled:opacity-60"
+                className="border-ink-muted/30 text-ink hover:bg-ink-muted/5 rounded-md border px-4 py-2 text-sm focus-visible:[box-shadow:var(--focus-ring)] focus-visible:outline-none disabled:opacity-60"
               >
                 {tMsg("newMessage")}
               </button>
               <button
                 type="button"
                 onClick={() => setReportOpen(true)}
-                className="border-line-hard text-ink hover:bg-surface-subtle focus-visible:ring-brand-600 rounded-md border px-4 py-2 text-sm focus:outline-none focus-visible:ring-2"
+                className="border-line-hard text-ink hover:bg-surface-subtle rounded-md border px-4 py-2 text-sm focus-visible:[box-shadow:var(--focus-ring)] focus-visible:outline-none"
               >
                 {tSafety("report.action")}
               </button>
@@ -252,116 +249,7 @@ export default function ProfileRoute(): JSX.Element {
         </div>
       </Surface>
 
-      <Surface variant="flat" padding="0" className="px-5">
-        <Tabs
-          value={tab}
-          onChange={(next) => setTab(next as ProfileTab)}
-          label={t("sectionsLabel")}
-        >
-          <Tab value="about">{t("about")}</Tab>
-          <Tab value="exp" count={profile.experiences.length}>
-            {t("experience")}
-          </Tab>
-          <Tab value="edu" count={profile.educations.length}>
-            {t("education")}
-          </Tab>
-          <Tab value="skills" count={profile.skills.length}>
-            {t("skills")}
-          </Tab>
-          <Tab value="activity">{t("posts")}</Tab>
-        </Tabs>
-      </Surface>
-
-      {tab === "about" ? (
-        profile.about ? (
-          <Surface as="section" variant="flat" padding="6">
-            <h2 className="text-ink mb-2 text-xl font-semibold">{t("about")}</h2>
-            <p className="text-ink whitespace-pre-wrap">{profile.about}</p>
-          </Surface>
-        ) : (
-          <Surface variant="tinted" padding="6">
-            <p className="text-ink-muted text-center text-sm">{t("aboutEmpty")}</p>
-          </Surface>
-        )
-      ) : null}
-
-      {tab === "exp" ? (
-        <Surface as="section" variant="card" padding="0">
-          <div className="flex items-center justify-between px-5 pb-2 pt-4">
-            <h2 className="text-ink text-xl font-semibold">{t("experience")}</h2>
-          </div>
-          {profile.experiences.length === 0 ? (
-            <p className="text-ink-muted px-5 pb-4 text-sm">{t("expEmpty")}</p>
-          ) : (
-            <ul className="flex flex-col">
-              {profile.experiences.map((e, i) => (
-                <li key={e.id ?? i} className="border-line-soft flex gap-4 border-t px-5 py-4">
-                  <div className="bg-surface-sunken text-ink-muted flex h-12 w-12 shrink-0 items-center justify-center rounded-md text-sm font-semibold">
-                    {(e.companyName[0] ?? "?").toUpperCase()}
-                  </div>
-                  <div>
-                    <p className="text-ink font-semibold">{e.title}</p>
-                    <p className="text-ink-muted text-sm">{e.companyName}</p>
-                    {e.description ? (
-                      <p className="text-ink mt-1 text-sm">{e.description}</p>
-                    ) : null}
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
-        </Surface>
-      ) : null}
-
-      {tab === "edu" ? (
-        <Surface as="section" variant="flat" padding="6">
-          <h2 className="text-ink mb-3 text-xl font-semibold">{t("education")}</h2>
-          {profile.educations.length === 0 ? (
-            <p className="text-ink-muted text-sm">{t("eduEmpty")}</p>
-          ) : (
-            <ul className="flex flex-col gap-4">
-              {profile.educations.map((e, i) => (
-                <li key={e.id ?? i}>
-                  <p className="text-ink font-semibold">{e.school}</p>
-                  {e.degree ? (
-                    <p className="text-ink-muted text-sm">
-                      {e.degree}
-                      {e.fieldOfStudy ? ` · ${e.fieldOfStudy}` : ""}
-                    </p>
-                  ) : null}
-                </li>
-              ))}
-            </ul>
-          )}
-        </Surface>
-      ) : null}
-
-      {tab === "skills" ? (
-        <Surface as="section" variant="flat" padding="6">
-          <h2 className="text-ink mb-3 text-xl font-semibold">{t("skills")}</h2>
-          {profile.skills.length === 0 ? (
-            <p className="text-ink-muted text-sm">{t("skillsEmpty")}</p>
-          ) : (
-            <ul className="flex flex-wrap gap-2">
-              {profile.skills.map((s) => (
-                <li
-                  key={s.id}
-                  className="border-ink-muted/30 text-ink rounded-full border px-3 py-1 text-sm"
-                >
-                  {s.name}
-                </li>
-              ))}
-            </ul>
-          )}
-        </Surface>
-      ) : null}
-
-      {tab === "activity" ? (
-        <Surface as="section" variant="flat" padding="6">
-          <h2 className="text-ink mb-4 text-xl font-semibold">{t("posts")}</h2>
-          <p className="text-ink-muted text-sm">{t("postsEmpty")}</p>
-        </Surface>
-      ) : null}
+      <ProfileTabsContent profile={profile} tab={tab} onTabChange={setTab} />
       <ReportDialog
         open={reportOpen}
         onOpenChange={setReportOpen}

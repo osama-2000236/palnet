@@ -17,7 +17,7 @@ import {
   NotificationPreferences as NotificationPreferencesSchema,
   type NotificationPreferences,
 } from "@baydar/shared";
-import { Button, Surface, Switch, useToast } from "@baydar/ui-web";
+import { Button, Skeleton, Surface, Switch, useToast } from "@baydar/ui-web";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -283,8 +283,8 @@ function PrefsSkeleton(): JSX.Element {
       {[0, 1, 2].map((g) => (
         <Surface key={g} variant="card" padding="0">
           <div className="px-4 py-3">
-            <div className="bg-surface-sunken h-4 w-32 animate-pulse rounded" />
-            <div className="bg-surface-sunken mt-2 h-3 w-48 animate-pulse rounded" />
+            <Skeleton className="h-4 w-32" />
+            <Skeleton className="mt-2 h-3 w-48" />
           </div>
           <div className="border-line-soft border-t" />
           <ul>
@@ -297,11 +297,11 @@ function PrefsSkeleton(): JSX.Element {
                 }
               >
                 <div className="flex flex-col gap-1.5">
-                  <div className="bg-surface-sunken h-3.5 w-36 animate-pulse rounded" />
-                  <div className="bg-surface-sunken h-3 w-52 animate-pulse rounded" />
+                  <Skeleton className="h-3.5 w-36" />
+                  <Skeleton className="h-3 w-52" />
                 </div>
-                <div className="bg-surface-sunken h-5 w-9 animate-pulse justify-self-center rounded-full" />
-                <div className="bg-surface-sunken h-5 w-9 animate-pulse justify-self-center rounded-full" />
+                <Skeleton kind="pill" className="h-5 w-9 justify-self-center" />
+                <Skeleton kind="pill" className="h-5 w-9 justify-self-center" />
               </li>
             ))}
           </ul>

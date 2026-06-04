@@ -4,19 +4,10 @@ import Link from "next/link";
 import { Avatar, Icon, RetryChip, Surface } from "@baydar/ui-web";
 import Image from "next/image";
 import { useLocale, useTranslations } from "next-intl";
-import type { Job } from "@baydar/shared";
+import type { Job, PersonSuggestion } from "@baydar/shared";
 
 interface RightRailProps {
-  suggestions: {
-    user: {
-      userId: string;
-      handle: string;
-      firstName: string;
-      lastName: string;
-      headline: string | null;
-      avatarUrl: string | null;
-    };
-  }[];
+  suggestions: PersonSuggestion[];
   suggestionsError: boolean;
   onRetrySuggestions: () => void;
   jobs: Job[];
@@ -76,7 +67,7 @@ export function RightRail({
                 </div>
                 <Link
                   href={`/in/${s.user.handle}`}
-                  className="border-brand-600 text-brand-700 hover:bg-brand-50 focus-visible:ring-brand-600 inline-flex shrink-0 items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-semibold focus:outline-none focus-visible:ring-2"
+                  className="border-brand-600 text-brand-700 hover:bg-brand-50 inline-flex shrink-0 items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-semibold focus-visible:[box-shadow:var(--focus-ring)] focus-visible:outline-none"
                 >
                   <Icon name="plus" size={12} />
                   {t("connect")}
