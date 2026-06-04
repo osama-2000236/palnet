@@ -80,7 +80,8 @@ export function Chip({
       : "border-line-hard bg-surface text-ink-muted",
     interactive && !active && "hover:bg-surface-subtle",
     interactive && active && "hover:bg-brand-100",
-    interactive && "cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/30",
+    interactive &&
+      "cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/30",
     disabled && "cursor-not-allowed opacity-55",
     className,
   );
@@ -98,7 +99,10 @@ export function Chip({
           {leading}
         </span>
       ) : null}
-      <span className="truncate" title={title ?? (typeof children === "string" ? children : undefined)}>
+      <span
+        className="truncate"
+        title={title ?? (typeof children === "string" ? children : undefined)}
+      >
         {children}
       </span>
       {onRemove && !disabled ? (
@@ -112,8 +116,8 @@ export function Chip({
           }}
           className={cx(
             "inline-flex shrink-0 items-center justify-center rounded-full",
-            "text-current/70 hover:text-current hover:bg-current/10",
-            "focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/30",
+            "text-current/70 hover:bg-current/10 hover:text-current",
+            "focus-visible:ring-brand-500/30 focus:outline-none focus-visible:ring-2",
             CLOSE_SIZE[size],
           )}
         >

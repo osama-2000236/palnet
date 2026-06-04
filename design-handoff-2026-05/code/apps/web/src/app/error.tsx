@@ -91,8 +91,8 @@ export default function RootError({
               margin: "0 0 24px",
             }}
           >
-            We hit an unexpected error while loading Baydar. The team has been notified.
-            Try again, or head back to your feed.
+            We hit an unexpected error while loading Baydar. The team has been notified. Try again,
+            or head back to your feed.
           </p>
           <div style={{ display: "flex", gap: 8, justifyContent: "center", flexWrap: "wrap" }}>
             <button

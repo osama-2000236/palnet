@@ -70,9 +70,7 @@ export default async function LandingPage({
           <h1 className="text-ink font-sans text-4xl font-bold leading-[1.1] tracking-tight md:text-5xl">
             {t("hero.title")}
           </h1>
-          <p className="text-ink-muted max-w-[52ch] text-lg leading-relaxed">
-            {t("hero.body")}
-          </p>
+          <p className="text-ink-muted max-w-[52ch] text-lg leading-relaxed">{t("hero.body")}</p>
           <div className="mt-2 flex flex-wrap items-center gap-3">
             <Link
               href={`/${locale}/register`}
@@ -120,10 +118,7 @@ export default async function LandingPage({
       </section>
 
       {/* ── Value props — three cards. ──────────────────────────────── */}
-      <section
-        aria-labelledby="value-props"
-        className="border-line-soft border-y bg-surface"
-      >
+      <section aria-labelledby="value-props" className="border-line-soft bg-surface border-y">
         <div className="mx-auto w-full max-w-[1128px] px-6 py-16">
           <h2
             id="value-props"
@@ -131,9 +126,7 @@ export default async function LandingPage({
           >
             {t("values.heading")}
           </h2>
-          <p className="text-ink-muted mt-3 max-w-[52ch] text-base">
-            {t("values.subhead")}
-          </p>
+          <p className="text-ink-muted mt-3 max-w-[52ch] text-base">{t("values.subhead")}</p>
           <ul className="mt-10 grid grid-cols-1 gap-6 md:grid-cols-3 md:gap-5">
             {(["trust", "career", "visibility"] as const).map((slot) => (
               <li
@@ -149,9 +142,7 @@ export default async function LandingPage({
                 <h3 className="text-ink font-sans text-lg font-semibold">
                   {t(`values.${slot}.title`)}
                 </h3>
-                <p className="text-ink-muted text-sm leading-relaxed">
-                  {t(`values.${slot}.body`)}
-                </p>
+                <p className="text-ink-muted text-sm leading-relaxed">{t(`values.${slot}.body`)}</p>
               </li>
             ))}
           </ul>
@@ -159,10 +150,7 @@ export default async function LandingPage({
       </section>
 
       {/* ── Employer track call-out — separate path for hiring teams. ─ */}
-      <section
-        aria-labelledby="employer-track"
-        className="bg-surface-muted"
-      >
+      <section aria-labelledby="employer-track" className="bg-surface-muted">
         <div className="mx-auto grid w-full max-w-[1128px] grid-cols-1 items-center gap-10 px-6 py-16 md:grid-cols-[1fr_auto]">
           <div>
             <p className="text-accent-700 text-[12px] font-semibold uppercase tracking-[0.12em]">
@@ -174,13 +162,11 @@ export default async function LandingPage({
             >
               {t("employer.title")}
             </h2>
-            <p className="text-ink-muted mt-3 max-w-[52ch] text-base">
-              {t("employer.body")}
-            </p>
+            <p className="text-ink-muted mt-3 max-w-[52ch] text-base">{t("employer.body")}</p>
           </div>
           <Link
             href={`/${locale}/register?as=employer`}
-            className="border-accent-600 text-accent-700 hover:bg-accent-50 inline-flex items-center rounded-md border bg-transparent px-5 py-3 text-base font-semibold whitespace-nowrap"
+            className="border-accent-600 text-accent-700 hover:bg-accent-50 inline-flex items-center whitespace-nowrap rounded-md border bg-transparent px-5 py-3 text-base font-semibold"
           >
             {t("employer.cta")}
           </Link>
@@ -190,12 +176,28 @@ export default async function LandingPage({
       {/* ── Footer — minimal: links to legal + locale switch sits here. */}
       <footer className="border-line-soft border-t">
         <div className="mx-auto flex w-full max-w-[1128px] flex-wrap items-center justify-between gap-4 px-6 py-8 text-sm">
-          <span className="text-ink-subtle">{t("footer.copyright", { year: new Date().getFullYear() })}</span>
+          <span className="text-ink-subtle">
+            {t("footer.copyright", { year: new Date().getFullYear() })}
+          </span>
           <nav className="flex flex-wrap gap-x-5 gap-y-2">
-            <Link href={`/${locale}/legal/tos`}     className="text-ink-muted hover:text-brand-700">{t("footer.tos")}</Link>
-            <Link href={`/${locale}/legal/privacy`} className="text-ink-muted hover:text-brand-700">{t("footer.privacy")}</Link>
-            <Link href={`/${locale}/legal/community`} className="text-ink-muted hover:text-brand-700">{t("footer.community")}</Link>
-            <Link href={`/${locale}/legal/employer`} className="text-ink-muted hover:text-brand-700">{t("footer.employer")}</Link>
+            <Link href={`/${locale}/legal/tos`} className="text-ink-muted hover:text-brand-700">
+              {t("footer.tos")}
+            </Link>
+            <Link href={`/${locale}/legal/privacy`} className="text-ink-muted hover:text-brand-700">
+              {t("footer.privacy")}
+            </Link>
+            <Link
+              href={`/${locale}/legal/community`}
+              className="text-ink-muted hover:text-brand-700"
+            >
+              {t("footer.community")}
+            </Link>
+            <Link
+              href={`/${locale}/legal/employer`}
+              className="text-ink-muted hover:text-brand-700"
+            >
+              {t("footer.employer")}
+            </Link>
           </nav>
         </div>
       </footer>

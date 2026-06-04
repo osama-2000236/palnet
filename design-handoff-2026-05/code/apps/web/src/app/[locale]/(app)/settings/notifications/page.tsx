@@ -46,8 +46,8 @@ interface EventGroup {
 }
 
 const EVENT_GROUPS: EventGroup[] = [
-  { key: "social",  events: ["newConnection", "newMessage", "newComment", "newReaction"] },
-  { key: "career",  events: ["jobMatch", "applicationStatus"] },
+  { key: "social", events: ["newConnection", "newMessage", "newComment", "newReaction"] },
+  { key: "career", events: ["jobMatch", "applicationStatus"] },
   { key: "account", events: ["weeklyDigest", "karamaUpdate", "moderationAction"] },
 ];
 
@@ -81,11 +81,9 @@ export default function NotificationsSettingsPage(): JSX.Element {
       setLoading(true);
       setError(null);
       try {
-        const data = await apiFetch(
-          "/me/notification-preferences",
-          NotificationPreferencesSchema,
-          { token: tk },
-        );
+        const data = await apiFetch("/me/notification-preferences", NotificationPreferencesSchema, {
+          token: tk,
+        });
         setPrefs(data);
         setPristine(data);
       } catch (e) {
@@ -104,9 +102,7 @@ export default function NotificationsSettingsPage(): JSX.Element {
 
   // Local mutations — saved as a single PATCH on confirm.
   const setChannel = (event: EventKey, channel: Channel, value: boolean): void => {
-    setPrefs((prev) =>
-      prev ? { ...prev, [event]: { ...prev[event], [channel]: value } } : prev,
-    );
+    setPrefs((prev) => (prev ? { ...prev, [event]: { ...prev[event], [channel]: value } } : prev));
   };
 
   const setAllChannel = (channel: Channel, value: boolean): void => {
@@ -211,12 +207,8 @@ export default function NotificationsSettingsPage(): JSX.Element {
           {EVENT_GROUPS.map((group) => (
             <Surface key={group.key} variant="card" padding="0">
               <header className="px-4 py-3">
-                <h2 className="text-ink text-sm font-semibold">
-                  {t(`groups.${group.key}.title`)}
-                </h2>
-                <p className="text-ink-muted mt-0.5 text-xs">
-                  {t(`groups.${group.key}.desc`)}
-                </p>
+                <h2 className="text-ink text-sm font-semibold">{t(`groups.${group.key}.title`)}</h2>
+                <p className="text-ink-muted mt-0.5 text-xs">{t(`groups.${group.key}.desc`)}</p>
               </header>
               <div className="border-line-soft border-t" />
               <ul>
@@ -229,12 +221,8 @@ export default function NotificationsSettingsPage(): JSX.Element {
                     }
                   >
                     <div>
-                      <div className="text-ink text-sm font-medium">
-                        {t(`events.${ev}.title`)}
-                      </div>
-                      <div className="text-ink-muted mt-0.5 text-xs">
-                        {t(`events.${ev}.desc`)}
-                      </div>
+                      <div className="text-ink text-sm font-medium">{t(`events.${ev}.title`)}</div>
+                      <div className="text-ink-muted mt-0.5 text-xs">{t(`events.${ev}.desc`)}</div>
                     </div>
                     <div className="flex justify-center">
                       <Switch
@@ -267,12 +255,7 @@ export default function NotificationsSettingsPage(): JSX.Element {
               <Button variant="secondary" size="sm" onClick={onRevert} disabled={saving}>
                 {tCommon("revert")}
               </Button>
-              <Button
-                variant="primary"
-                size="sm"
-                loading={saving}
-                onClick={() => void onSave()}
-              >
+              <Button variant="primary" size="sm" loading={saving} onClick={() => void onSave()}>
                 {saving ? tCommon("saving") : tCommon("save")}
               </Button>
             </div>
@@ -309,7 +292,7 @@ function Switch({
       onClick={() => onChange(!checked)}
       className={
         "focus-visible:ring-brand-500 relative inline-flex h-5 w-9 flex-none rounded-full transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 " +
-        (disabled ? "cursor-not-allowed opacity-55 " : "") +
+        (disabled ? "cursor-not-allowed opacity-55" : "") +
         (checked ? "bg-brand-600" : "bg-surface-sunken")
       }
     >

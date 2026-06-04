@@ -32,8 +32,7 @@ export function OnboardingDoneCard({
     if (window.localStorage.getItem(DISMISSED_KEY)) return;
 
     const next = readOnboardingHandoff();
-    const fresh =
-      next?.createdAt && Date.now() - Date.parse(next.createdAt) <= HANDOFF_MAX_AGE_MS;
+    const fresh = next?.createdAt && Date.now() - Date.parse(next.createdAt) <= HANDOFF_MAX_AGE_MS;
     if (!forceVisible && !fresh) return;
 
     setHandoff(next);

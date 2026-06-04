@@ -67,7 +67,7 @@ export function RightRail({
                 </div>
                 <Link
                   href={`/in/${s.user.handle}`}
-                  className="border-brand-600 text-brand-700 hover:bg-brand-50 inline-flex shrink-0 items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-semibold focus-visible:[box-shadow:var(--focus-ring)] focus-visible:outline-none"
+                  className="border-brand-600 text-brand-700 hover:bg-brand-50 inline-flex shrink-0 items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-semibold focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
                 >
                   <Icon name="plus" size={12} />
                   {t("connect")}

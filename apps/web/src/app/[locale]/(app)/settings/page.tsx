@@ -53,7 +53,7 @@ export default function SettingsLandingPage(): JSX.Element {
             <li key={item.href} className={i > 0 ? "border-line-soft border-t" : ""}>
               <Link
                 href={item.href}
-                className="hover:bg-surface-subtle group flex items-start justify-between gap-4 px-4 py-4 transition-colors focus-visible:[box-shadow:var(--focus-ring)] focus-visible:outline-none"
+                className="hover:bg-surface-subtle group flex items-start justify-between gap-4 px-4 py-4 transition-colors focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
               >
                 <div className="min-w-0 flex-1">
                   <div className="text-ink text-sm font-semibold">{item.label}</div>

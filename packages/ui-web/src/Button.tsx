@@ -74,7 +74,7 @@ export function Button({
         "inline-flex select-none items-center justify-center rounded-md font-semibold",
         "transition-colors duration-150 ease-out",
         // focus ring: keyboard-only
-        "focus-visible:[box-shadow:var(--focus-ring)] focus-visible:outline-none",
+        "focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]",
         // active: spec says 1px press on web
         "active:translate-y-px",
         // disabled

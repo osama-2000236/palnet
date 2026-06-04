@@ -43,33 +43,69 @@ export interface AlertProps {
 }
 
 const KIND_CLASSES: Record<AlertKind, string> = {
-  info:    "bg-info/10    border-info/25    text-info",
+  info: "bg-info/10    border-info/25    text-info",
   success: "bg-success/10 border-success/25 text-success",
   warning: "bg-warning/10 border-warning/25 text-warning",
-  danger:  "bg-danger/10  border-danger/25  text-danger",
+  danger: "bg-danger/10  border-danger/25  text-danger",
 };
 
 const KIND_ICON: Record<AlertKind, JSX.Element> = {
   info: (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5" aria-hidden="true">
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="h-5 w-5"
+      aria-hidden="true"
+    >
       <circle cx="12" cy="12" r="9" />
       <path d="M12 8h.01M11 12h1v5h1" />
     </svg>
   ),
   success: (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5" aria-hidden="true">
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="h-5 w-5"
+      aria-hidden="true"
+    >
       <circle cx="12" cy="12" r="9" />
       <path d="m8 12 3 3 5-6" />
     </svg>
   ),
   warning: (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5" aria-hidden="true">
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="h-5 w-5"
+      aria-hidden="true"
+    >
       <path d="M12 3l10 17H2L12 3z" />
       <path d="M12 10v4M12 17h.01" />
     </svg>
   ),
   danger: (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5" aria-hidden="true">
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="h-5 w-5"
+      aria-hidden="true"
+    >
       <circle cx="12" cy="12" r="9" />
       <path d="M12 8v5M12 16h.01" />
     </svg>
@@ -103,7 +139,7 @@ export function Alert({
         {title ? (
           <div className="font-sans text-[14px] font-semibold leading-snug">{title}</div>
         ) : null}
-        <div className={cx("text-[13.5px] leading-relaxed text-ink-muted", title && "mt-1")}>
+        <div className={cx("text-ink-muted text-[13.5px] leading-relaxed", title && "mt-1")}>
           {children}
         </div>
       </div>
@@ -113,7 +149,7 @@ export function Alert({
           type="button"
           onClick={onClose}
           aria-label={closeAriaLabel}
-          className="text-current/70 hover:text-current focus:outline-none focus-visible:ring-2 focus-visible:ring-current/30 ms-1 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md"
+          className="text-current/70 focus-visible:ring-current/30 ms-1 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md hover:text-current focus:outline-none focus-visible:ring-2"
         >
           <Icon name="x" size={14} strokeWidth={2.2} />
         </button>

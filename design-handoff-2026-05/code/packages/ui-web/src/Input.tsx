@@ -52,8 +52,8 @@ const SIZE_CLASSES: Record<InputSize, string> = {
 };
 
 const ICON_PADDING: Record<InputSize, { leading: string; trailing: string }> = {
-  sm: { leading: "ps-7",  trailing: "pe-7"  },
-  md: { leading: "ps-9",  trailing: "pe-9"  },
+  sm: { leading: "ps-7", trailing: "pe-7" },
+  md: { leading: "ps-9", trailing: "pe-9" },
   lg: { leading: "ps-10", trailing: "pe-10" },
 };
 
@@ -87,12 +87,9 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
 ): JSX.Element {
   // Auto-wire aria-describedby to the helper element when one is rendered.
   // If the consumer already passed `aria-describedby`, append rather than replace.
-  const helperId =
-    (errorMessage || helper) && id ? `${id}-helper` : undefined;
+  const helperId = (errorMessage || helper) && id ? `${id}-helper` : undefined;
   const describedBy =
-    helperId && ariaDescribedBy
-      ? `${ariaDescribedBy} ${helperId}`
-      : helperId ?? ariaDescribedBy;
+    helperId && ariaDescribedBy ? `${ariaDescribedBy} ${helperId}` : (helperId ?? ariaDescribedBy);
 
   return (
     <span className={cx("inline-flex flex-col gap-1", fullWidth && "w-full")}>
@@ -116,11 +113,11 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
           aria-describedby={describedBy}
           className={cx(
             // layout / shape
-            "rounded-md border bg-surface text-ink w-full",
+            "bg-surface text-ink w-full rounded-md border",
             "placeholder:text-ink-subtle",
             "transition-colors duration-150 ease-out",
             // focus ring (keyboard-only — matches Button)
-            "focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/30 focus-visible:border-brand-600",
+            "focus-visible:ring-brand-500/30 focus-visible:border-brand-600 focus:outline-none focus-visible:ring-2",
             // hover (only when not focused/disabled — outline strengthens)
             "hover:border-line-hard",
             // sizing
@@ -152,10 +149,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
       {errorMessage || helper ? (
         <span
           id={helperId}
-          className={cx(
-            "text-[12px]",
-            errorMessage ? "text-danger" : "text-ink-muted",
-          )}
+          className={cx("text-[12px]", errorMessage ? "text-danger" : "text-ink-muted")}
         >
           {errorMessage ?? helper}
         </span>

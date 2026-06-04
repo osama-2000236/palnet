@@ -149,7 +149,7 @@ export function Alert({
           type="button"
           onClick={onClose}
           aria-label={closeAriaLabel}
-          className="text-current/70 ms-1 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md hover:text-current focus-visible:[box-shadow:var(--focus-ring)] focus-visible:outline-none"
+          className="text-current/70 ms-1 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md hover:text-current focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
         >
           <Icon name="x" size={14} strokeWidth={2.2} />
         </button>

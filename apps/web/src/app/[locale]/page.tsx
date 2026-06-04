@@ -39,7 +39,7 @@ export default async function LandingPage({
         <Link
           href="/"
           aria-label={t("brand")}
-          className="flex items-center gap-2 rounded-md focus-visible:[box-shadow:var(--focus-ring)] focus-visible:outline-none"
+          className="flex items-center gap-2 rounded-md focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
         >
           <span
             className="bg-brand-600 text-ink-inverse flex h-9 w-9 items-center justify-center rounded-lg font-sans text-xl font-bold"
@@ -52,13 +52,13 @@ export default async function LandingPage({
         <nav aria-label={t("nav.label")} className="flex items-center gap-2">
           <Link
             href={`/${locale}/login`}
-            className="text-ink hover:bg-surface-subtle hidden rounded-md px-4 py-2 text-sm font-semibold focus-visible:[box-shadow:var(--focus-ring)] focus-visible:outline-none sm:inline-flex"
+            className="text-ink hover:bg-surface-subtle hidden rounded-md px-4 py-2 text-sm font-semibold focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)] sm:inline-flex"
           >
             {t("nav.signIn")}
           </Link>
           <Link
             href={`/${locale}/register`}
-            className="bg-brand-600 text-ink-inverse hover:bg-brand-700 rounded-md px-4 py-2 text-sm font-semibold focus-visible:[box-shadow:var(--focus-ring)] focus-visible:outline-none"
+            className="bg-brand-600 text-ink-inverse hover:bg-brand-700 rounded-md px-4 py-2 text-sm font-semibold focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
           >
             {t("nav.register")}
           </Link>
@@ -78,13 +78,13 @@ export default async function LandingPage({
           <div className="mt-2 flex flex-wrap items-center gap-3">
             <Link
               href={`/${locale}/register`}
-              className="bg-brand-600 text-ink-inverse hover:bg-brand-700 shadow-card inline-flex items-center rounded-md px-6 py-3 text-base font-semibold focus-visible:[box-shadow:var(--focus-ring)] focus-visible:outline-none"
+              className="bg-brand-600 text-ink-inverse hover:bg-brand-700 shadow-card inline-flex items-center rounded-md px-6 py-3 text-base font-semibold focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
             >
               {t("hero.ctaPrimary")}
             </Link>
             <Link
               href={`/${locale}/login`}
-              className="border-line-hard text-ink hover:bg-surface-subtle inline-flex items-center rounded-md border bg-transparent px-6 py-3 text-base font-semibold focus-visible:[box-shadow:var(--focus-ring)] focus-visible:outline-none"
+              className="border-line-hard text-ink hover:bg-surface-subtle inline-flex items-center rounded-md border bg-transparent px-6 py-3 text-base font-semibold focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
             >
               {t("hero.ctaSecondary")}
             </Link>
@@ -170,7 +170,7 @@ export default async function LandingPage({
           </div>
           <Link
             href={`/${locale}/register?as=employer`}
-            className="border-accent-600 text-accent-700 hover:bg-accent-50 inline-flex items-center whitespace-nowrap rounded-md border bg-transparent px-5 py-3 text-base font-semibold focus-visible:[box-shadow:var(--focus-ring)] focus-visible:outline-none"
+            className="border-accent-600 text-accent-700 hover:bg-accent-50 inline-flex items-center whitespace-nowrap rounded-md border bg-transparent px-5 py-3 text-base font-semibold focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
           >
             {t("employer.cta")}
           </Link>
@@ -186,25 +186,25 @@ export default async function LandingPage({
           <nav aria-label={t("footer.label")} className="flex flex-wrap gap-x-5 gap-y-2">
             <Link
               href={`/${locale}/legal/tos`}
-              className="text-ink-muted rounded-sm hover:text-brand-700 focus-visible:[box-shadow:var(--focus-ring)] focus-visible:outline-none"
+              className="text-ink-muted hover:text-brand-700 rounded-sm focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
             >
               {t("footer.tos")}
             </Link>
             <Link
               href={`/${locale}/legal/privacy`}
-              className="text-ink-muted rounded-sm hover:text-brand-700 focus-visible:[box-shadow:var(--focus-ring)] focus-visible:outline-none"
+              className="text-ink-muted hover:text-brand-700 rounded-sm focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
             >
               {t("footer.privacy")}
             </Link>
             <Link
               href={`/${locale}/legal/community`}
-              className="text-ink-muted rounded-sm hover:text-brand-700 focus-visible:[box-shadow:var(--focus-ring)] focus-visible:outline-none"
+              className="text-ink-muted hover:text-brand-700 rounded-sm focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
             >
               {t("footer.community")}
             </Link>
             <Link
               href={`/${locale}/legal/employer`}
-              className="text-ink-muted rounded-sm hover:text-brand-700 focus-visible:[box-shadow:var(--focus-ring)] focus-visible:outline-none"
+              className="text-ink-muted hover:text-brand-700 rounded-sm focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
             >
               {t("footer.employer")}
             </Link>

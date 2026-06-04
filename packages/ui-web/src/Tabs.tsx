@@ -50,7 +50,7 @@ export function Tab({ value, children, count }: TabProps): JSX.Element {
       onClick={() => ctx.onChange(value)}
       className={cx(
         "-mb-px me-6 inline-flex items-center gap-2 border-b-2 px-0.5 py-3 font-sans text-sm font-medium transition-colors",
-        "focus-visible:[box-shadow:var(--focus-ring)] focus-visible:outline-none",
+        "focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]",
         active ? "border-brand-600 text-ink" : "text-ink-muted hover:text-ink border-transparent",
       )}
     >

@@ -118,7 +118,7 @@ export function Chip({
           className={cx(
             "inline-flex shrink-0 items-center justify-center rounded-full",
             "text-current/70 hover:bg-current/10 hover:text-current",
-            "focus-visible:[box-shadow:var(--focus-ring)] focus-visible:outline-none",
+            "focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]",
             CLOSE_SIZE[size],
           )}
         >

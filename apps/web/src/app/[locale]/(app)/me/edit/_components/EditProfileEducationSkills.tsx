@@ -85,7 +85,7 @@ export function EducationsSection({
           <button
             type="button"
             onClick={() => setDraft({ ...EMPTY_EDUCATION })}
-            className="text-brand-600 text-sm hover:underline focus-visible:[box-shadow:var(--focus-ring)] focus-visible:outline-none"
+            className="text-brand-600 text-sm hover:underline focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
           >
             + {t("add")}
           </button>
@@ -112,7 +112,7 @@ export function EducationsSection({
                 type="button"
                 onClick={() => void remove(e.id as string)}
                 disabled={busy}
-                className="text-danger text-xs hover:underline focus-visible:[box-shadow:var(--focus-ring)] focus-visible:outline-none"
+                className="text-danger text-xs hover:underline focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
               >
                 {t("remove")}
               </button>
@@ -215,7 +215,7 @@ export function SkillsSection({
               onClick={() => void remove(s)}
               disabled={busy}
               aria-label={t("remove")}
-              className="text-danger text-xs hover:underline focus-visible:[box-shadow:var(--focus-ring)] focus-visible:outline-none"
+              className="text-danger text-xs hover:underline focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
             >
               ×
             </button>
@@ -231,7 +231,7 @@ export function SkillsSection({
           }}
           placeholder={t("addSkillPlaceholder")}
           maxLength={60}
-          className="border-ink-muted/30 flex-1 rounded-md border px-3 py-2 focus-visible:[box-shadow:var(--focus-ring)] focus-visible:outline-none"
+          className="border-ink-muted/30 flex-1 rounded-md border px-3 py-2 focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
         />
         <button
           type="button"

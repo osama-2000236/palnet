@@ -260,34 +260,37 @@ export default function OnboardingScreen(): JSX.Element {
     };
   }, [getValues, setValue]);
 
-  const loadSuggestions = useCallback(async (force = false): Promise<void> => {
-    if (suggestionsLoading || (suggestionsRequested && !force)) return;
+  const loadSuggestions = useCallback(
+    async (force = false): Promise<void> => {
+      if (suggestionsLoading || (suggestionsRequested && !force)) return;
 
-    setSuggestionsRequested(true);
-    if (!isConnected) {
-      setSuggestionsError(t("onboarding.network.offline"));
-      return;
-    }
+      setSuggestionsRequested(true);
+      if (!isConnected) {
+        setSuggestionsError(t("onboarding.network.offline"));
+        return;
+      }
 
-    const token = await getAccessToken();
-    if (!token) {
-      router.replace("/(auth)/login");
-      return;
-    }
+      const token = await getAccessToken();
+      if (!token) {
+        router.replace("/(auth)/login");
+        return;
+      }
 
-    setSuggestionsLoading(true);
-    setSuggestionsError(null);
-    try {
-      const data = await apiFetch("/connections/suggestions?limit=8", SuggestionsSchema, {
-        token,
-      });
-      setSuggestions(data);
-    } catch {
-      setSuggestionsError(t("onboarding.network.failed"));
-    } finally {
-      setSuggestionsLoading(false);
-    }
-  }, [isConnected, suggestionsLoading, suggestionsRequested, t]);
+      setSuggestionsLoading(true);
+      setSuggestionsError(null);
+      try {
+        const data = await apiFetch("/connections/suggestions?limit=8", SuggestionsSchema, {
+          token,
+        });
+        setSuggestions(data);
+      } catch {
+        setSuggestionsError(t("onboarding.network.failed"));
+      } finally {
+        setSuggestionsLoading(false);
+      }
+    },
+    [isConnected, suggestionsLoading, suggestionsRequested, t],
+  );
 
   useEffect(() => {
     if (step.key === "network") {

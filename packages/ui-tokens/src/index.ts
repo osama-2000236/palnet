@@ -122,7 +122,7 @@ export const tokens = {
       { bg: "accent.100", fg: "accent.700" },
       { bg: "surface.sunken", fg: "ink.muted" },
       { bg: "brand.200", fg: "brand.700" },
-      { bg: "brand.50", fg: "brand.500" },
+      { bg: "brand.50", fg: "brand.800" },
     ],
   },
   // Surface variant recipes — see DESIGN.md §3.

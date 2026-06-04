@@ -59,7 +59,9 @@ export default function MeRedirectPage(): JSX.Element {
       aria-live="polite"
       className="mx-auto flex w-full max-w-[760px] flex-col items-center gap-3 px-6 py-16"
     >
-      <span className="text-ink-muted text-sm">{stuck ? "Redirecting…" : "Loading your profile…"}</span>
+      <span className="text-ink-muted text-sm">
+        {stuck ? "Redirecting…" : "Loading your profile…"}
+      </span>
     </main>
   );
 }

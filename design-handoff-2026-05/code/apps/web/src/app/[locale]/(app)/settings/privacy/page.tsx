@@ -37,10 +37,10 @@ type SettingKey =
 // Each setting has its own valid option set. Keep these as data so we can
 // generate the form and Tab keys at runtime without hand-rolling JSX per row.
 const SETTINGS: ReadonlyArray<{ key: SettingKey; options: readonly PrivacyVisibility[] }> = [
-  { key: "profileVisibility",     options: ["public", "connections", "private"] },
-  { key: "whoCanMessage",         options: ["anyone", "connections"] },
-  { key: "whoCanSeeConnections",  options: ["public", "connections", "private"] },
-  { key: "whoCanSeeContact",      options: ["connections", "private"] },
+  { key: "profileVisibility", options: ["public", "connections", "private"] },
+  { key: "whoCanMessage", options: ["anyone", "connections"] },
+  { key: "whoCanSeeConnections", options: ["public", "connections", "private"] },
+  { key: "whoCanSeeContact", options: ["connections", "private"] },
 ];
 
 const TOGGLES: ReadonlyArray<{ key: SettingKey }> = [
@@ -102,10 +102,7 @@ export default function PrivacySettingsPage(): JSX.Element {
   };
 
   const isDirty = useMemo(
-    () =>
-      prefs !== null &&
-      pristine !== null &&
-      JSON.stringify(prefs) !== JSON.stringify(pristine),
+    () => prefs !== null && pristine !== null && JSON.stringify(prefs) !== JSON.stringify(pristine),
     [prefs, pristine],
   );
 
@@ -155,7 +152,9 @@ export default function PrivacySettingsPage(): JSX.Element {
                   }
                 >
                   <div>
-                    <div className="text-ink text-sm font-semibold">{t(`fields.${s.key}.title`)}</div>
+                    <div className="text-ink text-sm font-semibold">
+                      {t(`fields.${s.key}.title`)}
+                    </div>
                     <div className="text-ink-muted mt-0.5 text-xs">{t(`fields.${s.key}.desc`)}</div>
                   </div>
                   <div role="radiogroup" className="flex flex-wrap gap-2">
@@ -169,7 +168,7 @@ export default function PrivacySettingsPage(): JSX.Element {
                           aria-checked={active}
                           onClick={() => setVisibility(s.key, opt)}
                           className={
-                            "rounded-full border px-3 py-1 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-brand-600 " +
+                            "focus-visible:ring-brand-600 rounded-full border px-3 py-1 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 " +
                             (active
                               ? "border-brand-600 bg-brand-50 text-brand-700"
                               : "border-line-hard bg-surface text-ink-muted hover:bg-surface-subtle")
@@ -201,12 +200,8 @@ export default function PrivacySettingsPage(): JSX.Element {
                   }
                 >
                   <div className="min-w-0">
-                    <div className="text-ink text-sm font-medium">
-                      {t(`fields.${s.key}.title`)}
-                    </div>
-                    <div className="text-ink-muted mt-0.5 text-xs">
-                      {t(`fields.${s.key}.desc`)}
-                    </div>
+                    <div className="text-ink text-sm font-medium">{t(`fields.${s.key}.title`)}</div>
+                    <div className="text-ink-muted mt-0.5 text-xs">{t(`fields.${s.key}.desc`)}</div>
                   </div>
                   <Switch
                     checked={Boolean(prefs[s.key])}
@@ -233,12 +228,7 @@ export default function PrivacySettingsPage(): JSX.Element {
               >
                 {tCommon("revert")}
               </Button>
-              <Button
-                variant="primary"
-                size="sm"
-                loading={saving}
-                onClick={() => void onSave()}
-              >
+              <Button variant="primary" size="sm" loading={saving} onClick={() => void onSave()}>
                 {saving ? tCommon("saving") : tCommon("save")}
               </Button>
             </div>

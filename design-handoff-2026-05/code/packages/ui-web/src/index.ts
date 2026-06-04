@@ -37,7 +37,11 @@ export { Composer } from "./Composer";
 export type { ComposerProps, ComposerLabels, ComposerMedia } from "./Composer";
 export { PostCard } from "./PostCard";
 export type {
-  PostCardProps, PostCardLabels, PostCardAuthor, PostCardMedia, PostCardCounts,
+  PostCardProps,
+  PostCardLabels,
+  PostCardAuthor,
+  PostCardMedia,
+  PostCardCounts,
 } from "./PostCard";
 export { PostCardSkeleton } from "./PostCardSkeleton";
 
@@ -58,7 +62,11 @@ export { Tabs, Tab } from "./Tabs";
 export type { TabsProps, TabProps } from "./Tabs";
 export { Toast, ToastHost, ToastProvider, useToast } from "./Toast";
 export type {
-  ShowToastInput, ToastContextValue, ToastKind, ToastProps, ToastProviderProps,
+  ShowToastInput,
+  ToastContextValue,
+  ToastKind,
+  ToastProps,
+  ToastProviderProps,
 } from "./Toast";
 
 // NEW (May 2026 sprint) — see design-handoff-2026-05/MISSING-ELEMENTS.html
@@ -72,7 +80,11 @@ export type { AlertProps, AlertKind } from "./Alert";
 // ── Safety ───────────────────────────────────────────────────────────
 export { ReportDialog, BlockButton, BlockedListItem } from "./safety";
 export type {
-  ReportDialogLabels, ReportDialogProps, ReportTarget,
-  BlockButtonLabels, BlockButtonProps,
-  BlockedListItemLabels, BlockedListItemProps,
+  ReportDialogLabels,
+  ReportDialogProps,
+  ReportTarget,
+  BlockButtonLabels,
+  BlockButtonProps,
+  BlockedListItemLabels,
+  BlockedListItemProps,
 } from "./safety";

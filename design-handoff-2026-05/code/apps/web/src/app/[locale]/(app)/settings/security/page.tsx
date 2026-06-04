@@ -15,10 +15,7 @@
 //
 // Mutations all funnel through `apiCall` so 204s are handled uniformly.
 
-import {
-  ActiveSession as ActiveSessionSchema,
-  type ActiveSession,
-} from "@baydar/shared";
+import { ActiveSession as ActiveSessionSchema, type ActiveSession } from "@baydar/shared";
 import { Button, Surface, useToast } from "@baydar/ui-web";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -161,10 +158,7 @@ export default function SecuritySettingsPage(): JSX.Element {
           <p className="text-ink-muted mt-0.5 text-xs">{t("password.desc")}</p>
         </header>
         <div className="border-line-soft border-t" />
-        <form
-          onSubmit={(e) => void onChangePassword(e)}
-          className="flex flex-col gap-3 px-4 py-4"
-        >
+        <form onSubmit={(e) => void onChangePassword(e)} className="flex flex-col gap-3 px-4 py-4">
           <PasswordField
             label={t("password.current")}
             value={currentPw}
@@ -225,7 +219,11 @@ export default function SecuritySettingsPage(): JSX.Element {
         ) : sessionsError ? (
           <div className="flex flex-col items-center gap-3 px-4 py-6 text-center">
             <p className="text-ink-muted text-sm">{sessionsError}</p>
-            <Button variant="secondary" size="sm" onClick={() => token && void fetchSessions(token)}>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => token && void fetchSessions(token)}
+            >
               {tCommon("retry")}
             </Button>
           </div>
@@ -241,7 +239,9 @@ export default function SecuritySettingsPage(): JSX.Element {
               >
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className="text-ink text-sm font-medium">{s.device || t("sessions.unknownDevice")}</span>
+                    <span className="text-ink text-sm font-medium">
+                      {s.device || t("sessions.unknownDevice")}
+                    </span>
                     {s.id === thisDeviceId ? (
                       <span className="bg-brand-50 text-brand-700 rounded-full px-2 py-0.5 text-[11px] font-semibold">
                         {t("sessions.thisDevice")}
@@ -255,11 +255,7 @@ export default function SecuritySettingsPage(): JSX.Element {
                       : null}
                   </div>
                 </div>
-                <Button
-                  variant="danger-ghost"
-                  size="sm"
-                  onClick={() => void signOutOne(s.id)}
-                >
+                <Button variant="danger-ghost" size="sm" onClick={() => void signOutOne(s.id)}>
                   {s.id === thisDeviceId ? t("sessions.signOutThis") : t("sessions.signOut")}
                 </Button>
               </li>

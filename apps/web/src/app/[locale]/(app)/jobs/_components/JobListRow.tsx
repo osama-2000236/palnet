@@ -17,7 +17,7 @@ export function JobListRow({ job, salary }: { job: Job; salary: string | null })
   return (
     <Link
       href={`/jobs/${job.id}`}
-      className="block focus-visible:[box-shadow:var(--focus-ring)] focus-visible:outline-none"
+      className="block focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
     >
       <Surface variant="card" padding="4" className="hover:border-brand-400 transition-colors">
         <div className="flex items-start gap-3">

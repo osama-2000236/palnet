@@ -25,7 +25,11 @@ import { z } from "zod";
 import { apiCall, apiFetch } from "@/lib/api";
 import { toErrorMessage } from "@/lib/error-message";
 import { clearSession, getDeviceId, readSession } from "@/lib/session";
-import { formatRelative, PasswordField, SessionsSkeleton } from "./_components/SecuritySettingsParts";
+import {
+  formatRelative,
+  PasswordField,
+  SessionsSkeleton,
+} from "./_components/SecuritySettingsParts";
 
 const SessionsEnvelope = z.array(ActiveSessionSchema);
 

@@ -117,7 +117,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
             "placeholder:text-ink-subtle",
             "transition-colors duration-150 ease-out",
             // focus ring (keyboard-only — matches Button)
-            "focus-visible:border-brand-600 focus-visible:[box-shadow:var(--focus-ring)] focus-visible:outline-none",
+            "focus-visible:border-brand-600 focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]",
             // hover (only when not focused/disabled — outline strengthens)
             "hover:border-line-hard",
             // sizing
@@ -126,9 +126,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
             leading ? ICON_PADDING[size].leading : null,
             trailing ? ICON_PADDING[size].trailing : null,
             // state
-            error
-              ? "border-danger focus-visible:border-danger"
-              : "border-line-hard",
+            error ? "border-danger focus-visible:border-danger" : "border-line-hard",
             disabled && "bg-surface-subtle text-ink-subtle cursor-not-allowed",
             className,
           )}

@@ -1,13 +1,16 @@
 # Baydar — Codex Agent Context
 
 ## Stack
+
 Turborepo · pnpm · Next.js 15 App Router · Expo SDK 51
-- UI tokens:  packages/ui-tokens  (tokens.css + tailwind-preset.ts)
-- Web atoms:  packages/ui-web     (@baydar/ui-web barrel via index.ts)
-- Web app:    apps/web            (Next.js 15, locale-aware App Router)
-- Mobile app: apps/mobile         (Expo, parity with web minus admin/legal)
+
+- UI tokens: packages/ui-tokens (tokens.css + tailwind-preset.ts)
+- Web atoms: packages/ui-web (@baydar/ui-web barrel via index.ts)
+- Web app: apps/web (Next.js 15, locale-aware App Router)
+- Mobile app: apps/mobile (Expo, parity with web minus admin/legal)
 
 ## Critical conventions
+
 1. Every CSS variable must come from @baydar/ui-tokens/tokens.css.
    Never hard-code hex values. Never redeclare tokens in globals.css.
 2. All atoms live in packages/ui-web/src/. Add them to the barrel (index.ts).
@@ -22,12 +25,15 @@ Turborepo · pnpm · Next.js 15 App Router · Expo SDK 51
    Wait for `gh pr status` after pushing.
 
 ## Design handoff location
+
 All source files from the design review are in:
-  design-handoff-2026-05/code/
+design-handoff-2026-05/code/
 They mirror the repo tree 1:1. NEW = brand-new file. MODIFIED = replaces existing.
 
 ## Atom architecture
+
 New atoms follow the existing pattern in packages/ui-web/src/:
+
 - Props interface exported alongside the component
 - forwardRef where the element has a DOM ref
 - cx() from ./cx for class merging (never clsx, never cn)
@@ -35,6 +41,7 @@ New atoms follow the existing pattern in packages/ui-web/src/:
 - Variants encoded as lookup objects (see Alert.tsx, Chip.tsx, Input.tsx)
 
 ## Test expectations
+
 - `pnpm build` from repo root must succeed with zero type errors
 - ESLint must pass with zero errors (warnings allowed)
 - No new `any` types introduced

@@ -72,8 +72,8 @@ export default function NotFound(): JSX.Element {
             marginInline: "auto",
           }}
         >
-          The link might be wrong, the post might be deleted, or the handle might not exist.
-          Try a search, or head back to your feed.
+          The link might be wrong, the post might be deleted, or the handle might not exist. Try a
+          search, or head back to your feed.
         </p>
         <nav style={{ display: "flex", gap: 8, justifyContent: "center", flexWrap: "wrap" }}>
           <Link
