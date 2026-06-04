@@ -1,8 +1,16 @@
 import { ApiError } from "@baydar/shared";
 import type { z } from "zod";
-import { getAccessToken, getDeviceId, readSession, setAccessToken, writeSession } from "./session";
+import {
+  clearSession,
+  getAccessToken,
+  getDeviceId,
+  readSession,
+  setAccessToken,
+  writeSession,
+} from "./session";
 
 const BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000/api/v1";
+let refreshPromise: Promise<string | null> | null = null;
 
 export class ApiRequestError extends Error {
   constructor(
@@ -70,8 +78,17 @@ async function refreshAccessToken(): Promise<string | null> {
   return nextAccessToken;
 }
 
+async function refreshAccessTokenQueued(): Promise<string | null> {
+  refreshPromise ??= refreshAccessToken().finally(() => {
+    refreshPromise = null;
+  });
+  const nextToken = await refreshPromise;
+  if (!nextToken) clearSession();
+  return nextToken;
+}
+
 export async function getValidAccessToken(): Promise<string | null> {
-  return currentToken({}) ?? refreshAccessToken();
+  return currentToken({}) ?? refreshAccessTokenQueued();
 }
 
 function buildHeaders(opts: ApiFetchOptions, token: string | null): Headers {
@@ -103,7 +120,7 @@ async function jsonWithAuthRetry(path: string, opts: ApiFetchOptions): Promise<u
   let json = (await res.json().catch(() => ({}))) as unknown;
 
   if (res.status === 401) {
-    const refreshed = await refreshAccessToken();
+    const refreshed = await refreshAccessTokenQueued();
     if (refreshed) {
       res = await send(path, { ...opts, token: refreshed }, refreshed);
       json = (await res.json().catch(() => ({}))) as unknown;

@@ -32,6 +32,7 @@ import { z } from "zod";
 import { apiFetch, apiFetchPage, getValidAccessToken } from "@/lib/api";
 import { clearSession, readSession } from "@/lib/session";
 import { openStream } from "@/lib/sse";
+import { ConnectivityBanner } from "./components/ConnectivityBanner";
 
 const UnreadCount = z.object({ count: z.number().int().nonnegative() });
 const RoomsEnvelope = z.object({ data: z.array(ChatRoomSchema) });
@@ -383,6 +384,7 @@ export default function AppLayout({ children }: { children: ReactNode }): JSX.El
       onOpenSettings={onOpenSettings}
       onSignOut={onSignOut}
     >
+      <ConnectivityBanner degraded={notificationsConnectionDropped} />
       {children}
     </AppShell>
   );

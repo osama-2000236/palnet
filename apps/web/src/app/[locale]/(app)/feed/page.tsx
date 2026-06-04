@@ -3,14 +3,16 @@
 import { Suspense, useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import { apiFetchPage } from "@/lib/api";
 import { getAccessToken } from "@/lib/session";
 import { cursorPage, Post as PostSchema } from "@baydar/shared";
 import type { Post } from "@baydar/shared";
-import { EmptyState, PostCardSkeleton, RetryChip, Surface } from "@baydar/ui-web";
+import { Button, EmptyState, PostCardSkeleton, RetryChip, Surface } from "@baydar/ui-web";
 import { PostCard } from "@/components/PostCard";
 import { RightRail } from "../components/RightRail";
+import { clearOnboardingHandoff, readOnboardingHandoff } from "@/lib/session";
 
 const PostsPage = cursorPage(PostSchema);
 
@@ -38,11 +40,15 @@ export default function FeedPageRoute(): JSX.Element {
 
 function FeedInner(): JSX.Element {
   const t = useTranslations("feed");
+  const tCommon = useTranslations("common");
+  const router = useRouter();
+  const params = useSearchParams();
   const [posts, setPosts] = useState<HitState>(emptyHits);
   const [cursors, setCursors] = useState<CursorState>(emptyCursor);
   const [hasMore, setHasMore] = useState<MoreState>(emptyMore);
   const [requestAfter, setRequestAfter] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [onboardingName, setOnboardingName] = useState<string | null>(null);
 
   const query = useQuery({
     queryKey: ["feed", requestAfter],
@@ -78,6 +84,21 @@ function FeedInner(): JSX.Element {
   const loadingInitial = query.isFetching && posts.posts.length === 0 && !error;
   const showError = Boolean(error) && !query.isFetching;
 
+  useEffect(() => {
+    const handoff = readOnboardingHandoff();
+    if (params?.get("onboarded") === "1" || handoff) {
+      setOnboardingName(handoff?.name ?? "");
+    }
+  }, [params]);
+
+  function dismissOnboarding(): void {
+    clearOnboardingHandoff();
+    setOnboardingName(null);
+    const url = new URL(window.location.href);
+    url.searchParams.delete("onboarded");
+    router.replace(url.pathname + url.search);
+  }
+
   return (
     <main className="flex min-h-[calc(100vh-4rem)] w-full items-start justify-center gap-8 px-6 py-8">
       {/* Left: Feed */}
@@ -86,6 +107,21 @@ function FeedInner(): JSX.Element {
           {t("title") === undefined ? null : (
             <h1 className="text-ink mb-4 text-3xl font-bold">{t("title")}</h1>
           )}
+          {onboardingName !== null ? (
+            <Surface variant="hero" padding="4" className="mb-4">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <h2 className="text-ink text-base font-semibold">
+                    {t("onboardingDoneTitle", { name: onboardingName || t("title") })}
+                  </h2>
+                  <p className="text-ink-muted mt-1 text-sm">{t("onboardingDoneBody")}</p>
+                </div>
+                <Button variant="secondary" size="sm" onClick={dismissOnboarding}>
+                  {tCommon("continue")}
+                </Button>
+              </div>
+            </Surface>
+          ) : null}
           <form
             onSubmit={(e) => {
               e.preventDefault();
@@ -125,14 +161,15 @@ function FeedInner(): JSX.Element {
           )}
 
           {hasMore.posts ? (
-            <button
+            <Button
               type="button"
               onClick={() => setRequestAfter(cursors.posts)}
               disabled={query.isFetching}
-              className="border-ink-muted/30 text-ink hover:bg-ink-muted/5 self-center rounded-md border px-4 py-2 text-sm disabled:opacity-60"
+              variant="secondary"
+              className="self-center"
             >
               {query.isFetching ? t("loadingMore") : t("loadMore")}
-            </button>
+            </Button>
           ) : null}
 
           {showError && posts.posts.length > 0 ? (

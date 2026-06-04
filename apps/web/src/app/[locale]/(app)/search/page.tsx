@@ -9,7 +9,7 @@ import {
   type SearchPersonHit,
   type SearchPostHit,
 } from "@baydar/shared";
-import { Avatar, EmptyState, RetryChip, Surface } from "@baydar/ui-web";
+import { Avatar, Button, EmptyState, Input, RetryChip, Surface, Tab, Tabs } from "@baydar/ui-web";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -137,38 +137,25 @@ function SearchInner(): JSX.Element {
       <h1 className="text-ink text-3xl font-bold">{t("title")}</h1>
 
       <form onSubmit={submit} className="flex gap-2">
-        <input
+        <Input
           value={q}
           onChange={(e) => setQ(e.target.value)}
           placeholder={t("placeholder")}
-          className="border-ink-muted/30 bg-surface text-ink flex-1 rounded-md border px-3 py-2"
+          fullWidth
+          aria-label={t("placeholder")}
         />
-        <button
-          type="submit"
-          className="bg-brand-600 text-ink-inverse rounded-md px-4 py-2 text-sm font-semibold"
-        >
+        <Button type="submit" variant="primary">
           {t("submit")}
-        </button>
+        </Button>
       </form>
 
-      <div className="flex gap-2" role="tablist" aria-label={t("title")}>
+      <Tabs value={type} onChange={(next) => selectType(next as SearchType)} label={t("title")}>
         {tabs.map((tab) => (
-          <button
-            key={tab.key}
-            type="button"
-            role="tab"
-            aria-selected={tab.key === type}
-            onClick={() => selectType(tab.key)}
-            className={
-              tab.key === type
-                ? "bg-brand-600 text-ink-inverse rounded-md px-4 py-2 text-sm font-semibold"
-                : "border-ink-muted/30 text-ink rounded-md border px-4 py-2 text-sm font-semibold"
-            }
-          >
+          <Tab key={tab.key} value={tab.key}>
             {tab.label}
-          </button>
+          </Tab>
         ))}
-      </div>
+      </Tabs>
 
       {loadingInitial ? (
         <ul className="flex flex-col gap-3" aria-hidden="true">
@@ -203,14 +190,15 @@ function SearchInner(): JSX.Element {
       )}
 
       {hasMore[type] ? (
-        <button
+        <Button
           type="button"
           onClick={() => setRequestAfter(cursors[type])}
           disabled={query.isFetching}
-          className="border-ink-muted/30 text-ink hover:bg-ink-muted/5 self-center rounded-md border px-4 py-2 text-sm disabled:opacity-60"
+          variant="secondary"
+          className="self-center"
         >
           {query.isFetching ? t("loadingMore") : t("loadMore")}
-        </button>
+        </Button>
       ) : null}
 
       {showError && hits[type].length > 0 ? (

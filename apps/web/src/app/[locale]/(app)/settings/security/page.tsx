@@ -16,7 +16,7 @@
 // Mutations all funnel through `apiCall` so 204s are handled uniformly.
 
 import { ActiveSession as ActiveSessionSchema, type ActiveSession } from "@baydar/shared";
-import { Button, Surface, useToast } from "@baydar/ui-web";
+import { Alert, Button, Input, Surface, useToast } from "@baydar/ui-web";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
@@ -181,11 +181,7 @@ export default function SecuritySettingsPage(): JSX.Element {
             autoComplete="new-password"
             required
           />
-          {pwError ? (
-            <p role="alert" className="text-danger text-xs">
-              {pwError}
-            </p>
-          ) : null}
+          {pwError ? <Alert kind="danger">{pwError}</Alert> : null}
           <div className="flex justify-end">
             <Button
               type="submit"
@@ -306,24 +302,27 @@ function PasswordField({
   return (
     <label className="flex flex-col gap-1">
       <span className="text-ink text-xs font-semibold">{label}</span>
-      <span className="relative inline-flex">
-        <input
+      <span className="relative inline-flex w-full">
+        <Input
           type={reveal ? "text" : "password"}
           value={value}
           onChange={(e) => onChange(e.target.value)}
           autoComplete={autoComplete}
           required={required}
           dir="ltr"
-          className="border-line-hard bg-surface text-ink placeholder:text-ink-subtle focus:border-brand-600 focus:ring-brand-500/20 w-full rounded-md border px-3 py-1.5 pe-10 text-sm focus:outline-none focus:ring-2"
+          fullWidth
+          className="pe-12"
         />
-        <button
+        <Button
           type="button"
+          variant="ghost"
+          size="sm"
           onClick={() => setReveal((r) => !r)}
           aria-label={reveal ? "Hide password" : "Show password"}
-          className="text-ink-subtle hover:text-ink absolute inset-y-0 end-2 inline-flex items-center text-xs font-semibold"
+          className="absolute inset-y-1 end-1 h-auto px-2 text-xs"
         >
           {reveal ? "Hide" : "Show"}
-        </button>
+        </Button>
       </span>
       {helper ? <span className="text-ink-muted text-xs">{helper}</span> : null}
     </label>

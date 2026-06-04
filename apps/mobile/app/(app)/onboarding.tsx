@@ -190,6 +190,7 @@ export default function OnboardingScreen(): JSX.Element {
   const [submitting, setSubmitting] = useState(false);
   const [suggestions, setSuggestions] = useState<PersonSuggestionDto[]>([]);
   const [selectedSuggestionIds, setSelectedSuggestionIds] = useState<Set<string>>(new Set());
+  const [suggestionsRequested, setSuggestionsRequested] = useState(false);
   const [suggestionsLoading, setSuggestionsLoading] = useState(false);
   const [suggestionsError, setSuggestionsError] = useState<string | null>(null);
 
@@ -259,12 +260,14 @@ export default function OnboardingScreen(): JSX.Element {
     };
   }, [getValues, setValue]);
 
-  const loadSuggestions = useCallback(async (): Promise<void> => {
+  const loadSuggestions = useCallback(async (force = false): Promise<void> => {
+    if (suggestionsLoading || (suggestionsRequested && !force)) return;
+
+    setSuggestionsRequested(true);
     if (!isConnected) {
       setSuggestionsError(t("onboarding.network.offline"));
       return;
     }
-    if (suggestionsLoading || suggestions.length > 0) return;
 
     const token = await getAccessToken();
     if (!token) {
@@ -284,7 +287,7 @@ export default function OnboardingScreen(): JSX.Element {
     } finally {
       setSuggestionsLoading(false);
     }
-  }, [isConnected, suggestions.length, suggestionsLoading, t]);
+  }, [isConnected, suggestionsLoading, suggestionsRequested, t]);
 
   useEffect(() => {
     if (step.key === "network") {
@@ -520,7 +523,7 @@ export default function OnboardingScreen(): JSX.Element {
                   loading={suggestionsLoading}
                   error={suggestionsError}
                   selectedIds={selectedSuggestionIds}
-                  onRetry={loadSuggestions}
+                  onRetry={() => loadSuggestions(true)}
                   onToggle={(userId) => {
                     setSelectedSuggestionIds((current) => {
                       const next = new Set(current);

@@ -119,3 +119,35 @@ export function clearProfileCache(): void {
   if (typeof window === "undefined") return;
   window.localStorage.removeItem(PROFILE_CACHE_KEY);
 }
+
+const ONBOARDING_HANDOFF_KEY = "baydar.onboarding-handoff.v1";
+
+export interface OnboardingHandoff {
+  name?: string;
+  createdAt: string;
+}
+
+export function writeOnboardingHandoff(input: Pick<OnboardingHandoff, "name"> = {}): void {
+  if (typeof window === "undefined") return;
+  const handoff: OnboardingHandoff = {
+    name: input.name,
+    createdAt: new Date().toISOString(),
+  };
+  window.sessionStorage.setItem(ONBOARDING_HANDOFF_KEY, JSON.stringify(handoff));
+}
+
+export function readOnboardingHandoff(): OnboardingHandoff | null {
+  if (typeof window === "undefined") return null;
+  const raw = window.sessionStorage.getItem(ONBOARDING_HANDOFF_KEY);
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw) as OnboardingHandoff;
+  } catch {
+    return null;
+  }
+}
+
+export function clearOnboardingHandoff(): void {
+  if (typeof window === "undefined") return;
+  window.sessionStorage.removeItem(ONBOARDING_HANDOFF_KEY);
+}

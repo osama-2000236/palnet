@@ -17,7 +17,7 @@ import {
   type PrivacySettings,
   type PrivacyVisibility,
 } from "@baydar/shared";
-import { Button, Surface, useToast } from "@baydar/ui-web";
+import { Button, RadioGroup, Surface, Switch, useToast } from "@baydar/ui-web";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -157,28 +157,14 @@ export default function PrivacySettingsPage(): JSX.Element {
                     </div>
                     <div className="text-ink-muted mt-0.5 text-xs">{t(`fields.${s.key}.desc`)}</div>
                   </div>
-                  <div role="radiogroup" className="flex flex-wrap gap-2">
-                    {s.options.map((opt) => {
-                      const active = (prefs[s.key] as PrivacyVisibility) === opt;
-                      return (
-                        <button
-                          key={opt}
-                          type="button"
-                          role="radio"
-                          aria-checked={active}
-                          onClick={() => setVisibility(s.key, opt)}
-                          className={
-                            "focus-visible:ring-brand-600 rounded-full border px-3 py-1 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 " +
-                            (active
-                              ? "border-brand-600 bg-brand-50 text-brand-700"
-                              : "border-line-hard bg-surface text-ink-muted hover:bg-surface-subtle")
-                          }
-                        >
-                          {t(`options.${opt}`)}
-                        </button>
-                      );
-                    })}
-                  </div>
+                  <RadioGroup
+                    value={prefs[s.key] as PrivacyVisibility}
+                    onValueChange={(value) => setVisibility(s.key, value as PrivacyVisibility)}
+                    items={s.options.map((opt) => ({
+                      value: opt,
+                      label: t(`options.${opt}`),
+                    }))}
+                  />
                 </li>
               ))}
             </ul>
@@ -236,42 +222,6 @@ export default function PrivacySettingsPage(): JSX.Element {
         </>
       ) : null}
     </main>
-  );
-}
-
-// ────────────────────────────────────────────────────────────────────────
-// Inlined Switch — same as in settings/notifications/page.tsx. Hoist to
-// @baydar/ui-web/Switch.tsx when both pages have shipped.
-// ────────────────────────────────────────────────────────────────────────
-function Switch({
-  checked,
-  onChange,
-  ariaLabel,
-}: {
-  checked: boolean;
-  onChange(value: boolean): void;
-  ariaLabel: string;
-}): JSX.Element {
-  return (
-    <button
-      type="button"
-      role="switch"
-      aria-checked={checked}
-      aria-label={ariaLabel}
-      onClick={() => onChange(!checked)}
-      className={
-        "focus-visible:ring-brand-500 relative inline-flex h-5 w-9 flex-none rounded-full transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 " +
-        (checked ? "bg-brand-600" : "bg-surface-sunken")
-      }
-    >
-      <span
-        aria-hidden="true"
-        className={
-          "absolute top-0.5 h-4 w-4 rounded-full bg-white shadow-sm transition-transform duration-150 " +
-          (checked ? "start-[18px]" : "start-0.5")
-        }
-      />
-    </button>
   );
 }
 

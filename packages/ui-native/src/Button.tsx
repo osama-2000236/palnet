@@ -6,12 +6,13 @@
 //
 // onPress replaces onClick on native per spec.
 
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import {
   ActivityIndicator,
   Pressable,
   Text,
   View,
+  type GestureResponderEvent,
   type PressableProps,
   type StyleProp,
   type TextStyle,
@@ -92,8 +93,11 @@ export function Button({
   accessibilityLabel,
   accessibilityState,
   hitSlop,
+  onPressIn,
+  onPressOut,
   ...rest
 }: ButtonProps): JSX.Element {
+  const [pressed, setPressed] = useState(false);
   const isDisabled = !!disabled || loading;
   const hit = SIZE_HIT_TARGET[size];
   const extraHit = Math.max(0, (hit - SIZE_HEIGHT[size]) / 2);
@@ -120,15 +124,27 @@ export function Button({
     fontFamily: nativeTokens.type.family.sans,
   };
 
+  function handlePressIn(event: GestureResponderEvent): void {
+    setPressed(true);
+    onPressIn?.(event);
+  }
+
+  function handlePressOut(event: GestureResponderEvent): void {
+    setPressed(false);
+    onPressOut?.(event);
+  }
+
   return (
     <Pressable
       {...rest}
       disabled={isDisabled}
+      onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
       accessibilityState={{ disabled: isDisabled, busy: loading, ...accessibilityState }}
       hitSlop={hitSlop ?? { top: extraHit, bottom: extraHit, left: extraHit, right: extraHit }}
-      style={({ pressed }) => [
+      style={[
         base,
         // Spec: mobile active → opacity 0.85.
         pressed && !isDisabled ? { opacity: 0.85 } : null,

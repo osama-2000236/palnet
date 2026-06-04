@@ -48,6 +48,11 @@
   "chrome": {
     "bell": {
       "disconnected": "Live notification connection lost. Updates may be delayed."
+    },
+    "connectivity": {
+      "offline": "You are offline. Changes may not save until the connection returns.",
+      "restored": "Connection restored.",
+      "degraded": "Live updates are delayed. You can keep using Baydar."
     }
   },
   "landing": {
@@ -179,6 +184,8 @@
     "emptyTitle": "Your feed is quiet…",
     "emptyDesc": "Start a post, or connect with new people to see their posts here.",
     "welcome": "Welcome {name} — your account is ready.",
+    "onboardingDoneTitle": "Welcome {name} — your profile is ready.",
+    "onboardingDoneBody": "You can start posting, connect with people, or explore roles that match your experience.",
     "loadMore": "Load more",
     "loadingMore": "Loading…",
     "rail": {

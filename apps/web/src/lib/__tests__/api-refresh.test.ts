@@ -174,4 +174,43 @@ describe("api refresh handling", () => {
 
     expect(fetchMock).toHaveBeenCalledTimes(3);
   });
+
+  it("queues concurrent 401 refreshes behind one refresh request", async () => {
+    writeSession(makeSession("old-access"));
+    const fetchMock = jest.mocked(global.fetch);
+    fetchMock
+      .mockResolvedValueOnce(unauthorized())
+      .mockResolvedValueOnce(unauthorized())
+      .mockResolvedValueOnce(jsonResponse({ data: makeSession("new-access") }))
+      .mockResolvedValueOnce(jsonResponse({ data: { ok: true } }))
+      .mockResolvedValueOnce(jsonResponse({ data: { ok: true } }));
+
+    await expect(
+      Promise.all([
+        apiFetch("/profiles/me", OkPayload, { token: "old-access" }),
+        apiFetch("/profiles/me", OkPayload, { token: "old-access" }),
+      ]),
+    ).resolves.toEqual([{ ok: true }, { ok: true }]);
+
+    const refreshCalls = fetchMock.mock.calls.filter(
+      (call) => call[0] === `${apiBase}/auth/refresh`,
+    );
+    expect(refreshCalls).toHaveLength(1);
+    expect(fetchMock).toHaveBeenCalledTimes(5);
+  });
+
+  it("clears the stored session when refresh fails", async () => {
+    writeSession(makeSession("old-access"));
+    const fetchMock = jest.mocked(global.fetch);
+    fetchMock.mockResolvedValueOnce(unauthorized()).mockResolvedValueOnce(unauthorized());
+
+    await expect(
+      apiFetch("/profiles/me", OkPayload, { token: "old-access" }),
+    ).rejects.toMatchObject({
+      status: 401,
+      code: "AUTH_UNAUTHORIZED",
+    });
+
+    expect(readSession()).toBeNull();
+  });
 });

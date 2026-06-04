@@ -13,7 +13,7 @@
 // easy to find.
 
 import { RegisterBody } from "@baydar/shared";
-import { Alert, Button, Input } from "@baydar/ui-web";
+import { Alert, Button, Checkbox, Input } from "@baydar/ui-web";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
@@ -126,16 +126,12 @@ export default function RegisterPage(): JSX.Element {
           />
         </label>
 
-        {/* TODO(sweep-2): replace raw checkbox with <Checkbox> atom. */}
-        <label className="flex items-center gap-2 text-sm">
-          <input
-            type="checkbox"
-            checked={state.acceptTerms}
-            onChange={(e) => setState({ ...state, acceptTerms: e.target.checked })}
-            required
-          />
-          {t("acceptTerms")}
-        </label>
+        <Checkbox
+          checked={state.acceptTerms}
+          onCheckedChange={(checked) => setState({ ...state, acceptTerms: checked })}
+          required
+          label={t("acceptTerms")}
+        />
 
         {error ? <Alert kind="danger">{error}</Alert> : null}
 
