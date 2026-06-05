@@ -305,7 +305,7 @@ exports[`safety primitives renders ReportSheet content 1`] = `
     onStartShouldSetResponder={[Function]}
     style={
       {
-        "backgroundColor": "rgba(0, 0, 0, 0.35)",
+        "backgroundColor": "rgba(26, 26, 23, 0.40)",
         "bottom": 0,
         "left": 0,
         "position": "absolute",

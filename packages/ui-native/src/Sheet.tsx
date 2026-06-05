@@ -133,7 +133,7 @@ export function Sheet({
 const styles = StyleSheet.create({
   backdrop: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(0, 0, 0, 0.35)",
+    backgroundColor: nativeTokens.color.scrim,
   },
   card: {
     position: "absolute",

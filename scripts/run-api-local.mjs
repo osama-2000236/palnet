@@ -5,7 +5,7 @@ import { spawn } from "node:child_process";
 const root = process.cwd();
 const envFile = resolve(root, process.argv[2] ?? ".env.local");
 const fileEnv = existsSync(envFile) ? parseEnvFile(readFileSync(envFile, "utf8")) : {};
-const env = cleanSpawnEnv({ ...process.env, ...fileEnv });
+const env = cleanSpawnEnv({ ...fileEnv, ...process.env });
 const required = ["DATABASE_URL", "JWT_ACCESS_SECRET", "JWT_REFRESH_SECRET"];
 const missing = required.filter((key) => !env[key]?.trim());
 

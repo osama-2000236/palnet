@@ -68,7 +68,7 @@ export function Toast({
         type="button"
         aria-label={dismissLabel}
         onClick={onDismiss}
-        className="focus-visible:ring-ink-inverse/80 inline-flex h-7 w-7 flex-none items-center justify-center rounded-md text-current opacity-80 hover:opacity-100 focus:outline-none focus-visible:ring-2"
+        className="inline-flex h-7 w-7 flex-none items-center justify-center rounded-md text-current opacity-80 hover:opacity-100 focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
       >
         <Icon name="x" size={16} strokeWidth={2.2} />
       </button>

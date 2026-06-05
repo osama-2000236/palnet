@@ -191,7 +191,7 @@ function StatusTick({
           type="button"
           onClick={onRetry}
           aria-label={labels.statusFailed}
-          className="text-danger focus-visible:ring-danger inline-flex items-center focus:outline-none focus-visible:ring-2"
+          className="text-danger inline-flex items-center focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
         >
           <Icon name="x" size={14} />
         </button>

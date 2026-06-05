@@ -111,7 +111,7 @@ export function Menu({
         aria-expanded={open}
         aria-label={label}
         onClick={() => setOpen((value) => !value)}
-        className="focus-visible:ring-brand-500 rounded-md focus:outline-none focus-visible:ring-2"
+        className="rounded-md focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
       >
         {trigger}
       </button>
@@ -163,7 +163,7 @@ export function Menu({
                 }}
                 className={cx(
                   "flex min-h-8 items-center gap-2 rounded-sm px-2 py-1.5 text-start transition-colors",
-                  "focus:bg-surface-subtle hover:bg-surface-subtle focus:outline-none",
+                  "focus:bg-surface-subtle hover:bg-surface-subtle focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]",
                   item.danger ? "text-danger" : "text-ink",
                   item.disabled && "cursor-not-allowed opacity-55",
                 )}

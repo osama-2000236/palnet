@@ -115,7 +115,7 @@ export function ReportDialog({
             onChange={(event) => setDetails(event.currentTarget.value)}
             maxLength={2000}
             rows={4}
-            className="border-line-hard text-ink focus-visible:border-brand-600 focus-visible:ring-brand-600/30 rounded-md border bg-transparent px-3 py-2 text-sm focus:outline-none focus-visible:ring-2"
+            className="border-line-hard text-ink focus-visible:border-brand-600 rounded-md border bg-transparent px-3 py-2 text-sm focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
           />
         </label>
       </form>

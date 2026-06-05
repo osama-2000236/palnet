@@ -141,7 +141,7 @@ export function Composer({
         <button
           type="button"
           onClick={() => setExpanded(true)}
-          className="border-line-soft bg-surface-subtle text-ink-muted hover:bg-surface-muted focus-visible:ring-brand-600 focus-visible:ring-offset-surface flex-1 cursor-pointer rounded-full border px-4 py-2.5 text-start text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
+          className="border-line-soft bg-surface-subtle text-ink-muted hover:bg-surface-muted flex-1 cursor-pointer rounded-full border px-4 py-2.5 text-start text-sm focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
         >
           {labels.startPrompt}
         </button>
@@ -184,7 +184,7 @@ export function Composer({
         placeholder={labels.expandedPlaceholder}
         rows={5}
         maxLength={maxLength}
-        className="text-ink placeholder:text-ink-muted w-full resize-none rounded-md border-0 bg-transparent p-0 text-base focus:outline-none"
+        className="text-ink placeholder:text-ink-muted w-full resize-none rounded-md border-0 bg-transparent p-0 text-base focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
       />
 
       {media.length > 0 ? (
@@ -207,7 +207,7 @@ export function Composer({
                   type="button"
                   onClick={() => onRemoveMedia(m.id)}
                   aria-label={labels.removeMedia}
-                  className="bg-surface text-ink-muted shadow-card hover:text-danger focus-visible:ring-brand-600 absolute -end-2 -top-2 inline-flex h-5 w-5 items-center justify-center rounded-full focus:outline-none focus-visible:ring-2"
+                  className="bg-surface text-ink-muted shadow-card hover:text-danger absolute -end-2 -top-2 inline-flex h-5 w-5 items-center justify-center rounded-full focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
                 >
                   <Icon name="x" size={12} />
                 </button>
@@ -253,7 +253,7 @@ export function Composer({
             setExpanded(false);
             setBody("");
           }}
-          className="border-line-soft text-ink hover:bg-surface-subtle focus-visible:ring-brand-600 focus-visible:ring-offset-surface rounded-md border px-3 py-1.5 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
+          className="border-line-soft text-ink hover:bg-surface-subtle rounded-md border px-3 py-1.5 text-sm focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
         >
           {labels.cancel}
         </button>
@@ -261,7 +261,7 @@ export function Composer({
           type="button"
           onClick={() => void doSubmit()}
           disabled={busy || uploading || (body.trim().length === 0 && media.length === 0)}
-          className="bg-brand-600 text-ink-inverse shadow-card hover:bg-brand-700 focus-visible:ring-brand-600 focus-visible:ring-offset-surface inline-flex items-center gap-1.5 rounded-md px-4 py-1.5 text-sm font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+          className="bg-brand-600 text-ink-inverse shadow-card hover:bg-brand-700 inline-flex items-center gap-1.5 rounded-md px-4 py-1.5 text-sm font-semibold focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
         >
           <Icon name="send-paper" size={14} />
           {labels.submit}
@@ -285,7 +285,7 @@ function QuietChip({
       type="button"
       onClick={onClick}
       className={cx(
-        "text-ink-muted hover:bg-surface-subtle hover:text-ink focus-visible:ring-brand-600 focus-visible:ring-offset-surface inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
+        "text-ink-muted hover:bg-surface-subtle hover:text-ink inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]",
       )}
     >
       <Icon name={icon} size={14} />
@@ -310,7 +310,7 @@ function FileChip({
   return (
     <label
       className={cx(
-        "text-ink-muted hover:bg-surface-subtle hover:text-ink focus-within:ring-brand-600 inline-flex cursor-pointer items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium focus-within:ring-2",
+        "text-ink-muted hover:bg-surface-subtle hover:text-ink inline-flex cursor-pointer items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium focus-within:[box-shadow:var(--focus-ring)]",
         disabled && "cursor-not-allowed opacity-60",
       )}
     >

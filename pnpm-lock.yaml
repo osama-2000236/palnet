@@ -56,6 +56,9 @@ importers:
       '@baydar/shared':
         specifier: workspace:*
         version: link:../../packages/shared
+      '@baydar/ui-tokens':
+        specifier: workspace:*
+        version: link:../../packages/ui-tokens
       '@nestjs/common':
         specifier: ^10.4.6
         version: 10.4.22(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.2.2)(rxjs@7.8.2)

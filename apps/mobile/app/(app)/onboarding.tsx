@@ -20,7 +20,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import { Image } from "expo-image";
 import * as ImagePicker from "expo-image-picker";
 import { router, useLocalSearchParams } from "expo-router";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Controller,
   useForm,
@@ -188,6 +188,7 @@ export default function OnboardingScreen(): JSX.Element {
   const [photoError, setPhotoError] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const submitLockRef = useRef(false);
   const [suggestions, setSuggestions] = useState<PersonSuggestionDto[]>([]);
   const [selectedSuggestionIds, setSelectedSuggestionIds] = useState<Set<string>>(new Set());
   const [suggestionsRequested, setSuggestionsRequested] = useState(false);
@@ -345,6 +346,7 @@ export default function OnboardingScreen(): JSX.Element {
   }
 
   async function complete(values: OnboardingFormValues): Promise<void> {
+    if (submitLockRef.current) return;
     setSubmitError(null);
     if (!isConnected) {
       setSubmitError(t("onboarding.errors.offline"));
@@ -358,6 +360,7 @@ export default function OnboardingScreen(): JSX.Element {
     }
 
     setSubmitting(true);
+    submitLockRef.current = true;
     try {
       let profile = await apiFetch("/profiles/onboard", ProfileSchema, {
         method: "POST",
@@ -381,12 +384,16 @@ export default function OnboardingScreen(): JSX.Element {
       }
 
       if (avatarAsset) {
-        const uploaded = await uploadAsset({ asset: avatarAsset, purpose: "AVATAR", token });
-        profile = await apiFetch("/profiles/me", ProfileSchema, {
-          method: "PATCH",
-          token,
-          body: { avatarUrl: uploaded.publicUrl },
-        });
+        try {
+          const uploaded = await uploadAsset({ asset: avatarAsset, purpose: "AVATAR", token });
+          profile = await apiFetch("/profiles/me", ProfileSchema, {
+            method: "PATCH",
+            token,
+            body: { avatarUrl: uploaded.publicUrl },
+          });
+        } catch (error) {
+          if (!isOptionalAvatarUploadError(error)) throw error;
+        }
       }
 
       profile =
@@ -412,6 +419,7 @@ export default function OnboardingScreen(): JSX.Element {
         setSubmitError(t("onboarding.errors.generic"));
       }
     } finally {
+      submitLockRef.current = false;
       setSubmitting(false);
     }
   }
@@ -588,6 +596,14 @@ export default function OnboardingScreen(): JSX.Element {
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
+}
+
+function isOptionalAvatarUploadError(error: unknown): boolean {
+  if (error instanceof ApiRequestError) {
+    return error.status === 429 || error.status === 503 || error.code === "MEDIA_NOT_CONFIGURED";
+  }
+
+  return false;
 }
 
 function IdentityStep({

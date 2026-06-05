@@ -131,7 +131,7 @@ export function PostCard({
           type="button"
           onClick={() => author.id && onOpenProfile?.(author.id)}
           aria-label={labels.authorLabel}
-          className="focus-visible:ring-brand-600 focus-visible:ring-offset-surface shrink-0 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
+          className="shrink-0 rounded-full focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
         >
           <Avatar user={author} size="md" />
         </button>
@@ -139,7 +139,7 @@ export function PostCard({
           <button
             type="button"
             onClick={() => author.id && onOpenProfile?.(author.id)}
-            className="text-ink focus-visible:ring-brand-600 truncate text-start text-sm font-semibold hover:underline focus:outline-none focus-visible:ring-2"
+            className="text-ink truncate text-start text-sm font-semibold hover:underline focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
           >
             {name}
           </button>
@@ -158,7 +158,7 @@ export function PostCard({
           type="button"
           aria-label={labels.moreOptions}
           onClick={onReport}
-          className="text-ink-muted hover:bg-surface-subtle hover:text-ink focus-visible:ring-brand-600 inline-flex h-8 w-8 items-center justify-center rounded-md focus:outline-none focus-visible:ring-2"
+          className="text-ink-muted hover:bg-surface-subtle hover:text-ink inline-flex h-8 w-8 items-center justify-center rounded-md focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
         >
           <Icon name="more" size={18} />
         </button>
@@ -262,7 +262,7 @@ function ActionButton({
       aria-pressed={active}
       className={cx(
         "inline-flex flex-1 items-center justify-center gap-2 rounded-md px-2 py-2.5 text-sm font-medium transition-colors",
-        "hover:bg-surface-subtle focus-visible:ring-brand-600 focus-visible:ring-offset-surface focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
+        "hover:bg-surface-subtle focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]",
         "disabled:cursor-not-allowed disabled:opacity-60",
         active ? "text-brand-700 font-semibold" : "text-ink-muted hover:text-ink",
       )}

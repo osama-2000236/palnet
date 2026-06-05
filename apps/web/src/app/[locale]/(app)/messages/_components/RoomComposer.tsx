@@ -59,7 +59,7 @@ export function RoomComposer({
           placeholder={t("composePlaceholder")}
           rows={1}
           maxLength={5000}
-          className="border-line-soft bg-surface text-ink placeholder:text-ink-muted focus-visible:border-brand-600 focus-visible:ring-brand-600/30 min-h-10 flex-1 resize-none rounded-full border px-4 py-2.5 text-sm focus:outline-none focus-visible:ring-2"
+          className="border-line-soft bg-surface text-ink placeholder:text-ink-muted focus-visible:border-brand-600 min-h-10 flex-1 resize-none rounded-full border px-4 py-2.5 text-sm focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
           onKeyDown={(event) => {
             if (event.key === "Enter" && !event.shiftKey) {
               event.preventDefault();
@@ -87,7 +87,7 @@ export function RoomComposer({
               id="message-edit-body"
               value={editingBody}
               onChange={(event) => onEditingBodyChange(event.currentTarget.value)}
-              className="border-line-hard text-ink focus-visible:border-brand-600 focus-visible:ring-brand-600/30 min-h-20 rounded-md border bg-transparent px-3 py-2 text-sm focus:outline-none focus-visible:ring-2"
+              className="border-line-hard text-ink focus-visible:border-brand-600 min-h-20 rounded-md border bg-transparent px-3 py-2 text-sm focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
               maxLength={5000}
             />
             <div className="flex justify-end gap-2">
