@@ -10,6 +10,7 @@ import {
 import { I18nManager, Pressable, StyleSheet, Text, View } from "react-native";
 
 import { Icon } from "./Icon";
+import { shadowStyle } from "./shadow";
 import { nativeTokens } from "./tokens";
 
 export type ToastKind = "info" | "success" | "error";
@@ -163,7 +164,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: nativeTokens.space[3],
-    ...nativeTokens.shadow.pop,
+    ...shadowStyle("pop"),
   },
   message: {
     flex: 1,

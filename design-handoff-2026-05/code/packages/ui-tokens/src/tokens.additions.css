@@ -1,0 +1,81 @@
+/* packages/ui-tokens/src/tokens.additions.css
+ *
+ * Tokens the Product Health Report flagged as missing from the canonical
+ * `tokens.css`. They live in `index.ts` (TS) but were never emitted into
+ * CSS, so raw-CSS authors (and any non-Tailwind context: print, email) had
+ * to hard-code values.
+ *
+ * INTEGRATION:
+ *   1. Land this file alongside src/tokens.css.
+ *   2. Update tokens-build (pnpm tokens:build) so that index.ts emits
+ *      these blocks into the bottom of the generated tokens.css. Until
+ *      then, the @import statement below makes them effective at runtime
+ *      anywhere globals.css is loaded.
+ *   3. Eventually fold the contents back into tokens.css and delete this
+ *      file. Treat this as a migration shim, not a permanent surface.
+ *
+ * Reviewed against:
+ *   • design-handoff-2026-05/PRODUCT-HEALTH.md §3
+ *   • design-handoff-2026-05/MISSING-ELEMENTS.md (focus-ring, *-soft)
+ */
+
+:root {
+  /* ── Spacing (4 px unit) ─────────────────────────────────────────── */
+  --space-0:  0px;
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+  --space-24: 96px;
+
+  /* ── Semantic soft tints ─────────────────────────────────────────── */
+  /* Inline-message backgrounds. Designed against #ffffff body. */
+  --success-soft: rgba(59, 122, 59, 0.10);
+  --warning-soft: rgba(176, 122, 26, 0.10);
+  --danger-soft:  rgba(168,  50, 50, 0.08);
+  --info-soft:    rgba(47, 109, 138, 0.08);
+
+  /* Matching borders so the alert reads as a contained block. */
+  --success-border: rgba(59, 122, 59, 0.22);
+  --warning-border: rgba(176, 122, 26, 0.25);
+  --danger-border:  rgba(168,  50, 50, 0.22);
+  --info-border:    rgba(47, 109, 138, 0.20);
+
+  /* ── Focus ring (single source) ──────────────────────────────────── */
+  /* Two-stop ring: inner surface gap, outer brand-500 — mirrors the
+   * `focus-visible:ring-2 ring-offset-2` Tailwind pattern that every page
+   * was re-deriving by hand. */
+  --focus-ring-color: var(--brand-500);
+  --focus-ring-width: 2px;
+  --focus-ring-offset: 2px;
+  --focus-ring: 0 0 0 var(--focus-ring-offset) var(--surface),
+                0 0 0 calc(var(--focus-ring-offset) + var(--focus-ring-width)) var(--focus-ring-color);
+
+  /* ── Avatar palettes (5) ─────────────────────────────────────────── */
+  /* Today defined inline in Avatar.tsx. Hoisting so non-React surfaces
+   * (server-rendered HTML emails, RSS) can stay consistent. */
+  --avatar-palette-1-bg: var(--brand-100);
+  --avatar-palette-1-fg: var(--brand-800);
+  --avatar-palette-2-bg: var(--accent-100);
+  --avatar-palette-2-fg: var(--accent-700);
+  --avatar-palette-3-bg: var(--surface-sunken);
+  --avatar-palette-3-fg: var(--ink-muted);
+  --avatar-palette-4-bg: #d9e3c5;
+  --avatar-palette-4-fg: var(--brand-700);
+  --avatar-palette-5-bg: #e8d5c2;
+  --avatar-palette-5-fg: #6e4424;
+
+  /* ── Extra shadows ──────────────────────────────────────────────── */
+  --shadow-nav:   0 1px 0 var(--line-soft);
+  --shadow-modal: 0 24px 60px rgba(26,26,23,0.18), 0 4px 12px rgba(26,26,23,0.08);
+
+  /* ── Breakpoint completion ───────────────────────────────────────── */
+  --bp-sm: 640px;
+}

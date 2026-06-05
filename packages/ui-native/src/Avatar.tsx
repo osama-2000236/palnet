@@ -54,13 +54,9 @@ const DOT_SIZE: Record<AvatarSize, number> = {
   xl: 15,
 };
 
-// Three token-backed palettes, chosen deterministically from the seed so the
+// Token-backed palettes, chosen deterministically from the seed so the
 // same person always gets the same colour across the app.
-const PALETTES: { bg: string; fg: string }[] = [
-  { bg: nativeTokens.color.brand100, fg: nativeTokens.color.brand700 },
-  { bg: nativeTokens.color.accent50, fg: nativeTokens.color.accent600 },
-  { bg: nativeTokens.color.surfaceSunken, fg: nativeTokens.color.ink },
-];
+const PALETTES = nativeTokens.avatar.palette;
 
 function paletteFor(seed: string): { bg: string; fg: string } {
   let hash = 0;

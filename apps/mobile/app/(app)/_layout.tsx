@@ -7,7 +7,7 @@ import { WsNotificationEvent } from "@baydar/shared";
 import { Button, Icon, Surface, type IconName, nativeTokens } from "@baydar/ui-native";
 import type { BottomTabBarButtonProps } from "@react-navigation/bottom-tabs";
 import { Tabs, router, usePathname } from "expo-router";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, Text, View } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
@@ -22,6 +22,13 @@ import { subscribeSse } from "@/lib/sse";
 import { useNetworkStore } from "@/store/network";
 
 const UnreadCountEnvelope = z.object({ count: z.number().int().nonnegative() });
+const hiddenTabOptions = {
+  href: null,
+} as const;
+const hiddenFullScreenTabOptions = {
+  ...hiddenTabOptions,
+  tabBarStyle: { display: "none" },
+} as const;
 
 export default function AppTabsLayout(): JSX.Element {
   const { t } = useTranslation();
@@ -32,7 +39,7 @@ export default function AppTabsLayout(): JSX.Element {
   const [gateState, setGateState] = useState<"checking" | "ready" | "error">("checking");
 
   const verifyGate = useCallback(async (): Promise<void> => {
-    setGateState("checking");
+    setGateState((current) => (current === "ready" ? current : "checking"));
     const session = await readSession();
     if (!session) {
       router.replace("/(auth)/login");
@@ -86,12 +93,20 @@ export default function AppTabsLayout(): JSX.Element {
     void verifyGate();
   }, [verifyGate]);
 
+  const unsubscribeRef = useRef<(() => void) | undefined>(undefined);
+
   useEffect(() => {
-    if (!isConnected || gateState !== "ready" || pathname.includes("/onboarding")) return;
-    let unsubscribe: (() => void) | undefined;
+    if (!isConnected || gateState !== "ready" || pathname.includes("/onboarding")) {
+      // Clean up if we're disconnecting or not ready
+      unsubscribeRef.current?.();
+      unsubscribeRef.current = undefined;
+      return;
+    }
+
     void (async () => {
       let token = await getAccessToken();
       if (!token) return;
+
       try {
         const out = await apiFetch("/notifications/unread-count", UnreadCountEnvelope, { token });
         setNotificationBadge(out.count);
@@ -100,7 +115,12 @@ export default function AppTabsLayout(): JSX.Element {
         token = await getAccessToken();
         if (!token) return;
       }
-      unsubscribe = subscribeSse({
+
+      // Clean up any existing subscription first
+      unsubscribeRef.current?.();
+
+      // Set up new subscription
+      unsubscribeRef.current = subscribeSse({
         path: "/notifications/stream",
         token,
         schema: WsNotificationEvent,
@@ -115,8 +135,11 @@ export default function AppTabsLayout(): JSX.Element {
         },
       });
     })();
-    return (): void => {
-      unsubscribe?.();
+
+    // Cleanup function for when component unmounts or dependencies change
+    return () => {
+      unsubscribeRef.current?.();
+      unsubscribeRef.current = undefined;
     };
   }, [gateState, isConnected, pathname]);
 
@@ -273,23 +296,25 @@ export default function AppTabsLayout(): JSX.Element {
         }}
       />
 
-      <Tabs.Screen name="onboarding" options={{ href: null, tabBarStyle: { display: "none" } }} />
-      <Tabs.Screen name="jobs/index" options={{ href: null }} />
-      <Tabs.Screen name="composer" options={{ href: null }} />
-      <Tabs.Screen name="search" options={{ href: null }} />
-      <Tabs.Screen name="me/karama/index" options={{ href: null }} />
-      <Tabs.Screen name="me/edit" options={{ href: null }} />
-      <Tabs.Screen name="settings/blocked" options={{ href: null }} />
-      <Tabs.Screen name="in/[handle]" options={{ href: null }} />
-      <Tabs.Screen name="jobs/[id]" options={{ href: null }} />
-      <Tabs.Screen name="employer/index" options={{ href: null }} />
-      <Tabs.Screen name="employer/[slug]/index" options={{ href: null }} />
-      <Tabs.Screen name="employer/[slug]/[jobId]" options={{ href: null }} />
-      <Tabs.Screen name="messages/new" options={{ href: null }} />
-      <Tabs.Screen
-        name="messages/[roomId]"
-        options={{ href: null, tabBarStyle: { display: "none" } }}
-      />
+      <Tabs.Screen name="onboarding" options={hiddenFullScreenTabOptions} />
+      <Tabs.Screen name="jobs/index" options={hiddenTabOptions} />
+      <Tabs.Screen name="composer" options={hiddenTabOptions} />
+      <Tabs.Screen name="search" options={hiddenTabOptions} />
+      <Tabs.Screen name="me/karama/index" options={hiddenTabOptions} />
+      <Tabs.Screen name="me/edit" options={hiddenTabOptions} />
+      <Tabs.Screen name="settings/index" options={hiddenTabOptions} />
+      <Tabs.Screen name="settings/account" options={hiddenTabOptions} />
+      <Tabs.Screen name="settings/blocked" options={hiddenTabOptions} />
+      <Tabs.Screen name="settings/notifications" options={hiddenTabOptions} />
+      <Tabs.Screen name="settings/privacy" options={hiddenTabOptions} />
+      <Tabs.Screen name="settings/security" options={hiddenTabOptions} />
+      <Tabs.Screen name="in/[handle]" options={hiddenTabOptions} />
+      <Tabs.Screen name="jobs/[id]" options={hiddenTabOptions} />
+      <Tabs.Screen name="employer/index" options={hiddenTabOptions} />
+      <Tabs.Screen name="employer/[slug]/index" options={hiddenTabOptions} />
+      <Tabs.Screen name="employer/[slug]/[jobId]" options={hiddenTabOptions} />
+      <Tabs.Screen name="messages/new" options={hiddenTabOptions} />
+      <Tabs.Screen name="messages/[roomId]" options={hiddenFullScreenTabOptions} />
     </Tabs>
   );
 }

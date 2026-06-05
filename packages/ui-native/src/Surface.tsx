@@ -7,6 +7,7 @@
 import type { ReactNode } from "react";
 import { View, type StyleProp, type ViewProps, type ViewStyle } from "react-native";
 
+import { shadowStyle } from "./shadow";
 import { nativeTokens } from "./tokens";
 
 export type SurfaceVariant = "flat" | "card" | "hero" | "tinted" | "row";
@@ -34,7 +35,7 @@ const VARIANT_STYLE: Record<SurfaceVariant, ViewStyle> = {
     borderWidth: 1,
     borderColor: c.lineSoft,
     backgroundColor: c.surface,
-    ...nativeTokens.shadow.card,
+    ...shadowStyle("card"),
   },
   hero: {
     borderRadius: nativeTokens.radius.xl,
@@ -42,7 +43,7 @@ const VARIANT_STYLE: Record<SurfaceVariant, ViewStyle> = {
     borderColor: c.lineSoft,
     backgroundColor: c.surface,
     overflow: "hidden",
-    ...nativeTokens.shadow.card,
+    ...shadowStyle("card"),
   },
   tinted: {
     borderRadius: nativeTokens.radius.md,

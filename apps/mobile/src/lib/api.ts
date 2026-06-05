@@ -24,6 +24,10 @@ export interface ApiFetchOptions extends Omit<RequestInit, "body"> {
   skipAuth?: boolean;
 }
 
+type MobileRequestInit = RequestInit & {
+  cache?: "no-store";
+};
+
 export async function apiFetch<T extends z.ZodTypeAny>(
   path: string,
   schema: T,
@@ -104,20 +108,37 @@ async function request(
   // the JSON body (the default transport on the server is now httpOnly
   // cookie for the web client).
   headers.set("X-Auth-Transport", "body");
+  // React Native/OkHttp can replay ETag validators and return 304 responses
+  // without exposing the cached JSON body to JS. Authenticated API calls need
+  // fresh bodies because every response is schema-validated before rendering.
+  headers.set("Cache-Control", "no-store");
+  headers.set("Pragma", "no-cache");
+  headers.delete("If-None-Match");
+  headers.delete("If-Modified-Since");
 
   const { body, token: _token, skipAuth: _skipAuth, ...init } = opts;
   void _token;
   void _skipAuth;
+  const method = init.method?.toUpperCase() ?? "GET";
+  const requestPath = method === "GET" || method === "HEAD" ? withCacheBuster(path) : path;
 
   try {
-    return await fetch(`${API_BASE}${path}`, {
+    const requestInit: MobileRequestInit = {
       ...init,
+      cache: "no-store",
       headers,
       body: body === undefined ? undefined : JSON.stringify(body),
-    });
+    };
+    return await fetch(`${API_BASE}${requestPath}`, requestInit);
   } catch (error) {
     throw new ApiRequestError(0, "NETWORK_ERROR", error);
   }
+}
+
+function withCacheBuster(path: string): string {
+  const url = new URL(path, "https://baydar.local");
+  url.searchParams.set("_", String(Date.now()));
+  return `${url.pathname}${url.search}`;
 }
 
 async function refreshAccessToken(): Promise<string | null> {

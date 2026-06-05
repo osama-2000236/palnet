@@ -63,7 +63,7 @@ export function captureException(error: unknown): void {
  * component untouched so the app boots.
  */
 export function wrapApp<T>(component: T): T {
-  if (IS_EXPO_GO) return component;
+  if (IS_EXPO_GO || !initialized) return component;
   return Sentry.wrap(component as never) as T;
 }
 

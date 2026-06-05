@@ -6,13 +6,9 @@ import { useLocale, useTranslations } from "next-intl";
 
 export default function SettingsLandingPage(): JSX.Element {
   const t = useTranslations("settings");
+  const tMe = useTranslations("me.tabs");
   const locale = useLocale();
   const items = [
-    {
-      href: `/${locale}/me/karama`,
-      label: "Karama Points",
-      desc: "Balance, ledger, and reputation rewards.",
-    },
     {
       href: `/${locale}/settings/account`,
       label: t("items.account"),
@@ -24,9 +20,24 @@ export default function SettingsLandingPage(): JSX.Element {
       desc: t("items.notificationsDesc"),
     },
     {
+      href: `/${locale}/settings/privacy`,
+      label: t("items.privacy"),
+      desc: t("items.privacyDesc"),
+    },
+    {
+      href: `/${locale}/settings/security`,
+      label: t("items.security"),
+      desc: t("items.securityDesc"),
+    },
+    {
       href: `/${locale}/settings/blocked`,
       label: t("items.blocked"),
       desc: t("items.blockedDesc"),
+    },
+    {
+      href: `/${locale}/me/karama`,
+      label: tMe("karama"),
+      desc: t("notifications.events.karamaUpdate.desc"),
     },
   ];
 
@@ -42,7 +53,7 @@ export default function SettingsLandingPage(): JSX.Element {
             <li key={item.href} className={i > 0 ? "border-line-soft border-t" : ""}>
               <Link
                 href={item.href}
-                className="hover:bg-surface-subtle group flex items-start justify-between gap-4 px-4 py-4 transition-colors"
+                className="hover:bg-surface-subtle group flex items-start justify-between gap-4 px-4 py-4 transition-colors focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
               >
                 <div className="min-w-0 flex-1">
                   <div className="text-ink text-sm font-semibold">{item.label}</div>

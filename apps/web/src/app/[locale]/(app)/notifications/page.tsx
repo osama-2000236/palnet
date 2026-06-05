@@ -8,7 +8,7 @@ import {
   WsNotificationEvent,
   type Notification,
 } from "@baydar/shared";
-import { Avatar, EmptyState, Surface, useToast } from "@baydar/ui-web";
+import { Avatar, EmptyState, Skeleton, Surface, useToast } from "@baydar/ui-web";
 import { Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -244,7 +244,7 @@ function NotificationRow({
       )}
       <button
         type="button"
-        className="text-ink-muted hover:text-danger hover:bg-danger/10 flex h-9 w-9 flex-none items-center justify-center rounded-md disabled:cursor-not-allowed disabled:opacity-50"
+        className="text-ink-muted hover:text-danger hover:bg-danger/10 flex h-9 w-9 flex-none items-center justify-center rounded-md focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-50"
         aria-label={t("dismiss.aria")}
         title={t("dismiss.action")}
         disabled={dismissing}
@@ -259,10 +259,10 @@ function NotificationRow({
 function NotificationRowSkeleton(): JSX.Element {
   return (
     <div className="border-ink-muted/20 bg-surface flex items-start gap-3 rounded-md border p-3">
-      <div className="bg-surface-sunken h-10 w-10 animate-pulse rounded-full" />
+      <Skeleton kind="circle" className="h-10 w-10" />
       <div className="flex-1 space-y-2">
-        <div className="bg-surface-sunken h-3 w-3/4 animate-pulse rounded" />
-        <div className="bg-surface-sunken h-3 w-1/4 animate-pulse rounded" />
+        <Skeleton className="h-3 w-3/4" />
+        <Skeleton className="h-3 w-1/4" />
       </div>
     </div>
   );

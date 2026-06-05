@@ -23,12 +23,21 @@ import {
   type ReactNode,
 } from "react";
 
+import { Button } from "./Button";
+import { cx } from "./cx";
+
 export interface DialogProps {
   open: boolean;
   onClose(): void;
   title: string;
+  description?: ReactNode;
+  closeLabel?: string;
+  showClose?: boolean;
   blocking?: boolean;
   children: ReactNode;
+  footer?: ReactNode;
+  className?: string;
+  contentClassName?: string;
   // aria-describedby target for body copy. Optional; consumers can pass an id
   // that points at their description element.
   describedBy?: string;
@@ -41,8 +50,14 @@ export function Dialog({
   open,
   onClose,
   title,
+  description,
+  closeLabel = "Close",
+  showClose = true,
   blocking,
   children,
+  footer,
+  className,
+  contentClassName,
   describedBy,
 }: DialogProps): ReactElement | null {
   const dialogRef = useRef<HTMLDivElement | null>(null);
@@ -53,11 +68,14 @@ export function Dialog({
     if (open) {
       returnFocusRef.current = (document.activeElement as HTMLElement | null) ?? null;
       // Move focus into the dialog on open.
-      const id = window.requestAnimationFrame(() => {
+      const focusInitial = (): void => {
+        const preferred = dialogRef.current?.querySelector<HTMLElement>("[data-autofocus]");
         const first = dialogRef.current?.querySelector<HTMLElement>(FOCUSABLE_SELECTOR);
-        (first ?? dialogRef.current)?.focus();
-      });
-      return (): void => window.cancelAnimationFrame(id);
+        (preferred ?? first ?? dialogRef.current)?.focus();
+      };
+      focusInitial();
+      const id = window.setTimeout(focusInitial, 0);
+      return (): void => window.clearTimeout(id);
     }
     returnFocusRef.current?.focus?.();
     return undefined;
@@ -132,12 +150,35 @@ export function Dialog({
         aria-describedby={describedBy}
         tabIndex={-1}
         onKeyDown={onKeyDown}
-        className="bg-surface text-ink shadow-pop w-full max-w-md rounded-lg focus:outline-none"
+        className={cx(
+          "bg-surface text-ink shadow-pop focus-visible:ring-brand-500 w-full max-w-md rounded-lg focus-visible:ring-2 focus-visible:ring-offset-2",
+          className,
+        )}
       >
-        <div className="border-line-soft border-b px-5 py-4">
-          <h2 className="text-ink text-base font-semibold">{title}</h2>
+        <div className="border-line-soft flex items-start justify-between gap-3 border-b px-5 py-4">
+          <div className="min-w-0">
+            <h2 className="text-ink text-base font-semibold">{title}</h2>
+            {description ? <p className="text-ink-muted mt-1 text-sm">{description}</p> : null}
+          </div>
+          {showClose && !blocking ? (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={onClose}
+              aria-label={closeLabel}
+              className="h-8 w-8 px-0"
+            >
+              <span aria-hidden="true">x</span>
+            </Button>
+          ) : null}
         </div>
-        <div className="px-5 py-4">{children}</div>
+        <div className={cx("px-5 py-4", contentClassName)}>{children}</div>
+        {footer ? (
+          <div className="border-line-soft bg-surface-muted flex justify-end gap-2 border-t px-5 py-3">
+            {footer}
+          </div>
+        ) : null}
       </div>
     </div>
   );

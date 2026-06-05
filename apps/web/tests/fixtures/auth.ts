@@ -14,6 +14,8 @@ export interface A11yAuthState {
   session: string;
 }
 
+const ACCESS_TOKEN_EXPIRY_SKEW_MS = 60_000;
+
 let cachedAuthState: Promise<A11yAuthState> | null = null;
 
 export function ensureA11yStorageState(request: APIRequestContext): Promise<A11yAuthState> {
@@ -123,7 +125,14 @@ async function readA11yAuthState(): Promise<A11yAuthState | null> {
     const values = parsed.origins?.[0]?.localStorage ?? [];
     const session = values.find((entry) => entry.name === "baydar.session.v1")?.value;
     const deviceId = values.find((entry) => entry.name === "baydar.deviceId")?.value;
-    return session && deviceId ? { deviceId, session } : null;
+    if (!session || !deviceId) return null;
+
+    const parsedSession = AuthSession.parse(JSON.parse(session));
+    const accessExpiresAt = Date.parse(parsedSession.tokens.accessExpiresAt);
+    if (!Number.isFinite(accessExpiresAt)) return null;
+    if (accessExpiresAt - Date.now() <= ACCESS_TOKEN_EXPIRY_SKEW_MS) return null;
+
+    return { deviceId, session: JSON.stringify(parsedSession) };
   } catch {
     return null;
   }

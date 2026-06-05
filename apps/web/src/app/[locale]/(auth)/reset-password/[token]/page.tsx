@@ -1,6 +1,6 @@
 "use client";
 
-import { useToast } from "@baydar/ui-web";
+import { Button, Input, useToast } from "@baydar/ui-web";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
@@ -51,37 +51,33 @@ export default function ResetPasswordPage(): JSX.Element {
 
         <label className="flex flex-col gap-1">
           <span className="text-ink-muted text-sm">{t("reset.newPassword")}</span>
-          <input
+          <Input
             type="password"
-            className="border-ink-muted/30 rounded-md border px-3 py-2"
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
             required
             autoComplete="new-password"
             dir="ltr"
+            fullWidth
           />
         </label>
 
         <label className="flex flex-col gap-1">
           <span className="text-ink-muted text-sm">{t("reset.confirmPassword")}</span>
-          <input
+          <Input
             type="password"
-            className="border-ink-muted/30 rounded-md border px-3 py-2"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             required
             autoComplete="new-password"
             dir="ltr"
+            fullWidth
           />
         </label>
 
-        <button
-          type="submit"
-          disabled={busy || resetComplete}
-          className="bg-brand-600 text-ink-inverse shadow-card hover:bg-brand-700 rounded-md px-4 py-2 disabled:opacity-60"
-        >
+        <Button type="submit" variant="primary" loading={busy} disabled={resetComplete} fullWidth>
           {t("reset.submit")}
-        </button>
+        </Button>
 
         <Link href={`/${locale}/auth/login`} className="text-brand-700 text-sm font-semibold">
           {t("reset.backToLogin")}

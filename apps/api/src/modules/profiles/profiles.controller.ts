@@ -6,7 +6,7 @@ import {
   UpdateProfileBody,
   type Profile as ProfileDto,
 } from "@baydar/shared";
-import { Body, Controller, Delete, Get, Param, Patch, Post, Put } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Header, Param, Patch, Post, Put } from "@nestjs/common";
 import { ApiBearerAuth, ApiOkResponse, ApiTags } from "@nestjs/swagger";
 
 import { ZodValidationPipe } from "../../common/zod-pipe";
@@ -137,10 +137,11 @@ export class ProfilesController {
     return { data };
   }
 
-  // Public: anyone can view a profile, but we attach viewer state when a
-  // token is supplied.
+  // Public: anyone can view a profile, but the DTO can attach viewer state when
+  // a token is supplied, so shared caches must not store it.
   @OptionalAuth()
   @Get(":handle")
+  @Header("Cache-Control", "private, no-store")
   async byHandle(
     @Param("handle") handle: string,
     @OptionalUser() viewer: AuthUser | null,

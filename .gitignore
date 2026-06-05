@@ -10,6 +10,8 @@ build/
 out/
 .expo/
 .expo-shared/
+.vercel/
+apps/web/.vercel/
 
 # Env
 .env
@@ -74,6 +76,8 @@ packages/db/prisma/*.db-journal
 .artifacts/
 apps/Users/
 expo-qr.png
+open-design/
+palnet/
 
 # Python (agentflow tooling)
 __pycache__/

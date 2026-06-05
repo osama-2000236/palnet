@@ -16,6 +16,8 @@ function makeQueryClient(): QueryClient {
         // 60s is conservative enough to avoid extra refetches on tab focus
         // while still letting mutations + manual invalidations win.
         staleTime: 60 * 1000,
+        // Keep unused data in cache for 10 minutes before garbage collection.
+        gcTime: 10 * 60 * 1000,
         // Mutations and route nav already cover most refetch needs.
         refetchOnWindowFocus: false,
         retry: 1,

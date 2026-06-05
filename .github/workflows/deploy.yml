@@ -66,6 +66,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @baydar/db db:generate
       - run: pnpm lint:tokens
+      - run: pnpm check:release-placeholders
       - run: pnpm lint
       - run: pnpm type-check
       - run: pnpm --filter @baydar/db db:deploy
@@ -161,6 +162,15 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - name: Verify production release metadata
+        env:
+          EXPO_PUBLIC_EAS_PROJECT_ID: ${{ secrets.EXPO_PUBLIC_EAS_PROJECT_ID }}
+          EXPO_PUBLIC_SENTRY_DSN: ${{ secrets.EXPO_PUBLIC_SENTRY_DSN }}
+          EXPO_PUBLIC_SENTRY_RELEASE: ${{ github.sha }}
+          EXPO_PUBLIC_POSTHOG_KEY: ${{ secrets.EXPO_PUBLIC_POSTHOG_KEY }}
+          BAYDAR_APPLE_TEAM_ID: ${{ secrets.BAYDAR_APPLE_TEAM_ID }}
+          BAYDAR_ANDROID_SHA256_CERT_FINGERPRINTS: ${{ secrets.BAYDAR_ANDROID_SHA256_CERT_FINGERPRINTS }}
+        run: pnpm check:release-production
       - name: Run Prisma migrate deploy against production
         env:
           DATABASE_URL: ${{ secrets.PROD_DATABASE_URL }}
@@ -240,6 +250,10 @@ jobs:
       - name: EAS build + submit
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+          EXPO_PUBLIC_EAS_PROJECT_ID: ${{ secrets.EXPO_PUBLIC_EAS_PROJECT_ID }}
+          EXPO_PUBLIC_SENTRY_DSN: ${{ secrets.EXPO_PUBLIC_SENTRY_DSN }}
+          EXPO_PUBLIC_SENTRY_RELEASE: ${{ github.sha }}
+          EXPO_PUBLIC_POSTHOG_KEY: ${{ secrets.EXPO_PUBLIC_POSTHOG_KEY }}
         run: |
           eas build --platform all --profile production --non-interactive --auto-submit
         working-directory: apps/mobile

@@ -6,12 +6,13 @@
 //
 // onPress replaces onClick on native per spec.
 
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import {
   ActivityIndicator,
   Pressable,
   Text,
   View,
+  type GestureResponderEvent,
   type PressableProps,
   type StyleProp,
   type TextStyle,
@@ -20,7 +21,13 @@ import {
 
 import { nativeTokens } from "./tokens";
 
-export type ButtonVariant = "primary" | "secondary" | "ghost" | "accent" | "danger-ghost";
+export type ButtonVariant =
+  | "primary"
+  | "secondary"
+  | "ghost"
+  | "accent"
+  | "danger-ghost"
+  | "outline";
 export type ButtonSize = "sm" | "md" | "lg";
 
 export interface ButtonProps extends Omit<PressableProps, "style" | "children"> {
@@ -43,6 +50,7 @@ const VARIANT_BG: Record<ButtonVariant, string> = {
   ghost: "transparent",
   accent: c.accent600,
   "danger-ghost": "transparent",
+  outline: "transparent",
 };
 
 const VARIANT_FG: Record<ButtonVariant, string> = {
@@ -51,6 +59,7 @@ const VARIANT_FG: Record<ButtonVariant, string> = {
   ghost: c.ink,
   accent: c.inkInverse,
   "danger-ghost": c.danger,
+  outline: c.ink,
 };
 
 const VARIANT_BORDER: Record<ButtonVariant, string> = {
@@ -59,6 +68,7 @@ const VARIANT_BORDER: Record<ButtonVariant, string> = {
   ghost: "transparent",
   accent: c.accent600,
   "danger-ghost": "transparent",
+  outline: c.lineHard,
 };
 
 // Spec heights: 28 / 36 / 44. Minimum touch target is 44pt on mobile
@@ -83,8 +93,11 @@ export function Button({
   accessibilityLabel,
   accessibilityState,
   hitSlop,
+  onPressIn,
+  onPressOut,
   ...rest
 }: ButtonProps): JSX.Element {
+  const [pressed, setPressed] = useState(false);
   const isDisabled = !!disabled || loading;
   const hit = SIZE_HIT_TARGET[size];
   const extraHit = Math.max(0, (hit - SIZE_HEIGHT[size]) / 2);
@@ -111,15 +124,27 @@ export function Button({
     fontFamily: nativeTokens.type.family.sans,
   };
 
+  function handlePressIn(event: GestureResponderEvent): void {
+    setPressed(true);
+    onPressIn?.(event);
+  }
+
+  function handlePressOut(event: GestureResponderEvent): void {
+    setPressed(false);
+    onPressOut?.(event);
+  }
+
   return (
     <Pressable
       {...rest}
       disabled={isDisabled}
+      onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
       accessibilityState={{ disabled: isDisabled, busy: loading, ...accessibilityState }}
       hitSlop={hitSlop ?? { top: extraHit, bottom: extraHit, left: extraHit, right: extraHit }}
-      style={({ pressed }) => [
+      style={[
         base,
         // Spec: mobile active → opacity 0.85.
         pressed && !isDisabled ? { opacity: 0.85 } : null,

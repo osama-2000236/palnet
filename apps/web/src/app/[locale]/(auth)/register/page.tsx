@@ -1,6 +1,19 @@
 "use client";
 
+// Register — REFACTORED to consume the new ui-web atoms (Sweep PR).
+//
+// Changes from `main`:
+//   • 4 raw <input> fields replaced with <Input>.
+//   • Error <p role="alert"> replaced with <Alert kind="danger">.
+//   • Submit button uses the standard <Button loading> spinner instead of
+//     disabled-opacity-60.
+//
+// The terms checkbox stays raw for now — the Checkbox atom from the UI Kit
+// will land in the next sweep. Marking it explicitly so the future PR is
+// easy to find.
+
 import { RegisterBody } from "@baydar/shared";
+import { Alert, Button, Checkbox, Input } from "@baydar/ui-web";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
@@ -63,8 +76,8 @@ export default function RegisterPage(): JSX.Element {
 
         <label className="flex flex-col gap-1">
           <span className="text-ink-muted text-sm">{t("firstName")}</span>
-          <input
-            className="border-ink-muted/30 rounded-md border px-3 py-2"
+          <Input
+            fullWidth
             value={state.firstName}
             onChange={(e) => setState({ ...state, firstName: e.target.value })}
             required
@@ -74,8 +87,8 @@ export default function RegisterPage(): JSX.Element {
 
         <label className="flex flex-col gap-1">
           <span className="text-ink-muted text-sm">{t("lastName")}</span>
-          <input
-            className="border-ink-muted/30 rounded-md border px-3 py-2"
+          <Input
+            fullWidth
             value={state.lastName}
             onChange={(e) => setState({ ...state, lastName: e.target.value })}
             required
@@ -85,55 +98,46 @@ export default function RegisterPage(): JSX.Element {
 
         <label className="flex flex-col gap-1">
           <span className="text-ink-muted text-sm">{t("email")}</span>
-          <input
+          <Input
             type="email"
-            className="border-ink-muted/30 rounded-md border px-3 py-2"
+            fullWidth
             value={state.email}
             onChange={(e) => setState({ ...state, email: e.target.value })}
             required
             autoComplete="email"
             inputMode="email"
             dir="ltr"
+            error={error === t("errors.VALIDATION_FAILED")}
           />
         </label>
 
         <label className="flex flex-col gap-1">
           <span className="text-ink-muted text-sm">{t("password")}</span>
-          <input
+          <Input
             type="password"
-            className="border-ink-muted/30 rounded-md border px-3 py-2"
+            fullWidth
             value={state.password}
             onChange={(e) => setState({ ...state, password: e.target.value })}
             required
             autoComplete="new-password"
             minLength={8}
             dir="ltr"
+            helper={t("passwordHint")}
           />
         </label>
 
-        <label className="flex items-center gap-2 text-sm">
-          <input
-            type="checkbox"
-            checked={state.acceptTerms}
-            onChange={(e) => setState({ ...state, acceptTerms: e.target.checked })}
-            required
-          />
-          {t("acceptTerms")}
-        </label>
+        <Checkbox
+          checked={state.acceptTerms}
+          onCheckedChange={(checked) => setState({ ...state, acceptTerms: checked })}
+          required
+          label={t("acceptTerms")}
+        />
 
-        {error ? (
-          <p role="alert" className="text-danger text-sm">
-            {error}
-          </p>
-        ) : null}
+        {error ? <Alert kind="danger">{error}</Alert> : null}
 
-        <button
-          type="submit"
-          disabled={busy}
-          className="bg-brand-600 text-ink-inverse shadow-card hover:bg-brand-700 rounded-md px-4 py-2 disabled:opacity-60"
-        >
+        <Button type="submit" variant="primary" loading={busy} fullWidth>
           {t("submitRegister")}
-        </button>
+        </Button>
       </form>
     </main>
   );

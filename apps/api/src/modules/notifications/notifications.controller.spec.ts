@@ -11,12 +11,13 @@ import { Test } from "@nestjs/testing";
 import type { NextFunction, Request, Response } from "express";
 import request from "supertest";
 
-import { AllExceptionsFilter } from "../../common/exception.filter";
 import { DomainException } from "../../common/domain-exception";
+import { AllExceptionsFilter } from "../../common/exception.filter";
 import type { Env } from "../../config/env";
-import type { AuthUser } from "../auth/decorators/current-user.decorator";
 import type { AuthTokensService, StreamTokenUser } from "../auth/auth-tokens.service";
+import type { AuthUser } from "../auth/decorators/current-user.decorator";
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
+import type { LastSeenTracker } from "../auth/last-seen.tracker";
 
 import { NotificationsBus } from "./notifications.bus";
 import { NotificationsController } from "./notifications.controller";
@@ -134,7 +135,7 @@ function buildGuard(authTokens: Partial<AuthTokensService>): JwtAuthGuard {
     new Reflector(),
     { getOrThrow: jest.fn() } as unknown as ConfigService<Env, true>,
     authTokens as AuthTokensService,
-    { touch: jest.fn() } as unknown as import("../auth/last-seen.tracker").LastSeenTracker,
+    { touch: jest.fn() } as unknown as LastSeenTracker,
   );
 }
 

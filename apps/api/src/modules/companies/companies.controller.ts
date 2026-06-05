@@ -9,6 +9,7 @@ import {
   Controller,
   Delete,
   Get,
+  Header,
   HttpCode,
   HttpStatus,
   Param,
@@ -50,6 +51,7 @@ export class CompaniesController {
 
   @Get(":idOrSlug")
   @OptionalAuth()
+  @Header("Cache-Control", "public, max-age=300, stale-while-revalidate=600")
   async getOne(
     @OptionalUser() user: AuthUser | null,
     @Param("idOrSlug") idOrSlug: string,

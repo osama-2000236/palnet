@@ -2,6 +2,7 @@
   "common": {
     "appName": "Baydar",
     "loading": "Loading…",
+    "redirecting": "Redirecting…",
     "retry": "Retry",
     "cancel": "Cancel",
     "save": "Save",
@@ -48,14 +49,64 @@
   "chrome": {
     "bell": {
       "disconnected": "Live notification connection lost. Updates may be delayed."
+    },
+    "connectivity": {
+      "offline": "You are offline. Changes may not save until the connection returns.",
+      "restored": "Connection restored.",
+      "degraded": "Live updates are delayed. You can keep using Baydar."
     }
   },
   "landing": {
+    "brand": "Baydar",
     "title": "The professional network for the Arab world.",
     "subtitle": "Build your presence, connect with peers, and discover jobs — in Arabic first.",
+    "markGlyph": "Your professional mark",
     "cta": "Create your account",
     "haveAccount": "Already have an account?",
-    "login": "Sign in"
+    "login": "Sign in",
+    "nav": {
+      "label": "Landing navigation",
+      "signIn": "Sign in",
+      "register": "Get started"
+    },
+    "hero": {
+      "title": "The Arabic-first professional network.",
+      "body": "Build your presence, connect with peers, and discover work through a product shaped for Arabic professionals, regional hiring, and trust-first relationships.",
+      "ctaPrimary": "Create your profile",
+      "ctaSecondary": "I already have an account",
+      "eyebrow": "Trusted by professionals across the region",
+      "smallPrint": "Free for individuals. No credit card required."
+    },
+    "values": {
+      "heading": "Built around trust, careers, and control",
+      "subhead": "Baydar keeps the core professional loop focused: real people, useful roles, and privacy choices that are easy to understand.",
+      "trust": {
+        "title": "Trust by default",
+        "body": "Verified profiles and Karama points reward thoughtful contributions, not reach-bait."
+      },
+      "career": {
+        "title": "Careers that fit",
+        "body": "Find roles by skill match, location mode, salary clarity, and regional context."
+      },
+      "visibility": {
+        "title": "Visibility you control",
+        "body": "Choose who can find you, message you, and see your professional presence."
+      }
+    },
+    "employer": {
+      "title": "Hire from the strongest pool of Arab talent.",
+      "body": "Post a role in minutes, review applicants in context, and build a hiring presence where candidates already grow their professional reputation.",
+      "cta": "Start hiring",
+      "eyebrow": "Trusted by leading companies across the region"
+    },
+    "footer": {
+      "label": "Footer navigation",
+      "copyright": "© {year} Baydar — All rights reserved.",
+      "tos": "Terms",
+      "privacy": "Privacy",
+      "community": "Community guidelines",
+      "employer": "Employer agreement"
+    }
   },
   "auth": {
     "login": "Sign in",
@@ -63,6 +114,7 @@
     "logout": "Sign out",
     "email": "Email",
     "password": "Password",
+    "passwordHint": "Use at least 8 characters with a letter and a number.",
     "firstName": "First name",
     "lastName": "Last name",
     "acceptTerms": "I agree to the Terms and Privacy Policy",
@@ -124,14 +176,20 @@
     "handleHint": "Appears as /in/{handle}",
     "headline": "Headline",
     "location": "Location (city)",
-    "submit": "Save and continue"
+    "submit": "Save and continue",
+    "success": "Profile saved!"
   },
   "feed": {
     "title": "Feed",
-    "empty": "Start by publishing your first post.",
+    "noResults": "Nothing in your feed yet",
+    "empty": {
+      "feed": "Start by publishing your first post, or connect with people to see updates here."
+    },
     "emptyTitle": "Your feed is quiet…",
     "emptyDesc": "Start a post, or connect with new people to see their posts here.",
     "welcome": "Welcome {name} — your account is ready.",
+    "onboardingDoneTitle": "Welcome {name} — your profile is ready.",
+    "onboardingDoneBody": "You can start posting, connect with people, or explore roles that match your experience.",
     "loadMore": "Load more",
     "loadingMore": "Loading…",
     "rail": {
@@ -387,6 +445,63 @@
       "PROFILE_VIEW": "{actor} viewed your profile."
     }
   },
+  "me": {
+    "title": "Profile",
+    "editProfile": "Edit Profile",
+    "tabs": {
+      "posts": "Posts",
+      "about": "About",
+      "karama": "Karama"
+    },
+    "posts": {
+      "empty": "No posts yet",
+      "emptyDesc": "Start sharing your thoughts and updates to see them here.",
+      "createPost": "Create Post"
+    },
+    "connections": {
+      "title": "Connections",
+      "subtitle": "Manage your professional network",
+      "tabs": {
+        "accepted": "Accepted",
+        "pending": "Pending"
+      },
+      "connections": {
+        "empty": "No connections yet",
+        "emptyDesc": "Start connecting with professionals to build your network"
+      }
+    },
+    "createPost": "Create Post"
+  },
+  "saved": {
+    "title": "Saved",
+    "subtitle": "Bookmarked posts and content"
+  },
+  "onboarding": {
+    "title": "Complete your profile",
+    "subtitle": "This helps others find you.",
+    "handle": "Your handle",
+    "handleHint": "Appears as /in/{handle}",
+    "headline": "Headline",
+    "location": "Location (city)",
+    "submit": "Save and continue",
+    "success": {
+      "title": "Profile saved!",
+      "body": "Your profile has been updated successfully.",
+      "goToFeed": "Go to feed"
+    }
+  },
+  "connections": {
+    "title": "Connections",
+    "subtitle": "Manage your professional network",
+    "tabs": {
+      "accepted": "Accepted",
+      "pending": "Pending"
+    },
+    "connections": {
+      "empty": "No connections yet",
+      "emptyDesc": "Start connecting with professionals to build your network"
+    }
+  },
   "jobs": {
     "title": "Jobs",
     "filters": "Filters",
@@ -411,6 +526,7 @@
     "emptyTitle": "No jobs match those filters.",
     "emptyDesc": "Try widening your search or clearing a filter.",
     "notFound": "This job is no longer available.",
+    "loadFailedTitle": "Could not load jobs",
     "countSummary": "{count} jobs",
     "noneSummary": "No results",
     "from": "from",
@@ -438,7 +554,11 @@
       "blocked": "Blocked accounts",
       "blockedDesc": "Manage your blocklist.",
       "notifications": "Notifications",
-      "notificationsDesc": "Choose how we reach you over email and push."
+      "notificationsDesc": "Choose how we reach you over email and push.",
+      "privacy": "Privacy",
+      "privacyDesc": "Review profile, message, and search visibility.",
+      "security": "Security",
+      "securityDesc": "Review password, sessions, and two-factor status."
     },
     "notifications": {
       "title": "Notifications",
@@ -501,6 +621,54 @@
         "moderationAction": {
           "title": "Moderation action",
           "desc": "Cannot be disabled — we always notify you about actions on your account"
+        }
+      }
+    },
+    "privacy": {
+      "title": "Privacy",
+      "subtitle": "Review who can discover, view, and contact your professional profile.",
+      "noticeTitle": "Backend support is staged",
+      "noticeBody": "These controls show the intended privacy contract. They are disabled until the privacy API is connected, so no setting is silently changed.",
+      "disabledHint": "Saving is disabled until backend-backed privacy preferences are available.",
+      "rows": {
+        "profile": {
+          "title": "Profile visibility",
+          "body": "Your public profile can be viewed by people with the link and by signed-in Baydar members.",
+          "state": "Public profile"
+        },
+        "messages": {
+          "title": "Message requests",
+          "body": "People outside your network can request a conversation, but they cannot open a direct thread until accepted.",
+          "state": "Requests first"
+        },
+        "search": {
+          "title": "Search discovery",
+          "body": "Your name, handle, headline, and city can appear in Baydar search results.",
+          "state": "Discoverable"
+        }
+      }
+    },
+    "security": {
+      "title": "Security",
+      "subtitle": "Review account protection and session controls before backend actions are enabled.",
+      "noticeTitle": "No fake security actions",
+      "noticeBody": "Password, session, and two-factor controls are visible as a contract, but actions are disabled until the security API exists.",
+      "disabledHint": "Saving is disabled because there are no backend-backed security changes on this screen yet.",
+      "rows": {
+        "password": {
+          "title": "Password",
+          "body": "Password changes stay in the dedicated reset flow until in-session password updates are wired.",
+          "state": "Reset flow"
+        },
+        "sessions": {
+          "title": "Active sessions",
+          "body": "Session review and revoke controls need a server session list before they can be enabled.",
+          "state": "Coming"
+        },
+        "twoFactor": {
+          "title": "Two-factor authentication",
+          "body": "Two-factor setup is planned, but not enabled for this release.",
+          "state": "Not available"
         }
       }
     }

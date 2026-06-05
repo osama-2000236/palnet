@@ -1,13 +1,13 @@
 "use client";
 
 import { OnboardProfileBody, Profile } from "@baydar/shared";
-import { Banner, OnboardingProgress, Surface } from "@baydar/ui-web";
+import { Alert, Button, Input, OnboardingProgress, Surface } from "@baydar/ui-web";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 
 import { apiFetch, ApiRequestError } from "@/lib/api";
-import { getAccessToken } from "@/lib/session";
+import { getAccessToken, writeOnboardingHandoff, writeProfileCache } from "@/lib/session";
 
 export default function OnboardingPage(): JSX.Element {
   const t = useTranslations("onboarding");
@@ -49,12 +49,18 @@ export default function OnboardingPage(): JSX.Element {
 
     setBusy(true);
     try {
-      await apiFetch("/profiles/onboard", Profile.partial(), {
+      const profile = await apiFetch("/profiles/onboard", Profile.partial(), {
         method: "POST",
         body: parsed.data,
         token,
       });
-      router.push("/feed");
+      if (profile.userId && profile.handle) {
+        writeProfileCache({ userId: profile.userId, handle: profile.handle });
+      }
+      writeOnboardingHandoff({
+        name: [parsed.data.firstName, parsed.data.lastName].filter(Boolean).join(" "),
+      });
+      router.push(`/${locale}/feed?onboarded=1`);
     } catch (err) {
       if (err instanceof ApiRequestError) {
         const key = `errors.${err.code}`;
@@ -91,35 +97,35 @@ export default function OnboardingPage(): JSX.Element {
 
         <label className="flex flex-col gap-1">
           <span className="text-ink-muted text-sm">{tAuth("firstName")}</span>
-          <input
-            className="border-ink-muted/30 rounded-md border px-3 py-2"
+          <Input
             value={state.firstName}
             onChange={(e) => updateField("firstName", e.target.value)}
             required
+            fullWidth
           />
         </label>
 
         <label className="flex flex-col gap-1">
           <span className="text-ink-muted text-sm">{tAuth("lastName")}</span>
-          <input
-            className="border-ink-muted/30 rounded-md border px-3 py-2"
+          <Input
             value={state.lastName}
             onChange={(e) => updateField("lastName", e.target.value)}
             required
+            fullWidth
           />
         </label>
 
         <label className="flex flex-col gap-1">
           <span className="text-ink-muted text-sm">{t("handle")}</span>
-          <input
+          <Input
             dir="ltr"
-            className="border-ink-muted/30 rounded-md border px-3 py-2"
             value={state.handle}
             onChange={(e) => updateField("handle", e.target.value.toLowerCase())}
             required
             pattern="[a-z0-9][a-z0-9-]+[a-z0-9]"
             minLength={3}
             maxLength={30}
+            fullWidth
           />
           <span className="text-ink-muted text-xs">
             {t("handleHint", { handle: state.handle || "your-handle" })}
@@ -128,37 +134,29 @@ export default function OnboardingPage(): JSX.Element {
 
         <label className="flex flex-col gap-1">
           <span className="text-ink-muted text-sm">{t("headline")}</span>
-          <input
-            className="border-ink-muted/30 rounded-md border px-3 py-2"
+          <Input
             value={state.headline}
             onChange={(e) => updateField("headline", e.target.value)}
             maxLength={220}
+            fullWidth
           />
         </label>
 
         <label className="flex flex-col gap-1">
           <span className="text-ink-muted text-sm">{t("location")}</span>
-          <input
-            className="border-ink-muted/30 rounded-md border px-3 py-2"
+          <Input
             value={state.location}
             onChange={(e) => updateField("location", e.target.value)}
             maxLength={120}
+            fullWidth
           />
         </label>
 
-        {error ? (
-          <Banner kind="danger" live="polite">
-            {error}
-          </Banner>
-        ) : null}
+        {error ? <Alert kind="danger">{error}</Alert> : null}
 
-        <button
-          type="submit"
-          disabled={busy}
-          className="bg-brand-600 text-ink-inverse shadow-card hover:bg-brand-700 rounded-md px-4 py-2 disabled:opacity-60"
-        >
+        <Button type="submit" loading={busy} fullWidth>
           {t("submit")}
-        </button>
+        </Button>
       </form>
     </main>
   );

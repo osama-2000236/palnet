@@ -194,7 +194,7 @@ exports[`MessageBubble matches the theirs-message snapshot 1`] = `
           accessibilityElementsHidden={true}
           style={
             {
-              "color": "#1a1a17",
+              "color": "#5c5a52",
               "fontFamily": "IBMPlexSansArabic",
               "fontSize": 10,
               "fontWeight": "600",

@@ -10,7 +10,7 @@
 //   • Same 24×24 viewBox, same stroke-width default as web so glyph weight
 //     matches across platforms.
 
-import Svg, { Circle, Ellipse, Path, Rect } from "react-native-svg";
+import { Circle, Ellipse, Path, Rect, Svg } from "react-native-svg";
 
 import { nativeTokens } from "./tokens";
 

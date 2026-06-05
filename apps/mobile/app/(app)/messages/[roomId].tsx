@@ -19,6 +19,7 @@ import {
   AppHeader,
   Button,
   Icon,
+  Input,
   MessageBubble,
   ReportSheet,
   Sheet,
@@ -38,7 +39,6 @@ import {
   Pressable,
   RefreshControl,
   Text,
-  TextInput,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -532,20 +532,17 @@ export default function MessageThreadScreen(): JSX.Element {
             padding: nativeTokens.space[2],
           }}
         >
-          <TextInput
+          <Input
+            fullWidth
+            testID="message-composer"
             value={draft}
             onChangeText={setDraft}
             placeholder={t("messaging.composePlaceholder")}
-            placeholderTextColor={nativeTokens.color.inkMuted}
             multiline
             maxLength={5000}
-            style={{
+            style={{ flex: 1 }}
+            inputStyle={{
               flex: 1,
-              borderRadius: nativeTokens.radius.md,
-              borderWidth: 1,
-              borderColor: nativeTokens.color.lineHard,
-              paddingHorizontal: nativeTokens.space[3],
-              paddingVertical: nativeTokens.space[2],
               color: nativeTokens.color.ink,
               fontFamily: nativeTokens.type.family.sans,
               fontSize: nativeTokens.type.scale.body.size,
@@ -574,73 +571,31 @@ export default function MessageThreadScreen(): JSX.Element {
           title={t("messaging.edit.sheetTitle")}
           closeLabel={t("common.cancel", { defaultValue: "إلغاء" })}
         >
-          <TextInput
+          <Input
+            fullWidth
             value={editingBody}
             onChangeText={setEditingBody}
             multiline
             maxLength={5000}
             placeholder={t("messaging.composePlaceholder")}
-            placeholderTextColor={nativeTokens.color.inkMuted}
-            style={{
+            inputStyle={{
               minHeight: nativeTokens.space[24],
-              borderRadius: nativeTokens.radius.md,
-              borderWidth: 1,
-              borderColor: nativeTokens.color.lineHard,
-              paddingHorizontal: nativeTokens.space[3],
-              paddingVertical: nativeTokens.space[2],
               color: nativeTokens.color.ink,
               fontFamily: nativeTokens.type.family.sans,
               fontSize: nativeTokens.type.scale.body.size,
               textAlignVertical: "top",
             }}
           />
-          <Pressable
+          <Button
+            fullWidth
             disabled={editingBody.trim().length === 0}
             onPress={() => void saveEdit()}
-            accessibilityRole="button"
-            style={{
-              minHeight: nativeTokens.chrome.minHit,
-              borderRadius: nativeTokens.radius.md,
-              backgroundColor: nativeTokens.color.brand600,
-              alignItems: "center",
-              justifyContent: "center",
-              opacity: editingBody.trim().length === 0 ? 0.6 : 1,
-            }}
           >
-            <Text
-              style={{
-                color: nativeTokens.color.inkInverse,
-                fontFamily: nativeTokens.type.family.sans,
-                fontSize: nativeTokens.type.scale.body.size,
-                fontWeight: "700",
-              }}
-            >
-              {t("messaging.edit.save")}
-            </Text>
-          </Pressable>
-          <Pressable
-            onPress={() => void deleteSelected()}
-            accessibilityRole="button"
-            style={{
-              minHeight: nativeTokens.chrome.minHit,
-              borderRadius: nativeTokens.radius.md,
-              borderWidth: 1,
-              borderColor: nativeTokens.color.danger,
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <Text
-              style={{
-                color: nativeTokens.color.danger,
-                fontFamily: nativeTokens.type.family.sans,
-                fontSize: nativeTokens.type.scale.body.size,
-                fontWeight: "700",
-              }}
-            >
-              {t("messaging.delete.action")}
-            </Text>
-          </Pressable>
+            {t("messaging.edit.save")}
+          </Button>
+          <Button fullWidth variant="danger-ghost" onPress={() => void deleteSelected()}>
+            {t("messaging.delete.action")}
+          </Button>
         </Sheet>
         {reportMessage ? (
           <ReportSheet

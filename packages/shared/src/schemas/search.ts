@@ -1,4 +1,5 @@
 import { z } from "zod";
+
 import { JobLocationMode, JobType } from "../enums";
 
 // GET /search/people?q=<term>&limit=20&after=<cursor>

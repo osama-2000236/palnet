@@ -53,6 +53,7 @@ Every screen is judged against these verbs. If a screen doesn't help one of them
 1. **Olive primary, terracotta accent.** No blue. Ever.
 2. **Logical CSS properties only** (`start` / `end`, never `left` / `right`). See [docs/design/RTL.md](docs/design/RTL.md).
 3. **Tokens are the only source of values.** No hardcoded colors, sizes, or spacing in components.
+4. **Shared UI stays framework-neutral.** `packages/ui-web` may use React and browser primitives, but not Next-only APIs such as `next/image`; app wrappers own framework-specific rendering.
 
 ## 5. Visual language
 

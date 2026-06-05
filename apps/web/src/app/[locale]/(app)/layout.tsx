@@ -1,82 +1,26 @@
 "use client";
 
-// (app) layout — authenticated chrome for every signed-in web route.
-//
-// Responsibilities:
-//   • Guard: redirect to /login when no session (all /(app)/* pages were
-//     individually guarding before; we keep those too for defense-in-depth,
-//     but this layout is the primary gate).
-//   • Fetch the current user's profile for the top-bar avatar + "my profile"
-//     nav link.
-//   • Own the live unread counters (notifications + messages) via their
-//     respective SSE streams. The <AppShell> is a dumb view.
-//   • Derive the active nav route from the pathname.
-//   • Route the search pill: `q` syncs to URL; every keystroke lands on
-//     /search?q=… (so results update as the user types), Enter commits.
-//   • Skip the shell entirely on /onboarding — that screen is pre-profile.
-
 import {
-  ChatRoom as ChatRoomSchema,
   Profile as ProfileSchema,
   WsChatEvent,
   WsNotificationEvent,
-  type ChatRoom,
   type Profile,
 } from "@baydar/shared";
-import { AppShell, type AppShellLabels, type AppShellRoute } from "@baydar/ui-web";
+import { AppShell, type AppShellRoute } from "@baydar/ui-web";
 import { usePathname, useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { z } from "zod";
 
-import { apiFetch, apiFetchPage } from "@/lib/api";
+import { apiFetch, apiFetchPage, getValidAccessToken } from "@/lib/api";
 import { clearSession, readSession } from "@/lib/session";
 import { openStream } from "@/lib/sse";
-
-const UnreadCount = z.object({ count: z.number().int().nonnegative() });
-const RoomsEnvelope = z.object({ data: z.array(ChatRoomSchema) });
-
-/**
- * Map a pathname to the nav slot it should highlight.
- * `null` means "no highlight" (e.g. search results, unknown routes).
- */
-function routeOf(pathname: string, myHandle: string | null): AppShellRoute | null {
-  // Strip the locale prefix if present (e.g. /ar-PS/feed -> /feed).
-  const path = pathname.replace(/^\/(?:ar-PS|en)(?=\/|$)/, "") || "/";
-  if (path === "/" || path.startsWith("/feed")) return "feed";
-  if (path.startsWith("/network")) return "network";
-  if (path.startsWith("/jobs")) return "jobs";
-  if (path.startsWith("/messages")) return "messages";
-  if (path.startsWith("/notifications")) return "notifications";
-  if (path.startsWith("/me")) return "profile";
-  if (myHandle && path === `/in/${myHandle}`) return "profile";
-  return null;
-}
-
-function isBareAppRoute(pathname: string): boolean {
-  // Some /(app)/* routes intentionally render without the shell.
-  const path = pathname.replace(/^\/(?:ar-PS|en)(?=\/|$)/, "") || "/";
-  return path.startsWith("/onboarding");
-}
-
-function sumUnread(rooms: ChatRoom[]): number {
-  return rooms.reduce((acc, r) => acc + r.unreadCount, 0);
-}
+import { ConnectivityBanner } from "./components/ConnectivityBanner";
+import { isBareAppRoute, RoomsEnvelope, routeOf, sumUnread, UnreadCount } from "./layoutState";
+import { useAppShellLabels } from "./useAppShellLabels";
 
 export default function AppLayout({ children }: { children: ReactNode }): JSX.Element {
   const router = useRouter();
   const pathname = usePathname();
-
-  const tCommon = useTranslations("common");
-  const tNav = useTranslations("nav");
-  const tFeed = useTranslations("feed");
-  const tNetwork = useTranslations("network");
-  const tSearch = useTranslations("search");
-  const tMsg = useTranslations("messaging");
-  const tNotif = useTranslations("notifications");
-  const tBell = useTranslations("chrome.bell");
-  const tProfile = useTranslations("profile");
-  const tAuth = useTranslations("auth");
+  const labels = useAppShellLabels();
 
   const [token, setToken] = useState<string | null>(null);
   const [me, setMe] = useState<Profile | null>(null);
@@ -86,12 +30,24 @@ export default function AppLayout({ children }: { children: ReactNode }): JSX.El
 
   // Session bootstrap — redirect to /login if missing.
   useEffect(() => {
+    let cancelled = false;
     const session = readSession();
     if (!session) {
       router.replace("/login");
       return;
     }
-    setToken(session.tokens.accessToken);
+    void getValidAccessToken().then((nextToken) => {
+      if (cancelled) return;
+      if (!nextToken) {
+        clearSession();
+        router.replace("/login");
+        return;
+      }
+      setToken(nextToken);
+    });
+    return () => {
+      cancelled = true;
+    };
   }, [router]);
 
   // Fetch me once we have a token.
@@ -276,7 +232,7 @@ export default function AppLayout({ children }: { children: ReactNode }): JSX.El
           router.push("/notifications");
           return;
         case "profile":
-          router.push(me?.handle ? `/in/${me.handle}` : "/me/edit");
+          router.push(me?.handle ? `/in/${me.handle}` : "/me");
           return;
       }
     },
@@ -284,43 +240,17 @@ export default function AppLayout({ children }: { children: ReactNode }): JSX.El
   );
 
   const onViewProfile = useCallback(() => {
-    router.push(me?.handle ? `/in/${me.handle}` : "/me/edit");
+    router.push(me?.handle ? `/in/${me.handle}` : "/me");
   }, [router, me?.handle]);
 
   const onOpenSettings = useCallback(() => {
-    router.push("/settings/blocked");
+    router.push("/settings");
   }, [router]);
 
   const onSignOut = useCallback(() => {
     clearSession();
     router.push("/login");
   }, [router]);
-
-  const labels: AppShellLabels = useMemo(
-    () => ({
-      logoAlt: tCommon("appName"),
-      searchPlaceholder: tNav("searchPlaceholder"),
-      searchLabel: tSearch("title"),
-      mainNavLabel: tNav("main"),
-      nav: {
-        feed: tFeed("title"),
-        network: tNetwork("title"),
-        jobs: tNav("jobs"),
-        messages: tMsg("title"),
-        notifications: tNotif("title"),
-      },
-      myProfile: tNav("myProfile"),
-      viewProfile: tProfile("viewPublic"),
-      settings: tNav("settings"),
-      signOut: tAuth("logout"),
-      unreadTemplate: {
-        messages: tNav("unreadMessages", { count: "{count}" }),
-        notifications: tNav("unreadNotifications", { count: "{count}" }),
-      },
-      bellDisconnected: tBell("disconnected"),
-    }),
-    [tCommon, tNav, tFeed, tNetwork, tMsg, tNotif, tSearch, tBell, tProfile, tAuth],
-  );
 
   const meUser = me
     ? {
@@ -350,6 +280,7 @@ export default function AppLayout({ children }: { children: ReactNode }): JSX.El
       onOpenSettings={onOpenSettings}
       onSignOut={onSignOut}
     >
+      <ConnectivityBanner degraded={notificationsConnectionDropped} />
       {children}
     </AppShell>
   );

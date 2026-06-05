@@ -83,6 +83,28 @@ describe("formatRelativeTime", () => {
     expect(out).toMatch(/[\u0600-\u06ff]/);
   });
 
+  it("falls back when RelativeTimeFormat is unavailable", () => {
+    const original = Intl.RelativeTimeFormat;
+    Object.defineProperty(Intl, "RelativeTimeFormat", {
+      configurable: true,
+      value: undefined,
+    });
+
+    try {
+      const then = new Date(now.getTime() - 3 * 60 * 60 * 1000);
+      expect(formatRelativeTime(then, "en", now)).toBe("3 hours ago");
+
+      const ar = formatRelativeTime(then, "ar", now);
+      expect(ar).toContain("قبل");
+      expect(ar).not.toMatch(/[0-9]/);
+    } finally {
+      Object.defineProperty(Intl, "RelativeTimeFormat", {
+        configurable: true,
+        value: original,
+      });
+    }
+  });
+
   it("falls back to date string for >30 days", () => {
     const then = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000);
     const out = formatRelativeTime(then, "en-US", now);

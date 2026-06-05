@@ -1,4 +1,7 @@
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
+import { StyleSheet } from "react-native";
+
+import { nativeTokens } from "@baydar/ui-native";
 
 import LoginScreen from "../../app/(auth)/login";
 import { useNetworkStore } from "../store/network";
@@ -73,6 +76,9 @@ describe("LoginScreen", () => {
 
   it("shows field validation before calling auth", async () => {
     const screen = render(<LoginScreen />);
+    const submitStyle = StyleSheet.flatten(screen.getByTestId("login-submit").props.style);
+
+    expect(submitStyle.backgroundColor).toBe(nativeTokens.color.brand600);
 
     fireEvent.press(screen.getByTestId("login-submit"));
 

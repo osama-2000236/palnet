@@ -1,14 +1,18 @@
 "use client";
 
-// Jobs listing — v1 shape per Sprint 6:
-//   • Left: filters (location mode, job type, city search) — controlled.
-//   • Center: paginated list of jobs.
-//   • Each row: company logo + title + company name + city · mode · type +
-//     salary range + skills chips. "Applied ✓" tag if the viewer already
-//     submitted an application.
+// Jobs listing — REFACTORED to consume the new ui-web atoms (Sweep PR).
 //
-// Deliberately skipping the right-rail for v1 — we can re-use the feed PYMK
-// rail once there's more to surface (e.g. saved jobs, company suggestions).
+// Changes from `main`:
+//   • Removed the local `FilterChip` function — now `<Chip onClick active>`.
+//   • Raw <input> for `search` and `city` filters replaced with <Input>
+//     (gains: hover state, focus ring from --focus-ring, leading icon
+//     support, consistent height with the rest of the app).
+//   • Plain-text "error in tinted Surface" replaced with <Alert kind="danger">
+//     — gains: icon, severity colour, embedded retry action.
+//   • Skill chips in the row card are now `<Chip>` instead of ad-hoc
+//     `<li>` spans — same visual, consistent with the filter side.
+//
+// Nothing about the data flow, pagination, or routing changed.
 
 import {
   cursorPage,
@@ -18,9 +22,7 @@ import {
   JobType,
   type Job,
 } from "@baydar/shared";
-import { EmptyState, Surface } from "@baydar/ui-web";
-import Image from "next/image";
-import Link from "next/link";
+import { Alert, Button, Chip, EmptyState, Icon, Input, Surface } from "@baydar/ui-web";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
@@ -28,6 +30,7 @@ import { useCallback, useEffect, useState } from "react";
 import { apiFetchPage } from "@/lib/api";
 import { getErrorCode, toErrorMessage } from "@/lib/error-message";
 import { readSession } from "@/lib/session";
+import { JobListRow, JobRowSkeleton } from "./_components/JobListRow";
 
 const JobsPage = cursorPage(JobSchema);
 
@@ -79,7 +82,6 @@ export default function JobsPageRoute(): JSX.Element {
   const [firstLoad, setFirstLoad] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Session bootstrap.
   useEffect(() => {
     const session = readSession();
     if (!session) {
@@ -112,56 +114,78 @@ export default function JobsPageRoute(): JSX.Element {
     [tErr, router, locale],
   );
 
-  // Initial + re-run whenever filters change. Debounce query + city.
   useEffect(() => {
     if (!token) return;
     const id = setTimeout(() => void load(token, null, filters), 250);
     return (): void => clearTimeout(id);
   }, [token, filters, load]);
 
+  // Retry helper used by both the error Alert and (potentially) future
+  // "stale results" banners.
+  const retry = useCallback(() => {
+    if (!token) return;
+    void load(token, null, filters);
+  }, [token, filters, load]);
+
   return (
     <div className="mx-auto grid w-full max-w-[1128px] grid-cols-1 gap-6 px-4 py-6 lg:grid-cols-[260px_minmax(0,1fr)]">
+      {/* ── Filters rail ─────────────────────────────────────────── */}
       <div className="hidden lg:block">
         <Surface variant="card" padding="4" as="aside">
           <h2 className="text-ink mb-3 text-sm font-semibold">{t("filters")}</h2>
 
-          <label className="mb-3 block">
-            <span className="text-ink-muted mb-1 block text-xs">{t("search")}</span>
-            <input
+          <div className="mb-3">
+            <label htmlFor="jobs-q" className="text-ink-muted mb-1 block text-xs">
+              {t("search")}
+            </label>
+            <Input
+              id="jobs-q"
               type="search"
+              size="sm"
+              fullWidth
               value={filters.q}
               onChange={(e) => setFilters((f) => ({ ...f, q: e.target.value }))}
               placeholder={t("searchPlaceholder")}
-              className="border-line-hard bg-surface text-ink placeholder:text-ink-subtle focus:border-brand-500 focus:ring-brand-500/20 w-full rounded-md border px-3 py-1.5 text-sm focus:outline-none focus:ring-2"
+              leading={<Icon name="search" size={14} />}
+              aria-label={t("search")}
             />
-          </label>
+          </div>
 
-          <label className="mb-3 block">
-            <span className="text-ink-muted mb-1 block text-xs">{t("city")}</span>
-            <input
+          <div className="mb-3">
+            <label htmlFor="jobs-city" className="text-ink-muted mb-1 block text-xs">
+              {t("city")}
+            </label>
+            <Input
+              id="jobs-city"
               type="text"
+              size="sm"
+              fullWidth
               value={filters.city}
               onChange={(e) => setFilters((f) => ({ ...f, city: e.target.value }))}
               placeholder={t("cityPlaceholder")}
-              className="border-line-hard bg-surface text-ink placeholder:text-ink-subtle focus:border-brand-500 focus:ring-brand-500/20 w-full rounded-md border px-3 py-1.5 text-sm focus:outline-none focus:ring-2"
+              aria-label={t("city")}
             />
-          </label>
+          </div>
 
           <fieldset className="mb-3">
             <legend className="text-ink-muted mb-1 block text-xs">{t("type")}</legend>
             <div className="flex flex-wrap gap-1.5">
-              <FilterChip
+              <Chip
+                size="sm"
                 active={filters.type === ""}
                 onClick={() => setFilters((f) => ({ ...f, type: "" }))}
-                label={t("any")}
-              />
+              >
+                {t("any")}
+              </Chip>
               {(Object.values(JobType) as JobType[]).map((kind) => (
-                <FilterChip
+                <Chip
                   key={kind}
+                  size="sm"
                   active={filters.type === kind}
                   onClick={() => setFilters((f) => ({ ...f, type: kind }))}
-                  label={t(`typeLabels.${kind}`)}
-                />
+                >
+                  {t(`typeLabels.${kind}`)}
+                </Chip>
               ))}
             </div>
           </fieldset>
@@ -169,24 +193,29 @@ export default function JobsPageRoute(): JSX.Element {
           <fieldset>
             <legend className="text-ink-muted mb-1 block text-xs">{t("location")}</legend>
             <div className="flex flex-wrap gap-1.5">
-              <FilterChip
+              <Chip
+                size="sm"
                 active={filters.locationMode === ""}
                 onClick={() => setFilters((f) => ({ ...f, locationMode: "" }))}
-                label={t("any")}
-              />
+              >
+                {t("any")}
+              </Chip>
               {(Object.values(JobLocationMode) as JobLocationMode[]).map((m) => (
-                <FilterChip
+                <Chip
                   key={m}
+                  size="sm"
                   active={filters.locationMode === m}
                   onClick={() => setFilters((f) => ({ ...f, locationMode: m }))}
-                  label={t(`locationLabels.${m}`)}
-                />
+                >
+                  {t(`locationLabels.${m}`)}
+                </Chip>
               ))}
             </div>
           </fieldset>
         </Surface>
       </div>
 
+      {/* ── Results main ─────────────────────────────────────────── */}
       <main>
         <div className="mb-4 flex items-center justify-between">
           <h1 className="text-ink text-xl font-semibold">{t("title")}</h1>
@@ -208,9 +237,19 @@ export default function JobsPageRoute(): JSX.Element {
             ))}
           </ul>
         ) : error ? (
-          <Surface variant="tinted" padding="6">
-            <p className="text-ink-muted text-sm">{error}</p>
-          </Surface>
+          // ── BEFORE: <Surface variant="tinted" padding="6"><p>{error}</p></Surface>
+          // ── AFTER:  Alert with severity, icon, and a retry action.
+          <Alert
+            kind="danger"
+            title={t("loadFailedTitle")}
+            action={
+              <Button variant="secondary" size="sm" onClick={retry}>
+                {tCommon("retry")}
+              </Button>
+            }
+          >
+            {error}
+          </Alert>
         ) : items.length === 0 ? (
           <Surface variant="card" padding="0">
             <EmptyState motif="jobs" title={t("emptyTitle")} body={t("emptyDesc")} />
@@ -226,120 +265,19 @@ export default function JobsPageRoute(): JSX.Element {
             </ul>
             {hasMore ? (
               <div className="mt-4 flex justify-center">
-                <button
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  loading={loading}
                   onClick={() => token && cursor && void load(token, cursor, filters)}
-                  disabled={loading}
-                  className="border-line-hard bg-surface text-ink hover:bg-surface-subtle rounded-md border px-4 py-1.5 text-sm disabled:opacity-55"
                 >
                   {loading ? tCommon("loading") : t("loadMore")}
-                </button>
+                </Button>
               </div>
             ) : null}
           </>
         )}
       </main>
     </div>
-  );
-}
-
-function FilterChip({
-  active,
-  onClick,
-  label,
-}: {
-  active: boolean;
-  onClick: () => void;
-  label: string;
-}): JSX.Element {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={active}
-      className={
-        active
-          ? "border-brand-600 bg-brand-50 text-brand-700 rounded-full border px-3 py-1 text-xs font-semibold"
-          : "border-line-hard bg-surface text-ink-muted hover:bg-surface-subtle rounded-full border px-3 py-1 text-xs"
-      }
-    >
-      {label}
-    </button>
-  );
-}
-
-function JobListRow({ job, salary }: { job: Job; salary: string | null }): JSX.Element {
-  const t = useTranslations("jobs");
-  const metaParts = [
-    job.city,
-    t(`locationLabels.${job.locationMode}`),
-    t(`typeLabels.${job.type}`),
-  ].filter(Boolean) as string[];
-
-  return (
-    <Link href={`/jobs/${job.id}`} className="block">
-      <Surface variant="card" padding="4" className="hover:border-brand-400 transition-colors">
-        <div className="flex items-start gap-3">
-          <div
-            className="bg-surface-sunken text-ink-muted flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-md text-sm font-semibold"
-            aria-hidden="true"
-          >
-            {job.company.logoUrl ? (
-              <Image
-                src={job.company.logoUrl}
-                alt=""
-                width={48}
-                height={48}
-                className="h-full w-full object-cover"
-                sizes="48px"
-              />
-            ) : (
-              (job.company.name[0] ?? "?").toUpperCase()
-            )}
-          </div>
-          <div className="min-w-0 flex-1">
-            <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0">
-                <h3 className="text-ink truncate text-base font-semibold">{job.title}</h3>
-                <p className="text-ink-muted truncate text-sm">{job.company.name}</p>
-              </div>
-              {job.viewer.hasApplied ? (
-                <span className="border-success/30 bg-success/10 text-success shrink-0 rounded-full border px-2 py-0.5 text-[11px] font-semibold">
-                  {t("appliedBadge")}
-                </span>
-              ) : null}
-            </div>
-            <p className="text-ink-muted mt-1 text-xs">{metaParts.join(" · ")}</p>
-            {salary ? <p className="text-ink mt-1 text-xs font-semibold">{salary}</p> : null}
-            {job.skillsRequired.length > 0 ? (
-              <ul className="mt-2 flex flex-wrap gap-1">
-                {job.skillsRequired.slice(0, 5).map((s) => (
-                  <li
-                    key={s}
-                    className="bg-surface-subtle text-ink-muted rounded-full px-2 py-0.5 text-[11px]"
-                  >
-                    {s}
-                  </li>
-                ))}
-              </ul>
-            ) : null}
-          </div>
-        </div>
-      </Surface>
-    </Link>
-  );
-}
-
-function JobRowSkeleton(): JSX.Element {
-  return (
-    <Surface variant="card" padding="4" aria-hidden="true">
-      <div className="flex items-start gap-3">
-        <div className="bg-surface-sunken h-12 w-12 shrink-0 animate-pulse rounded-md" />
-        <div className="flex-1 space-y-2">
-          <div className="bg-surface-sunken h-4 w-2/3 animate-pulse rounded" />
-          <div className="bg-surface-sunken h-3 w-1/3 animate-pulse rounded" />
-          <div className="bg-surface-sunken h-3 w-1/2 animate-pulse rounded" />
-        </div>
-      </div>
-    </Surface>
   );
 }

@@ -3,6 +3,7 @@ const path = require("node:path");
 module.exports = {
   rootDir: "../..",
   preset: "jest-expo",
+  setupFiles: ["<rootDir>/apps/mobile/jest-env.ts"],
   setupFilesAfterEnv: ["<rootDir>/apps/mobile/jest-setup.ts"],
   roots: ["<rootDir>/apps/mobile/src", "<rootDir>/packages/ui-native/src"],
   testRegex: "(/__tests__/.*|(\\.|/)(test))\\.tsx?$",

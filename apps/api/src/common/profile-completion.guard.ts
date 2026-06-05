@@ -3,10 +3,11 @@ import { CanActivate, ExecutionContext, Injectable } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
 import type { Request } from "express";
 
-import { DomainException } from "./domain-exception";
-import { REQUIRE_COMPLETE_PROFILE_KEY } from "./require-complete-profile.decorator";
 import type { AuthUser } from "../modules/auth/decorators/current-user.decorator";
 import { PrismaService } from "../modules/prisma/prisma.service";
+
+import { DomainException } from "./domain-exception";
+import { REQUIRE_COMPLETE_PROFILE_KEY } from "./require-complete-profile.decorator";
 
 @Injectable()
 export class ProfileCompletionGuard implements CanActivate {

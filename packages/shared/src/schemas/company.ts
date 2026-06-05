@@ -1,4 +1,5 @@
 import { z } from "zod";
+
 import { CompanyMemberRole } from "../enums";
 
 export const CompanySlug = z

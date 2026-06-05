@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useId, useRef, useState } from "react";
+import { useId, useState } from "react";
 
 import { Avatar } from "./Avatar";
 import { Button } from "./Button";
-import { cx } from "./cx";
+import { Dialog } from "./Dialog";
+import { RadioGroup } from "./RadioGroup";
 import { Surface } from "./Surface";
 
 export type ReportReason =
@@ -67,114 +68,58 @@ export function ReportDialog({
   labels,
   submitting = false,
 }: ReportDialogProps): JSX.Element | null {
-  const titleId = useId();
+  const formId = useId();
   const detailsId = useId();
-  const panelRef = useRef<HTMLFormElement | null>(null);
-  const restoreRef = useRef<HTMLElement | null>(null);
   const [reason, setReason] = useState<ReportReason>("SPAM");
   const [details, setDetails] = useState("");
 
-  useEffect(() => {
-    if (!open) return;
-    restoreRef.current =
-      document.activeElement instanceof HTMLElement ? document.activeElement : null;
-    const timer = window.setTimeout(() => panelRef.current?.focus(), 0);
-    return () => {
-      window.clearTimeout(timer);
-      restoreRef.current?.focus();
-    };
-  }, [open]);
-
-  if (!open) return null;
-
   return (
-    <div
-      role="presentation"
-      className="bg-ink/40 fixed inset-0 z-50 flex items-center justify-center p-4"
-      onMouseDown={(event) => {
-        if (event.target === event.currentTarget) onOpenChange(false);
-      }}
+    <Dialog
+      open={open}
+      onClose={() => onOpenChange(false)}
+      title={labels.title}
+      closeLabel={labels.close}
+      footer={
+        <>
+          <Button variant="secondary" type="button" onClick={() => onOpenChange(false)}>
+            {labels.cancel}
+          </Button>
+          <Button type="submit" form={formId} loading={submitting}>
+            {labels.submit}
+          </Button>
+        </>
+      }
     >
-      <Surface
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={titleId}
-        variant="hero"
-        padding="5"
-        className="w-full max-w-md outline-none"
-        onKeyDown={(event) => {
-          if (event.key === "Escape") onOpenChange(false);
+      <form
+        id={formId}
+        tabIndex={-1}
+        data-autofocus
+        className="flex flex-col gap-4"
+        onSubmit={(event) => {
+          event.preventDefault();
+          onSubmit({ target, reason, details: details.trim() || undefined });
         }}
       >
-        <form
-          ref={panelRef}
-          tabIndex={-1}
-          className="flex flex-col gap-4"
-          onSubmit={(event) => {
-            event.preventDefault();
-            onSubmit({ target, reason, details: details.trim() || undefined });
-          }}
-        >
-          <div className="flex items-start justify-between gap-3">
-            <h2 id={titleId} className="text-ink text-lg font-semibold">
-              {labels.title}
-            </h2>
-            <button
-              type="button"
-              aria-label={labels.close}
-              onClick={() => onOpenChange(false)}
-              className="text-ink-muted hover:bg-surface-subtle focus-visible:ring-brand-600 inline-flex h-10 w-10 items-center justify-center rounded-md focus:outline-none focus-visible:ring-2"
-            >
-              x
-            </button>
-          </div>
+        <RadioGroup
+          legend={<span className="sr-only">{labels.title}</span>}
+          value={reason}
+          onValueChange={(value) => setReason(value as ReportReason)}
+          items={REASONS.map((item) => ({ value: item, label: labels.reasons[item] }))}
+        />
 
-          <fieldset className="flex flex-col gap-2">
-            <legend className="sr-only">{labels.title}</legend>
-            {REASONS.map((item) => (
-              <label
-                key={item}
-                className={cx(
-                  "border-line-soft flex min-h-10 cursor-pointer items-center gap-2 rounded-md border px-3 py-2 text-sm",
-                  item === reason ? "bg-brand-50 text-brand-700" : "bg-surface text-ink",
-                )}
-              >
-                <input
-                  type="radio"
-                  name="report-reason"
-                  value={item}
-                  checked={item === reason}
-                  onChange={() => setReason(item)}
-                  className="accent-brand-600"
-                />
-                <span>{labels.reasons[item]}</span>
-              </label>
-            ))}
-          </fieldset>
-
-          <label className="flex flex-col gap-1 text-sm" htmlFor={detailsId}>
-            <span className="text-ink font-semibold">{labels.detailsLabel}</span>
-            <textarea
-              id={detailsId}
-              value={details}
-              onChange={(event) => setDetails(event.currentTarget.value)}
-              maxLength={2000}
-              rows={4}
-              className="border-line-hard text-ink focus-visible:border-brand-600 focus-visible:ring-brand-600/30 rounded-md border bg-transparent px-3 py-2 text-sm focus:outline-none focus-visible:ring-2"
-            />
-          </label>
-
-          <div className="flex justify-end gap-2">
-            <Button variant="secondary" type="button" onClick={() => onOpenChange(false)}>
-              {labels.cancel}
-            </Button>
-            <Button type="submit" loading={submitting}>
-              {labels.submit}
-            </Button>
-          </div>
-        </form>
-      </Surface>
-    </div>
+        <label className="flex flex-col gap-1 text-sm" htmlFor={detailsId}>
+          <span className="text-ink font-semibold">{labels.detailsLabel}</span>
+          <textarea
+            id={detailsId}
+            value={details}
+            onChange={(event) => setDetails(event.currentTarget.value)}
+            maxLength={2000}
+            rows={4}
+            className="border-line-hard text-ink focus-visible:border-brand-600 focus-visible:ring-brand-600/30 rounded-md border bg-transparent px-3 py-2 text-sm focus:outline-none focus-visible:ring-2"
+          />
+        </label>
+      </form>
+    </Dialog>
   );
 }
 

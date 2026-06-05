@@ -1,6 +1,6 @@
 "use client";
 
-import { useToast } from "@baydar/ui-web";
+import { Button, Input, useToast } from "@baydar/ui-web";
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
@@ -42,25 +42,21 @@ export default function ForgotPasswordPage(): JSX.Element {
 
         <label className="flex flex-col gap-1">
           <span className="text-ink-muted text-sm">{t("email")}</span>
-          <input
+          <Input
             type="email"
-            className="border-ink-muted/30 rounded-md border px-3 py-2"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
             autoComplete="email"
             inputMode="email"
             dir="ltr"
+            fullWidth
           />
         </label>
 
-        <button
-          type="submit"
-          disabled={busy}
-          className="bg-brand-600 text-ink-inverse shadow-card hover:bg-brand-700 rounded-md px-4 py-2 disabled:opacity-60"
-        >
+        <Button type="submit" variant="primary" loading={busy} fullWidth>
           {t("forgot.submit")}
-        </button>
+        </Button>
 
         <Link href={`/${locale}/auth/login`} className="text-brand-700 text-sm font-semibold">
           {t("forgot.backToLogin")}

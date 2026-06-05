@@ -66,7 +66,13 @@ jest.mock("react-i18next", () => ({
 
 describe("MessagesListScreen", () => {
   beforeEach(() => {
+    jest.useFakeTimers();
     jest.clearAllMocks();
+  });
+
+  afterEach(() => {
+    jest.clearAllTimers();
+    jest.useRealTimers();
   });
 
   it("dedupes initial room loads and renders rate-limit errors without crashing", async () => {
@@ -83,5 +89,6 @@ describe("MessagesListScreen", () => {
 
     expect(mockApiFetchPage).toHaveBeenCalledTimes(1);
     expect(mockReplace).not.toHaveBeenCalled();
+    screen.unmount();
   });
 });

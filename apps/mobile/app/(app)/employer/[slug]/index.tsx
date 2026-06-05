@@ -1,11 +1,18 @@
 import { Company, cursorPage, EmployerJob } from "@baydar/shared";
-import { Surface, nativeTokens } from "@baydar/ui-native";
+import {
+  AppHeader,
+  EmptyState,
+  RecordCard,
+  RecordCardSkeleton,
+  nativeTokens,
+} from "@baydar/ui-native";
 import { Link, Stack, useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { FlatList, Pressable, Text } from "react-native";
+import { FlatList, Pressable, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { StateMessage } from "@/components/StateMessage";
 import { apiFetch, apiFetchPage } from "@/lib/api";
 import { apiErrorMessage } from "@/lib/api-errors";
 
@@ -52,59 +59,71 @@ export default function CompanyJobsScreen(): JSX.Element {
   }, [load]);
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: nativeTokens.color.surfaceMuted }}>
-      <Stack.Screen options={{ title: t("employer.jobsTitle"), headerShown: true }} />
-      <FlatList
-        contentContainerStyle={{ padding: nativeTokens.space[4], gap: nativeTokens.space[3] }}
-        data={jobs}
-        keyExtractor={(j) => j.id}
-        refreshing={loading}
-        onRefresh={load}
-        ListEmptyComponent={
-          error ? (
-            <Text style={{ color: nativeTokens.color.danger }}>{error}</Text>
-          ) : loading ? (
-            <Text style={{ color: nativeTokens.color.inkMuted }}>{t("common.loading")}</Text>
-          ) : (
-            <Surface variant="card" padding="4">
-              <Text style={{ color: nativeTokens.color.ink }}>{t("employer.applicantsEmpty")}</Text>
-            </Surface>
-          )
-        }
-        renderItem={({ item }) => (
-          <Link
-            href={{
-              pathname: "/(app)/employer/[slug]/[jobId]",
-              params: { slug, jobId: item.id },
-            }}
-            asChild
-          >
-            <Pressable>
-              <Surface variant="card" padding="4">
-                <Text
-                  style={{
-                    color: nativeTokens.color.ink,
-                    fontFamily: nativeTokens.type.family.sans,
-                    fontSize: nativeTokens.type.scale.h3.size,
-                    fontWeight: "700",
-                  }}
-                >
-                  {item.title}
-                </Text>
-                <Text
-                  style={{
-                    color: nativeTokens.color.inkMuted,
-                    fontSize: nativeTokens.type.scale.caption.size,
-                    marginTop: nativeTokens.space[1],
-                  }}
-                >
-                  {t("employer.applicantCount", { count: item.applicantCount })}
-                </Text>
-              </Surface>
-            </Pressable>
-          </Link>
-        )}
-      />
+    <SafeAreaView style={styles.screen}>
+      <Stack.Screen options={{ title: t("employer.jobsTitle"), headerShown: false }} />
+      <View style={styles.content}>
+        <AppHeader title={t("employer.jobsTitle")} compact />
+        <FlatList
+          contentContainerStyle={styles.listContent}
+          data={jobs}
+          keyExtractor={(j) => j.id}
+          refreshing={loading}
+          onRefresh={load}
+          ListEmptyComponent={
+            error ? (
+              <StateMessage
+                message={error}
+                actionLabel={t("common.retry")}
+                busy={loading}
+                onAction={() => void load()}
+              />
+            ) : loading || !companyId ? (
+              <View style={styles.skeletonStack}>
+                <RecordCardSkeleton />
+                <RecordCardSkeleton />
+              </View>
+            ) : (
+              <EmptyState motif="jobs" title={t("employer.jobsEmpty")} />
+            )
+          }
+          renderItem={({ item }) => (
+            <Link
+              href={{
+                pathname: "/(app)/employer/[slug]/[jobId]",
+                params: { slug, jobId: item.id },
+              }}
+              asChild
+            >
+              <Pressable>
+                <RecordCard
+                  title={item.title}
+                  subtitle={`${item.type} · ${item.locationMode}`}
+                  meta={t("employer.applicantCount", { count: item.applicantCount })}
+                />
+              </Pressable>
+            </Link>
+          )}
+        />
+      </View>
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+    backgroundColor: nativeTokens.color.surfaceMuted,
+  },
+  content: {
+    flex: 1,
+    paddingHorizontal: nativeTokens.space[4],
+    paddingTop: nativeTokens.space[3],
+  },
+  listContent: {
+    gap: nativeTokens.space[3],
+    paddingBottom: nativeTokens.space[6],
+  },
+  skeletonStack: {
+    gap: nativeTokens.space[3],
+  },
+});

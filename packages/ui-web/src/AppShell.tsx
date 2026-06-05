@@ -37,7 +37,15 @@ import { Avatar, type AvatarUser } from "./Avatar";
 import { cx } from "./cx";
 import { Icon, type IconName } from "./Icon";
 
-export type AppShellRoute = "feed" | "network" | "jobs" | "messages" | "notifications" | "profile";
+export type AppShellRoute =
+  | "feed"
+  | "network"
+  | "jobs"
+  | "messages"
+  | "notifications"
+  | "profile"
+  | "saved"
+  | "employer";
 
 export interface AppShellLabels {
   /** Alt text for the logo button (announced to screen readers). */
@@ -113,6 +121,8 @@ const NAV_ITEMS: ReadonlyArray<{
   { key: "jobs", icon: "briefcase" },
   { key: "messages", icon: "message" },
   { key: "notifications", icon: "bell" },
+  { key: "saved", icon: "bookmark" },
+  { key: "employer", icon: "building" },
 ];
 
 /** 99+ cap so badges never break the 20px target. */
@@ -263,7 +273,7 @@ export function AppShell({
   return (
     <div className="bg-surface-muted min-h-screen">
       <header role="banner" className="border-line-soft bg-surface sticky top-0 z-20 h-14 border-b">
-        <div className="mx-auto flex h-full w-full max-w-[1128px] items-center gap-4 px-5">
+        <div className="mx-auto flex h-full w-full min-w-0 max-w-[1128px] items-center gap-2 px-3 sm:gap-4 sm:px-5">
           {/* Logo — routes home. */}
           <button
             type="button"
@@ -297,7 +307,7 @@ export function AppShell({
             ref={navRef}
             onKeyDown={onNavKeyDown}
             aria-label={labels.mainNavLabel}
-            className="flex items-stretch gap-1"
+            className="flex min-w-0 shrink items-stretch gap-1 overflow-x-auto overscroll-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           >
             {NAV_ITEMS.map((item) => {
               const active = currentRoute === item.key;

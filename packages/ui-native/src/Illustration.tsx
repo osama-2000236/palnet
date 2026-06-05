@@ -3,7 +3,7 @@
 // + colour tokens as the web kit; sizes resolve to nativeTokens.illustration.size.
 
 import { View, type StyleProp, type ViewStyle } from "react-native";
-import Svg, { Circle, G, Line, Path, Rect } from "react-native-svg";
+import { Circle, G, Line, Path, Rect, Svg } from "react-native-svg";
 
 import { nativeTokens } from "./tokens";
 
@@ -16,6 +16,7 @@ export const ILLUSTRATION_MOTIFS = [
   "jobs",
   "onboarding",
   "settings",
+  "saved",
 ] as const;
 export type IllustrationMotif = (typeof ILLUSTRATION_MOTIFS)[number];
 
@@ -82,16 +83,17 @@ export function Illustration({
 function OutlineSet({ motif }: { motif: IllustrationMotif }): JSX.Element | null {
   const stroke = c.brand700;
   const accent = c.accent600;
+  const common = {
+    fill: "none",
+    stroke,
+    strokeWidth: 1.8,
+    strokeLinecap: "round" as const,
+    strokeLinejoin: "round" as const,
+  };
   switch (motif) {
     case "feed":
       return (
-        <G
-          fill="none"
-          stroke={stroke}
-          strokeWidth={1.8}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
+        <G {...common}>
           <Rect x="32" y="28" width="76" height="22" rx="4" />
           <Rect x="38" y="54" width="64" height="22" rx="4" />
           <Line x1="42" y1="38" x2="86" y2="38" stroke={accent} strokeWidth={2} />
@@ -100,13 +102,7 @@ function OutlineSet({ motif }: { motif: IllustrationMotif }): JSX.Element | null
       );
     case "network":
       return (
-        <G
-          fill="none"
-          stroke={stroke}
-          strokeWidth={1.8}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
+        <G {...common}>
           <Circle cx="48" cy="50" r="14" />
           <Circle cx="92" cy="50" r="14" />
           <Line x1="62" y1="50" x2="78" y2="50" stroke={accent} strokeWidth={2} />
@@ -116,13 +112,7 @@ function OutlineSet({ motif }: { motif: IllustrationMotif }): JSX.Element | null
       );
     case "messages":
       return (
-        <G
-          fill="none"
-          stroke={stroke}
-          strokeWidth={1.8}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
+        <G {...common}>
           <Path d="M30 38 q0 -10 10 -10 h44 q10 0 10 10 v12 q0 10 -10 10 h-22 l-10 8 v-8 h-12 q-10 0 -10 -10 z" />
           <Path
             d="M70 60 q0 -10 10 -10 h22 q10 0 10 10 v8 q0 10 -10 10 h-14 l-8 6 v-6 q-10 0 -10 -10 z"
@@ -199,6 +189,15 @@ function OutlineSet({ motif }: { motif: IllustrationMotif }): JSX.Element | null
         >
           <Path d="M70 26 l22 8 v18 q0 16 -22 26 q-22 -10 -22 -26 v-18 z" />
           <Path d="M60 52 l8 8 l16 -16" stroke={accent} strokeWidth={2} />
+        </G>
+      );
+    case "saved":
+      return (
+        <G {...common}>
+          <Circle cx="50" cy="40" r="18" />
+          <Path d="M32 56 q12 -16 24 0 t24 0" stroke={accent} strokeWidth={2} fill="none" />
+          <Line x1="38" y1="64" x2="62" y2="64" />
+          <Line x1="50" y1="52" x2="50" y2="76" />
         </G>
       );
     default:

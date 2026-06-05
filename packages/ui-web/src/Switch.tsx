@@ -41,7 +41,7 @@ export function Switch({
       disabled={disabled}
       onClick={() => onChange(!checked)}
       className={
-        "focus-visible:ring-brand-500 relative inline-flex h-5 w-9 flex-none rounded-full transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 " +
+        "relative inline-flex h-5 w-9 flex-none rounded-full transition-colors duration-150 focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)] " +
         (disabled ? "cursor-not-allowed opacity-55" : "") +
         (checked ? "bg-brand-600" : "bg-surface-sunken")
       }

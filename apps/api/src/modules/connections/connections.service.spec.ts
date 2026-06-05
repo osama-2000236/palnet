@@ -9,6 +9,7 @@ import { ConnectionsService } from "./connections.service";
 
 type PrismaStub = {
   user: { findUnique: jest.Mock };
+  profile: { findMany: jest.Mock };
   connection: {
     create: jest.Mock;
     update: jest.Mock;
@@ -23,6 +24,7 @@ type PrismaStub = {
 function buildPrisma(): PrismaStub {
   return {
     user: { findUnique: jest.fn() },
+    profile: { findMany: jest.fn() },
     connection: {
       create: jest.fn(),
       update: jest.fn(),
@@ -129,6 +131,51 @@ describe("ConnectionsService", () => {
           data: expect.objectContaining({ status: "ACCEPTED" }),
         }),
       );
+    });
+  });
+
+  describe("suggestions", () => {
+    it("excludes the viewer and existing connection rows", async () => {
+      prisma.connection.findMany.mockResolvedValue([
+        { requesterId: "u_me", receiverId: "u_existing" },
+        { requesterId: "u_pending", receiverId: "u_me" },
+      ]);
+      prisma.profile.findMany.mockResolvedValue([
+        {
+          userId: "u_new",
+          handle: "new-person",
+          firstName: "New",
+          lastName: "Person",
+          headline: null,
+          avatarUrl: null,
+        },
+      ]);
+
+      const rows = await service.suggestions("u_me", 8);
+
+      expect(prisma.profile.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            userId: { notIn: ["u_me", "u_existing", "u_pending"] },
+            user: { isActive: true, deletedAt: null },
+          }),
+          take: 8,
+        }),
+      );
+      expect(rows).toEqual([
+        {
+          user: {
+            userId: "u_new",
+            handle: "new-person",
+            firstName: "New",
+            lastName: "Person",
+            headline: null,
+            avatarUrl: null,
+          },
+          reasonCode: "SUGGESTED",
+          reasonCount: null,
+        },
+      ]);
     });
   });
 });

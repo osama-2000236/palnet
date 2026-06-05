@@ -1,4 +1,5 @@
 import { z } from "zod";
+
 import { ConnectionStatus } from "../enums";
 
 export const SendConnectionBody = z.object({

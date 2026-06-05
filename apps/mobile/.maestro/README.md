@@ -10,15 +10,20 @@ release.
 - `compose-post.yaml` — login → composer modal → optimistic insert.
 - `send-message.yaml` — login → first room → send message → assert echo.
 
-All flows assume a fixture user `qa@baydar.ps` (password
-`qa-fixture-pass`) seeded against the staging API and at least one
-existing DM thread with the messaging companion account.
+All flows assume the completed local QA fixture user
+`qa+qa-android-0520.0000@baydar.test` (password `Password123`) and at least
+one existing DM thread with the messaging companion account. The seed user
+`demo@baydar.ps` intentionally routes to mandatory onboarding because it does
+not include professional background data.
 
 ## Running locally
 
 ```bash
 # Install once
 curl -Ls "https://get.maestro.mobile.dev" | bash
+
+# Seed completed local QA accounts once per database reset.
+pnpm --filter @baydar/db qa:load-fixture -- --run-id=qa-android-0520 --users=2
 
 # Launch the Expo dev build on an emulator first, then:
 cd apps/mobile

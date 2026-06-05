@@ -1,11 +1,12 @@
 import { ErrorCode } from "@baydar/shared";
-import { Test } from "@nestjs/testing";
 import { Reflector } from "@nestjs/core";
+import { Test } from "@nestjs/testing";
+
+import { PrismaService } from "../modules/prisma/prisma.service";
 
 import { DomainException } from "./domain-exception";
 import { ProfileCompletionGuard } from "./profile-completion.guard";
 import { REQUIRE_COMPLETE_PROFILE_KEY } from "./require-complete-profile.decorator";
-import { PrismaService } from "../modules/prisma/prisma.service";
 
 type PrismaStub = {
   profile: {

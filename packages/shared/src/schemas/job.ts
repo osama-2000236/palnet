@@ -1,4 +1,5 @@
 import { z } from "zod";
+
 import { ApplicationStatus, JobLocationMode, JobType } from "../enums";
 
 export const CreateJobBody = z.object({

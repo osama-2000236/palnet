@@ -4,7 +4,7 @@ import {
   ConnectionListItem as ConnectionListItemSchema,
   type ConnectionListItem,
 } from "@baydar/shared";
-import { Avatar, EmptyState, Surface } from "@baydar/ui-web";
+import { Avatar, EmptyState, Skeleton, Surface } from "@baydar/ui-web";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -203,8 +203,8 @@ function FilterTab({
       onClick={onClick}
       className={
         active
-          ? "bg-brand-600 text-ink-inverse rounded-md px-4 py-1.5 text-sm font-semibold"
-          : "border-ink-muted/30 text-ink hover:bg-ink-muted/5 rounded-md border px-4 py-1.5 text-sm"
+          ? "bg-brand-600 text-ink-inverse rounded-md px-4 py-1.5 text-sm font-semibold focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+          : "border-ink-muted/30 text-ink hover:bg-ink-muted/5 rounded-md border px-4 py-1.5 text-sm focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
       }
     >
       {children}
@@ -219,13 +219,13 @@ function ConnectionRowSkeleton(): JSX.Element {
       className="border-line-soft bg-surface flex items-center justify-between gap-3 rounded-md border p-4"
     >
       <div className="flex min-w-0 items-center gap-3">
-        <div className="bg-surface-sunken h-10 w-10 animate-pulse rounded-full" />
+        <Skeleton kind="circle" className="h-10 w-10" />
         <div className="flex flex-col gap-2">
-          <div className="bg-surface-sunken h-3 w-40 animate-pulse rounded" />
-          <div className="bg-surface-sunken h-3 w-24 animate-pulse rounded" />
+          <Skeleton className="h-3 w-40" />
+          <Skeleton className="h-3 w-24" />
         </div>
       </div>
-      <div className="bg-surface-sunken h-7 w-24 animate-pulse rounded-md" />
+      <Skeleton radius="var(--radius-md)" className="h-7 w-24" />
     </li>
   );
 }

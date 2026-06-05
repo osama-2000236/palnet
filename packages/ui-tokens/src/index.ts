@@ -60,6 +60,8 @@ export const tokens = {
   shadow: {
     card: "0 1px 2px rgba(26,26,23,0.04), 0 1px 3px rgba(26,26,23,0.05)",
     pop: "0 10px 28px rgba(26,26,23,0.12)",
+    nav: "0 1px 0 rgba(26,26,23,0.06)",
+    modal: "0 24px 60px rgba(26,26,23,0.20), 0 4px 12px rgba(26,26,23,0.08)",
   },
   type: {
     family: {
@@ -86,17 +88,42 @@ export const tokens = {
     4: 16,
     5: 20,
     6: 24,
+    7: 28,
     8: 32,
+    9: 36,
     10: 40,
+    11: 44,
     12: 48,
+    13: 52,
+    14: 56,
+    15: 60,
     16: 64,
+    17: 68,
+    18: 72,
+    19: 76,
     20: 80,
+    21: 84,
+    22: 88,
+    23: 92,
     24: 96,
   } as const,
   // Motion
   motion: {
     duration: { fast: 80, base: 120, slow: 240 },
     easing: { standard: "cubic-bezier(0.2, 0, 0, 1)", emphasized: "cubic-bezier(0.3, 0, 0, 1.15)" },
+  },
+  focus: {
+    ring: "0 0 0 2px var(--brand-500)",
+    offset: 2,
+  },
+  avatar: {
+    palette: [
+      { bg: "brand.100", fg: "brand.800" },
+      { bg: "accent.100", fg: "accent.700" },
+      { bg: "surface.sunken", fg: "ink.muted" },
+      { bg: "brand.200", fg: "brand.700" },
+      { bg: "brand.50", fg: "brand.800" },
+    ],
   },
   // Surface variant recipes — see DESIGN.md §3.
   surfaceRecipes: {
@@ -126,10 +153,13 @@ export const tokens = {
   // Named breakpoints (px). The web app collapses 3-col → 2-col → 1-col
   // along these. Right rail is XL-only.
   breakpoint: {
+    sm: 640,
     md: 768,
     lg: 1024,
     xl: 1280,
   },
+  // Numeral direction for LTR numbers inside RTL text
+  numeralDirection: "ltr",
 } as const;
 
 export type Tokens = typeof tokens;

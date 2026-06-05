@@ -1,0 +1,178 @@
+"use client";
+
+import { Profile as ProfileSchema, UpdateProfileBody, type Profile } from "@baydar/shared";
+import { Avatar, Surface } from "@baydar/ui-web";
+import { useTranslations } from "next-intl";
+import { useState, type ChangeEvent, type ReactNode } from "react";
+
+import { apiFetch } from "@/lib/api";
+import { getAccessToken } from "@/lib/session";
+import { uploadFile } from "@/lib/uploads";
+
+const inputClass =
+  "border-ink-muted/30 w-full rounded-md border px-3 py-2 focus-visible:[box-shadow:var(--focus-ring)] focus-visible:outline-none";
+
+export function BasicsSection({
+  profile,
+  onChanged,
+}: {
+  profile: Profile;
+  onChanged: (next: Profile) => void;
+}): JSX.Element {
+  const t = useTranslations("profile");
+  const tOn = useTranslations("onboarding");
+  const [state, setState] = useState({
+    firstName: profile.firstName,
+    lastName: profile.lastName,
+    headline: profile.headline ?? "",
+    about: profile.about ?? "",
+    location: profile.location ?? "",
+  });
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+
+  async function onAvatarChange(e: ChangeEvent<HTMLInputElement>): Promise<void> {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const token = getAccessToken();
+    if (!token) return;
+    setError(null);
+    setUploading(true);
+    try {
+      const publicUrl = await uploadFile({ file, purpose: "AVATAR", token });
+      const next = await apiFetch("/profiles/me", ProfileSchema, {
+        method: "PATCH",
+        body: { avatarUrl: publicUrl },
+        token,
+      });
+      onChanged(next);
+    } catch {
+      setError(t("uploadFailed"));
+    } finally {
+      setUploading(false);
+      e.target.value = "";
+    }
+  }
+
+  async function save(): Promise<void> {
+    setError(null);
+    const parsed = UpdateProfileBody.safeParse({
+      firstName: state.firstName,
+      lastName: state.lastName,
+      headline: state.headline || null,
+      about: state.about || null,
+      location: state.location || null,
+    });
+    if (!parsed.success) {
+      setError(t("validationFailed"));
+      return;
+    }
+    const token = getAccessToken();
+    if (!token) return;
+    setBusy(true);
+    try {
+      const next = await apiFetch("/profiles/me", ProfileSchema, {
+        method: "PATCH",
+        body: parsed.data,
+        token,
+      });
+      onChanged(next);
+    } catch {
+      setError(t("saveFailed"));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <Surface as="section" variant="flat" padding="6">
+      <h2 className="text-ink mb-3 text-xl font-semibold">{t("basics")}</h2>
+
+      <div className="mb-4 flex items-center gap-4">
+        <Avatar
+          user={{
+            id: profile.userId,
+            handle: profile.handle,
+            firstName: profile.firstName,
+            lastName: profile.lastName,
+            avatarUrl: profile.avatarUrl ?? null,
+          }}
+          size="lg"
+        />
+        <label className="border-ink-muted/30 text-ink hover:bg-ink-muted/5 cursor-pointer rounded-md border px-3 py-2 text-sm focus-within:shadow-[var(--focus-ring)]">
+          {uploading ? t("uploading") : t("changeAvatar")}
+          <input
+            type="file"
+            accept="image/png,image/jpeg,image/webp"
+            onChange={onAvatarChange}
+            disabled={uploading}
+            className="hidden"
+          />
+        </label>
+      </div>
+
+      <div className="grid gap-3 md:grid-cols-2">
+        <Field label={tOn("firstName" as never) as string}>
+          <input
+            className={inputClass}
+            value={state.firstName}
+            onChange={(e) => setState({ ...state, firstName: e.target.value })}
+          />
+        </Field>
+        <Field label={tOn("lastName" as never) as string}>
+          <input
+            className={inputClass}
+            value={state.lastName}
+            onChange={(e) => setState({ ...state, lastName: e.target.value })}
+          />
+        </Field>
+      </div>
+      <Field label={tOn("headline")}>
+        <input
+          className={inputClass}
+          value={state.headline}
+          onChange={(e) => setState({ ...state, headline: e.target.value })}
+          maxLength={220}
+        />
+      </Field>
+      <Field label={t("about")}>
+        <textarea
+          className={inputClass}
+          rows={4}
+          value={state.about}
+          onChange={(e) => setState({ ...state, about: e.target.value })}
+          maxLength={4000}
+        />
+      </Field>
+      <Field label={tOn("location")}>
+        <input
+          className={inputClass}
+          value={state.location}
+          onChange={(e) => setState({ ...state, location: e.target.value })}
+          maxLength={120}
+        />
+      </Field>
+      {error ? <p className="text-danger text-sm">{error}</p> : null}
+      <div className="mt-3 flex justify-end">
+        <button
+          type="button"
+          onClick={save}
+          disabled={busy}
+          className="bg-brand-600 text-ink-inverse rounded-md px-4 py-2 text-sm font-semibold focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)] disabled:opacity-60"
+        >
+          {t("save")}
+        </button>
+      </div>
+    </Surface>
+  );
+}
+
+function Field({ label, children }: { label: string; children: ReactNode }): JSX.Element {
+  return (
+    <label className="mt-2 flex flex-col gap-1">
+      <span className="text-ink-muted text-sm">{label}</span>
+      {children}
+    </label>
+  );
+}

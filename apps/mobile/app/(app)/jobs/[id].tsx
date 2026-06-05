@@ -2,12 +2,12 @@
 // Applied badge flips optimistically on press, rolls back on failure.
 
 import { ApplyToJobBody, Job as JobSchema, type Job } from "@baydar/shared";
-import { AppHeader, Button, Icon, Surface, nativeTokens } from "@baydar/ui-native";
+import { AppHeader, Button, Icon, Input, Surface, nativeTokens } from "@baydar/ui-native";
 import { Image } from "expo-image";
 import { router, useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ScrollView, Text, TextInput, View } from "react-native";
+import { ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { StateMessage } from "@/components/StateMessage";
@@ -183,14 +183,14 @@ export default function JobDetailScreen(): JSX.Element {
 
               <View style={{ gap: nativeTokens.space[1] }}>
                 <Text style={styles.fieldLabel}>{t("jobs.coverLetterLabel")}</Text>
-                <TextInput
+                <Input
+                  fullWidth
                   value={coverLetter}
                   onChangeText={setCoverLetter}
                   placeholder={t("jobs.coverLetterPlaceholder")}
-                  placeholderTextColor={nativeTokens.color.inkMuted}
                   multiline
                   maxLength={8000}
-                  style={styles.coverLetterInput}
+                  inputStyle={styles.coverLetterInput}
                 />
                 <Text style={styles.hint}>{t("jobs.coverLetterHint")}</Text>
               </View>
@@ -281,12 +281,6 @@ const styles = {
   },
   coverLetterInput: {
     minHeight: 140,
-    borderRadius: nativeTokens.radius.md,
-    borderWidth: 1,
-    borderColor: nativeTokens.color.lineHard,
-    backgroundColor: nativeTokens.color.surface,
-    paddingHorizontal: nativeTokens.space[3],
-    paddingVertical: nativeTokens.space[2],
     color: nativeTokens.color.ink,
     fontFamily: nativeTokens.type.family.sans,
     fontSize: nativeTokens.type.scale.body.size,

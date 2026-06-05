@@ -21,7 +21,7 @@ export default defineConfig({
     ? []
     : [
         {
-          command: "pnpm --filter @baydar/api dev",
+          command: "node ../../scripts/run-api-local.mjs ../../.env.local",
           url: "http://localhost:4000/api/v1/health",
           reuseExistingServer: !process.env.CI,
           timeout: 120_000,
