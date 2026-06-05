@@ -2,23 +2,25 @@
 
 import {
   cursorPage,
-  formatRelativeTime,
   Notification as NotificationSchema,
-  NotificationType,
   WsNotificationEvent,
   type Notification,
 } from "@baydar/shared";
-import { Avatar, EmptyState, Skeleton, Surface, useToast } from "@baydar/ui-web";
-import { Trash2 } from "lucide-react";
-import Link from "next/link";
+import { EmptyState, Surface, useToast } from "@baydar/ui-web";
 import { useRouter } from "next/navigation";
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 
 import { apiCall, apiFetchPage } from "@/lib/api";
 import { useDismissNotification } from "@/lib/api/notifications";
 import { readSession } from "@/lib/session";
 import { openStream } from "@/lib/sse";
+import {
+  NotificationsErrorState,
+  NotificationsList,
+  NotificationsLoadMore,
+  NotificationsSkeleton,
+} from "./_components/NotificationsParts";
 
 const NotificationsPage = cursorPage(NotificationSchema);
 
@@ -33,6 +35,7 @@ export default function NotificationsPageRoute(): JSX.Element {
   const [hasMore, setHasMore] = useState(false);
   const [loading, setLoading] = useState(false);
   const [firstLoad, setFirstLoad] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [sseLive, setSseLive] = useState(false);
 
   // Session bootstrap.
@@ -56,6 +59,14 @@ export default function NotificationsPageRoute(): JSX.Element {
       setItems((prev) => (after ? [...prev, ...page.data] : page.data));
       setCursor(page.meta.nextCursor);
       setHasMore(page.meta.hasMore);
+      setLoadError(false);
+    } catch {
+      setLoadError(true);
+      if (!after) {
+        setItems([]);
+        setCursor(null);
+        setHasMore(false);
+      }
     } finally {
       setLoading(false);
       setFirstLoad(false);
@@ -156,147 +167,39 @@ export default function NotificationsPageRoute(): JSX.Element {
       </header>
 
       {firstLoad ? (
-        <ul className="flex flex-col gap-2" aria-hidden="true">
-          {[0, 1, 2, 3].map((i) => (
-            <li key={i}>
-              <NotificationRowSkeleton />
-            </li>
-          ))}
-        </ul>
+        <NotificationsSkeleton />
+      ) : loadError && items.length === 0 ? (
+        <NotificationsErrorState
+          title={t("errorTitle")}
+          body={t("errorBody")}
+          retryLabel={t("retry")}
+          loading={loading}
+          onRetry={() => {
+            if (token) void load(null, token);
+          }}
+        />
       ) : items.length === 0 ? (
         <Surface variant="card" padding="0">
           <EmptyState motif="notifications" title={t("empty")} />
         </Surface>
       ) : (
-        <ul className="flex flex-col gap-2">
-          {items.map((n) => (
-            <li key={n.id}>
-              <NotificationRow
-                item={n}
-                dismissing={dismissNotification.isPending}
-                onDismiss={dismissItem}
-              />
-            </li>
-          ))}
-        </ul>
+        <NotificationsList
+          items={items}
+          dismissing={dismissNotification.isPending}
+          onDismiss={dismissItem}
+        />
       )}
 
       {hasMore && token ? (
-        <button
-          type="button"
+        <NotificationsLoadMore
+          loading={loading}
+          label={t("loadMore")}
+          loadingLabel={t("loading")}
           onClick={() => void load(cursor, token)}
-          disabled={loading}
-          className="border-ink-muted/30 text-ink hover:bg-ink-muted/5 self-center rounded-md border px-4 py-2 text-sm disabled:opacity-60"
-        >
-          {loading ? t("loading") : t("loadMore")}
-        </button>
+        />
       ) : null}
     </main>
   );
-}
-
-function NotificationRow({
-  item,
-  dismissing,
-  onDismiss,
-}: {
-  item: Notification;
-  dismissing: boolean;
-  onDismiss: (item: Notification) => void;
-}): JSX.Element {
-  const t = useTranslations("notifications");
-  const tTemplates = useTranslations("notifications.templates");
-  const locale = useLocale();
-  const actor = item.actor;
-  const actorName = actor ? `${actor.firstName} ${actor.lastName}`.trim() || actor.handle : ""; // system notification
-
-  const template = templateKeyFor(item.type);
-  const body = tTemplates(template, { actor: actorName });
-  const unread = item.readAt === null;
-  const href = hrefFor(item);
-
-  const content = (
-    <>
-      <Avatar user={actor ?? { handle: "system" }} size="md" />
-
-      <div className="flex flex-1 flex-col gap-0.5">
-        <p className="text-ink text-sm">{body}</p>
-        <p className="text-ink-muted text-xs">{formatRelativeTime(item.createdAt, locale)}</p>
-      </div>
-      {unread ? (
-        <span aria-hidden="true" className="bg-accent-600 mt-1 h-2 w-2 flex-none rounded-full" />
-      ) : null}
-    </>
-  );
-
-  return (
-    <div
-      className={`flex items-start gap-3 rounded-md border p-3 transition ${
-        unread ? "border-brand-500/30 bg-brand-50" : "border-ink-muted/20 bg-surface"
-      }`}
-    >
-      {href ? (
-        <Link href={href} className="flex min-w-0 flex-1 items-start gap-3 hover:opacity-90">
-          {content}
-        </Link>
-      ) : (
-        <div className="flex min-w-0 flex-1 items-start gap-3">{content}</div>
-      )}
-      <button
-        type="button"
-        className="text-ink-muted hover:text-danger hover:bg-danger/10 flex h-9 w-9 flex-none items-center justify-center rounded-md focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-50"
-        aria-label={t("dismiss.aria")}
-        title={t("dismiss.action")}
-        disabled={dismissing}
-        onClick={() => onDismiss(item)}
-      >
-        <Trash2 aria-hidden="true" size={16} strokeWidth={2} />
-      </button>
-    </div>
-  );
-}
-
-function NotificationRowSkeleton(): JSX.Element {
-  return (
-    <div className="border-ink-muted/20 bg-surface flex items-start gap-3 rounded-md border p-3">
-      <Skeleton kind="circle" className="h-10 w-10" />
-      <div className="flex-1 space-y-2">
-        <Skeleton className="h-3 w-3/4" />
-        <Skeleton className="h-3 w-1/4" />
-      </div>
-    </div>
-  );
-}
-
-function templateKeyFor(type: Notification["type"]): string {
-  return type; // keys in locale files are the enum values verbatim
-}
-
-function hrefFor(n: Notification): string | null {
-  if (n.type === NotificationType.MESSAGE_RECEIVED) {
-    // Room id lives in data.roomId — see messaging.service.ts.
-    const data = n.data as { roomId?: string } | null;
-    if (data?.roomId) return `/messages?room=${encodeURIComponent(data.roomId)}`;
-    return "/messages";
-  }
-  if (
-    n.type === NotificationType.CONNECTION_REQUEST ||
-    n.type === NotificationType.CONNECTION_ACCEPTED
-  ) {
-    return "/network";
-  }
-  if (
-    n.type === NotificationType.POST_REACTION ||
-    n.type === NotificationType.POST_COMMENT ||
-    n.type === NotificationType.POST_MENTION
-  ) {
-    if (n.postId) return `/feed#post-${n.postId}`;
-    return "/feed";
-  }
-  if (n.type === NotificationType.PROFILE_VIEW && n.actor?.handle) {
-    return `/in/${n.actor.handle}`;
-  }
-  return null;
 }
 
 function restoreNotification(items: Notification[], item: Notification): Notification[] {

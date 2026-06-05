@@ -1,109 +1,31 @@
-// Root 404 — caught by Next.js when no segment matches. Locale-agnostic
-// (the locale router lives one level deeper); the "Go home" CTA hits "/"
-// and the middleware redirects to the user's preferred locale.
-//
-// Next.js App Router contract:
-//   • Server Component is OK — no client interactivity needed.
-//   • Sits at `app/not-found.tsx`, sibling to `app/layout.tsx`.
-//
-// Kept dependency-light for the same reason as `app/error.tsx`: this page
-// may render when locale resources are themselves the cause of the miss.
-
 import Link from "next/link";
 import type { JSX } from "react";
-import { tokens } from "@baydar/ui-tokens";
 
 export default function NotFound(): JSX.Element {
   return (
-    <main
-      style={{
-        minHeight: "100vh",
-        fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-        color: tokens.color.ink.DEFAULT,
-        backgroundColor: tokens.color.surface.muted,
-        display: "grid",
-        placeItems: "center",
-        padding: "32px",
-      }}
-    >
-      <section
-        style={{
-          maxWidth: 480,
-          width: "100%",
-          background: tokens.color.surface.DEFAULT,
-          border: `1px solid ${tokens.color.line.soft}`,
-          borderRadius: tokens.radius.lg,
-          padding: "40px 32px",
-          boxShadow: tokens.shadow.card,
-          textAlign: "center",
-        }}
-      >
-        {/* "404" rendered as a large, brand-coloured numeral — no illustration
-         * dependency, no font dependency beyond the body stack. */}
+    <main className="bg-surface-muted text-ink grid min-h-screen place-items-center px-6 py-10">
+      <section className="border-line-soft bg-surface shadow-card w-full max-w-[480px] rounded-lg border px-6 py-10 text-center sm:px-8">
         <div
-          style={{
-            fontFamily: '"IBM Plex Sans Arabic", "IBM Plex Sans", system-ui, sans-serif',
-            fontSize: 88,
-            fontWeight: 700,
-            lineHeight: 1,
-            letterSpacing: "-0.04em",
-            color: tokens.color.brand[600],
-            margin: "0 0 16px",
-          }}
+          dir="ltr"
+          className="text-brand-600 mb-4 font-sans text-[80px] font-bold leading-none sm:text-[88px]"
         >
           404
         </div>
-        <h1
-          style={{
-            fontSize: 22,
-            fontWeight: 600,
-            margin: "0 0 8px",
-            letterSpacing: "-0.01em",
-          }}
-        >
-          That page slipped away
-        </h1>
-        <p
-          style={{
-            color: tokens.color.ink.muted,
-            fontSize: 14,
-            lineHeight: 1.55,
-            margin: "0 0 24px",
-            maxWidth: "44ch",
-            marginInline: "auto",
-          }}
-        >
+        <h1 className="text-[22px] font-semibold leading-tight">That page slipped away</h1>
+        <p className="text-ink-muted mx-auto mt-2 max-w-[44ch] text-sm leading-relaxed">
           The link might be wrong, the post might be deleted, or the handle might not exist. Try a
           search, or head back to your feed.
         </p>
-        <nav style={{ display: "flex", gap: 8, justifyContent: "center", flexWrap: "wrap" }}>
+        <nav className="mt-6 flex flex-wrap justify-center gap-2" aria-label="Recovery links">
           <Link
             href="/feed"
-            style={{
-              background: tokens.color.brand[600],
-              color: tokens.color.ink.inverse,
-              border: `1px solid ${tokens.color.brand[600]}`,
-              borderRadius: tokens.radius.md,
-              padding: "9px 18px",
-              fontSize: 14,
-              fontWeight: 600,
-              textDecoration: "none",
-            }}
+            className="border-brand-600 bg-brand-600 text-ink-inverse rounded-md border px-4 py-2 text-sm font-semibold no-underline focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
           >
             Go to feed
           </Link>
           <Link
             href="/search"
-            style={{
-              background: tokens.color.surface.DEFAULT,
-              color: tokens.color.ink.DEFAULT,
-              border: `1px solid ${tokens.color.line.hard}`,
-              borderRadius: tokens.radius.md,
-              padding: "9px 18px",
-              fontSize: 14,
-              fontWeight: 600,
-              textDecoration: "none",
-            }}
+            className="border-line-hard bg-surface text-ink rounded-md border px-4 py-2 text-sm font-semibold no-underline focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
           >
             Search
           </Link>

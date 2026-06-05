@@ -56,8 +56,10 @@ function FeedInner(): JSX.Element {
   const [requestAfter, setRequestAfter] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [suggestions, setSuggestions] = useState<PersonSuggestion[]>([]);
+  const [suggestionsLoading, setSuggestionsLoading] = useState(true);
   const [suggestionsError, setSuggestionsError] = useState(false);
   const [jobs, setJobs] = useState<Job[]>([]);
+  const [jobsLoading, setJobsLoading] = useState(true);
   const [jobsError, setJobsError] = useState(false);
 
   const query = useQuery({
@@ -97,6 +99,7 @@ function FeedInner(): JSX.Element {
 
   const loadSuggestions = useCallback(async (): Promise<void> => {
     const token = getAccessToken() ?? undefined;
+    setSuggestionsLoading(true);
     try {
       const next = await apiFetch("/connections/suggestions?limit=4", Suggestions, { token });
       setSuggestions(next);
@@ -104,11 +107,14 @@ function FeedInner(): JSX.Element {
     } catch {
       setSuggestions([]);
       setSuggestionsError(true);
+    } finally {
+      setSuggestionsLoading(false);
     }
   }, []);
 
   const loadRailJobs = useCallback(async (): Promise<void> => {
     const token = getAccessToken() ?? undefined;
+    setJobsLoading(true);
     try {
       const page = await apiFetchPage("/jobs?limit=3", JobsPage, { token });
       setJobs(page.data);
@@ -116,6 +122,8 @@ function FeedInner(): JSX.Element {
     } catch {
       setJobs([]);
       setJobsError(true);
+    } finally {
+      setJobsLoading(false);
     }
   }, []);
 
@@ -158,7 +166,7 @@ function FeedInner(): JSX.Element {
               ))}
             </ul>
           ) : showError && posts.posts.length === 0 ? (
-            <SearchErrorState
+            <FeedErrorState
               title={t("errorTitle")}
               body={error ?? t("errorBody")}
               retryLabel={t("retry")}
@@ -190,7 +198,7 @@ function FeedInner(): JSX.Element {
           ) : null}
 
           {showError && posts.posts.length > 0 ? (
-            <SearchErrorState
+            <FeedErrorState
               title={t("errorTitle")}
               body={error ?? t("errorBody")}
               retryLabel={t("retry")}
@@ -205,9 +213,11 @@ function FeedInner(): JSX.Element {
       <Suspense fallback={null}>
         <RightRail
           suggestions={suggestions}
+          suggestionsLoading={suggestionsLoading}
           suggestionsError={suggestionsError}
           onRetrySuggestions={() => void loadSuggestions()}
           jobs={jobs}
+          jobsLoading={jobsLoading}
           jobSuggestionsError={jobsError}
           onRetryJobs={() => void loadRailJobs()}
         />
@@ -224,7 +234,7 @@ async function fetchFeedPage(after: string | null) {
   return apiFetchPage(path, PostsPage, { token });
 }
 
-function SearchErrorState({
+function FeedErrorState({
   title,
   body,
   retryLabel,

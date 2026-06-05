@@ -38,8 +38,8 @@ export default function AppSegmentError({
       <Surface variant="card" padding="0">
         <EmptyState
           motif="error"
-          title={t("segmentTitle")}
-          body={t("segmentBody")}
+          title={t("boundary.title")}
+          body={t("boundary.body")}
           cta={tCommon("retry")}
           onAction={reset}
           altCta={tCommon("goHome")}
@@ -49,7 +49,10 @@ export default function AppSegmentError({
           }}
         />
         {error.digest ? (
-          <p className="text-ink-subtle border-line-soft border-t px-6 pb-4 pt-3 text-center font-mono text-[11px]">
+          <p
+            className="text-ink-subtle border-line-soft border-t px-6 pb-4 pt-3 text-center font-mono text-[11px]"
+            dir="ltr"
+          >
             Error ID: {error.digest}
           </p>
         ) : null}

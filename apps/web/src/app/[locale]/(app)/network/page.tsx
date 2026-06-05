@@ -4,7 +4,7 @@ import {
   ConnectionListItem as ConnectionListItemSchema,
   type ConnectionListItem,
 } from "@baydar/shared";
-import { Avatar, EmptyState, Skeleton, Surface } from "@baydar/ui-web";
+import { Avatar, Button, EmptyState, Skeleton, Surface } from "@baydar/ui-web";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -105,14 +105,8 @@ export default function NetworkRoute(): JSX.Element {
         <Surface variant="card" padding="0">
           <EmptyState
             motif="network"
-            title={
-              filter === "INCOMING"
-                ? t("invitations")
-                : filter === "OUTGOING"
-                  ? t("sent")
-                  : t("myConnections")
-            }
-            body={t("empty")}
+            title={t(EMPTY_STATE_COPY[filter].title)}
+            body={t(EMPTY_STATE_COPY[filter].body)}
           />
         </Surface>
       ) : (
@@ -125,7 +119,10 @@ export default function NetworkRoute(): JSX.Element {
               padding="4"
               className="flex flex-wrap items-center justify-between gap-3"
             >
-              <Link href={`/in/${c.user.handle}`} className="flex min-w-0 items-center gap-3">
+              <Link
+                href={`/in/${c.user.handle}`}
+                className="flex min-w-0 items-center gap-3 rounded-md focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+              >
                 <Avatar
                   user={{
                     id: c.user.userId,
@@ -148,37 +145,33 @@ export default function NetworkRoute(): JSX.Element {
 
               {filter === "INCOMING" ? (
                 <div className="flex gap-2">
-                  <button
-                    type="button"
+                  <Button
+                    variant="secondary"
+                    size="sm"
                     onClick={() => void respond(c.connectionId, "ACCEPT")}
-                    className="bg-brand-600 text-ink-inverse rounded-md px-3 py-1.5 text-sm font-semibold"
                   >
                     {t("accept")}
-                  </button>
-                  <button
-                    type="button"
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
                     onClick={() => void respond(c.connectionId, "DECLINE")}
-                    className="border-ink-muted/30 text-ink rounded-md border px-3 py-1.5 text-sm"
                   >
                     {t("decline")}
-                  </button>
+                  </Button>
                 </div>
               ) : filter === "OUTGOING" ? (
-                <button
-                  type="button"
-                  onClick={() => void withdraw(c.connectionId)}
-                  className="border-ink-muted/30 text-ink rounded-md border px-3 py-1.5 text-sm"
-                >
+                <Button variant="ghost" size="sm" onClick={() => void withdraw(c.connectionId)}>
                   {t("withdraw")}
-                </button>
+                </Button>
               ) : (
-                <button
-                  type="button"
+                <Button
+                  variant="danger-ghost"
+                  size="sm"
                   onClick={() => void remove(c.connectionId)}
-                  className="border-ink-muted/30 text-ink rounded-md border px-3 py-1.5 text-sm"
                 >
                   {t("removeConnection")}
-                </button>
+                </Button>
               )}
             </Surface>
           ))}
@@ -187,6 +180,21 @@ export default function NetworkRoute(): JSX.Element {
     </main>
   );
 }
+
+const EMPTY_STATE_COPY = {
+  ACCEPTED: {
+    title: "emptyConnectionsTitle",
+    body: "emptyConnectionsBody",
+  },
+  INCOMING: {
+    title: "emptyIncomingTitle",
+    body: "emptyIncomingBody",
+  },
+  OUTGOING: {
+    title: "emptyOutgoingTitle",
+    body: "emptyOutgoingBody",
+  },
+} as const satisfies Record<Filter, { title: string; body: string }>;
 
 function FilterTab({
   active,

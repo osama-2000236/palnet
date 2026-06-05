@@ -14,10 +14,11 @@
 // apps/web/src/app/[locale]/(app)/settings/account/page.tsx (form-edit shape).
 
 import {
+  DEFAULT_NOTIFICATION_PREFERENCES,
   NotificationPreferences as NotificationPreferencesSchema,
   type NotificationPreferences,
 } from "@baydar/shared";
-import { Button, Skeleton, Surface, Switch, useToast } from "@baydar/ui-web";
+import { Button, Surface, Switch, useToast } from "@baydar/ui-web";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -25,6 +26,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { apiCall, apiFetch } from "@/lib/api";
 import { toErrorMessage } from "@/lib/error-message";
 import { readSession } from "@/lib/session";
+import { ChannelHeader, PrefsSkeleton } from "./_components/NotificationSettingsParts";
 
 // Each notification "event" can be turned on/off for two channels.
 type Channel = "email" | "push";
@@ -50,6 +52,15 @@ const EVENT_GROUPS: EventGroup[] = [
   { key: "career", events: ["jobMatch", "applicationStatus"] },
   { key: "account", events: ["weeklyDigest", "karamaUpdate", "moderationAction"] },
 ];
+
+const LOCKED_EVENTS: ReadonlySet<EventKey> = new Set(["moderationAction"]);
+
+function enforceLockedPrefs(prefs: NotificationPreferences): NotificationPreferences {
+  return {
+    ...prefs,
+    moderationAction: { ...DEFAULT_NOTIFICATION_PREFERENCES.moderationAction },
+  };
+}
 
 export default function NotificationsSettingsPage(): JSX.Element {
   const t = useTranslations("settings.notifications");
@@ -84,8 +95,9 @@ export default function NotificationsSettingsPage(): JSX.Element {
         const data = await apiFetch("/me/notification-preferences", NotificationPreferencesSchema, {
           token: tk,
         });
-        setPrefs(data);
-        setPristine(data);
+        const next = enforceLockedPrefs(data);
+        setPrefs(next);
+        setPristine(next);
       } catch (e) {
         setError(toErrorMessage(e, tErr));
       } finally {
@@ -102,6 +114,7 @@ export default function NotificationsSettingsPage(): JSX.Element {
 
   // Local mutations — saved as a single PATCH on confirm.
   const setChannel = (event: EventKey, channel: Channel, value: boolean): void => {
+    if (LOCKED_EVENTS.has(event)) return;
     setPrefs((prev) => (prev ? { ...prev, [event]: { ...prev[event], [channel]: value } } : prev));
   };
 
@@ -111,6 +124,7 @@ export default function NotificationsSettingsPage(): JSX.Element {
       const next: NotificationPreferences = { ...prev };
       for (const group of EVENT_GROUPS) {
         for (const ev of group.events) {
+          if (LOCKED_EVENTS.has(ev)) continue;
           next[ev] = { ...next[ev], [channel]: value };
         }
       }
@@ -135,13 +149,15 @@ export default function NotificationsSettingsPage(): JSX.Element {
   const onSave = async (): Promise<void> => {
     if (!token || !prefs) return;
     setSaving(true);
+    const next = enforceLockedPrefs(prefs);
     try {
       await apiCall("/me/notification-preferences", {
         token,
         method: "PATCH",
-        body: prefs,
+        body: next,
       });
-      setPristine(prefs);
+      setPrefs(next);
+      setPristine(next);
       toast.showToast({ message: t("savedToast"), kind: "success" });
     } catch (e) {
       toast.showToast({ message: toErrorMessage(e, tErr), kind: "error" });
@@ -212,34 +228,43 @@ export default function NotificationsSettingsPage(): JSX.Element {
               </header>
               <div className="border-line-soft border-t" />
               <ul>
-                {group.events.map((ev, i) => (
-                  <li
-                    key={ev}
-                    className={
-                      "grid grid-cols-[1fr_72px_72px] items-center gap-4 px-4 py-3" +
-                      (i > 0 ? " border-line-soft border-t" : "")
-                    }
-                  >
-                    <div>
-                      <div className="text-ink text-sm font-medium">{t(`events.${ev}.title`)}</div>
-                      <div className="text-ink-muted mt-0.5 text-xs">{t(`events.${ev}.desc`)}</div>
-                    </div>
-                    <div className="flex justify-center">
-                      <Switch
-                        checked={prefs[ev]?.email ?? false}
-                        onChange={(v) => setChannel(ev, "email", v)}
-                        ariaLabel={t(`events.${ev}.title`) + " · email"}
-                      />
-                    </div>
-                    <div className="flex justify-center">
-                      <Switch
-                        checked={prefs[ev]?.push ?? false}
-                        onChange={(v) => setChannel(ev, "push", v)}
-                        ariaLabel={t(`events.${ev}.title`) + " · push"}
-                      />
-                    </div>
-                  </li>
-                ))}
+                {group.events.map((ev, i) => {
+                  const locked = LOCKED_EVENTS.has(ev);
+                  return (
+                    <li
+                      key={ev}
+                      className={
+                        "grid grid-cols-[1fr_72px_72px] items-center gap-4 px-4 py-3" +
+                        (i > 0 ? " border-line-soft border-t" : "")
+                      }
+                    >
+                      <div>
+                        <div className="text-ink text-sm font-medium">
+                          {t(`events.${ev}.title`)}
+                        </div>
+                        <div className="text-ink-muted mt-0.5 text-xs">
+                          {t(`events.${ev}.desc`)}
+                        </div>
+                      </div>
+                      <div className="flex justify-center">
+                        <Switch
+                          checked={prefs[ev]?.email ?? false}
+                          onChange={(v) => setChannel(ev, "email", v)}
+                          ariaLabel={t(`events.${ev}.title`) + " · email"}
+                          disabled={locked || saving}
+                        />
+                      </div>
+                      <div className="flex justify-center">
+                        <Switch
+                          checked={prefs[ev]?.push ?? false}
+                          onChange={(v) => setChannel(ev, "push", v)}
+                          ariaLabel={t(`events.${ev}.title`) + " · push"}
+                          disabled={locked || saving}
+                        />
+                      </div>
+                    </li>
+                  );
+                })}
               </ul>
             </Surface>
           ))}
@@ -263,50 +288,5 @@ export default function NotificationsSettingsPage(): JSX.Element {
         </>
       ) : null}
     </main>
-  );
-}
-
-function ChannelHeader({ label }: { label: string }): JSX.Element {
-  return (
-    <span className="text-ink-subtle text-center font-sans text-[11px] font-semibold uppercase tracking-wider">
-      {label}
-    </span>
-  );
-}
-
-// ────────────────────────────────────────────────────────────────────────
-// Skeleton — mirrors the per-group + per-row layout. Tokens only.
-// ────────────────────────────────────────────────────────────────────────
-function PrefsSkeleton(): JSX.Element {
-  return (
-    <div className="flex flex-col gap-4" aria-hidden="true">
-      {[0, 1, 2].map((g) => (
-        <Surface key={g} variant="card" padding="0">
-          <div className="px-4 py-3">
-            <Skeleton className="h-4 w-32" />
-            <Skeleton className="mt-2 h-3 w-48" />
-          </div>
-          <div className="border-line-soft border-t" />
-          <ul>
-            {[0, 1, 2].map((i) => (
-              <li
-                key={i}
-                className={
-                  "grid grid-cols-[1fr_72px_72px] items-center gap-4 px-4 py-3" +
-                  (i > 0 ? " border-line-soft border-t" : "")
-                }
-              >
-                <div className="flex flex-col gap-1.5">
-                  <Skeleton className="h-3.5 w-36" />
-                  <Skeleton className="h-3 w-52" />
-                </div>
-                <Skeleton kind="pill" className="h-5 w-9 justify-self-center" />
-                <Skeleton kind="pill" className="h-5 w-9 justify-self-center" />
-              </li>
-            ))}
-          </ul>
-        </Surface>
-      ))}
-    </div>
   );
 }

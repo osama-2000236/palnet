@@ -35,13 +35,17 @@ export const nativeTokens = {
     lineHard: "rgba(26, 26, 23, 0.16)",
 
     success: "#3b7a3b",
-    successSoft: "rgba(59, 122, 59, 0.12)",
+    successSoft: "rgba(59, 122, 59, 0.10)",
+    successBorder: "rgba(59, 122, 59, 0.22)",
     warning: "#b07a1a",
-    warningSoft: "rgba(176, 122, 26, 0.12)",
+    warningSoft: "rgba(176, 122, 26, 0.10)",
+    warningBorder: "rgba(176, 122, 26, 0.25)",
     danger: "#a83232",
-    dangerSoft: "rgba(168, 50, 50, 0.10)",
+    dangerSoft: "rgba(168, 50, 50, 0.08)",
+    dangerBorder: "rgba(168, 50, 50, 0.22)",
     info: "#2f6d8a",
     infoSoft: "rgba(47, 109, 138, 0.08)",
+    infoBorder: "rgba(47, 109, 138, 0.20)",
     scrim: "rgba(26, 26, 23, 0.40)",
   },
   radius: { xs: 4, sm: 6, md: 10, lg: 14, xl: 20, full: 9999 },
@@ -126,7 +130,7 @@ export const nativeTokens = {
     minHit: 44, // Apple HIG + Material minimum touch target
   },
   focus: {
-    ringColor: "#687a3a",
+    ringColor: "#526030",
     ringWidth: 2,
     ringOffset: 2,
   },
@@ -136,7 +140,7 @@ export const nativeTokens = {
       { bg: "#f4dbce", fg: "#8b3a22" },
       { bg: "#ebe8dc", fg: "#5c5a52" },
       { bg: "#ccd6a8", fg: "#3f4a26" },
-      { bg: "#f4f6ef", fg: "#687a3a" },
+      { bg: "#e8d5c2", fg: "#6e4424" },
     ],
   },
   illustration: {

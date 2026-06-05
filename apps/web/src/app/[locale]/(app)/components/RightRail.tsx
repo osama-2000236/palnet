@@ -1,25 +1,29 @@
 "use client";
 
 import Link from "next/link";
-import { Avatar, Icon, RetryChip, Surface } from "@baydar/ui-web";
+import { Avatar, Icon, RetryChip, Skeleton, Surface } from "@baydar/ui-web";
 import Image from "next/image";
 import { useLocale, useTranslations } from "next-intl";
 import type { Job, PersonSuggestion } from "@baydar/shared";
 
 interface RightRailProps {
   suggestions: PersonSuggestion[];
+  suggestionsLoading: boolean;
   suggestionsError: boolean;
   onRetrySuggestions: () => void;
   jobs: Job[];
+  jobsLoading: boolean;
   jobSuggestionsError: boolean;
   onRetryJobs: () => void;
 }
 
 export function RightRail({
   suggestions,
+  suggestionsLoading,
   suggestionsError,
   onRetrySuggestions,
   jobs,
+  jobsLoading,
   jobSuggestionsError,
   onRetryJobs,
 }: RightRailProps) {
@@ -32,11 +36,16 @@ export function RightRail({
       <Surface variant="card" padding="0">
         <div className="flex items-center justify-between px-4 pt-3">
           <span className="text-ink text-sm font-semibold">{t("pymk")}</span>
-          <Link href="/network" className="text-ink-muted hover:text-brand-700 text-xs">
+          <Link
+            href="/network"
+            className="text-ink-muted hover:text-brand-700 rounded-sm text-xs focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+          >
             {t("pymkAll")}
           </Link>
         </div>
-        {suggestions.length > 0 ? (
+        {suggestionsLoading ? (
+          <RailRowsSkeleton />
+        ) : suggestions.length > 0 ? (
           <ul className="flex flex-col">
             {suggestions.slice(0, 4).map((s) => (
               <li
@@ -56,7 +65,7 @@ export function RightRail({
                 <div className="flex min-w-0 flex-1 flex-col">
                   <Link
                     href={`/in/${s.user.handle}`}
-                    className="text-ink truncate text-sm font-semibold hover:underline"
+                    className="text-ink truncate rounded-sm text-sm font-semibold hover:underline focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
                   >
                     {s.user.firstName} {s.user.lastName}
                   </Link>
@@ -76,9 +85,12 @@ export function RightRail({
             ))}
           </ul>
         ) : suggestionsError ? (
-          <div className="flex items-center justify-end px-4 py-3">
-            <RetryChip onRetry={onRetrySuggestions} label={tCommon("retry")} />
-          </div>
+          <RailError
+            message={t("pymkFailed")}
+            retryLabel={tCommon("retry")}
+            onRetry={onRetrySuggestions}
+            loading={suggestionsLoading}
+          />
         ) : (
           <div className="text-ink-muted px-4 py-3 text-xs">—</div>
         )}
@@ -87,11 +99,16 @@ export function RightRail({
       <Surface variant="card" padding="0">
         <div className="flex items-center justify-between px-4 pt-3">
           <span className="text-ink text-sm font-semibold">{t("jobs")}</span>
-          <Link href={`/${locale}/jobs`} className="text-ink-muted hover:text-brand-700 text-xs">
+          <Link
+            href={`/${locale}/jobs`}
+            className="text-ink-muted hover:text-brand-700 rounded-sm text-xs focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+          >
             {t("pymkAll")}
           </Link>
         </div>
-        {jobs.length > 0 ? (
+        {jobsLoading ? (
+          <RailRowsSkeleton />
+        ) : jobs.length > 0 ? (
           <ul className="flex flex-col">
             {jobs.map((j) => {
               const metaParts = [j.city, tJobs(`locationLabels.${j.locationMode}`)].filter(
@@ -101,7 +118,7 @@ export function RightRail({
                 <li key={j.id} className="border-line-soft border-t px-4 py-3 first:border-t-0">
                   <Link
                     href={`/jobs/${j.id}`}
-                    className="flex items-start gap-2.5 hover:opacity-90"
+                    className="flex items-start gap-2.5 rounded-sm hover:opacity-90 focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
                   >
                     <div
                       className="bg-surface-sunken text-ink-muted flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-md text-xs font-semibold"
@@ -135,17 +152,62 @@ export function RightRail({
             })}
           </ul>
         ) : jobSuggestionsError ? (
-          <div className="flex items-center justify-end px-4 py-3">
-            <RetryChip onRetry={onRetryJobs} label={tCommon("retry")} />
-          </div>
+          <RailError
+            message={t("jobsFailed")}
+            retryLabel={tCommon("retry")}
+            onRetry={onRetryJobs}
+            loading={jobsLoading}
+          />
         ) : (
           <div className="px-4 py-3 text-xs">
-            <Link href={`/${locale}/jobs`} className="text-ink-muted hover:text-brand-700">
+            <Link
+              href={`/${locale}/jobs`}
+              className="text-ink-muted hover:text-brand-700 rounded-sm focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+            >
               {t("jobsEmpty")}
             </Link>
           </div>
         )}
       </Surface>
     </aside>
+  );
+}
+
+function RailError({
+  message,
+  retryLabel,
+  onRetry,
+  loading,
+}: {
+  message: string;
+  retryLabel: string;
+  onRetry: () => void;
+  loading: boolean;
+}): JSX.Element {
+  return (
+    <div className="flex items-center justify-between gap-3 px-4 py-3">
+      <p className="text-ink-muted text-xs">{message}</p>
+      <RetryChip onRetry={onRetry} label={retryLabel} loading={loading} />
+    </div>
+  );
+}
+
+function RailRowsSkeleton(): JSX.Element {
+  return (
+    <ul aria-hidden="true" className="flex flex-col">
+      {[0, 1, 2].map((i) => (
+        <li
+          key={i}
+          className="border-line-soft flex items-start gap-2.5 border-t px-4 py-3 first:border-t-0"
+        >
+          <Skeleton kind="circle" className="h-9 w-9 shrink-0" />
+          <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+            <Skeleton className="h-3.5 w-28" />
+            <Skeleton className="h-3 w-20" />
+          </div>
+          <Skeleton kind="pill" className="h-6 w-14 shrink-0" />
+        </li>
+      ))}
+    </ul>
   );
 }

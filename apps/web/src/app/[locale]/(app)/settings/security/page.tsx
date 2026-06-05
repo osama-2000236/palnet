@@ -25,11 +25,7 @@ import { z } from "zod";
 import { apiCall, apiFetch } from "@/lib/api";
 import { toErrorMessage } from "@/lib/error-message";
 import { clearSession, getDeviceId, readSession } from "@/lib/session";
-import {
-  formatRelative,
-  PasswordField,
-  SessionsSkeleton,
-} from "./_components/SecuritySettingsParts";
+import { PasswordField, SessionsList, SessionsSkeleton } from "./_components/SecuritySettingsParts";
 
 const SessionsEnvelope = z.array(ActiveSessionSchema);
 
@@ -229,39 +225,11 @@ export default function SecuritySettingsPage(): JSX.Element {
             </Button>
           </div>
         ) : sessions && sessions.length > 0 ? (
-          <ul>
-            {sessions.map((s, i) => (
-              <li
-                key={s.id}
-                className={
-                  "flex items-start justify-between gap-3 px-4 py-3" +
-                  (i > 0 ? " border-line-soft border-t" : "")
-                }
-              >
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="text-ink text-sm font-medium">
-                      {s.device || t("sessions.unknownDevice")}
-                    </span>
-                    {s.id === thisDeviceId ? (
-                      <span className="bg-brand-50 text-brand-700 rounded-full px-2 py-0.5 text-[11px] font-semibold">
-                        {t("sessions.thisDevice")}
-                      </span>
-                    ) : null}
-                  </div>
-                  <div className="text-ink-muted mt-0.5 text-xs">
-                    {[s.city, s.country].filter(Boolean).join(", ")}
-                    {s.lastActiveAt
-                      ? ` · ${t("sessions.lastActive", { when: formatRelative(s.lastActiveAt) })}`
-                      : null}
-                  </div>
-                </div>
-                <Button variant="danger-ghost" size="sm" onClick={() => void signOutOne(s.id)}>
-                  {s.id === thisDeviceId ? t("sessions.signOutThis") : t("sessions.signOut")}
-                </Button>
-              </li>
-            ))}
-          </ul>
+          <SessionsList
+            sessions={sessions}
+            thisDeviceId={thisDeviceId}
+            onSignOut={(id) => void signOutOne(id)}
+          />
         ) : (
           <p className="text-ink-muted px-4 py-6 text-center text-sm">{t("sessions.empty")}</p>
         )}

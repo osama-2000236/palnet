@@ -1,6 +1,7 @@
 "use client";
 
 import { tokens } from "@baydar/ui-tokens";
+import Link from "next/link";
 
 // Root error boundary — catches errors thrown in the root layout itself.
 // Must include <html> and <body>. Token-bound inline styles only since this
@@ -15,7 +16,13 @@ export default function GlobalError({
   return (
     <html lang="en" dir="ltr">
       <style>{`
-        :root { --focus-ring: ${tokens.focus.ring}; }
+        :root {
+          --surface: ${tokens.color.surface.DEFAULT};
+          --focus-ring-color: ${tokens.color.brand[600]};
+          --focus-ring-width: ${tokens.focus.width}px;
+          --focus-ring-offset: ${tokens.focus.offset}px;
+          --focus-ring: ${tokens.focus.ring};
+        }
         .global-error-action:focus-visible {
           outline: none;
           box-shadow: var(--focus-ring);
@@ -54,6 +61,23 @@ export default function GlobalError({
           >
             Try again
           </button>
+          <Link
+            href="/"
+            className="global-error-action"
+            style={{
+              display: "inline-block",
+              marginInlineStart: 8,
+              background: tokens.color.surface.DEFAULT,
+              color: tokens.color.ink.DEFAULT,
+              border: `1px solid ${tokens.color.line.hard}`,
+              borderRadius: tokens.radius.md,
+              padding: "8px 16px",
+              fontWeight: 600,
+              textDecoration: "none",
+            }}
+          >
+            Go home
+          </Link>
           {error.digest ? (
             <p
               style={{
@@ -62,8 +86,9 @@ export default function GlobalError({
                 fontSize: 11,
                 color: tokens.color.ink.subtle,
               }}
+              dir="ltr"
             >
-              {error.digest}
+              Error ID: {error.digest}
             </p>
           ) : null}
         </div>
