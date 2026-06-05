@@ -63,6 +63,7 @@ export default function ComposerScreen(): JSX.Element {
     const token = await getAccessToken();
     if (!token) return;
     setUploading(true);
+    setError(null);
     try {
       const uploaded = await uploadAsset({
         asset: {
@@ -86,6 +87,8 @@ export default function ComposerScreen(): JSX.Element {
           blurhash: uploaded.blurhash,
         },
       ]);
+    } catch (caught) {
+      setError(apiErrorMessage(t, caught));
     } finally {
       setUploading(false);
     }

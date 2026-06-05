@@ -1,3 +1,5 @@
+import { tokens } from "@baydar/ui-tokens";
+
 export type MailTemplate = "verify-email" | "password-reset";
 export type MailLocale = "ar-PS" | "en";
 
@@ -60,13 +62,13 @@ const COPY: Record<
 };
 
 const COLORS = {
-  bg: "#f7f6f1",
-  surface: "#ffffff",
-  ink: "#1d1f1a",
-  muted: "#6b6f63",
-  brand: "#5b6b3a",
-  brandInk: "#ffffff",
-  border: "#e3e1d6",
+  bg: tokens.color.surface.muted,
+  surface: tokens.color.surface.DEFAULT,
+  ink: tokens.color.ink.DEFAULT,
+  muted: tokens.color.ink.muted,
+  brand: tokens.color.brand[600],
+  brandInk: tokens.color.ink.inverse,
+  border: tokens.color.line.soft,
 };
 
 function escapeHtml(value: string): string {

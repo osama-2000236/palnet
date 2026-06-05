@@ -279,14 +279,14 @@ export function AppShell({
             type="button"
             onClick={() => onNavigate("feed")}
             aria-label={labels.logoAlt}
-            className="text-ink focus-visible:ring-brand-600 focus-visible:ring-offset-surface flex shrink-0 items-center gap-2 rounded-md py-1 hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
+            className="text-ink flex shrink-0 items-center gap-2 rounded-md py-1 hover:opacity-90 focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
           >
             <Icon name="logo" size={32} />
             <span className="hidden text-lg font-semibold sm:inline">{labels.logoAlt}</span>
           </button>
 
           {/* Search pill. */}
-          <div className="bg-surface-subtle focus-within:ring-brand-600 flex min-w-0 flex-1 items-center gap-2 rounded-full px-3.5 py-2 focus-within:ring-2 sm:max-w-[320px]">
+          <div className="bg-surface-subtle flex min-w-0 flex-1 items-center gap-2 rounded-full px-3.5 py-2 focus-within:[box-shadow:var(--focus-ring)] sm:max-w-[320px]">
             <span className="text-ink-muted" aria-hidden="true">
               <Icon name="search" size={16} />
             </span>
@@ -298,7 +298,7 @@ export function AppShell({
               onKeyDown={onSearchKey}
               placeholder={labels.searchPlaceholder}
               aria-label={labels.searchLabel}
-              className="text-ink placeholder:text-ink-muted min-w-0 flex-1 bg-transparent text-sm focus:outline-none"
+              className="text-ink placeholder:text-ink-muted min-w-0 flex-1 bg-transparent text-sm focus-visible:outline-none"
             />
           </div>
 
@@ -336,7 +336,7 @@ export function AppShell({
                   aria-current={active ? "page" : undefined}
                   title={disconnected ? labels.bellDisconnected : undefined}
                   className={cx(
-                    "focus-visible:ring-brand-600 focus-visible:ring-offset-surface relative -mb-px inline-flex min-w-[64px] flex-col items-center gap-0.5 border-b-2 px-3 py-2 text-[11px] font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
+                    "relative -mb-px inline-flex min-w-[64px] flex-col items-center gap-0.5 border-b-2 px-3 py-2 text-[11px] font-medium focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]",
                     active
                       ? "border-brand-600 text-ink"
                       : "text-ink-muted hover:text-ink border-transparent",
@@ -383,7 +383,7 @@ export function AppShell({
                 aria-controls={menuId}
                 aria-current={currentRoute === "profile" ? "page" : undefined}
                 className={cx(
-                  "focus-visible:ring-brand-600 focus-visible:ring-offset-surface relative -mb-px inline-flex flex-col items-center gap-0.5 rounded-t-md border-b-2 px-3 py-1.5 text-[11px] font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
+                  "relative -mb-px inline-flex flex-col items-center gap-0.5 rounded-t-md border-b-2 px-3 py-1.5 text-[11px] font-medium transition-colors focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]",
                   currentRoute === "profile"
                     ? "border-brand-600 text-ink"
                     : "text-ink-muted hover:bg-surface-subtle hover:text-ink border-transparent",
@@ -431,7 +431,7 @@ export function AppShell({
                               setMenuOpen(false);
                               onViewProfile();
                             }}
-                            className="text-brand-700 hover:bg-brand-100 focus-visible:ring-brand-600 mt-2 rounded-md px-2 py-1 text-xs font-semibold focus:outline-none focus-visible:ring-2"
+                            className="text-brand-700 hover:bg-brand-100 mt-2 rounded-md px-2 py-1 text-xs font-semibold focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
                           >
                             {labels.viewProfile}
                           </button>
@@ -490,7 +490,7 @@ function MenuItem({ children, onSelect }: { children: ReactNode; onSelect(): voi
       type="button"
       role="menuitem"
       onClick={onSelect}
-      className="text-ink hover:bg-surface-subtle focus:bg-surface-subtle block w-full cursor-pointer px-3 py-2 text-start text-sm focus:outline-none"
+      className="text-ink hover:bg-surface-subtle focus:bg-surface-subtle block w-full cursor-pointer px-3 py-2 text-start text-sm focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
     >
       {children}
     </button>

@@ -35,7 +35,7 @@ export function InboxList({
         <Link
           href="/messages/new"
           aria-label={t("newMessage")}
-          className="text-ink-muted hover:bg-surface-subtle hover:text-ink focus-visible:ring-brand-600 inline-flex h-8 w-8 items-center justify-center rounded-md focus:outline-none focus-visible:ring-2"
+          className="text-ink-muted hover:bg-surface-subtle hover:text-ink inline-flex h-8 w-8 items-center justify-center rounded-md focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
         >
           <Icon name="plus" size={18} />
         </Link>

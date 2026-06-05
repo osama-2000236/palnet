@@ -42,7 +42,7 @@ function generatedClientPath(...segments) {
   return path.join(nodeModulesDir, ".prisma", "client", ...segments);
 }
 
-function verifyExistingClient() {
+function verifyExistingClient(reason) {
   const required = ["default.js", "index.js", "schema.prisma"].map((file) =>
     generatedClientPath(file),
   );
@@ -53,14 +53,12 @@ function verifyExistingClient() {
     process.exit(1);
   }
 
-  console.warn(
-    "prisma generate: nested process spawn is blocked in this environment; existing generated client artifacts are present.",
-  );
+  console.warn(`prisma generate: ${reason}; existing generated client artifacts are present.`);
 }
 
 const canSpawn = spawnSync(process.execPath, ["--version"], { encoding: "utf8" });
 if (canSpawn.error?.code === "EPERM") {
-  verifyExistingClient();
+  verifyExistingClient("nested process spawn is blocked in this environment");
   process.exit(0);
 }
 
@@ -68,17 +66,30 @@ const prismaCli = require.resolve("prisma/build/index.js");
 const result = spawnSync(process.execPath, [prismaCli, "generate"], {
   cwd: process.cwd(),
   env: localEngineEnv(),
-  stdio: "inherit",
+  encoding: "utf8",
 });
 
+if (result.stdout) process.stdout.write(result.stdout);
+if (result.stderr) process.stderr.write(result.stderr);
+
 if (result.error?.code === "EPERM") {
-  verifyExistingClient();
+  verifyExistingClient("nested process spawn is blocked in this environment");
   process.exit(0);
 }
 
 if (result.error) {
   console.error(result.error.message);
   process.exit(1);
+}
+
+if (
+  result.status !== 0 &&
+  process.platform === "win32" &&
+  /EPERM: operation not permitted, rename/.test(result.stderr ?? "") &&
+  /query_engine-windows\.dll\.node/.test(result.stderr ?? "")
+) {
+  verifyExistingClient("Prisma query engine DLL is locked by a running local process");
+  process.exit(0);
 }
 
 process.exit(result.status ?? 1);

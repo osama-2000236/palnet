@@ -1,5 +1,7 @@
 "use client";
 
+import { tokens } from "@baydar/ui-tokens";
+
 // Root error boundary — catches errors thrown in the root layout itself.
 // Must include <html> and <body>. Token-bound inline styles only since this
 // renders without the locale layout's CSS shell.
@@ -12,12 +14,19 @@ export default function GlobalError({
 }): JSX.Element {
   return (
     <html lang="en" dir="ltr">
+      <style>{`
+        :root { --focus-ring: ${tokens.focus.ring}; }
+        .global-error-action:focus-visible {
+          outline: none;
+          box-shadow: var(--focus-ring);
+        }
+      `}</style>
       <body
         style={{
           fontFamily: "system-ui, sans-serif",
           margin: 0,
-          background: "#faf9f5",
-          color: "#1a1a17",
+          background: tokens.color.surface.muted,
+          color: tokens.color.ink.DEFAULT,
           minHeight: "100vh",
           display: "grid",
           placeItems: "center",
@@ -26,16 +35,17 @@ export default function GlobalError({
       >
         <div style={{ maxWidth: 480, textAlign: "center" }}>
           <h1 style={{ fontSize: 22, margin: "0 0 8px" }}>Something went wrong</h1>
-          <p style={{ color: "#5c5a52", fontSize: 14, margin: "0 0 16px" }}>
+          <p style={{ color: tokens.color.ink.muted, fontSize: 14, margin: "0 0 16px" }}>
             We hit an unexpected error. Try again or return home.
           </p>
           <button
             type="button"
             onClick={reset}
+            className="global-error-action"
             style={{
-              background: "#526030",
-              color: "#fff",
-              border: "1px solid #526030",
+              background: tokens.color.brand[600],
+              color: tokens.color.ink.inverse,
+              border: `1px solid ${tokens.color.brand[600]}`,
               borderRadius: 10,
               padding: "8px 16px",
               fontWeight: 600,
@@ -50,7 +60,7 @@ export default function GlobalError({
                 marginTop: 16,
                 fontFamily: "ui-monospace, monospace",
                 fontSize: 11,
-                color: "#8a8880",
+                color: tokens.color.ink.subtle,
               }}
             >
               {error.digest}

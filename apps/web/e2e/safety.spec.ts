@@ -12,9 +12,10 @@ test.skip(
 test("safety: block from profile, view blocked list, unblock", async ({ page, request }) => {
   const auth = await ensureA11yStorageState(request);
   const session = JSON.parse(auth.session) as { tokens: { accessToken: string } };
+  const runId = process.env.BAYDAR_QA_RUN_ID ?? "qa-local";
   const stamp = Date.now();
-  const targetEmail = `safety-target-${stamp}@baydar.test`;
-  const targetHandle = `safety-${stamp}`;
+  const targetEmail = `qa+${runId}.safety-target-${stamp}@baydar.test`;
+  const targetHandle = `safety-${stamp.toString(36)}`.slice(0, 30);
   const password = "Password123";
 
   const registered = await request.post(`${API_BASE}/auth/register`, {

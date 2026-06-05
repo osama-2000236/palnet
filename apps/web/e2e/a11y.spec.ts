@@ -61,7 +61,10 @@ const AUTHED_BASE_ROUTES: ReadonlyArray<{ path: (locale: string) => string; labe
   { path: (locale) => `/${locale}/jobs`, label: "jobs" },
   { path: (locale) => `/${locale}/notifications`, label: "notifications" },
   { path: (locale) => `/${locale}/search`, label: "search" },
-  { path: (locale) => `/${locale}/in/a11y-test`, label: "own profile" },
+  {
+    path: (locale) => `/${locale}/in/${process.env.BAYDAR_QA_A11Y_HANDLE ?? "a11y-test"}`,
+    label: "own profile",
+  },
   { path: (locale) => `/${locale}/messages`, label: "messages" },
 ];
 
@@ -74,6 +77,7 @@ test.describe("authenticated routes", () => {
       "Authenticated locale sweep runs once; the route loop covers ar-PS and en.",
     );
     const auth = await ensureA11yStorageState(request);
+    process.env.BAYDAR_QA_A11Y_HANDLE = auth.handle;
     await page.addInitScript((state) => {
       window.localStorage.setItem("baydar.session.v1", state.session);
       window.localStorage.setItem("baydar.deviceId", state.deviceId);

@@ -1,6 +1,9 @@
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
+import * as ImagePicker from "expo-image-picker";
 
 import OnboardingScreen from "../../app/(app)/onboarding";
+import { ApiRequestError } from "../lib/api";
+import { uploadAsset } from "../lib/uploads";
 import { useNetworkStore } from "../store/network";
 
 const mockReplace = jest.fn();
@@ -135,6 +138,7 @@ describe("OnboardingScreen", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     useNetworkStore.getState().setConnected(true);
+    (ImagePicker.launchImageLibraryAsync as jest.Mock).mockResolvedValue({ canceled: true });
     mockApiFetch.mockImplementation(async (path: string) => {
       if (path === "/connections/suggestions?limit=8") return [];
       if (path === "/profiles/me/experiences") {
@@ -208,6 +212,57 @@ describe("OnboardingScreen", () => {
         expect.anything(),
         expect.objectContaining({ method: "POST" }),
       );
+      expect(mockWriteProfileCache).toHaveBeenCalled();
+      expect(mockReplace).toHaveBeenCalledWith("/(app)/feed");
+    });
+  });
+
+  it("does not block setup when optional avatar upload is rate-limited", async () => {
+    (ImagePicker.launchImageLibraryAsync as jest.Mock).mockResolvedValue({
+      canceled: false,
+      assets: [
+        {
+          uri: "file:///avatar.jpg",
+          mimeType: "image/jpeg",
+          fileSize: 1024,
+          fileName: "avatar.jpg",
+        },
+      ],
+    });
+    (uploadAsset as jest.MockedFunction<typeof uploadAsset>).mockRejectedValue(
+      new ApiRequestError(429, "RATE_LIMITED"),
+    );
+
+    const screen = render(<OnboardingScreen />);
+
+    fireEvent.press(screen.getByTestId("onboarding-identity-confirm"));
+    fireEvent.press(screen.getByTestId("onboarding-next"));
+
+    await waitFor(() => expect(screen.getByTestId("onboarding-handle")).toBeTruthy());
+    fireEvent.changeText(screen.getByTestId("onboarding-handle"), "lina-khalil");
+    fireEvent.changeText(screen.getByTestId("onboarding-headline"), "مديرة منتج");
+    fireEvent.press(screen.getByTestId("onboarding-next"));
+
+    await waitFor(() => expect(screen.getByTestId("onboarding-location")).toBeTruthy());
+    fireEvent.changeText(screen.getByTestId("onboarding-location"), "رام الله");
+    fireEvent.press(screen.getByTestId("onboarding-next"));
+
+    await waitFor(() => expect(screen.getByTestId("onboarding-work-title")).toBeTruthy());
+    fireEvent.changeText(screen.getByTestId("onboarding-work-title"), "مديرة منتج");
+    fireEvent.changeText(screen.getByTestId("onboarding-company"), "بيدر");
+    fireEvent.changeText(screen.getByTestId("onboarding-work-start-year"), "2024");
+    fireEvent.press(screen.getByTestId("onboarding-next"));
+
+    await waitFor(() => expect(screen.getByText("اختيار صورة")).toBeTruthy());
+    fireEvent.press(screen.getByText("اختيار صورة"));
+    await waitFor(() => expect(screen.getByText("تغيير الصورة")).toBeTruthy());
+    fireEvent.press(screen.getByTestId("onboarding-next"));
+
+    await waitFor(() => expect(screen.getByTestId("onboarding-submit")).toBeTruthy());
+    fireEvent.press(screen.getByTestId("onboarding-submit"));
+
+    await waitFor(() => {
+      expect(uploadAsset).toHaveBeenCalled();
       expect(mockWriteProfileCache).toHaveBeenCalled();
       expect(mockReplace).toHaveBeenCalledWith("/(app)/feed");
     });

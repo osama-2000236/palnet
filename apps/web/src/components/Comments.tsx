@@ -133,7 +133,7 @@ export function Comments({
                 type="button"
                 aria-label={tSafety("report.action")}
                 onClick={() => setReportTargetId(c.id)}
-                className="text-ink-muted hover:bg-surface hover:text-ink focus-visible:ring-brand-600 inline-flex h-10 min-w-10 items-center justify-center rounded-md px-2 text-xs focus:outline-none focus-visible:ring-2"
+                className="text-ink-muted hover:bg-surface hover:text-ink inline-flex h-10 min-w-10 items-center justify-center rounded-md px-2 text-xs focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
               >
                 {tSafety("report.action")}
               </button>
@@ -147,7 +147,7 @@ export function Comments({
           type="button"
           onClick={() => void load(cursor)}
           disabled={loading}
-          className="text-ink-muted self-start text-xs hover:underline"
+          className="text-ink-muted self-start rounded-sm text-xs hover:underline focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
         >
           {t("loadMoreComments")}
         </button>
@@ -159,12 +159,12 @@ export function Comments({
           onChange={(e) => setDraft(e.target.value)}
           placeholder={t("commentPlaceholder")}
           maxLength={2000}
-          className="border-ink-muted/30 bg-surface text-ink flex-1 rounded-md border px-3 py-1.5 text-sm"
+          className="border-ink-muted/30 bg-surface text-ink flex-1 rounded-md border px-3 py-1.5 text-sm focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
         />
         <button
           type="submit"
           disabled={busy || draft.trim().length === 0}
-          className="bg-brand-600 text-ink-inverse rounded-md px-3 py-1.5 text-sm font-semibold disabled:opacity-60"
+          className="bg-brand-600 text-ink-inverse rounded-md px-3 py-1.5 text-sm font-semibold focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)] disabled:opacity-60"
         >
           {t("commentSubmit")}
         </button>

@@ -44,7 +44,7 @@ export function RoomRow({
         "border-line-soft flex w-full items-center gap-3 border-b px-4 py-3 text-start transition-colors",
         "border-s-[3px]",
         active ? "border-s-brand-600 bg-brand-50" : "hover:bg-surface-subtle border-s-transparent",
-        "focus-visible:ring-brand-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset",
+        "focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]",
       )}
     >
       <Avatar user={user} size="md" online={online} />

@@ -57,7 +57,7 @@ export function Popover({
         aria-label={label}
         onClick={() => setOpen((value) => !value)}
         onKeyDown={onKeyDown}
-        className="focus-visible:ring-brand-500 rounded-md focus:outline-none focus-visible:ring-2"
+        className="rounded-md focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
       >
         {trigger}
       </button>
