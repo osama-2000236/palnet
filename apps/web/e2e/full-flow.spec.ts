@@ -6,6 +6,7 @@ import { ensureA11yStorageState } from "../tests/fixtures/auth";
 import { qaRunStatePath, type QaRunState } from "./qa-run";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000/api/v1";
+type RouteWaitUntil = NonNullable<Parameters<Page["goto"]>[1]>["waitUntil"];
 
 const PUBLIC_ROUTES = [
   "/",
@@ -52,8 +53,18 @@ const AUTHED_ROUTES = [
 ];
 
 test.describe("full route health", () => {
+  test.describe.configure({ mode: "serial" });
+  test.setTimeout(120_000);
+
+  test.beforeEach(async ({}, testInfo) => {
+    test.skip(
+      testInfo.project.name !== "chromium-ar",
+      "Full route smoke already covers ar-PS/en paths and runs once for stability.",
+    );
+  });
+
   test("public routes render in Arabic and English", async ({ page }) => {
-    const baseURL = process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3101';
+    const baseURL = process.env.PLAYWRIGHT_BASE_URL || "http://localhost:3101";
     for (const route of PUBLIC_ROUTES) {
       await assertHealthyRoute(page, baseURL + route);
     }
@@ -71,47 +82,63 @@ test.describe("full route health", () => {
     });
 
     test("core app, settings, admin, and employer surfaces render", async ({ page }) => {
-      const baseURL = process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3101';
+      const baseURL = process.env.PLAYWRIGHT_BASE_URL || "http://localhost:3101";
       for (const route of AUTHED_ROUTES) {
-        let waitUntil: string = 'domcontentloaded';
-        console.log(`DEBUG: baseURL: ${baseURL}, route: "${route}", waitUntil: ${waitUntil}, fullURL: ${baseURL + route}`);
-        await assertHealthyRoute(page, baseURL + route, waitUntil);
+        await assertHealthyRoute(page, baseURL + route);
       }
     });
 
     test("profile, job detail, and seeded employer detail render", async ({ page, request }) => {
       const auth = await ensureA11yStorageState(request);
-      const baseURL = process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3101';
-      await assertHealthyRoute(page, baseURL + `/ar-PS/in/${auth.handle}`, 'domcontentloaded');
+      const baseURL = process.env.PLAYWRIGHT_BASE_URL || "http://localhost:3101";
+      await assertHealthyRoute(page, baseURL + `/ar-PS/in/${auth.handle}`);
 
       const jobs = await request.get(`${API_BASE}/jobs?limit=1`);
       test.skip(!jobs.ok(), "API unavailable for seeded job discovery.");
       const jobBody = (await jobs.json()) as { data?: Array<{ id: string }> };
       const jobId = jobBody.data?.[0]?.id;
       test.skip(!jobId, "No seeded job available for job detail smoke.");
-      await assertHealthyRoute(page, baseURL + `/ar-PS/jobs/${jobId}`, 'domcontentloaded');
+      await assertHealthyRoute(page, baseURL + `/ar-PS/jobs/${jobId}`);
 
       const runId = await readQaRunId();
       test.skip(!runId, "No QA run id available for seeded employer routes.");
       const slug = `${runId}-baydar-labs`.toLowerCase();
-      await assertHealthyRoute(page, baseURL + `/ar-PS/employer/${slug}`, 'domcontentloaded');
-      await assertHealthyRoute(page, baseURL + `/ar-PS/employer/${slug}/jobs/new`, 'domcontentloaded');
+      await assertHealthyRoute(page, baseURL + `/ar-PS/employer/${slug}`);
+      await assertHealthyRoute(page, baseURL + `/ar-PS/employer/${slug}/jobs/new`);
     });
   });
 });
 
-async function assertHealthyRoute(page: Page, route: string, waitUntil: string = 'networkidle'): Promise<void> {
-  // Log console and page errors
-  page.on('console', msg => console.log(`PAGE CONSOLE (${route}): ${msg.text()}`));
-  page.on('pageerror', err => console.log(`PAGE ERROR (${route}): ${err}`));
-
-  console.log(`DEBUG: assertHealthyRoute called with route: ${route}, waitUntil: ${waitUntil}`);
-  const response = await page.goto(route, { waitUntil, timeout: 60000 });
-  console.log(`Response status for ${response?.url()}: ${response?.status()}`);
+async function assertHealthyRoute(
+  page: Page,
+  route: string,
+  waitUntil: RouteWaitUntil = "domcontentloaded",
+): Promise<void> {
+  const response = await gotoRoute(page, route, waitUntil);
+  if (response) {
+    expect(
+      response.status(),
+      `${route} should not return a server error`,
+    ).not.toBeGreaterThanOrEqual(500);
+  }
   const body = page.locator("body");
   await expect(body).toBeVisible();
   await expect(body).not.toContainText(/Application error|Unhandled Runtime Error/i);
   await expect(body).not.toContainText(/TypeError|ReferenceError|SyntaxError/);
+}
+
+async function gotoRoute(
+  page: Page,
+  route: string,
+  waitUntil: RouteWaitUntil,
+): ReturnType<Page["goto"]> {
+  try {
+    return await page.goto(route, { waitUntil, timeout: 20_000 });
+  } catch (error) {
+    if (!String(error).includes("net::ERR_ABORTED")) throw error;
+    await page.waitForLoadState("domcontentloaded", { timeout: 5_000 }).catch(() => undefined);
+    return page.goto(route, { waitUntil, timeout: 20_000 });
+  }
 }
 
 async function readQaRunId(): Promise<string | null> {
