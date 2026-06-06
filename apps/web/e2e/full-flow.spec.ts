@@ -53,8 +53,9 @@ const AUTHED_ROUTES = [
 
 test.describe("full route health", () => {
   test("public routes render in Arabic and English", async ({ page }) => {
+    const baseURL = process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3101';
     for (const route of PUBLIC_ROUTES) {
-      await assertHealthyRoute(page, route);
+      await assertHealthyRoute(page, baseURL + route);
     }
   });
 
@@ -62,10 +63,6 @@ test.describe("full route health", () => {
     test.describe.configure({ mode: "serial" });
 
     test.beforeEach(async ({ page, request }) => {
-      test.skip(
-        test.info().project.name !== "chromium-ar",
-        "Authenticated route matrix runs once and includes ar-PS plus core en routes.",
-      );
       const auth = await ensureA11yStorageState(request);
       await page.addInitScript((state) => {
         window.localStorage.setItem("baydar.session.v1", state.session);
@@ -74,34 +71,43 @@ test.describe("full route health", () => {
     });
 
     test("core app, settings, admin, and employer surfaces render", async ({ page }) => {
+      const baseURL = process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3101';
       for (const route of AUTHED_ROUTES) {
-        await assertHealthyRoute(page, route);
+        let waitUntil: string = 'domcontentloaded';
+        console.log(`DEBUG: baseURL: ${baseURL}, route: "${route}", waitUntil: ${waitUntil}, fullURL: ${baseURL + route}`);
+        await assertHealthyRoute(page, baseURL + route, waitUntil);
       }
     });
 
     test("profile, job detail, and seeded employer detail render", async ({ page, request }) => {
       const auth = await ensureA11yStorageState(request);
-      await assertHealthyRoute(page, `/ar-PS/in/${auth.handle}`);
+      const baseURL = process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3101';
+      await assertHealthyRoute(page, baseURL + `/ar-PS/in/${auth.handle}`, 'domcontentloaded');
 
       const jobs = await request.get(`${API_BASE}/jobs?limit=1`);
       test.skip(!jobs.ok(), "API unavailable for seeded job discovery.");
       const jobBody = (await jobs.json()) as { data?: Array<{ id: string }> };
       const jobId = jobBody.data?.[0]?.id;
       test.skip(!jobId, "No seeded job available for job detail smoke.");
-      await assertHealthyRoute(page, `/ar-PS/jobs/${jobId}`);
+      await assertHealthyRoute(page, baseURL + `/ar-PS/jobs/${jobId}`, 'domcontentloaded');
 
       const runId = await readQaRunId();
       test.skip(!runId, "No QA run id available for seeded employer routes.");
       const slug = `${runId}-baydar-labs`.toLowerCase();
-      await assertHealthyRoute(page, `/ar-PS/employer/${slug}`);
-      await assertHealthyRoute(page, `/ar-PS/employer/${slug}/jobs/new`);
+      await assertHealthyRoute(page, baseURL + `/ar-PS/employer/${slug}`, 'domcontentloaded');
+      await assertHealthyRoute(page, baseURL + `/ar-PS/employer/${slug}/jobs/new`, 'domcontentloaded');
     });
   });
 });
 
-async function assertHealthyRoute(page: Page, route: string): Promise<void> {
-  await page.goto(route);
-  await page.waitForLoadState("domcontentloaded");
+async function assertHealthyRoute(page: Page, route: string, waitUntil: string = 'networkidle'): Promise<void> {
+  // Log console and page errors
+  page.on('console', msg => console.log(`PAGE CONSOLE (${route}): ${msg.text()}`));
+  page.on('pageerror', err => console.log(`PAGE ERROR (${route}): ${err}`));
+
+  console.log(`DEBUG: assertHealthyRoute called with route: ${route}, waitUntil: ${waitUntil}`);
+  const response = await page.goto(route, { waitUntil, timeout: 60000 });
+  console.log(`Response status for ${response?.url()}: ${response?.status()}`);
   const body = page.locator("body");
   await expect(body).toBeVisible();
   await expect(body).not.toContainText(/Application error|Unhandled Runtime Error/i);
