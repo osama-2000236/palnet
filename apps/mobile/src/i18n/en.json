@@ -482,6 +482,44 @@
       "PROFILE_VIEW": "{{actor}} viewed your profile."
     }
   },
+  "activity": {
+    "title": "Activity",
+    "subtitle": "Requests, unread updates, profile tasks, and matching roles in one place.",
+    "errorBody": "We could not load your activity summary. Try again.",
+    "metrics": {
+      "notifications": "Unread updates",
+      "requests": "Requests",
+      "jobs": "Jobs"
+    },
+    "tasks": {
+      "title": "Needs attention",
+      "empty": "Nothing urgent right now.",
+      "profile": {
+        "title": "Complete your profile",
+        "body": "A complete profile helps people and employers understand your work.",
+        "cta": "Edit profile"
+      },
+      "network": {
+        "title": "{{count}} connection requests",
+        "body": "Review people who want to connect with you.",
+        "cta": "Review"
+      },
+      "notifications": {
+        "title": "{{count}} unread notifications",
+        "body": "Catch up on replies, mentions, and profile updates.",
+        "cta": "Open"
+      },
+      "security": {
+        "title": "Review account security",
+        "body": "Password, sessions, and two-factor controls are gathered in settings.",
+        "cta": "Review"
+      }
+    },
+    "jobs": {
+      "title": "Recent matching roles",
+      "empty": "No job matches are ready yet."
+    }
+  },
   "jobs": {
     "title": "Jobs",
     "filters": "Filters",

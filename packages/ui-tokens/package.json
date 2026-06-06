@@ -8,12 +8,18 @@
     ".": "./src/index.ts",
     "./native": "./src/tokens.native.ts",
     "./tokens.css": "./src/tokens.css",
-    "./tailwind-preset": "./tailwind-preset.ts"
+    "./tailwind-preset": {
+      "types": "./dist/tailwind-preset.d.ts",
+      "default": "./tailwind-preset.cjs"
+    }
   },
   "typesVersions": {
     "*": {
       "native": [
         "src/tokens.native.ts"
+      ],
+      "tailwind-preset": [
+        "dist/tailwind-preset.d.ts"
       ]
     }
   },

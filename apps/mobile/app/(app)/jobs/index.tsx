@@ -1,21 +1,18 @@
 // Mobile jobs list. Jobs are reached from feed/search content rather than the
 // bottom shell, so this route keeps a compact header and dense record rhythm.
 
-import { cursorPage, Job as JobSchema, JobLocationMode, JobType, type Job } from "@baydar/shared";
+import { cursorPage, Job as JobSchema, type Job } from "@baydar/shared";
 import {
   AppHeader,
   Button,
-  Chip,
   Icon,
-  Input,
   RecordCardSkeleton,
   SearchField,
-  Sheet,
   nativeTokens,
 } from "@baydar/ui-native";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { FlatList, RefreshControl, Text, View } from "react-native";
+import { FlatList, RefreshControl, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { StateMessage } from "@/components/StateMessage";
@@ -24,50 +21,15 @@ import { apiFetchPage } from "@/lib/api";
 import { apiErrorMessage } from "@/lib/api-errors";
 import { getAccessToken } from "@/lib/session";
 
+import {
+  EMPTY_FILTERS,
+  FilterSheet,
+  activeFilterCount,
+  buildQs,
+  type Filters,
+} from "../_jobs/filters";
+
 const JobsPage = cursorPage(JobSchema);
-
-type Filters = {
-  q: string;
-  city: string;
-  type: JobType | "";
-  locationMode: JobLocationMode | "";
-};
-
-const EMPTY_FILTERS: Filters = { q: "", city: "", type: "", locationMode: "" };
-
-const TYPE_VALUES: JobType[] = [
-  JobType.FULL_TIME,
-  JobType.PART_TIME,
-  JobType.CONTRACT,
-  JobType.INTERNSHIP,
-  JobType.VOLUNTEER,
-  JobType.TEMPORARY,
-];
-
-const LOCATION_VALUES: JobLocationMode[] = [
-  JobLocationMode.ONSITE,
-  JobLocationMode.HYBRID,
-  JobLocationMode.REMOTE,
-];
-
-function buildQs(filters: Filters, after: string | null): string {
-  const qs = new URLSearchParams({ limit: "20" });
-  if (after) qs.set("after", after);
-  if (filters.q) qs.set("q", filters.q);
-  if (filters.city) qs.set("city", filters.city);
-  if (filters.type) qs.set("type", filters.type);
-  if (filters.locationMode) qs.set("locationMode", filters.locationMode);
-  return qs.toString();
-}
-
-function activeFilterCount(f: Filters): number {
-  let n = 0;
-  if (f.q) n += 1;
-  if (f.city) n += 1;
-  if (f.type) n += 1;
-  if (f.locationMode) n += 1;
-  return n;
-}
 
 export default function JobsScreen(): JSX.Element {
   const { t } = useTranslation();
@@ -228,132 +190,5 @@ export default function JobsScreen(): JSX.Element {
         onChange={setFilters}
       />
     </SafeAreaView>
-  );
-}
-
-// ────────────────────────────────────────────────────────────────────────
-// Filter sheet — controlled inputs, live-commits to the parent on change.
-// ────────────────────────────────────────────────────────────────────────
-
-function FilterSheet({
-  open,
-  onClose,
-  filters,
-  onChange,
-}: {
-  open: boolean;
-  onClose: () => void;
-  filters: Filters;
-  onChange: (next: Filters) => void;
-}): JSX.Element {
-  const { t } = useTranslation();
-
-  const set = <K extends keyof Filters>(key: K, value: Filters[K]): void => {
-    onChange({ ...filters, [key]: value });
-  };
-
-  return (
-    <Sheet open={open} onClose={onClose} title={t("jobs.filters")}>
-      <Field label={t("jobs.city")}>
-        <Input
-          fullWidth
-          size="lg"
-          value={filters.city}
-          onChangeText={(v) => set("city", v)}
-          placeholder={t("jobs.cityPlaceholder")}
-        />
-      </Field>
-
-      <Field label={t("jobs.type")}>
-        <ChipRow
-          values={TYPE_VALUES}
-          selected={filters.type}
-          onSelect={(v) => set("type", filters.type === v ? "" : v)}
-          labelFor={(v) => t(`jobs.typeLabels.${v}`)}
-        />
-      </Field>
-
-      <Field label={t("jobs.location")}>
-        <ChipRow
-          values={LOCATION_VALUES}
-          selected={filters.locationMode}
-          onSelect={(v) => set("locationMode", filters.locationMode === v ? "" : v)}
-          labelFor={(v) => t(`jobs.locationLabels.${v}`)}
-        />
-      </Field>
-
-      <View
-        style={{
-          flexDirection: "row",
-          gap: nativeTokens.space[2],
-          marginTop: nativeTokens.space[2],
-        }}
-      >
-        <View style={{ flex: 1 }}>
-          <Button variant="secondary" size="md" fullWidth onPress={() => onChange(EMPTY_FILTERS)}>
-            {t("common.clear")}
-          </Button>
-        </View>
-        <View style={{ flex: 1 }}>
-          <Button variant="primary" size="md" fullWidth onPress={onClose}>
-            {t("common.done")}
-          </Button>
-        </View>
-      </View>
-    </Sheet>
-  );
-}
-
-function Field({ label, children }: { label: string; children: React.ReactNode }): JSX.Element {
-  return (
-    <View style={{ gap: nativeTokens.space[1] }}>
-      <Text
-        style={{
-          color: nativeTokens.color.inkMuted,
-          fontFamily: nativeTokens.type.family.sans,
-          fontSize: nativeTokens.type.scale.small.size,
-          fontWeight: "600",
-        }}
-      >
-        {label}
-      </Text>
-      {children}
-    </View>
-  );
-}
-
-function ChipRow<T extends string>({
-  values,
-  selected,
-  onSelect,
-  labelFor,
-}: {
-  values: T[];
-  selected: T | "";
-  onSelect: (v: T) => void;
-  labelFor: (v: T) => string;
-}): JSX.Element {
-  return (
-    <View
-      style={{
-        flexDirection: "row",
-        flexWrap: "wrap",
-        gap: nativeTokens.space[2],
-      }}
-    >
-      {values.map((v) => {
-        const active = selected === v;
-        return (
-          <Chip
-            key={v}
-            selected={active}
-            onPress={() => onSelect(v)}
-            accessibilityLabel={labelFor(v)}
-          >
-            {labelFor(v)}
-          </Chip>
-        );
-      })}
-    </View>
   );
 }

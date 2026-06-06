@@ -14,7 +14,7 @@ import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, View } from "react-native";
+import { KeyboardAvoidingView, Platform, Pressable, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { apiFetch } from "@/lib/api";
@@ -23,6 +23,8 @@ import { track } from "@/lib/analytics";
 import { successHaptic, tapHaptic } from "@/lib/haptics";
 import { getAccessToken, readSession } from "@/lib/session";
 import { uploadAsset } from "@/lib/uploads";
+
+import { styles } from "./_composer/styles";
 
 const MAX_BODY = 3000;
 const MAX_MEDIA = 8;
@@ -241,74 +243,3 @@ export default function ComposerScreen(): JSX.Element {
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: nativeTokens.color.surfaceMuted,
-  },
-  content: {
-    flex: 1,
-    gap: nativeTokens.space[3],
-    paddingHorizontal: nativeTokens.space[4],
-    paddingTop: nativeTokens.space[8],
-  },
-  authorChip: {
-    alignSelf: "flex-start",
-    flexDirection: "row",
-    alignItems: "center",
-    gap: nativeTokens.space[2],
-  },
-  authorText: {
-    color: nativeTokens.color.inkMuted,
-    fontSize: nativeTokens.type.scale.small.size,
-    fontFamily: nativeTokens.type.family.sans,
-  },
-  bodyInput: {
-    minHeight: nativeTokens.space[20] * 2,
-    color: nativeTokens.color.ink,
-    fontSize: nativeTokens.type.scale.body.size,
-    lineHeight: nativeTokens.type.scale.body.line,
-    fontFamily: nativeTokens.type.family.body,
-  },
-  counter: {
-    alignSelf: "flex-end",
-    color: nativeTokens.color.inkMuted,
-    fontSize: nativeTokens.type.scale.caption.size,
-    fontFamily: nativeTokens.type.family.mono,
-  },
-  mediaGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: nativeTokens.space[2],
-  },
-  mediaThumbWrap: {
-    width: nativeTokens.space[20],
-    height: nativeTokens.space[20],
-  },
-  mediaThumb: {
-    width: "100%",
-    height: "100%",
-    borderRadius: nativeTokens.radius.md,
-  },
-  removeBadge: {
-    position: "absolute",
-    top: nativeTokens.space[1],
-    end: nativeTokens.space[1],
-    width: nativeTokens.space[6],
-    height: nativeTokens.space[6],
-    borderRadius: nativeTokens.radius.full,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: nativeTokens.color.accent600,
-  },
-  actions: {
-    flexDirection: "row",
-    gap: nativeTokens.space[2],
-  },
-  errorText: {
-    color: nativeTokens.color.danger,
-    fontSize: nativeTokens.type.scale.small.size,
-    fontFamily: nativeTokens.type.family.sans,
-  },
-});

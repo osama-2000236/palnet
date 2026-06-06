@@ -1,32 +1,12 @@
-// Mobile profile screen. Uses ui-native atoms (Surface, Avatar, Button) +
-// nativeTokens so styling stays in lockstep with the web twin.
-
-import {
-  ChatRoom as ChatRoomSchema,
-  Profile as ProfileSchema,
-  ReportReason,
-  type Profile,
-} from "@baydar/shared";
-import {
-  Avatar,
-  BlockButton,
-  Button,
-  ReportSheet,
-  SegmentedControl,
-  Surface,
-  nativeTokens,
-  useToast,
-  type BlockButtonLabels,
-  type ReportSheetLabels,
-} from "@baydar/ui-native";
+import { ChatRoom as ChatRoomSchema, Profile as ProfileSchema, type Profile } from "@baydar/shared";
+import { Button, ReportSheet, SegmentedControl, useToast } from "@baydar/ui-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { z } from "zod";
 
-import { FieldCover } from "@/components/FieldCover";
 import { StateMessage } from "@/components/StateMessage";
 import { useBlock, useReport, useUnblock } from "@/api/safety";
 import { apiFetch } from "@/lib/api";
@@ -34,16 +14,17 @@ import { apiErrorMessage } from "@/lib/api-errors";
 import { successHaptic, tapHaptic } from "@/lib/haptics";
 import { getAccessToken } from "@/lib/session";
 
+import { ProfileActions, type ConnectionAction } from "../_profile-detail/ProfileActions";
+import { ProfileHero } from "../_profile-detail/ProfileHero";
+import {
+  PROFILE_TABS,
+  ProfileTabContent,
+  type ProfileTab,
+} from "../_profile-detail/ProfileTabContent";
+import { blockButtonLabels, reportSheetLabels } from "../_profile-detail/safetyLabels";
+import { profileStyles } from "../_profile-detail/styles";
+
 const Raw = z.object({}).passthrough();
-
-type ProfileTab = "about" | "exp" | "edu" | "skills";
-
-const TABS: { key: ProfileTab; i18n: string }[] = [
-  { key: "about", i18n: "profile.about" },
-  { key: "exp", i18n: "profile.experience" },
-  { key: "edu", i18n: "profile.education" },
-  { key: "skills", i18n: "profile.skills" },
-];
 
 export default function ProfileScreen(): JSX.Element {
   const { handle } = useLocalSearchParams<{ handle: string }>();
@@ -79,9 +60,7 @@ export default function ProfileScreen(): JSX.Element {
     })();
   }, [handle, t]);
 
-  async function connectionAction(
-    action: "CONNECT" | "WITHDRAW" | "ACCEPT" | "DECLINE" | "REMOVE",
-  ): Promise<void> {
+  async function connectionAction(action: ConnectionAction): Promise<void> {
     if (!profile?.viewer) return;
     const token = await getAccessToken();
     if (!token) return;
@@ -167,196 +146,77 @@ export default function ProfileScreen(): JSX.Element {
     );
   }
 
-  const conn = profile.viewer?.connection;
+  const loadedProfile = profile;
+  const conn = loadedProfile.viewer?.connection;
   const isBlocked = conn?.status === "BLOCKED";
-  const blockLabels: BlockButtonLabels = isBlocked
-    ? {
-        block: t("safety.block.button"),
-        unblock: t("safety.unblock.button"),
-        confirmTitle: t("safety.unblock.confirm.title"),
-        confirmBody: t("safety.unblock.confirm.body"),
-        confirmCta: t("safety.unblock.confirm.cta"),
-        cancel: t("common.cancel"),
-      }
-    : {
-        block: t("safety.block.button"),
-        unblock: t("safety.unblock.button"),
-        confirmTitle: t("safety.block.confirm.title"),
-        confirmBody: t("safety.block.confirm.body"),
-        confirmCta: t("safety.block.confirm.cta"),
-        cancel: t("common.cancel"),
-      };
-  const reportLabels: ReportSheetLabels = {
-    title: t("safety.report.title"),
-    detailsLabel: t("safety.report.details_label"),
-    cancel: t("common.cancel"),
-    submit: t("safety.report.submit"),
-    close: t("safety.report.close"),
-    reasons: {
-      [ReportReason.SPAM]: t("safety.report.reason.spam"),
-      [ReportReason.HARASSMENT]: t("safety.report.reason.harassment"),
-      [ReportReason.HATE]: t("safety.report.reason.hate"),
-      [ReportReason.MISINFORMATION]: t("safety.report.reason.misinformation"),
-      [ReportReason.NUDITY]: t("safety.report.reason.nudity"),
-      [ReportReason.VIOLENCE]: t("safety.report.reason.violence"),
-      [ReportReason.OTHER]: t("safety.report.reason.other"),
-    },
-  };
+  const blockLabels = blockButtonLabels(t, isBlocked);
+  const reportLabels = reportSheetLabels(t);
+
+  async function messageUser(): Promise<void> {
+    const token = await getAccessToken();
+    if (!token) return;
+    setBusy(true);
+    try {
+      const room = await apiFetch("/messaging/rooms", ChatRoomSchema, {
+        method: "POST",
+        token,
+        body: { otherUserId: loadedProfile.userId },
+      });
+      router.push({
+        pathname: "/(app)/messages/[roomId]",
+        params: { roomId: room.id },
+      });
+    } catch (caught) {
+      setActionError(apiErrorMessage(t, caught));
+    } finally {
+      setBusy(false);
+    }
+  }
 
   return (
     <SafeAreaView style={profileStyles.screen}>
       <ScrollView contentContainerStyle={profileStyles.scrollBody}>
-        <Surface variant="hero" padding="0" style={profileStyles.hero}>
-          <FieldCover uri={profile.coverUrl} />
-          <View style={profileStyles.identityBlock}>
-            <Avatar
-              user={{
-                id: profile.userId,
-                handle: profile.handle,
-                firstName: profile.firstName,
-                lastName: profile.lastName,
-                avatarUrl: profile.avatarUrl,
-              }}
-              size="xl"
-            />
-            <Text style={profileStyles.name}>
-              {profile.firstName} {profile.lastName}
-            </Text>
-            {profile.headline ? (
-              <Text style={profileStyles.headline}>{profile.headline}</Text>
-            ) : null}
-            {profile.location ? (
-              <Text style={profileStyles.location}>{profile.location}</Text>
-            ) : null}
-            <Text style={profileStyles.handle}>/in/{profile.handle}</Text>
-          </View>
-
-          {profile.viewer?.isSelf ? (
-            <View style={profileStyles.editWrap}>
-              <Button
-                variant="secondary"
-                size="md"
-                testID="profile-edit-button"
-                onPress={() => router.push("/(app)/me/edit")}
-              >
-                {t("profile.edit")}
-              </Button>
-            </View>
-          ) : null}
-
-          {profile.viewer && !profile.viewer.isSelf ? (
-            <View style={profileStyles.actionsRow}>
-              {!conn || conn.status === "WITHDRAWN" || conn.status === "DECLINED" ? (
-                <Button
-                  variant="primary"
-                  size="md"
-                  disabled={busy}
-                  onPress={() => void connectionAction("CONNECT")}
-                >
-                  {t("network.connect")}
-                </Button>
-              ) : conn.status === "PENDING" && conn.direction === "OUTGOING" ? (
-                <Button
-                  variant="secondary"
-                  size="md"
-                  disabled={busy}
-                  onPress={() => void connectionAction("WITHDRAW")}
-                >
-                  {t("network.withdraw")}
-                </Button>
-              ) : conn.status === "PENDING" && conn.direction === "INCOMING" ? (
-                <>
-                  <Button
-                    variant="primary"
-                    size="md"
-                    disabled={busy}
-                    onPress={() => void connectionAction("ACCEPT")}
-                  >
-                    {t("network.accept")}
-                  </Button>
-                  <Button
-                    variant="secondary"
-                    size="md"
-                    disabled={busy}
-                    onPress={() => void connectionAction("DECLINE")}
-                  >
-                    {t("network.decline")}
-                  </Button>
-                </>
-              ) : conn.status === "ACCEPTED" ? (
-                <Button
-                  variant="secondary"
-                  size="md"
-                  disabled={busy}
-                  onPress={() => void connectionAction("REMOVE")}
-                >
-                  {t("network.removeConnection")}
-                </Button>
-              ) : null}
-              <Button
-                variant="secondary"
-                size="md"
-                disabled={busy}
-                onPress={async () => {
-                  const token = await getAccessToken();
-                  if (!token) return;
-                  setBusy(true);
-                  try {
-                    const room = await apiFetch("/messaging/rooms", ChatRoomSchema, {
-                      method: "POST",
-                      token,
-                      body: { otherUserId: profile.userId },
-                    });
-                    router.push({
-                      pathname: "/(app)/messages/[roomId]",
-                      params: { roomId: room.id },
-                    });
-                  } catch (caught) {
-                    setActionError(apiErrorMessage(t, caught));
-                  } finally {
-                    setBusy(false);
-                  }
-                }}
-              >
-                {t("messaging.newMessage")}
-              </Button>
-              <Button variant="secondary" size="md" onPress={() => setReportOpen(true)}>
-                {t("safety.report.action")}
-              </Button>
-              <BlockButton
-                userId={profile.userId}
-                isBlocked={isBlocked}
-                variant={isBlocked ? "unblock" : "block"}
-                labels={blockLabels}
-                loading={block.isPending || unblock.isPending}
-                onChange={(nextBlocked, userId) => {
-                  if (nextBlocked) {
-                    block.mutate(
-                      { blockedUserId: userId },
-                      {
-                        onSuccess: () => {
-                          showToast({ message: t("safety.block.success"), kind: "success" });
-                          router.replace("/(app)/feed");
-                        },
-                        onError: () =>
-                          showToast({ message: t("safety.block.error"), kind: "error" }),
-                      },
-                    );
-                  } else {
-                    unblock.mutate(userId, {
+        <ProfileHero
+          profile={loadedProfile}
+          onEdit={loadedProfile.viewer?.isSelf ? () => router.push("/(app)/me/edit") : undefined}
+          actionSlot={
+            <ProfileActions
+              profile={loadedProfile}
+              busy={busy}
+              isBlocked={isBlocked}
+              blockLabels={blockLabels}
+              blockLoading={block.isPending || unblock.isPending}
+              onConnectionAction={(action) => void connectionAction(action)}
+              onMessage={() => void messageUser()}
+              onReport={() => setReportOpen(true)}
+              onBlockChange={(nextBlocked, userId) => {
+                if (nextBlocked) {
+                  block.mutate(
+                    { blockedUserId: userId },
+                    {
                       onSuccess: () => {
-                        setProfile({ ...profile, viewer: { isSelf: false, connection: null } });
-                        showToast({ message: t("safety.unblock.success"), kind: "success" });
+                        showToast({ message: t("safety.block.success"), kind: "success" });
+                        router.replace("/(app)/feed");
                       },
-                      onError: () =>
-                        showToast({ message: t("safety.unblock.error"), kind: "error" }),
-                    });
-                  }
-                }}
-              />
-            </View>
-          ) : null}
-        </Surface>
+                      onError: () => showToast({ message: t("safety.block.error"), kind: "error" }),
+                    },
+                  );
+                } else {
+                  unblock.mutate(userId, {
+                    onSuccess: () => {
+                      setProfile({
+                        ...loadedProfile,
+                        viewer: { isSelf: false, connection: null },
+                      });
+                      showToast({ message: t("safety.unblock.success"), kind: "success" });
+                    },
+                    onError: () => showToast({ message: t("safety.unblock.error"), kind: "error" }),
+                  });
+                }
+              }}
+            />
+          }
+        />
 
         {actionError ? (
           <StateMessage
@@ -368,82 +228,12 @@ export default function ProfileScreen(): JSX.Element {
         ) : null}
 
         <SegmentedControl
-          items={TABS.map((tab) => ({ key: tab.key, label: t(tab.i18n) }))}
+          items={PROFILE_TABS.map((tab) => ({ key: tab.key, label: t(tab.i18n) }))}
           selectedKey={activeTab}
           onChange={setActiveTab}
         />
 
-        {activeTab === "about" ? (
-          profile.about ? (
-            <Section title={t("profile.about")}>
-              <Text style={profileStyles.bodyText}>{profile.about}</Text>
-            </Section>
-          ) : (
-            <Surface variant="tinted" padding="6">
-              <Text style={profileStyles.emptyText}>{t("profile.aboutEmpty")}</Text>
-            </Surface>
-          )
-        ) : null}
-
-        {activeTab === "exp" ? (
-          <Section title={t("profile.experience")}>
-            {profile.experiences.length === 0 ? (
-              <Text style={profileStyles.emptyText}>{t("profile.expEmpty")}</Text>
-            ) : (
-              profile.experiences.map((e, idx) => (
-                <View
-                  key={e.id ?? `${e.companyName}-${e.startDate}`}
-                  style={idx === 0 ? undefined : profileStyles.experienceItemSpacing}
-                >
-                  <Text style={profileStyles.itemTitle}>{e.title}</Text>
-                  <Text style={profileStyles.itemSubtitle}>{e.companyName}</Text>
-                  {e.description ? (
-                    <Text style={profileStyles.itemDescription}>{e.description}</Text>
-                  ) : null}
-                </View>
-              ))
-            )}
-          </Section>
-        ) : null}
-
-        {activeTab === "edu" ? (
-          <Section title={t("profile.education")}>
-            {profile.educations.length === 0 ? (
-              <Text style={profileStyles.emptyText}>{t("profile.eduEmpty")}</Text>
-            ) : (
-              profile.educations.map((e, idx) => (
-                <View
-                  key={e.id ?? e.school}
-                  style={idx === 0 ? undefined : profileStyles.experienceItemSpacing}
-                >
-                  <Text style={profileStyles.itemTitle}>{e.school}</Text>
-                  {e.degree ? (
-                    <Text style={profileStyles.itemSubtitle}>
-                      {e.degree}
-                      {e.fieldOfStudy ? ` · ${e.fieldOfStudy}` : ""}
-                    </Text>
-                  ) : null}
-                </View>
-              ))
-            )}
-          </Section>
-        ) : null}
-
-        {activeTab === "skills" ? (
-          <Section title={t("profile.skills")}>
-            {profile.skills.length === 0 ? (
-              <Text style={profileStyles.emptyText}>{t("profile.skillsEmpty")}</Text>
-            ) : (
-              <View style={profileStyles.skillsRow}>
-                {profile.skills.map((s) => (
-                  <View key={s.id} style={profileStyles.skillChip}>
-                    <Text style={profileStyles.skillLabel}>{s.name}</Text>
-                  </View>
-                ))}
-              </View>
-            )}
-          </Section>
-        ) : null}
+        <ProfileTabContent profile={loadedProfile} activeTab={activeTab} />
 
         <View style={profileStyles.footer}>
           <Button variant="ghost" size="md" fullWidth onPress={() => router.back()}>
@@ -453,7 +243,7 @@ export default function ProfileScreen(): JSX.Element {
         <ReportSheet
           open={reportOpen}
           onOpenChange={setReportOpen}
-          target={{ kind: "user", id: profile.userId }}
+          target={{ kind: "user", id: loadedProfile.userId }}
           labels={reportLabels}
           submitting={report.isPending}
           onSubmit={(input) => {
@@ -470,141 +260,3 @@ export default function ProfileScreen(): JSX.Element {
     </SafeAreaView>
   );
 }
-
-function Section({ title, children }: { title: string; children: React.ReactNode }): JSX.Element {
-  return (
-    <Surface variant="card" padding="4">
-      <Text style={profileStyles.sectionTitle}>{title}</Text>
-      {children}
-    </Surface>
-  );
-}
-
-const profileStyles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: nativeTokens.color.surfaceMuted },
-  center: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: nativeTokens.color.surfaceMuted,
-  },
-  errorScreen: {
-    flex: 1,
-    backgroundColor: nativeTokens.color.surfaceMuted,
-    padding: nativeTokens.space[4],
-  },
-  errorText: {
-    color: nativeTokens.color.inkMuted,
-    fontFamily: nativeTokens.type.family.sans,
-    fontSize: nativeTokens.type.scale.body.size,
-    textAlign: "center",
-  },
-  scrollBody: {
-    padding: nativeTokens.space[4],
-    gap: nativeTokens.space[4],
-  },
-  hero: {
-    overflow: "hidden",
-  },
-  identityBlock: {
-    marginTop: -nativeTokens.space[10],
-    paddingHorizontal: nativeTokens.space[4],
-    paddingBottom: nativeTokens.space[3],
-    alignItems: "flex-start",
-  },
-  name: {
-    marginTop: nativeTokens.space[3],
-    color: nativeTokens.color.ink,
-    fontFamily: nativeTokens.type.family.sans,
-    fontSize: nativeTokens.type.scale.display.size,
-    lineHeight: nativeTokens.type.scale.display.line,
-    fontWeight: "700",
-  },
-  headline: {
-    color: nativeTokens.color.inkMuted,
-    fontFamily: nativeTokens.type.family.sans,
-    fontSize: nativeTokens.type.scale.body.size,
-    marginTop: nativeTokens.space[1],
-  },
-  location: {
-    color: nativeTokens.color.inkMuted,
-    fontFamily: nativeTokens.type.family.sans,
-    fontSize: nativeTokens.type.scale.small.size,
-    marginTop: nativeTokens.space[1],
-  },
-  handle: {
-    color: nativeTokens.color.inkMuted,
-    fontFamily: nativeTokens.type.family.sans,
-    fontSize: nativeTokens.type.scale.small.size,
-    marginTop: nativeTokens.space[1],
-  },
-  editWrap: {
-    paddingHorizontal: nativeTokens.space[4],
-    paddingBottom: nativeTokens.space[3],
-    alignSelf: "flex-start",
-  },
-  actionsRow: {
-    paddingHorizontal: nativeTokens.space[4],
-    paddingBottom: nativeTokens.space[3],
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: nativeTokens.space[2],
-  },
-  bodyText: {
-    color: nativeTokens.color.ink,
-    fontFamily: nativeTokens.type.family.sans,
-    fontSize: nativeTokens.type.scale.body.size,
-    lineHeight: nativeTokens.type.scale.body.line,
-  },
-  emptyText: {
-    color: nativeTokens.color.inkMuted,
-    fontFamily: nativeTokens.type.family.sans,
-    fontSize: nativeTokens.type.scale.small.size,
-  },
-  experienceItemSpacing: { marginTop: nativeTokens.space[3] },
-  itemTitle: {
-    color: nativeTokens.color.ink,
-    fontFamily: nativeTokens.type.family.sans,
-    fontSize: nativeTokens.type.scale.h3.size,
-    lineHeight: nativeTokens.type.scale.h3.line,
-    fontWeight: "600",
-  },
-  itemSubtitle: {
-    color: nativeTokens.color.inkMuted,
-    fontFamily: nativeTokens.type.family.sans,
-    fontSize: nativeTokens.type.scale.small.size,
-  },
-  itemDescription: {
-    marginTop: nativeTokens.space[1],
-    color: nativeTokens.color.ink,
-    fontFamily: nativeTokens.type.family.sans,
-    fontSize: nativeTokens.type.scale.body.size,
-    lineHeight: nativeTokens.type.scale.body.line,
-  },
-  skillsRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: nativeTokens.space[2],
-  },
-  skillChip: {
-    borderWidth: 1,
-    borderColor: nativeTokens.color.lineHard,
-    borderRadius: nativeTokens.radius.full,
-    paddingHorizontal: nativeTokens.space[3],
-    paddingVertical: nativeTokens.space[1],
-  },
-  skillLabel: {
-    color: nativeTokens.color.ink,
-    fontFamily: nativeTokens.type.family.sans,
-    fontSize: nativeTokens.type.scale.small.size,
-  },
-  sectionTitle: {
-    marginBottom: nativeTokens.space[2],
-    color: nativeTokens.color.ink,
-    fontFamily: nativeTokens.type.family.sans,
-    fontSize: nativeTokens.type.scale.h2.size,
-    lineHeight: nativeTokens.type.scale.h2.line,
-    fontWeight: "600",
-  },
-  footer: { paddingVertical: nativeTokens.space[3] },
-});

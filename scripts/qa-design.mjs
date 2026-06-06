@@ -1,5 +1,5 @@
 import { execSync } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 
 const tracked = execSync("git ls-files", { encoding: "utf8" })
   .split(/\r?\n/)
@@ -28,21 +28,8 @@ const legacyOversizeAllowlist = new Set([
   "apps/api/src/modules/profiles/profiles.service.ts",
   "apps/api/src/modules/search/search.service.ts",
   "apps/api/src/modules/auth/auth-tokens.service.ts",
-  "apps/mobile/app/(app)/_layout.tsx",
-  "apps/mobile/app/(app)/composer.tsx",
-  "apps/mobile/app/(app)/feed.tsx",
-  "apps/mobile/app/(app)/in/[handle].tsx",
-  "apps/mobile/app/(app)/jobs/[id].tsx",
-  "apps/mobile/app/(app)/jobs/index.tsx",
-  "apps/mobile/app/(app)/me/index.tsx",
-  "apps/mobile/app/(app)/network.tsx",
   "packages/db/prisma/qa-load-fixture.ts",
   "packages/db/prisma/seed.ts",
-  "packages/ui-native/src/Icon.tsx",
-  "packages/ui-native/src/Illustration.tsx",
-  "packages/ui-native/src/safety.tsx",
-  "packages/ui-web/src/Composer.tsx",
-  "packages/ui-web/src/Illustration.tsx",
 ]);
 
 const colorViolations = [];
@@ -53,6 +40,7 @@ const oversizeWarnings = [];
 for (const file of sourceFiles) {
   if (file.startsWith("design-handoff-2026-05/")) continue;
   if (file.startsWith("docs/_archive/")) continue;
+  if (!existsSync(file)) continue;
   const text = readFileSync(file, "utf8");
   const lines = text.split(/\r?\n/);
 

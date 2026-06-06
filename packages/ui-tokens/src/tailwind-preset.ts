@@ -1,14 +1,12 @@
-// packages/ui-tokens/tailwind-preset.ts
-// Drop-in Tailwind preset for apps/web. Extends Tailwind with our tokens.
-// Usage in apps/web/tailwind.config.ts:
-//   import preset from "@baydar/ui-tokens/tailwind-preset";
-//   export default { presets: [preset], content: [...] };
+import { tokens } from "./index";
 
-import type { Config } from "tailwindcss";
+type TailwindPreset = {
+  theme: {
+    extend: Record<string, unknown>;
+  };
+};
 
-import { tokens } from "./src/index";
-
-const preset: Partial<Config> = {
+const preset: TailwindPreset = {
   theme: {
     extend: {
       colors: {

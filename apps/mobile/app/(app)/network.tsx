@@ -4,9 +4,6 @@ import {
 } from "@baydar/shared";
 import {
   AppHeader,
-  Avatar,
-  Button,
-  RecordCard,
   RecordCardSkeleton,
   SegmentedControl,
   nativeTokens,
@@ -14,7 +11,7 @@ import {
 import { router } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { FlatList, RefreshControl, StyleSheet, View } from "react-native";
+import { FlatList, RefreshControl, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { z } from "zod";
 
@@ -24,13 +21,15 @@ import { apiErrorMessage } from "@/lib/api-errors";
 import { successHaptic, tapHaptic } from "@/lib/haptics";
 import { getAccessToken, readSession } from "@/lib/session";
 
+import { ConnectionRow, type NetworkFilter } from "./_network/ConnectionRow";
+import { styles } from "./_network/styles";
+
 const ListEnvelope = z.array(ConnectionListItemSchema);
 const Raw = z.object({}).passthrough();
-type Filter = "ACCEPTED" | "INCOMING" | "OUTGOING";
 
 export default function NetworkScreen(): JSX.Element {
   const { t } = useTranslation();
-  const [filter, setFilter] = useState<Filter>("ACCEPTED");
+  const [filter, setFilter] = useState<NetworkFilter>("ACCEPTED");
   const [items, setItems] = useState<ConnectionListItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -54,7 +53,7 @@ export default function NetworkScreen(): JSX.Element {
   );
 
   const load = useCallback(
-    async (f: Filter): Promise<void> => {
+    async (f: NetworkFilter): Promise<void> => {
       const token = await getAccessToken();
       if (!token) return;
       setLoading(true);
@@ -234,120 +233,3 @@ export default function NetworkScreen(): JSX.Element {
     </SafeAreaView>
   );
 }
-
-function ConnectionRow({
-  item,
-  filter,
-  onRespond,
-  onWithdraw,
-  onRemove,
-  pending,
-}: {
-  item: ConnectionListItem;
-  filter: Filter;
-  onRespond: (id: string, action: "ACCEPT" | "DECLINE") => Promise<void>;
-  onWithdraw: (id: string) => Promise<void>;
-  onRemove: (id: string) => Promise<void>;
-  pending: boolean;
-}): JSX.Element {
-  const { t } = useTranslation();
-  const name = `${item.user.firstName} ${item.user.lastName}`.trim();
-
-  return (
-    <RecordCard
-      leading={
-        <Avatar
-          user={{
-            id: item.user.userId,
-            handle: item.user.handle,
-            firstName: item.user.firstName,
-            lastName: item.user.lastName,
-            avatarUrl: item.user.avatarUrl,
-          }}
-          size="md"
-        />
-      }
-      title={name}
-      subtitle={item.user.headline}
-      onPress={() => router.push(`/(app)/in/${item.user.handle}`)}
-      accessibilityLabel={name}
-      trailing={
-        filter === "INCOMING" ? (
-          <View style={styles.actions}>
-            <Button
-              size="sm"
-              loading={pending}
-              disabled={pending}
-              onPress={() => void onRespond(item.connectionId, "ACCEPT")}
-              accessibilityLabel={t("network.accept")}
-            >
-              {t("network.accept")}
-            </Button>
-            <Button
-              variant="secondary"
-              size="sm"
-              disabled={pending}
-              onPress={() => void onRespond(item.connectionId, "DECLINE")}
-              accessibilityLabel={t("network.decline")}
-            >
-              {t("network.decline")}
-            </Button>
-          </View>
-        ) : filter === "OUTGOING" ? (
-          <Button
-            variant="secondary"
-            size="sm"
-            loading={pending}
-            disabled={pending}
-            onPress={() => void onWithdraw(item.connectionId)}
-            accessibilityLabel={t("network.withdraw")}
-          >
-            {t("network.withdraw")}
-          </Button>
-        ) : (
-          <Button
-            variant="secondary"
-            size="sm"
-            loading={pending}
-            disabled={pending}
-            onPress={() => void onRemove(item.connectionId)}
-            accessibilityLabel={t("network.removeConnection")}
-          >
-            {t("network.removeConnection")}
-          </Button>
-        )
-      }
-    />
-  );
-}
-
-const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: nativeTokens.color.surfaceMuted,
-  },
-  content: {
-    flex: 1,
-    paddingHorizontal: nativeTokens.space[4],
-    paddingTop: nativeTokens.space[3],
-  },
-  tabs: {
-    marginBottom: nativeTokens.space[3],
-  },
-  listContent: {
-    paddingBottom: nativeTokens.space[6],
-  },
-  separator: {
-    height: nativeTokens.space[2],
-  },
-  skeletonStack: {
-    gap: nativeTokens.space[2],
-  },
-  inlineError: {
-    marginBottom: nativeTokens.space[3],
-  },
-  actions: {
-    flexDirection: "row",
-    gap: nativeTokens.space[2],
-  },
-});

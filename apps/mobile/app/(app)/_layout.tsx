@@ -4,13 +4,11 @@
 // pushable hidden routes so primary navigation stays focused and touch-safe.
 
 import { WsNotificationEvent } from "@baydar/shared";
-import { Button, Icon, Surface, type IconName, nativeTokens } from "@baydar/ui-native";
-import type { BottomTabBarButtonProps } from "@react-navigation/bottom-tabs";
+import { nativeTokens } from "@baydar/ui-native";
 import { Tabs, router, usePathname } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Pressable, Text, View } from "react-native";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { z } from "zod";
 
 import { LoadingIntro } from "@/components/LoadingIntro";
@@ -21,14 +19,16 @@ import { clearSession, getAccessToken, readSession } from "@/lib/session";
 import { subscribeSse } from "@/lib/sse";
 import { useNetworkStore } from "@/store/network";
 
+import { AppGateError } from "./_tabs/AppGateError";
+import {
+  TabButton,
+  TabIcon,
+  TabLabel,
+  hiddenFullScreenTabOptions,
+  hiddenTabOptions,
+} from "./_tabs/TabParts";
+
 const UnreadCountEnvelope = z.object({ count: z.number().int().nonnegative() });
-const hiddenTabOptions = {
-  href: null,
-} as const;
-const hiddenFullScreenTabOptions = {
-  ...hiddenTabOptions,
-  tabBarStyle: { display: "none" },
-} as const;
 
 export default function AppTabsLayout(): JSX.Element {
   const { t } = useTranslation();
@@ -155,53 +155,7 @@ export default function AppTabsLayout(): JSX.Element {
   }
 
   if (gateState === "error") {
-    return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: nativeTokens.color.surfaceMuted }}>
-        <View
-          style={{
-            flex: 1,
-            justifyContent: "center",
-            padding: nativeTokens.space[4],
-          }}
-        >
-          <Surface variant="hero" padding="5" style={{ gap: nativeTokens.space[3] }}>
-            <Text
-              selectable
-              style={{
-                color: nativeTokens.color.ink,
-                fontFamily: nativeTokens.type.family.sans,
-                fontSize: nativeTokens.type.scale.h1.size,
-                fontWeight: "700",
-                lineHeight: nativeTokens.type.scale.h1.line,
-                textAlign: "right",
-              }}
-            >
-              {t("appGate.title")}
-            </Text>
-            <Text
-              selectable
-              style={{
-                color: nativeTokens.color.inkMuted,
-                fontFamily: nativeTokens.type.family.body,
-                fontSize: nativeTokens.type.scale.body.size,
-                lineHeight: nativeTokens.type.scale.body.line,
-                textAlign: "right",
-              }}
-            >
-              {isConnected ? t("appGate.body") : t("appGate.offlineBody")}
-            </Text>
-            <Button
-              fullWidth
-              size="lg"
-              accessibilityLabel={t("common.retry")}
-              onPress={() => void verifyGate()}
-            >
-              {t("common.retry")}
-            </Button>
-          </Surface>
-        </View>
-      </SafeAreaView>
-    );
+    return <AppGateError isConnected={isConnected} onRetry={() => void verifyGate()} />;
   }
 
   return (
@@ -297,6 +251,7 @@ export default function AppTabsLayout(): JSX.Element {
       />
 
       <Tabs.Screen name="onboarding" options={hiddenFullScreenTabOptions} />
+      <Tabs.Screen name="activity" options={hiddenTabOptions} />
       <Tabs.Screen name="jobs/index" options={hiddenTabOptions} />
       <Tabs.Screen name="composer" options={hiddenTabOptions} />
       <Tabs.Screen name="search" options={hiddenTabOptions} />
@@ -326,78 +281,5 @@ function isSessionGateError(error: unknown): boolean {
     error.code === "AUTH_UNAUTHORIZED" ||
     error.code === "AUTH_TOKEN_EXPIRED" ||
     error.code === "AUTH_TOKEN_INVALID"
-  );
-}
-
-function TabLabel({
-  label,
-  color,
-  focused,
-  raised = false,
-}: {
-  label: string;
-  color: string;
-  focused: boolean;
-  raised?: boolean;
-}): JSX.Element {
-  return (
-    <Text
-      allowFontScaling={false}
-      numberOfLines={1}
-      adjustsFontSizeToFit
-      minimumFontScale={0.72}
-      style={{
-        width: nativeTokens.space[16],
-        maxWidth: nativeTokens.space[16],
-        color,
-        fontFamily: nativeTokens.type.family.sans,
-        fontSize: nativeTokens.type.scale.caption.size - nativeTokens.space[1] / 2,
-        lineHeight: nativeTokens.type.scale.caption.line - nativeTokens.space[1],
-        fontWeight: focused ? "800" : "700",
-        textAlign: "center",
-        includeFontPadding: false,
-        marginTop: raised ? nativeTokens.space[1] : 0,
-      }}
-    >
-      {label}
-    </Text>
-  );
-}
-
-function TabButton({
-  testID,
-  ...props
-}: BottomTabBarButtonProps & { testID: string }): JSX.Element {
-  const { ref: _ref, ...pressableProps } = props as BottomTabBarButtonProps & { ref?: unknown };
-  return <Pressable {...pressableProps} testID={testID} />;
-}
-
-function TabIcon({
-  name,
-  color,
-  focused,
-}: {
-  name: IconName;
-  color: string;
-  focused: boolean;
-}): JSX.Element {
-  return (
-    <View
-      style={{
-        minWidth: nativeTokens.chrome.minHit,
-        height: nativeTokens.space[6] + nativeTokens.space[1],
-        borderRadius: nativeTokens.radius.full,
-        alignItems: "center",
-        justifyContent: "center",
-        backgroundColor: focused ? nativeTokens.color.brand50 : "transparent",
-      }}
-    >
-      <Icon
-        name={name}
-        color={color}
-        size={nativeTokens.space[5]}
-        strokeWidth={focused ? 2.2 : 1.8}
-      />
-    </View>
   );
 }

@@ -23,8 +23,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { Avatar, type AvatarUser } from "./Avatar";
-import { cx } from "./cx";
-import { Icon, type IconName } from "./Icon";
+import { FileChip, QuietChip } from "./ComposerChips";
+import { Icon } from "./Icon";
 import { Surface } from "./Surface";
 
 /** One piece of media already uploaded by the host — a remote URL. */
@@ -268,61 +268,5 @@ export function Composer({
         </button>
       </div>
     </Surface>
-  );
-}
-
-function QuietChip({
-  icon,
-  label,
-  onClick,
-}: {
-  icon: IconName;
-  label: string;
-  onClick(): void;
-}): JSX.Element {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={cx(
-        "text-ink-muted hover:bg-surface-subtle hover:text-ink inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]",
-      )}
-    >
-      <Icon name={icon} size={14} />
-      {label}
-    </button>
-  );
-}
-
-function FileChip({
-  icon,
-  label,
-  accept,
-  onChange,
-  disabled,
-}: {
-  icon: IconName;
-  label: string;
-  accept: string;
-  onChange(e: React.ChangeEvent<HTMLInputElement>): void;
-  disabled: boolean;
-}): JSX.Element {
-  return (
-    <label
-      className={cx(
-        "text-ink-muted hover:bg-surface-subtle hover:text-ink inline-flex cursor-pointer items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium focus-within:[box-shadow:var(--focus-ring)]",
-        disabled && "cursor-not-allowed opacity-60",
-      )}
-    >
-      <Icon name={icon} size={14} />
-      {label}
-      <input
-        type="file"
-        accept={accept}
-        onChange={onChange}
-        disabled={disabled}
-        className="hidden"
-      />
-    </label>
   );
 }

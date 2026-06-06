@@ -1,8 +1,16 @@
-import { expect, test, type APIRequestContext, type Page } from "@playwright/test";
+import { expect, test, type APIRequestContext, type Page, type Route } from "@playwright/test";
 
 import { ensureA11yStorageState } from "../tests/fixtures/auth";
 
-const ROUTES = ["feed", "search", "network", "notifications", "messages", "settings", "activity"] as const;
+const ROUTES = [
+  "feed",
+  "search",
+  "network",
+  "notifications",
+  "messages",
+  "settings",
+  "activity",
+] as const;
 const LOCALES = ["ar-PS", "en"] as const;
 const VIEWPORTS = [
   { name: "desktop", size: { width: 1440, height: 900 } },
@@ -30,6 +38,18 @@ test.describe("visual route coverage", () => {
       });
     }
   }
+
+  test("activity error state matches mobile snapshot", async ({ page }) => {
+    await failGet(page, "**/api/v1/profiles/me");
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/en/activity", { waitUntil: "domcontentloaded" });
+    await expect(page.getByText("Activity is unavailable")).toBeVisible();
+    await expect(page).toHaveScreenshot("activity-error-en-mobile.png", {
+      animations: "disabled",
+      fullPage: true,
+      maxDiffPixelRatio: 0.02,
+    });
+  });
 });
 
 async function installAuth(page: Page, request: APIRequestContext): Promise<void> {
@@ -52,4 +72,22 @@ async function assertVisualRoute(page: Page, route: string): Promise<void> {
 
   const screenshot = await page.screenshot({ animations: "disabled", fullPage: true });
   expect(screenshot.byteLength, `${route} screenshot should not be blank`).toBeGreaterThan(8_000);
+}
+
+async function failGet(page: Page, pattern: string): Promise<void> {
+  await page.route(pattern, async (route) => {
+    if (route.request().method() !== "GET") {
+      await route.continue();
+      return;
+    }
+    await failRoute(route);
+  });
+}
+
+async function failRoute(route: Route): Promise<void> {
+  await route.fulfill({
+    contentType: "application/json",
+    status: 500,
+    body: JSON.stringify({ error: { code: "INTERNAL", message: "Forced QA failure" } }),
+  });
 }

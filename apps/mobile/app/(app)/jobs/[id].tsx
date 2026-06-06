@@ -17,6 +17,8 @@ import { track } from "@/lib/analytics";
 import { successHaptic, tapHaptic } from "@/lib/haptics";
 import { getAccessToken } from "@/lib/session";
 
+import { styles } from "../_jobs/detailStyles";
+
 export default function JobDetailScreen(): JSX.Element {
   const { t } = useTranslation();
   const params = useLocalSearchParams<{ id: string }>();
@@ -240,108 +242,3 @@ export default function JobDetailScreen(): JSX.Element {
     </SafeAreaView>
   );
 }
-
-const styles = {
-  screen: { flex: 1, backgroundColor: nativeTokens.color.surfaceMuted },
-  title: {
-    color: nativeTokens.color.ink,
-    fontSize: nativeTokens.type.scale.h1.size,
-    lineHeight: nativeTokens.type.scale.h1.line,
-    fontWeight: "700" as const,
-    fontFamily: nativeTokens.type.family.sans,
-  },
-  section: {
-    color: nativeTokens.color.ink,
-    fontSize: nativeTokens.type.scale.h3.size,
-    fontWeight: "600" as const,
-    fontFamily: nativeTokens.type.family.sans,
-    marginBottom: nativeTokens.space[2],
-  },
-  body: {
-    color: nativeTokens.color.ink,
-    fontSize: nativeTokens.type.scale.body.size,
-    lineHeight: nativeTokens.type.scale.body.line,
-    fontFamily: nativeTokens.type.family.body,
-  },
-  muted: {
-    color: nativeTokens.color.inkMuted,
-    fontSize: nativeTokens.type.scale.small.size,
-    fontFamily: nativeTokens.type.family.sans,
-  },
-  fieldLabel: {
-    color: nativeTokens.color.ink,
-    fontFamily: nativeTokens.type.family.sans,
-    fontSize: nativeTokens.type.scale.small.size,
-    fontWeight: "600" as const,
-  },
-  hint: {
-    color: nativeTokens.color.inkMuted,
-    fontFamily: nativeTokens.type.family.sans,
-    fontSize: nativeTokens.type.scale.caption.size,
-  },
-  coverLetterInput: {
-    minHeight: 140,
-    color: nativeTokens.color.ink,
-    fontFamily: nativeTokens.type.family.sans,
-    fontSize: nativeTokens.type.scale.body.size,
-    textAlignVertical: "top" as const,
-  },
-  inlineError: {
-    backgroundColor: nativeTokens.color.dangerSoft,
-    borderWidth: 1,
-    borderColor: nativeTokens.color.danger,
-    borderRadius: nativeTokens.radius.md,
-    paddingHorizontal: nativeTokens.space[3],
-    paddingVertical: nativeTokens.space[2],
-  },
-  inlineErrorText: {
-    color: nativeTokens.color.danger,
-    fontFamily: nativeTokens.type.family.sans,
-    fontSize: nativeTokens.type.scale.small.size,
-  },
-  formActions: {
-    flexDirection: "row" as const,
-    justifyContent: "flex-end" as const,
-    gap: nativeTokens.space[2],
-    marginTop: nativeTokens.space[1],
-  },
-  logoBox: {
-    width: nativeTokens.space[8] + nativeTokens.space[6],
-    height: nativeTokens.space[8] + nativeTokens.space[6],
-    borderRadius: nativeTokens.radius.md,
-    backgroundColor: nativeTokens.color.surfaceSunken,
-    alignItems: "center" as const,
-    justifyContent: "center" as const,
-    overflow: "hidden" as const,
-  },
-  logoFallback: {
-    color: nativeTokens.color.inkMuted,
-    fontWeight: "600" as const,
-    fontSize: nativeTokens.type.scale.h2.size,
-    fontFamily: nativeTokens.type.family.sans,
-  },
-  appliedBadge: {
-    alignSelf: "flex-start" as const,
-    paddingHorizontal: nativeTokens.space[3],
-    paddingVertical: nativeTokens.space[2],
-    borderRadius: nativeTokens.radius.md,
-    backgroundColor: nativeTokens.color.successSoft,
-  },
-  appliedBadgeText: {
-    color: nativeTokens.color.success,
-    fontSize: nativeTokens.type.scale.small.size,
-    fontWeight: "700" as const,
-    fontFamily: nativeTokens.type.family.sans,
-  },
-  chip: {
-    paddingHorizontal: nativeTokens.space[2],
-    paddingVertical: nativeTokens.space[1],
-    borderRadius: nativeTokens.radius.full,
-    backgroundColor: nativeTokens.color.surfaceSubtle,
-  },
-  chipText: {
-    color: nativeTokens.color.ink,
-    fontSize: nativeTokens.type.scale.caption.size,
-    fontFamily: nativeTokens.type.family.sans,
-  },
-};

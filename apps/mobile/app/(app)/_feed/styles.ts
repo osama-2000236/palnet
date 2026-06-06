@@ -1,0 +1,166 @@
+import { StyleSheet } from "react-native";
+
+import { nativeTokens } from "@baydar/ui-native";
+
+export const feedStyles = StyleSheet.create({
+  screen: {
+    flex: 1,
+    backgroundColor: nativeTokens.color.surfaceMuted,
+  },
+  content: {
+    flex: 1,
+    paddingHorizontal: nativeTokens.space[4],
+    paddingTop: nativeTokens.space[3],
+  },
+  iconButton: {
+    width: nativeTokens.chrome.minHit,
+    height: nativeTokens.chrome.minHit,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: nativeTokens.radius.full,
+    backgroundColor: nativeTokens.color.surface,
+    borderWidth: 1,
+    borderColor: nativeTokens.color.lineSoft,
+  },
+  iconButtonActive: {
+    backgroundColor: nativeTokens.color.accent600,
+    borderColor: nativeTokens.color.accent600,
+  },
+  unreadDot: {
+    position: "absolute",
+    top: -nativeTokens.space[1],
+    end: -nativeTokens.space[1],
+    minWidth: nativeTokens.space[5],
+    height: nativeTokens.space[5],
+    borderRadius: nativeTokens.radius.full,
+    backgroundColor: nativeTokens.color.accent700,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: nativeTokens.space[1],
+  },
+  unreadText: {
+    color: nativeTokens.color.inkInverse,
+    fontSize: nativeTokens.type.scale.caption.size,
+    fontWeight: "700",
+    fontFamily: nativeTokens.type.family.sans,
+  },
+  searchEntry: {
+    minHeight: nativeTokens.chrome.minHit,
+    borderRadius: nativeTokens.radius.full,
+    borderWidth: 1,
+    borderColor: nativeTokens.color.lineSoft,
+    backgroundColor: nativeTokens.color.surfaceSubtle,
+    paddingHorizontal: nativeTokens.space[3],
+    flexDirection: "row",
+    alignItems: "center",
+    gap: nativeTokens.space[2],
+    flex: 1,
+  },
+  searchText: {
+    flex: 1,
+    color: nativeTokens.color.inkMuted,
+    fontFamily: nativeTokens.type.family.sans,
+    fontSize: nativeTokens.type.scale.body.size,
+    textAlign: "right",
+  },
+  pressed: { opacity: 0.88 },
+  composerWrap: { marginBottom: nativeTokens.space[3] },
+  jobsEntryWrap: {
+    marginBottom: nativeTokens.space[3],
+  },
+  jobsEntry: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: nativeTokens.space[3],
+  },
+  jobsIcon: {
+    width: nativeTokens.space[10],
+    height: nativeTokens.space[10],
+    borderRadius: nativeTokens.radius.full,
+    backgroundColor: nativeTokens.color.brand100,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  jobsText: {
+    flex: 1,
+    minWidth: 0,
+  },
+  jobsTitle: {
+    color: nativeTokens.color.ink,
+    fontSize: nativeTokens.type.scale.h3.size,
+    lineHeight: nativeTokens.type.scale.h3.line,
+    fontWeight: "700",
+    fontFamily: nativeTokens.type.family.sans,
+    textAlign: "right",
+  },
+  jobsSubtitle: {
+    color: nativeTokens.color.inkMuted,
+    fontSize: nativeTokens.type.scale.small.size,
+    lineHeight: nativeTokens.type.scale.small.line,
+    fontFamily: nativeTokens.type.family.sans,
+    textAlign: "right",
+  },
+  profileCard: {
+    gap: nativeTokens.space[3],
+    marginBottom: nativeTokens.space[3],
+  },
+  profileMain: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: nativeTokens.space[3],
+  },
+  profileText: {
+    flex: 1,
+  },
+  profileName: {
+    color: nativeTokens.color.ink,
+    fontSize: nativeTokens.type.scale.h2.size,
+    lineHeight: nativeTokens.type.scale.h2.line,
+    fontWeight: "700",
+    fontFamily: nativeTokens.type.family.sans,
+    textAlign: "right",
+  },
+  profileHeadline: {
+    color: nativeTokens.color.inkMuted,
+    fontSize: nativeTokens.type.scale.small.size,
+    lineHeight: nativeTokens.type.scale.small.line,
+    fontFamily: nativeTokens.type.family.sans,
+    textAlign: "right",
+  },
+  profileMeta: {
+    color: nativeTokens.color.inkSubtle,
+    fontSize: nativeTokens.type.scale.caption.size,
+    lineHeight: nativeTokens.type.scale.caption.line,
+    fontFamily: nativeTokens.type.family.sans,
+    textAlign: "right",
+  },
+  profileFooter: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: nativeTokens.space[2],
+  },
+  profileProgress: {
+    flex: 1,
+    color: nativeTokens.color.brand700,
+    fontSize: nativeTokens.type.scale.caption.size,
+    lineHeight: nativeTokens.type.scale.caption.line,
+    fontWeight: "700",
+    fontFamily: nativeTokens.type.family.sans,
+    textAlign: "right",
+  },
+  errorBox: {
+    gap: nativeTokens.space[2],
+    marginBottom: nativeTokens.space[3],
+    backgroundColor: nativeTokens.color.warningSoft,
+  },
+  skeletonStack: {
+    gap: nativeTokens.space[3],
+  },
+  separator: {
+    height: nativeTokens.space[3],
+  },
+  footerLoading: {
+    paddingVertical: nativeTokens.space[4],
+  },
+});
