@@ -231,6 +231,15 @@ export default function AppLayout({ children }: { children: ReactNode }): JSX.El
         case "notifications":
           router.push("/notifications");
           return;
+        case "activity":
+          router.push("/activity");
+          return;
+        case "saved":
+          router.push("/saved");
+          return;
+        case "employer":
+          router.push("/employer");
+          return;
         case "profile":
           router.push(me?.handle ? `/in/${me.handle}` : "/me");
           return;

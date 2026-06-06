@@ -1,6 +1,5 @@
 import type { Config } from "tailwindcss";
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const preset = require("@baydar/config/tailwind-preset");
+import preset from "@baydar/ui-tokens/tailwind-preset";
 
 // In production we scan the compiled `dist/` output of @baydar/ui-web — that's
 // exactly the shipped surface, no test files or fixtures, so the generated

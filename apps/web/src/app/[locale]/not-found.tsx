@@ -18,6 +18,7 @@ export default function LocaleNotFound(): JSX.Element {
   const tNetwork = useTranslations("network");
   const tMsg = useTranslations("messaging");
   const tNotif = useTranslations("notifications");
+  const tActivity = useTranslations("activity");
   const tBell = useTranslations("chrome.bell");
   const tProfile = useTranslations("profile");
   const tAuth = useTranslations("auth");
@@ -36,6 +37,7 @@ export default function LocaleNotFound(): JSX.Element {
       jobs: tNav("jobs"),
       messages: tMsg("title"),
       notifications: tNotif("title"),
+      activity: tActivity("title"),
       saved: tSaved("title"),
       employer: tEmployer("title"),
     },
@@ -46,6 +48,7 @@ export default function LocaleNotFound(): JSX.Element {
     unreadTemplate: {
       messages: tNav("unreadMessages", { count: "{count}" }),
       notifications: tNav("unreadNotifications", { count: "{count}" }),
+      activity: "",
       saved: "",
       employer: "",
     },

@@ -1,74 +1,21 @@
 "use client";
 
-import {
-  ChatRoom as ChatRoomSchema,
-  CursorPageMeta,
-  Message as MessageSchema,
-  type ChatRoom,
-  type Message,
-  type WsChatEvent,
-} from "@baydar/shared";
-import { groupMessages, type GroupedMessage } from "@baydar/ui-web";
+import { Message as MessageSchema, type ChatRoom, type Message } from "@baydar/shared";
 import { useTranslations } from "next-intl";
-import { useCallback, useEffect, useMemo, useRef, useState, type MutableRefObject } from "react";
-import { z } from "zod";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { apiCall, apiFetch, ApiRequestError, apiFetchPage } from "@/lib/api";
 
-import { ONLINE_WINDOW_MS, TYPING_POST_THROTTLE_MS, TYPING_TTL_MS, upsertMessage } from "../_utils";
-import { useMessagesStream } from "./useMessagesStream";
-
-const RoomsEnvelope = z.object({ data: z.array(ChatRoomSchema) });
-const MessagesPageEnvelope = z.object({
-  data: z.array(MessageSchema),
-  meta: CursorPageMeta,
-});
-
-export interface UseRoomMessagesInput {
-  token: string | null;
-  viewerId: string | null;
-}
-
-export interface UseRoomMessagesResult {
-  rooms: ChatRoom[];
-  filteredRooms: ChatRoom[];
-  activeRoomId: string | null;
-  activeRoom: ChatRoom | null;
-  otherMember: ChatRoom["members"][number] | null;
-  memberById: Map<string, ChatRoom["members"][number]>;
-  otherOnline: boolean;
-  messages: Message[];
-  grouped: GroupedMessage<Message>[];
-  hasMore: boolean;
-  draft: string;
-  sending: boolean;
-  searchTerm: string;
-  failedClientIds: Set<string>;
-  error: string | null;
-  actionMessage: Message | null;
-  reportMessage: Message | null;
-  editingBody: string;
-  activeTyping: { userId: string; expiresAt: number } | null;
-  firstUnreadIndex: number;
-  unreadCount: number;
-  otherLastReadAtMs: number;
-  threadRef: MutableRefObject<HTMLDivElement | null>;
-  firstUnreadRef: MutableRefObject<HTMLDivElement | null>;
-  setActiveRoomId(roomId: string | null): void;
-  setDraft(value: string): void;
-  setSearchTerm(value: string): void;
-  setError(value: string | null): void;
-  setActionMessage(value: Message | null): void;
-  setReportMessage(value: Message | null): void;
-  setEditingBody(value: string): void;
-  loadOlder(): void;
-  scrollToUnread(): void;
-  postTypingThrottled(): void;
-  submit(): Promise<void>;
-  retryFailed(clientMessageId: string): Promise<void>;
-  saveEdit(): Promise<void>;
-  deleteMessage(message: Message): Promise<void>;
-}
+import { upsertMessage } from "../_utils";
+import { useRoomMessageSendActions } from "./useRoomMessageSendActions";
+import { useRoomMessagesDerived } from "./useRoomMessagesDerived";
+import { useRoomMessagesEvents } from "./useRoomMessagesEvents";
+import {
+  MessagesPageEnvelope,
+  RoomsEnvelope,
+  type UseRoomMessagesInput,
+  type UseRoomMessagesResult,
+} from "./useRoomMessages.types";
 
 export function useRoomMessages({ token, viewerId }: UseRoomMessagesInput): UseRoomMessagesResult {
   const t = useTranslations("messaging");
@@ -152,212 +99,33 @@ export function useRoomMessages({ token, viewerId }: UseRoomMessagesInput): UseR
     });
   }, [activeRoomId, loadMessages, token]);
 
-  const handleEvent = useCallback(
-    (event: WsChatEvent): void => {
-      if (event.type === "message.new") {
-        const message = event.payload;
-        setMessages((prev) => {
-          if (message.roomId !== activeRoomId) return prev;
-          const idx = prev.findIndex(
-            (item) => item.clientMessageId && item.clientMessageId === message.clientMessageId,
-          );
-          if (idx >= 0) {
-            const next = prev.slice();
-            next[idx] = message;
-            return next;
-          }
-          if (prev.some((item) => item.id === message.id)) return prev;
-          return [...prev, message];
-        });
-        setRooms((prev) =>
-          prev
-            .map((room) => {
-              if (room.id !== message.roomId) return room;
-              const isActive = room.id === activeRoomId;
-              return {
-                ...room,
-                lastMessage: message,
-                unreadCount: isActive || message.authorId === viewerId ? 0 : room.unreadCount + 1,
-                updatedAt: message.createdAt,
-              };
-            })
-            .sort((a, b) => (a.updatedAt < b.updatedAt ? 1 : -1)),
-        );
-        setTypingUserByRoom((prev) => {
-          if (!prev[message.roomId]) return prev;
-          const next = { ...prev };
-          delete next[message.roomId];
-          return next;
-        });
-        if (message.roomId === activeRoomId && token) {
-          requestAnimationFrame(() => {
-            if (threadRef.current) threadRef.current.scrollTop = threadRef.current.scrollHeight;
-          });
-          if (message.authorId !== viewerId) {
-            void apiCall(`/messaging/rooms/${message.roomId}/read`, {
-              method: "POST",
-              token,
-            }).catch(() => {});
-          }
-        }
-      } else if (event.type === "message.edited" || event.type === "message.deleted") {
-        const message = event.payload;
-        setMessages((prev) => {
-          if (message.roomId !== activeRoomId) return prev;
-          return upsertMessage(prev, message);
-        });
-        setRooms((prev) =>
-          prev.map((room) =>
-            room.id === message.roomId
-              ? { ...room, lastMessage: message, updatedAt: message.createdAt }
-              : room,
-          ),
-        );
-      } else if (event.type === "message.read") {
-        const { roomId, userId, at } = event.payload;
-        setRooms((prev) =>
-          prev.map((room) => {
-            if (room.id !== roomId) return room;
-            return {
-              ...room,
-              members: room.members.map((member) =>
-                member.userId === userId ? { ...member, lastReadAt: at } : member,
-              ),
-            };
-          }),
-        );
-      } else if (event.type === "typing") {
-        const { roomId, userId } = event.payload;
-        if (userId === viewerId) return;
-        setTypingUserByRoom((prev) => ({
-          ...prev,
-          [roomId]: { userId, expiresAt: Date.now() + TYPING_TTL_MS },
-        }));
-      }
-    },
-    [activeRoomId, token, viewerId],
-  );
+  useRoomMessagesEvents({
+    token,
+    viewerId,
+    activeRoomId,
+    threadRef,
+    setMessages,
+    setRooms,
+    setTypingUserByRoom,
+    setError,
+    translate: (message) => t(message),
+  });
 
-  const handleStreamError = useCallback(
-    (message: "connectionLost" | "connectionFailed"): void => {
-      setError(t(message));
-    },
-    [t],
-  );
-
-  useMessagesStream({ token, onEvent: handleEvent, onError: handleStreamError });
-
-  useEffect(() => {
-    if (Object.keys(typingUserByRoom).length === 0) return undefined;
-    const intervalId = window.setInterval(() => {
-      setTypingUserByRoom((prev) => {
-        const now = Date.now();
-        let changed = false;
-        const next: typeof prev = {};
-        for (const [roomId, entry] of Object.entries(prev)) {
-          if (entry.expiresAt > now) next[roomId] = entry;
-          else changed = true;
-        }
-        return changed ? next : prev;
-      });
-    }, 1000);
-    return () => window.clearInterval(intervalId);
-  }, [typingUserByRoom]);
-
-  const postTypingThrottled = useCallback((): void => {
-    if (!activeRoomId || !token) return;
-    const now = Date.now();
-    if (
-      lastTypingPostRef.current.roomId === activeRoomId &&
-      now - lastTypingPostRef.current.at < TYPING_POST_THROTTLE_MS
-    ) {
-      return;
-    }
-    lastTypingPostRef.current = { roomId: activeRoomId, at: now };
-    void apiCall(`/messaging/rooms/${activeRoomId}/typing`, {
-      method: "POST",
-      token,
-    }).catch(() => {});
-  }, [activeRoomId, token]);
-
-  const submit = useCallback(async (): Promise<void> => {
-    if (!activeRoomId || !token || draft.trim().length === 0) return;
-    setSending(true);
-    setError(null);
-    const clientMessageId = `web-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-    const optimistic: Message = {
-      id: `pending-${clientMessageId}`,
-      roomId: activeRoomId,
-      authorId: viewerId ?? "me",
-      body: draft.trim(),
-      mediaUrl: null,
-      clientMessageId,
-      createdAt: new Date().toISOString(),
-      editedAt: null,
-      deletedAt: null,
-    };
-    setMessages((prev) => [...prev, optimistic]);
-    setDraft("");
-    requestAnimationFrame(() => {
-      if (threadRef.current) threadRef.current.scrollTop = threadRef.current.scrollHeight;
-    });
-    try {
-      const saved = await apiFetch(`/messaging/rooms/${activeRoomId}/messages`, MessageSchema, {
-        method: "POST",
-        token,
-        body: { body: optimistic.body, clientMessageId },
-      });
-      setMessages((prev) => {
-        const idx = prev.findIndex((item) => item.clientMessageId === clientMessageId);
-        if (idx < 0) return prev;
-        const next = prev.slice();
-        next[idx] = saved;
-        return next;
-      });
-    } catch (err) {
-      setFailedClientIds((prev) => {
-        const next = new Set(prev);
-        next.add(clientMessageId);
-        return next;
-      });
-      setError(err instanceof ApiRequestError ? t("sendFailed") : t("sendFailed"));
-    } finally {
-      setSending(false);
-    }
-  }, [activeRoomId, draft, t, token, viewerId]);
-
-  const retryFailed = useCallback(
-    async (clientMessageId: string): Promise<void> => {
-      const target = messages.find((message) => message.clientMessageId === clientMessageId);
-      if (!target || !activeRoomId || !token) return;
-      setFailedClientIds((prev) => {
-        const next = new Set(prev);
-        next.delete(clientMessageId);
-        return next;
-      });
-      try {
-        const saved = await apiFetch(`/messaging/rooms/${activeRoomId}/messages`, MessageSchema, {
-          method: "POST",
-          token,
-          body: { body: target.body, clientMessageId },
-        });
-        setMessages((prev) => {
-          const idx = prev.findIndex((message) => message.clientMessageId === clientMessageId);
-          if (idx < 0) return prev;
-          const next = prev.slice();
-          next[idx] = saved;
-          return next;
-        });
-      } catch {
-        setFailedClientIds((prev) => {
-          const next = new Set(prev);
-          next.add(clientMessageId);
-          return next;
-        });
-      }
-    },
-    [activeRoomId, messages, token],
-  );
+  const { postTypingThrottled, submit, retryFailed } = useRoomMessageSendActions({
+    token,
+    viewerId,
+    activeRoomId,
+    draft,
+    messages,
+    threadRef,
+    lastTypingPostRef,
+    setDraft,
+    setSending,
+    setMessages,
+    setFailedClientIds,
+    setError,
+    translate: (key) => t(key),
+  });
 
   const saveEdit = useCallback(async (): Promise<void> => {
     if (!actionMessage || !token) return;
@@ -393,34 +161,22 @@ export function useRoomMessages({ token, viewerId }: UseRoomMessagesInput): UseR
     [t, token],
   );
 
-  const activeRoom = useMemo(
-    () => rooms.find((room) => room.id === activeRoomId) ?? null,
-    [activeRoomId, rooms],
-  );
-
-  const otherMember = useMemo(() => {
-    if (!activeRoom || !viewerId) return null;
-    return activeRoom.members.find((member) => member.userId !== viewerId) ?? null;
-  }, [activeRoom, viewerId]);
-
-  const memberById = useMemo(() => {
-    const map = new Map<string, ChatRoom["members"][number]>();
-    for (const member of activeRoom?.members ?? []) {
-      map.set(member.userId, member);
-    }
-    return map;
-  }, [activeRoom]);
-
-  const viewerLastReadAtMs = useMemo(() => {
-    if (!activeRoom || !viewerId) return 0;
-    const me = activeRoom.members.find((member) => member.userId === viewerId);
-    return me?.lastReadAt ? Date.parse(me.lastReadAt) : 0;
-  }, [activeRoom, viewerId]);
-
-  const firstUnreadIndex = useMemo(() => {
-    if (!viewerLastReadAtMs) return -1;
-    return messages.findIndex((message) => Date.parse(message.createdAt) > viewerLastReadAtMs);
-  }, [messages, viewerLastReadAtMs]);
+  const {
+    activeRoom,
+    otherMember,
+    memberById,
+    otherOnline,
+    filteredRooms,
+    grouped,
+    firstUnreadIndex,
+    otherLastReadAtMs,
+  } = useRoomMessagesDerived({
+    rooms,
+    activeRoomId,
+    messages,
+    viewerId,
+    searchTerm,
+  });
 
   const scrollToUnread = useCallback((): void => {
     if (firstUnreadIndex >= 0) {
@@ -435,47 +191,6 @@ export function useRoomMessages({ token, viewerId }: UseRoomMessagesInput): UseR
     didInitialScrollRef.current = true;
     requestAnimationFrame(scrollToUnread);
   }, [messages.length, scrollToUnread]);
-
-  const otherLastReadAtMs = useMemo(() => {
-    if (!otherMember?.lastReadAt) return 0;
-    return Date.parse(otherMember.lastReadAt);
-  }, [otherMember]);
-
-  const otherOnline = useMemo(
-    () =>
-      otherMember?.lastSeenAt
-        ? Date.now() - Date.parse(otherMember.lastSeenAt) < ONLINE_WINDOW_MS
-        : false,
-    [otherMember],
-  );
-
-  const filteredRooms = useMemo(() => {
-    const q = searchTerm.trim().toLocaleLowerCase();
-    if (!q) return rooms;
-    return rooms.filter((room) => {
-      const other = viewerId ? room.members.find((member) => member.userId !== viewerId) : null;
-      const haystack = [
-        other?.firstName,
-        other?.lastName,
-        other?.handle,
-        room.title,
-        room.lastMessage?.body,
-      ]
-        .filter(Boolean)
-        .join(" ")
-        .toLocaleLowerCase();
-      return haystack.includes(q);
-    });
-  }, [rooms, searchTerm, viewerId]);
-
-  const grouped = useMemo(
-    () =>
-      groupMessages(messages, {
-        authorId: (message) => message.authorId,
-        createdAt: (message) => message.createdAt,
-      }),
-    [messages],
-  );
 
   const activeTyping =
     activeRoomId && typingUserByRoom[activeRoomId] ? typingUserByRoom[activeRoomId] : null;

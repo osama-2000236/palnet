@@ -29,6 +29,7 @@ const AUTHED_ROUTES = [
   "/ar-PS/jobs",
   "/en/jobs",
   "/ar-PS/notifications",
+  "/ar-PS/activity",
   "/ar-PS/search",
   "/en/search",
   "/ar-PS/messages",

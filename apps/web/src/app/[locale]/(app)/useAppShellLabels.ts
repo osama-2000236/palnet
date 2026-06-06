@@ -12,6 +12,7 @@ export function useAppShellLabels(): AppShellLabels {
   const tSearch = useTranslations("search");
   const tMsg = useTranslations("messaging");
   const tNotif = useTranslations("notifications");
+  const tActivity = useTranslations("activity");
   const tBell = useTranslations("chrome.bell");
   const tProfile = useTranslations("profile");
   const tAuth = useTranslations("auth");
@@ -30,6 +31,7 @@ export function useAppShellLabels(): AppShellLabels {
         jobs: tNav("jobs"),
         messages: tMsg("title"),
         notifications: tNotif("title"),
+        activity: tActivity("title"),
         saved: tSaved("title"),
         employer: tEmployer("title"),
       },
@@ -40,6 +42,7 @@ export function useAppShellLabels(): AppShellLabels {
       unreadTemplate: {
         messages: tNav("unreadMessages", { count: "{count}" }),
         notifications: tNav("unreadNotifications", { count: "{count}" }),
+        activity: "",
         saved: "",
         employer: "",
       },
@@ -52,6 +55,7 @@ export function useAppShellLabels(): AppShellLabels {
       tNetwork,
       tMsg,
       tNotif,
+      tActivity,
       tSearch,
       tBell,
       tProfile,

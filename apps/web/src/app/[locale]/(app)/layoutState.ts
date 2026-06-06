@@ -12,6 +12,7 @@ export function routeOf(pathname: string, myHandle: string | null): AppShellRout
   if (path.startsWith("/jobs")) return "jobs";
   if (path.startsWith("/messages")) return "messages";
   if (path.startsWith("/notifications")) return "notifications";
+  if (path.startsWith("/activity")) return "activity";
   if (path.startsWith("/saved")) return "saved";
   if (path.startsWith("/employer")) return "employer";
   if (path.startsWith("/me")) return "profile";
