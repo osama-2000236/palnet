@@ -98,6 +98,11 @@ design-handoff-2026-05/   Bundle handed to Claude Design platform.
 - **Account hard-delete after 30-day grace** — needs a scheduled job.
 - **Real email provider** (console transport today), **Redis-backed SSE fanout + rate-limit** (in-memory now; `RateLimitBackend` interface ready), **virus/NSFW media scan** (`media/confirm` endpoint exists; real scanner deferred).
 - **Pre-launch env tasks:** universal-link files are drafts (need Apple Team ID + Android SHA256), EAS project id, prod Sentry/PostHog, **native Arabic copy review**, **legal/privacy counsel review**.
+- **Flaky test:** `apps/mobile/src/__tests__/onboarding-flow.test.tsx` (around `onboarding-identity-confirm`) fails intermittently then passes on re-run — async/timing flake, not a real regression. Verified 2026-06-12: full suite is **31 suites / 83 tests / 5 snapshots green** on a clean re-run. Stabilize the test rather than chasing a phantom bug.
+
+### Gate state at handoff (verified 2026-06-12, clean `main`)
+
+`pnpm lint:tokens` clean · `pnpm format:check` green · `pnpm type-check` 13/13 · `pnpm test` green (one flaky mobile test, see above). `main` working tree is clean (only untracked local `.claude/settings.json`).
 
 ---
 
