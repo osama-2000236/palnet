@@ -66,6 +66,7 @@ const AUTHED_BASE_ROUTES: ReadonlyArray<{ path: (locale: string) => string; labe
     label: "own profile",
   },
   { path: (locale) => `/${locale}/messages`, label: "messages" },
+  { path: (locale) => `/${locale}/me/premium`, label: "premium" },
 ];
 
 test.describe("authenticated routes", () => {

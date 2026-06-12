@@ -11,12 +11,10 @@ import {
 } from "@baydar/shared";
 import { Alert, Button, Skeleton, Surface } from "@baydar/ui-web";
 import { useLocale, useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
-import { apiFetch } from "@/lib/api";
+import { apiFetch, getValidAccessToken } from "@/lib/api";
 import { toErrorMessage } from "@/lib/error-message";
-import { getAccessToken } from "@/lib/session";
 
 import { PremiumCheckout } from "./_components/PremiumCheckout";
 import { formatMoney } from "./format";
@@ -31,7 +29,6 @@ export default function PremiumPage(): JSX.Element {
   const tErrors = useTranslations("errors");
   const tCommon = useTranslations("common");
   const locale = useLocale();
-  const router = useRouter();
 
   const [catalog, setCatalog] = useState<BillingCatalogDto | null>(null);
   const [billingMe, setBillingMe] = useState<BillingMeDto | null>(null);
@@ -41,11 +38,10 @@ export default function PremiumPage(): JSX.Element {
   const [checkoutOpen, setCheckoutOpen] = useState(false);
 
   async function load(): Promise<void> {
-    const token = getAccessToken();
-    if (!token) {
-      router.replace(`/${locale}/login`);
-      return;
-    }
+    // The (app) layout owns the login redirect; here we only wait for a
+    // usable token (refreshing if the in-memory one is gone after a reload).
+    const token = await getValidAccessToken();
+    if (!token) return;
     setError(null);
     try {
       const [nextCatalog, nextMe, nextKarama] = await Promise.all([

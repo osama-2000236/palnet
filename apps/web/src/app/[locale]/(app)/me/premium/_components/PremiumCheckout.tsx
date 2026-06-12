@@ -13,9 +13,8 @@ import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 
-import { apiFetch } from "@/lib/api";
+import { apiFetch, getValidAccessToken } from "@/lib/api";
 import { toErrorMessage } from "@/lib/error-message";
-import { getAccessToken } from "@/lib/session";
 
 import { formatMoney } from "../format";
 
@@ -72,7 +71,7 @@ export function PremiumCheckout({
   ];
 
   async function checkout(): Promise<void> {
-    const token = getAccessToken();
+    const token = await getValidAccessToken();
     if (!token) return;
     setBusy(true);
     setError(null);
