@@ -86,7 +86,11 @@ export default function ActivityRoute(): JSX.Element {
   const metrics = useMemo<ActivityMetric[]>(() => {
     if (!state) return [];
     return [
-      { label: t("metrics.notifications"), value: state.unreadNotifications, href: "/notifications" },
+      {
+        label: t("metrics.notifications"),
+        value: state.unreadNotifications,
+        href: "/notifications",
+      },
       { label: t("metrics.requests"), value: state.incoming.length, href: "/network" },
       { label: t("metrics.jobs"), value: state.jobs.length, href: "/jobs" },
     ];

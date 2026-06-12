@@ -120,12 +120,15 @@ function NavButton({
 }): JSX.Element {
   const item = NAV_ITEMS.find((navItem) => navItem.key === route)!;
   const active = currentRoute === route;
-  const count = route === "messages" ? messagesUnread : route === "notifications" ? notificationsUnread : undefined;
+  const count =
+    route === "messages"
+      ? messagesUnread
+      : route === "notifications"
+        ? notificationsUnread
+        : undefined;
   const badgeText = typeof count === "number" ? formatBadge(count) : "";
   const srUnread =
-    typeof count === "number" && count > 0
-      ? unreadLabelFor(labels, route, count)
-      : undefined;
+    typeof count === "number" && count > 0 ? unreadLabelFor(labels, route, count) : undefined;
   const disconnected = route === "notifications" && notificationsConnectionDropped;
 
   return (

@@ -140,7 +140,11 @@ async function sendMessage(
   });
 }
 
-function replaceByClientId(current: Message[], clientMessageId: string, message: Message): Message[] {
+function replaceByClientId(
+  current: Message[],
+  clientMessageId: string,
+  message: Message,
+): Message[] {
   const idx = current.findIndex((item) => item.clientMessageId === clientMessageId);
   if (idx < 0) return current;
   const next = current.slice();

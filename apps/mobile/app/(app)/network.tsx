@@ -2,12 +2,7 @@ import {
   ConnectionListItem as ConnectionListItemSchema,
   type ConnectionListItem,
 } from "@baydar/shared";
-import {
-  AppHeader,
-  RecordCardSkeleton,
-  SegmentedControl,
-  nativeTokens,
-} from "@baydar/ui-native";
+import { AppHeader, RecordCardSkeleton, SegmentedControl, nativeTokens } from "@baydar/ui-native";
 import { router } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";

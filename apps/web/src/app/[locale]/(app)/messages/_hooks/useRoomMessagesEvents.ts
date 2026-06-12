@@ -1,7 +1,13 @@
 "use client";
 
 import { type ChatRoom, type Message, type WsChatEvent } from "@baydar/shared";
-import { useCallback, useEffect, type Dispatch, type MutableRefObject, type SetStateAction } from "react";
+import {
+  useCallback,
+  useEffect,
+  type Dispatch,
+  type MutableRefObject,
+  type SetStateAction,
+} from "react";
 
 import { apiCall } from "@/lib/api";
 import { TYPING_TTL_MS, upsertMessage } from "../_utils";
@@ -44,7 +50,10 @@ export function useRoomMessagesEvents({
             if (threadRef.current) threadRef.current.scrollTop = threadRef.current.scrollHeight;
           });
           if (message.authorId !== viewerId) {
-            void apiCall(`/messaging/rooms/${message.roomId}/read`, { method: "POST", token }).catch(() => {});
+            void apiCall(`/messaging/rooms/${message.roomId}/read`, {
+              method: "POST",
+              token,
+            }).catch(() => {});
           }
         }
         return;
@@ -52,7 +61,9 @@ export function useRoomMessagesEvents({
 
       if (event.type === "message.edited" || event.type === "message.deleted") {
         const message = event.payload;
-        setMessages((prev) => (message.roomId === activeRoomId ? upsertMessage(prev, message) : prev));
+        setMessages((prev) =>
+          message.roomId === activeRoomId ? upsertMessage(prev, message) : prev,
+        );
         setRooms((prev) =>
           prev.map((room) =>
             room.id === message.roomId
@@ -94,7 +105,11 @@ export function useRoomMessagesEvents({
   }, [setTypingUserByRoom]);
 }
 
-function reconcileNewMessage(current: Message[], message: Message, activeRoomId: string | null): Message[] {
+function reconcileNewMessage(
+  current: Message[],
+  message: Message,
+  activeRoomId: string | null,
+): Message[] {
   if (message.roomId !== activeRoomId) return current;
   const idx = current.findIndex(
     (item) => item.clientMessageId && item.clientMessageId === message.clientMessageId,
@@ -128,7 +143,12 @@ function updateRoomForMessage(
     .sort((a, b) => (a.updatedAt < b.updatedAt ? 1 : -1));
 }
 
-function updateRoomReadReceipt(rooms: ChatRoom[], roomId: string, userId: string, at: string): ChatRoom[] {
+function updateRoomReadReceipt(
+  rooms: ChatRoom[],
+  roomId: string,
+  userId: string,
+  at: string,
+): ChatRoom[] {
   return rooms.map((room) =>
     room.id === roomId
       ? {

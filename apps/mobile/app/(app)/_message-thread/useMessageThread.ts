@@ -86,8 +86,7 @@ export function useMessageThread(roomId: string | undefined) {
       path: "/messaging/stream",
       token,
       schema: WsChatEvent,
-      onEvent: (event) =>
-        applyThreadEvent({ event, roomId, token, setMessages, setRoom }),
+      onEvent: (event) => applyThreadEvent({ event, roomId, token, setMessages, setRoom }),
     });
   }, [token, roomId, refresh, isConnected]);
 

@@ -90,7 +90,11 @@ export function AppShellProfileMenu({
             : "text-ink-muted hover:bg-surface-subtle hover:text-ink border-transparent",
         )}
       >
-        {me ? <Avatar user={me} size="sm" /> : <span className="bg-surface-sunken h-8 w-8 animate-pulse rounded-full" />}
+        {me ? (
+          <Avatar user={me} size="sm" />
+        ) : (
+          <span className="bg-surface-sunken h-8 w-8 animate-pulse rounded-full" />
+        )}
         <span className="inline-flex items-center gap-0.5">
           {labels.myProfile}
           <Icon name="chevron-down" size={12} />
@@ -105,12 +109,22 @@ export function AppShellProfileMenu({
           onKeyDown={onMenuKeyDown}
           className="border-line-soft bg-surface shadow-card absolute end-0 top-full z-30 mt-1 min-w-[240px] rounded-md border py-1"
         >
-          <ProfileHero me={me} meHeadline={meHeadline} labels={labels} onViewProfile={onViewProfile} onOpenChange={onOpenChange} />
+          <ProfileHero
+            me={me}
+            meHeadline={meHeadline}
+            labels={labels}
+            onViewProfile={onViewProfile}
+            onOpenChange={onOpenChange}
+          />
           {onViewProfile && !me ? (
-            <MenuItem onSelect={() => select(onOpenChange, onViewProfile)}>{labels.viewProfile}</MenuItem>
+            <MenuItem onSelect={() => select(onOpenChange, onViewProfile)}>
+              {labels.viewProfile}
+            </MenuItem>
           ) : null}
           {onOpenSettings ? (
-            <MenuItem onSelect={() => select(onOpenChange, onOpenSettings)}>{labels.settings}</MenuItem>
+            <MenuItem onSelect={() => select(onOpenChange, onOpenSettings)}>
+              {labels.settings}
+            </MenuItem>
           ) : null}
           {onSignOut ? (
             <>
@@ -130,7 +144,10 @@ function ProfileHero({
   labels,
   onViewProfile,
   onOpenChange,
-}: Pick<AppShellProfileMenuProps, "me" | "meHeadline" | "labels" | "onViewProfile" | "onOpenChange">): JSX.Element | null {
+}: Pick<
+  AppShellProfileMenuProps,
+  "me" | "meHeadline" | "labels" | "onViewProfile" | "onOpenChange"
+>): JSX.Element | null {
   if (!me) return null;
   return (
     <div className="border-line-soft mb-1 flex gap-3 border-b px-3 py-3">

@@ -25,7 +25,11 @@ import {
 } from "./_onboarding/api";
 import { fieldsForStep } from "./_onboarding/flow";
 import { onboardingSchema } from "./_onboarding/schema";
-import { defaultOnboardingValues, type OnboardingFormValues, type StepKey } from "./_onboarding/types";
+import {
+  defaultOnboardingValues,
+  type OnboardingFormValues,
+  type StepKey,
+} from "./_onboarding/types";
 
 export default function OnboardingScreen(): JSX.Element {
   const { t } = useTranslation();
@@ -249,7 +253,9 @@ export default function OnboardingScreen(): JSX.Element {
               step={step.key}
             />
             <StepDots active={stepIndex} count={steps.length} />
-            {!isConnected ? <StateMessage message={t("onboarding.offline")} tone="warning" /> : null}
+            {!isConnected ? (
+              <StateMessage message={t("onboarding.offline")} tone="warning" />
+            ) : null}
             <StepContent
               avatarAsset={avatarAsset}
               backgroundKind={backgroundKind}

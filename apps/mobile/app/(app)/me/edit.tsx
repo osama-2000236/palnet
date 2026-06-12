@@ -88,11 +88,33 @@ export default function EditProfileScreen(): JSX.Element {
               </Button>
             }
           />
-          {error ? <StateMessage message={error} actionLabel={t("common.retry")} onAction={() => void refresh()} /> : null}
-          <BasicsCard profile={profile} onChanged={(next) => void handleProfileChanged(next)} onError={setError} />
-          <ExperiencesCard profile={profile} onChanged={(next) => void handleProfileChanged(next)} onError={setError} />
-          <EducationsCard profile={profile} onChanged={(next) => void handleProfileChanged(next)} onError={setError} />
-          <SkillsCard profile={profile} onChanged={(next) => void handleProfileChanged(next)} onError={setError} />
+          {error ? (
+            <StateMessage
+              message={error}
+              actionLabel={t("common.retry")}
+              onAction={() => void refresh()}
+            />
+          ) : null}
+          <BasicsCard
+            profile={profile}
+            onChanged={(next) => void handleProfileChanged(next)}
+            onError={setError}
+          />
+          <ExperiencesCard
+            profile={profile}
+            onChanged={(next) => void handleProfileChanged(next)}
+            onError={setError}
+          />
+          <EducationsCard
+            profile={profile}
+            onChanged={(next) => void handleProfileChanged(next)}
+            onError={setError}
+          />
+          <SkillsCard
+            profile={profile}
+            onChanged={(next) => void handleProfileChanged(next)}
+            onError={setError}
+          />
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>

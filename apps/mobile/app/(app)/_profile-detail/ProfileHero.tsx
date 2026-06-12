@@ -37,9 +37,7 @@ export function ProfileHero({
           {profile.firstName} {profile.lastName}
         </Text>
         {profile.headline ? <Text style={profileStyles.headline}>{profile.headline}</Text> : null}
-        {profile.location ? (
-          <Text style={profileStyles.location}>{profile.location}</Text>
-        ) : null}
+        {profile.location ? <Text style={profileStyles.location}>{profile.location}</Text> : null}
         <Text style={profileStyles.handle}>/in/{profile.handle}</Text>
       </View>
 

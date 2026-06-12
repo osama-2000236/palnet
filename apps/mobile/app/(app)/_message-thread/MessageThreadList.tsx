@@ -1,10 +1,5 @@
 import { type ChatRoom, type Message } from "@baydar/shared";
-import {
-  MessageBubble,
-  Surface,
-  nativeTokens,
-  type MessageBubbleLabels,
-} from "@baydar/ui-native";
+import { MessageBubble, Surface, nativeTokens, type MessageBubbleLabels } from "@baydar/ui-native";
 import { FlatList, Pressable, RefreshControl, Text, View } from "react-native";
 
 import { computeStatus, shortTime } from "./utils";
@@ -160,7 +155,9 @@ function MessageRow({
           }
           edited={Boolean(item.editedAt)}
           deleted={Boolean(item.deletedAt)}
-          onRetry={item.clientMessageId ? () => onRetryFailed(item.clientMessageId as string) : undefined}
+          onRetry={
+            item.clientMessageId ? () => onRetryFailed(item.clientMessageId as string) : undefined
+          }
           labels={labels}
         >
           {item.body}

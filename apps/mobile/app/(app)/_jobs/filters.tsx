@@ -89,7 +89,13 @@ export function FilterSheet({
           labelFor={(v) => t(`jobs.locationLabels.${v}`)}
         />
       </Field>
-      <View style={{ flexDirection: "row", gap: nativeTokens.space[2], marginTop: nativeTokens.space[2] }}>
+      <View
+        style={{
+          flexDirection: "row",
+          gap: nativeTokens.space[2],
+          marginTop: nativeTokens.space[2],
+        }}
+      >
         <View style={{ flex: 1 }}>
           <Button variant="secondary" size="md" fullWidth onPress={() => onChange(EMPTY_FILTERS)}>
             {t("common.clear")}
