@@ -85,6 +85,8 @@ const EXPECTED_ROUTES = [
   "GET /auth/me",
   "POST /auth/stream-token",
   "POST /billing/checkout-session",
+  "GET /billing/catalog",
+  "GET /billing/me",
   "GET /billing/invoices",
   "POST /billing/invoices/:id/pay-by-transfer",
   "POST /billing/webhooks/hyperpay",
