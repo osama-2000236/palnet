@@ -88,6 +88,7 @@ const EXPECTED_ROUTES = [
   "GET /billing/catalog",
   "GET /billing/me",
   "GET /billing/invoices",
+  "GET /billing/companies/:companyId/summary",
   "POST /billing/invoices/:id/pay-by-transfer",
   "POST /billing/webhooks/hyperpay",
   "POST /posts/:id/comments",

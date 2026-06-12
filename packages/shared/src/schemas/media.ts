@@ -4,7 +4,7 @@ import { MediaKind } from "../enums";
 
 // Where the uploaded asset will live in the product surface. Drives the
 // storage key prefix and public URL path.
-export const MediaPurpose = z.enum(["AVATAR", "COVER", "POST_MEDIA"]);
+export const MediaPurpose = z.enum(["AVATAR", "COVER", "POST_MEDIA", "RECEIPT"]);
 export type MediaPurpose = z.infer<typeof MediaPurpose>;
 
 // ──────────────────────────────────────────────────────────────────────────

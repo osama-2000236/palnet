@@ -5,6 +5,7 @@ import { KaramaService } from "../karama/karama.service";
 import { PrismaService } from "../prisma/prisma.service";
 
 import { BillingService } from "./billing.service";
+import { EmployerEntitlementsService } from "./employer-entitlements.service";
 import { HyperPayClient } from "./hyperpay.client";
 import { WalletRegistry } from "./wallets/wallet-registry";
 
@@ -13,6 +14,8 @@ type PrismaStub = {
   user: { findUnique: jest.Mock };
   companyMember: { findFirst: jest.Mock; findMany: jest.Mock };
   subscription: { create: jest.Mock; findFirst: jest.Mock };
+  job: { count: jest.Mock };
+  employerCredit: { findMany: jest.Mock };
   invoice: {
     create: jest.Mock;
     update: jest.Mock;
@@ -30,6 +33,8 @@ function buildPrisma(): PrismaStub {
     user: { findUnique: jest.fn() },
     companyMember: { findFirst: jest.fn(), findMany: jest.fn() },
     subscription: { create: jest.fn(), findFirst: jest.fn() },
+    job: { count: jest.fn() },
+    employerCredit: { findMany: jest.fn() },
     invoice: {
       create: jest.fn(),
       update: jest.fn(),
@@ -89,6 +94,10 @@ describe("BillingService", () => {
             getMonthlyEarnings: jest.fn(),
             getBalance: jest.fn(),
           },
+        },
+        {
+          provide: EmployerEntitlementsService,
+          useValue: { activeJobLimit: jest.fn().mockResolvedValue(5) },
         },
         {
           provide: WalletRegistry,
@@ -332,6 +341,48 @@ describe("BillingService", () => {
 
     prisma.subscription.findFirst.mockResolvedValue(null);
     expect((await service.getBillingMe("user-1")).subscription).toBeNull();
+  });
+
+  it("summarizes company billing: plan, job quota, and live credits", async () => {
+    prisma.subscription.findFirst.mockResolvedValue({
+      id: "sub-9",
+      userId: null,
+      companyId: "company-1",
+      planId: "plan_employer_basic",
+      status: "ACTIVE",
+      currentPeriodStart: new Date("2026-06-01T00:00:00Z"),
+      currentPeriodEnd: new Date("2026-07-01T00:00:00Z"),
+      providerSubscriptionId: null,
+      cancelAtPeriodEnd: false,
+      plan: {
+        id: "plan_employer_basic",
+        code: "EMPLOYER_BASIC",
+        name: "Employer Basic",
+        priceCents: 2900,
+        currency: "USD",
+        intervalDays: 30,
+        features: { activeJobs: 5 },
+        isActive: true,
+      },
+    });
+    prisma.job.count.mockResolvedValue(3);
+    prisma.employerCredit.findMany.mockResolvedValue([
+      { kind: "FEATURED_SLOT", remaining: 1, expiresAt: new Date("2026-08-01T00:00:00Z") },
+    ]);
+
+    const summary = await service.getCompanyBillingSummary("company-1");
+
+    expect(summary).toMatchObject({
+      activeJobs: 3,
+      jobLimit: 5,
+      subscription: { plan: { code: "EMPLOYER_BASIC" } },
+      credits: [{ kind: "FEATURED_SLOT", remaining: 1, expiresAt: "2026-08-01T00:00:00.000Z" }],
+    });
+    expect(prisma.employerCredit.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ companyId: "company-1", remaining: { gt: 0 } }),
+      }),
+    );
   });
 
   it("lists bank-transfer receipts waiting for admin review", async () => {

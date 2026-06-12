@@ -24,5 +24,6 @@ describe("viewer-scoped cache headers", () => {
     expect(cacheControlFor(BillingController.prototype.catalog)).toBe("private, no-store");
     expect(cacheControlFor(BillingController.prototype.me)).toBe("private, no-store");
     expect(cacheControlFor(BillingController.prototype.invoices)).toBe("private, no-store");
+    expect(cacheControlFor(BillingController.prototype.companySummary)).toBe("private, no-store");
   });
 });

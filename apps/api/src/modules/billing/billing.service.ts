@@ -6,6 +6,7 @@ import {
   type BillingMe,
   type CheckoutSession,
   type CheckoutSessionBody,
+  type CompanyBillingSummary,
   type Invoice as InvoiceDto,
   type Subscription as SubscriptionDto,
   ErrorCode,
@@ -22,6 +23,7 @@ import { KaramaService } from "../karama/karama.service";
 import { PrismaService } from "../prisma/prisma.service";
 
 import { convertCents, deriveDisplayCurrency } from "./currency";
+import { EmployerEntitlementsService } from "./employer-entitlements.service";
 import { HyperPayClient } from "./hyperpay.client";
 import { ALL_PLAN_CODES, PLAN_DEFS, POINTS_PRICE_BY_PLAN } from "./pricing";
 import { WalletRegistry } from "./wallets/wallet-registry";
@@ -43,6 +45,7 @@ export class BillingService {
     private readonly config: ConfigService<Env, true>,
     private readonly karama: KaramaService,
     private readonly wallets: WalletRegistry,
+    private readonly entitlements: EmployerEntitlementsService,
   ) {}
 
   async createCheckoutSession(userId: string, body: CheckoutSessionBody): Promise<CheckoutSession> {
@@ -283,6 +286,41 @@ export class BillingService {
       include: { plan: true },
     });
     return { subscription: row ? toSubscriptionDto(row) : null };
+  }
+
+  // Billing state for one company. Access (owner/admin membership) is
+  // enforced by CompanyRoleGuard on the controller route.
+  async getCompanyBillingSummary(companyId: string): Promise<CompanyBillingSummary> {
+    const now = new Date();
+    const [subscription, activeJobs, jobLimit, credits] = await Promise.all([
+      this.prisma.subscription.findFirst({
+        where: { companyId, status: { in: ["TRIALING", "ACTIVE", "PAST_DUE"] } },
+        orderBy: { createdAt: "desc" },
+        include: { plan: true },
+      }),
+      this.prisma.job.count({ where: { companyId, isActive: true, deletedAt: null } }),
+      this.entitlements.activeJobLimit(companyId),
+      this.prisma.employerCredit.findMany({
+        where: {
+          companyId,
+          remaining: { gt: 0 },
+          OR: [{ expiresAt: null }, { expiresAt: { gt: now } }],
+        },
+        orderBy: { expiresAt: "asc" },
+        select: { kind: true, remaining: true, expiresAt: true },
+      }),
+    ]);
+
+    return {
+      subscription: subscription ? toSubscriptionDto(subscription) : null,
+      activeJobs,
+      jobLimit,
+      credits: credits.map((credit) => ({
+        kind: credit.kind,
+        remaining: credit.remaining,
+        expiresAt: credit.expiresAt?.toISOString() ?? null,
+      })),
+    };
   }
 
   async listInvoices(userId: string): Promise<InvoiceDto[]> {

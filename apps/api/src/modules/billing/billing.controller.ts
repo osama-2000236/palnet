@@ -4,10 +4,12 @@ import {
   BillingMe,
   CheckoutSession,
   CheckoutSessionBody,
+  CompanyBillingSummary,
   Invoice,
   type BillingCatalog as BillingCatalogDto,
   type BillingMe as BillingMeDto,
   type CheckoutSession as CheckoutSessionDto,
+  type CompanyBillingSummary as CompanyBillingSummaryDto,
   type Invoice as InvoiceDto,
 } from "@baydar/shared";
 import {
@@ -20,6 +22,7 @@ import {
   HttpStatus,
   Param,
   Post,
+  UseGuards,
 } from "@nestjs/common";
 import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 import { z } from "zod";
@@ -28,6 +31,7 @@ import { RequireCompleteProfile } from "../../common/require-complete-profile.de
 import { ZodValidationPipe } from "../../common/zod-pipe";
 import { CurrentUser, type AuthUser } from "../auth/decorators/current-user.decorator";
 import { Public } from "../auth/decorators/public.decorator";
+import { CompanyRoleGuard, RequireCompanyRole } from "../companies/guards/company-role.guard";
 
 import { BillingService } from "./billing.service";
 
@@ -71,6 +75,16 @@ export class BillingController {
   @Header("Cache-Control", "private, no-store")
   async invoices(@CurrentUser() user: AuthUser): Promise<InvoiceDto[]> {
     return z.array(Invoice).parse(await this.billing.listInvoices(user.id));
+  }
+
+  @Get("companies/:companyId/summary")
+  @ApiBearerAuth()
+  @RequireCompleteProfile()
+  @UseGuards(CompanyRoleGuard)
+  @RequireCompanyRole("OWNER", "ADMIN")
+  @Header("Cache-Control", "private, no-store")
+  async companySummary(@Param("companyId") companyId: string): Promise<CompanyBillingSummaryDto> {
+    return CompanyBillingSummary.parse(await this.billing.getCompanyBillingSummary(companyId));
   }
 
   @Post("invoices/:id/pay-by-transfer")

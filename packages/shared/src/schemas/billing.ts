@@ -119,6 +119,30 @@ export const BillingMe = z.object({
 });
 export type BillingMe = z.infer<typeof BillingMe>;
 
+export const EmployerCreditKind = {
+  FEATURED_SLOT: "FEATURED_SLOT",
+  JOB_POST: "JOB_POST",
+  APPLICATION_BOOST: "APPLICATION_BOOST",
+} as const;
+export type EmployerCreditKind = (typeof EmployerCreditKind)[keyof typeof EmployerCreditKind];
+
+export const EmployerCreditSummary = z.object({
+  kind: z.nativeEnum(EmployerCreditKind),
+  remaining: z.number().int().nonnegative(),
+  expiresAt: z.string().datetime().nullable(),
+});
+export type EmployerCreditSummary = z.infer<typeof EmployerCreditSummary>;
+
+// Billing state of one company, for owners/admins: the active company
+// subscription, how much of the job quota is used, and unspent credits.
+export const CompanyBillingSummary = z.object({
+  subscription: Subscription.nullable(),
+  activeJobs: z.number().int().nonnegative(),
+  jobLimit: z.number().int().positive(),
+  credits: z.array(EmployerCreditSummary),
+});
+export type CompanyBillingSummary = z.infer<typeof CompanyBillingSummary>;
+
 export const CheckoutSessionBody = z.object({
   planCode: z.nativeEnum(PlanCode),
   companyId: z.string().cuid().optional(),
