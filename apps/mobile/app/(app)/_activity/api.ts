@@ -94,3 +94,5 @@ export function buildActivityTasks(state: ActivityState, t: TFunction): Activity
   });
   return next;
 }
+
+export default () => null;

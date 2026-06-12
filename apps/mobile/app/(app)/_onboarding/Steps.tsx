@@ -2,7 +2,7 @@ import { Button, Icon, Surface, nativeTokens } from "@baydar/ui-native";
 import { Image } from "expo-image";
 import { Controller, type Control, type FieldErrors } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import { Pressable, Switch, Text, View } from "react-native";
+import { I18nManager, Pressable, Switch, Text, View } from "react-native";
 
 import type { PickedAsset } from "@/lib/uploads";
 
@@ -68,7 +68,7 @@ export function IdentityStep({
                     fontFamily: nativeTokens.type.family.body,
                     fontSize: nativeTokens.type.scale.small.size,
                     lineHeight: nativeTokens.type.scale.small.line,
-                    textAlign: "right",
+                    textAlign: I18nManager.isRTL ? "right" : "left",
                   }}
                 >
                   {t("onboarding.identity.confirm")}
@@ -201,16 +201,61 @@ export function BackgroundStep({
       </View>
       {backgroundKind === "work" ? (
         <View style={{ gap: nativeTokens.space[3] }}>
-          <ControlledField control={control} error={errors.workTitle?.message} label={t("profile.expTitle")} name="workTitle" testID="onboarding-work-title" />
-          <ControlledField control={control} error={errors.companyName?.message} label={t("profile.company")} name="companyName" testID="onboarding-company" />
-          <ControlledField control={control} error={errors.workStartYear?.message} keyboardType="number-pad" label={t("onboarding.background.startYear")} maxLength={4} name="workStartYear" testID="onboarding-work-start-year" />
-          <ControlledField control={control} error={errors.workDescription?.message} label={t("profile.description")} multiline name="workDescription" testID="onboarding-work-description" />
+          <ControlledField
+            control={control}
+            error={errors.workTitle?.message}
+            label={t("profile.expTitle")}
+            name="workTitle"
+            testID="onboarding-work-title"
+          />
+          <ControlledField
+            control={control}
+            error={errors.companyName?.message}
+            label={t("profile.company")}
+            name="companyName"
+            testID="onboarding-company"
+          />
+          <ControlledField
+            control={control}
+            error={errors.workStartYear?.message}
+            keyboardType="number-pad"
+            label={t("onboarding.background.startYear")}
+            maxLength={4}
+            name="workStartYear"
+            testID="onboarding-work-start-year"
+          />
+          <ControlledField
+            control={control}
+            error={errors.workDescription?.message}
+            label={t("profile.description")}
+            multiline
+            name="workDescription"
+            testID="onboarding-work-description"
+          />
         </View>
       ) : (
         <View style={{ gap: nativeTokens.space[3] }}>
-          <ControlledField control={control} error={errors.school?.message} label={t("profile.school")} name="school" testID="onboarding-school" />
-          <ControlledField control={control} error={errors.degree?.message} label={t("profile.degree")} name="degree" testID="onboarding-degree" />
-          <ControlledField control={control} error={errors.fieldOfStudy?.message} label={t("profile.fieldOfStudy")} name="fieldOfStudy" testID="onboarding-field-of-study" />
+          <ControlledField
+            control={control}
+            error={errors.school?.message}
+            label={t("profile.school")}
+            name="school"
+            testID="onboarding-school"
+          />
+          <ControlledField
+            control={control}
+            error={errors.degree?.message}
+            label={t("profile.degree")}
+            name="degree"
+            testID="onboarding-degree"
+          />
+          <ControlledField
+            control={control}
+            error={errors.fieldOfStudy?.message}
+            label={t("profile.fieldOfStudy")}
+            name="fieldOfStudy"
+            testID="onboarding-field-of-study"
+          />
         </View>
       )}
     </View>
@@ -246,7 +291,11 @@ export function PhotoStep({
         }}
       >
         {avatarAsset ? (
-          <Image source={{ uri: avatarAsset.uri }} contentFit="cover" style={{ width: "100%", height: "100%" }} />
+          <Image
+            source={{ uri: avatarAsset.uri }}
+            contentFit="cover"
+            style={{ width: "100%", height: "100%" }}
+          />
         ) : (
           <Icon name="logo" size={nativeTokens.space[12]} color={nativeTokens.color.brand600} />
         )}
@@ -289,3 +338,5 @@ export function PhotoStep({
     </View>
   );
 }
+
+export default () => null;

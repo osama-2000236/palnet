@@ -1,7 +1,13 @@
-import { Button, Input as NativeInput, Surface, nativeTokens, type InputProps } from "@baydar/ui-native";
+import {
+  Button,
+  Input as NativeInput,
+  Surface,
+  nativeTokens,
+  type InputProps,
+} from "@baydar/ui-native";
 import { Controller, type Control, type FieldPath } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import { Text, View } from "react-native";
+import { I18nManager, Text, View } from "react-native";
 
 import type { OnboardingFormValues } from "./types";
 
@@ -41,7 +47,7 @@ export function ControlledField({
               fontSize: nativeTokens.type.scale.small.size,
               fontWeight: "700",
               lineHeight: nativeTokens.type.scale.small.line,
-              textAlign: "right",
+              textAlign: I18nManager.isRTL ? "right" : "left",
             }}
           >
             {label}
@@ -56,7 +62,10 @@ export function ControlledField({
             inputStyle={[
               props.keyboardType === "email-address"
                 ? { textAlign: "left", writingDirection: "ltr" }
-                : { textAlign: "right", writingDirection: "rtl" },
+                : {
+                    textAlign: I18nManager.isRTL ? "right" : "left",
+                    writingDirection: I18nManager.isRTL ? "rtl" : "ltr",
+                  },
               {
                 minHeight: multiline ? nativeTokens.space[20] : nativeTokens.chrome.minHit,
                 color: nativeTokens.color.ink,
@@ -89,7 +98,7 @@ export function FieldError({ message }: { message: string }): JSX.Element {
         fontFamily: nativeTokens.type.family.sans,
         fontSize: nativeTokens.type.scale.caption.size,
         lineHeight: nativeTokens.type.scale.caption.line,
-        textAlign: "right",
+        textAlign: I18nManager.isRTL ? "right" : "left",
       }}
     >
       {t(message)}
@@ -129,7 +138,7 @@ export function EmptyState({ message }: { message: string }): JSX.Element {
           fontFamily: nativeTokens.type.family.body,
           fontSize: nativeTokens.type.scale.body.size,
           lineHeight: nativeTokens.type.scale.body.line,
-          textAlign: "right",
+          textAlign: I18nManager.isRTL ? "right" : "left",
         }}
       >
         {message}
@@ -137,3 +146,5 @@ export function EmptyState({ message }: { message: string }): JSX.Element {
     </Surface>
   );
 }
+
+export default () => null;

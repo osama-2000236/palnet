@@ -1,6 +1,6 @@
 import { Button, Surface, nativeTokens } from "@baydar/ui-native";
 import { useTranslation } from "react-i18next";
-import { Text, View } from "react-native";
+import { I18nManager, Text, View } from "react-native";
 
 import type { StepKey } from "./types";
 
@@ -27,7 +27,7 @@ export function OnboardingHeader({
           fontSize: nativeTokens.type.scale.caption.size,
           fontWeight: "700",
           lineHeight: nativeTokens.type.scale.caption.line,
-          textAlign: "right",
+          textAlign: I18nManager.isRTL ? "right" : "left",
         }}
       >
         {t("onboarding.progress", { current: active + 1, total: count })}
@@ -40,7 +40,7 @@ export function OnboardingHeader({
           fontSize: nativeTokens.type.scale.display.size,
           fontWeight: "700",
           lineHeight: nativeTokens.type.scale.display.line,
-          textAlign: "right",
+          textAlign: I18nManager.isRTL ? "right" : "left",
         }}
       >
         {label}
@@ -52,7 +52,7 @@ export function OnboardingHeader({
           fontFamily: nativeTokens.type.family.body,
           fontSize: nativeTokens.type.scale.body.size,
           lineHeight: nativeTokens.type.scale.body.line,
-          textAlign: "right",
+          textAlign: I18nManager.isRTL ? "right" : "left",
         }}
       >
         {t(`onboarding.stepCopy.${step}`)}
@@ -147,8 +147,8 @@ export function OnboardingFooter({
         borderTopColor: nativeTokens.color.lineSoft,
         backgroundColor: nativeTokens.color.surfaceMuted,
         position: "absolute",
-        left: 0,
-        right: 0,
+        start: 0,
+        end: 0,
         bottom: 0,
         zIndex: 20,
         elevation: 20,
@@ -180,3 +180,5 @@ export function OnboardingFooter({
     </View>
   );
 }
+
+export default () => null;

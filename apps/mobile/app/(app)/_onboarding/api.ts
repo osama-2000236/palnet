@@ -64,7 +64,10 @@ export async function persistOnboarding({
     }
   }
 
-  profile = values.backgroundKind === "work" ? await addWork(values, token) : await addEducation(values, token);
+  profile =
+    values.backgroundKind === "work"
+      ? await addWork(values, token)
+      : await addEducation(values, token);
 
   if (selectedSuggestionIds.size > 0) {
     await Promise.allSettled(
@@ -82,7 +85,13 @@ export async function persistOnboarding({
 }
 
 export function toHandle(value: string): string {
-  return value.trim().toLowerCase().replace(/[^a-z0-9-]+/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "").slice(0, 30);
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9-]+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "")
+    .slice(0, 30);
 }
 
 function isOptionalAvatarUploadError(error: unknown): boolean {
@@ -123,3 +132,5 @@ async function addEducation(values: OnboardingFormValues, token: string): Promis
     }),
   });
 }
+
+export default () => null;
