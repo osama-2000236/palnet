@@ -179,7 +179,11 @@
     "headline": "Headline",
     "location": "Location (city)",
     "submit": "Save and continue",
-    "success": "Profile saved!"
+    "success": {
+      "title": "Profile saved!",
+      "body": "Your profile has been updated successfully.",
+      "goToFeed": "Go to feed"
+    }
   },
   "feed": {
     "title": "Feed",
@@ -531,20 +535,6 @@
     "title": "Saved",
     "subtitle": "Bookmarked posts and content"
   },
-  "onboarding": {
-    "title": "Complete your profile",
-    "subtitle": "This helps others find you.",
-    "handle": "Your handle",
-    "handleHint": "Appears as /in/{handle}",
-    "headline": "Headline",
-    "location": "Location (city)",
-    "submit": "Save and continue",
-    "success": {
-      "title": "Profile saved!",
-      "body": "Your profile has been updated successfully.",
-      "goToFeed": "Go to feed"
-    }
-  },
   "connections": {
     "title": "Connections",
     "subtitle": "Manage your professional network",
@@ -613,7 +603,9 @@
       "privacy": "Privacy",
       "privacyDesc": "Review profile, message, and search visibility.",
       "security": "Security",
-      "securityDesc": "Review password, sessions, and two-factor status."
+      "securityDesc": "Review password, sessions, and two-factor status.",
+      "premium": "Baydar Premium",
+      "premiumDesc": "Compare plans, upgrade, and pay your way"
     },
     "notifications": {
       "title": "Notifications",
@@ -891,6 +883,75 @@
       "expiresAt": "Expires on",
       "submit": "Publish",
       "submitting": "Publishing…"
+    }
+  },
+  "premium": {
+    "kicker": "Baydar Premium",
+    "title": "Stand out where it matters",
+    "subtitle": "Premium gives your profile reach and insight — priced for our region, cancel anytime.",
+    "loadError": "Could not load plans.",
+    "current": {
+      "activeTitle": "Your Premium is active",
+      "renewsBody": "Your plan renews on {date}.",
+      "endsBody": "Your plan ends on {date}.",
+      "pastDueTitle": "Payment pending",
+      "pastDueBody": "We're confirming your last payment. Premium stays active meanwhile."
+    },
+    "free": {
+      "name": "Basic",
+      "price": "Free",
+      "tagline": "The essentials, forever free",
+      "features": {
+        "profile": "A full professional profile",
+        "connect": "Unlimited connections and messaging",
+        "jobs": "Apply to any job"
+      }
+    },
+    "plan": {
+      "name": "Baydar Premium",
+      "tagline": "Insight and visibility, 30 days at a time",
+      "perMonth": "{price} / month",
+      "originalUsd": "Billed as {price} USD",
+      "features": {
+        "analytics": "Profile analytics",
+        "whoViewed": "See who viewed your profile",
+        "diasporaBadge": "Diaspora badge on your profile"
+      }
+    },
+    "cta": "Upgrade to Premium",
+    "checkout": {
+      "title": "Choose how to pay",
+      "methods": {
+        "card": "Bank card",
+        "bankTransfer": "Bank transfer",
+        "points": "Karama Points",
+        "jawwalpay": "JawwalPay",
+        "palpay": "PalPay",
+        "reflect": "Reflect"
+      },
+      "comingSoon": "Coming soon",
+      "walletSoon": "Local wallet payments are coming soon. Use a card or bank transfer for now.",
+      "pointsBalance": "Your balance: {balance} points · costs {cost} points",
+      "pointsInsufficient": "You need {cost} Karama points. Earn points by contributing on Baydar.",
+      "earnPoints": "About Karama",
+      "confirm": "Continue",
+      "confirmPoints": "Redeem {cost} points",
+      "processing": "Processing…",
+      "cardRedirect": "You'll be redirected to our secure payment partner.",
+      "cardError": "Card payments are temporarily unavailable. Try a bank transfer.",
+      "bank": {
+        "title": "Bank transfer instructions",
+        "body": "Transfer the exact amount and keep the reference. We activate Premium after reviewing the transfer — usually within two business days.",
+        "beneficiary": "Beneficiary",
+        "iban": "IBAN",
+        "reference": "Reference",
+        "amount": "Amount",
+        "due": "Complete the transfer within 7 days to keep this invoice open."
+      },
+      "pointsSuccess": {
+        "title": "Premium activated",
+        "body": "Enjoy 30 days of Premium — paid with your Karama points."
+      }
     }
   }
 }

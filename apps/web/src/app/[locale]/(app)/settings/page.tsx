@@ -39,6 +39,11 @@ export default function SettingsLandingPage(): JSX.Element {
       label: tMe("karama"),
       desc: t("notifications.events.karamaUpdate.desc"),
     },
+    {
+      href: `/${locale}/me/premium`,
+      label: t("items.premium"),
+      desc: t("items.premiumDesc"),
+    },
   ];
 
   return (
