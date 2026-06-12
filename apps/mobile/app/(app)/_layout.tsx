@@ -268,6 +268,7 @@ export default function AppTabsLayout(): JSX.Element {
       <Tabs.Screen name="jobs/[id]" options={hiddenTabOptions} />
       <Tabs.Screen name="employer/index" options={hiddenTabOptions} />
       <Tabs.Screen name="employer/[slug]/index" options={hiddenTabOptions} />
+      <Tabs.Screen name="employer/[slug]/billing" options={hiddenTabOptions} />
       <Tabs.Screen name="employer/[slug]/[jobId]" options={hiddenTabOptions} />
       <Tabs.Screen name="messages/new" options={hiddenTabOptions} />
       <Tabs.Screen name="messages/[roomId]" options={hiddenFullScreenTabOptions} />
