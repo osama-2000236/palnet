@@ -1,5 +1,7 @@
 # HANDOFF.md — Current State
 
+> **⚠️ 2026-06-12 — this file is partly historical. The live, reconciled status for the next agent is `docs/HANDOFF-FABLE5.md`. Read that first.** Two facts below were stale before reconciliation and are now corrected inline: F-04 (company admin) **shipped** in PR #25, and PR #25's monetization **backend** landed with **no UI** (C1–C7 still outstanding).
+
 > Read after `project-spec.md`, `DESIGN.md`, and `BRAND.md`.
 
 ## Current Baseline
@@ -17,7 +19,7 @@
 - Mobile app boots in RTL with bundled Arabic fonts, Expo Router, bottom tabs, tokenized shared UI primitives, feed/profile/network/search/messages/notifications/jobs flows, deep links, push-device registration, haptics, offline banner, pull-to-refresh, and Expo Go guardrails.
 - API has auth, profiles, feed/posts/comments/reactions/reposts, connections, messages, notifications/devices, jobs/applications, safety reports/blocks, media upload URL generation, health, and supporting shared Zod contracts.
 - UGC safety is wired end-to-end on web and mobile: report, block, unblock, and blocked-users management call the Sprint 14 safety endpoints.
-- Sprint 17 closes F-03 search scope: web, mobile, shared contracts, and API now support people, posts, and jobs search. Companies search remains deferred until the F-04 company admin/management surface exists.
+- Sprint 17 closes F-03 search scope: web, mobile, shared contracts, and API now support people, posts, and jobs search. Companies search was deferred pending F-04 — **F-04 has since shipped (PR #25), so companies search is now unblocked**; decide and ship or formally re-defer with a reason.
 - Sprint 18 closes F-09 email verification and password recovery with hashed single-use tokens, console-only mail transport, web/mobile reset screens, and universal-link route entries.
 - Sprint 19 closes the privacy HIGH gap for account deletion and data export with soft-delete, 30-day restore, anonymization, refresh-token revocation, synchronous JSON export, web settings UI, and a mobile settings surface.
 - Sprint 20 closes the security hardening slice for one-time SSE stream tokens, web CSP/security headers, route-level rate-limit decorators, strict media presign MIME/size checks, and production CORS origin validation.
@@ -58,7 +60,8 @@ Tracked separately in PR #30 against `main`.
 - Universal-link files are committed as drafts; replace Apple team ID and Android release SHA256 before production hosting.
 - EAS project id and production Sentry/PostHog values remain environment-level release tasks.
 - Admin moderation queue / report resolution UI remains a separate follow-up sprint.
-- Company admin/management remains open from Sprint 12 audit F-04; do not add companies search until that surface ships.
+- ~~Company admin/management remains open from Sprint 12 audit F-04~~ **CLOSED:** PR #25 (`0bebf5a`) shipped `apps/api/src/modules/companies/` (controller, service, company-jobs, company-members, role guard), registered in `app.module.ts`.
+- **Monetization UI (C1–C7) is OPEN and undocumented elsewhere.** PR #25 shipped the full billing/companies/Karama **backend** but explicitly punted the web+mobile UI ("UI surfaces C1–C7 are tracked as the next iteration"). No premium, checkout, employer-billing, invoices, Karama-as-payment, or skill-endorse UI exists. See `docs/HANDOFF-FABLE5.md` §5 for the scoped task table.
 - Real email provider integration remains deferred; choose Resend, SES, Postmark, or another provider before replacing the console transport.
 - Safety-related privacy/legal copy still needs counsel review before launch.
 - Account hard-delete after the 30-day restore grace period remains a follow-up scheduled job.
