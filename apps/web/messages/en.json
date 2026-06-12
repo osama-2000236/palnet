@@ -918,7 +918,28 @@
         "diasporaBadge": "Diaspora badge on your profile"
       }
     },
-    "cta": "Upgrade to Premium",
+    "cta": "Upgrade to Premium"
+  },
+  "billing": {
+    "plans": {
+      "EMPLOYER_FREE": "Employer Free",
+      "EMPLOYER_BASIC": "Employer Basic",
+      "EMPLOYER_PRO": "Employer Pro",
+      "FEATURED_SLOT": "Featured job slot",
+      "USER_PREMIUM": "Baydar Premium"
+    },
+    "features": {
+      "activeJobs": "{count} active jobs",
+      "applicantInbox": "Applicant inbox",
+      "basicAnalytics": "Basic analytics",
+      "advancedAnalytics": "Advanced analytics",
+      "csvExport": "CSV export",
+      "featuredSlots": "{count} featured slot included",
+      "profileAnalytics": "Profile analytics",
+      "whoViewedMe": "See who viewed your profile",
+      "diasporaBadge": "Diaspora badge on your profile",
+      "durationDays": "Featured for {count} days"
+    },
     "checkout": {
       "title": "Choose how to pay",
       "methods": {
@@ -930,7 +951,6 @@
         "reflect": "Reflect"
       },
       "comingSoon": "Coming soon",
-      "walletSoon": "Local wallet payments are coming soon. Use a card or bank transfer for now.",
       "pointsBalance": "Your balance: {balance} points · costs {cost} points",
       "pointsInsufficient": "You need {cost} Karama points. Earn points by contributing on Baydar.",
       "earnPoints": "About Karama",
@@ -941,7 +961,7 @@
       "cardError": "Card payments are temporarily unavailable. Try a bank transfer.",
       "bank": {
         "title": "Bank transfer instructions",
-        "body": "Transfer the exact amount and keep the reference. We activate Premium after reviewing the transfer — usually within two business days.",
+        "body": "Transfer the exact amount and keep the reference. We activate the purchase after reviewing the transfer — usually within two business days.",
         "beneficiary": "Beneficiary",
         "iban": "IBAN",
         "reference": "Reference",
@@ -952,6 +972,50 @@
         "title": "Premium activated",
         "body": "Enjoy 30 days of Premium — paid with your Karama points."
       }
+    },
+    "invoices": {
+      "title": "Billing history",
+      "empty": "No invoices yet.",
+      "loadError": "Could not load invoices.",
+      "statuses": {
+        "DRAFT": "Draft",
+        "OPEN": "Awaiting payment",
+        "PAID": "Paid",
+        "VOID": "Voided",
+        "UNCOLLECTIBLE": "Uncollectible"
+      },
+      "dueBy": "Due {date}",
+      "uploadReceipt": "Upload transfer receipt",
+      "uploading": "Uploading…",
+      "receiptSubmitted": "Receipt submitted — pending review.",
+      "uploadError": "Could not upload the receipt.",
+      "viewReceipt": "View receipt"
+    },
+    "employer": {
+      "title": "Company billing",
+      "subtitle": "Plan, job quota, credits, and invoices for this company.",
+      "loadError": "Could not load company billing.",
+      "currentPlan": "Current plan",
+      "renewsBody": "Renews on {date}.",
+      "endsBody": "Ends on {date}.",
+      "pastDueBody": "Last payment is pending confirmation.",
+      "jobSlots": "Active jobs",
+      "jobSlotsValue": "{used} of {limit}",
+      "credits": "Credits",
+      "noCredits": "No unspent credits.",
+      "expires": "Expires {date}",
+      "creditKinds": {
+        "FEATURED_SLOT": "Featured job slot",
+        "JOB_POST": "Extra job post",
+        "APPLICATION_BOOST": "Application boost"
+      },
+      "choosePlan": "Upgrade your plan",
+      "perMonth": "{price} / month",
+      "oneTime": "{price} one-time",
+      "originalUsd": "Billed as {price} USD",
+      "select": "Select",
+      "selected": "Selected",
+      "billingLink": "Billing"
     }
   }
 }

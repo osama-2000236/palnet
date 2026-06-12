@@ -755,7 +755,28 @@
         "diasporaBadge": "شارة المغترب على ملفك"
       }
     },
-    "cta": "الترقية إلى المميّز",
+    "cta": "الترقية إلى المميّز"
+  },
+  "billing": {
+    "plans": {
+      "EMPLOYER_FREE": "المُوظِّف المجانية",
+      "EMPLOYER_BASIC": "المُوظِّف الأساسية",
+      "EMPLOYER_PRO": "المُوظِّف الاحترافية",
+      "FEATURED_SLOT": "موضع وظيفة مميّز",
+      "USER_PREMIUM": "بيدر المميّز"
+    },
+    "features": {
+      "activeJobs": "{count} وظائف فعّالة",
+      "applicantInbox": "صندوق المتقدمين",
+      "basicAnalytics": "تحليلات أساسية",
+      "advancedAnalytics": "تحليلات متقدمة",
+      "csvExport": "تصدير CSV",
+      "featuredSlots": "موضع مميّز واحد مشمول",
+      "profileAnalytics": "إحصاءات الملف الشخصي",
+      "whoViewedMe": "اعرف من شاهد ملفك",
+      "diasporaBadge": "شارة المغترب على ملفك",
+      "durationDays": "تمييز لمدة {count} أيام"
+    },
     "checkout": {
       "title": "اختر طريقة الدفع",
       "methods": {
@@ -767,7 +788,6 @@
         "reflect": "ريفلكت"
       },
       "comingSoon": "قريبًا",
-      "walletSoon": "الدفع عبر المحافظ المحلية قادم قريبًا. استخدم البطاقة أو الحوالة البنكية حاليًا.",
       "pointsBalance": "رصيدك: {balance} نقطة · التكلفة {cost} نقطة",
       "pointsInsufficient": "تحتاج إلى {cost} نقطة كرامة. اكسب النقاط بالمساهمة في بيدر.",
       "earnPoints": "عن كرامة",
@@ -778,7 +798,7 @@
       "cardError": "الدفع بالبطاقة غير متاح مؤقتًا. جرّب الحوالة البنكية.",
       "bank": {
         "title": "تعليمات الحوالة البنكية",
-        "body": "حوّل المبلغ كما هو واحتفظ بالمرجع. نفعّل العضوية بعد مراجعة الحوالة — عادةً خلال يومي عمل.",
+        "body": "حوّل المبلغ كما هو واحتفظ بالمرجع. نفعّل الشراء بعد مراجعة الحوالة — عادةً خلال يومي عمل.",
         "beneficiary": "المستفيد",
         "iban": "IBAN",
         "reference": "المرجع",
@@ -789,6 +809,50 @@
         "title": "تم تفعيل العضوية المميزة",
         "body": "استمتع بثلاثين يومًا من المزايا — دفعتها نقاط كرامتك."
       }
+    },
+    "invoices": {
+      "title": "سجل الفواتير",
+      "empty": "لا فواتير بعد.",
+      "loadError": "تعذّر تحميل الفواتير.",
+      "statuses": {
+        "DRAFT": "مسودة",
+        "OPEN": "بانتظار الدفع",
+        "PAID": "مدفوعة",
+        "VOID": "ملغاة",
+        "UNCOLLECTIBLE": "متعذّر تحصيلها"
+      },
+      "dueBy": "تستحق في {date}",
+      "uploadReceipt": "رفع إيصال الحوالة",
+      "uploading": "جارٍ الرفع…",
+      "receiptSubmitted": "أُرسل الإيصال — قيد المراجعة.",
+      "uploadError": "تعذّر رفع الإيصال.",
+      "viewReceipt": "عرض الإيصال"
+    },
+    "employer": {
+      "title": "فوترة الشركة",
+      "subtitle": "الباقة وحصة الوظائف والأرصدة والفواتير لهذه الشركة.",
+      "loadError": "تعذّر تحميل فوترة الشركة.",
+      "currentPlan": "الباقة الحالية",
+      "renewsBody": "تتجدد في {date}.",
+      "endsBody": "تنتهي في {date}.",
+      "pastDueBody": "الدفعة الأخيرة قيد التأكيد.",
+      "jobSlots": "الوظائف الفعّالة",
+      "jobSlotsValue": "{used} من {limit}",
+      "credits": "الأرصدة",
+      "noCredits": "لا أرصدة غير مستخدمة.",
+      "expires": "ينتهي في {date}",
+      "creditKinds": {
+        "FEATURED_SLOT": "موضع وظيفة مميّز",
+        "JOB_POST": "نشر وظيفة إضافية",
+        "APPLICATION_BOOST": "تعزيز طلب"
+      },
+      "choosePlan": "رقِّ باقتك",
+      "perMonth": "{price} / شهريًا",
+      "oneTime": "{price} لمرة واحدة",
+      "originalUsd": "تُحتسب {price} دولارًا أمريكيًا",
+      "select": "اختيار",
+      "selected": "مختارة",
+      "billingLink": "الفوترة"
     }
   }
 }

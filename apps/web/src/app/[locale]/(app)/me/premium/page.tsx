@@ -3,21 +3,26 @@
 import {
   BillingCatalog,
   BillingMe,
+  Invoice,
   KaramaBalance,
   PlanCode,
   type BillingCatalog as BillingCatalogDto,
   type BillingMe as BillingMeDto,
+  type Invoice as InvoiceDto,
   type KaramaBalance as KaramaBalanceDto,
 } from "@baydar/shared";
 import { Alert, Button, Skeleton, Surface } from "@baydar/ui-web";
 import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
+import { z } from "zod";
 
+import { CheckoutPanel } from "@/components/billing/CheckoutPanel";
+import { InvoiceList } from "@/components/billing/InvoiceList";
 import { apiFetch, getValidAccessToken } from "@/lib/api";
 import { toErrorMessage } from "@/lib/error-message";
+import { formatMoney } from "@/lib/money";
 
-import { PremiumCheckout } from "./_components/PremiumCheckout";
-import { formatMoney } from "./format";
+const InvoicesResponse = z.array(Invoice);
 
 // Premium feature keys we know how to label, in display order. Server-side
 // plan features that aren't listed here simply don't render.
@@ -33,6 +38,7 @@ export default function PremiumPage(): JSX.Element {
   const [catalog, setCatalog] = useState<BillingCatalogDto | null>(null);
   const [billingMe, setBillingMe] = useState<BillingMeDto | null>(null);
   const [karama, setKarama] = useState<KaramaBalanceDto | null>(null);
+  const [invoices, setInvoices] = useState<InvoiceDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
@@ -44,14 +50,17 @@ export default function PremiumPage(): JSX.Element {
     if (!token) return;
     setError(null);
     try {
-      const [nextCatalog, nextMe, nextKarama] = await Promise.all([
+      const [nextCatalog, nextMe, nextKarama, nextInvoices] = await Promise.all([
         apiFetch("/billing/catalog", BillingCatalog, { token }),
         apiFetch("/billing/me", BillingMe, { token }),
         apiFetch("/karama/balance", KaramaBalance, { token }),
+        apiFetch("/billing/invoices", InvoicesResponse, { token }),
       ]);
       setCatalog(nextCatalog);
       setBillingMe(nextMe);
       setKarama(nextKarama);
+      // Personal scope only — company invoices live on the employer billing page.
+      setInvoices(nextInvoices.filter((invoice) => invoice.userId !== null));
     } catch (caught) {
       setError(toErrorMessage(caught, tErrors));
     } finally {
@@ -164,12 +173,16 @@ export default function PremiumPage(): JSX.Element {
       ) : null}
 
       {!loading && !error && plan && karama && checkoutOpen && !hasPremium ? (
-        <PremiumCheckout
+        <CheckoutPanel
           plan={plan}
           wallets={catalog?.wallets ?? []}
           karama={karama}
           onActivated={() => void load()}
         />
+      ) : null}
+
+      {!loading && !error && invoices.length > 0 ? (
+        <InvoiceList invoices={invoices} onChanged={() => void load()} />
       ) : null}
     </main>
   );

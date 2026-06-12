@@ -17,6 +17,7 @@ type Filter = "active" | "archived";
 
 export default function CompanyDashboardPage(): JSX.Element {
   const t = useTranslations("employer.dashboard");
+  const tBillingEmployer = useTranslations("billing.employer");
   const tCommon = useTranslations("common");
   const tErr = useTranslations("errors");
   const router = useRouter();
@@ -101,12 +102,20 @@ export default function CompanyDashboardPage(): JSX.Element {
         <div>
           <h1 className="text-ink text-2xl font-semibold">{company?.name ?? slug}</h1>
         </div>
-        <Link
-          href={`/${locale}/employer/${slug}/jobs/new`}
-          className="bg-brand-500 hover:bg-brand-600 inline-flex items-center rounded-md px-4 py-2 text-sm font-semibold text-white"
-        >
-          {t("createJob")}
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link
+            href={`/${locale}/employer/${slug}/billing`}
+            className="border-line-hard text-ink hover:bg-surface-subtle inline-flex items-center rounded-md border px-4 py-2 text-sm font-semibold"
+          >
+            {tBillingEmployer("billingLink")}
+          </Link>
+          <Link
+            href={`/${locale}/employer/${slug}/jobs/new`}
+            className="bg-brand-500 hover:bg-brand-600 inline-flex items-center rounded-md px-4 py-2 text-sm font-semibold text-white"
+          >
+            {t("createJob")}
+          </Link>
+        </div>
       </header>
 
       <section className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
