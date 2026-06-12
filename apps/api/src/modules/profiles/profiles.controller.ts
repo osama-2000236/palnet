@@ -4,6 +4,7 @@ import {
   ExperienceBody,
   OnboardProfileBody,
   UpdateProfileBody,
+  type EndorseSkillResult as EndorseSkillResultDto,
   type Profile as ProfileDto,
 } from "@baydar/shared";
 import { Body, Controller, Delete, Get, Header, Param, Patch, Post, Put } from "@nestjs/common";
@@ -134,6 +135,19 @@ export class ProfilesController {
     @Param("skillId") skillId: string,
   ): Promise<{ data: ProfileDto }> {
     const data = await this.profiles.removeSkill(user.id, skillId);
+    return { data };
+  }
+
+  // Endorse a skill on someone else's profile. Idempotent per endorser;
+  // awards Karama to the endorsee within the service-enforced caps.
+  @Post(":handle/skills/:skillId/endorse")
+  @ApiBearerAuth()
+  async endorseSkill(
+    @CurrentUser() user: AuthUser,
+    @Param("handle") handle: string,
+    @Param("skillId") skillId: string,
+  ): Promise<{ data: EndorseSkillResultDto }> {
+    const data = await this.profiles.endorseSkill(user.id, handle, skillId);
     return { data };
   }
 

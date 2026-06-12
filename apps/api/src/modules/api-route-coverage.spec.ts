@@ -159,6 +159,7 @@ const EXPECTED_ROUTES = [
   "DELETE /profiles/me/educations/:id",
   "POST /profiles/me/skills",
   "DELETE /profiles/me/skills/:skillId",
+  "POST /profiles/:handle/skills/:skillId/endorse",
   "GET /profiles/:handle",
   "POST /ratings",
   "GET /ratings/:userId",

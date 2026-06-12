@@ -102,6 +102,15 @@ export const AddSkillBody = z.object({
 });
 export type AddSkillBody = z.infer<typeof AddSkillBody>;
 
+// Result of endorsing someone's skill. Endorsements are idempotent per
+// (endorser, skill); `awardedKarama` is false on replays and when the
+// endorsee hit a Karama earning cap.
+export const EndorseSkillResult = z.object({
+  endorsements: z.number().int().nonnegative(),
+  awardedKarama: z.boolean(),
+});
+export type EndorseSkillResult = z.infer<typeof EndorseSkillResult>;
+
 export const OnboardProfileBody = z.object({
   handle: Handle,
   firstName: z.string().min(1).max(60),
