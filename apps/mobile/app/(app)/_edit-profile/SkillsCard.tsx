@@ -1,5 +1,5 @@
 import { AddSkillBody, Profile as ProfileSchema } from "@baydar/shared";
-import { Button, Input as NativeInput, Surface } from "@baydar/ui-native";
+import { Button, Surface } from "@baydar/ui-native";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Text, View } from "react-native";
@@ -7,7 +7,7 @@ import { Text, View } from "react-native";
 import { apiFetch } from "@/lib/api";
 import { apiErrorMessage } from "@/lib/api-errors";
 import { getAccessToken } from "@/lib/session";
-import { Card, type ProfileCardProps } from "./shared";
+import { Card, Input, type ProfileCardProps } from "./shared";
 import { styles } from "./styles";
 
 export function SkillsCard({ profile, onChanged, onError }: ProfileCardProps): JSX.Element {
@@ -66,25 +66,27 @@ export function SkillsCard({ profile, onChanged, onError }: ProfileCardProps): J
         {profile.skills.map((skill) => (
           <Surface key={skill.id} variant="tinted" padding="2" style={styles.skillChip}>
             <Text style={styles.skillText}>{skill.name}</Text>
-            <Button variant="danger-ghost" size="sm" onPress={() => void remove(skill.id)} disabled={busy}>
+            <Button
+              variant="danger-ghost"
+              size="sm"
+              onPress={() => void remove(skill.id)}
+              disabled={busy}
+            >
               {t("profile.remove")}
             </Button>
           </Surface>
         ))}
       </View>
       <View style={styles.skillInputRow}>
-        <NativeInput
-          fullWidth
+        <Input
           value={name}
           onChangeText={setName}
           placeholder={t("profile.addSkillPlaceholder")}
           maxLength={60}
-          accessibilityLabel={t("profile.addSkillPlaceholder")}
-          accessibilityHint={fieldError ?? undefined}
-          error={Boolean(fieldError)}
-          errorMessage={fieldError ?? undefined}
+          error={fieldError}
+          inputDirection="auto"
+          fullWidth
           style={styles.skillInput}
-          inputStyle={styles.inputAuto}
         />
         <Button onPress={add} disabled={busy || name.trim().length === 0} loading={busy}>
           {t("profile.add")}
@@ -93,3 +95,5 @@ export function SkillsCard({ profile, onChanged, onError }: ProfileCardProps): J
     </Card>
   );
 }
+
+export default () => null;

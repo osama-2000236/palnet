@@ -87,7 +87,12 @@ export function EducationsCard({ profile, onChanged, onError }: ProfileCardProps
             ) : null}
           </View>
           {education.id ? (
-            <Button variant="danger-ghost" size="sm" onPress={() => void remove(education.id as string)} disabled={busy}>
+            <Button
+              variant="danger-ghost"
+              size="sm"
+              onPress={() => void remove(education.id as string)}
+              disabled={busy}
+            >
               {t("profile.remove")}
             </Button>
           ) : null}
@@ -96,12 +101,35 @@ export function EducationsCard({ profile, onChanged, onError }: ProfileCardProps
       {show ? (
         <Surface variant="tinted" padding="3">
           <View style={styles.cardBody}>
-            <Input value={school} onChangeText={setSchool} placeholder={t("profile.school")} error={fieldErrors.school} inputDirection="auto" />
-            <Input value={degree} onChangeText={setDegree} placeholder={t("profile.degree")} inputDirection="auto" />
-            <Input value={fieldOfStudy} onChangeText={setFieldOfStudy} placeholder={t("profile.fieldOfStudy")} inputDirection="auto" />
+            <Input
+              value={school}
+              onChangeText={setSchool}
+              placeholder={t("profile.school")}
+              error={fieldErrors.school}
+              inputDirection="auto"
+              fullWidth
+            />
+            <Input
+              value={degree}
+              onChangeText={setDegree}
+              placeholder={t("profile.degree")}
+              inputDirection="auto"
+              fullWidth
+            />
+            <Input
+              value={fieldOfStudy}
+              onChangeText={setFieldOfStudy}
+              placeholder={t("profile.fieldOfStudy")}
+              inputDirection="auto"
+              fullWidth
+            />
             <View style={styles.buttonRow}>
-              <Button variant="ghost" size="sm" onPress={() => setShow(false)}>{t("profile.cancel")}</Button>
-              <Button size="sm" onPress={add} disabled={busy} loading={busy}>{t("profile.save")}</Button>
+              <Button variant="ghost" size="sm" onPress={() => setShow(false)}>
+                {t("profile.cancel")}
+              </Button>
+              <Button size="sm" onPress={add} disabled={busy} loading={busy}>
+                {t("profile.save")}
+              </Button>
             </View>
           </View>
         </Surface>
@@ -109,7 +137,9 @@ export function EducationsCard({ profile, onChanged, onError }: ProfileCardProps
         <Button
           variant="ghost"
           size="sm"
-          leading={<Icon name="plus" size={nativeTokens.space[4]} color={nativeTokens.color.brand700} />}
+          leading={
+            <Icon name="plus" size={nativeTokens.space[4]} color={nativeTokens.color.brand700} />
+          }
           onPress={() => setShow(true)}
         >
           {t("profile.add")}
@@ -118,3 +148,5 @@ export function EducationsCard({ profile, onChanged, onError }: ProfileCardProps
     </Card>
   );
 }
+
+export default () => null;

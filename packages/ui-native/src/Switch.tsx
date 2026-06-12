@@ -58,7 +58,7 @@ export function Switch({
         style={{
           position: "absolute",
           top: PAD,
-          left: PAD,
+          start: PAD,
           width: THUMB,
           height: THUMB,
           borderRadius: nativeTokens.radius.full,

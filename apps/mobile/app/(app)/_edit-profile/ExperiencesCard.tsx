@@ -84,14 +84,24 @@ export function ExperiencesCard({ profile, onChanged, onError }: ProfileCardProp
   return (
     <Card title={t("profile.experience")}>
       {profile.experiences.map((experience) => (
-        <View key={experience.id ?? `${experience.companyName}-${experience.startDate}`} style={styles.itemRow}>
+        <View
+          key={experience.id ?? `${experience.companyName}-${experience.startDate}`}
+          style={styles.itemRow}
+        >
           <View style={styles.itemText}>
             <Text style={styles.itemTitle}>{experience.title}</Text>
             <Text style={styles.itemMeta}>{experience.companyName}</Text>
-            {experience.description ? <Text style={styles.itemBody}>{experience.description}</Text> : null}
+            {experience.description ? (
+              <Text style={styles.itemBody}>{experience.description}</Text>
+            ) : null}
           </View>
           {experience.id ? (
-            <Button variant="danger-ghost" size="sm" onPress={() => void remove(experience.id as string)} disabled={busy}>
+            <Button
+              variant="danger-ghost"
+              size="sm"
+              onPress={() => void remove(experience.id as string)}
+              disabled={busy}
+            >
               {t("profile.remove")}
             </Button>
           ) : null}
@@ -100,13 +110,42 @@ export function ExperiencesCard({ profile, onChanged, onError }: ProfileCardProp
       {show ? (
         <Surface variant="tinted" padding="3">
           <View style={styles.cardBody}>
-            <Input value={title} onChangeText={setTitle} placeholder={t("profile.expTitle")} error={fieldErrors.title} inputDirection="auto" />
-            <Input value={companyName} onChangeText={setCompanyName} placeholder={t("profile.company")} error={fieldErrors.companyName} inputDirection="auto" />
-            <Input value={startDate} onChangeText={setStartDate} placeholder={t("profile.dateHint")} error={fieldErrors.startDate} inputDirection="ltr" />
-            <Input value={description} onChangeText={setDescription} placeholder={t("profile.description")} multiline />
+            <Input
+              value={title}
+              onChangeText={setTitle}
+              placeholder={t("profile.expTitle")}
+              error={fieldErrors.title}
+              inputDirection="auto"
+              fullWidth
+            />
+            <Input
+              value={companyName}
+              onChangeText={setCompanyName}
+              placeholder={t("profile.company")}
+              error={fieldErrors.companyName}
+              inputDirection="auto"
+              fullWidth
+            />
+            <Input
+              value={startDate}
+              onChangeText={setStartDate}
+              placeholder={t("profile.dateHint")}
+              error={fieldErrors.startDate}
+              inputDirection="ltr"
+            />
+            <Input
+              value={description}
+              onChangeText={setDescription}
+              placeholder={t("profile.description")}
+              multiline
+            />
             <View style={styles.buttonRow}>
-              <Button variant="ghost" size="sm" onPress={() => setShow(false)}>{t("profile.cancel")}</Button>
-              <Button size="sm" onPress={add} disabled={busy} loading={busy}>{t("profile.save")}</Button>
+              <Button variant="ghost" size="sm" onPress={() => setShow(false)}>
+                {t("profile.cancel")}
+              </Button>
+              <Button size="sm" onPress={add} disabled={busy} loading={busy}>
+                {t("profile.save")}
+              </Button>
             </View>
           </View>
         </Surface>
@@ -114,7 +153,9 @@ export function ExperiencesCard({ profile, onChanged, onError }: ProfileCardProp
         <Button
           variant="ghost"
           size="sm"
-          leading={<Icon name="plus" size={nativeTokens.space[4]} color={nativeTokens.color.brand700} />}
+          leading={
+            <Icon name="plus" size={nativeTokens.space[4]} color={nativeTokens.color.brand700} />
+          }
           onPress={() => setShow(true)}
         >
           {t("profile.add")}
@@ -123,3 +164,5 @@ export function ExperiencesCard({ profile, onChanged, onError }: ProfileCardProp
     </Card>
   );
 }
+
+export default () => null;

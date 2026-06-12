@@ -37,8 +37,8 @@ const styles = StyleSheet.create({
   },
   strip: {
     position: "absolute",
-    left: -nativeTokens.space[8],
-    right: -nativeTokens.space[8],
+    start: -nativeTokens.space[8],
+    end: -nativeTokens.space[8],
     height: nativeTokens.space[6],
     borderRadius: nativeTokens.radius.full,
     transform: [{ rotate: "-8deg" }],
@@ -64,8 +64,8 @@ const styles = StyleSheet.create({
   horizon: {
     position: "absolute",
     top: nativeTokens.space[4],
-    left: 0,
-    right: 0,
+    start: 0,
+    end: 0,
     height: 1,
     backgroundColor: nativeTokens.color.lineSoft,
   },

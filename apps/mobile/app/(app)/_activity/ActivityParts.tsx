@@ -142,3 +142,5 @@ const metricStyles = {
     textAlign: "center" as const,
   },
 };
+
+export default () => null;

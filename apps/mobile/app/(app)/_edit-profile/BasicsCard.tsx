@@ -119,18 +119,51 @@ export function BasicsCard({ profile, onChanged, onError }: ProfileCardProps): J
       </View>
       <View style={styles.nameGrid}>
         <View style={styles.nameCell}>
-          <Input value={firstName} onChangeText={setFirstName} placeholder={t("profile.firstName")} error={fieldErrors.firstName} />
+          <Input
+            value={firstName}
+            onChangeText={setFirstName}
+            placeholder={t("profile.firstName")}
+            error={fieldErrors.firstName}
+            fullWidth
+          />
         </View>
         <View style={styles.nameCell}>
-          <Input value={lastName} onChangeText={setLastName} placeholder={t("profile.lastName")} error={fieldErrors.lastName} />
+          <Input
+            value={lastName}
+            onChangeText={setLastName}
+            placeholder={t("profile.lastName")}
+            error={fieldErrors.lastName}
+            fullWidth
+          />
         </View>
       </View>
-      <Input value={headline} onChangeText={setHeadline} placeholder={t("profile.headline")} error={fieldErrors.headline} inputDirection="auto" />
-      <Input value={about} onChangeText={setAbout} placeholder={t("profile.about")} multiline error={fieldErrors.about} />
-      <Input value={location} onChangeText={setLocation} placeholder={t("profile.location")} error={fieldErrors.location} />
+      <Input
+        value={headline}
+        onChangeText={setHeadline}
+        placeholder={t("profile.headline")}
+        error={fieldErrors.headline}
+        inputDirection="auto"
+        fullWidth
+      />
+      <Input
+        value={about}
+        onChangeText={setAbout}
+        placeholder={t("profile.about")}
+        multiline
+        error={fieldErrors.about}
+        fullWidth
+      />
+      <Input
+        value={location}
+        onChangeText={setLocation}
+        placeholder={t("profile.location")}
+        error={fieldErrors.location}
+      />
       <Button onPress={save} disabled={busy} loading={busy} fullWidth>
         {t("common.saveChanges")}
       </Button>
     </Card>
   );
 }
+
+export default () => null;

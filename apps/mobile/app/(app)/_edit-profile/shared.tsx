@@ -1,7 +1,7 @@
 import { Input as NativeInput, Surface } from "@baydar/ui-native";
 import type { Profile } from "@baydar/shared";
 import type { ReactNode } from "react";
-import { Text, View } from "react-native";
+import { Text, View, type ViewStyle, type TextStyle } from "react-native";
 
 import { styles } from "./styles";
 
@@ -27,6 +27,10 @@ export function Input({
   multiline,
   error,
   inputDirection = "rtl",
+  fullWidth = false,
+  maxLength,
+  style,
+  inputStyle,
 }: {
   value: string;
   onChangeText: (v: string) => void;
@@ -34,18 +38,24 @@ export function Input({
   multiline?: boolean;
   error?: string | null;
   inputDirection?: "rtl" | "ltr" | "auto";
+  fullWidth?: boolean;
+  maxLength?: number;
+  style?: ViewStyle;
+  inputStyle?: TextStyle;
 }): JSX.Element {
   return (
     <NativeInput
-      fullWidth
+      fullWidth={fullWidth}
       value={value}
       onChangeText={onChangeText}
       placeholder={placeholder}
       multiline={multiline}
+      maxLength={maxLength}
       accessibilityLabel={placeholder}
       accessibilityHint={error ?? undefined}
       error={Boolean(error)}
       errorMessage={error ?? undefined}
+      style={style}
       inputStyle={[
         inputDirection === "ltr"
           ? styles.inputLtr
@@ -53,7 +63,8 @@ export function Input({
             ? styles.inputAuto
             : styles.inputRtl,
         multiline ? styles.multilineInput : null,
-      ]}
+        inputStyle,
+      ].filter(Boolean)}
     />
   );
 }
@@ -63,3 +74,5 @@ export function parseDateInput(value: string): string | null {
   if (Number.isNaN(timestamp)) return null;
   return new Date(timestamp).toISOString();
 }
+
+export default () => null;

@@ -50,3 +50,5 @@ export function defaultOnboardingValues({
     networkMessage: "",
   };
 }
+
+export default () => null;
