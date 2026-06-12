@@ -256,6 +256,7 @@ export default function AppTabsLayout(): JSX.Element {
       <Tabs.Screen name="composer" options={hiddenTabOptions} />
       <Tabs.Screen name="search" options={hiddenTabOptions} />
       <Tabs.Screen name="me/karama/index" options={hiddenTabOptions} />
+      <Tabs.Screen name="me/premium/index" options={hiddenTabOptions} />
       <Tabs.Screen name="me/edit" options={hiddenTabOptions} />
       <Tabs.Screen name="settings/index" options={hiddenTabOptions} />
       <Tabs.Screen name="settings/account" options={hiddenTabOptions} />
