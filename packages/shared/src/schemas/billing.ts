@@ -45,7 +45,8 @@ export const WalletProvider = {
 export type WalletProvider = (typeof WalletProvider)[keyof typeof WalletProvider];
 
 export const Plan = z.object({
-  id: z.string().cuid(),
+  // Seeded plan rows use stable readable ids (plan_user_premium), not cuids.
+  id: z.string().min(1),
   code: z.nativeEnum(PlanCode),
   name: z.string(),
   priceCents: z.number().int().nonnegative(),
@@ -59,7 +60,7 @@ export type Plan = z.infer<typeof Plan>;
 export const Invoice = z.object({
   id: z.string().cuid(),
   subscriptionId: z.string().cuid().nullable(),
-  planId: z.string().cuid().nullable(),
+  planId: z.string().min(1).nullable(),
   userId: z.string().cuid().nullable(),
   companyId: z.string().cuid().nullable(),
   amountCents: z.number().int().nonnegative(),
@@ -79,7 +80,7 @@ export const Subscription = z.object({
   id: z.string().cuid(),
   userId: z.string().cuid().nullable(),
   companyId: z.string().cuid().nullable(),
-  planId: z.string().cuid(),
+  planId: z.string().min(1),
   status: z.nativeEnum(SubscriptionStatus),
   currentPeriodStart: z.string().datetime().nullable(),
   currentPeriodEnd: z.string().datetime().nullable(),
