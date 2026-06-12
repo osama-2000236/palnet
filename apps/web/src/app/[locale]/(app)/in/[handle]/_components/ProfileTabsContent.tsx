@@ -1,8 +1,11 @@
 "use client";
 
-import type { Profile } from "@baydar/shared";
-import { Surface, Tab, Tabs } from "@baydar/ui-web";
+import { EndorseSkillResult, type Profile } from "@baydar/shared";
+import { Button, Surface, Tab, Tabs, useToast } from "@baydar/ui-web";
 import { useTranslations } from "next-intl";
+import { useState } from "react";
+
+import { apiFetch, getValidAccessToken } from "@/lib/api";
 
 export type ProfileTab = "about" | "exp" | "edu" | "skills" | "activity";
 
@@ -119,21 +122,78 @@ function EducationPanel({ profile }: { profile: Profile }): JSX.Element {
 
 function SkillsPanel({ profile }: { profile: Profile }): JSX.Element {
   const t = useTranslations("profile");
+  const { showToast } = useToast();
+  // Local endorsement-count overrides + endorsed marks for this session.
+  // The server is idempotent per endorser, so repeats are safe regardless.
+  const [counts, setCounts] = useState<Record<string, number>>({});
+  const [endorsedIds, setEndorsedIds] = useState<Set<string>>(new Set());
+  const [busySkillId, setBusySkillId] = useState<string | null>(null);
+
+  const canEndorse = profile.viewer !== undefined && !profile.viewer.isSelf;
+
+  async function endorse(skillId: string): Promise<void> {
+    const token = await getValidAccessToken();
+    if (!token) return;
+    setBusySkillId(skillId);
+    try {
+      const result = await apiFetch(
+        `/profiles/${encodeURIComponent(profile.handle)}/skills/${skillId}/endorse`,
+        EndorseSkillResult,
+        { method: "POST", token },
+      );
+      setCounts((current) => ({ ...current, [skillId]: result.endorsements }));
+      setEndorsedIds((current) => new Set(current).add(skillId));
+      showToast({
+        message: result.awardedKarama ? t("endorseThanks") : t("endorseAlready"),
+        kind: "success",
+      });
+    } catch {
+      showToast({ message: t("endorseError"), kind: "error" });
+    } finally {
+      setBusySkillId(null);
+    }
+  }
+
   return (
     <Surface as="section" variant="flat" padding="6">
       <h2 className="text-ink mb-3 text-xl font-semibold">{t("skills")}</h2>
       {profile.skills.length === 0 ? (
         <p className="text-ink-muted text-sm">{t("skillsEmpty")}</p>
       ) : (
-        <ul className="flex flex-wrap gap-2">
-          {profile.skills.map((s) => (
-            <li
-              key={s.id}
-              className="border-ink-muted/30 text-ink rounded-full border px-3 py-1 text-sm"
-            >
-              {s.name}
-            </li>
-          ))}
+        <ul className="flex flex-col gap-2">
+          {profile.skills.map((s) => {
+            const count = counts[s.id] ?? s.endorsements;
+            const endorsed = endorsedIds.has(s.id);
+            return (
+              <li
+                key={s.id}
+                className="border-line-soft flex items-center justify-between gap-3 rounded-md border px-3 py-2"
+              >
+                <span className="text-ink min-w-0 flex-1 text-sm font-medium">
+                  {s.name}
+                  {count > 0 ? (
+                    <span
+                      className="text-ink-muted ms-2 text-xs"
+                      aria-label={t("endorseCountLabel", { count })}
+                    >
+                      {count}
+                    </span>
+                  ) : null}
+                </span>
+                {canEndorse ? (
+                  <Button
+                    variant={endorsed ? "ghost" : "outline"}
+                    size="sm"
+                    disabled={endorsed || busySkillId !== null}
+                    loading={busySkillId === s.id}
+                    onClick={() => void endorse(s.id)}
+                  >
+                    {endorsed ? t("endorsed") : t("endorse")}
+                  </Button>
+                ) : null}
+              </li>
+            );
+          })}
         </ul>
       )}
     </Surface>
