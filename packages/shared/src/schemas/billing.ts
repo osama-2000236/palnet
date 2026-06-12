@@ -89,6 +89,35 @@ export const Subscription = z.object({
 });
 export type Subscription = z.infer<typeof Subscription>;
 
+// Plan as offered to the viewer: server converts the USD list price into the
+// viewer's display currency and attaches the Karama points price when the
+// plan is redeemable with points (currently USER_PREMIUM only).
+export const PlanOffer = Plan.extend({
+  displayAmountCents: z.number().int().nonnegative(),
+  displayCurrency: z.string().length(3),
+  pointsPrice: z.number().int().positive().nullable(),
+});
+export type PlanOffer = z.infer<typeof PlanOffer>;
+
+export const WalletAvailability = z.object({
+  provider: z.nativeEnum(WalletProvider),
+  configured: z.boolean(),
+});
+export type WalletAvailability = z.infer<typeof WalletAvailability>;
+
+export const BillingCatalog = z.object({
+  plans: z.array(PlanOffer),
+  wallets: z.array(WalletAvailability),
+});
+export type BillingCatalog = z.infer<typeof BillingCatalog>;
+
+// Viewer's own billing state: the active personal subscription (company
+// subscriptions live on the employer billing surface instead).
+export const BillingMe = z.object({
+  subscription: Subscription.nullable(),
+});
+export type BillingMe = z.infer<typeof BillingMe>;
+
 export const CheckoutSessionBody = z.object({
   planCode: z.nativeEnum(PlanCode),
   companyId: z.string().cuid().optional(),

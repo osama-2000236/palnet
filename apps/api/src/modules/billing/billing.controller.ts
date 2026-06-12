@@ -1,12 +1,26 @@
 import {
   BankTransferReceiptBody,
+  BillingCatalog,
+  BillingMe,
   CheckoutSession,
   CheckoutSessionBody,
   Invoice,
+  type BillingCatalog as BillingCatalogDto,
+  type BillingMe as BillingMeDto,
   type CheckoutSession as CheckoutSessionDto,
   type Invoice as InvoiceDto,
 } from "@baydar/shared";
-import { Body, Controller, Get, Headers, HttpCode, HttpStatus, Param, Post } from "@nestjs/common";
+import {
+  Body,
+  Controller,
+  Get,
+  Header,
+  Headers,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Post,
+} from "@nestjs/common";
 import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 import { z } from "zod";
 
@@ -35,9 +49,26 @@ export class BillingController {
     return CheckoutSession.parse(await this.billing.createCheckoutSession(user.id, body));
   }
 
+  @Get("catalog")
+  @ApiBearerAuth()
+  @RequireCompleteProfile()
+  @Header("Cache-Control", "private, no-store")
+  async catalog(@CurrentUser() user: AuthUser): Promise<BillingCatalogDto> {
+    return BillingCatalog.parse(await this.billing.getCatalog(user.id));
+  }
+
+  @Get("me")
+  @ApiBearerAuth()
+  @RequireCompleteProfile()
+  @Header("Cache-Control", "private, no-store")
+  async me(@CurrentUser() user: AuthUser): Promise<BillingMeDto> {
+    return BillingMe.parse(await this.billing.getBillingMe(user.id));
+  }
+
   @Get("invoices")
   @ApiBearerAuth()
   @RequireCompleteProfile()
+  @Header("Cache-Control", "private, no-store")
   async invoices(@CurrentUser() user: AuthUser): Promise<InvoiceDto[]> {
     return z.array(Invoice).parse(await this.billing.listInvoices(user.id));
   }
