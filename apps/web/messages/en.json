@@ -351,7 +351,13 @@
     "eduEmpty": "No education added.",
     "skillsEmpty": "No skills added yet.",
     "posts": "Activity",
-    "postsEmpty": "No posts yet."
+    "postsEmpty": "No posts yet.",
+    "endorse": "Endorse",
+    "endorsed": "Endorsed",
+    "endorseCountLabel": "{count} endorsements",
+    "endorseThanks": "Skill endorsed.",
+    "endorseAlready": "You already endorsed this skill.",
+    "endorseError": "Could not endorse this skill."
   },
   "network": {
     "title": "My network",
@@ -1017,5 +1023,48 @@
       "selected": "Selected",
       "billingLink": "Billing"
     }
+  },
+  "karama": {
+    "kicker": "Karama Points",
+    "title": "Reputation is earned",
+    "subtitle": "Spend trusted reputation on visibility boosts.",
+    "balance": "Balance",
+    "cap": "Cap {cap}",
+    "loadError": "Could not load Karama balance.",
+    "redeemError": "Could not redeem this reward.",
+    "redeem": "Redeem",
+    "redeeming": "Redeeming…",
+    "points": "{count} points",
+    "recent": "Recent activity",
+    "premiumActive": "Premium is active — manage it on the Premium page.",
+    "premiumLink": "Baydar Premium",
+    "rewards": {
+      "boost": {
+        "title": "Boost application",
+        "body": "Top of employer inbox for 48 hours."
+      },
+      "premium": {
+        "title": "Premium month",
+        "body": "30 days of Baydar Premium, recorded as an invoice."
+      },
+      "featured": {
+        "title": "Featured profile",
+        "body": "Pin your profile in skill search for 7 days."
+      }
+    },
+    "reasons": {
+      "PROFILE_COMPLETE": "Profile completed",
+      "ENDORSEMENT": "Skill endorsement",
+      "VERIFIED_HIRE": "Verified hire",
+      "RATING_RECEIVED": "Rating received",
+      "REPORT_UPHELD": "Report upheld",
+      "FIRST_POST": "First post",
+      "REDEEM_BOOST_APPLICATION": "Redeemed: application boost",
+      "REDEEM_PREMIUM": "Redeemed: Premium",
+      "REDEEM_FEATURED_PROFILE": "Redeemed: featured profile",
+      "DECAY": "Decay",
+      "ADJUSTMENT": "Adjustment"
+    },
+    "redeemed": "Redeemed: {reward}."
   }
 }

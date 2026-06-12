@@ -350,7 +350,13 @@
     "eduEmpty": "لا يوجد تعليم مضاف.",
     "skillsEmpty": "لم تُضف مهارات بعد.",
     "posts": "النشاط",
-    "postsEmpty": "لا توجد منشورات."
+    "postsEmpty": "لا توجد منشورات.",
+    "endorse": "تزكية",
+    "endorsed": "تمت التزكية",
+    "endorseCountLabel": "{count} تزكيات",
+    "endorseThanks": "تمت تزكية المهارة.",
+    "endorseAlready": "سبق أن زكّيت هذه المهارة.",
+    "endorseError": "تعذّرت تزكية هذه المهارة."
   },
   "network": {
     "title": "شبكتي",
@@ -1005,5 +1011,48 @@
       "selected": "مختارة",
       "billingLink": "الفوترة"
     }
+  },
+  "karama": {
+    "kicker": "نقاط كرامة",
+    "title": "السمعة تُكتسب",
+    "subtitle": "أنفق سمعتك الموثوقة على تعزيز حضورك.",
+    "balance": "الرصيد",
+    "cap": "الحد الأقصى {cap}",
+    "loadError": "تعذّر تحميل رصيد كرامة.",
+    "redeemError": "تعذّر استبدال هذه المكافأة.",
+    "redeem": "استبدال",
+    "redeeming": "جارٍ الاستبدال…",
+    "points": "{count} نقطة",
+    "recent": "النشاط الأخير",
+    "premiumActive": "عضويتك المميزة فعّالة — أدرها من صفحة بيدر المميّز.",
+    "premiumLink": "بيدر المميّز",
+    "rewards": {
+      "boost": {
+        "title": "تعزيز طلب التقديم",
+        "body": "صدارة صندوق المُوظِّف لمدة ٤٨ ساعة."
+      },
+      "premium": {
+        "title": "شهر مميّز",
+        "body": "٣٠ يومًا من بيدر المميّز، تُسجَّل كفاتورة."
+      },
+      "featured": {
+        "title": "ملف مميّز",
+        "body": "تثبيت ملفك في بحث المهارات لمدة ٧ أيام."
+      }
+    },
+    "reasons": {
+      "PROFILE_COMPLETE": "اكتمال الملف",
+      "ENDORSEMENT": "تزكية مهارة",
+      "VERIFIED_HIRE": "توظيف موثّق",
+      "RATING_RECEIVED": "تقييم مستلم",
+      "REPORT_UPHELD": "بلاغ مقبول",
+      "FIRST_POST": "أول منشور",
+      "REDEEM_BOOST_APPLICATION": "استبدال: تعزيز طلب",
+      "REDEEM_PREMIUM": "استبدال: عضوية مميزة",
+      "REDEEM_FEATURED_PROFILE": "استبدال: ملف مميّز",
+      "DECAY": "تناقص",
+      "ADJUSTMENT": "تسوية"
+    },
+    "redeemed": "تم الاستبدال: {reward}."
   }
 }
