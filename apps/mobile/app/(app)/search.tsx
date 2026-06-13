@@ -1,8 +1,10 @@
 import {
   cursorPage,
+  SearchCompanyHit as SearchCompanyHitSchema,
   SearchJobHit as SearchJobHitSchema,
   SearchPersonHit as SearchPersonHitSchema,
   SearchPostHit as SearchPostHitSchema,
+  type SearchCompanyHit,
   type SearchJobHit,
   type SearchPersonHit,
   type SearchPostHit,
@@ -30,9 +32,10 @@ import { getAccessToken } from "@/lib/session";
 const PeoplePage = cursorPage(SearchPersonHitSchema);
 const PostsPage = cursorPage(SearchPostHitSchema);
 const JobsPage = cursorPage(SearchJobHitSchema);
+const CompaniesPage = cursorPage(SearchCompanyHitSchema);
 
-type SearchType = "people" | "posts" | "jobs";
-type SearchHit = SearchPersonHit | SearchPostHit | SearchJobHit;
+type SearchType = "people" | "posts" | "companies" | "jobs";
+type SearchHit = SearchPersonHit | SearchPostHit | SearchCompanyHit | SearchJobHit;
 
 export default function SearchScreen(): JSX.Element {
   const { t } = useTranslation();
@@ -49,6 +52,11 @@ export default function SearchScreen(): JSX.Element {
     () => [
       { key: "people" as const, label: t("search.tabs.people"), testID: "search-tab-people" },
       { key: "posts" as const, label: t("search.tabs.posts"), testID: "search-tab-posts" },
+      {
+        key: "companies" as const,
+        label: t("search.tabs.companies"),
+        testID: "search-tab-companies",
+      },
       { key: "jobs" as const, label: t("search.tabs.jobs"), testID: "search-tab-jobs" },
     ],
     [t],
@@ -181,13 +189,36 @@ async function fetchSearchPage(type: SearchType, qs: string, token: string | und
   const path = `/search/${type}?${qs}`;
   if (type === "people") return apiFetchPage(path, PeoplePage, { token });
   if (type === "posts") return apiFetchPage(path, PostsPage, { token });
+  if (type === "companies") return apiFetchPage(path, CompaniesPage, { token });
   return apiFetchPage(path, JobsPage, { token });
 }
 
 function SearchRow({ type, item }: { type: SearchType; item: SearchHit }): JSX.Element {
   if (type === "posts") return <PostRow item={item as SearchPostHit} />;
+  if (type === "companies") return <CompanyRow item={item as SearchCompanyHit} />;
   if (type === "jobs") return <JobRow item={item as SearchJobHit} />;
   return <PersonRow item={item as SearchPersonHit} />;
+}
+
+function CompanyRow({ item }: { item: SearchCompanyHit }): JSX.Element {
+  const { t } = useTranslation();
+  const location = [item.city, item.country].filter(Boolean).join(", ");
+  const jobsLabel =
+    item.activeJobs > 0 ? t("search.activeJobsCount", { count: item.activeJobs }) : null;
+  return (
+    <RecordCard
+      onPress={() =>
+        router.push({
+          pathname: "/(app)/jobs",
+          params: { companyId: item.id, company: item.name },
+        } as never)
+      }
+      accessibilityLabel={item.name}
+      title={item.verified ? `${item.name} · ${t("search.verified")}` : item.name}
+      subtitle={item.tagline ?? item.industry}
+      meta={[item.industry, location, jobsLabel].filter(Boolean).join(" · ")}
+    />
+  );
 }
 
 function PersonRow({ item }: { item: SearchPersonHit }): JSX.Element {

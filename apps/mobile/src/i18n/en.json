@@ -328,17 +328,21 @@
     "tabs": {
       "people": "People",
       "posts": "Posts",
-      "jobs": "Jobs"
+      "jobs": "Jobs",
+      "companies": "Companies"
     },
     "empty": {
       "people": "No people match that search.",
       "posts": "No posts match that search.",
-      "jobs": "No jobs match that search."
+      "jobs": "No jobs match that search.",
+      "companies": "No matching companies. Try another name or industry."
     },
     "noResults": "No people match that search.",
     "prompt": "Try a name or handle to find people.",
     "loadMore": "Load more",
-    "loadingMore": "Loading…"
+    "loadingMore": "Loading…",
+    "verified": "Verified",
+    "activeJobsCount": "{{count}} open jobs"
   },
   "profile": {
     "about": "About",
@@ -561,7 +565,9 @@
       "ONSITE": "On-site",
       "HYBRID": "Hybrid",
       "REMOTE": "Remote"
-    }
+    },
+    "companyFilter": "Jobs at {{name}}",
+    "clearCompanyFilter": "Clear company filter"
   },
   "settings": {
     "title": "Settings",
