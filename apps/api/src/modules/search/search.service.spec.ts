@@ -9,6 +9,7 @@ type PrismaStub = {
   profile: { findUnique: jest.Mock };
   post: { findUnique: jest.Mock };
   job: { findUnique: jest.Mock };
+  company: { findUnique: jest.Mock };
   $queryRaw: jest.Mock;
 };
 
@@ -17,6 +18,7 @@ function buildPrisma(): PrismaStub {
     profile: { findUnique: jest.fn() },
     post: { findUnique: jest.fn() },
     job: { findUnique: jest.fn() },
+    company: { findUnique: jest.fn() },
     $queryRaw: jest.fn().mockResolvedValue([]),
   };
 }
@@ -124,6 +126,36 @@ describe("SearchService", () => {
       select: { handle: true, id: true },
     });
     expect(prisma.$queryRaw).toHaveBeenCalled();
+  });
+
+  it("searches companies over name/slug/tagline/industry with a live-jobs count", async () => {
+    prisma.$queryRaw.mockResolvedValue([
+      {
+        id: "comp_1",
+        slug: "baydar-labs",
+        name: "Baydar Labs",
+        tagline: "بيدر للتقنية",
+        industry: "Software",
+        city: "Ramallah",
+        country: "PS",
+        logoUrl: null,
+        verified: true,
+        activeJobs: 3n,
+      },
+    ]);
+
+    const page = await service.searchCompanies("viewer", { q: "baydar", limit: 20 });
+
+    expect(page.data[0]).toMatchObject({
+      slug: "baydar-labs",
+      verified: true,
+      activeJobs: 3,
+    });
+    const sql = rawSqlFromCall(prisma.$queryRaw.mock.calls[0]!);
+    expect(sql).toMatch(/"Company"/);
+    expect(sql).toMatch(/to_tsvector\(/);
+    expect(sql).toMatch(/"industry"/);
+    expect(sql).toMatch(/COUNT\(\*\)/);
   });
 
   it("uses a tsquery FTS predicate for people search", async () => {

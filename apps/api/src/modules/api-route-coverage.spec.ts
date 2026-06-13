@@ -174,6 +174,7 @@ const EXPECTED_ROUTES = [
   "GET /blocks",
   "GET /search/people",
   "GET /search/posts",
+  "GET /search/companies",
   "GET /search/jobs",
 ].sort();
 

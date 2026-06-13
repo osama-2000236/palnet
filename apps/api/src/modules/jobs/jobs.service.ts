@@ -59,12 +59,14 @@ export class JobsService {
       city?: string | null;
       type?: JobDto["type"] | null;
       locationMode?: JobDto["locationMode"] | null;
+      companyId?: string | null;
     },
   ): Promise<{ data: JobDto[]; meta: CursorPageMeta }> {
     const rows = (await this.prisma.job.findMany({
       where: {
         isActive: true,
         deletedAt: null,
+        ...(filters.companyId ? { companyId: filters.companyId } : {}),
         ...(filters.q
           ? {
               OR: [

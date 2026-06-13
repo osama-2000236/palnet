@@ -1,8 +1,10 @@
 import {
+  CompaniesSearchQuery,
   type CursorPageMeta,
   JobsSearchQuery,
   PeopleSearchQuery,
   PostsSearchQuery,
+  type SearchCompanyHit,
   type SearchJobHit,
   type SearchPersonHit,
   type SearchPostHit,
@@ -44,6 +46,16 @@ export class SearchController {
     query: PostsSearchQuery,
   ): Promise<{ data: SearchPostHit[]; meta: CursorPageMeta }> {
     return this.search.searchPosts(user.id, query);
+  }
+
+  @Get("companies")
+  @RateLimit("search")
+  async companies(
+    @CurrentUser() user: AuthUser,
+    @Query(new ZodValidationPipe(CompaniesSearchQuery))
+    query: CompaniesSearchQuery,
+  ): Promise<{ data: SearchCompanyHit[]; meta: CursorPageMeta }> {
+    return this.search.searchCompanies(user.id, query);
   }
 
   @Get("jobs")
