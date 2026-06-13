@@ -209,8 +209,8 @@ function CompanyRow({ item }: { item: SearchCompanyHit }): JSX.Element {
     <RecordCard
       onPress={() =>
         router.push({
-          pathname: "/(app)/jobs",
-          params: { companyId: item.id, company: item.name },
+          pathname: "/(app)/company/[slug]",
+          params: { slug: item.slug },
         } as never)
       }
       accessibilityLabel={item.name}
