@@ -1,8 +1,14 @@
 "use client";
 
-import type { SearchJobHit, SearchPersonHit, SearchPostHit } from "@baydar/shared";
+import type {
+  SearchCompanyHit,
+  SearchJobHit,
+  SearchPersonHit,
+  SearchPostHit,
+} from "@baydar/shared";
 import { Avatar, RetryChip, Skeleton, Surface } from "@baydar/ui-web";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 
 export function PeopleRow({ item }: { item: SearchPersonHit }): JSX.Element {
   return (
@@ -82,6 +88,47 @@ export function JobRow({ item }: { item: SearchJobHit }): JSX.Element {
           <span className="text-ink-muted text-xs">
             {[location, item.locationMode, item.type].filter(Boolean).join(" · ")}
           </span>
+        </div>
+      </Link>
+    </Surface>
+  );
+}
+
+export function CompanyRow({ item }: { item: SearchCompanyHit }): JSX.Element {
+  const t = useTranslations("search");
+  const location = [item.city, item.country].filter(Boolean).join(", ");
+  // Until a public company page exists, a hit opens that company's open jobs.
+  const href = `/jobs?companyId=${item.id}&company=${encodeURIComponent(item.name)}`;
+  return (
+    <Surface as="li" variant="flat" padding="4">
+      <Link
+        href={href}
+        className="flex items-start gap-3 focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+      >
+        {item.logoUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={item.logoUrl} alt="" className="h-12 w-12 shrink-0 rounded-md object-cover" />
+        ) : (
+          <div className="bg-surface-sunken text-ink flex h-12 w-12 shrink-0 items-center justify-center rounded-md text-sm font-bold">
+            {item.name.slice(0, 1)}
+          </div>
+        )}
+        <div className="flex min-w-0 flex-col gap-1">
+          <span className="text-ink font-semibold">
+            {item.name}
+            {item.verified ? (
+              <span className="text-brand-700 ms-2 text-xs font-semibold">{t("verified")}</span>
+            ) : null}
+          </span>
+          {item.tagline ? <span className="text-ink-muted text-sm">{item.tagline}</span> : null}
+          <span className="text-ink-muted text-xs">
+            {[item.industry, location].filter(Boolean).join(" · ")}
+          </span>
+          {item.activeJobs > 0 ? (
+            <span className="text-brand-700 text-xs font-semibold">
+              {t("activeJobsCount", { count: item.activeJobs })}
+            </span>
+          ) : null}
         </div>
       </Link>
     </Surface>

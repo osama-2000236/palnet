@@ -285,12 +285,14 @@
     "tabs": {
       "people": "الأشخاص",
       "posts": "المنشورات",
-      "jobs": "الوظائف"
+      "jobs": "الوظائف",
+      "companies": "شركات"
     },
     "empty": {
       "people": "لا يوجد أشخاص يطابقون البحث.",
       "posts": "لا توجد منشورات تطابق البحث.",
-      "jobs": "لا توجد وظائف تطابق البحث."
+      "jobs": "لا توجد وظائف تطابق البحث.",
+      "companies": "لا شركات مطابقة. جرّب اسمًا أو مجالًا آخر."
     },
     "noResults": "لا نتائج مطابقة.",
     "prompt": "جرّب اسمًا أو معرّفًا للبحث عن أشخاص.",
@@ -298,7 +300,9 @@
     "errorBody": "تعذّر تحميل هذه النتائج. حاول مرة أخرى.",
     "retry": "أعد محاولة البحث",
     "loadMore": "تحميل المزيد",
-    "loadingMore": "جارٍ التحميل…"
+    "loadingMore": "جارٍ التحميل…",
+    "verified": "موثّقة",
+    "activeJobsCount": "{count} وظائف شاغرة"
   },
   "profile": {
     "title": "الملف الشخصي",
@@ -495,7 +499,9 @@
     "coverLetterPlaceholder": "اكتب لماذا أنت مناسب لهذا الدور…",
     "coverLetterHint": "حتى 8,000 حرف.",
     "submitApplication": "أرسل الطلب",
-    "loadFailedTitle": "تعذّر تحميل الوظائف"
+    "loadFailedTitle": "تعذّر تحميل الوظائف",
+    "companyFilter": "وظائف لدى {name}",
+    "clearCompanyFilter": "إزالة تصفية الشركة"
   },
   "settings": {
     "title": "الإعدادات",

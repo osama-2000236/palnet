@@ -2,9 +2,11 @@
 
 import {
   cursorPage,
+  SearchCompanyHit as SearchCompanyHitSchema,
   SearchJobHit as SearchJobHitSchema,
   SearchPersonHit as SearchPersonHitSchema,
   SearchPostHit as SearchPostHitSchema,
+  type SearchCompanyHit,
   type SearchJobHit,
   type SearchPersonHit,
   type SearchPostHit,
@@ -18,6 +20,7 @@ import { Suspense, useEffect, useMemo, useState } from "react";
 import { apiFetchPage } from "@/lib/api";
 import { getAccessToken } from "@/lib/session";
 import {
+  CompanyRow,
   JobRow,
   PeopleRow,
   PostRow,
@@ -28,20 +31,22 @@ import {
 const PeoplePage = cursorPage(SearchPersonHitSchema);
 const PostsPage = cursorPage(SearchPostHitSchema);
 const JobsPage = cursorPage(SearchJobHitSchema);
+const CompaniesPage = cursorPage(SearchCompanyHitSchema);
 
-type SearchType = "people" | "posts" | "jobs";
+type SearchType = "people" | "posts" | "companies" | "jobs";
 type HitState = {
   people: SearchPersonHit[];
   posts: SearchPostHit[];
+  companies: SearchCompanyHit[];
   jobs: SearchJobHit[];
 };
 type CursorState = Record<SearchType, string | null>;
 type MoreState = Record<SearchType, boolean>;
 
-const searchTypes: SearchType[] = ["people", "posts", "jobs"];
-const emptyHits: HitState = { people: [], posts: [], jobs: [] };
-const emptyCursor: CursorState = { people: null, posts: null, jobs: null };
-const emptyMore: MoreState = { people: false, posts: false, jobs: false };
+const searchTypes: SearchType[] = ["people", "posts", "companies", "jobs"];
+const emptyHits: HitState = { people: [], posts: [], companies: [], jobs: [] };
+const emptyCursor: CursorState = { people: null, posts: null, companies: null, jobs: null };
+const emptyMore: MoreState = { people: false, posts: false, companies: false, jobs: false };
 
 export default function SearchPage(): JSX.Element {
   return (
@@ -190,6 +195,9 @@ function SearchInner(): JSX.Element {
         <ul className="flex flex-col gap-3">
           {type === "people" ? hits.people.map((p) => <PeopleRow key={p.userId} item={p} />) : null}
           {type === "posts" ? hits.posts.map((p) => <PostRow key={p.id} item={p} />) : null}
+          {type === "companies"
+            ? hits.companies.map((c) => <CompanyRow key={c.id} item={c} />)
+            : null}
           {type === "jobs" ? hits.jobs.map((j) => <JobRow key={j.id} item={j} />) : null}
         </ul>
       )}
@@ -226,9 +234,10 @@ async function fetchSearchPage(type: SearchType, term: string, after: string | n
   const path = `/search/${type}?${qs.toString()}`;
   if (type === "people") return apiFetchPage(path, PeoplePage, { token });
   if (type === "posts") return apiFetchPage(path, PostsPage, { token });
+  if (type === "companies") return apiFetchPage(path, CompaniesPage, { token });
   return apiFetchPage(path, JobsPage, { token });
 }
 
 function parseSearchType(value: string | null | undefined): SearchType {
-  return value === "posts" || value === "jobs" ? value : "people";
+  return value === "posts" || value === "jobs" || value === "companies" ? value : "people";
 }
