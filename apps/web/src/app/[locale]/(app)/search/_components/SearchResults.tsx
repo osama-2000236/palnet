@@ -97,8 +97,7 @@ export function JobRow({ item }: { item: SearchJobHit }): JSX.Element {
 export function CompanyRow({ item }: { item: SearchCompanyHit }): JSX.Element {
   const t = useTranslations("search");
   const location = [item.city, item.country].filter(Boolean).join(", ");
-  // Until a public company page exists, a hit opens that company's open jobs.
-  const href = `/jobs?companyId=${item.id}&company=${encodeURIComponent(item.name)}`;
+  const href = `/company/${item.slug}`;
   return (
     <Surface as="li" variant="flat" padding="4">
       <Link

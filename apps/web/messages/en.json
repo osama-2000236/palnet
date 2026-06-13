@@ -831,7 +831,14 @@
   },
   "company": {
     "about": "About",
-    "jobs": "Jobs"
+    "jobs": "Jobs",
+    "openJobs": "Open jobs",
+    "noJobs": "No open roles right now.",
+    "loadError": "Could not load this company.",
+    "visitWebsite": "Visit website",
+    "verified": "Verified",
+    "viewAllJobs": "View all jobs",
+    "notFound": "Company not found."
   },
   "employer": {
     "title": "Employer workspace",
