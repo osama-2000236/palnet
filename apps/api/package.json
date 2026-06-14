@@ -9,7 +9,7 @@
     "build": "nest build",
     "predev": "pnpm --filter @baydar/shared build && pnpm --filter @baydar/db build",
     "dev": "nest start --watch",
-    "prestart": "pnpm --filter @baydar/shared build && pnpm --filter @baydar/db build",
+    "prestart": "pnpm --filter @baydar/ui-tokens build && pnpm --filter @baydar/shared build && pnpm --filter @baydar/db build",
     "start": "node dist/main.js",
     "lint": "eslint \"{src,test}/**/*.ts\"",
     "type-check": "tsc --noEmit",
