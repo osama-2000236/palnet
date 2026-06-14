@@ -34,6 +34,7 @@ interface JobRow {
     logoUrl: string | null;
   };
   applications: { id: string }[];
+  bookmarks: { id: string }[];
 }
 
 const jobInclude = (viewerId: string) =>
@@ -41,6 +42,11 @@ const jobInclude = (viewerId: string) =>
     company: { select: { id: true, slug: true, name: true, logoUrl: true } },
     applications: {
       where: { applicantId: viewerId },
+      select: { id: true },
+      take: 1,
+    },
+    bookmarks: {
+      where: { userId: viewerId },
       select: { id: true },
       take: 1,
     },
@@ -159,6 +165,9 @@ function toJobDto(row: JobRow): JobDto {
     expiresAt: row.expiresAt ? row.expiresAt.toISOString() : null,
     createdAt: row.createdAt.toISOString(),
     company: row.company,
-    viewer: { hasApplied: row.applications.length > 0 },
+    viewer: {
+      hasApplied: row.applications.length > 0,
+      bookmarkId: row.bookmarks[0]?.id ?? null,
+    },
   };
 }

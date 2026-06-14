@@ -1,5 +1,7 @@
 import {
+  ActiveSession,
   ConfirmVerifyEmailBody,
+  ChangePasswordBody,
   ErrorCode,
   ForgotPasswordBody,
   type AuthSession,
@@ -15,9 +17,11 @@ import {
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
+  Param,
   Post,
   Req,
   Res,
@@ -65,6 +69,13 @@ function readTransport(req: Request): Transport {
   return value === "body" ? "body" : "cookie";
 }
 
+function requestMeta(req: Request): { userAgent?: string; ipAddress?: string } {
+  return {
+    userAgent: req.get("user-agent"),
+    ipAddress: req.ip,
+  };
+}
+
 @ApiTags("auth")
 @Controller("auth")
 @UseGuards(JwtAuthGuard)
@@ -86,7 +97,11 @@ export class AuthController {
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ): Promise<{ data: AuthSession }> {
-    const session = await this.auth.register(body, body.deviceId ?? "register-bootstrap");
+    const session = await this.auth.register(
+      body,
+      body.deviceId ?? "register-bootstrap",
+      requestMeta(req),
+    );
     return { data: this.applyTransport(req, res, session) };
   }
 
@@ -101,7 +116,7 @@ export class AuthController {
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ): Promise<{ data: AuthSession }> {
-    const session = await this.auth.login(body);
+    const session = await this.auth.login(body, requestMeta(req));
     return { data: this.applyTransport(req, res, session) };
   }
 
@@ -148,7 +163,7 @@ export class AuthController {
         HttpStatus.BAD_REQUEST,
       );
     }
-    const session = await this.auth.refresh(parsed.data);
+    const session = await this.auth.refresh(parsed.data, requestMeta(req));
     return { data: this.applyTransport(req, res, session) };
   }
 
@@ -221,6 +236,43 @@ export class AuthController {
         }),
       );
     }
+  }
+
+  @Post("change-password")
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiBearerAuth()
+  async changePassword(
+    @CurrentUser() user: AuthUser,
+    @Body(new ZodValidationPipe(ChangePasswordBody)) body: ChangePasswordBody,
+  ): Promise<void> {
+    await this.auth.changePassword(user.id, body);
+  }
+
+  @Get("sessions")
+  @ApiBearerAuth()
+  async sessions(@CurrentUser() user: AuthUser): Promise<{ data: ActiveSession[] }> {
+    const data = await this.auth.listSessions(user.id);
+    return { data };
+  }
+
+  @Delete("sessions/others")
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiBearerAuth()
+  async logoutOtherSessions(
+    @CurrentUser() user: AuthUser,
+    @Body(new ZodValidationPipe(LogoutBody)) body: LogoutBody,
+  ): Promise<void> {
+    await this.auth.logoutOthers(user.id, body.deviceId);
+  }
+
+  @Delete("sessions/:deviceId")
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiBearerAuth()
+  async logoutSession(
+    @CurrentUser() user: AuthUser,
+    @Param("deviceId") deviceId: string,
+  ): Promise<void> {
+    await this.auth.logout(user.id, deviceId);
   }
 
   @Get("me")

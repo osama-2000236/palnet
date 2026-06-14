@@ -8,15 +8,21 @@
 //     cover letter. Submit POSTs to /jobs/:id/apply with `{ coverLetter }`.
 //     The endpoint is idempotent, so retrying after a network error is safe.
 
-import { formatSalaryRange, Job as JobSchema, type Job } from "@baydar/shared";
-import { Button, Surface } from "@baydar/ui-web";
+import {
+  Bookmark,
+  BookmarkType,
+  formatSalaryRange,
+  Job as JobSchema,
+  type Job,
+} from "@baydar/shared";
+import { Button, Icon, Surface } from "@baydar/ui-web";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 
-import { apiFetch } from "@/lib/api";
+import { apiCall, apiFetch } from "@/lib/api";
 import { getErrorCode, toErrorMessage } from "@/lib/error-message";
 import { readSession } from "@/lib/session";
 import { ApplyDialog } from "./_components/ApplyDialog";
@@ -35,6 +41,7 @@ export default function JobDetailPage(): JSX.Element {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [applyOpen, setApplyOpen] = useState(false);
+  const [saveBusy, setSaveBusy] = useState(false);
 
   useEffect(() => {
     const session = readSession();
@@ -65,6 +72,34 @@ export default function JobDetailPage(): JSX.Element {
     setJob((j) => (j ? { ...j, viewer: { ...j.viewer, hasApplied: true } } : j));
     setApplyOpen(false);
   }, []);
+
+  const toggleSave = useCallback(async (): Promise<void> => {
+    if (!token || !job || saveBusy) return;
+    const bookmarkId = job.viewer.bookmarkId;
+    setSaveBusy(true);
+    setJob({
+      ...job,
+      viewer: { ...job.viewer, bookmarkId: bookmarkId ? null : "pending_bookmark" },
+    });
+    try {
+      if (bookmarkId) {
+        await apiCall(`/bookmarks/${bookmarkId}`, { method: "DELETE", token });
+        return;
+      }
+      const created = await apiFetch("/bookmarks", Bookmark, {
+        method: "POST",
+        token,
+        body: { type: BookmarkType.JOB, targetId: job.id },
+      });
+      setJob((current) =>
+        current ? { ...current, viewer: { ...current.viewer, bookmarkId: created.id } } : current,
+      );
+    } catch {
+      setJob(job);
+    } finally {
+      setSaveBusy(false);
+    }
+  }, [job, saveBusy, token]);
 
   if (loading) {
     return <JobDetailSkeleton />;
@@ -140,7 +175,17 @@ export default function JobDetailPage(): JSX.Element {
             <p className="text-ink-muted mt-1 text-xs">{metaParts.join(" · ")}</p>
             {salary ? <p className="text-ink mt-1 text-sm font-semibold">{salary}</p> : null}
           </div>
-          <div className="shrink-0">
+          <div className="flex shrink-0 flex-col items-end gap-2">
+            <Button
+              variant="secondary"
+              size="sm"
+              loading={saveBusy}
+              onClick={() => void toggleSave()}
+              leading={<Icon name="bookmark" size={16} />}
+              aria-pressed={job.viewer.bookmarkId !== null}
+            >
+              {job.viewer.bookmarkId ? t("saved") : t("save")}
+            </Button>
             {job.viewer.hasApplied ? (
               <span
                 className="border-success/30 bg-success/10 text-success inline-flex items-center gap-1 rounded-md border px-3 py-1.5 text-xs font-semibold"

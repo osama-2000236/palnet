@@ -41,7 +41,7 @@
   },
   "nav": {
     "main": "Primary navigation",
-    "searchPlaceholder": "Search people, jobs, companies…",
+    "searchPlaceholder": "Search people, posts, jobs, companies…",
     "jobs": "Jobs",
     "myProfile": "Me",
     "settings": "Settings",
@@ -234,6 +234,8 @@
     "comment": "Comment",
     "repost": "Repost",
     "send": "Send",
+    "save": "Save",
+    "saved": "Saved",
     "comments": "Comments",
     "reposts": "Reposts",
     "commentsCount": "{count} comments",
@@ -294,17 +296,19 @@
   },
   "search": {
     "title": "Search",
-    "placeholder": "Search people, posts, or jobs…",
+    "placeholder": "Search people, posts, jobs, or companies…",
     "submit": "Search",
     "tabs": {
       "people": "People",
       "posts": "Posts",
-      "jobs": "Jobs"
+      "jobs": "Jobs",
+      "companies": "Companies"
     },
     "empty": {
       "people": "No people match that search.",
       "posts": "No posts match that search.",
-      "jobs": "No jobs match that search."
+      "jobs": "No jobs match that search.",
+      "companies": "No companies match that search."
     },
     "noResults": "No people match that search.",
     "prompt": "Try a name or handle to find people.",
@@ -346,8 +350,60 @@
     "expEmpty": "No experiences added.",
     "eduEmpty": "No education added.",
     "skillsEmpty": "No skills added yet.",
+    "endorse": "Endorse",
+    "endorsed": "Endorsed",
+    "endorsementsLabel": "endorsements",
+    "endorseSkill": "Endorse {skill}",
+    "endorseSuccess": "Endorsement added. Karama awarded.",
+    "endorseAlready": "You already endorsed this skill.",
+    "endorseFailed": "Could not endorse this skill.",
+    "endorseSignIn": "Sign in to endorse skills.",
     "posts": "Activity",
     "postsEmpty": "No posts yet."
+  },
+  "karama": {
+    "kicker": "Karama Points",
+    "title": "Reputation is earned",
+    "subtitle": "Spend trusted reputation on visibility boosts.",
+    "balance": "Balance",
+    "cap": "Cap",
+    "loadingValue": "…",
+    "loadFailed": "Could not load Karama balance.",
+    "redeemFailed": "Could not redeem this reward.",
+    "redeemSuccess": "Reward redeemed.",
+    "checkoutSuccess": "Premium activated with Karama Points.",
+    "checkoutBadge": "Points checkout",
+    "points": "points",
+    "redeem": "Redeem",
+    "recent": "Recent activity",
+    "recentEmpty": "No recent Karama activity.",
+    "rewards": {
+      "boost": {
+        "title": "Boost application",
+        "body": "Top of employer inbox for 48 hours."
+      },
+      "premium": {
+        "title": "Premium month",
+        "body": "Unlock premium profile visibility for 30 days."
+      },
+      "featured": {
+        "title": "Featured profile",
+        "body": "Pin your profile in skill search for 7 days."
+      }
+    },
+    "reasons": {
+      "PROFILE_COMPLETE": "Profile completed",
+      "ENDORSEMENT": "Skill endorsement",
+      "VERIFIED_HIRE": "Verified hire",
+      "RATING_RECEIVED": "Rating received",
+      "REPORT_UPHELD": "Report upheld",
+      "FIRST_POST": "First post",
+      "REDEEM_BOOST_APPLICATION": "Application boost",
+      "REDEEM_PREMIUM": "Premium redemption",
+      "REDEEM_FEATURED_PROFILE": "Featured profile",
+      "DECAY": "Monthly decay",
+      "ADJUSTMENT": "Adjustment"
+    }
   },
   "network": {
     "title": "My network",
@@ -529,7 +585,18 @@
   },
   "saved": {
     "title": "Saved",
-    "subtitle": "Bookmarked posts and content"
+    "subtitle": "Saved posts and jobs",
+    "emptyTitle": "No saved items yet.",
+    "emptyDesc": "Save posts and jobs to find them later.",
+    "loadFailedTitle": "Could not load saved items",
+    "loadMore": "Load more",
+    "remove": "Remove from saved items",
+    "removedToast": "Removed from saved items.",
+    "removeFailed": "Could not remove saved item.",
+    "types": {
+      "POST": "Post",
+      "JOB": "Job"
+    }
   },
   "onboarding": {
     "title": "Complete your profile",
@@ -569,6 +636,8 @@
     "any": "Any",
     "apply": "Apply",
     "appliedBadge": "Applied",
+    "save": "Save",
+    "saved": "Saved",
     "applyTitle": "Apply to {title}",
     "applySubtitle": "Share a short note with {company}. You can leave it blank and apply directly.",
     "coverLetterLabel": "Cover letter (optional)",
@@ -823,6 +892,62 @@
       "button": "Restore account",
       "success": "Your account has been restored.",
       "error": "Could not restore this account."
+    }
+  },
+  "admin": {
+    "moderation": {
+      "kicker": "Admin",
+      "title": "Moderation queue",
+      "loadFailed": "Could not load moderation queue.",
+      "actionFailed": "Could not apply moderation action.",
+      "reporter": "reporter",
+      "target": "Target:",
+      "unknown": "unknown",
+      "confirmHardDelete": "Hard-delete this reported account? This cannot be undone.",
+      "emptyTitle": "No open reports",
+      "emptyBody": "New safety reports will appear here for moderator review.",
+      "actions": {
+        "DISMISS": "Dismiss",
+        "WARN": "Warn",
+        "SUSPEND": "Suspend",
+        "HARD_DELETE": "Hard delete"
+      }
+    },
+    "billing": {
+      "kicker": "Admin",
+      "title": "Payment review",
+      "subtitle": "Review bank-transfer receipts before activating the purchase.",
+      "loadFailed": "Could not load payment review queue.",
+      "actionFailed": "Could not apply billing action.",
+      "loading": "Loading payment review queue…",
+      "invoice": "invoice",
+      "company": "Company:",
+      "user": "User:",
+      "status": "Status:",
+      "missing": "n/a",
+      "receipt": "Open receipt",
+      "confirmVoid": "Void this invoice? This cannot be undone.",
+      "emptyTitle": "No receipts need review",
+      "emptyBody": "New bank-transfer uploads will appear here for finance review.",
+      "actions": {
+        "MARK_PAID": "Mark paid",
+        "VOID": "Void"
+      },
+      "methods": {
+        "CARD": "Card",
+        "BANK_TRANSFER": "Bank transfer",
+        "POINTS": "Karama points",
+        "JAWWALPAY": "JawwalPay",
+        "PALPAY": "PalPay",
+        "REFLECT": "Reflect"
+      },
+      "statuses": {
+        "DRAFT": "Draft",
+        "OPEN": "Open",
+        "PAID": "Paid",
+        "VOID": "Void",
+        "UNCOLLECTIBLE": "Uncollectible"
+      }
     }
   },
   "company": {

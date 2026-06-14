@@ -63,6 +63,12 @@ export const JobLocationMode = {
 } as const;
 export type JobLocationMode = (typeof JobLocationMode)[keyof typeof JobLocationMode];
 
+export const BookmarkType = {
+  POST: "POST",
+  JOB: "JOB",
+} as const;
+export type BookmarkType = (typeof BookmarkType)[keyof typeof BookmarkType];
+
 export const ApplicationStatus = {
   SUBMITTED: "SUBMITTED",
   REVIEWING: "REVIEWING",

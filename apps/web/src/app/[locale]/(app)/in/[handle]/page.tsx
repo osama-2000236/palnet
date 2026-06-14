@@ -7,9 +7,9 @@ import {
   type Profile,
 } from "@baydar/shared";
 import {
-  Avatar,
   BlockButton,
   Button,
+  ProfileHeader,
   ReportDialog,
   Surface,
   useToast,
@@ -140,32 +140,23 @@ export default function ProfileRoute(): JSX.Element {
 
   return (
     <main className="mx-auto flex w-full max-w-[840px] flex-col gap-6 px-6 py-8">
-      <Surface as="section" variant="hero" padding="6">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div className="flex items-start gap-4">
-            <Avatar
-              user={{
-                id: profile.userId,
-                handle: profile.handle,
-                firstName: profile.firstName,
-                lastName: profile.lastName,
-                avatarUrl: profile.avatarUrl ?? null,
-              }}
-              size="xl"
-              ring
-            />
-            <div className="flex flex-col">
-              <h1 className="text-ink text-3xl font-bold">
-                {profile.firstName} {profile.lastName}
-              </h1>
-              {profile.headline ? <p className="text-ink-muted">{profile.headline}</p> : null}
-              {profile.location ? (
-                <p className="text-ink-muted text-sm">{profile.location}</p>
-              ) : null}
-              <p className="text-ink-muted text-xs">/in/{profile.handle}</p>
-            </div>
-          </div>
-          {profile.viewer?.isSelf ? (
+      <ProfileHeader
+        user={{
+          id: profile.userId,
+          handle: profile.handle,
+          firstName: profile.firstName,
+          lastName: profile.lastName,
+          avatarUrl: profile.avatarUrl ?? null,
+        }}
+        fullName={`${profile.firstName} ${profile.lastName}`}
+        headline={profile.headline}
+        meta={
+          <>
+            {profile.location ? `${profile.location} · ` : ""}/in/{profile.handle}
+          </>
+        }
+        actions={
+          profile.viewer?.isSelf ? (
             <Link
               href="/me/edit"
               className="border-ink-muted/30 text-ink hover:bg-ink-muted/5 rounded-md border px-4 py-2 text-sm focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
@@ -173,7 +164,7 @@ export default function ProfileRoute(): JSX.Element {
               {t("edit")}
             </Link>
           ) : (
-            <div className="flex flex-wrap items-center gap-2">
+            <>
               <ConnectButton
                 targetUserId={profile.userId}
                 viewer={profile.viewer}
@@ -244,10 +235,10 @@ export default function ProfileRoute(): JSX.Element {
                   }
                 }}
               />
-            </div>
-          )}
-        </div>
-      </Surface>
+            </>
+          )
+        }
+      />
 
       <ProfileTabsContent profile={profile} tab={tab} onTabChange={setTab} />
       <ReportDialog

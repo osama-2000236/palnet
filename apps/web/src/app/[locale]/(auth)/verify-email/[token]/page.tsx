@@ -37,7 +37,7 @@ export default function VerifyEmailPage(): JSX.Element {
             ? t("verify.success")
             : t("verify.error")}
       </p>
-      <Link href={`/${locale}/auth/login`} className="text-brand-700 text-sm font-semibold">
+      <Link href={`/${locale}/login`} className="text-brand-700 text-sm font-semibold">
         {t("verify.backToLogin")}
       </Link>
     </main>

@@ -38,6 +38,13 @@ export const LogoutBody = z.object({
 });
 export type LogoutBody = z.infer<typeof LogoutBody>;
 
+export const ChangePasswordBody = z.object({
+  currentPassword: z.string().min(1),
+  newPassword: Password,
+  deviceId: z.string().min(1).max(128),
+});
+export type ChangePasswordBody = z.infer<typeof ChangePasswordBody>;
+
 export const StreamTokenScope = z.enum(["messaging", "notifications"]);
 export type StreamTokenScope = z.infer<typeof StreamTokenScope>;
 

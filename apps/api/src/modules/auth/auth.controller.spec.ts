@@ -150,4 +150,77 @@ describe("AuthController email verification and password reset", () => {
       await app.close();
     }
   });
+
+  it("POST /auth/change-password validates and returns 204", async () => {
+    const auth = { changePassword: jest.fn().mockResolvedValue(undefined) };
+    const app = await createApp({ auth });
+
+    try {
+      await request(app.getHttpServer())
+        .post("/auth/change-password")
+        .send({
+          currentPassword: "OldPassword1",
+          newPassword: "NewPassword1",
+          deviceId: "device-1",
+        })
+        .expect(204)
+        .expect("");
+      expect(auth.changePassword).toHaveBeenCalledWith("user-1", {
+        currentPassword: "OldPassword1",
+        newPassword: "NewPassword1",
+        deviceId: "device-1",
+      });
+    } finally {
+      await app.close();
+    }
+  });
+
+  it("GET /auth/sessions returns active sessions", async () => {
+    const sessions = [
+      {
+        id: "device-1",
+        device: "Chrome",
+        lastActiveAt: "2026-06-14T10:00:00.000Z",
+      },
+    ];
+    const auth = { listSessions: jest.fn().mockResolvedValue(sessions) };
+    const app = await createApp({ auth });
+
+    try {
+      await request(app.getHttpServer()).get("/auth/sessions").expect(200).expect({
+        data: sessions,
+      });
+      expect(auth.listSessions).toHaveBeenCalledWith("user-1");
+    } finally {
+      await app.close();
+    }
+  });
+
+  it("DELETE /auth/sessions/others revokes every other device", async () => {
+    const auth = { logoutOthers: jest.fn().mockResolvedValue(undefined) };
+    const app = await createApp({ auth });
+
+    try {
+      await request(app.getHttpServer())
+        .delete("/auth/sessions/others")
+        .send({ deviceId: "device-1" })
+        .expect(204)
+        .expect("");
+      expect(auth.logoutOthers).toHaveBeenCalledWith("user-1", "device-1");
+    } finally {
+      await app.close();
+    }
+  });
+
+  it("DELETE /auth/sessions/:deviceId revokes one device", async () => {
+    const auth = { logout: jest.fn().mockResolvedValue(undefined) };
+    const app = await createApp({ auth });
+
+    try {
+      await request(app.getHttpServer()).delete("/auth/sessions/device-2").expect(204).expect("");
+      expect(auth.logout).toHaveBeenCalledWith("user-1", "device-2");
+    } finally {
+      await app.close();
+    }
+  });
 });

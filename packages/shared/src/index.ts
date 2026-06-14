@@ -12,6 +12,7 @@ export * from "./schemas/interaction";
 export * from "./schemas/message";
 export * from "./schemas/notification";
 export * from "./schemas/job";
+export * from "./schemas/bookmark";
 export * from "./schemas/company";
 export * from "./schemas/search";
 export * from "./schemas/media";

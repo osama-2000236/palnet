@@ -1,7 +1,7 @@
 // Mobile jobs list. Jobs are reached from feed/search content rather than the
 // bottom shell, so this route keeps a compact header and dense record rhythm.
 
-import { cursorPage, Job as JobSchema, type Job } from "@baydar/shared";
+import { Bookmark, BookmarkType, cursorPage, Job as JobSchema, type Job } from "@baydar/shared";
 import {
   AppHeader,
   Button,
@@ -17,7 +17,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { StateMessage } from "@/components/StateMessage";
 import { JobRow } from "@/components/rows/JobRow";
-import { apiFetchPage } from "@/lib/api";
+import { apiCall, apiFetch, apiFetchPage } from "@/lib/api";
 import { apiErrorMessage } from "@/lib/api-errors";
 import { getAccessToken } from "@/lib/session";
 
@@ -42,6 +42,7 @@ export default function JobsScreen(): JSX.Element {
   const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [savingId, setSavingId] = useState<string | null>(null);
 
   const load = useCallback(
     async (after: string | null, f: Filters): Promise<void> => {
@@ -81,6 +82,49 @@ export default function JobsScreen(): JSX.Element {
       setRefreshing(false);
     }
   }, [filters, load]);
+
+  const toggleSave = useCallback(
+    async (job: Job): Promise<void> => {
+      if (savingId) return;
+      const token = await getAccessToken();
+      if (!token) return;
+      const bookmarkId = job.viewer.bookmarkId;
+      setSavingId(job.id);
+      setItems((prev) =>
+        prev.map((item) =>
+          item.id === job.id
+            ? {
+                ...item,
+                viewer: { ...item.viewer, bookmarkId: bookmarkId ? null : "pending_bookmark" },
+              }
+            : item,
+        ),
+      );
+      try {
+        if (bookmarkId) {
+          await apiCall(`/bookmarks/${bookmarkId}`, { method: "DELETE", token });
+          return;
+        }
+        const created = await apiFetch("/bookmarks", Bookmark, {
+          method: "POST",
+          token,
+          body: { type: BookmarkType.JOB, targetId: job.id },
+        });
+        setItems((prev) =>
+          prev.map((item) =>
+            item.id === job.id
+              ? { ...item, viewer: { ...item.viewer, bookmarkId: created.id } }
+              : item,
+          ),
+        );
+      } catch {
+        setItems((prev) => prev.map((item) => (item.id === job.id ? job : item)));
+      } finally {
+        setSavingId(null);
+      }
+    },
+    [savingId],
+  );
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: nativeTokens.color.surfaceMuted }}>
@@ -145,7 +189,13 @@ export default function JobsScreen(): JSX.Element {
             <FlatList
               data={items}
               keyExtractor={(j) => j.id}
-              renderItem={({ item }) => <JobRow job={item} />}
+              renderItem={({ item }) => (
+                <JobRow
+                  job={item}
+                  saving={savingId === item.id}
+                  onToggleSave={() => void toggleSave(item)}
+                />
+              )}
               ItemSeparatorComponent={() => <View style={{ height: nativeTokens.space[3] }} />}
               onEndReachedThreshold={0.4}
               onEndReached={() => {

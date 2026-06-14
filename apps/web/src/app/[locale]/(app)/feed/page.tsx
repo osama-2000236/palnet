@@ -15,7 +15,14 @@ import {
   Post as PostSchema,
 } from "@baydar/shared";
 import type { Job, PersonSuggestion, Post } from "@baydar/shared";
-import { Button, EmptyState, PostCardSkeleton, RetryChip, Surface } from "@baydar/ui-web";
+import {
+  Button,
+  EmptyState,
+  PostCardSkeleton,
+  RetryChip,
+  staggerDelay,
+  Surface,
+} from "@baydar/ui-web";
 import { PostCard } from "@/components/PostCard";
 import { RightRail } from "../components/RightRail";
 import { OnboardingDoneCard } from "./OnboardingDoneCard";
@@ -179,8 +186,22 @@ function FeedInner(): JSX.Element {
             </Surface>
           ) : (
             <ul className="flex flex-col gap-3">
-              {posts.posts.map((post) => (
-                <PostCard key={post.id} post={post} />
+              {posts.posts.map((post, i) => (
+                <li
+                  key={post.id}
+                  className="animate-enter-up"
+                  style={{ animationDelay: `${staggerDelay(i)}ms` }}
+                >
+                  <PostCard
+                    post={post}
+                    onChange={(next) =>
+                      setPosts((prev) => ({
+                        ...prev,
+                        posts: prev.posts.map((item) => (item.id === next.id ? next : item)),
+                      }))
+                    }
+                  />
+                </li>
               ))}
             </ul>
           )}

@@ -13,10 +13,12 @@ type PrismaStub = {
     findUnique: jest.Mock;
     findFirst: jest.Mock;
     create: jest.Mock;
+    update: jest.Mock;
     findUniqueOrThrow: jest.Mock;
   };
   refreshToken: {
     create: jest.Mock;
+    findMany: jest.Mock;
     findFirst: jest.Mock;
     update: jest.Mock;
     updateMany: jest.Mock;
@@ -29,10 +31,12 @@ function buildPrisma(): PrismaStub {
       findUnique: jest.fn(),
       findFirst: jest.fn(),
       create: jest.fn(),
+      update: jest.fn(),
       findUniqueOrThrow: jest.fn(),
     },
     refreshToken: {
       create: jest.fn(),
+      findMany: jest.fn(),
       findFirst: jest.fn(),
       update: jest.fn(),
       updateMany: jest.fn(),
@@ -197,6 +201,106 @@ describe("AuthService", () => {
         code: ErrorCode.ACCOUNT_DELETED,
         status: 403,
       });
+    });
+  });
+
+  describe("sessions", () => {
+    it("lists one active row per device id", async () => {
+      prisma.refreshToken.findMany.mockResolvedValue([
+        {
+          deviceId: "device-1",
+          userAgent: "Chrome",
+          ipAddress: "127.0.0.1",
+          createdAt: new Date("2026-06-14T10:00:00.000Z"),
+        },
+        {
+          deviceId: "device-1",
+          userAgent: "Old Chrome",
+          ipAddress: "127.0.0.1",
+          createdAt: new Date("2026-06-13T10:00:00.000Z"),
+        },
+        {
+          deviceId: "device-2",
+          userAgent: null,
+          ipAddress: null,
+          createdAt: new Date("2026-06-14T09:00:00.000Z"),
+        },
+      ]);
+
+      const sessions = await service.listSessions("user_1");
+
+      expect(prisma.refreshToken.findMany).toHaveBeenCalledWith({
+        where: { userId: "user_1", revokedAt: null, expiresAt: { gt: expect.any(Date) } },
+        orderBy: { createdAt: "desc" },
+        select: {
+          deviceId: true,
+          userAgent: true,
+          ipAddress: true,
+          createdAt: true,
+        },
+      });
+      expect(sessions).toEqual([
+        {
+          id: "device-1",
+          device: "Chrome",
+          lastActiveAt: "2026-06-14T10:00:00.000Z",
+        },
+        {
+          id: "device-2",
+          device: "device-2",
+          lastActiveAt: "2026-06-14T09:00:00.000Z",
+        },
+      ]);
+    });
+
+    it("revokes all sessions except the current device", async () => {
+      await service.logoutOthers("user_1", "device-1");
+
+      expect(prisma.refreshToken.updateMany).toHaveBeenCalledWith({
+        where: { userId: "user_1", deviceId: { not: "device-1" }, revokedAt: null },
+        data: { revokedAt: expect.any(Date) },
+      });
+    });
+  });
+
+  describe("changePassword", () => {
+    it("updates the password and revokes other devices", async () => {
+      const passwordHash = await bcrypt.hash("OldPassword1", 4);
+      prisma.user.findUnique.mockResolvedValue({ passwordHash });
+      prisma.user.update.mockResolvedValue({});
+      prisma.refreshToken.updateMany.mockResolvedValue({ count: 1 });
+
+      await service.changePassword("user_1", {
+        currentPassword: "OldPassword1",
+        newPassword: "NewPassword1",
+        deviceId: "device-1",
+      });
+
+      const nextHash = prisma.user.update.mock.calls[0][0].data.passwordHash;
+      await expect(bcrypt.compare("NewPassword1", nextHash)).resolves.toBe(true);
+      expect(prisma.refreshToken.updateMany).toHaveBeenCalledWith({
+        where: { userId: "user_1", deviceId: { not: "device-1" }, revokedAt: null },
+        data: { revokedAt: expect.any(Date) },
+      });
+    });
+
+    it("rejects an incorrect current password", async () => {
+      const passwordHash = await bcrypt.hash("OldPassword1", 4);
+      prisma.user.findUnique.mockResolvedValue({ passwordHash });
+
+      await expect(
+        service.changePassword("user_1", {
+          currentPassword: "WrongPassword1",
+          newPassword: "NewPassword1",
+          deviceId: "device-1",
+        }),
+      ).rejects.toMatchObject({
+        response: {
+          error: { code: ErrorCode.AUTH_UNAUTHORIZED },
+        },
+      });
+      expect(prisma.user.update).not.toHaveBeenCalled();
+      expect(prisma.refreshToken.updateMany).not.toHaveBeenCalled();
     });
   });
 });

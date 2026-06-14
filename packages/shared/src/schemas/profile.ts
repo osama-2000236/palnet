@@ -41,6 +41,12 @@ export const Skill = z.object({
 });
 export type Skill = z.infer<typeof Skill>;
 
+export const EndorseSkillResult = z.object({
+  endorsements: z.number().int().nonnegative(),
+  awardedKarama: z.boolean(),
+});
+export type EndorseSkillResult = z.infer<typeof EndorseSkillResult>;
+
 export const ViewerProfileState = z.object({
   isSelf: z.boolean(),
   connection: z

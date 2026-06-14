@@ -1,57 +1,42 @@
 "use client";
 
 import type { Job } from "@baydar/shared";
-import { Chip, Skeleton, Surface } from "@baydar/ui-web";
+import { Chip, Icon, Skeleton, Surface, cx } from "@baydar/ui-web";
 import Image from "next/image";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 
-export function JobListRow({ job, salary }: { job: Job; salary: string | null }): JSX.Element {
+export function JobListRow({
+  job,
+  salary,
+  saving,
+  onToggleSave,
+}: {
+  job: Job;
+  salary: string | null;
+  saving?: boolean;
+  onToggleSave?: () => void;
+}): JSX.Element {
   const t = useTranslations("jobs");
   const metaParts = [
     job.city,
     t(`locationLabels.${job.locationMode}`),
     t(`typeLabels.${job.type}`),
   ].filter(Boolean) as string[];
+  const saved = job.viewer.bookmarkId !== null;
 
   return (
-    <Link
-      href={`/jobs/${job.id}`}
-      className="block focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
-    >
-      <Surface variant="card" padding="4" className="hover:border-brand-400 transition-colors">
-        <div className="flex items-start gap-3">
-          <div
-            className="bg-surface-sunken text-ink-muted flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-md text-sm font-semibold"
-            aria-hidden="true"
-          >
-            {job.company.logoUrl ? (
-              <Image
-                src={job.company.logoUrl}
-                alt=""
-                width={48}
-                height={48}
-                className="object-cover"
-              />
-            ) : (
-              (job.company.name[0] ?? "?").toUpperCase()
-            )}
-          </div>
+    <Surface variant="card" padding="4" className="hover:border-brand-400 transition-colors">
+      <div className="flex items-start gap-3">
+        <Link
+          href={`/jobs/${job.id}`}
+          className="flex min-w-0 flex-1 items-start gap-3 rounded-md focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+        >
+          <CompanyLogo job={job} />
           <div className="min-w-0 flex-1">
-            <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0">
-                <h2 className="text-ink truncate text-base font-semibold">{job.title}</h2>
-                <p className="text-ink-muted truncate text-sm">{job.company.name}</p>
-              </div>
-              {job.viewer.hasApplied ? (
-                <Chip
-                  size="sm"
-                  dotClassName="bg-success"
-                  className="border-success/30 bg-success/10 text-success"
-                >
-                  {t("appliedBadge")}
-                </Chip>
-              ) : null}
+            <div className="min-w-0">
+              <h2 className="text-ink truncate text-base font-semibold">{job.title}</h2>
+              <p className="text-ink-muted truncate text-sm">{job.company.name}</p>
             </div>
             <p className="text-ink-muted mt-1 text-xs">{metaParts.join(" · ")}</p>
             {salary ? <p className="text-ink mt-1 text-xs font-semibold">{salary}</p> : null}
@@ -65,9 +50,51 @@ export function JobListRow({ job, salary }: { job: Job; salary: string | null })
               </ul>
             ) : null}
           </div>
+        </Link>
+        <div className="flex shrink-0 items-start gap-2">
+          {job.viewer.hasApplied ? (
+            <Chip
+              size="sm"
+              dotClassName="bg-success"
+              className="border-success/30 bg-success/10 text-success"
+            >
+              {t("appliedBadge")}
+            </Chip>
+          ) : null}
+          {onToggleSave ? (
+            <button
+              type="button"
+              aria-label={saved ? t("saved") : t("save")}
+              aria-pressed={saved}
+              disabled={saving}
+              onClick={onToggleSave}
+              className={cx(
+                "hover:bg-surface-subtle inline-flex h-9 w-9 items-center justify-center rounded-md focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]",
+                "disabled:cursor-not-allowed disabled:opacity-60",
+                saved ? "text-brand-700" : "text-ink-muted hover:text-ink",
+              )}
+            >
+              <Icon name="bookmark" size={18} />
+            </button>
+          ) : null}
         </div>
-      </Surface>
-    </Link>
+      </div>
+    </Surface>
+  );
+}
+
+function CompanyLogo({ job }: { job: Job }): JSX.Element {
+  return (
+    <div
+      className="bg-surface-sunken text-ink-muted flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-md text-sm font-semibold"
+      aria-hidden="true"
+    >
+      {job.company.logoUrl ? (
+        <Image src={job.company.logoUrl} alt="" width={48} height={48} className="object-cover" />
+      ) : (
+        (job.company.name[0] ?? "?").toUpperCase()
+      )}
+    </div>
   );
 }
 

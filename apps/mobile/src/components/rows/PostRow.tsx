@@ -1,4 +1,10 @@
-import { ReportReason, formatRelativeTime, type Post } from "@baydar/shared";
+import {
+  Bookmark,
+  BookmarkType,
+  ReportReason,
+  formatRelativeTime,
+  type Post,
+} from "@baydar/shared";
 import {
   PostCard,
   ReportSheet,
@@ -14,7 +20,7 @@ import { useTranslation } from "react-i18next";
 import { StyleSheet, View } from "react-native";
 
 import { CommentsList } from "@/components/CommentsList";
-import { apiCall } from "@/lib/api";
+import { apiCall, apiFetch } from "@/lib/api";
 import { useReport } from "@/api/safety";
 import { successHaptic, tapHaptic } from "@/lib/haptics";
 import { getAccessToken } from "@/lib/session";
@@ -30,6 +36,7 @@ export const PostRow = memo(function PostRow({ post, onChange }: PostRowProps): 
   const [showComments, setShowComments] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [saveBusy, setSaveBusy] = useState(false);
   const report = useReport();
 
   async function toggleReaction(): Promise<void> {
@@ -69,7 +76,40 @@ export const PostRow = memo(function PostRow({ post, onChange }: PostRowProps): 
     }
   }
 
+  async function toggleSave(): Promise<void> {
+    if (saveBusy) return;
+    const token = await getAccessToken();
+    if (!token) return;
+    const bookmarkId = post.viewer.bookmarkId;
+    const optimistic: Post = {
+      ...post,
+      viewer: { ...post.viewer, bookmarkId: bookmarkId ? null : "pending_bookmark" },
+    };
+    onChange?.(optimistic);
+    setSaveBusy(true);
+    try {
+      tapHaptic();
+      if (bookmarkId) {
+        await apiCall(`/bookmarks/${bookmarkId}`, { method: "DELETE", token });
+        successHaptic();
+        return;
+      }
+      const created = await apiFetch("/bookmarks", Bookmark, {
+        method: "POST",
+        token,
+        body: { type: BookmarkType.POST, targetId: post.id },
+      });
+      onChange?.({ ...post, viewer: { ...post.viewer, bookmarkId: created.id } });
+      successHaptic();
+    } catch {
+      onChange?.(post);
+    } finally {
+      setSaveBusy(false);
+    }
+  }
+
   const liked = post.viewer.reaction !== null;
+  const saved = post.viewer.bookmarkId !== null;
   const singleMedia = post.media.length === 1;
   const authorName = `${post.author.firstName} ${post.author.lastName}`.trim();
   const media =
@@ -111,6 +151,15 @@ export const PostRow = memo(function PostRow({ post, onChange }: PostRowProps): 
       key: "repost",
       label: t("post.reposts"),
       icon: "repost",
+    },
+    {
+      key: "save",
+      label: saved ? t("post.saved") : t("post.save"),
+      icon: "bookmark",
+      selected: saved,
+      disabled: saveBusy,
+      testID: `post-save-${post.id}`,
+      onPress: () => void toggleSave(),
     },
     {
       key: "send",
@@ -207,6 +256,7 @@ function areEqual(prev: PostRowProps, next: PostRowProps): boolean {
     prev.post.id === next.post.id &&
     prev.post.updatedAt === next.post.updatedAt &&
     prev.post.viewer.reaction === next.post.viewer.reaction &&
+    prev.post.viewer.bookmarkId === next.post.viewer.bookmarkId &&
     prev.post.counts.reactions === next.post.counts.reactions &&
     prev.post.counts.comments === next.post.counts.comments
   );

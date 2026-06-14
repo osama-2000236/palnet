@@ -37,6 +37,7 @@ export interface PostWithIncludes {
   };
   reactions: Array<{ type: string }>; // scoped to viewer (take: 1)
   reposts: Array<{ id: string }>; // scoped to viewer (take: 1)
+  bookmarks: Array<{ id: string }>; // scoped to viewer (take: 1)
 }
 
 export function toPostDto(post: PostWithIncludes): PostDto {
@@ -67,6 +68,7 @@ export function toPostDto(post: PostWithIncludes): PostDto {
       viewer: {
         reaction: post.reactions[0]?.type ?? null,
         reposted: post.reposts.length > 0,
+        bookmarkId: post.bookmarks[0]?.id ?? null,
       },
       author: {
         id: post.author.id,
@@ -111,6 +113,7 @@ export function toPostDto(post: PostWithIncludes): PostDto {
     viewer: {
       reaction: post.reactions[0]?.type ?? null,
       reposted: post.reposts.length > 0,
+      bookmarkId: post.bookmarks[0]?.id ?? null,
     },
     author: {
       id: post.author.id,
@@ -158,6 +161,11 @@ export function postInclude(viewerId: string, excludedUserIds: string[] = []) {
       select: { type: true },
     },
     reposts: {
+      where: { userId: viewerId },
+      take: 1,
+      select: { id: true },
+    },
+    bookmarks: {
       where: { userId: viewerId },
       take: 1,
       select: { id: true },

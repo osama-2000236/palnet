@@ -8,9 +8,9 @@
 // other devices, and a forward-compatible 2FA panel.
 //
 // Server endpoints (all require Authorization):
-//   POST   /auth/change-password      body { currentPassword, newPassword }
+//   POST   /auth/change-password      body { currentPassword, newPassword, deviceId }
 //   GET    /auth/sessions             → ActiveSession[]
-//   DELETE /auth/sessions/others      → 204  ("sign out everywhere else")
+//   DELETE /auth/sessions/others      body { deviceId } → 204  ("sign out everywhere else")
 //   DELETE /auth/sessions/:id         → 204
 //
 // Mutations all funnel through `apiCall` so 204s are handled uniformly.
@@ -103,7 +103,7 @@ export default function SecuritySettingsPage(): JSX.Element {
       await apiCall("/auth/change-password", {
         method: "POST",
         token,
-        body: { currentPassword: currentPw, newPassword: newPw },
+        body: { currentPassword: currentPw, newPassword: newPw, deviceId: thisDeviceId },
       });
       setCurrentPw("");
       setNewPw("");
@@ -120,7 +120,11 @@ export default function SecuritySettingsPage(): JSX.Element {
   const signOutOthers = async (): Promise<void> => {
     if (!token) return;
     try {
-      await apiCall("/auth/sessions/others", { method: "DELETE", token });
+      await apiCall("/auth/sessions/others", {
+        method: "DELETE",
+        token,
+        body: { deviceId: thisDeviceId },
+      });
       toast.showToast({ message: t("sessions.signedOutOthersToast"), kind: "success" });
       void fetchSessions(token);
     } catch (e) {

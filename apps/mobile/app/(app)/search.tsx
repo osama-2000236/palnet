@@ -1,22 +1,21 @@
 import {
+  SearchCompanyHit as SearchCompanyHitSchema,
   cursorPage,
   SearchJobHit as SearchJobHitSchema,
   SearchPersonHit as SearchPersonHitSchema,
   SearchPostHit as SearchPostHitSchema,
+  type SearchCompanyHit,
   type SearchJobHit,
   type SearchPersonHit,
   type SearchPostHit,
 } from "@baydar/shared";
 import {
   AppHeader,
-  Avatar,
-  RecordCard,
   RecordCardSkeleton,
   SearchField,
   SegmentedControl,
   nativeTokens,
 } from "@baydar/ui-native";
-import { router } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { FlatList, StyleSheet, View } from "react-native";
@@ -27,12 +26,15 @@ import { apiFetchPage } from "@/lib/api";
 import { apiErrorMessage } from "@/lib/api-errors";
 import { getAccessToken } from "@/lib/session";
 
+import { SearchRow } from "./_search/SearchRow";
+
 const PeoplePage = cursorPage(SearchPersonHitSchema);
 const PostsPage = cursorPage(SearchPostHitSchema);
 const JobsPage = cursorPage(SearchJobHitSchema);
+const CompaniesPage = cursorPage(SearchCompanyHitSchema);
 
-type SearchType = "people" | "posts" | "jobs";
-type SearchHit = SearchPersonHit | SearchPostHit | SearchJobHit;
+type SearchType = "people" | "posts" | "jobs" | "companies";
+type SearchHit = SearchPersonHit | SearchPostHit | SearchJobHit | SearchCompanyHit;
 
 export default function SearchScreen(): JSX.Element {
   const { t } = useTranslation();
@@ -50,6 +52,11 @@ export default function SearchScreen(): JSX.Element {
       { key: "people" as const, label: t("search.tabs.people"), testID: "search-tab-people" },
       { key: "posts" as const, label: t("search.tabs.posts"), testID: "search-tab-posts" },
       { key: "jobs" as const, label: t("search.tabs.jobs"), testID: "search-tab-jobs" },
+      {
+        key: "companies" as const,
+        label: t("search.tabs.companies"),
+        testID: "search-tab-companies",
+      },
     ],
     [t],
   );
@@ -181,77 +188,8 @@ async function fetchSearchPage(type: SearchType, qs: string, token: string | und
   const path = `/search/${type}?${qs}`;
   if (type === "people") return apiFetchPage(path, PeoplePage, { token });
   if (type === "posts") return apiFetchPage(path, PostsPage, { token });
-  return apiFetchPage(path, JobsPage, { token });
-}
-
-function SearchRow({ type, item }: { type: SearchType; item: SearchHit }): JSX.Element {
-  if (type === "posts") return <PostRow item={item as SearchPostHit} />;
-  if (type === "jobs") return <JobRow item={item as SearchJobHit} />;
-  return <PersonRow item={item as SearchPersonHit} />;
-}
-
-function PersonRow({ item }: { item: SearchPersonHit }): JSX.Element {
-  const name = `${item.firstName} ${item.lastName}`.trim();
-  return (
-    <RecordCard
-      onPress={() => router.push(`/(app)/in/${item.handle}`)}
-      accessibilityLabel={name}
-      leading={
-        <Avatar
-          user={{
-            id: item.userId,
-            handle: item.handle,
-            firstName: item.firstName,
-            lastName: item.lastName,
-            avatarUrl: item.avatarUrl,
-          }}
-          size="md"
-        />
-      }
-      title={name}
-      subtitle={item.headline}
-      meta={`/in/${item.handle}`}
-      metaDirection="ltr"
-    />
-  );
-}
-
-function PostRow({ item }: { item: SearchPostHit }): JSX.Element {
-  return (
-    <RecordCard
-      onPress={() => router.push(`/(app)/in/${item.authorHandle}`)}
-      accessibilityLabel={item.authorDisplayName}
-      leading={
-        <Avatar
-          user={{
-            id: item.authorId,
-            handle: item.authorHandle,
-            firstName: item.authorDisplayName,
-            lastName: "",
-            avatarUrl: item.authorAvatarUrl,
-          }}
-          size="md"
-        />
-      }
-      title={item.authorDisplayName}
-      subtitle={item.bodyExcerpt}
-      meta={`/${item.authorHandle}`}
-      metaDirection="ltr"
-    />
-  );
-}
-
-function JobRow({ item }: { item: SearchJobHit }): JSX.Element {
-  const location = [item.city, item.country].filter(Boolean).join(", ");
-  return (
-    <RecordCard
-      onPress={() => router.push(`/(app)/jobs/${item.id}`)}
-      accessibilityLabel={item.title}
-      title={item.title}
-      subtitle={item.companyName}
-      meta={[location, item.locationMode, item.type].filter(Boolean).join(" · ")}
-    />
-  );
+  if (type === "jobs") return apiFetchPage(path, JobsPage, { token });
+  return apiFetchPage(path, CompaniesPage, { token });
 }
 
 const styles = StyleSheet.create({

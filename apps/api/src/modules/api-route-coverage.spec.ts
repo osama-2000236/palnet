@@ -9,6 +9,7 @@ import { AdminInternalController } from "./admin/admin-internal.controller";
 import { AdminModerationController } from "./admin/admin-moderation.controller";
 import { AuthController } from "./auth/auth.controller";
 import { BillingController } from "./billing/billing.controller";
+import { BookmarksController } from "./bookmarks/bookmarks.controller";
 import { CommentsController } from "./comments/comments.controller";
 import { CompaniesController } from "./companies/companies.controller";
 import { CompanyJobsController } from "./companies/company-jobs.controller";
@@ -38,6 +39,7 @@ const CONTROLLERS: Array<Type<unknown>> = [
   AdminModerationController,
   AuthController,
   BillingController,
+  BookmarksController,
   CommentsController,
   CompaniesController,
   CompanyJobsController,
@@ -82,12 +84,19 @@ const EXPECTED_ROUTES = [
   "POST /auth/forgot-password",
   "POST /auth/reset-password",
   "POST /auth/logout",
+  "POST /auth/change-password",
+  "GET /auth/sessions",
+  "DELETE /auth/sessions/others",
+  "DELETE /auth/sessions/:deviceId",
   "GET /auth/me",
   "POST /auth/stream-token",
   "POST /billing/checkout-session",
   "GET /billing/invoices",
   "POST /billing/invoices/:id/pay-by-transfer",
   "POST /billing/webhooks/hyperpay",
+  "GET /bookmarks",
+  "POST /bookmarks",
+  "DELETE /bookmarks/:id",
   "POST /posts/:id/comments",
   "GET /posts/:id/comments",
   "DELETE /comments/:id",
@@ -156,6 +165,7 @@ const EXPECTED_ROUTES = [
   "DELETE /profiles/me/educations/:id",
   "POST /profiles/me/skills",
   "DELETE /profiles/me/skills/:skillId",
+  "POST /profiles/:handle/skills/:skillId/endorse",
   "GET /profiles/:handle",
   "POST /ratings",
   "GET /ratings/:userId",
@@ -171,6 +181,7 @@ const EXPECTED_ROUTES = [
   "GET /search/people",
   "GET /search/posts",
   "GET /search/jobs",
+  "GET /search/companies",
 ].sort();
 
 describe("API route coverage", () => {

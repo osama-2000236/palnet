@@ -1,7 +1,7 @@
 // Mobile job detail. Hero with company logo + title + meta + apply button.
 // Applied badge flips optimistically on press, rolls back on failure.
 
-import { ApplyToJobBody, Job as JobSchema, type Job } from "@baydar/shared";
+import { ApplyToJobBody, Bookmark, BookmarkType, Job as JobSchema, type Job } from "@baydar/shared";
 import { AppHeader, Button, Icon, Input, Surface, nativeTokens } from "@baydar/ui-native";
 import { Image } from "expo-image";
 import { router, useLocalSearchParams } from "expo-router";
@@ -30,6 +30,7 @@ export default function JobDetailScreen(): JSX.Element {
   const [applyOpen, setApplyOpen] = useState(false);
   const [coverLetter, setCoverLetter] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [saveBusy, setSaveBusy] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -88,6 +89,39 @@ export default function JobDetailScreen(): JSX.Element {
       setSubmitting(false);
     }
   }, [job, submitting, coverLetter, t]);
+
+  const toggleSave = useCallback(async (): Promise<void> => {
+    if (!job || saveBusy) return;
+    const token = await getAccessToken();
+    if (!token) return;
+    const bookmarkId = job.viewer.bookmarkId;
+    setSaveBusy(true);
+    setJob({
+      ...job,
+      viewer: { ...job.viewer, bookmarkId: bookmarkId ? null : "pending_bookmark" },
+    });
+    try {
+      tapHaptic();
+      if (bookmarkId) {
+        await apiCall(`/bookmarks/${bookmarkId}`, { method: "DELETE", token });
+        successHaptic();
+        return;
+      }
+      const created = await apiFetch("/bookmarks", Bookmark, {
+        method: "POST",
+        token,
+        body: { type: BookmarkType.JOB, targetId: job.id },
+      });
+      setJob((current) =>
+        current ? { ...current, viewer: { ...current.viewer, bookmarkId: created.id } } : current,
+      );
+      successHaptic();
+    } catch {
+      setJob(job);
+    } finally {
+      setSaveBusy(false);
+    }
+  }, [job, saveBusy]);
 
   if (loading) {
     return (
@@ -160,7 +194,16 @@ export default function JobDetailScreen(): JSX.Element {
               </Text>
             </View>
           </View>
-          <View style={{ marginTop: nativeTokens.space[3] }}>
+          <View style={{ marginTop: nativeTokens.space[3], gap: nativeTokens.space[2] }}>
+            <Button
+              variant="secondary"
+              onPress={() => void toggleSave()}
+              loading={saveBusy}
+              accessibilityLabel={job.viewer.bookmarkId ? t("jobs.saved") : t("jobs.save")}
+              leading={<Icon name="bookmark" size={16} color={nativeTokens.color.ink} />}
+            >
+              {job.viewer.bookmarkId ? t("jobs.saved") : t("jobs.save")}
+            </Button>
             {job.viewer.hasApplied ? (
               <View style={styles.appliedBadge}>
                 <Text style={styles.appliedBadgeText}>✓ {t("jobs.appliedBadge")}</Text>

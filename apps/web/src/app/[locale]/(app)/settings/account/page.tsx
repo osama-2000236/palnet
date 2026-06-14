@@ -55,7 +55,7 @@ export default function AccountSettingsPage(): JSX.Element {
         body: { confirmation: CONFIRMATION },
       });
       clearSession();
-      router.replace(`/${locale}/auth/login?deleted=grace`);
+      router.replace(`/${locale}/login?deleted=grace`);
     } catch {
       showToast({ message: t("delete.error"), kind: "error" });
       setBusy(null);

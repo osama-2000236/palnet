@@ -11,7 +11,7 @@ const karamaStub = {
   award: jest.fn(),
   awardOnce: jest.fn().mockResolvedValue(true),
   getMonthlyEarnings: jest.fn().mockResolvedValue(0),
-} as unknown as KaramaService;
+};
 
 type PrismaStub = {
   profile: { create: jest.Mock; findUnique: jest.Mock; update: jest.Mock };
@@ -28,7 +28,12 @@ type PrismaStub = {
     findUnique: jest.Mock;
   };
   skill: { create: jest.Mock; findFirst: jest.Mock };
-  profileSkill: { upsert: jest.Mock; deleteMany: jest.Mock };
+  profileSkill: {
+    upsert: jest.Mock;
+    deleteMany: jest.Mock;
+    findUnique: jest.Mock;
+    update: jest.Mock;
+  };
   connection: { findFirst: jest.Mock };
 };
 
@@ -48,7 +53,12 @@ function buildPrisma(): PrismaStub {
       findUnique: jest.fn(),
     },
     skill: { create: jest.fn(), findFirst: jest.fn() },
-    profileSkill: { upsert: jest.fn(), deleteMany: jest.fn() },
+    profileSkill: {
+      upsert: jest.fn(),
+      deleteMany: jest.fn(),
+      findUnique: jest.fn(),
+      update: jest.fn(),
+    },
     connection: { findFirst: jest.fn() },
   };
 }
@@ -83,6 +93,9 @@ describe("ProfilesService (edit)", () => {
 
   beforeEach(async () => {
     prisma = buildPrisma();
+    karamaStub.award.mockReset();
+    karamaStub.awardOnce.mockReset().mockResolvedValue(true);
+    karamaStub.getMonthlyEarnings.mockReset().mockResolvedValue(0);
     // getMine is called at the end of every mutation; it looks up profile by userId.
     prisma.profile.findUnique.mockImplementation(async ({ where }) => {
       if (where.userId === "u_1") return profileRow();
@@ -305,6 +318,107 @@ describe("ProfilesService (edit)", () => {
       expect(prisma.profileSkill.deleteMany).toHaveBeenCalledWith({
         where: { profileId: "p_1", skillId: "sk_9" },
       });
+    });
+
+    it("endorses another user's skill once and increments the visible count", async () => {
+      prisma.profile.findUnique.mockImplementation(async ({ where }) => {
+        if (where.handle === "muna") return { id: "p_target", userId: "u_target" };
+        if (where.userId === "u_1") return profileRow();
+        return null;
+      });
+      prisma.profileSkill.findUnique.mockResolvedValue({
+        profileId: "p_target",
+        skillId: "sk_1",
+        endorsements: 2,
+      });
+      prisma.profileSkill.update.mockResolvedValue({
+        profileId: "p_target",
+        skillId: "sk_1",
+        endorsements: 3,
+      });
+
+      const result = await service.endorseSkill("u_actor", "muna", "sk_1");
+
+      expect(karamaStub.awardOnce).toHaveBeenCalledWith({
+        userId: "u_target",
+        reason: "ENDORSEMENT",
+        delta: 5,
+        refType: "endorsement",
+        refId: "u_actor:p_target:sk_1",
+      });
+      expect(prisma.profileSkill.update).toHaveBeenCalledWith({
+        where: { profileId_skillId: { profileId: "p_target", skillId: "sk_1" } },
+        data: { endorsements: { increment: 1 } },
+      });
+      expect(result).toEqual({ endorsements: 3, awardedKarama: true });
+    });
+
+    it("does not increment a repeated endorsement from the same actor", async () => {
+      karamaStub.awardOnce.mockResolvedValue(false);
+      prisma.profile.findUnique.mockResolvedValue({ id: "p_target", userId: "u_target" });
+      prisma.profileSkill.findUnique.mockResolvedValue({
+        profileId: "p_target",
+        skillId: "sk_1",
+        endorsements: 4,
+      });
+
+      const result = await service.endorseSkill("u_actor", "muna", "sk_1");
+
+      expect(prisma.profileSkill.update).not.toHaveBeenCalled();
+      expect(result).toEqual({ endorsements: 4, awardedKarama: false });
+    });
+
+    it("increments endorsements without Karama when the skill cap is reached", async () => {
+      prisma.profile.findUnique.mockResolvedValue({ id: "p_target", userId: "u_target" });
+      prisma.profileSkill.findUnique.mockResolvedValue({
+        profileId: "p_target",
+        skillId: "sk_1",
+        endorsements: 5,
+      });
+      prisma.profileSkill.update.mockResolvedValue({
+        profileId: "p_target",
+        skillId: "sk_1",
+        endorsements: 6,
+      });
+
+      const result = await service.endorseSkill("u_actor", "muna", "sk_1");
+
+      expect(karamaStub.awardOnce).toHaveBeenCalledWith(
+        expect.objectContaining({ delta: 0, refId: "u_actor:p_target:sk_1" }),
+      );
+      expect(prisma.profileSkill.update).toHaveBeenCalled();
+      expect(result).toEqual({ endorsements: 6, awardedKarama: false });
+    });
+
+    it("increments endorsements without Karama when the monthly cap is reached", async () => {
+      karamaStub.getMonthlyEarnings.mockResolvedValue(200);
+      prisma.profile.findUnique.mockResolvedValue({ id: "p_target", userId: "u_target" });
+      prisma.profileSkill.findUnique.mockResolvedValue({
+        profileId: "p_target",
+        skillId: "sk_1",
+        endorsements: 1,
+      });
+      prisma.profileSkill.update.mockResolvedValue({
+        profileId: "p_target",
+        skillId: "sk_1",
+        endorsements: 2,
+      });
+
+      const result = await service.endorseSkill("u_actor", "muna", "sk_1");
+
+      expect(karamaStub.awardOnce).toHaveBeenCalledWith(
+        expect.objectContaining({ delta: 0, refId: "u_actor:p_target:sk_1" }),
+      );
+      expect(result).toEqual({ endorsements: 2, awardedKarama: false });
+    });
+
+    it("rejects self endorsements", async () => {
+      prisma.profile.findUnique.mockResolvedValue({ id: "p_1", userId: "u_1" });
+
+      await expect(service.endorseSkill("u_1", "osama", "sk_1")).rejects.toMatchObject({
+        code: ErrorCode.VALIDATION_FAILED,
+      } as Partial<DomainException>);
+      expect(prisma.profileSkill.findUnique).not.toHaveBeenCalled();
     });
   });
 });

@@ -1,38 +1,34 @@
 import { z } from "zod";
 
-export const BookmarkType = {
-  POST: "post",
-  JOB: "job",
-  PROFILE: "profile",
-} as const;
-export type BookmarkType = (typeof BookmarkType)[keyof typeof BookmarkType];
+import { BookmarkType } from "../enums";
+import { CursorPageQuery } from "../pagination";
 
 export const Bookmark = z.object({
   id: z.string().cuid(),
   type: z.nativeEnum(BookmarkType),
+  targetId: z.string().cuid(),
   title: z.string(),
-  description: z.string().optional(),
-  url: z.string(),
-  // For posts and jobs, we might have an avatar (e.g., author or company)
-  avatarUrl: z.string().url().optional(),
-  // For profiles, we might have a handle
-  handle: z.string().optional(),
-  // Timestamp when saved
+  subtitle: z.string().nullable(),
+  description: z.string().nullable(),
+  href: z.string(),
+  imageUrl: z.string().url().nullable(),
   savedAt: z.string().datetime(),
 });
 export type Bookmark = z.infer<typeof Bookmark>;
 
+export const BookmarkListQuery = CursorPageQuery.extend({
+  type: z.nativeEnum(BookmarkType).optional(),
+});
+export type BookmarkListQuery = z.infer<typeof BookmarkListQuery>;
+
 export const CreateBookmarkBody = z.object({
   type: z.nativeEnum(BookmarkType),
-  title: z.string(),
-  description: z.string().optional(),
-  url: z.string(),
-  avatarUrl: z.string().url().optional(),
-  handle: z.string().optional(),
+  targetId: z.string().cuid(),
 });
 export type CreateBookmarkBody = z.infer<typeof CreateBookmarkBody>;
 
-export const RemoveBookmarkBody = z.object({
-  id: z.string().cuid(),
+export const BookmarkState = z.object({
+  bookmarked: z.boolean(),
+  bookmarkId: z.string().cuid().nullable(),
 });
-export type RemoveBookmarkBody = z.infer<typeof RemoveBookmarkBody>;
+export type BookmarkState = z.infer<typeof BookmarkState>;

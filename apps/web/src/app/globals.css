@@ -56,3 +56,12 @@ samp {
 
 /* `.rtl-mirror` is now defined in tokens.css alongside the breakpoint vars;
  * removed from here. */
+
+/* Tailwind's `animation` utility does not auto-respect reduced-motion.
+ * Entrances render as their final state when the user opts out. */
+@media (prefers-reduced-motion: reduce) {
+  .animate-enter-up,
+  .enter-up-item {
+    animation: none !important;
+  }
+}

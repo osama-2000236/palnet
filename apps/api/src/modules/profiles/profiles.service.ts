@@ -295,35 +295,24 @@ export class ProfilesService {
       throw new DomainException(ErrorCode.NOT_FOUND, "Skill not present on profile.", 404);
     }
 
+    const monthlyEarned = await this.karama.getMonthlyEarnings(targetProfile.userId, "ENDORSEMENT");
+    const skillRemaining = Math.max(25 - profileSkill.endorsements * 5, 0);
+    const monthlyRemaining = Math.max(200 - monthlyEarned, 0);
+    const karamaDelta = Math.min(5, skillRemaining, monthlyRemaining);
+
     // Idempotency: refId encodes (actor, profileId, skillId) since ProfileSkill
-    // is identified by a composite primary key. Awarding via awardOnce
-    // returns false on replay; we then skip the endorsements++ as well so the
-    // counter mirrors the ledger exactly.
+    // is identified by a composite primary key. Even when Karama is capped, the
+    // zero-delta ledger row records that this actor has endorsed this skill.
     const refId = `${actorId}:${profileSkill.profileId}:${profileSkill.skillId}`;
     const alreadyEndorsed = await this.karama.awardOnce({
       userId: targetProfile.userId,
       reason: "ENDORSEMENT",
+      delta: karamaDelta,
       refType: "endorsement",
       refId,
     });
     if (!alreadyEndorsed) {
       return { endorsements: profileSkill.endorsements, awardedKarama: false };
-    }
-
-    // Enforce monthly cap by computing post-award sum and clamping the next
-    // award via a compensating ADJUSTMENT if we exceeded +200 this month.
-    // Simpler: cap the +5 award by checking earnings and rolling back to 0.
-    const monthlyEarned = await this.karama.getMonthlyEarnings(targetProfile.userId, "ENDORSEMENT");
-    if (monthlyEarned > 200) {
-      // Already past the monthly window allowance — apply an ADJUSTMENT
-      // refund to neutralize this endorsement's +5.
-      void this.karama.award({
-        userId: targetProfile.userId,
-        reason: "ADJUSTMENT",
-        delta: -5,
-        refType: "endorsement-cap",
-        refId,
-      });
     }
 
     await this.prisma.profileSkill.update({
@@ -335,7 +324,7 @@ export class ProfilesService {
       },
       data: { endorsements: { increment: 1 } },
     });
-    return { endorsements: profileSkill.endorsements + 1, awardedKarama: true };
+    return { endorsements: profileSkill.endorsements + 1, awardedKarama: karamaDelta > 0 };
   }
 
   // ────────────────────────────────────────────────────────────────────

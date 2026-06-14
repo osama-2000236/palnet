@@ -4,15 +4,15 @@ import {
   ConnectionListItem as ConnectionListItemSchema,
   type ConnectionListItem,
 } from "@baydar/shared";
-import { Avatar, Button, EmptyState, Skeleton, Surface } from "@baydar/ui-web";
+import { Avatar, Button, EmptyState, Skeleton, staggerDelay, Surface } from "@baydar/ui-web";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 import { z } from "zod";
 
-import { apiFetch } from "@/lib/api";
-import { getAccessToken, readSession } from "@/lib/session";
+import { apiFetch, getValidAccessToken } from "@/lib/api";
+import { readSession } from "@/lib/session";
 
 const ListEnvelope = z.array(ConnectionListItemSchema);
 type Filter = "ACCEPTED" | "INCOMING" | "OUTGOING";
@@ -26,7 +26,7 @@ export default function NetworkRoute(): JSX.Element {
   const [loading, setLoading] = useState(false);
 
   const load = useCallback(async (f: Filter): Promise<void> => {
-    const token = getAccessToken();
+    const token = await getValidAccessToken();
     if (!token) return;
     setLoading(true);
     try {
@@ -49,7 +49,7 @@ export default function NetworkRoute(): JSX.Element {
   }, [router, filter, load]);
 
   async function respond(id: string, action: "ACCEPT" | "DECLINE"): Promise<void> {
-    const token = getAccessToken();
+    const token = await getValidAccessToken();
     if (!token) return;
     await apiFetch(`/connections/${id}/respond`, Raw, {
       method: "POST",
@@ -60,7 +60,7 @@ export default function NetworkRoute(): JSX.Element {
   }
 
   async function withdraw(id: string): Promise<void> {
-    const token = getAccessToken();
+    const token = await getValidAccessToken();
     if (!token) return;
     await apiFetch(`/connections/${id}/withdraw`, Raw, {
       method: "POST",
@@ -70,7 +70,7 @@ export default function NetworkRoute(): JSX.Element {
   }
 
   async function remove(id: string): Promise<void> {
-    const token = getAccessToken();
+    const token = await getValidAccessToken();
     if (!token) return;
     await apiFetch(`/connections/${id}`, Raw, {
       method: "DELETE",
@@ -111,13 +111,14 @@ export default function NetworkRoute(): JSX.Element {
         </Surface>
       ) : (
         <ul className="flex flex-col gap-3">
-          {items.map((c) => (
+          {items.map((c, i) => (
             <Surface
               as="li"
               key={c.connectionId}
               variant="flat"
               padding="4"
-              className="flex flex-wrap items-center justify-between gap-3"
+              className="animate-enter-up flex flex-wrap items-center justify-between gap-3"
+              style={{ animationDelay: `${staggerDelay(i)}ms` }}
             >
               <Link
                 href={`/in/${c.user.handle}`}

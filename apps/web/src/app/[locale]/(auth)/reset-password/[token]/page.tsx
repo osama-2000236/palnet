@@ -79,7 +79,7 @@ export default function ResetPasswordPage(): JSX.Element {
           {t("reset.submit")}
         </Button>
 
-        <Link href={`/${locale}/auth/login`} className="text-brand-700 text-sm font-semibold">
+        <Link href={`/${locale}/login`} className="text-brand-700 text-sm font-semibold">
           {t("reset.backToLogin")}
         </Link>
       </form>

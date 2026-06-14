@@ -44,6 +44,8 @@ export interface PostCardLabels {
   comment: string;
   repost: string;
   send: string;
+  save?: string;
+  saved?: string;
   /** "{n} تعليق" — interpolated count label. */
   commentsCount(n: number): string;
   /** "{n} إعادة نشر" — interpolated count label. */
@@ -70,6 +72,10 @@ export interface PostCardProps {
   liked: boolean;
   /** Disable the like button while a request is in flight. */
   busy?: boolean;
+  /** Whether the viewer has saved/bookmarked this post. */
+  saved?: boolean;
+  /** Disable the save button while a request is in flight. */
+  saveBusy?: boolean;
   labels: PostCardLabels;
 
   /** Click the author name/avatar — host routes to the profile page. */
@@ -80,6 +86,8 @@ export interface PostCardProps {
   onRepost?(): void;
   /** Share action. */
   onShare?(): void;
+  /** Toggle save/bookmark. */
+  onToggleSave?(): void;
   onReport?(): void;
   /**
    * When the viewer expands comments, the host mounts the Comments region
@@ -100,11 +108,14 @@ export function PostCard({
   counts,
   liked,
   busy = false,
+  saved = false,
+  saveBusy = false,
   labels,
   onOpenProfile,
   onToggleReaction,
   onRepost,
   onShare,
+  onToggleSave,
   onReport,
   commentsSlot,
   commentsOpen,
@@ -225,6 +236,15 @@ export function PostCard({
           active={open}
         />
         <ActionButton icon="repost" label={labels.repost} onClick={onRepost} />
+        {onToggleSave && labels.save ? (
+          <ActionButton
+            icon="bookmark"
+            label={saved ? (labels.saved ?? labels.save) : labels.save}
+            onClick={onToggleSave}
+            active={saved}
+            disabled={saveBusy}
+          />
+        ) : null}
         <ActionButton icon="send-paper" label={labels.send} onClick={onShare} />
       </div>
 

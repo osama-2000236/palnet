@@ -1,12 +1,12 @@
 "use client";
 
-import { Surface } from "@baydar/ui-web";
+import { Button, EmptyState, Surface } from "@baydar/ui-web";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { z } from "zod";
 
-import { apiFetch } from "@/lib/api";
-import { getAccessToken } from "@/lib/session";
+import { apiFetch, getValidAccessToken } from "@/lib/api";
 
 const Report = z.object({
   id: z.string(),
@@ -22,14 +22,19 @@ const Report = z.object({
   createdAt: z.string().datetime(),
 });
 type Report = z.infer<typeof Report>;
+type ModerationAction = "DISMISS" | "WARN" | "SUSPEND" | "HARD_DELETE";
+
+const ACTIONS: ModerationAction[] = ["DISMISS", "WARN", "SUSPEND", "HARD_DELETE"];
 
 export default function ModerationPage(): JSX.Element {
   const router = useRouter();
+  const t = useTranslations("admin.moderation");
   const [reports, setReports] = useState<Report[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [pendingAction, setPendingAction] = useState<string | null>(null);
 
   async function load(): Promise<void> {
-    const token = getAccessToken();
+    const token = await getValidAccessToken();
     if (!token) {
       router.replace("/login");
       return;
@@ -40,7 +45,7 @@ export default function ModerationPage(): JSX.Element {
         await apiFetch("/admin/moderation/reports?status=open", z.array(Report), { token }),
       );
     } catch {
-      setError("Could not load moderation queue.");
+      setError(t("loadFailed"));
     }
   }
 
@@ -49,73 +54,89 @@ export default function ModerationPage(): JSX.Element {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  async function act(reportId: string, action: "DISMISS" | "WARN" | "SUSPEND"): Promise<void> {
-    const token = getAccessToken();
+  async function act(reportId: string, action: ModerationAction): Promise<void> {
+    const token = await getValidAccessToken();
     if (!token) return;
-    await apiFetch(`/admin/moderation/reports/${reportId}/actions`, Report, {
-      method: "POST",
-      token,
-      body: { action },
-    });
-    await load();
+    if (action === "HARD_DELETE" && !window.confirm(t("confirmHardDelete"))) return;
+    const key = `${reportId}:${action}`;
+    setPendingAction(key);
+    setError(null);
+    try {
+      await apiFetch(`/admin/moderation/reports/${reportId}/actions`, Report, {
+        method: "POST",
+        token,
+        body: { action },
+      });
+      await load();
+    } catch {
+      setError(t("actionFailed"));
+    } finally {
+      setPendingAction(null);
+    }
   }
 
   return (
     <main className="mx-auto flex w-full max-w-[1040px] flex-col gap-5 px-6 py-8">
       <header>
-        <p className="text-brand-700 text-sm font-semibold">Admin</p>
-        <h1 className="text-ink text-3xl font-bold">Moderation queue</h1>
+        <p className="text-brand-700 text-sm font-semibold">{t("kicker")}</p>
+        <h1 className="text-ink text-3xl font-bold">{t("title")}</h1>
       </header>
       {error ? <p className="text-danger text-sm">{error}</p> : null}
       <section className="flex flex-col gap-3">
         {(reports ?? []).map((report) => (
           <Surface key={report.id} as="article" variant="card" padding="4">
-            <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-              <div className="min-w-0">
-                <p className="text-ink text-sm font-semibold">{report.reason}</p>
-                <p className="text-ink-muted text-xs">
-                  {new Date(report.createdAt).toLocaleString()} · reporter {report.reporterId}
-                </p>
-                <p className="text-ink-muted mt-2 text-sm">
-                  Target:{" "}
-                  {report.targetUserId ??
-                    report.targetPostId ??
-                    report.targetCommentId ??
-                    report.targetMessageId ??
-                    "unknown"}
-                </p>
-                {report.details ? <p className="text-ink mt-2 text-sm">{report.details}</p> : null}
-              </div>
-              <div className="flex flex-wrap gap-2">
-                <button
-                  type="button"
-                  onClick={() => void act(report.id, "DISMISS")}
-                  className="border-line-hard rounded-md border px-3 py-2 text-sm"
-                >
-                  Dismiss
-                </button>
-                <button
-                  type="button"
-                  onClick={() => void act(report.id, "WARN")}
-                  className="border-line-hard rounded-md border px-3 py-2 text-sm"
-                >
-                  Warn
-                </button>
-                <button
-                  type="button"
-                  onClick={() => void act(report.id, "SUSPEND")}
-                  className="bg-danger text-ink-inverse rounded-md px-3 py-2 text-sm font-semibold"
-                >
-                  Suspend
-                </button>
-              </div>
-            </div>
+            {(() => {
+              const target =
+                report.targetUserId ??
+                report.targetPostId ??
+                report.targetCommentId ??
+                report.targetMessageId ??
+                null;
+              return (
+                <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                  <div className="min-w-0">
+                    <p className="text-ink text-sm font-semibold">{report.reason}</p>
+                    <p className="text-ink-muted text-xs">
+                      <span dir="ltr">{new Date(report.createdAt).toLocaleString()}</span>
+                      {" · "}
+                      {t("reporter")} <span dir="ltr">{report.reporterId}</span>
+                    </p>
+                    <p className="text-ink-muted mt-2 text-sm">
+                      {t("target")} {target ? <span dir="ltr">{target}</span> : t("unknown")}
+                    </p>
+                    {report.details ? (
+                      <p className="text-ink mt-2 text-sm">{report.details}</p>
+                    ) : null}
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {ACTIONS.map((action) => (
+                      <Button
+                        key={action}
+                        size="sm"
+                        variant={
+                          action === "DISMISS"
+                            ? "secondary"
+                            : action === "WARN"
+                              ? "outline"
+                              : "danger-ghost"
+                        }
+                        loading={pendingAction === `${report.id}:${action}`}
+                        disabled={pendingAction !== null}
+                        onClick={() => void act(report.id, action)}
+                      >
+                        {t(`actions.${action}`)}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+              );
+            })()}
           </Surface>
         ))}
       </section>
       {reports?.length === 0 ? (
         <Surface variant="flat" padding="4">
-          <p className="text-ink-muted text-sm">No open reports.</p>
+          <EmptyState motif="settings" title={t("emptyTitle")} body={t("emptyBody")} />
         </Surface>
       ) : null}
     </main>

@@ -10,6 +10,7 @@ import { AccountModule } from "./modules/account/account.module";
 import { AdminInternalModule } from "./modules/admin/admin-internal.module";
 import { AuthModule } from "./modules/auth/auth.module";
 import { BillingModule } from "./modules/billing/billing.module";
+import { BookmarksModule } from "./modules/bookmarks/bookmarks.module";
 import { CommentsModule } from "./modules/comments/comments.module";
 import { CompaniesModule } from "./modules/companies/companies.module";
 import { ConnectionsModule } from "./modules/connections/connections.module";
@@ -54,6 +55,7 @@ const defaultThrottleLimit =
     RateLimitModule,
     HealthModule,
     AuthModule,
+    BookmarksModule,
     ProfilesModule,
     PostsModule,
     FeedModule,

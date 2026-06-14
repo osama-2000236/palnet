@@ -1,12 +1,30 @@
 "use client";
 
-import type { SearchJobHit, SearchPersonHit, SearchPostHit } from "@baydar/shared";
-import { Avatar, RetryChip, Skeleton, Surface } from "@baydar/ui-web";
+import type {
+  SearchCompanyHit,
+  SearchJobHit,
+  SearchPersonHit,
+  SearchPostHit,
+} from "@baydar/shared";
+import { Avatar, RetryChip, Skeleton, staggerDelay, Surface } from "@baydar/ui-web";
+import Image from "next/image";
 import Link from "next/link";
 
-export function PeopleRow({ item }: { item: SearchPersonHit }): JSX.Element {
+export function PeopleRow({
+  item,
+  index = 0,
+}: {
+  item: SearchPersonHit;
+  index?: number;
+}): JSX.Element {
   return (
-    <Surface as="li" variant="flat" padding="4">
+    <Surface
+      as="li"
+      variant="flat"
+      padding="4"
+      className="animate-enter-up"
+      style={{ animationDelay: `${staggerDelay(index)}ms` }}
+    >
       <Link
         href={`/in/${item.handle}`}
         className="flex items-start gap-3 focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
@@ -36,9 +54,15 @@ export function PeopleRow({ item }: { item: SearchPersonHit }): JSX.Element {
   );
 }
 
-export function PostRow({ item }: { item: SearchPostHit }): JSX.Element {
+export function PostRow({ item, index = 0 }: { item: SearchPostHit; index?: number }): JSX.Element {
   return (
-    <Surface as="li" variant="flat" padding="4">
+    <Surface
+      as="li"
+      variant="flat"
+      padding="4"
+      className="animate-enter-up"
+      style={{ animationDelay: `${staggerDelay(index)}ms` }}
+    >
       <Link
         href={`/in/${item.authorHandle}`}
         className="flex items-start gap-3 focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
@@ -65,10 +89,16 @@ export function PostRow({ item }: { item: SearchPostHit }): JSX.Element {
   );
 }
 
-export function JobRow({ item }: { item: SearchJobHit }): JSX.Element {
+export function JobRow({ item, index = 0 }: { item: SearchJobHit; index?: number }): JSX.Element {
   const location = [item.city, item.country].filter(Boolean).join(", ");
   return (
-    <Surface as="li" variant="flat" padding="4">
+    <Surface
+      as="li"
+      variant="flat"
+      padding="4"
+      className="animate-enter-up"
+      style={{ animationDelay: `${staggerDelay(index)}ms` }}
+    >
       <Link
         href={`/jobs/${item.id}`}
         className="flex items-start gap-3 focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
@@ -81,6 +111,52 @@ export function JobRow({ item }: { item: SearchJobHit }): JSX.Element {
           <span className="text-ink-muted text-sm">{item.companyName}</span>
           <span className="text-ink-muted text-xs">
             {[location, item.locationMode, item.type].filter(Boolean).join(" · ")}
+          </span>
+        </div>
+      </Link>
+    </Surface>
+  );
+}
+
+export function CompanyRow({
+  item,
+  index = 0,
+}: {
+  item: SearchCompanyHit;
+  index?: number;
+}): JSX.Element {
+  const location = [item.city, item.country].filter(Boolean).join(", ");
+  return (
+    <Surface
+      as="li"
+      variant="flat"
+      padding="4"
+      className="animate-enter-up"
+      style={{ animationDelay: `${staggerDelay(index)}ms` }}
+    >
+      <Link
+        href={`/employer/${item.slug}`}
+        className="flex items-start gap-3 focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+      >
+        <div className="bg-surface-sunken text-ink flex h-12 w-12 shrink-0 items-center justify-center rounded-md text-sm font-bold">
+          {item.logoUrl ? (
+            <Image
+              src={item.logoUrl}
+              alt=""
+              width={48}
+              height={48}
+              sizes="48px"
+              className="h-full w-full object-cover"
+            />
+          ) : (
+            item.name.slice(0, 1)
+          )}
+        </div>
+        <div className="flex min-w-0 flex-col gap-1">
+          <span className="text-ink font-semibold">{item.name}</span>
+          {item.tagline ? <span className="text-ink-muted text-sm">{item.tagline}</span> : null}
+          <span className="text-ink-muted text-xs">
+            {[item.industry, location].filter(Boolean).join(" · ")}
           </span>
         </div>
       </Link>

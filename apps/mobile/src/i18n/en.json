@@ -269,6 +269,8 @@
     "comments": "Comments",
     "reposts": "Reposts",
     "send": "Send",
+    "save": "Save",
+    "saved": "Saved",
     "commentPlaceholder": "Add a comment…",
     "commentSubmit": "Reply",
     "commentError": "Could not post comment.",
@@ -322,18 +324,20 @@
   },
   "search": {
     "title": "Search",
-    "placeholder": "Search people, posts, or jobs",
+    "placeholder": "Search people, posts, jobs, or companies",
     "submit": "Search",
     "filters": "Filters",
     "tabs": {
       "people": "People",
       "posts": "Posts",
-      "jobs": "Jobs"
+      "jobs": "Jobs",
+      "companies": "Companies"
     },
     "empty": {
       "people": "No people match that search.",
       "posts": "No posts match that search.",
-      "jobs": "No jobs match that search."
+      "jobs": "No jobs match that search.",
+      "companies": "No companies match that search."
     },
     "noResults": "No people match that search.",
     "prompt": "Try a name or handle to find people.",
@@ -372,6 +376,12 @@
     "expEmpty": "No experiences added.",
     "eduEmpty": "No education added.",
     "skillsEmpty": "No skills added yet.",
+    "endorse": "Endorse",
+    "endorsed": "Endorsed",
+    "endorsementsLabel": "endorsements",
+    "endorseSkill": "Endorse {{skill}}",
+    "endorseSuccess": "Endorsement added. Karama awarded.",
+    "endorseAlready": "You already endorsed this skill.",
     "validation": {
       "firstName": "Enter your first name.",
       "lastName": "Enter your last name.",
@@ -383,6 +393,49 @@
       "date": "Enter the date as YYYY-MM-DD.",
       "school": "Enter a school name.",
       "skill": "Enter a valid skill."
+    }
+  },
+  "karama": {
+    "kicker": "Karama Points",
+    "title": "Reputation is earned",
+    "subtitle": "Spend trusted reputation on visibility boosts.",
+    "balance": "Balance",
+    "cap": "Cap",
+    "loadFailed": "Could not load Karama balance.",
+    "redeemSuccess": "Reward redeemed.",
+    "checkoutSuccess": "Premium activated with Karama Points.",
+    "checkoutBadge": "Points checkout",
+    "points": "points",
+    "redeem": "Redeem",
+    "redeemReward": "Redeem {{reward}}",
+    "recent": "Recent activity",
+    "recentEmpty": "No recent Karama activity.",
+    "rewards": {
+      "boost": {
+        "title": "Boost application",
+        "body": "Top of employer inbox for 48 hours."
+      },
+      "premium": {
+        "title": "Premium month",
+        "body": "Unlock premium profile visibility for 30 days."
+      },
+      "featured": {
+        "title": "Featured profile",
+        "body": "Pin your profile in skill search for 7 days."
+      }
+    },
+    "reasons": {
+      "PROFILE_COMPLETE": "Profile completed",
+      "ENDORSEMENT": "Skill endorsement",
+      "VERIFIED_HIRE": "Verified hire",
+      "RATING_RECEIVED": "Rating received",
+      "REPORT_UPHELD": "Report upheld",
+      "FIRST_POST": "First post",
+      "REDEEM_BOOST_APPLICATION": "Application boost",
+      "REDEEM_PREMIUM": "Premium redemption",
+      "REDEEM_FEATURED_PROFILE": "Featured profile",
+      "DECAY": "Monthly decay",
+      "ADJUSTMENT": "Adjustment"
     }
   },
   "network": {
@@ -531,6 +584,8 @@
     "location": "Location",
     "apply": "Apply",
     "appliedBadge": "Applied",
+    "save": "Save",
+    "saved": "Saved",
     "applyTitle": "Apply to {{title}}",
     "applySubtitle": "Share a short note with {{company}}. You can leave it blank and apply directly.",
     "coverLetterLabel": "Cover letter (optional)",
@@ -555,6 +610,18 @@
       "ONSITE": "On-site",
       "HYBRID": "Hybrid",
       "REMOTE": "Remote"
+    }
+  },
+  "saved": {
+    "title": "Saved",
+    "subtitle": "Saved posts and jobs",
+    "empty": "No saved items yet.",
+    "remove": "Remove from saved items",
+    "removed": "Removed from saved items.",
+    "removeFailed": "Could not remove saved item.",
+    "types": {
+      "POST": "Post",
+      "JOB": "Job"
     }
   },
   "settings": {

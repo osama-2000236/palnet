@@ -14,8 +14,8 @@ export const LinkingOptions = {
       },
       "(auth)": {
         screens: {
-          "verify-email/[token]": "auth/verify-email/:token",
-          "reset-password/[token]": "auth/reset-password/:token",
+          "verify-email/[token]": "verify-email/:token",
+          "reset-password/[token]": "reset-password/:token",
         },
       },
     },
@@ -60,6 +60,12 @@ export function routeFromUrl(url: string): Href | null {
   }
   if (resource === "auth" && id === "reset-password" && token) {
     return { pathname: "/(auth)/reset-password/[token]", params: { token } } as unknown as Href;
+  }
+  if (resource === "verify-email" && id) {
+    return { pathname: "/(auth)/verify-email/[token]", params: { token: id } } as unknown as Href;
+  }
+  if (resource === "reset-password" && id) {
+    return { pathname: "/(auth)/reset-password/[token]", params: { token: id } } as unknown as Href;
   }
 
   return null;

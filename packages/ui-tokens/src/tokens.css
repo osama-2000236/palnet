@@ -130,9 +130,15 @@
   /* Motion */
   --ease-standard: cubic-bezier(0.2, 0, 0, 1);
   --ease-emphasized: cubic-bezier(0.3, 0, 0, 1.15);
+  --ease-spring: cubic-bezier(0.34, 1.4, 0.5, 1);
   --dur-fast: 80ms;
   --dur-base: 120ms;
   --dur-slow: 240ms;
+  --stagger-step: 40ms;
+  --enter-rise: 8px;
+
+  /* Profile cover — the single allowed decorative gradient (DESIGN.md §13). */
+  --cover-gradient: linear-gradient(135deg, var(--brand-500), var(--brand-700));
 
   /* Illustration scale (EmptyState / Illustration primitive) */
   --illus-size-sm: 96px;

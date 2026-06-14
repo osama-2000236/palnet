@@ -96,6 +96,23 @@ export const profileStyles = StyleSheet.create({
     flexWrap: "wrap",
     gap: nativeTokens.space[2],
   },
+  skillsList: {
+    gap: nativeTokens.space[2],
+  },
+  skillItem: {
+    borderWidth: 1,
+    borderColor: nativeTokens.color.lineSoft,
+    borderRadius: nativeTokens.radius.md,
+    padding: nativeTokens.space[3],
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: nativeTokens.space[3],
+  },
+  skillCopy: {
+    flex: 1,
+    minWidth: 0,
+  },
   skillChip: {
     borderWidth: 1,
     borderColor: nativeTokens.color.lineHard,
@@ -107,6 +124,23 @@ export const profileStyles = StyleSheet.create({
     color: nativeTokens.color.ink,
     fontFamily: nativeTokens.type.family.sans,
     fontSize: nativeTokens.type.scale.small.size,
+  },
+  skillMeta: {
+    marginTop: nativeTokens.space[1],
+    color: nativeTokens.color.inkMuted,
+    fontFamily: nativeTokens.type.family.sans,
+    fontSize: nativeTokens.type.scale.caption.size,
+    lineHeight: nativeTokens.type.scale.caption.line,
+  },
+  skillCount: {
+    writingDirection: "ltr",
+  },
+  skillNotice: {
+    marginTop: nativeTokens.space[2],
+    color: nativeTokens.color.inkMuted,
+    fontFamily: nativeTokens.type.family.sans,
+    fontSize: nativeTokens.type.scale.small.size,
+    lineHeight: nativeTokens.type.scale.small.line,
   },
   sectionTitle: {
     marginBottom: nativeTokens.space[2],

@@ -19,7 +19,7 @@ Default policy for new REST routes: return `{ data, meta? }`, with `meta` reserv
 Current raw response exceptions:
 
 - `GET /health` returns a health object.
-- `POST /auth/logout`, delete routes, reaction/repost toggles, and messaging read/archive/typing routes return `204 No Content`.
+- `POST /auth/logout`, `POST /auth/change-password`, delete routes, reaction/repost toggles, and messaging read/archive/typing routes return `204 No Content`.
 - `DELETE /blocks/:blockedUserId` returns `204 No Content`.
 - Messaging detail/action routes return raw DTOs: `POST /messaging/rooms`, `GET /messaging/rooms/:id`, `POST /messaging/rooms/:id/messages`, `PATCH /messaging/messages/:id`, and `DELETE /messaging/messages/:id`.
 - Job detail/action routes return raw DTOs: `GET /jobs/:id` returns a `Job`; `POST /jobs/:id/apply` returns `{ id, status }`.
@@ -40,6 +40,10 @@ All other JSON success responses should use `{ data, meta? }` unless a future de
 - `POST /auth/login`
 - `POST /auth/refresh`
 - `POST /auth/logout`
+- `POST /auth/change-password` accepts `{ currentPassword, newPassword, deviceId }` and returns `204 No Content`.
+- `GET /auth/sessions` returns `{ data: ActiveSession[] }` with `id` set to the device id.
+- `DELETE /auth/sessions/others` accepts `{ deviceId }` and returns `204 No Content`.
+- `DELETE /auth/sessions/:deviceId` returns `204 No Content`.
 - `GET /auth/me`
 - `POST /auth/verify-email/send` returns `202 Accepted` with no body. The response is enumeration-safe.
 - `POST /auth/verify-email/confirm` returns `{ data: { emailVerified: true } }`.
@@ -94,6 +98,16 @@ Login for a soft-deleted account returns `403`. Within the 30-day restore grace 
 - `DELETE /comments/:id`
 - `POST /posts/:id/reposts`
 - `DELETE /posts/:id/reposts`
+
+`Post.viewer.bookmarkId` is the viewer-owned saved row id, or `null`.
+
+### Saved Items
+
+- `GET /bookmarks` returns `{ data: Bookmark[], meta }` with cursor pagination.
+- `POST /bookmarks` accepts `{ type: "POST" | "JOB", targetId }` and returns `{ data: Bookmark }`.
+- `DELETE /bookmarks/:id` deletes the viewer-owned bookmark row and returns `204 No Content`.
+
+Bookmarks are target-owned: clients never submit titles, hrefs, or images. The API derives display data from the live post/job target and hides bookmarks whose targets are deleted/inactive.
 
 ### Media
 
@@ -175,28 +189,28 @@ Browser flow: call `POST /auth/stream-token` with `{ scope: "notifications" }`, 
 - `GET /jobs/:id`
 - `POST /jobs/:id/apply`
 
-The current shipped UI supports job listing, detail, filters, optimistic apply, and optional cover letter. Company-admin endpoints are planned but should be confirmed against implementation before use.
+`Job.viewer.bookmarkId` is the viewer-owned saved row id, or `null`. The current shipped UI supports job listing, detail, filters, optimistic apply, save/remove, and optional cover letter. Company-admin endpoints are planned but should be confirmed against implementation before use.
 
 ### Search
 
 - `GET /search/people?q=&after=&limit=` returns `{ data: SearchPersonHit[], meta }`.
 - `GET /search/posts?q=&after=&limit=` returns `{ data: SearchPostHit[], meta }` and excludes posts from users in either direction of a block relationship.
 - `GET /search/jobs?q=&after=&limit=` returns `{ data: SearchJobHit[], meta }` and only includes active, unexpired jobs.
-
-`/search/companies` is deferred until the company admin/management surface ships.
+- `GET /search/companies?q=&after=&limit=` returns `{ data: SearchCompanyHit[], meta }` and links results to the employer/company surface.
 
 ## Rate Limits
 
 Route-level rate limits are per authenticated user. Related endpoints share the same bucket when listed together.
 
-| Class                | Routes                                                        | Limit                 |
-| -------------------- | ------------------------------------------------------------- | --------------------- |
-| Media presign        | `POST /media/presign`                                         | 30/hour/user          |
-| Search               | `GET /search/people`, `GET /search/posts`, `GET /search/jobs` | 60/min/user combined  |
-| Content create       | `POST /posts`, `POST /posts/:id/comments`                     | 30/hour/user combined |
-| Messaging send       | `POST /messaging/rooms/:id/messages`                          | 120/min/user          |
-| Push device register | `POST /notifications/devices`                                 | 10/hour/user          |
-| Safety action        | `POST /reports`, `POST /blocks`                               | 30/hour/user combined |
+| Class                | Routes                                                                                 | Limit                 |
+| -------------------- | -------------------------------------------------------------------------------------- | --------------------- |
+| Media presign        | `POST /media/presign`                                                                  | 30/hour/user          |
+| Search               | `GET /search/people`, `GET /search/posts`, `GET /search/jobs`, `GET /search/companies` | 60/min/user combined  |
+| Content create       | `POST /posts`, `POST /posts/:id/comments`                                              | 30/hour/user combined |
+| Saved items          | `GET /bookmarks`, `POST /bookmarks`, `DELETE /bookmarks/:id`                           | default user bucket   |
+| Messaging send       | `POST /messaging/rooms/:id/messages`                                                   | 120/min/user          |
+| Push device register | `POST /notifications/devices`                                                          | 10/hour/user          |
+| Safety action        | `POST /reports`, `POST /blocks`                                                        | 30/hour/user combined |
 
 Over-limit responses use `429` with `error.code = "RATE_LIMITED"` and a `Retry-After` header.
 

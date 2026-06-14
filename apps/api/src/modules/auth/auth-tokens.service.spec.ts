@@ -111,7 +111,7 @@ describe("AuthTokensService", () => {
       "verify-email",
       "demo@baydar.ps",
       expect.objectContaining({
-        url: expect.stringContaining("/auth/verify-email/"),
+        url: expect.stringContaining("/verify-email/"),
         locale: "ar-PS",
       }),
     );

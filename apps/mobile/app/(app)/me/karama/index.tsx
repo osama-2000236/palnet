@@ -1,15 +1,19 @@
 import {
+  CheckoutSession,
+  CheckoutSessionBody,
   KaramaBalance,
   KaramaRedeemResult,
   KaramaReward,
+  PaymentMethod,
+  PlanCode,
   RedeemKaramaBody,
   type KaramaBalance as KaramaBalanceDto,
   type KaramaReward as KaramaRewardDto,
 } from "@baydar/shared";
-import { Button, Surface, nativeTokens } from "@baydar/ui-native";
+import { Button, Surface } from "@baydar/ui-native";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { StateMessage } from "@/components/StateMessage";
@@ -17,25 +21,24 @@ import { apiFetch } from "@/lib/api";
 import { apiErrorMessage } from "@/lib/api-errors";
 import { makeIdempotencyKey } from "@/lib/idempotency";
 
-const REWARDS: { reward: KaramaRewardDto; key: string; cost: number }[] = [
-  { reward: KaramaReward.BOOST_APPLICATION, key: "boost", cost: 100 },
-  { reward: KaramaReward.PREMIUM_30D, key: "premium", cost: 500 },
-  { reward: KaramaReward.FEATURED_PROFILE_7D, key: "featured", cost: 1000 },
-];
+import { KARAMA_REWARDS } from "../../_karama/data";
+import { karamaStyles as styles } from "../../_karama/styles";
+
+type Notice = { kind: "success" | "error"; text: string };
 
 export default function KaramaScreen(): JSX.Element {
   const { t } = useTranslation();
   const [balance, setBalance] = useState<KaramaBalanceDto | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<Notice | null>(null);
   const [busyReward, setBusyReward] = useState<KaramaRewardDto | null>(null);
 
   const load = useCallback(async (): Promise<void> => {
-    setError(null);
+    setNotice(null);
     try {
       setBalance(await apiFetch("/karama/balance", KaramaBalance));
     } catch (caught) {
-      setError(apiErrorMessage(t, caught));
+      setNotice({ kind: "error", text: apiErrorMessage(t, caught) });
     } finally {
       setLoading(false);
     }
@@ -45,22 +48,44 @@ export default function KaramaScreen(): JSX.Element {
     void load();
   }, [load]);
 
-  async function redeem(reward: KaramaRewardDto): Promise<void> {
-    const body = RedeemKaramaBody.parse({
-      reward,
-      idempotencyKey: makeIdempotencyKey(reward),
+  async function redeemPremiumWithPoints(): Promise<void> {
+    const body = CheckoutSessionBody.parse({
+      planCode: PlanCode.USER_PREMIUM,
+      returnUrl: "https://baydar.ps/me/karama",
+      method: PaymentMethod.POINTS,
     });
+    await apiFetch("/billing/checkout-session", CheckoutSession, {
+      method: "POST",
+      body,
+    });
+  }
+
+  async function redeem(reward: KaramaRewardDto): Promise<void> {
     setBusyReward(reward);
-    setError(null);
+    setNotice(null);
     try {
-      const result = await apiFetch("/karama/redeem", KaramaRedeemResult, {
-        method: "POST",
-        body,
-      });
-      setBalance((current) => (current ? { ...current, balance: result.balance } : current));
+      if (reward === KaramaReward.PREMIUM_30D) {
+        await redeemPremiumWithPoints();
+      } else {
+        const result = await apiFetch("/karama/redeem", KaramaRedeemResult, {
+          method: "POST",
+          body: RedeemKaramaBody.parse({
+            reward,
+            idempotencyKey: makeIdempotencyKey(reward),
+          }),
+        });
+        setBalance((current) => (current ? { ...current, balance: result.balance } : current));
+      }
       await load();
+      setNotice({
+        kind: "success",
+        text:
+          reward === KaramaReward.PREMIUM_30D
+            ? t("karama.checkoutSuccess")
+            : t("karama.redeemSuccess"),
+      });
     } catch (caught) {
-      setError(apiErrorMessage(t, caught));
+      setNotice({ kind: "error", text: apiErrorMessage(t, caught) });
     } finally {
       setBusyReward(null);
     }
@@ -74,192 +99,89 @@ export default function KaramaScreen(): JSX.Element {
     );
   }
 
+  const recent = balance?.recent ?? [];
+
   return (
     <SafeAreaView style={styles.screen}>
       <ScrollView contentContainerStyle={styles.scrollBody}>
         <View>
           <Text accessibilityRole="header" style={styles.kicker}>
-            Karama Points
+            {t("karama.kicker")}
           </Text>
-          <Text style={styles.title}>Reputation is earned</Text>
-          <Text style={styles.subtitle}>Spend trusted reputation on visibility boosts.</Text>
+          <Text style={styles.title}>{t("karama.title")}</Text>
+          <Text style={styles.subtitle}>{t("karama.subtitle")}</Text>
         </View>
 
-        {error ? (
+        {notice ? (
           <StateMessage
-            message={error}
-            actionLabel={t("common.retry")}
-            onAction={() => void load()}
+            message={notice.text}
+            tone={notice.kind}
+            role={notice.kind === "error" ? "alert" : "text"}
+            actionLabel={notice.kind === "error" ? t("common.retry") : undefined}
+            onAction={notice.kind === "error" ? () => void load() : undefined}
           />
         ) : null}
 
         <Surface variant="tinted" padding="4" style={styles.balanceCard}>
-          <Text style={styles.balanceLabel}>Balance</Text>
+          <Text style={styles.balanceLabel}>{t("karama.balance")}</Text>
           <Text style={styles.balanceValue}>{balance?.balance ?? 0}</Text>
-          <Text style={styles.balanceLabel}>Cap {balance?.cap ?? 5000}</Text>
+          <Text style={styles.balanceLabel}>
+            {t("karama.cap")} <Text style={styles.ltr}>{balance?.cap ?? 5000}</Text>
+          </Text>
         </Surface>
 
-        {REWARDS.map((item) => {
+        {KARAMA_REWARDS.map((item) => {
           const disabled = !balance || balance.balance < item.cost || busyReward !== null;
+          const isPremium = item.reward === KaramaReward.PREMIUM_30D;
           return (
             <Surface key={item.reward} variant="card" padding="4" style={styles.rewardCard}>
-              <Text style={styles.rewardTitle}>{rewardTitle(item.key)}</Text>
-              <Text style={styles.rewardBody}>{rewardBody(item.key)}</Text>
-              <Text style={styles.rewardCost}>{item.cost} points</Text>
+              <View style={styles.rewardHeader}>
+                <Text style={styles.rewardTitle}>{t(`karama.rewards.${item.key}.title`)}</Text>
+                {isPremium ? (
+                  <View style={styles.badge}>
+                    <Text style={styles.badgeText}>{t("karama.checkoutBadge")}</Text>
+                  </View>
+                ) : null}
+              </View>
+              <Text style={styles.rewardBody}>{t(`karama.rewards.${item.key}.body`)}</Text>
+              <Text style={styles.rewardCost}>
+                <Text style={styles.ltr}>{item.cost}</Text> {t("karama.points")}
+              </Text>
               <Button
-                variant="primary"
+                variant={isPremium ? "primary" : "secondary"}
                 size="md"
                 disabled={disabled}
                 loading={busyReward === item.reward}
                 onPress={() => void redeem(item.reward)}
-                accessibilityLabel={`Redeem ${rewardTitle(item.key)}`}
+                accessibilityLabel={t("karama.redeemReward", {
+                  reward: t(`karama.rewards.${item.key}.title`),
+                })}
               >
-                Redeem
+                {t("karama.redeem")}
               </Button>
             </Surface>
           );
         })}
 
         <Surface variant="flat" padding="4" style={styles.ledger}>
-          <Text style={styles.sectionTitle}>Recent activity</Text>
-          {(balance?.recent ?? []).map((entry) => (
-            <View key={entry.id} style={styles.ledgerRow}>
-              <Text style={styles.ledgerReason}>{entry.reason.replaceAll("_", " ")}</Text>
-              <Text
-                style={[styles.ledgerDelta, entry.delta < 0 ? styles.negative : styles.positive]}
-              >
-                {entry.delta > 0 ? "+" : ""}
-                {entry.delta}
-              </Text>
-            </View>
-          ))}
+          <Text style={styles.sectionTitle}>{t("karama.recent")}</Text>
+          {recent.length === 0 ? (
+            <Text style={styles.rewardBody}>{t("karama.recentEmpty")}</Text>
+          ) : (
+            recent.map((entry) => (
+              <View key={entry.id} style={styles.ledgerRow}>
+                <Text style={styles.ledgerReason}>{t(`karama.reasons.${entry.reason}`)}</Text>
+                <Text
+                  style={[styles.ledgerDelta, entry.delta < 0 ? styles.negative : styles.positive]}
+                >
+                  {entry.delta > 0 ? "+" : ""}
+                  {entry.delta}
+                </Text>
+              </View>
+            ))
+          )}
         </Surface>
       </ScrollView>
     </SafeAreaView>
   );
 }
-
-function rewardTitle(key: string): string {
-  if (key === "boost") return "Boost application";
-  if (key === "premium") return "Premium month";
-  return "Featured profile";
-}
-
-function rewardBody(key: string): string {
-  if (key === "boost") return "Top of employer inbox for 48 hours.";
-  if (key === "premium") return "Unlock premium profile visibility for 30 days.";
-  return "Pin your profile in skill search for 7 days.";
-}
-
-const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: nativeTokens.color.surfaceMuted,
-  },
-  centerScreen: {
-    flex: 1,
-    justifyContent: "center",
-    backgroundColor: nativeTokens.color.surfaceMuted,
-    padding: nativeTokens.space[4],
-  },
-  scrollBody: {
-    padding: nativeTokens.space[4],
-    gap: nativeTokens.space[4],
-  },
-  kicker: {
-    color: nativeTokens.color.brand700,
-    fontFamily: nativeTokens.type.family.sans,
-    fontSize: nativeTokens.type.scale.small.size,
-    lineHeight: nativeTokens.type.scale.small.line,
-    fontWeight: "700",
-  },
-  title: {
-    color: nativeTokens.color.ink,
-    fontFamily: nativeTokens.type.family.sans,
-    fontSize: nativeTokens.type.scale.h1.size,
-    lineHeight: nativeTokens.type.scale.h1.line,
-    fontWeight: "700",
-  },
-  subtitle: {
-    color: nativeTokens.color.inkMuted,
-    fontFamily: nativeTokens.type.family.body,
-    fontSize: nativeTokens.type.scale.small.size,
-    lineHeight: nativeTokens.type.scale.small.line,
-  },
-  balanceCard: {
-    gap: nativeTokens.space[1],
-  },
-  balanceLabel: {
-    color: nativeTokens.color.inkMuted,
-    fontFamily: nativeTokens.type.family.sans,
-    fontSize: nativeTokens.type.scale.small.size,
-    lineHeight: nativeTokens.type.scale.small.line,
-  },
-  balanceValue: {
-    color: nativeTokens.color.ink,
-    fontFamily: nativeTokens.type.family.sans,
-    fontSize: 48,
-    lineHeight: 56,
-    fontWeight: "800",
-  },
-  rewardCard: {
-    gap: nativeTokens.space[2],
-  },
-  rewardTitle: {
-    color: nativeTokens.color.ink,
-    fontFamily: nativeTokens.type.family.sans,
-    fontSize: nativeTokens.type.scale.h3.size,
-    lineHeight: nativeTokens.type.scale.h3.line,
-    fontWeight: "700",
-  },
-  rewardBody: {
-    color: nativeTokens.color.inkMuted,
-    fontFamily: nativeTokens.type.family.body,
-    fontSize: nativeTokens.type.scale.small.size,
-    lineHeight: nativeTokens.type.scale.small.line,
-  },
-  rewardCost: {
-    color: nativeTokens.color.brand700,
-    fontFamily: nativeTokens.type.family.sans,
-    fontSize: nativeTokens.type.scale.small.size,
-    lineHeight: nativeTokens.type.scale.small.line,
-    fontWeight: "700",
-  },
-  ledger: {
-    gap: nativeTokens.space[2],
-  },
-  sectionTitle: {
-    color: nativeTokens.color.ink,
-    fontFamily: nativeTokens.type.family.sans,
-    fontSize: nativeTokens.type.scale.h3.size,
-    lineHeight: nativeTokens.type.scale.h3.line,
-    fontWeight: "700",
-  },
-  ledgerRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    gap: nativeTokens.space[3],
-    paddingVertical: nativeTokens.space[2],
-    borderTopWidth: 1,
-    borderTopColor: nativeTokens.color.lineSoft,
-  },
-  ledgerReason: {
-    flex: 1,
-    color: nativeTokens.color.ink,
-    fontFamily: nativeTokens.type.family.sans,
-    fontSize: nativeTokens.type.scale.small.size,
-    lineHeight: nativeTokens.type.scale.small.line,
-  },
-  ledgerDelta: {
-    fontFamily: nativeTokens.type.family.sans,
-    fontSize: nativeTokens.type.scale.small.size,
-    lineHeight: nativeTokens.type.scale.small.line,
-    fontWeight: "700",
-  },
-  positive: {
-    color: nativeTokens.color.brand700,
-  },
-  negative: {
-    color: nativeTokens.color.danger,
-  },
-});

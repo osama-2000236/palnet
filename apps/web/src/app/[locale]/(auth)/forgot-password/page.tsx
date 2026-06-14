@@ -58,7 +58,7 @@ export default function ForgotPasswordPage(): JSX.Element {
           {t("forgot.submit")}
         </Button>
 
-        <Link href={`/${locale}/auth/login`} className="text-brand-700 text-sm font-semibold">
+        <Link href={`/${locale}/login`} className="text-brand-700 text-sm font-semibold">
           {t("forgot.backToLogin")}
         </Link>
       </form>

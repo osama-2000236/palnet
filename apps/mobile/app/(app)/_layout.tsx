@@ -252,6 +252,7 @@ export default function AppTabsLayout(): JSX.Element {
 
       <Tabs.Screen name="onboarding" options={hiddenFullScreenTabOptions} />
       <Tabs.Screen name="activity" options={hiddenTabOptions} />
+      <Tabs.Screen name="saved" options={hiddenTabOptions} />
       <Tabs.Screen name="jobs/index" options={hiddenTabOptions} />
       <Tabs.Screen name="composer" options={hiddenTabOptions} />
       <Tabs.Screen name="search" options={hiddenTabOptions} />

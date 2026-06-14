@@ -344,7 +344,7 @@ describe("API controller contract", () => {
         name: "Baydar",
         logoUrl: null,
       },
-      viewer: { hasApplied: false },
+      viewer: { hasApplied: false, bookmarkId: null },
     };
     const jobs = { getOne: jest.fn().mockResolvedValue(job) };
     const app = await createApp({

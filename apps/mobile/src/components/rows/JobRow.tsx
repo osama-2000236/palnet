@@ -1,18 +1,27 @@
 import { type Job } from "@baydar/shared";
-import { RecordCard, nativeTokens } from "@baydar/ui-native";
+import { Icon, RecordCard, nativeTokens } from "@baydar/ui-native";
 import { Image } from "expo-image";
 import { router } from "expo-router";
 import { memo } from "react";
 import { useTranslation } from "react-i18next";
-import { StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 
-export const JobRow = memo(function JobRow({ job }: { job: Job }): JSX.Element {
+export const JobRow = memo(function JobRow({
+  job,
+  saving,
+  onToggleSave,
+}: {
+  job: Job;
+  saving?: boolean;
+  onToggleSave?: () => void;
+}): JSX.Element {
   const { t } = useTranslation();
   const metaParts = [
     job.city,
     t(`jobs.locationLabels.${job.locationMode}`),
     t(`jobs.typeLabels.${job.type}`),
   ].filter(Boolean) as string[];
+  const saved = job.viewer.bookmarkId !== null;
 
   return (
     <RecordCard
@@ -37,21 +46,50 @@ export const JobRow = memo(function JobRow({ job }: { job: Job }): JSX.Element {
         </View>
       }
       trailing={
-        job.viewer.hasApplied ? (
-          <View style={styles.appliedBadge}>
-            <Text style={styles.appliedText}>{t("jobs.appliedBadge")}</Text>
-          </View>
-        ) : null
+        <View style={styles.trailing}>
+          {onToggleSave ? (
+            <Pressable
+              onPress={onToggleSave}
+              disabled={saving}
+              accessibilityRole="button"
+              accessibilityLabel={saved ? t("jobs.saved") : t("jobs.save")}
+              accessibilityState={{ selected: saved, disabled: saving }}
+              hitSlop={8}
+              style={({ pressed }) => [
+                styles.saveButton,
+                saved ? styles.saveButtonActive : null,
+                pressed && !saving ? styles.pressed : null,
+                saving ? styles.disabled : null,
+              ]}
+            >
+              <Icon
+                name="bookmark"
+                size={18}
+                color={saved ? nativeTokens.color.brand700 : nativeTokens.color.inkMuted}
+              />
+            </Pressable>
+          ) : null}
+          {job.viewer.hasApplied ? (
+            <View style={styles.appliedBadge}>
+              <Text style={styles.appliedText}>{t("jobs.appliedBadge")}</Text>
+            </View>
+          ) : null}
+        </View>
       }
     />
   );
 }, areEqual);
 
-function areEqual(prev: { job: Job }, next: { job: Job }): boolean {
+function areEqual(
+  prev: { job: Job; saving?: boolean; onToggleSave?: () => void },
+  next: { job: Job; saving?: boolean; onToggleSave?: () => void },
+): boolean {
   return (
     prev.job.id === next.job.id &&
     prev.job.createdAt === next.job.createdAt &&
-    prev.job.viewer.hasApplied === next.job.viewer.hasApplied
+    prev.job.viewer.hasApplied === next.job.viewer.hasApplied &&
+    prev.job.viewer.bookmarkId === next.job.viewer.bookmarkId &&
+    prev.saving === next.saving
   );
 }
 
@@ -70,6 +108,21 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     fontFamily: nativeTokens.type.family.sans,
   },
+  trailing: {
+    alignItems: "flex-end",
+    gap: nativeTokens.space[2],
+  },
+  saveButton: {
+    width: nativeTokens.space[9],
+    height: nativeTokens.space[9],
+    borderRadius: nativeTokens.radius.md,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: nativeTokens.color.surfaceSubtle,
+  },
+  saveButtonActive: {
+    backgroundColor: nativeTokens.color.brand50,
+  },
   appliedBadge: {
     alignSelf: "flex-start",
     paddingHorizontal: nativeTokens.space[2],
@@ -82,5 +135,11 @@ const styles = StyleSheet.create({
     fontSize: nativeTokens.type.scale.caption.size,
     fontWeight: "700",
     fontFamily: nativeTokens.type.family.sans,
+  },
+  pressed: {
+    opacity: 0.84,
+  },
+  disabled: {
+    opacity: 0.5,
   },
 });

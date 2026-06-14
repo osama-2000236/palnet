@@ -9,6 +9,7 @@ type PrismaStub = {
   profile: { findUnique: jest.Mock };
   post: { findUnique: jest.Mock };
   job: { findUnique: jest.Mock };
+  company: { findUnique: jest.Mock };
   $queryRaw: jest.Mock;
 };
 
@@ -17,6 +18,7 @@ function buildPrisma(): PrismaStub {
     profile: { findUnique: jest.fn() },
     post: { findUnique: jest.fn() },
     job: { findUnique: jest.fn() },
+    company: { findUnique: jest.fn() },
     $queryRaw: jest.fn().mockResolvedValue([]),
   };
 }
@@ -54,6 +56,18 @@ const jobRow = (overrides: Partial<{ id: string }> = {}) => ({
   createdAt: new Date("2026-05-05T10:00:00.000Z"),
   companyName: "Baydar",
   companyLogoUrl: null,
+});
+
+const companyRow = (overrides: Partial<{ id: string; name: string }> = {}) => ({
+  id: overrides.id ?? "company_1",
+  slug: "baydar",
+  name: overrides.name ?? "Baydar",
+  tagline: "Arabic-first professional network",
+  industry: "Technology",
+  city: "Ramallah",
+  country: "PS",
+  logoUrl: null,
+  verified: true,
 });
 
 /**
@@ -156,6 +170,7 @@ describe("SearchService", () => {
     const sql = rawSqlFromCall(prisma.$queryRaw.mock.calls[0]!);
     expect(sql).toMatch(/to_tsvector\('simple', COALESCE\(po\."body"/);
     expect(sql).toMatch(/plainto_tsquery/);
+    expect(sql).toMatch(/au\."deletedAt"\s+IS\s+NULL/);
     expect(page.data).toEqual([
       expect.objectContaining({
         id: "post_1",
@@ -196,5 +211,37 @@ describe("SearchService", () => {
         type: "FULL_TIME",
       }),
     ]);
+  });
+
+  it("searches companies via tsquery and maps public company metadata", async () => {
+    prisma.$queryRaw.mockResolvedValue([companyRow()]);
+
+    const page = await service.searchCompanies("viewer", { q: "baydar", limit: 20 });
+
+    const sql = rawSqlFromCall(prisma.$queryRaw.mock.calls[0]!);
+    expect(sql).toMatch(/FROM\s+"Company"/);
+    expect(sql).toMatch(/to_tsvector\(/);
+    expect(sql).toMatch(/plainto_tsquery/);
+    expect(page.data).toEqual([
+      expect.objectContaining({
+        id: "company_1",
+        slug: "baydar",
+        name: "Baydar",
+        industry: "Technology",
+        verified: true,
+      }),
+    ]);
+  });
+
+  it("resolves the company cursor row when `after` is provided", async () => {
+    prisma.company.findUnique.mockResolvedValue({ name: "Baydar", id: "company_1" });
+    prisma.$queryRaw.mockResolvedValue([]);
+
+    await service.searchCompanies("viewer", { q: "x", limit: 20, after: "company_1" });
+
+    expect(prisma.company.findUnique).toHaveBeenCalledWith({
+      where: { id: "company_1" },
+      select: { name: true, id: true },
+    });
   });
 });

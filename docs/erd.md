@@ -20,6 +20,7 @@ erDiagram
   User ||--o{ CompanyMember : manages
   User ||--o{ Connection : requests
   User ||--o{ BlockedUser : blocks
+  User ||--o{ Bookmark : saves
 
   Profile ||--o{ Experience : lists
   Profile ||--o{ Education : lists
@@ -30,6 +31,7 @@ erDiagram
   Post ||--o{ Reaction : receives
   Post ||--o{ Comment : gathers
   Post ||--o{ Repost : reposted
+  Post ||--o{ Bookmark : saved_as
   Comment ||--o{ Comment : replies
 
   ChatRoom ||--o{ ChatRoomMember : has
@@ -40,6 +42,7 @@ erDiagram
   Company ||--o{ Experience : referenced
 
   Job ||--o{ Application : collects
+  Job ||--o{ Bookmark : saved_as
 ```
 
 ## Key Decisions
@@ -88,7 +91,11 @@ The `@@unique([userId, postId])` enforces the LinkedIn behavior: replacing a rea
 
 `Job.country = "PS"`, `Job.salaryCurrency = "ILS"`. Override at create time if posting for diaspora roles.
 
-### 10. Full-text search for day one uses Postgres
+### 10. Bookmarks are target-owned saved items
+
+`Bookmark` stores one saved `POST` or `JOB` target per user. The DB enforces target shape with `Bookmark_target_check`, and partial unique indexes enforce one bookmark per user/post or user/job. Clients send only `{ type, targetId }`; titles, hrefs, and images are derived server-side so saved rows cannot spoof links.
+
+### 11. Full-text search for day one uses Postgres
 
 `@@fulltext` on `Profile` (name, headline, about), `Post` (body), `Job` (title, description). This postpones OpenSearch/Elastic until scale demands it. When Postgres FTS stops being enough, add a `search` module without schema migration.
 
@@ -107,6 +114,7 @@ The `@@unique([userId, postId])` enforces the LinkedIn behavior: replacing a rea
 | ChatRoomMember                        | Cascade                              | No                                    |
 | Notification                          | Cascade (recipient); SetNull (actor) | No                                    |
 | Application                           | Cascade                              | No                                    |
+| Bookmark                              | Cascade                              | No                                    |
 | CompanyMember                         | Cascade                              | No                                    |
 | Job                                   | Cascade                              | Yes (posted by deleted user: cascade) |
 

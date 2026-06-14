@@ -92,7 +92,7 @@ export function LoginForm(): JSX.Element {
       </label>
 
       <Link
-        href={`/${locale}/auth/forgot-password`}
+        href={`/${locale}/forgot-password`}
         className="text-brand-700 hover:text-brand-800 text-sm font-semibold"
       >
         {t("forgot.link")}

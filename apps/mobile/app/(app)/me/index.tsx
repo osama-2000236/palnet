@@ -155,10 +155,28 @@ export default function MeScreen(): JSX.Element {
           variant="secondary"
           size="md"
           fullWidth
-          onPress={() => router.push("/(app)/me/karama" as never)}
-          accessibilityLabel="Karama Points"
+          onPress={() => router.push("/(app)/saved" as never)}
+          accessibilityLabel={t("saved.title")}
         >
-          Karama Points
+          {t("saved.title")}
+        </Button>
+        <Button
+          variant="secondary"
+          size="md"
+          fullWidth
+          onPress={() => router.push("/(app)/me/connections" as never)}
+          accessibilityLabel={t("network.myConnections")}
+        >
+          {t("network.myConnections")}
+        </Button>
+        <Button
+          variant="secondary"
+          size="md"
+          fullWidth
+          onPress={() => router.push("/(app)/me/karama" as never)}
+          accessibilityLabel={t("karama.kicker")}
+        >
+          {t("karama.kicker")}
         </Button>
         <Button
           variant="secondary"

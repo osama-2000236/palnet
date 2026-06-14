@@ -164,6 +164,11 @@ enum RatingContext {
   EMPLOYER_RATES_CANDIDATE
 }
 
+enum BookmarkType {
+  POST
+  JOB
+}
+
 // ──────────────────────────────────────────────────────────────────────────
 // Identity & Auth
 // ──────────────────────────────────────────────────────────────────────────
@@ -212,6 +217,7 @@ model User {
   karamaLedger            KaramaLedger[]
   ratingsGiven            UserRating[]             @relation("RatingRater")
   ratingsReceived         UserRating[]             @relation("RatingRatee")
+  bookmarks               Bookmark[]
 
   @@index([email])
   @@index([role])
@@ -417,6 +423,7 @@ model Post {
   reactions Reaction[]
   comments  Comment[]
   reposts   Repost[]
+  bookmarks Bookmark[]
   // FTS: raw SQL GIN index on body added in a later migration.
 
   @@index([authorId, createdAt])
@@ -483,6 +490,22 @@ model Repost {
 
   @@unique([userId, postId])
   @@index([postId])
+}
+
+model Bookmark {
+  id        String       @id @default(cuid())
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  type      BookmarkType
+  post      Post?        @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId    String?
+  job       Job?         @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  jobId     String?
+  createdAt DateTime     @default(now())
+
+  @@index([userId, createdAt])
+  @@index([postId])
+  @@index([jobId])
 }
 
 // ──────────────────────────────────────────────────────────────────────────
@@ -649,6 +672,7 @@ model Job {
   deletedAt      DateTime?
 
   applications Application[]
+  bookmarks    Bookmark[]
   // FTS: raw SQL GIN index on (title || description) added in a later migration.
 
   @@index([companyId])
@@ -819,6 +843,7 @@ model KaramaLedger {
   refId        String?
   createdAt    DateTime     @default(now())
 
+  @@unique([userId, reason, refType, refId])
   @@index([userId, createdAt])
   @@index([reason])
 }

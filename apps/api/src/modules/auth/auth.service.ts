@@ -1,8 +1,10 @@
 import * as crypto from "node:crypto";
 
 import {
+  type ActiveSession,
   type AuthSession,
   type AuthTokens,
+  type ChangePasswordBody,
   ErrorCode,
   type LoginBody,
   type RefreshBody,
@@ -27,6 +29,11 @@ interface AccessTokenPayload {
   locale: string;
 }
 
+interface SessionMeta {
+  userAgent?: string;
+  ipAddress?: string;
+}
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -34,7 +41,11 @@ export class AuthService {
     private readonly config: ConfigService<Env, true>,
   ) {}
 
-  async register(body: RegisterBody, deviceId: string): Promise<AuthSession> {
+  async register(
+    body: RegisterBody,
+    deviceId: string,
+    meta: SessionMeta = {},
+  ): Promise<AuthSession> {
     const existing = await this.prisma.user.findUnique({
       where: { email: body.email },
     });
@@ -57,10 +68,10 @@ export class AuthService {
       },
     });
 
-    return this.issueSession(user, deviceId);
+    return this.issueSession(user, deviceId, meta);
   }
 
-  async login(body: LoginBody): Promise<AuthSession> {
+  async login(body: LoginBody, meta: SessionMeta = {}): Promise<AuthSession> {
     const user =
       (await this.prisma.user.findUnique({
         where: { email: body.email },
@@ -88,10 +99,10 @@ export class AuthService {
       );
     }
 
-    return this.issueSession(user, body.deviceId);
+    return this.issueSession(user, body.deviceId, meta);
   }
 
-  async refresh(body: RefreshBody): Promise<AuthSession> {
+  async refresh(body: RefreshBody, meta: SessionMeta = {}): Promise<AuthSession> {
     const hash = hashToken(body.refreshToken);
     const record = await this.prisma.refreshToken.findFirst({
       where: { tokenHash: hash, deviceId: body.deviceId, revokedAt: null },
@@ -112,13 +123,68 @@ export class AuthService {
       data: { revokedAt: new Date() },
     });
 
-    return this.issueSession(record.user, body.deviceId);
+    return this.issueSession(record.user, body.deviceId, meta);
   }
 
   async logout(userId: string, deviceId: string): Promise<void> {
     await this.prisma.refreshToken.updateMany({
       where: { userId, deviceId, revokedAt: null },
       data: { revokedAt: new Date() },
+    });
+  }
+
+  async logoutOthers(userId: string, currentDeviceId: string): Promise<void> {
+    await this.prisma.refreshToken.updateMany({
+      where: { userId, deviceId: { not: currentDeviceId }, revokedAt: null },
+      data: { revokedAt: new Date() },
+    });
+  }
+
+  async listSessions(userId: string): Promise<ActiveSession[]> {
+    const rows = await this.prisma.refreshToken.findMany({
+      where: { userId, revokedAt: null, expiresAt: { gt: new Date() } },
+      orderBy: { createdAt: "desc" },
+      select: {
+        deviceId: true,
+        userAgent: true,
+        ipAddress: true,
+        createdAt: true,
+      },
+    });
+
+    const seen = new Set<string>();
+    const sessions: ActiveSession[] = [];
+    for (const row of rows) {
+      if (seen.has(row.deviceId)) continue;
+      seen.add(row.deviceId);
+      sessions.push({
+        id: row.deviceId,
+        device: row.userAgent ?? row.deviceId,
+        lastActiveAt: row.createdAt.toISOString(),
+      });
+    }
+    return sessions;
+  }
+
+  async changePassword(userId: string, body: ChangePasswordBody): Promise<void> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { passwordHash: true },
+    });
+    if (!user) throw this.badCredentials();
+
+    const ok = await bcrypt.compare(body.currentPassword, user.passwordHash);
+    if (!ok) throw this.badCredentials();
+
+    const passwordHash = await bcrypt.hash(body.newPassword, this.getNumberConfig("BCRYPT_COST"));
+    const now = new Date();
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { passwordHash },
+    });
+    await this.prisma.refreshToken.updateMany({
+      where: { userId, deviceId: { not: body.deviceId }, revokedAt: null },
+      data: { revokedAt: now },
     });
   }
 
@@ -155,6 +221,7 @@ export class AuthService {
   async issueSession(
     user: { id: string; email: string; role: AuthUser["role"]; locale: string },
     deviceId: string,
+    meta: SessionMeta = {},
   ): Promise<AuthSession> {
     const tokens = this.signTokens(user);
 
@@ -164,6 +231,8 @@ export class AuthService {
         userId: user.id,
         deviceId,
         tokenHash: hashToken(tokens.refreshToken),
+        userAgent: meta.userAgent,
+        ipAddress: meta.ipAddress,
         expiresAt: new Date(tokens.refreshExpiresAt),
       },
     });

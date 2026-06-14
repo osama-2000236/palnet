@@ -1,9 +1,11 @@
 import { Prisma } from "@baydar/db";
 import type {
+  CompaniesSearchQuery,
   CursorPageMeta,
   JobsSearchQuery,
   PeopleSearchQuery,
   PostsSearchQuery,
+  SearchCompanyHit,
   SearchJobHit,
   SearchPersonHit,
   SearchPostHit,
@@ -49,6 +51,18 @@ interface JobSearchRow {
   createdAt: Date;
   companyName: string;
   companyLogoUrl: string | null;
+}
+
+interface CompanySearchRow {
+  id: string;
+  slug: string;
+  name: string;
+  tagline: string | null;
+  industry: string | null;
+  city: string | null;
+  country: string;
+  logoUrl: string | null;
+  verified: boolean;
 }
 
 @Injectable()
@@ -167,6 +181,7 @@ export class SearchService {
       JOIN   "User"    au ON au."id"     = po."authorId"
       LEFT JOIN "Profile" pr ON pr."userId" = au."id"
       WHERE  po."deletedAt" IS NULL
+        AND  au."deletedAt" IS NULL
         AND  to_tsvector('simple', COALESCE(po."body", '')) @@ plainto_tsquery('simple', ${q})
         ${excludedClause}
         ${cursorClause}
@@ -246,6 +261,71 @@ export class SearchService {
         country: j.country,
         type: j.type,
         createdAt: j.createdAt.toISOString(),
+      })),
+      meta: {
+        nextCursor: hasMore ? trimmed[trimmed.length - 1]!.id : null,
+        hasMore,
+        limit,
+      },
+    };
+  }
+
+  async searchCompanies(
+    _viewerId: string,
+    query: CompaniesSearchQuery,
+  ): Promise<{ data: SearchCompanyHit[]; meta: CursorPageMeta }> {
+    const q = query.q.trim();
+    const limit = query.limit;
+
+    const cursorRow = query.after
+      ? await this.prisma.company.findUnique({
+          where: { id: query.after },
+          select: { name: true, id: true },
+        })
+      : null;
+
+    const cursorClause = cursorRow
+      ? Prisma.sql`AND (c."name", c."id") > (${cursorRow.name}, ${cursorRow.id})`
+      : Prisma.empty;
+
+    const rows = await this.prisma.$queryRaw<CompanySearchRow[]>(Prisma.sql`
+      SELECT
+        c."id"       AS "id",
+        c."slug"     AS "slug",
+        c."name"     AS "name",
+        c."tagline"  AS "tagline",
+        c."industry" AS "industry",
+        c."city"     AS "city",
+        c."country"  AS "country",
+        c."logoUrl"  AS "logoUrl",
+        c."verified" AS "verified"
+      FROM   "Company" c
+      WHERE  to_tsvector(
+               'simple',
+               COALESCE(c."name",     '') || ' ' ||
+               COALESCE(c."tagline",  '') || ' ' ||
+               COALESCE(c."industry", '') || ' ' ||
+               COALESCE(c."city",     '')
+             ) @@ plainto_tsquery('simple', ${q})
+        ${cursorClause}
+      ORDER  BY c."name" ASC, c."id" ASC
+      LIMIT  ${limit + 1}
+    `);
+
+    const hasMore = rows.length > limit;
+    const trimmed = hasMore ? rows.slice(0, limit) : rows;
+
+    return {
+      data: trimmed.map<SearchCompanyHit>((c) => ({
+        id: c.id,
+        slug: c.slug,
+        name: c.name,
+        tagline: c.tagline,
+        industry: c.industry,
+        city: c.city,
+        country: c.country,
+        logoUrl: c.logoUrl,
+        verified: c.verified,
       })),
       meta: {
         nextCursor: hasMore ? trimmed[trimmed.length - 1]!.id : null,

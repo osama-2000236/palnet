@@ -102,21 +102,27 @@ export class KaramaService {
   }
 
   // Idempotent variant for one-time earns (PROFILE_COMPLETE, FIRST_POST, etc.)
-  // and capped earns (ENDORSEMENT). Caller must supply both refType and refId
-  // so duplicate fires (e.g., repeated profile saves) become no-ops.
+  // and capped earns (ENDORSEMENT). The database unique constraint on
+  // (userId, reason, refType, refId) is the source of truth, so duplicate
+  // concurrent fires roll back cleanly instead of racing a read-before-write.
   async awardOnce(input: AwardInput & { refType: string; refId: string }): Promise<boolean> {
-    const existing = await this.prisma.karamaLedger.findFirst({
-      where: {
-        userId: input.userId,
-        reason: input.reason,
+    const desiredDelta = input.delta ?? KARAMA_EARN[input.reason];
+    try {
+      await this.applyDelta(input.userId, desiredDelta, input.reason, {
         refType: input.refType,
         refId: input.refId,
-      },
-      select: { id: true },
-    });
-    if (existing) return false;
-    await this.award(input);
-    return true;
+        clampToCap: desiredDelta > 0,
+      });
+      return true;
+    } catch (err) {
+      if (isUniqueConstraintViolation(err)) return false;
+      this.log.warn(
+        `Award-once failed (user=${input.userId} reason=${input.reason} ref=${input.refType}:${input.refId}): ${
+          (err as Error).message
+        }`,
+      );
+      return false;
+    }
   }
 
   // Returns the absolute sum of positive ledger deltas for a single reason in
@@ -218,15 +224,25 @@ export class KaramaService {
       const delta = calculateDecayDelta(user.karamaBalance);
       if (delta >= 0) continue;
 
-      totalDelta += delta;
-      decayedUserIds.push(user.id);
-
-      if (!dryRun) {
-        await this.applyDelta(user.id, delta, "DECAY", {
-          refType: KARAMA_DECAY_REF_TYPE,
-          refId: period,
-          requireBalance: Math.abs(delta),
-        });
+      if (dryRun) {
+        totalDelta += delta;
+        decayedUserIds.push(user.id);
+      } else {
+        try {
+          await this.applyDelta(user.id, delta, "DECAY", {
+            refType: KARAMA_DECAY_REF_TYPE,
+            refId: period,
+            requireBalance: Math.abs(delta),
+          });
+          totalDelta += delta;
+          decayedUserIds.push(user.id);
+        } catch (err) {
+          if (isUniqueConstraintViolation(err)) {
+            skippedAlreadyDecayedCount += 1;
+            continue;
+          }
+          throw err;
+        }
       }
     }
 
@@ -334,6 +350,15 @@ function calculateDecayDelta(balance: number): number {
 
 function decayPeriod(now: Date): string {
   return `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, "0")}`;
+}
+
+function isUniqueConstraintViolation(err: unknown): boolean {
+  return (
+    typeof err === "object" &&
+    err !== null &&
+    "code" in err &&
+    (err as { code?: unknown }).code === "P2002"
+  );
 }
 
 function toLedgerDto(row: {

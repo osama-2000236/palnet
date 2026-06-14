@@ -41,11 +41,11 @@ All commits are authored by the repo owner (`Osama Abujarad`) but the actual cod
 
 `docs/HANDOFF.md` and the `docs/audit/SPRINT-12..21` files describe the repo **as of Sprint 21, before PR #25**. They are **out of date** on two material points. Treat them as history, not current truth:
 
-1. **F-04 (company admin/management) is NO LONGER an open gap.** `docs/HANDOFF.md` still lists "Company admin/management remains open from Sprint 12 audit F-04." **It shipped.** [PR #25](#) (`0bebf5a`, "Beta monetization launch surfaces — Sprints 22+23+24 partial", merged 2026-05-15, ~8000 LOC / 100 files) added a full `apps/api/src/modules/companies/` module (controller, service, company-jobs, company-members, role guard), registered in `app.module.ts`. → **Companies search, previously deferred _because_ F-04 was missing, is now unblockable.**
+1. **F-04 (company admin/management) is NO LONGER an open gap.** `docs/HANDOFF.md` used to list "Company admin/management remains open from Sprint 12 audit F-04." **It shipped.** [PR #25](#) (`0bebf5a`, "Beta monetization launch surfaces — Sprints 22+23+24 partial", merged 2026-05-15, ~8000 LOC / 100 files) added a full `apps/api/src/modules/companies/` module (controller, service, company-jobs, company-members, role guard), registered in `app.module.ts`. → **2026-06-13:** companies search is now shipped across API/shared/web/mobile.
 
 2. **A large monetization BACKEND shipped with NO frontend.** PR #25's own commit message states: _"UI surfaces (C1–C7) are tracked as the next iteration; this commit keeps the backend complete and consistent across web and mobile."_ That UI **was never built** and is **not listed anywhere in `docs/HANDOFF.md`'s follow-ups** — it is a silent gap. This is your single biggest, best-bounded opportunity (see §5).
 
-**Your first housekeeping task:** rewrite `docs/HANDOFF.md` to reflect real `main` (PR #25 backend landed, F-04 closed, monetization UI outstanding) so the next agent isn't misled the way this one nearly was.
+**Housekeeping status:** `docs/HANDOFF.md` was reconciled again on 2026-06-13. It now records F-04 closed, companies search shipped, C5/C6 done, and the remaining C1-C4/C7 monetization work.
 
 ---
 
@@ -70,7 +70,7 @@ design-handoff-2026-05/   Bundle handed to Claude Design platform.
 
 ### API modules present (NestJS)
 
-`auth`, `profiles`, `feed`/`posts`/`comments`/`reactions`/`reposts`, `connections`, `messaging`, `notifications`/`devices`, `jobs`/`applications`, **`companies`** (controller + company-jobs + company-members + role guard), **`billing`** (checkout, invoices, HyperPay webhook, employer-entitlements, wallets, currency), `ratings` (Karama), `account` (delete/export), `media` (presign + confirm/scan), `search` (people/posts/jobs), `admin` moderation, `safety` (report/block).
+`auth`, `profiles`, `feed`/`posts`/`comments`/`reactions`/`reposts`, `connections`, `messaging`, `notifications`/`devices`, `jobs`/`applications`, **`companies`** (controller + company-jobs + company-members + role guard), **`billing`** (checkout, invoices, HyperPay webhook, employer-entitlements, wallets, currency), `ratings` (Karama), `account` (delete/export), `media` (presign + confirm/scan), `search` (people/posts/jobs), `admin` moderation/billing review, `safety` (report/block).
 
 ### Shared contracts of note
 
@@ -91,11 +91,11 @@ design-handoff-2026-05/   Bundle handed to Claude Design platform.
 
 ### Known follow-ups still genuinely open (post-PR #25)
 
-- **Monetization UI (C1–C7)** — backend done, frontend missing. _(See §5 — your headline task.)_
-- **`/saved`** (bookmark icon exists, no route/API), **`/me/connections`** (network shows suggestions only, no accepted-connections list), **`/employer/[slug]/billing`** (per-org billing surface).
-- **Companies search** — now unblocked by F-04; decide and ship or formally defer with a reason.
-- **Admin moderation queue / report-resolution UI** — backend exists, operator UI doesn't.
-- **Account hard-delete after 30-day grace** — needs a scheduled job.
+- **Monetization UI (C1–C7)** — C5 Karama-as-payment and C6 skill endorsement are now implemented; C1–C4 and broader C7 parity/review remain. _(See §5.)_
+- **`/employer/[slug]/billing`** (per-org billing surface). `/saved` and `/me/connections` now route to real shipped flows on web and mobile.
+- **Companies search** — shipped 2026-06-13 across API/shared/web/mobile.
+- **Admin moderation + billing-review queues** — localized web operator UIs exist at `/moderation` and `/billing`; still need operator QA/design review.
+- **Account hard-delete after 30-day grace** — service and internal endpoint exist (`POST /admin/internal/account-retention/run`); production scheduler config still needed.
 - **Real email provider** (console transport today), **Redis-backed SSE fanout + rate-limit** (in-memory now; `RateLimitBackend` interface ready), **virus/NSFW media scan** (`media/confirm` endpoint exists; real scanner deferred).
 - **Pre-launch env tasks:** universal-link files are drafts (need Apple Team ID + Android SHA256), EAS project id, prod Sentry/PostHog, **native Arabic copy review**, **legal/privacy counsel review**.
 - **Flaky test:** `apps/mobile/src/__tests__/onboarding-flow.test.tsx` (around `onboarding-identity-confirm`) fails intermittently then passes on re-run — async/timing flake, not a real regression. Verified 2026-06-12: full suite is **31 suites / 83 tests / 5 snapshots green** on a clean re-run. Stabilize the test rather than chasing a phantom bug.
@@ -116,13 +116,13 @@ This is the cleanest large, well-bounded piece of work in the repo and the best 
 | C2  | Checkout flow — method picker                      | `CheckoutSession` (card / bank-transfer / POINTS / wallet)             | Render IBAN instructions for bank-transfer; wallet tiles show **"coming soon"** until provider configured (do NOT fake success). |
 | C3  | `/employer/[slug]/billing` (**new route**)         | `EMPLOYER_BASIC/PRO/FEATURED_SLOT`, employer-entitlements, job credits | Plan status + upgrade + remaining job-credit display.                                                                            |
 | C4  | Invoices / billing history + receipt upload        | `GET /billing/invoices`, `BankTransferReceiptBody`                     | User + company scopes.                                                                                                           |
-| C5  | Karama-as-payment wired into existing `/me/karama` | `POINTS` method, `karama.ts`                                           | Page already exists (`me/karama/page.tsx` 152 LOC web, `index.tsx` 265 LOC mobile) — extend, don't replace.                      |
-| C6  | Skill-endorsement UI on profile                    | `POST /profiles/:handle/skills/:skillId/endorse`                       | No UI exists yet; endorse awards Karama.                                                                                         |
-| C7  | Mobile parity for C1–C6                            | same contracts                                                         | Web + native stay in lockstep (a `CLAUDE.md` hard rule).                                                                         |
+| C5  | Karama-as-payment wired into existing `/me/karama` | `POINTS` method, `karama.ts`                                           | **Done 2026-06-13:** web/mobile localized; premium redemption uses points checkout.                                              |
+| C6  | Skill-endorsement UI on profile                    | `POST /profiles/:handle/skills/:skillId/endorse`                       | **Done 2026-06-13:** web/mobile profile skill panels endorse and update counts; API route/schema/tests added.                    |
+| C7  | Mobile parity for C1–C6                            | same contracts                                                         | Partially done for C5/C6; C1–C4 still need web + native lockstep.                                                                |
 
 Context to load for this: `packages/shared/src/schemas/billing.ts` + `karama.ts`, `apps/api/src/modules/billing/*` + `companies/*`, existing `me/karama` pages, `apps/web/src/app/[locale]/(app)/employer/[slug]/page.tsx`, plus `DESIGN.md` and the `ui-web`/`ui-native` primitive set.
 
-**Cheaper leftover tasks** (`/saved`, `/me/connections`, doc rewrite, companies-search decision) are good warm-ups or fillers — they don't need your full capacity.
+**Cheaper leftover tasks:** `/me/connections`, `/saved`, the docs reconciliation, and the companies-search decision are closed in the 2026-06-13/14 Codex pass.
 
 ---
 

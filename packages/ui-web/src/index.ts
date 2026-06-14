@@ -3,6 +3,7 @@
 // Keep alphabetical within sections.
 
 export { cx } from "./cx";
+export { staggerDelay } from "./useStagger";
 
 // ── Layout primitives ────────────────────────────────────────────────
 export { Surface } from "./layout";
@@ -25,6 +26,8 @@ export type { OnboardingProgressProps, OnboardingProgressStyle } from "./Onboard
 // ── Identity ─────────────────────────────────────────────────────────
 export { Avatar } from "./Avatar";
 export type { AvatarProps, AvatarSize, AvatarUser } from "./Avatar";
+export { ProfileHeader } from "./ProfileHeader";
+export type { ProfileHeaderProps } from "./ProfileHeader";
 export { Icon } from "./Icon";
 export type { IconProps, IconName } from "./Icon";
 

@@ -43,6 +43,7 @@ export const Post = z.object({
   viewer: z.object({
     reaction: z.string().nullable(),
     reposted: z.boolean(),
+    bookmarkId: z.string().cuid().nullable(),
   }),
   author: z.object({
     id: z.string().cuid(),

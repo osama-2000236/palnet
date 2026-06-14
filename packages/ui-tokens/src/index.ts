@@ -59,6 +59,11 @@ export const tokens = {
       infoBorder: "rgba(47, 109, 138, 0.20)",
       scrim: "rgba(26, 26, 23, 0.40)",
     },
+    cover: {
+      // The ONLY decorative gradient in the system (DESIGN.md §13). Olive Depth:
+      // brand-500 → brand-700. Generated CSS var references brand vars, not hex.
+      gradient: "linear-gradient(135deg, #687a3a, #3f4a26)",
+    },
   },
   radius: { xs: 4, sm: 6, md: 10, lg: 14, xl: 20, full: 9999 } as const,
   shadow: {
@@ -114,7 +119,13 @@ export const tokens = {
   // Motion
   motion: {
     duration: { fast: 80, base: 120, slow: 240 },
-    easing: { standard: "cubic-bezier(0.2, 0, 0, 1)", emphasized: "cubic-bezier(0.3, 0, 0, 1.15)" },
+    easing: {
+      standard: "cubic-bezier(0.2, 0, 0, 1)",
+      emphasized: "cubic-bezier(0.3, 0, 0, 1.15)",
+      spring: "cubic-bezier(0.34, 1.4, 0.5, 1)", // emphasized + overshoot for entrances
+    },
+    stagger: { step: 40, max: 6 }, // ms between list items; cap at 6 (6×40 = 240ms = --dur-slow)
+    enter: { rise: 8 }, // px translateY on entrance (= space[2])
   },
   focus: {
     ring: "0 0 0 var(--focus-ring-offset) var(--surface), 0 0 0 calc(var(--focus-ring-offset) + var(--focus-ring-width)) var(--focus-ring-color)",

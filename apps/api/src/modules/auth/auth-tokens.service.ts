@@ -112,7 +112,7 @@ export class AuthTokensService {
 
     const locale = normalizeLocale(user.locale);
     await this.mail.send("verify-email", user.email, {
-      url: this.buildWebUrl(`/auth/verify-email/${plain}`, locale),
+      url: this.buildWebUrl(`/verify-email/${plain}`, locale),
       locale,
     });
   }
@@ -161,7 +161,7 @@ export class AuthTokensService {
 
     const locale = normalizeLocale(user.locale);
     await this.mail.send("password-reset", user.email, {
-      url: this.buildWebUrl(`/auth/reset-password/${plain}`, locale),
+      url: this.buildWebUrl(`/reset-password/${plain}`, locale),
       locale,
     });
   }

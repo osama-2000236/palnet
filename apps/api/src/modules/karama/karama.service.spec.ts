@@ -79,6 +79,47 @@ describe("KaramaService", () => {
     });
   });
 
+  it("awardOnce writes through the transaction without a pre-read", async () => {
+    tx.user.findUnique.mockResolvedValue({ karamaBalance: 10 });
+    tx.user.update.mockResolvedValue({ karamaBalance: 15 });
+    tx.karamaLedger.create.mockResolvedValue({ createdAt: new Date() });
+
+    const result = await service.awardOnce({
+      userId: "user-1",
+      reason: "ENDORSEMENT",
+      refType: "endorsement",
+      refId: "actor:p_1:sk_1",
+    });
+
+    expect(result).toBe(true);
+    expect(prisma.karamaLedger.findFirst).not.toHaveBeenCalled();
+    expect(tx.karamaLedger.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        userId: "user-1",
+        delta: 5,
+        reason: "ENDORSEMENT",
+        refType: "endorsement",
+        refId: "actor:p_1:sk_1",
+      }),
+    });
+  });
+
+  it("awardOnce returns false when the ledger unique constraint wins the race", async () => {
+    prisma.$transaction.mockRejectedValueOnce(
+      Object.assign(new Error("duplicate"), { code: "P2002" }),
+    );
+
+    const result = await service.awardOnce({
+      userId: "user-1",
+      reason: "PROFILE_COMPLETE",
+      refType: "profile-complete",
+      refId: "user-1",
+    });
+
+    expect(result).toBe(false);
+    expect(prisma.karamaLedger.findFirst).not.toHaveBeenCalled();
+  });
+
   it("rejects redemption when balance is insufficient", async () => {
     prisma.karamaLedger.findFirst.mockResolvedValue(null);
     tx.user.findUnique.mockResolvedValue({ karamaBalance: 40 });
@@ -215,6 +256,25 @@ describe("KaramaService", () => {
       decayedCount: 1,
       totalDelta: -1,
       decayedUserIds: ["user-1"],
+    });
+  });
+
+  it("skips decay when a concurrent run already wrote the ledger row", async () => {
+    prisma.user.findMany.mockResolvedValue([{ id: "user-1", karamaBalance: 300 }]);
+    prisma.karamaLedger.findMany.mockResolvedValue([]);
+    prisma.$transaction.mockRejectedValueOnce(
+      Object.assign(new Error("duplicate"), { code: "P2002" }),
+    );
+
+    const result = await service.runMonthlyDecay({
+      now: new Date("2026-05-15T03:00:00Z"),
+    });
+
+    expect(result).toMatchObject({
+      decayedCount: 0,
+      skippedAlreadyDecayedCount: 1,
+      totalDelta: 0,
+      decayedUserIds: [],
     });
   });
 });

@@ -1,8 +1,11 @@
 "use client";
 
-import type { Profile } from "@baydar/shared";
-import { Surface, Tab, Tabs } from "@baydar/ui-web";
+import { EndorseSkillResult, type Profile } from "@baydar/shared";
+import { Button, Surface, Tab, Tabs } from "@baydar/ui-web";
 import { useTranslations } from "next-intl";
+import { useEffect, useState } from "react";
+
+import { apiFetch, getValidAccessToken } from "@/lib/api";
 
 export type ProfileTab = "about" | "exp" | "edu" | "skills" | "activity";
 
@@ -119,23 +122,87 @@ function EducationPanel({ profile }: { profile: Profile }): JSX.Element {
 
 function SkillsPanel({ profile }: { profile: Profile }): JSX.Element {
   const t = useTranslations("profile");
+  const [endorsementCounts, setEndorsementCounts] = useState<Record<string, number>>({});
+  const [endorsedSkillIds, setEndorsedSkillIds] = useState<Set<string>>(() => new Set());
+  const [busySkillId, setBusySkillId] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
+
+  useEffect(() => {
+    setEndorsementCounts(
+      Object.fromEntries(profile.skills.map((skill) => [skill.id, skill.endorsements])),
+    );
+    setEndorsedSkillIds(new Set());
+  }, [profile.skills]);
+
+  async function endorseSkill(skillId: string): Promise<void> {
+    const token = await getValidAccessToken();
+    if (!token) {
+      setNotice(t("endorseSignIn"));
+      return;
+    }
+    setBusySkillId(skillId);
+    setNotice(null);
+    try {
+      const result = await apiFetch(
+        `/profiles/${profile.handle}/skills/${skillId}/endorse`,
+        EndorseSkillResult,
+        { method: "POST", token },
+      );
+      setEndorsementCounts((current) => ({ ...current, [skillId]: result.endorsements }));
+      setEndorsedSkillIds((current) => {
+        const next = new Set(current);
+        next.add(skillId);
+        return next;
+      });
+      setNotice(result.awardedKarama ? t("endorseSuccess") : t("endorseAlready"));
+    } catch {
+      setNotice(t("endorseFailed"));
+    } finally {
+      setBusySkillId(null);
+    }
+  }
+
+  const canEndorse =
+    profile.viewer !== undefined &&
+    !profile.viewer.isSelf &&
+    profile.viewer.connection?.status !== "BLOCKED";
+
   return (
     <Surface as="section" variant="flat" padding="6">
       <h2 className="text-ink mb-3 text-xl font-semibold">{t("skills")}</h2>
       {profile.skills.length === 0 ? (
         <p className="text-ink-muted text-sm">{t("skillsEmpty")}</p>
       ) : (
-        <ul className="flex flex-wrap gap-2">
+        <ul className="flex flex-col gap-2">
           {profile.skills.map((s) => (
             <li
               key={s.id}
-              className="border-ink-muted/30 text-ink rounded-full border px-3 py-1 text-sm"
+              className="border-line-soft flex flex-wrap items-center justify-between gap-3 rounded-md border px-3 py-2 text-sm"
             >
-              {s.name}
+              <span className="flex min-w-0 flex-col">
+                <span className="text-ink font-semibold">{s.name}</span>
+                <span className="text-ink-muted text-xs">
+                  <span dir="ltr">{endorsementCounts[s.id] ?? s.endorsements}</span>{" "}
+                  {t("endorsementsLabel")}
+                </span>
+              </span>
+              {canEndorse ? (
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  loading={busySkillId === s.id}
+                  disabled={busySkillId !== null || endorsedSkillIds.has(s.id)}
+                  onClick={() => void endorseSkill(s.id)}
+                  aria-label={t("endorseSkill", { skill: s.name })}
+                >
+                  {endorsedSkillIds.has(s.id) ? t("endorsed") : t("endorse")}
+                </Button>
+              ) : null}
             </li>
           ))}
         </ul>
       )}
+      {notice ? <p className="text-ink-muted mt-3 text-sm">{notice}</p> : null}
     </Surface>
   );
 }

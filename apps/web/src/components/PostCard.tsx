@@ -5,7 +5,13 @@
 // API call + optimistic reconcile) and mounts our existing Comments region
 // into the shared card via `commentsSlot`.
 
-import { ReportReason, formatRelativeTime, type Post } from "@baydar/shared";
+import {
+  Bookmark,
+  BookmarkType,
+  ReportReason,
+  formatRelativeTime,
+  type Post,
+} from "@baydar/shared";
 import {
   PostCard as PostCardShell,
   ReportDialog,
@@ -17,7 +23,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { Comments } from "@/components/Comments";
-import { apiCall } from "@/lib/api";
+import { apiCall, apiFetch } from "@/lib/api";
 import { useReport } from "@/lib/api/safety";
 import { getAccessToken } from "@/lib/session";
 
@@ -38,6 +44,7 @@ export function PostCard({
   const [commentsOpen, setCommentsOpen] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
   const report = useReport();
+  const [saveBusy, setSaveBusy] = useState(false);
 
   async function toggleReaction(): Promise<void> {
     const token = getAccessToken();
@@ -70,6 +77,34 @@ export function PostCard({
       onChange?.(post);
     } finally {
       setBusy(false);
+    }
+  }
+
+  async function toggleSave(): Promise<void> {
+    const token = getAccessToken();
+    if (!token || saveBusy) return;
+    const bookmarkId = post.viewer.bookmarkId;
+    const optimistic: Post = {
+      ...post,
+      viewer: { ...post.viewer, bookmarkId: bookmarkId ? null : "pending_bookmark" },
+    };
+    onChange?.(optimistic);
+    setSaveBusy(true);
+    try {
+      if (bookmarkId) {
+        await apiCall(`/bookmarks/${bookmarkId}`, { method: "DELETE", token });
+        return;
+      }
+      const created = await apiFetch("/bookmarks", Bookmark, {
+        method: "POST",
+        token,
+        body: { type: BookmarkType.POST, targetId: post.id },
+      });
+      onChange?.({ ...post, viewer: { ...post.viewer, bookmarkId: created.id } });
+    } catch {
+      onChange?.(post);
+    } finally {
+      setSaveBusy(false);
     }
   }
 
@@ -112,12 +147,16 @@ export function PostCard({
         counts={post.counts}
         liked={post.viewer.reaction !== null}
         busy={busy}
+        saved={post.viewer.bookmarkId !== null}
+        saveBusy={saveBusy}
         labels={{
           like: t("like"),
           liked: t("liked"),
           comment: t("comment"),
           repost: t("repost"),
           send: t("send"),
+          save: t("save"),
+          saved: t("saved"),
           commentsCount: (count) => t("commentsCount", { count }),
           repostsCount: (count) => t("repostsCount", { count }),
           authorLabel: `${post.author.firstName} ${post.author.lastName}`.trim(),
@@ -128,6 +167,7 @@ export function PostCard({
         commentsOpen={commentsOpen}
         onToggleComments={setCommentsOpen}
         onToggleReaction={() => void toggleReaction()}
+        onToggleSave={() => void toggleSave()}
         onReport={() => setReportOpen(true)}
         onOpenProfile={() => router.push(`/in/${post.author.handle}`)}
         commentsSlot={

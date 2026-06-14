@@ -46,6 +46,7 @@ export const Job = z.object({
   }),
   viewer: z.object({
     hasApplied: z.boolean(),
+    bookmarkId: z.string().cuid().nullable(),
   }),
 });
 export type Job = z.infer<typeof Job>;

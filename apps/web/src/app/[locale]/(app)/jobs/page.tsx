@@ -15,6 +15,8 @@
 // Nothing about the data flow, pagination, or routing changed.
 
 import {
+  Bookmark,
+  BookmarkType,
   cursorPage,
   formatCurrency,
   Job as JobSchema,
@@ -27,7 +29,7 @@ import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 
-import { apiFetchPage } from "@/lib/api";
+import { apiCall, apiFetch, apiFetchPage } from "@/lib/api";
 import { getErrorCode, toErrorMessage } from "@/lib/error-message";
 import { readSession } from "@/lib/session";
 import { JobListRow, JobRowSkeleton } from "./_components/JobListRow";
@@ -81,6 +83,7 @@ export default function JobsPageRoute(): JSX.Element {
   const [loading, setLoading] = useState(false);
   const [firstLoad, setFirstLoad] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [savingId, setSavingId] = useState<string | null>(null);
 
   useEffect(() => {
     const session = readSession();
@@ -126,6 +129,47 @@ export default function JobsPageRoute(): JSX.Element {
     if (!token) return;
     void load(token, null, filters);
   }, [token, filters, load]);
+
+  const toggleSave = useCallback(
+    async (job: Job): Promise<void> => {
+      if (!token || savingId) return;
+      const bookmarkId = job.viewer.bookmarkId;
+      setSavingId(job.id);
+      setItems((prev) =>
+        prev.map((item) =>
+          item.id === job.id
+            ? {
+                ...item,
+                viewer: { ...item.viewer, bookmarkId: bookmarkId ? null : "pending_bookmark" },
+              }
+            : item,
+        ),
+      );
+      try {
+        if (bookmarkId) {
+          await apiCall(`/bookmarks/${bookmarkId}`, { method: "DELETE", token });
+          return;
+        }
+        const created = await apiFetch("/bookmarks", Bookmark, {
+          method: "POST",
+          token,
+          body: { type: BookmarkType.JOB, targetId: job.id },
+        });
+        setItems((prev) =>
+          prev.map((item) =>
+            item.id === job.id
+              ? { ...item, viewer: { ...item.viewer, bookmarkId: created.id } }
+              : item,
+          ),
+        );
+      } catch {
+        setItems((prev) => prev.map((item) => (item.id === job.id ? job : item)));
+      } finally {
+        setSavingId(null);
+      }
+    },
+    [savingId, token],
+  );
 
   return (
     <div className="mx-auto grid w-full max-w-[1128px] grid-cols-1 gap-6 px-4 py-6 lg:grid-cols-[260px_minmax(0,1fr)]">
@@ -259,7 +303,12 @@ export default function JobsPageRoute(): JSX.Element {
             <ul className="space-y-3">
               {items.map((job) => (
                 <li key={job.id}>
-                  <JobListRow job={job} salary={formatSalary(job, t, locale)} />
+                  <JobListRow
+                    job={job}
+                    salary={formatSalary(job, t, locale)}
+                    saving={savingId === job.id}
+                    onToggleSave={() => void toggleSave(job)}
+                  />
                 </li>
               ))}
             </ul>

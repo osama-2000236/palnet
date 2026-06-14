@@ -1,9 +1,11 @@
 import {
   AddSkillBody,
   EducationBody,
+  EndorseSkillResult,
   ExperienceBody,
   OnboardProfileBody,
   UpdateProfileBody,
+  type EndorseSkillResult as EndorseSkillResultDto,
   type Profile as ProfileDto,
 } from "@baydar/shared";
 import { Body, Controller, Delete, Get, Header, Param, Patch, Post, Put } from "@nestjs/common";
@@ -135,6 +137,17 @@ export class ProfilesController {
   ): Promise<{ data: ProfileDto }> {
     const data = await this.profiles.removeSkill(user.id, skillId);
     return { data };
+  }
+
+  @Post(":handle/skills/:skillId/endorse")
+  @ApiBearerAuth()
+  async endorseSkill(
+    @CurrentUser() user: AuthUser,
+    @Param("handle") handle: string,
+    @Param("skillId") skillId: string,
+  ): Promise<{ data: EndorseSkillResultDto }> {
+    const data = await this.profiles.endorseSkill(user.id, handle, skillId);
+    return { data: EndorseSkillResult.parse(data) };
   }
 
   // Public: anyone can view a profile, but the DTO can attach viewer state when

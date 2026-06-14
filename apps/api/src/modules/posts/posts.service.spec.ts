@@ -41,6 +41,7 @@ const hydrated = (overrides: Partial<{ authorId: string; id: string }> = {}) => 
   updatedAt: new Date("2026-01-01T00:00:00Z"),
   author: {
     id: overrides.authorId ?? "user_1",
+    deletedAt: null,
     profile: {
       handle: "osama",
       firstName: "Osama",
@@ -53,6 +54,7 @@ const hydrated = (overrides: Partial<{ authorId: string; id: string }> = {}) => 
   _count: { reactions: 0, comments: 0, reposts: 0 },
   reactions: [],
   reposts: [],
+  bookmarks: [],
 });
 
 describe("PostsService", () => {
@@ -88,6 +90,7 @@ describe("PostsService", () => {
       expect(dto.author.handle).toBe("osama");
       expect(dto.counts.reactions).toBe(0);
       expect(dto.viewer.reaction).toBeNull();
+      expect(dto.viewer.bookmarkId).toBeNull();
       expect(prisma.post.create).toHaveBeenCalledTimes(1);
     });
   });

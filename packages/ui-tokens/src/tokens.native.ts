@@ -124,6 +124,14 @@ export const nativeTokens = {
     23: 92,
     24: 96,
   },
+  motion: {
+    // Mirrors web easing for RN parity (DESIGN.md §12). `spring` = emphasized + overshoot.
+    easing: {
+      standard: "cubic-bezier(0.2, 0, 0, 1)",
+      emphasized: "cubic-bezier(0.3, 0, 0, 1.15)",
+      spring: "cubic-bezier(0.34, 1.4, 0.5, 1)",
+    },
+  },
   chrome: {
     navHeight: 56,
     tabHeight: 64,
