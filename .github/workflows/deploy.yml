@@ -134,17 +134,14 @@ jobs:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID_WEB }}
         run: vercel pull --yes --environment=preview --token="$VERCEL_TOKEN"
-        working-directory: apps/web
       - name: Build Web (Vercel)
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
         run: vercel build --token="$VERCEL_TOKEN"
-        working-directory: apps/web
       - name: Deploy Web to staging
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
         run: vercel deploy --prebuilt --token="$VERCEL_TOKEN" > deploy-url.txt
-        working-directory: apps/web
 
   migrate-production:
     name: Migrate Neon (production)
@@ -217,17 +214,14 @@ jobs:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID_WEB }}
         run: vercel pull --yes --environment=production --token="$VERCEL_TOKEN"
-        working-directory: apps/web
       - name: Build Web (Vercel)
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
         run: vercel build --prod --token="$VERCEL_TOKEN"
-        working-directory: apps/web
       - name: Deploy Web to production
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
         run: vercel deploy --prebuilt --prod --token="$VERCEL_TOKEN"
-        working-directory: apps/web
 
   submit-mobile-production:
     name: Submit Mobile builds (production) — EAS
