@@ -85,3 +85,8 @@ __pycache__/
 
 # QA run scratch
 .qa-last-run-id.tmp
+
+# Scratch/junk
+_tmp_*
+*.zip
+.claude/settings.local.json
