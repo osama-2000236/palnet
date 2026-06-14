@@ -13,9 +13,7 @@ export { buildContentSecurityPolicy, buildSecurityHeaders };
 const nextConfig = {
   reactStrictMode: true,
   transpilePackages: ["@baydar/shared", "@baydar/ui-tokens", "@baydar/ui-web"],
-  experimental: {
-    typedRoutes: true,
-  },
+  typedRoutes: true,
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "media.baydar.ps" },

@@ -11,6 +11,13 @@ import "./globals.css";
 export const metadata = {
   title: "Baydar — بيدر",
   description: "شبكة عربية مهنية — حيث يلتقي أثرك بفرصتك.",
+  icons: {
+    icon: [
+      { url: "/icon-192.png", type: "image/png", sizes: "192x192" },
+      { url: "/icon-512.png", type: "image/png", sizes: "512x512" },
+    ],
+    apple: [{ url: "/icon-192.png", type: "image/png", sizes: "192x192" }],
+  },
 };
 
 const sansArabic = IBM_Plex_Sans_Arabic({

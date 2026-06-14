@@ -2,6 +2,7 @@
 
 import { Banner } from "@baydar/ui-web";
 import { useTranslations } from "next-intl";
+import { useEffect, useState } from "react";
 
 import { useOnline } from "@/lib/useOnline";
 
@@ -12,6 +13,13 @@ export function ConnectivityBanner({
 }): JSX.Element | null {
   const t = useTranslations("chrome.connectivity");
   const state = useOnline();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
 
   if (state === "offline") {
     return (
