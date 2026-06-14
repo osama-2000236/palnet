@@ -16,10 +16,14 @@ assert(!devHeaders.has("Strict-Transport-Security"));
 
 const prodHeaders = asMap(buildSecurityHeaders({ NODE_ENV: "production" }));
 assert(prodHeaders.has("Content-Security-Policy"));
-assert(!prodHeaders.get("Content-Security-Policy").includes("'unsafe-inline'"));
+const prodCsp = prodHeaders.get("Content-Security-Policy");
+assert(!directive(prodCsp, "script-src").includes("'unsafe-inline'"));
+assert(!directive(prodCsp, "style-src").includes("'unsafe-inline'"));
 const nonceCsp = buildContentSecurityPolicy({ NODE_ENV: "production" }, "test-nonce");
 assert(nonceCsp.includes("'nonce-test-nonce'"));
-assert(!nonceCsp.includes("'unsafe-inline'"));
+assert(!directive(nonceCsp, "script-src").includes("'unsafe-inline'"));
+assert(!directive(nonceCsp, "style-src").includes("'unsafe-inline'"));
+assert.equal(directive(nonceCsp, "style-src-attr"), "style-src-attr 'unsafe-inline'");
 assert.equal(prodHeaders.get("X-Content-Type-Options"), "nosniff");
 assert.equal(prodHeaders.get("Referrer-Policy"), "strict-origin-when-cross-origin");
 assert.equal(prodHeaders.get("X-Frame-Options"), "DENY");
@@ -33,3 +37,7 @@ assert(!staticProdHeaders.has("Content-Security-Policy"));
 assert(staticProdHeaders.has("Strict-Transport-Security"));
 
 console.log("security headers assertion passed");
+
+function directive(csp, name) {
+  return csp.split("; ").find((part) => part.startsWith(`${name} `)) ?? "";
+}

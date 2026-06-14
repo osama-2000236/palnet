@@ -35,6 +35,8 @@ export function buildContentSecurityPolicy(env = process.env, nonce) {
     "frame-ancestors 'none'",
     `script-src ${scriptOrigins.join(" ")}`,
     `style-src ${styleOrigins.join(" ")}`,
+    `style-src-elem ${styleOrigins.join(" ")}`,
+    "style-src-attr 'unsafe-inline'",
     `img-src ${imageOrigins.join(" ")}`,
     "font-src 'self' data:",
     `connect-src ${connectOrigins.join(" ")}`,
