@@ -79,6 +79,25 @@ const preset: TailwindPreset = {
         ],
       },
       spacing: Object.fromEntries(Object.entries(tokens.space).map(([k, v]) => [k, `${v}px`])),
+      transitionDuration: {
+        fast: `${tokens.motion.duration.fast}ms`,
+        base: `${tokens.motion.duration.base}ms`,
+        slow: `${tokens.motion.duration.slow}ms`,
+      },
+      transitionTimingFunction: {
+        standard: tokens.motion.easing.standard,
+        emphasized: tokens.motion.easing.emphasized,
+        spring: tokens.motion.easing.spring,
+      },
+      keyframes: {
+        "enter-up": {
+          from: { opacity: "0", transform: `translateY(${tokens.motion.enter.rise}px)` },
+          to: { opacity: "1", transform: "translateY(0)" },
+        },
+      },
+      animation: {
+        "enter-up": `enter-up ${tokens.motion.duration.slow}ms ${tokens.motion.easing.emphasized} both`,
+      },
     },
   },
 };

@@ -44,6 +44,12 @@ export const tokens = {
       soft: "rgba(26, 26, 23, 0.08)",
       hard: "rgba(26, 26, 23, 0.16)",
     },
+    // The ONLY decorative gradient in the system (DESIGN.md §13: profile cover
+    // is the single allowed exception to the no-gradients rule). Olive-only —
+    // brand-500 → brand-700, honoring "no blue ever".
+    cover: {
+      gradient: "linear-gradient(135deg, #687a3a, #3f4a26)",
+    },
     semantic: {
       success: "#3b7a3b",
       successSoft: "rgba(59, 122, 59, 0.10)",
@@ -114,7 +120,16 @@ export const tokens = {
   // Motion
   motion: {
     duration: { fast: 80, base: 120, slow: 240 },
-    easing: { standard: "cubic-bezier(0.2, 0, 0, 1)", emphasized: "cubic-bezier(0.3, 0, 0, 1.15)" },
+    easing: {
+      standard: "cubic-bezier(0.2, 0, 0, 1)",
+      emphasized: "cubic-bezier(0.3, 0, 0, 1.15)",
+      // emphasized with stronger overshoot — for emphasized entrances.
+      spring: "cubic-bezier(0.34, 1.4, 0.5, 1)",
+    },
+    // ms between consecutive list-item entrances; cap at 6 (6×40 = 240ms = slow).
+    stagger: { step: 40, max: 6 },
+    // px translateY on entrance (= space[2]).
+    enter: { rise: 8 },
   },
   focus: {
     ring: "0 0 0 var(--focus-ring-offset) var(--surface), 0 0 0 calc(var(--focus-ring-offset) + var(--focus-ring-width)) var(--focus-ring-color)",

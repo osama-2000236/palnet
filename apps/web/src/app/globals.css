@@ -36,13 +36,13 @@ body {
 
 html {
   /* Canonical token first, legacy aliases as fallback during migration. */
-  font-family: var(--font-sans),
-    var(--font-naskh), var(--font-sans-arabic),
-    "IBM Plex Sans Arabic", "IBM Plex Sans", system-ui, sans-serif;
+  font-family:
+    var(--font-sans), var(--font-naskh), var(--font-sans-arabic), "IBM Plex Sans Arabic",
+    "IBM Plex Sans", system-ui, sans-serif;
 }
 
 body {
-  @apply bg-surface-muted text-ink antialiased font-body;
+  @apply bg-surface-muted text-ink font-body antialiased;
 }
 
 /* Keep code blocks LTR even in RTL pages. */
@@ -56,3 +56,12 @@ samp {
 
 /* `.rtl-mirror` is now defined in tokens.css alongside the breakpoint vars;
  * removed from here. */
+
+/* Tailwind's `animation` utility does not auto-respect reduced-motion.
+ * Honor the OS preference: entrances render as their final state instantly. */
+@media (prefers-reduced-motion: reduce) {
+  .animate-enter-up,
+  .enter-up-item {
+    animation: none !important;
+  }
+}

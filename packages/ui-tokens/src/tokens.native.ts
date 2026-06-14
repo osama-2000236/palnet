@@ -134,6 +134,16 @@ export const nativeTokens = {
     ringWidth: 2,
     ringOffset: 2,
   },
+  motion: {
+    duration: { fast: 80, base: 120, slow: 240 },
+    easing: {
+      standard: "cubic-bezier(0.2, 0, 0, 1)",
+      emphasized: "cubic-bezier(0.3, 0, 0, 1.15)",
+      spring: "cubic-bezier(0.34, 1.4, 0.5, 1)",
+    },
+    stagger: { step: 40, max: 6 },
+    enter: { rise: 8 },
+  },
   avatar: {
     palette: [
       { bg: "#e6ebd6", fg: "#2e371d" },
