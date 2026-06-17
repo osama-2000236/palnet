@@ -6,6 +6,21 @@ describe("app bootstrap env validation", () => {
     JWT_ACCESS_SECRET: "a".repeat(32),
     JWT_REFRESH_SECRET: "b".repeat(32),
   };
+  const productionEnv = {
+    BANK_TRANSFER_BENEFICIARY: "Baydar",
+    BANK_TRANSFER_IBAN: "PS92PALS000000000000000000000",
+    BAYDAR_WEB_URL: "https://web-tamb5sde9-osama-2000236s-projects.vercel.app",
+    CLAMAV_SCAN_URL: "https://scanner.example.com/clamav",
+    CLOUDFLARE_IMAGES_SCAN_URL: "https://scanner.example.com/images",
+    HYPERPAY_ACCESS_TOKEN: "hyperpay-token",
+    HYPERPAY_ENTITY_ID: "entity-id",
+    HYPERPAY_WEBHOOK_SECRET: "webhook-secret",
+    INTERNAL_CRON_TOKEN: "c".repeat(24),
+    MAIL_FROM: "Baydar <noreply@example.com>",
+    RESEND_API_KEY: "resend-key",
+    SENTRY_DSN: "https://public@example.com/1",
+    SENTRY_RELEASE: "abcdef1",
+  };
   const originalEnv = process.env;
 
   afterEach(() => {
@@ -35,6 +50,18 @@ describe("app bootstrap env validation", () => {
         ]),
       }),
     );
+  });
+
+  it("allows project-scoped Vercel wildcard CORS origins in production", () => {
+    process.env = {
+      ...originalEnv,
+      ...baseEnv,
+      ...productionEnv,
+      NODE_ENV: "production",
+      CORS_ORIGINS: "https://web-*-osama-2000236s-projects.vercel.app",
+    };
+
+    expect(loadEnv().CORS_ORIGINS).toBe("https://web-*-osama-2000236s-projects.vercel.app");
   });
 
   it("rejects missing CORS origins in production", () => {

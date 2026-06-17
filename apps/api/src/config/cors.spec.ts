@@ -20,6 +20,15 @@ describe("buildCorsOrigin", () => {
     expect(allows("https://*.vercel.app", "https://web-preview.vercel.app")).toBe(true);
   });
 
+  it("allows wildcard host-label origins", () => {
+    expect(
+      allows(
+        "https://web-*-osama-2000236s-projects.vercel.app",
+        "https://web-tamb5sde9-osama-2000236s-projects.vercel.app",
+      ),
+    ).toBe(true);
+  });
+
   it("rejects the bare wildcard suffix origin", () => {
     expect(allows("https://*.vercel.app", "https://vercel.app")).toBe(false);
   });

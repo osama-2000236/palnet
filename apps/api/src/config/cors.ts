@@ -1,13 +1,10 @@
 type CorsOriginCallback = (err: Error | null, allow?: boolean) => void;
 
-export type CorsOriginDelegate = (
-  origin: string | undefined,
-  callback: CorsOriginCallback,
-) => void;
+export type CorsOriginDelegate = (origin: string | undefined, callback: CorsOriginCallback) => void;
 
 interface WildcardOrigin {
   protocol: string;
-  suffix: string;
+  hostnamePattern: RegExp;
 }
 
 export function buildCorsOrigin(rawOrigins: string): false | CorsOriginDelegate {
@@ -39,12 +36,20 @@ export function buildCorsOrigin(rawOrigins: string): false | CorsOriginDelegate 
 }
 
 function parseWildcardOrigin(origin: string): WildcardOrigin | null {
-  const match = /^(https?):\/\/\*\.(.+)$/i.exec(origin);
-  if (!match) return null;
+  let url: URL;
+  try {
+    url = new URL(origin);
+  } catch {
+    return null;
+  }
+
+  if (!url.hostname.includes("*") || url.pathname !== "/" || url.search || url.hash) {
+    return null;
+  }
 
   return {
-    protocol: match[1]!.toLowerCase(),
-    suffix: match[2]!.toLowerCase(),
+    protocol: url.protocol.toLowerCase(),
+    hostnamePattern: wildcardHostnameToRegex(url.hostname),
   };
 }
 
@@ -52,12 +57,18 @@ function matchesWildcard(origin: string, rule: WildcardOrigin): boolean {
   try {
     const url = new URL(origin);
     const hostname = url.hostname.toLowerCase();
-    return (
-      url.protocol.toLowerCase() === `${rule.protocol}:` &&
-      hostname.endsWith(`.${rule.suffix}`) &&
-      hostname !== rule.suffix
-    );
+    return url.protocol.toLowerCase() === rule.protocol && rule.hostnamePattern.test(hostname);
   } catch {
     return false;
   }
+}
+
+function wildcardHostnameToRegex(hostname: string): RegExp {
+  const pattern = hostname.toLowerCase().split("*").map(escapeRegExp).join("[^.]+");
+
+  return new RegExp(`^${pattern}$`, "i");
+}
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[\\^$.*+?()[\]{}|]/g, "\\$&");
 }
