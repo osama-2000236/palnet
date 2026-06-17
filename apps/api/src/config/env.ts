@@ -82,8 +82,13 @@ export function loadEnv(): Env {
     if (!origins || origins.length === 0) {
       failEnv({ CORS_ORIGINS: ["CORS_ORIGINS is required in production."] });
     }
-    if (origins.includes("*")) {
-      failEnv({ CORS_ORIGINS: ["Wildcard CORS origins are forbidden in production."] });
+    const wildcardOrigins = origins.filter((origin) => origin.includes("*"));
+    if (wildcardOrigins.some((origin) => !isProjectScopedVercelWildcard(origin))) {
+      failEnv({
+        CORS_ORIGINS: [
+          "Wildcard CORS origins are forbidden in production unless they are project-scoped Vercel preview origins.",
+        ],
+      });
     }
     if (!data.RESEND_API_KEY || !data.MAIL_FROM) {
       failEnv({
@@ -149,4 +154,27 @@ function failEnv(errors: Record<string, string[] | undefined>): never {
   // eslint-disable-next-line no-console
   console.error("[env] invalid configuration:", errors);
   process.exit(1);
+}
+
+function isProjectScopedVercelWildcard(origin: string): boolean {
+  try {
+    const url = new URL(origin);
+    const hostname = url.hostname.toLowerCase();
+    const wildcardCount = Array.from(hostname.matchAll(/\*/g)).length;
+    const firstLabel = hostname.split(".")[0];
+
+    return (
+      url.protocol === "https:" &&
+      url.pathname === "/" &&
+      !url.search &&
+      !url.hash &&
+      hostname.endsWith(".vercel.app") &&
+      wildcardCount === 1 &&
+      firstLabel !== undefined &&
+      firstLabel !== "*" &&
+      firstLabel.includes("*")
+    );
+  } catch {
+    return false;
+  }
 }

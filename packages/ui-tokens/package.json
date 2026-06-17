@@ -2,11 +2,20 @@
   "name": "@baydar/ui-tokens",
   "version": "0.0.1",
   "private": true,
-  "main": "./src/index.ts",
+  "main": "./dist/index.js",
   "types": "./src/index.ts",
   "exports": {
-    ".": "./src/index.ts",
-    "./native": "./src/tokens.native.ts",
+    ".": {
+      "types": "./src/index.ts",
+      "node": "./dist/index.js",
+      "default": "./src/index.ts"
+    },
+    "./native": {
+      "types": "./src/tokens.native.ts",
+      "react-native": "./src/tokens.native.ts",
+      "node": "./dist/tokens.native.js",
+      "default": "./src/tokens.native.ts"
+    },
     "./tokens.css": "./src/tokens.css",
     "./tailwind-preset": {
       "types": "./dist/tailwind-preset.d.ts",

@@ -1,22 +1,15 @@
 const productionBuild = process.env.EAS_BUILD_PROFILE === "production";
+const defaultEasProjectId = "927bc25d-14dc-42bd-a9b2-92f1db758f3d";
 
 const getOptionalEnv = (name) => {
   const value = process.env[name]?.trim();
   return value ? value : undefined;
 };
 
-const getProductionEnv = (name) => {
-  const value = getOptionalEnv(name);
-
-  if (productionBuild && !value) {
-    throw new Error(`[baydar/mobile] ${name} is required for production EAS builds.`);
-  }
-
-  return value;
-};
-
 const easProjectId =
-  getProductionEnv("EXPO_PUBLIC_EAS_PROJECT_ID") ?? getOptionalEnv("EAS_PROJECT_ID");
+  getOptionalEnv("EXPO_PUBLIC_EAS_PROJECT_ID") ??
+  getOptionalEnv("EAS_PROJECT_ID") ??
+  defaultEasProjectId;
 
 const extra = easProjectId
   ? {
