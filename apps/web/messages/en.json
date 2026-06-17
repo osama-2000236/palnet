@@ -179,7 +179,11 @@
     "headline": "Headline",
     "location": "Location (city)",
     "submit": "Save and continue",
-    "success": "Profile saved!"
+    "success": {
+      "title": "Profile saved!",
+      "body": "Your profile has been updated successfully.",
+      "goToFeed": "Go to feed"
+    }
   },
   "feed": {
     "title": "Feed",
@@ -598,20 +602,6 @@
       "JOB": "Job"
     }
   },
-  "onboarding": {
-    "title": "Complete your profile",
-    "subtitle": "This helps others find you.",
-    "handle": "Your handle",
-    "handleHint": "Appears as /in/{handle}",
-    "headline": "Headline",
-    "location": "Location (city)",
-    "submit": "Save and continue",
-    "success": {
-      "title": "Profile saved!",
-      "body": "Your profile has been updated successfully.",
-      "goToFeed": "Go to feed"
-    }
-  },
   "connections": {
     "title": "Connections",
     "subtitle": "Manage your professional network",
@@ -682,7 +672,9 @@
       "privacy": "Privacy",
       "privacyDesc": "Review profile, message, and search visibility.",
       "security": "Security",
-      "securityDesc": "Review password, sessions, and two-factor status."
+      "securityDesc": "Review password, sessions, and two-factor status.",
+      "appearance": "Appearance",
+      "appearanceDesc": "Choose light, dark, or match your device."
     },
     "notifications": {
       "title": "Notifications",
@@ -862,6 +854,18 @@
           "state": "Not available"
         }
       }
+    },
+    "appearance": {
+      "title": "Appearance",
+      "subtitle": "Choose the interface theme. Light is the default.",
+      "legend": "Theme",
+      "light": "Light",
+      "lightDesc": "The default light background.",
+      "dark": "Dark",
+      "darkDesc": "Warm charcoal — easier on the eyes in low light.",
+      "system": "System",
+      "systemDesc": "Follow your device setting automatically.",
+      "hint": "We remember your choice on this device."
     }
   },
   "account": {

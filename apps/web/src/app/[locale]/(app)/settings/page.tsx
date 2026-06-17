@@ -20,6 +20,11 @@ export default function SettingsLandingPage(): JSX.Element {
       desc: t("items.notificationsDesc"),
     },
     {
+      href: `/${locale}/settings/appearance`,
+      label: t("items.appearance"),
+      desc: t("items.appearanceDesc"),
+    },
+    {
       href: `/${locale}/settings/privacy`,
       label: t("items.privacy"),
       desc: t("items.privacyDesc"),
