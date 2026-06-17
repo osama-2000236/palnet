@@ -28,7 +28,7 @@
 
 Baydar is an Arabic-first professional network for Arab professionals. The interface should feel **serious, warm, local, and trustworthy** — closer to a well-run professional majlis or regional hiring office than to a generic SaaS dashboard.
 
-The design language is built from Baydar's world: olive groves, wheat fields, warm paper, terracotta clay, limestone, and dark Arabic ink. The product should never drift toward LinkedIn blue, generic SaaS blue, dark mode, playful chrome, or marketing-page decoration.
+The design language is built from Baydar's world: olive groves, wheat fields, warm paper, terracotta clay, limestone, and dark Arabic ink. The product should never drift toward LinkedIn blue, generic SaaS blue, playful chrome, or marketing-page decoration. (A warm-dark theme exists — warm charcoal, never pure black — but light is the default; see §5.)
 
 We optimise for **confidence and quick scanning** — compact enough for repeated daily use, clear enough for first-time onboarding, and polite enough for professional communication.
 
@@ -75,7 +75,9 @@ Every screen is judged against these verbs. If a screen doesn't help one of them
 | Line soft      | `rgba(26,26,23,0.08)`        | —                     | Internal dividers                                                |
 | Line hard      | `rgba(26,26,23,0.16)`        | —                     | Input borders, outlined buttons                                  |
 
-**Forbidden:** pure `#000`, pure `#fff` shadows, Tailwind default blues/slates. Dark mode is not yet designed — do not add it.
+**Forbidden:** pure `#000`, pure `#fff` shadows, Tailwind default blues/slates.
+
+**Warm-dark theme.** Light is the default. A warm-dark theme (warm charcoal `#232220`, never pure black; olive + terracotta identity preserved) ships in the tokens and is opt-in only — web: add `.dark` or `[data-theme="dark"]` to a root element; native: `getNativeTokens("dark")`. Do not hardcode dark values at the screen level; the token layer swaps every variable for you.
 
 All UI color must map through the tokens in [packages/ui-tokens/src/index.ts](packages/ui-tokens/src/index.ts) (web CSS vars + Tailwind classes) or [packages/ui-tokens/src/tokens.native.ts](packages/ui-tokens/src/tokens.native.ts) (`nativeTokens.color.*` for React Native). Never hardcode a hex at the screen level.
 
@@ -259,7 +261,7 @@ When onboarding gets multiple steps (signup → verify → profile → first con
 ## 13. What NOT to do
 
 - ❌ Tailwind blue or any generic SaaS blue.
-- ❌ Dark mode (not yet designed).
+- ❌ Pure-black dark mode. The warm-dark theme uses warm charcoal (`#232220`), never `#000`; light stays the default.
 - ❌ Nested cards. Use `flat` or `row` inside a `card`.
 - ❌ Decorative gradients, orbs, bokeh, hero illustration chrome. Profile cover gradient is the single allowed exception.
 - ❌ Large hero type inside dense app screens.
@@ -278,6 +280,8 @@ The old default-blue palette has already been replaced. Current token values liv
 - [packages/ui-tokens/src/index.ts](packages/ui-tokens/src/index.ts) — TypeScript source.
 - [packages/ui-tokens/src/tokens.css](packages/ui-tokens/src/tokens.css) — generated web CSS vars.
 - [packages/ui-tokens/src/tokens.native.ts](packages/ui-tokens/src/tokens.native.ts) — generated `nativeTokens` for RN.
+
+The warm-dark theme lives alongside these: `tokens.dark` in `index.ts`, the `.dark` / `[data-theme="dark"]` scope in `tokens.css`, and `nativeTokensDark` / `getNativeTokens()` in `tokens.native.ts`. Light is the default; dark is opt-in.
 
 Do not hardcode new visual values in apps or shared UI packages. Add or adjust a token first, regenerate token outputs, and run `pnpm lint:tokens`.
 

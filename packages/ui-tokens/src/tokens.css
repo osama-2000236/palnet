@@ -103,6 +103,39 @@
   --avatar-palette-5-bg: #e8d5c2;
   --avatar-palette-5-fg: #6e4424;
 
+  /* Channel forms (space-separated R G B) for Tailwind alpha support.
+   * Tailwind maps each colour to `rgb(var(--<token>-rgb) / <alpha-value>)`, so
+   * utilities like `bg-ink/40` keep working AND the whole palette re-themes when
+   * the `.dark` scope swaps these channels. The hex vars above stay for direct
+   * `var(--token)` consumers (focus ring, avatar palettes, illustrations). */
+  --brand-50-rgb: 244 246 239;
+  --brand-100-rgb: 230 235 214;
+  --brand-200-rgb: 204 214 168;
+  --brand-300-rgb: 169 184 120;
+  --brand-400-rgb: 135 153 83;
+  --brand-500-rgb: 104 122 58;
+  --brand-600-rgb: 82 96 48;
+  --brand-700-rgb: 63 74 38;
+  --brand-800-rgb: 46 55 29;
+  --brand-900-rgb: 31 37 19;
+  --accent-50-rgb: 251 240 234;
+  --accent-100-rgb: 244 219 206;
+  --accent-500-rgb: 198 90 58;
+  --accent-600-rgb: 168 72 44;
+  --accent-700-rgb: 139 58 34;
+  --ink-rgb: 26 26 23;
+  --ink-muted-rgb: 92 90 82;
+  --ink-subtle-rgb: 138 136 128;
+  --ink-inverse-rgb: 255 255 255;
+  --surface-rgb: 255 255 255;
+  --surface-muted-rgb: 250 249 245;
+  --surface-subtle-rgb: 241 239 231;
+  --surface-sunken-rgb: 235 232 220;
+  --success-rgb: 59 122 59;
+  --warning-rgb: 176 122 26;
+  --danger-rgb: 168 50 50;
+  --info-rgb: 47 109 138;
+
   /* Radius */
   --radius-xs: 4px;
   --radius-sm: 6px;
@@ -157,7 +190,89 @@
   --bp-xl: 1280px;
 }
 
-/* No dark mode yet — do not add. */
+/* ── Warm-dark theme ────────────────────────────────────────────────────────
+ * Designed in the Baydar Mobile Kit (May 2026). Warm charcoal, NOT pure black;
+ * olive + terracotta identity preserved. LIGHT IS THE DEFAULT — dark is opt-in:
+ * add `.dark` or `[data-theme="dark"]` to a root element (e.g. <html>).
+ * Only the tokens that change are redeclared; the rest inherit :root above.
+ * Tokens defined via var() refs (focus-ring, cover-gradient, most avatar
+ * palettes) re-resolve automatically inside this scope — no need to repeat them.
+ */
+.dark,
+[data-theme="dark"] {
+  /* Brand (olive) — only the depths used at dark altitude shift. */
+  --brand-50: #262a1b;
+  --brand-100: #39431f;
+  --brand-200: #52612e;
+  --brand-600: #7e9442;
+  --brand-700: #9bb059;
+
+  /* Accent (terracotta) */
+  --accent-50: #3a241c;
+  --accent-100: #4a2c20;
+  --accent-600: #cf6743;
+  --accent-700: #b5532f;
+
+  /* Ink */
+  --ink: #f1efe8;
+  --ink-muted: #b3afa4;
+  --ink-subtle: #85827a;
+  --ink-inverse: #1a1a17;
+
+  /* Surface */
+  --surface: #232220;
+  --surface-muted: #1a1916;
+  --surface-subtle: #2d2b27;
+  --surface-sunken: #37342f;
+
+  /* Lines — switch to light-on-dark */
+  --line-soft: rgba(255, 255, 255, 0.08);
+  --line-hard: rgba(255, 255, 255, 0.17);
+
+  /* Semantic — success + danger re-lit; warning + info read fine as-is */
+  --success: #6fae5f;
+  --success-soft: rgba(111, 174, 95, 0.14);
+  --success-border: rgba(111, 174, 95, 0.3);
+  --danger: #d96b6b;
+  --danger-soft: rgba(217, 107, 107, 0.14);
+  --danger-border: rgba(217, 107, 107, 0.3);
+  --scrim: rgba(0, 0, 0, 0.5);
+
+  /* Shadow — warm-ink shadows vanish on dark; use pure black */
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3), 0 1px 3px rgba(0, 0, 0, 0.42);
+  --shadow-pop: 0 10px 28px rgba(0, 0, 0, 0.5);
+  --shadow-nav: 0 1px 0 rgba(0, 0, 0, 0.4);
+  --shadow-modal: 0 24px 60px rgba(0, 0, 0, 0.6), 0 4px 12px rgba(0, 0, 0, 0.4);
+
+  /* Avatar fg refs that would land dark-on-dark are re-pointed to a light depth.
+   * Palettes 3 (ink-muted) & 5 (literal sand) already resolve light — left alone. */
+  --avatar-palette-1-fg: var(--brand-700);
+  --avatar-palette-2-fg: var(--accent-600);
+  --avatar-palette-4-fg: var(--brand-700);
+
+  /* Channel forms — mirror the hex overrides above so Tailwind utilities
+   * (bg-surface, text-ink, bg-brand-600, …) re-theme in dark. Only the solids
+   * that change are listed; warning + info inherit their light channels. */
+  --brand-50-rgb: 38 42 27;
+  --brand-100-rgb: 57 67 31;
+  --brand-200-rgb: 82 97 46;
+  --brand-600-rgb: 126 148 66;
+  --brand-700-rgb: 155 176 89;
+  --accent-50-rgb: 58 36 28;
+  --accent-100-rgb: 74 44 32;
+  --accent-600-rgb: 207 103 67;
+  --accent-700-rgb: 181 83 47;
+  --ink-rgb: 241 239 232;
+  --ink-muted-rgb: 179 175 164;
+  --ink-subtle-rgb: 133 130 122;
+  --ink-inverse-rgb: 26 26 23;
+  --surface-rgb: 35 34 32;
+  --surface-muted-rgb: 26 25 22;
+  --surface-subtle-rgb: 45 43 39;
+  --surface-sunken-rgb: 55 52 47;
+  --success-rgb: 111 174 95;
+  --danger-rgb: 217 107 107;
+}
 
 /* RTL helper: flip icons that need directional mirroring.
  * DIRECTIONAL: arrows, navigation chevrons, send icons.

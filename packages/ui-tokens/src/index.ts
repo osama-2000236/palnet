@@ -177,6 +177,54 @@ export const tokens = {
   },
   // Numeral direction for LTR numbers inside RTL text
   numeralDirection: "ltr",
+
+  // ── Warm-dark theme ──────────────────────────────────────────────────────
+  // Designed in the Baydar Mobile Kit (May 2026). Warm charcoal, NOT pure black;
+  // olive brand + terracotta accent identity preserved. LIGHT IS THE DEFAULT —
+  // dark is opt-in (web: `.dark` / `[data-theme="dark"]`; native:
+  // `getNativeTokens("dark")`). Only the tokens that change are listed here;
+  // every other token inherits its light value above.
+  dark: {
+    color: {
+      // brand-300/400/500/800/900 keep their light values (unused at dark depth).
+      brand: { 50: "#262a1b", 100: "#39431f", 200: "#52612e", 600: "#7e9442", 700: "#9bb059" },
+      // accent-500 keeps its light value.
+      accent: { 50: "#3a241c", 100: "#4a2c20", 600: "#cf6743", 700: "#b5532f" },
+      ink: { DEFAULT: "#f1efe8", muted: "#b3afa4", subtle: "#85827a", inverse: "#1a1a17" },
+      surface: { DEFAULT: "#232220", muted: "#1a1916", subtle: "#2d2b27", sunken: "#37342f" },
+      line: { soft: "rgba(255, 255, 255, 0.08)", hard: "rgba(255, 255, 255, 0.17)" },
+      semantic: {
+        // success + danger re-lit for the dark surface; soft/border re-derived.
+        // warning + info keep their light values (legible on warm charcoal).
+        success: "#6fae5f",
+        successSoft: "rgba(111, 174, 95, 0.14)",
+        successBorder: "rgba(111, 174, 95, 0.30)",
+        danger: "#d96b6b",
+        dangerSoft: "rgba(217, 107, 107, 0.14)",
+        dangerBorder: "rgba(217, 107, 107, 0.30)",
+        scrim: "rgba(0, 0, 0, 0.50)",
+      },
+    },
+    shadow: {
+      // Pure-black shadows on a dark surface (the warm-ink shadows vanish).
+      card: "0 1px 2px rgba(0,0,0,0.30), 0 1px 3px rgba(0,0,0,0.42)",
+      pop: "0 10px 28px rgba(0,0,0,0.50)",
+      nav: "0 1px 0 rgba(0,0,0,0.40)",
+      modal: "0 24px 60px rgba(0,0,0,0.60), 0 4px 12px rgba(0,0,0,0.40)",
+    },
+    // Avatar chips stay tinted, but fg refs must resolve LIGHT-on-dark: palette
+    // 1 & 4 move their fg to brand-700 (light olive at dark depth); 2 → accent-600.
+    // Palette 5 stays a literal light sand chip (same as light theme).
+    avatar: {
+      palette: [
+        { bg: "brand.100", fg: "brand.700" },
+        { bg: "accent.100", fg: "accent.600" },
+        { bg: "surface.sunken", fg: "ink.DEFAULT" },
+        { bg: "brand.200", fg: "brand.700" },
+        { bg: "#e8d5c2", fg: "#6e4424" },
+      ],
+    },
+  },
 } as const;
 
 export type Tokens = typeof tokens;

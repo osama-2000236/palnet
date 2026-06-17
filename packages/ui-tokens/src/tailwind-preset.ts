@@ -1,34 +1,53 @@
 import { tokens } from "./index";
 
 type TailwindPreset = {
+  // `dark:` utility variants resolve under `.dark`. The full CSS-var swap (which
+  // most tokenized utilities like `bg-surface` ride for free) lives in
+  // tokens.css and ALSO honors `[data-theme="dark"]`. Light is the default —
+  // dark is opt-in.
+  darkMode: "class" | "media" | [string, string | string[]];
   theme: {
     extend: Record<string, unknown>;
   };
 };
 
+// Map a token name to its channel-var form so Tailwind utilities support the
+// `/<opacity>` modifier AND re-theme under `.dark` (channels are swapped in
+// tokens.css). The literal hex in tokens.* stays the canonical value; here we
+// only reference the CSS var the build emits.
+const v = (name: string): string => `rgb(var(--${name}-rgb) / <alpha-value>)`;
+const scale = (prefix: string, keys: readonly (string | number)[]): Record<string, string> =>
+  Object.fromEntries(keys.map((k) => [k, v(`${prefix}-${k}`)]));
+
 const preset: TailwindPreset = {
+  darkMode: "class",
   theme: {
     extend: {
       colors: {
-        brand: tokens.color.brand,
-        accent: tokens.color.accent,
+        brand: scale("brand", [50, 100, 200, 300, 400, 500, 600, 700, 800, 900]),
+        accent: scale("accent", [50, 100, 500, 600, 700]),
         ink: {
-          DEFAULT: tokens.color.ink.DEFAULT,
-          muted: tokens.color.ink.muted,
-          subtle: tokens.color.ink.subtle,
-          inverse: tokens.color.ink.inverse,
+          DEFAULT: v("ink"),
+          muted: v("ink-muted"),
+          subtle: v("ink-subtle"),
+          inverse: v("ink-inverse"),
         },
         surface: {
-          DEFAULT: tokens.color.surface.DEFAULT,
-          muted: tokens.color.surface.muted,
-          subtle: tokens.color.surface.subtle,
-          sunken: tokens.color.surface.sunken,
+          DEFAULT: v("surface"),
+          muted: v("surface-muted"),
+          subtle: v("surface-subtle"),
+          sunken: v("surface-sunken"),
         },
-        line: tokens.color.line,
-        success: tokens.color.semantic.success,
-        warning: tokens.color.semantic.warning,
-        danger: tokens.color.semantic.danger,
-        info: tokens.color.semantic.info,
+        // line is translucent (rgba) — no alpha modifier needed; plain var
+        // still re-themes in dark.
+        line: {
+          soft: "var(--line-soft)",
+          hard: "var(--line-hard)",
+        },
+        success: v("success"),
+        warning: v("warning"),
+        danger: v("danger"),
+        info: v("info"),
       },
       borderRadius: {
         xs: `${tokens.radius.xs}px`,
