@@ -6,6 +6,7 @@ import helmet from "helmet";
 import { Logger } from "nestjs-pino";
 
 import { AppModule } from "./app.module";
+import { buildCorsOrigin } from "./config/cors";
 import { loadEnv } from "./config/env";
 
 async function bootstrap(): Promise<void> {
@@ -21,17 +22,8 @@ async function bootstrap(): Promise<void> {
   // (health, mark-read, 204s) uncompressed so we don't pay handshake cost.
   app.use(compression({ threshold: 1024 }));
 
-  const corsOrigins = env.CORS_ORIGINS.split(",")
-    .map((o) => o.trim())
-    .filter(Boolean);
-  if (env.NODE_ENV === "production" && corsOrigins.length === 0) {
-    throw new Error(
-      "[baydar/api] CORS_ORIGINS must list at least one origin in production. " +
-        "Set CORS_ORIGINS=https://baydar.ps,https://www.baydar.ps or similar.",
-    );
-  }
   app.enableCors({
-    origin: corsOrigins.length > 0 ? corsOrigins : false,
+    origin: buildCorsOrigin(env.CORS_ORIGINS),
     credentials: true,
   });
 

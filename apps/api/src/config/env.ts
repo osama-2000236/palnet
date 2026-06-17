@@ -82,7 +82,7 @@ export function loadEnv(): Env {
     if (!origins || origins.length === 0) {
       failEnv({ CORS_ORIGINS: ["CORS_ORIGINS is required in production."] });
     }
-    if (origins.includes("*")) {
+    if (origins.some((origin) => origin.includes("*"))) {
       failEnv({ CORS_ORIGINS: ["Wildcard CORS origins are forbidden in production."] });
     }
     if (!data.RESEND_API_KEY || !data.MAIL_FROM) {
