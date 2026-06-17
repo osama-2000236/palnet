@@ -76,6 +76,11 @@ function requestMeta(req: Request): { userAgent?: string; ipAddress?: string } {
   };
 }
 
+function isSecureRequest(req: Request): boolean {
+  const forwardedProto = req.get("x-forwarded-proto")?.split(",")[0]?.trim().toLowerCase();
+  return req.secure || forwardedProto === "https" || process.env.NODE_ENV === "production";
+}
+
 @ApiTags("auth")
 @Controller("auth")
 @UseGuards(JwtAuthGuard)
@@ -232,7 +237,7 @@ export class AuthController {
       res.setHeader(
         "Set-Cookie",
         serializeClearedRefreshCookie({
-          secure: req.secure || process.env.NODE_ENV === "production",
+          secure: isSecureRequest(req),
         }),
       );
     }
@@ -309,7 +314,7 @@ export class AuthController {
       "Set-Cookie",
       serializeRefreshCookie(session.tokens.refreshToken, {
         maxAgeSeconds,
-        secure: req.secure || process.env.NODE_ENV === "production",
+        secure: isSecureRequest(req),
       }),
     );
     return {
