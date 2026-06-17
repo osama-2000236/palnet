@@ -58,15 +58,13 @@ describe("ProfileCompletionGuard", () => {
     expect(prisma.profile.findUnique).not.toHaveBeenCalled();
   });
 
-  it("blocks authenticated users without a complete profile", async () => {
+  it("blocks authenticated users without an onboarded profile", async () => {
     prisma.profile.findUnique.mockResolvedValue({
       firstName: "Osama",
       lastName: "Hamad",
       handle: "osama",
-      headline: "Full Stack Engineer",
+      headline: null,
       location: "Ramallah",
-      experiences: [],
-      educations: [],
     });
 
     const call = guard.canActivate(executionContext());
@@ -77,15 +75,13 @@ describe("ProfileCompletionGuard", () => {
     });
   });
 
-  it("allows authenticated users with a complete profile", async () => {
+  it("allows authenticated users with an onboarded profile", async () => {
     prisma.profile.findUnique.mockResolvedValue({
       firstName: "Osama",
       lastName: "Hamad",
       handle: "osama",
       headline: "Full Stack Engineer",
       location: "Ramallah",
-      experiences: [{ id: "exp_1" }],
-      educations: [],
     });
 
     await expect(guard.canActivate(executionContext())).resolves.toBe(true);

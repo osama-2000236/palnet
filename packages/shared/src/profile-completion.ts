@@ -8,14 +8,18 @@ export interface ProfileCompletionInput {
   educations?: readonly unknown[] | null;
 }
 
-export function isProfileComplete(profile: ProfileCompletionInput): boolean {
-  const hasIdentity = Boolean(
+export function isProfileOnboarded(profile: ProfileCompletionInput): boolean {
+  return Boolean(
     profile.firstName?.trim() &&
     profile.lastName?.trim() &&
     profile.handle?.trim() &&
     profile.headline?.trim() &&
     profile.location?.trim(),
   );
+}
+
+export function isProfileComplete(profile: ProfileCompletionInput): boolean {
+  const hasIdentity = isProfileOnboarded(profile);
   const hasBackground =
     (profile.experiences?.length ?? 0) > 0 || (profile.educations?.length ?? 0) > 0;
   return hasIdentity && hasBackground;
