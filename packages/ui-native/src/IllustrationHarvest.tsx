@@ -2,11 +2,10 @@ import type { JSX } from "react";
 import { Circle, G, Line, Path, Rect } from "react-native-svg";
 
 import type { IllustrationMotif } from "./Illustration";
-import { nativeTokens } from "./tokens";
-
-const c = nativeTokens.color;
+import { useThemeTokens } from "./ThemeProvider";
 
 export function HarvestSet({ motif }: { motif: IllustrationMotif }): JSX.Element {
+  const c = useThemeTokens().color;
   const olive = c.brand600;
   const cream = c.surfaceMuted;
   const ink = c.brand800;

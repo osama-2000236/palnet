@@ -11,6 +11,7 @@ import { I18nManager, Pressable, StyleSheet, Text, View } from "react-native";
 
 import { Icon } from "./Icon";
 import { shadowStyle } from "./shadow";
+import { useThemeTokens } from "./ThemeProvider";
 import { nativeTokens } from "./tokens";
 
 export type ToastKind = "info" | "success" | "error";
@@ -47,31 +48,31 @@ const AUTO_DISMISS_MS = 3500;
 const ToastContext = createContext<ToastContextValue | null>(null);
 let nextToastId = 1;
 
-const BACKGROUND: Record<ToastKind, string> = {
-  info: nativeTokens.color.info,
-  success: nativeTokens.color.success,
-  error: nativeTokens.color.danger,
-};
-
 export function Toast({
   message,
   kind,
   onDismiss,
   dismissLabel = "Dismiss notification",
 }: ToastProps): JSX.Element {
+  const tk = useThemeTokens();
+  const background: Record<ToastKind, string> = {
+    info: tk.color.info,
+    success: tk.color.success,
+    error: tk.color.danger,
+  };
   return (
     <View
       accessibilityRole={kind === "error" ? "alert" : "text"}
-      style={[styles.toast, { backgroundColor: BACKGROUND[kind] }]}
+      style={[styles.toast, { backgroundColor: background[kind] }]}
     >
-      <Text style={styles.message}>{message}</Text>
+      <Text style={[styles.message, { color: tk.color.inkInverse }]}>{message}</Text>
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={dismissLabel}
         onPress={onDismiss}
         style={({ pressed }) => [styles.dismiss, pressed ? styles.pressed : null]}
       >
-        <Icon name="x" size={nativeTokens.space[4]} color={nativeTokens.color.inkInverse} />
+        <Icon name="x" size={nativeTokens.space[4]} color={tk.color.inkInverse} />
       </Pressable>
     </View>
   );

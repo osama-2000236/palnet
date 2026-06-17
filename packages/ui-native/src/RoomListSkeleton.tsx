@@ -9,10 +9,11 @@ export type RoomListSkeletonProps = Record<string, never>;
 import type { ReactElement } from "react";
 import { View } from "react-native";
 
+import { useThemeTokens } from "./ThemeProvider";
 import { nativeTokens } from "./tokens";
 
 export function RoomListSkeleton(_: RoomListSkeletonProps): ReactElement {
-  const c = nativeTokens.color;
+  const c = useThemeTokens().color;
   const s = nativeTokens.space;
   return (
     <View

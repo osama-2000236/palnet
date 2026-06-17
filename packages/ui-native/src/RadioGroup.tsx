@@ -8,6 +8,7 @@ import {
   type ViewStyle,
 } from "react-native";
 
+import { useThemeTokens } from "./ThemeProvider";
 import { nativeTokens } from "./tokens";
 
 export interface RadioGroupItem {
@@ -42,7 +43,7 @@ export function RadioGroup({
   itemStyle,
   textStyle,
 }: RadioGroupProps): JSX.Element {
-  const c = nativeTokens.color;
+  const c = useThemeTokens().color;
   return (
     <View
       accessibilityRole="radiogroup"

@@ -12,6 +12,7 @@ import {
   type IllustrationSize,
   type IllustrationTint,
 } from "./Illustration";
+import { useThemeTokens } from "./ThemeProvider";
 import { nativeTokens } from "./tokens";
 
 export interface EmptyStateProps {
@@ -49,6 +50,7 @@ export function EmptyState({
 }: EmptyStateProps): JSX.Element {
   const inline = variant === "inline";
   const resolvedSize: IllustrationSize = size ?? (inline ? "sm" : "md");
+  const tk = useThemeTokens();
   return (
     <View
       accessibilityRole="text"
@@ -75,6 +77,7 @@ export function EmptyState({
           style={[
             styles.title,
             {
+              color: tk.color.ink,
               textAlign: align === "start" ? "left" : "center",
               fontSize: inline ? 16 : 19,
             },
@@ -87,6 +90,7 @@ export function EmptyState({
             style={[
               styles.body,
               {
+                color: tk.color.inkMuted,
                 textAlign: align === "start" ? "left" : "center",
                 fontSize: inline ? 13 : 15,
               },

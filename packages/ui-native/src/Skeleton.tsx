@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { Animated, type DimensionValue, type StyleProp, type ViewStyle } from "react-native";
 
+import { useThemeTokens } from "./ThemeProvider";
 import { nativeTokens } from "./tokens";
 
 export interface SkeletonProps {
@@ -19,6 +20,7 @@ export function Skeleton({
   style,
 }: SkeletonProps): JSX.Element {
   const opacity = useRef(new Animated.Value(0.42)).current;
+  const tk = useThemeTokens();
 
   useEffect(() => {
     const animation = Animated.loop(
@@ -52,7 +54,7 @@ export function Skeleton({
           width,
           height,
           borderRadius: computedRadius,
-          backgroundColor: nativeTokens.color.surfaceSubtle,
+          backgroundColor: tk.color.surfaceSubtle,
           opacity,
         },
         style,

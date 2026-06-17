@@ -3,6 +3,7 @@ import { Pressable, StyleSheet, Text, View, type StyleProp, type ViewStyle } fro
 import { Avatar, type AvatarUser } from "./Avatar";
 import { Icon } from "./Icon";
 import { Surface } from "./Surface";
+import { useThemeTokens } from "./ThemeProvider";
 import { nativeTokens } from "./tokens";
 
 export interface ComposerEntryProps {
@@ -22,6 +23,7 @@ export function ComposerEntry({
   testID,
   style,
 }: ComposerEntryProps): JSX.Element {
+  const c = useThemeTokens().color;
   return (
     <Pressable
       onPress={onPress}
@@ -32,13 +34,15 @@ export function ComposerEntry({
     >
       <Surface variant="card" padding="3" style={styles.surface}>
         <Avatar user={user ?? null} size="md" />
-        <View style={styles.prompt}>
-          <Text numberOfLines={2} style={styles.placeholder}>
+        <View style={[styles.prompt, { borderColor: c.lineSoft, backgroundColor: c.surfaceMuted }]}>
+          <Text numberOfLines={2} style={[styles.placeholder, { color: c.inkMuted }]}>
             {placeholder}
           </Text>
         </View>
-        <View style={styles.iconWrap}>
-          <Icon name="image" size={18} color={nativeTokens.color.inkMuted} />
+        <View
+          style={[styles.iconWrap, { borderColor: c.lineSoft, backgroundColor: c.surfaceMuted }]}
+        >
+          <Icon name="image" size={18} color={c.inkMuted} />
         </View>
       </Surface>
     </Pressable>

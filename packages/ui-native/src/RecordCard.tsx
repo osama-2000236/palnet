@@ -10,6 +10,7 @@ import {
 } from "react-native";
 
 import { Surface } from "./Surface";
+import { useThemeTokens } from "./ThemeProvider";
 import { nativeTokens } from "./tokens";
 
 export interface RecordCardProps {
@@ -43,6 +44,7 @@ export function RecordCard({
   testID,
   style,
 }: RecordCardProps): JSX.Element {
+  const c = useThemeTokens().color;
   const content = (
     <Surface
       variant={variant === "row" ? "row" : "card"}
@@ -52,11 +54,11 @@ export function RecordCard({
       <View style={styles.row}>
         {leading ? <View style={styles.leading}>{leading}</View> : null}
         <View style={styles.textWrap}>
-          <Text numberOfLines={2} style={styles.title}>
+          <Text numberOfLines={2} style={[styles.title, { color: c.ink }]}>
             {title}
           </Text>
           {subtitle ? (
-            <Text numberOfLines={2} style={styles.subtitle}>
+            <Text numberOfLines={2} style={[styles.subtitle, { color: c.inkMuted }]}>
               {subtitle}
             </Text>
           ) : null}
@@ -65,6 +67,7 @@ export function RecordCard({
               numberOfLines={1}
               style={[
                 styles.meta,
+                { color: c.inkSubtle },
                 metaDirection === "ltr"
                   ? styles.metaLtr
                   : metaDirection === "auto"

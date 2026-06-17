@@ -14,6 +14,7 @@ import {
   type ViewStyle,
 } from "react-native";
 
+import { useThemeTokens } from "./ThemeProvider";
 import { nativeTokens } from "./tokens";
 
 export type ChipSize = "sm" | "md";
@@ -74,7 +75,7 @@ export function Chip({
   const isSelected = selected ?? active;
   const interactive = Boolean(onPress) && !disabled;
   const s = SIZE[size];
-  const c = nativeTokens.color;
+  const c = useThemeTokens().color;
   const extraHit = Math.max(0, (nativeTokens.chrome.minHit - s.height) / 2);
 
   const container: ViewStyle = {

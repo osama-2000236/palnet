@@ -5,6 +5,7 @@
 import type { ReactElement, ReactNode } from "react";
 import { Pressable, Text, View } from "react-native";
 
+import { useThemeTokens } from "./ThemeProvider";
 import { nativeTokens } from "./tokens";
 
 export type BannerKind = "info" | "warning" | "danger" | "success";
@@ -24,7 +25,7 @@ export function Banner({
   onDismiss,
   dismissLabel,
 }: BannerProps): ReactElement {
-  const c = nativeTokens.color;
+  const c = useThemeTokens().color;
   const palette = {
     info: { bg: c.infoSoft, fg: c.info },
     warning: { bg: c.warningSoft, fg: c.warning },
