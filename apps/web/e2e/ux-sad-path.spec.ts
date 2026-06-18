@@ -44,11 +44,16 @@ test.describe("sad-path UX coverage", () => {
 
   test("offline banner announces connection loss", async ({ page }) => {
     await page.goto("/en/feed", { waitUntil: "domcontentloaded" });
-    await page.evaluate(() => window.dispatchEvent(new Event("offline")));
+    await expect(page.getByRole("main")).toBeVisible();
 
-    await expect(
-      page.getByText("You are offline. Changes may not save until the connection returns."),
-    ).toBeVisible();
+    await page.context().setOffline(true);
+    try {
+      await expect(
+        page.getByText("You are offline. Changes may not save until the connection returns."),
+      ).toBeVisible();
+    } finally {
+      await page.context().setOffline(false);
+    }
   });
 
   test("keyboard focus lands on a visible token ring", async ({ page }) => {

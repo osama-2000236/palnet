@@ -164,6 +164,14 @@ jobs:
           NEXT_PUBLIC_API_URL: http://localhost:4000/api/v1
           NEXT_PUBLIC_WS_URL: http://localhost:4000
           NEXT_PUBLIC_DEFAULT_LOCALE: ar-PS
+      - name: Upload Playwright failure artifacts
+        if: failure()
+        uses: actions/upload-artifact@v6
+        with:
+          name: playwright-failure-${{ github.run_id }}
+          path: apps/web/test-results/
+          if-no-files-found: ignore
+          retention-days: 7
 
   lighthouse-web:
     needs: build-web
