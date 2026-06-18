@@ -17,6 +17,10 @@ import { cachedProfileStatus, fetchProfileStatus } from "@/lib/profile-state";
 import { registerForPushAsync } from "@/lib/push";
 import { clearSession, getAccessToken, readSession } from "@/lib/session";
 import { subscribeSse } from "@/lib/sse";
+import {
+  HIDDEN_APP_TAB_ROUTES,
+  HIDDEN_FULL_SCREEN_APP_TAB_ROUTES,
+} from "@/navigation/app-tab-routes";
 import { useNetworkStore } from "@/store/network";
 
 import { AppGateError } from "./_tabs/AppGateError";
@@ -164,7 +168,6 @@ export default function AppTabsLayout(): JSX.Element {
         headerShown: false,
         tabBarActiveTintColor: nativeTokens.color.brand700,
         tabBarInactiveTintColor: nativeTokens.color.inkMuted,
-        tabBarButton: () => null,
         tabBarStyle: {
           height: nativeTokens.chrome.tabHeight + Math.max(insets.bottom, nativeTokens.space[2]),
           paddingTop: nativeTokens.space[2],
@@ -251,27 +254,12 @@ export default function AppTabsLayout(): JSX.Element {
         }}
       />
 
-      <Tabs.Screen name="onboarding" options={hiddenFullScreenTabOptions} />
-      <Tabs.Screen name="activity" options={hiddenTabOptions} />
-      <Tabs.Screen name="saved" options={hiddenTabOptions} />
-      <Tabs.Screen name="jobs/index" options={hiddenTabOptions} />
-      <Tabs.Screen name="composer" options={hiddenTabOptions} />
-      <Tabs.Screen name="search" options={hiddenTabOptions} />
-      <Tabs.Screen name="me/karama/index" options={hiddenTabOptions} />
-      <Tabs.Screen name="me/edit" options={hiddenTabOptions} />
-      <Tabs.Screen name="settings/index" options={hiddenTabOptions} />
-      <Tabs.Screen name="settings/account" options={hiddenTabOptions} />
-      <Tabs.Screen name="settings/blocked" options={hiddenTabOptions} />
-      <Tabs.Screen name="settings/notifications" options={hiddenTabOptions} />
-      <Tabs.Screen name="settings/privacy" options={hiddenTabOptions} />
-      <Tabs.Screen name="settings/security" options={hiddenTabOptions} />
-      <Tabs.Screen name="in/[handle]" options={hiddenTabOptions} />
-      <Tabs.Screen name="jobs/[id]" options={hiddenTabOptions} />
-      <Tabs.Screen name="employer/index" options={hiddenTabOptions} />
-      <Tabs.Screen name="employer/[slug]/index" options={hiddenTabOptions} />
-      <Tabs.Screen name="employer/[slug]/[jobId]" options={hiddenTabOptions} />
-      <Tabs.Screen name="messages/new" options={hiddenTabOptions} />
-      <Tabs.Screen name="messages/[roomId]" options={hiddenFullScreenTabOptions} />
+      {HIDDEN_APP_TAB_ROUTES.map((name) => (
+        <Tabs.Screen key={name} name={name} options={hiddenTabOptions} />
+      ))}
+      {HIDDEN_FULL_SCREEN_APP_TAB_ROUTES.map((name) => (
+        <Tabs.Screen key={name} name={name} options={hiddenFullScreenTabOptions} />
+      ))}
     </Tabs>
   );
 }

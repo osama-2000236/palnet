@@ -1,13 +1,31 @@
 import { render, waitFor } from "@testing-library/react-native";
+import { readdirSync } from "node:fs";
+import { join, relative, sep } from "node:path";
 import type { ReactNode } from "react";
 
 import AppTabsLayout from "../../app/(app)/_layout";
+import {
+  HIDDEN_APP_TAB_ROUTES,
+  HIDDEN_FULL_SCREEN_APP_TAB_ROUTES,
+} from "../navigation/app-tab-routes";
 
 const visibleScreens: string[] = [];
 const hiddenScreens: string[] = [];
 let defaultTabBarButton: (() => ReactNode) | undefined;
 let mockIsConnected = true;
 let mockPathname = "/feed";
+
+function discoverAppRoutes(directory: string): string[] {
+  return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+    const fullPath = join(directory, entry.name);
+    if (entry.isDirectory()) return discoverAppRoutes(fullPath);
+    if (!/\.(?:ts|tsx)$/.test(entry.name)) return [];
+    return relative(join(__dirname, "../../app/(app)"), fullPath)
+      .split(sep)
+      .join("/")
+      .replace(/\.(?:ts|tsx)$/, "");
+  });
+}
 
 jest.mock("expo-router", () => {
   const Tabs = function MockTabs({
@@ -122,17 +140,14 @@ describe("AppTabsLayout", () => {
       "notifications",
       "me/index",
     ]);
-    expect(defaultTabBarButton?.()).toBeNull();
-    expect(hiddenScreens).toEqual(
-      expect.arrayContaining([
-        "jobs/index",
-        "composer",
-        "search",
-        "me/edit",
-        "settings/index",
-        "settings/account",
-        "settings/notifications",
-      ]),
+    expect(defaultTabBarButton).toBeUndefined();
+    expect([...new Set(hiddenScreens)].sort()).toEqual(
+      [...HIDDEN_APP_TAB_ROUTES, ...HIDDEN_FULL_SCREEN_APP_TAB_ROUTES].sort(),
+    );
+    expect([...new Set([...visibleScreens, ...hiddenScreens])].sort()).toEqual(
+      discoverAppRoutes(join(__dirname, "../../app/(app)"))
+        .filter((route) => route !== "_layout")
+        .sort(),
     );
   });
 
