@@ -1,4 +1,4 @@
-import { ErrorCode, isProfileComplete } from "@baydar/shared";
+import { ErrorCode, isProfileOnboarded } from "@baydar/shared";
 import { CanActivate, ExecutionContext, Injectable } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
 import type { Request } from "express";
@@ -36,12 +36,10 @@ export class ProfileCompletionGuard implements CanActivate {
         handle: true,
         headline: true,
         location: true,
-        experiences: { select: { id: true }, take: 1 },
-        educations: { select: { id: true }, take: 1 },
       },
     });
 
-    if (!profile || !isProfileComplete(profile)) {
+    if (!profile || !isProfileOnboarded(profile)) {
       throw new DomainException(
         ErrorCode.PROFILE_ONBOARDING_REQUIRED,
         "Complete your profile before using Baydar.",

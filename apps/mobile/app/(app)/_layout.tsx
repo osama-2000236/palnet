@@ -8,6 +8,7 @@ import { nativeTokens } from "@baydar/ui-native";
 import { Tabs, router, usePathname } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { BackHandler } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { z } from "zod";
 
@@ -17,6 +18,10 @@ import { cachedProfileStatus, fetchProfileStatus } from "@/lib/profile-state";
 import { registerForPushAsync } from "@/lib/push";
 import { clearSession, getAccessToken, readSession } from "@/lib/session";
 import { subscribeSse } from "@/lib/sse";
+import {
+  HIDDEN_APP_TAB_ROUTES,
+  HIDDEN_FULL_SCREEN_APP_TAB_ROUTES,
+} from "@/navigation/app-tab-routes";
 import { useNetworkStore } from "@/store/network";
 
 import { AppGateError } from "./_tabs/AppGateError";
@@ -93,6 +98,15 @@ export default function AppTabsLayout(): JSX.Element {
     void verifyGate();
   }, [verifyGate]);
 
+  useEffect(() => {
+    if (pathname !== "/feed") return;
+    const subscription = BackHandler.addEventListener("hardwareBackPress", () => {
+      BackHandler.exitApp();
+      return true;
+    });
+    return () => subscription.remove();
+  }, [pathname]);
+
   const unsubscribeRef = useRef<(() => void) | undefined>(undefined);
 
   useEffect(() => {
@@ -160,6 +174,7 @@ export default function AppTabsLayout(): JSX.Element {
 
   return (
     <Tabs
+      backBehavior="history"
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: nativeTokens.color.brand700,
@@ -250,27 +265,12 @@ export default function AppTabsLayout(): JSX.Element {
         }}
       />
 
-      <Tabs.Screen name="onboarding" options={hiddenFullScreenTabOptions} />
-      <Tabs.Screen name="activity" options={hiddenTabOptions} />
-      <Tabs.Screen name="saved" options={hiddenTabOptions} />
-      <Tabs.Screen name="jobs/index" options={hiddenTabOptions} />
-      <Tabs.Screen name="composer" options={hiddenTabOptions} />
-      <Tabs.Screen name="search" options={hiddenTabOptions} />
-      <Tabs.Screen name="me/karama/index" options={hiddenTabOptions} />
-      <Tabs.Screen name="me/edit" options={hiddenTabOptions} />
-      <Tabs.Screen name="settings/index" options={hiddenTabOptions} />
-      <Tabs.Screen name="settings/account" options={hiddenTabOptions} />
-      <Tabs.Screen name="settings/blocked" options={hiddenTabOptions} />
-      <Tabs.Screen name="settings/notifications" options={hiddenTabOptions} />
-      <Tabs.Screen name="settings/privacy" options={hiddenTabOptions} />
-      <Tabs.Screen name="settings/security" options={hiddenTabOptions} />
-      <Tabs.Screen name="in/[handle]" options={hiddenTabOptions} />
-      <Tabs.Screen name="jobs/[id]" options={hiddenTabOptions} />
-      <Tabs.Screen name="employer/index" options={hiddenTabOptions} />
-      <Tabs.Screen name="employer/[slug]/index" options={hiddenTabOptions} />
-      <Tabs.Screen name="employer/[slug]/[jobId]" options={hiddenTabOptions} />
-      <Tabs.Screen name="messages/new" options={hiddenTabOptions} />
-      <Tabs.Screen name="messages/[roomId]" options={hiddenFullScreenTabOptions} />
+      {HIDDEN_APP_TAB_ROUTES.map((name) => (
+        <Tabs.Screen key={name} name={name} options={hiddenTabOptions} />
+      ))}
+      {HIDDEN_FULL_SCREEN_APP_TAB_ROUTES.map((name) => (
+        <Tabs.Screen key={name} name={name} options={hiddenFullScreenTabOptions} />
+      ))}
     </Tabs>
   );
 }

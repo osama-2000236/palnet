@@ -10,7 +10,12 @@
     },
     "preview": {
       "distribution": "internal",
-      "channel": "preview"
+      "channel": "preview",
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://baydar-api-staging.onrender.com/api/v1",
+        "EXPO_PUBLIC_WS_URL": "https://baydar-api-staging.onrender.com",
+        "EXPO_PUBLIC_DEFAULT_LOCALE": "ar-PS"
+      }
     },
     "production": {
       "channel": "production",

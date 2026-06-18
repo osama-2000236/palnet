@@ -9,6 +9,21 @@ import { AuthController } from "./auth.controller";
 import { AuthService } from "./auth.service";
 import { JwtAuthGuard } from "./guards/jwt-auth.guard";
 
+const authSession = {
+  user: {
+    id: "cm00000000000000000000001",
+    email: "demo@baydar.ps",
+    role: "USER",
+    locale: "ar-PS",
+  },
+  tokens: {
+    accessToken: "access-token",
+    refreshToken: "refresh-token",
+    accessExpiresAt: "2026-05-06T12:15:00.000Z",
+    refreshExpiresAt: "2026-06-06T12:00:00.000Z",
+  },
+};
+
 async function createApp(mocks: {
   auth?: Partial<AuthService>;
   authTokens?: Partial<AuthTokensService>;
@@ -36,6 +51,27 @@ async function createApp(mocks: {
 }
 
 describe("AuthController email verification and password reset", () => {
+  it("sets a cross-site refresh cookie behind HTTPS proxies", async () => {
+    const auth = { login: jest.fn().mockResolvedValue(authSession) };
+    const app = await createApp({ auth });
+
+    try {
+      await request(app.getHttpServer())
+        .post("/auth/login")
+        .set("x-forwarded-proto", "https")
+        .send({ email: "demo@baydar.ps", password: "Password1", deviceId: "web-device" })
+        .expect(200)
+        .expect((res) => {
+          const cookie = res.headers["set-cookie"]?.[0] ?? "";
+          expect(cookie).toContain("HttpOnly");
+          expect(cookie).toContain("SameSite=None");
+          expect(cookie).toContain("Secure");
+        });
+    } finally {
+      await app.close();
+    }
+  });
+
   it("POST /auth/stream-token returns a scoped one-time token envelope", async () => {
     const authTokens = {
       issueStreamToken: jest.fn().mockResolvedValue({

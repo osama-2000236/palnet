@@ -30,19 +30,21 @@ export const REFRESH_COOKIE_NAME = "baydar_refresh";
 interface SerializeOptions {
   maxAgeSeconds?: number;
   secure?: boolean;
+  sameSite?: "Lax" | "None";
   path?: string;
 }
 
 /**
- * Serialise a Set-Cookie value for the refresh token. HttpOnly + SameSite=Lax
- * are non-negotiable; `Secure` is gated on `secure` so dev (http://localhost)
- * still works in browsers that strip Secure cookies on plain HTTP.
+ * Serialise a Set-Cookie value for the refresh token. Staging/production web
+ * and API run on different sites, so Secure cookies default to SameSite=None.
+ * Local HTTP dev keeps Lax because browsers reject SameSite=None without Secure.
  */
 export function serializeRefreshCookie(value: string, opts: SerializeOptions = {}): string {
+  const sameSite = opts.sameSite ?? (opts.secure ? "None" : "Lax");
   const segments = [
     `${REFRESH_COOKIE_NAME}=${encodeURIComponent(value)}`,
     "HttpOnly",
-    "SameSite=Lax",
+    `SameSite=${sameSite}`,
     `Path=${opts.path ?? "/api/v1/auth"}`,
   ];
   if (opts.maxAgeSeconds !== undefined) {

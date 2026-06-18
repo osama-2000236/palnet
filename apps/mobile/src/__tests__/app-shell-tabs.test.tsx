@@ -1,15 +1,46 @@
 import { render, waitFor } from "@testing-library/react-native";
+import { readdirSync } from "node:fs";
+import { join, relative, sep } from "node:path";
 import type { ReactNode } from "react";
+import { BackHandler } from "react-native";
 
 import AppTabsLayout from "../../app/(app)/_layout";
+import {
+  HIDDEN_APP_TAB_ROUTES,
+  HIDDEN_FULL_SCREEN_APP_TAB_ROUTES,
+} from "../navigation/app-tab-routes";
 
 const visibleScreens: string[] = [];
 const hiddenScreens: string[] = [];
+let defaultTabBarButton: (() => ReactNode) | undefined;
+let tabBackBehavior: string | undefined;
 let mockIsConnected = true;
 let mockPathname = "/feed";
 
+function discoverAppRoutes(directory: string): string[] {
+  return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+    const fullPath = join(directory, entry.name);
+    if (entry.isDirectory()) return discoverAppRoutes(fullPath);
+    if (!/\.(?:ts|tsx)$/.test(entry.name)) return [];
+    return relative(join(__dirname, "../../app/(app)"), fullPath)
+      .split(sep)
+      .join("/")
+      .replace(/\.(?:ts|tsx)$/, "");
+  });
+}
+
 jest.mock("expo-router", () => {
-  const Tabs = function MockTabs({ children }: { children: ReactNode }) {
+  const Tabs = function MockTabs({
+    backBehavior,
+    children,
+    screenOptions,
+  }: {
+    backBehavior?: string;
+    children: ReactNode;
+    screenOptions?: { tabBarButton?: () => ReactNode };
+  }) {
+    tabBackBehavior = backBehavior;
+    defaultTabBarButton = screenOptions?.tabBarButton;
     return <>{children}</>;
   };
   Tabs.Screen = function MockTabsScreen({
@@ -88,6 +119,9 @@ const { clearSession: mockClearSession } = jest.requireMock("@/lib/session") as 
 const { ApiRequestError: MockApiRequestError } = jest.requireMock("@/lib/api") as {
   ApiRequestError: new (status: number, code: string, details?: unknown) => Error;
 };
+const { apiFetch: mockApiFetch } = jest.requireMock("@/lib/api") as {
+  apiFetch: jest.Mock;
+};
 
 describe("AppTabsLayout", () => {
   beforeEach(() => {
@@ -114,17 +148,31 @@ describe("AppTabsLayout", () => {
       "notifications",
       "me/index",
     ]);
-    expect(hiddenScreens).toEqual(
-      expect.arrayContaining([
-        "jobs/index",
-        "composer",
-        "search",
-        "me/edit",
-        "settings/index",
-        "settings/account",
-        "settings/notifications",
-      ]),
+    expect(defaultTabBarButton).toBeUndefined();
+    expect(tabBackBehavior).toBe("history");
+    expect([...new Set(hiddenScreens)].sort()).toEqual(
+      [...HIDDEN_APP_TAB_ROUTES, ...HIDDEN_FULL_SCREEN_APP_TAB_ROUTES].sort(),
     );
+    expect([...new Set([...visibleScreens, ...hiddenScreens])].sort()).toEqual(
+      discoverAppRoutes(join(__dirname, "../../app/(app)"))
+        .filter((route) => route !== "_layout")
+        .sort(),
+    );
+  });
+
+  it("exits from the feed root instead of revealing the landing screen", async () => {
+    const addBackListener = jest.spyOn(BackHandler, "addEventListener");
+    const exitApp = jest.spyOn(BackHandler, "exitApp").mockImplementation(() => undefined);
+
+    render(<AppTabsLayout />);
+
+    await waitFor(() => {
+      expect(addBackListener).toHaveBeenCalledWith("hardwareBackPress", expect.any(Function));
+      expect(mockApiFetch).toHaveBeenCalled();
+    });
+    const handler = addBackListener.mock.calls.at(-1)?.[1];
+    expect(handler?.()).toBe(true);
+    expect(exitApp).toHaveBeenCalledTimes(1);
   });
 
   it("redirects expired sessions to login instead of showing a profile gate error", async () => {
