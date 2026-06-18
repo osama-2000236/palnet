@@ -1,11 +1,12 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Pressable, Text, TextInput, View } from "react-native";
 
 import { Avatar } from "./Avatar";
 import { Button } from "./Button";
-import { safetyStyles as styles } from "./safety.styles";
+import { makeSafetyStyles } from "./safety.styles";
 import { Sheet } from "./Sheet";
 import { Surface } from "./Surface";
+import { useThemeTokens } from "./ThemeProvider";
 
 export type ReportReason =
   | "SPAM"
@@ -69,6 +70,8 @@ export function ReportSheet({
 }: ReportSheetProps): JSX.Element {
   const [reason, setReason] = useState<ReportReason>("SPAM");
   const [details, setDetails] = useState("");
+  const c = useThemeTokens().color;
+  const styles = useMemo(() => makeSafetyStyles(c), [c]);
 
   return (
     <Sheet
@@ -154,6 +157,8 @@ export function BlockButton({
 }: BlockButtonProps): JSX.Element {
   const [confirming, setConfirming] = useState(false);
   const nextBlocked = variant === "block";
+  const c = useThemeTokens().color;
+  const styles = useMemo(() => makeSafetyStyles(c), [c]);
   return (
     <View style={styles.blockWrap}>
       <Button
@@ -207,6 +212,8 @@ export function BlockedListItem({
   labels,
   loading = false,
 }: BlockedListItemProps): JSX.Element {
+  const c = useThemeTokens().color;
+  const styles = useMemo(() => makeSafetyStyles(c), [c]);
   return (
     <View style={styles.blockedRow}>
       <Avatar

@@ -6,6 +6,7 @@
 import { Image } from "expo-image";
 import { StyleSheet, Text, View, type StyleProp, type ViewStyle } from "react-native";
 
+import { useThemeTokens } from "./ThemeProvider";
 import { nativeTokens } from "./tokens";
 
 export type AvatarSize = "xs" | "sm" | "md" | "lg" | "xl";
@@ -54,17 +55,19 @@ const DOT_SIZE: Record<AvatarSize, number> = {
   xl: 15,
 };
 
-// Token-backed palettes, chosen deterministically from the seed so the
-// same person always gets the same colour across the app.
-const PALETTES = nativeTokens.avatar.palette;
-
-function paletteFor(seed: string): { bg: string; fg: string } {
+// Token-backed palettes, chosen deterministically from the seed so the same
+// person always gets the same colour across the app. Palettes come from the
+// active theme so the dark-mode set (light-on-dark chips) is used in dark.
+function paletteFor(
+  seed: string,
+  palettes: typeof nativeTokens.avatar.palette,
+): { bg: string; fg: string } {
   let hash = 0;
   for (let i = 0; i < seed.length; i += 1) {
     hash = (hash * 31 + seed.charCodeAt(i)) | 0;
   }
-  const idx = Math.abs(hash) % PALETTES.length;
-  return PALETTES[idx] ?? PALETTES[0]!;
+  const idx = Math.abs(hash) % palettes.length;
+  return palettes[idx] ?? palettes[0]!;
 }
 
 function initialsOf(user: AvatarUser): string {
@@ -94,8 +97,9 @@ export function Avatar({
 }: AvatarProps): JSX.Element | null {
   if (!user) return null;
 
+  const tk = useThemeTokens();
   const seed = user.id || user.handle || nameOf(user) || "0";
-  const palette = paletteFor(seed);
+  const palette = paletteFor(seed, tk.avatar.palette);
   const initials = initialsOf(user);
   const label = alt ?? nameOf(user);
   const placeholder = blurhash ?? user.avatarBlurhash ?? null;
@@ -111,14 +115,14 @@ export function Avatar({
     overflow: "hidden",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: user.avatarUrl ? nativeTokens.color.surfaceSunken : palette.bg,
+    backgroundColor: user.avatarUrl ? tk.color.surfaceSunken : palette.bg,
   };
 
   const xlBorder: ViewStyle =
     size === "xl"
       ? {
           borderWidth: 3,
-          borderColor: nativeTokens.color.surface,
+          borderColor: tk.color.surface,
         }
       : {};
 
@@ -130,7 +134,7 @@ export function Avatar({
         alignItems: "center",
         justifyContent: "center",
         borderWidth: ringWidth,
-        borderColor: nativeTokens.color.brand600,
+        borderColor: tk.color.brand600,
         padding: ringGap,
       }
     : {};
@@ -145,8 +149,8 @@ export function Avatar({
     height: DOT_SIZE[size],
     borderRadius: DOT_SIZE[size] / 2,
     borderWidth: 2,
-    borderColor: nativeTokens.color.surface,
-    backgroundColor: nativeTokens.color.success,
+    borderColor: tk.color.surface,
+    backgroundColor: tk.color.success,
   };
 
   const avatarBody = (

@@ -5,6 +5,7 @@ import { View, type StyleProp, type ViewStyle } from "react-native";
 import { Circle, G, Line, Path, Rect, Svg } from "react-native-svg";
 
 import { HarvestSet } from "./IllustrationHarvest";
+import { useThemeTokens } from "./ThemeProvider";
 import { nativeTokens } from "./tokens";
 
 export const ILLUSTRATION_MOTIFS = [
@@ -37,15 +38,6 @@ export interface IllustrationProps {
 const VB_W = 140;
 const VB_H = 100;
 
-const TINT_BG: Record<IllustrationTint, string> = {
-  none: "transparent",
-  sand: nativeTokens.color.surfaceSubtle,
-  olive: nativeTokens.color.brand50,
-  sunken: nativeTokens.color.surfaceSunken,
-};
-
-const c = nativeTokens.color;
-
 export function Illustration({
   motif,
   direction = "harvest",
@@ -55,6 +47,13 @@ export function Illustration({
 }: IllustrationProps): JSX.Element {
   const px = nativeTokens.illustration.size[size];
   const h = Math.round((px * VB_H) / VB_W);
+  const tk = useThemeTokens();
+  const tintBg: Record<IllustrationTint, string> = {
+    none: "transparent",
+    sand: tk.color.surfaceSubtle,
+    olive: tk.color.brand50,
+    sunken: tk.color.surfaceSunken,
+  };
   return (
     <View
       accessibilityElementsHidden
@@ -63,7 +62,7 @@ export function Illustration({
         {
           width: px,
           height: h,
-          backgroundColor: TINT_BG[tint],
+          backgroundColor: tintBg[tint],
           borderRadius: tint === "none" ? 0 : nativeTokens.radius.lg,
           alignItems: "center",
           justifyContent: "center",
@@ -81,6 +80,7 @@ export function Illustration({
 }
 
 function OutlineSet({ motif }: { motif: IllustrationMotif }): JSX.Element | null {
+  const c = useThemeTokens().color;
   const stroke = c.brand700;
   const accent = c.accent600;
   const common = {
@@ -206,6 +206,7 @@ function OutlineSet({ motif }: { motif: IllustrationMotif }): JSX.Element | null
 }
 
 function BlockSet({ motif }: { motif: IllustrationMotif }): JSX.Element | null {
+  const c = useThemeTokens().color;
   const tint1 = c.brand100;
   const tint2 = c.brand200;
   const ink = c.brand700;

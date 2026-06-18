@@ -15,6 +15,7 @@ import {
   type ViewStyle,
 } from "react-native";
 
+import { useThemeTokens } from "./ThemeProvider";
 import { nativeTokens } from "./tokens";
 
 export type InputSize = "sm" | "md" | "lg";
@@ -56,7 +57,7 @@ export function Input({
 }: InputProps): JSX.Element {
   const disabled = editable === false;
   const message = errorMessage ?? helperText ?? helper;
-  const c = nativeTokens.color;
+  const c = useThemeTokens().color;
 
   const wrapperStyle: ViewStyle = {
     minHeight: SIZE_HEIGHT[size],

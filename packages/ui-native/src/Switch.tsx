@@ -9,6 +9,7 @@
 import type { ReactElement } from "react";
 import { I18nManager, Pressable, View, type StyleProp, type ViewStyle } from "react-native";
 
+import { useThemeTokens } from "./ThemeProvider";
 import { nativeTokens } from "./tokens";
 
 export interface SwitchProps {
@@ -32,7 +33,7 @@ export function Switch({
   disabled,
   style,
 }: SwitchProps): ReactElement {
-  const c = nativeTokens.color;
+  const c = useThemeTokens().color;
   const direction = I18nManager.isRTL ? -1 : 1;
   return (
     <Pressable

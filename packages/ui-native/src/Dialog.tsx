@@ -7,6 +7,7 @@ import type { ReactElement, ReactNode } from "react";
 import { Modal, Pressable, Text, View } from "react-native";
 
 import { shadowStyle } from "./shadow";
+import { useThemeTokens } from "./ThemeProvider";
 import { nativeTokens } from "./tokens";
 
 export interface DialogProps {
@@ -18,7 +19,7 @@ export interface DialogProps {
 }
 
 export function Dialog({ open, onClose, title, blocking, children }: DialogProps): ReactElement {
-  const c = nativeTokens.color;
+  const c = useThemeTokens().color;
   return (
     <Modal
       visible={open}

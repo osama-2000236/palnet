@@ -8,6 +8,7 @@ import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 
 import { Avatar, type AvatarUser } from "./Avatar";
 import { Icon, type IconName } from "./Icon";
+import { useThemeTokens } from "./ThemeProvider";
 import { nativeTokens } from "./tokens";
 
 export type AppShellRoute =
@@ -76,14 +77,15 @@ export function AppShell({
   onNavigate,
   children,
 }: AppShellProps): ReactElement {
+  const c = useThemeTokens().color;
   if (bare) {
     return <View style={styles.bare}>{children}</View>;
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: c.surface }]}>
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { borderColor: c.lineSoft }]}>
         {/* Logo — routes home. */}
         <TouchableOpacity
           activeOpacity={0.7}
@@ -93,13 +95,13 @@ export function AppShell({
         >
           <Icon name="logo" size={32} />
           {!labels.logoAlt || labels.logoAlt.length === 0 ? null : (
-            <Text style={styles.logoText}>{labels.logoAlt}</Text>
+            <Text style={[styles.logoText, { color: c.ink }]}>{labels.logoAlt}</Text>
           )}
         </TouchableOpacity>
 
         {/* Search pill. */}
-        <View style={styles.searchInputContainer}>
-          <Icon name="search" size={16} color={nativeTokens.color.ink} />
+        <View style={[styles.searchInputContainer, { backgroundColor: c.surfaceSubtle }]}>
+          <Icon name="search" size={16} color={c.ink} />
           {/* TODO: Replace with actual TextInput when search is implemented */}
           <View style={{ flex: 1 }} />
         </View>
@@ -129,12 +131,15 @@ export function AppShell({
                       ? `${labels.nav[item.key as Exclude<AppShellRoute, "profile">]}, ${labels.myProfile}`
                       : labels.nav[item.key as Exclude<AppShellRoute, "profile">]
                   }
-                  style={[styles.navItem, active && styles.navItemActive]}
+                  style={[
+                    styles.navItem,
+                    active ? { borderBottomWidth: 2, borderColor: c.brand600 } : null,
+                  ]}
                 >
                   <View style={styles.navIcon}>
-                    <Icon name={item.icon} size={20} color={nativeTokens.color.ink} />
+                    <Icon name={item.icon} size={20} color={c.ink} />
                   </View>
-                  <Text style={styles.navText}>
+                  <Text style={[styles.navText, { color: c.ink }]}>
                     {labels.nav[item.key as Exclude<AppShellRoute, "profile">]}
                   </Text>
                 </TouchableOpacity>
@@ -143,7 +148,7 @@ export function AppShell({
           </View>
 
           {/* Vertical divider. */}
-          <View style={styles.divider} />
+          <View style={[styles.divider, { backgroundColor: c.lineSoft }]} />
 
           {/* Profile menu trigger. */}
           <TouchableOpacity
@@ -155,9 +160,13 @@ export function AppShell({
             accessibilityLabel={labels.myProfile}
             style={styles.profileButton}
           >
-            {me ? <Avatar user={me} size="sm" /> : <View style={styles.avatarPlaceholder} />}
-            <Text style={styles.profileText}>{labels.myProfile}</Text>
-            <Icon name="chevron-down" size={12} color={nativeTokens.color.ink} />
+            {me ? (
+              <Avatar user={me} size="sm" />
+            ) : (
+              <View style={[styles.avatarPlaceholder, { backgroundColor: c.surfaceSunken }]} />
+            )}
+            <Text style={[styles.profileText, { color: c.ink }]}>{labels.myProfile}</Text>
+            <Icon name="chevron-down" size={12} color={c.ink} />
           </TouchableOpacity>
         </View>
       </View>

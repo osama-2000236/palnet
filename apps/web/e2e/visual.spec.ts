@@ -44,6 +44,9 @@ test.describe("visual route coverage", () => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/en/activity", { waitUntil: "domcontentloaded" });
     await expect(page.getByText("Activity is unavailable")).toBeVisible();
+    if (!process.env.CI) {
+      await page.addStyleTag({ content: "nextjs-portal { display: none !important; }" });
+    }
     await expect(page).toHaveScreenshot("activity-error-en-mobile.png", {
       animations: "disabled",
       fullPage: true,

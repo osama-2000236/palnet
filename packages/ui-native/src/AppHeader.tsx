@@ -8,6 +8,7 @@ import {
   type ViewStyle,
 } from "react-native";
 
+import { useThemeTokens } from "./ThemeProvider";
 import { nativeTokens } from "./tokens";
 
 export interface AppHeaderProps extends Omit<ViewProps, "style"> {
@@ -30,16 +31,17 @@ export function AppHeader({
   style,
   ...rest
 }: AppHeaderProps): JSX.Element {
+  const c = useThemeTokens().color;
   return (
     <View style={[styles.wrap, compact ? styles.compact : null, style]} {...rest}>
       <View style={styles.topRow}>
         {leading ? <View style={styles.leading}>{leading}</View> : null}
         <View style={styles.textWrap}>
-          <Text numberOfLines={1} style={styles.title}>
+          <Text numberOfLines={1} style={[styles.title, { color: c.ink }]}>
             {title}
           </Text>
           {subtitle ? (
-            <Text numberOfLines={2} style={styles.subtitle}>
+            <Text numberOfLines={2} style={[styles.subtitle, { color: c.inkMuted }]}>
               {subtitle}
             </Text>
           ) : null}

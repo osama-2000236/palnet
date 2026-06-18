@@ -1,5 +1,7 @@
-export { nativeTokens } from "./tokens";
-export type { NativeTokens } from "./tokens";
+export { nativeTokens, nativeTokensDark, getNativeTokens } from "./tokens";
+export type { NativeTokens, NativeTheme, ColorScheme } from "./tokens";
+export { ThemeProvider, useTheme, useThemeTokens } from "./ThemeProvider";
+export type { ThemeProviderProps } from "./ThemeProvider";
 export { Surface } from "./Surface";
 export type { SurfaceProps, SurfaceVariant, SurfacePadding } from "./Surface";
 export { shadowStyle } from "./shadow";

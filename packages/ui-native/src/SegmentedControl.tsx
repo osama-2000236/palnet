@@ -1,5 +1,6 @@
 import { Pressable, StyleSheet, Text, View, type StyleProp, type ViewStyle } from "react-native";
 
+import { useThemeTokens } from "./ThemeProvider";
 import { nativeTokens } from "./tokens";
 
 export interface SegmentedControlItem<Key extends string = string> {
@@ -24,6 +25,11 @@ export function SegmentedControl<Key extends string = string>({
   style,
   testID,
 }: SegmentedControlProps<Key>): JSX.Element {
+  const c = useThemeTokens().color;
+  const itemDefault = { borderColor: c.lineHard, backgroundColor: c.surface };
+  const itemSelected = { borderColor: c.brand600, backgroundColor: c.brand600 };
+  const labelDefault = { color: c.ink };
+  const labelSelected = { color: c.inkInverse };
   return (
     <View accessibilityRole="tablist" testID={testID} style={[styles.wrap, style]}>
       {items.map((item) => {
@@ -38,14 +44,11 @@ export function SegmentedControl<Key extends string = string>({
             onPress={() => onChange(item.key)}
             style={({ pressed }) => [
               styles.item,
-              selected ? styles.itemSelected : styles.itemDefault,
+              selected ? itemSelected : itemDefault,
               pressed ? styles.itemPressed : null,
             ]}
           >
-            <Text
-              numberOfLines={1}
-              style={[styles.label, selected ? styles.labelSelected : styles.labelDefault]}
-            >
+            <Text numberOfLines={1} style={[styles.label, selected ? labelSelected : labelDefault]}>
               {item.label}
             </Text>
           </Pressable>
@@ -71,14 +74,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     paddingHorizontal: nativeTokens.space[3],
   },
-  itemDefault: {
-    borderColor: nativeTokens.color.lineHard,
-    backgroundColor: nativeTokens.color.surface,
-  },
-  itemSelected: {
-    borderColor: nativeTokens.color.brand600,
-    backgroundColor: nativeTokens.color.brand600,
-  },
   itemPressed: {
     opacity: 0.85,
   },
@@ -87,11 +82,5 @@ const styles = StyleSheet.create({
     fontSize: nativeTokens.type.scale.small.size,
     lineHeight: nativeTokens.type.scale.small.line,
     fontWeight: "700",
-  },
-  labelDefault: {
-    color: nativeTokens.color.ink,
-  },
-  labelSelected: {
-    color: nativeTokens.color.inkInverse,
   },
 });

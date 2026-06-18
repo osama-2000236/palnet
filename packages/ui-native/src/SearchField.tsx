@@ -1,6 +1,7 @@
 import { Pressable, StyleSheet, TextInput, View, type TextInputProps } from "react-native";
 
 import { Icon } from "./Icon";
+import { useThemeTokens } from "./ThemeProvider";
 import { nativeTokens } from "./tokens";
 
 export interface SearchFieldProps extends Omit<
@@ -24,19 +25,24 @@ export function SearchField({
   ...rest
 }: SearchFieldProps): JSX.Element {
   const canClear = Boolean(value && onClear);
+  const c = useThemeTokens().color;
 
   return (
-    <View testID={containerTestID} style={styles.wrap}>
-      <Icon name="search" size={18} color={nativeTokens.color.inkMuted} />
+    <View
+      testID={containerTestID}
+      style={[styles.wrap, { borderColor: c.lineSoft, backgroundColor: c.surfaceSubtle }]}
+    >
+      <Icon name="search" size={18} color={c.inkMuted} />
       <TextInput
         {...rest}
         value={value}
         testID={testID}
         accessibilityLabel={accessibilityLabel ?? rest.placeholder}
-        placeholderTextColor={nativeTokens.color.inkMuted}
+        placeholderTextColor={c.inkMuted}
         returnKeyType={rest.returnKeyType ?? "search"}
         style={[
           styles.input,
+          { color: c.ink },
           inputDirection === "ltr"
             ? styles.inputLtr
             : inputDirection === "auto"
@@ -50,9 +56,12 @@ export function SearchField({
           accessibilityRole="button"
           accessibilityLabel={clearLabel}
           hitSlop={10}
-          style={({ pressed }) => [styles.clear, pressed ? styles.pressed : null]}
+          style={({ pressed }) => [
+            styles.clear,
+            pressed ? { backgroundColor: c.surfaceSubtle } : null,
+          ]}
         >
-          <Icon name="x" size={16} color={nativeTokens.color.inkMuted} />
+          <Icon name="x" size={16} color={c.inkMuted} />
         </Pressable>
       ) : null}
     </View>

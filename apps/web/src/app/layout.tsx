@@ -5,6 +5,7 @@ import { headers } from "next/headers";
 import type { ReactNode } from "react";
 
 import { defaultLocale, localeDir, locales, type Locale } from "@/i18n";
+import { themeBootScript } from "@/lib/theme";
 
 import "./globals.css";
 
@@ -43,8 +44,21 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
   const dir = headerStore.get("x-baydar-dir") === "ltr" ? "ltr" : localeDir[locale];
 
   return (
-    <html lang={locale} dir={dir} className={`${sansArabic.variable} ${bodyArabic.variable}`}>
-      <body>{children}</body>
+    <html
+      lang={locale}
+      dir={dir}
+      className={`${sansArabic.variable} ${bodyArabic.variable}`}
+      // The boot script below sets the `dark` class + `color-scheme` on <html>
+      // before React hydrates, so the server markup intentionally differs.
+      suppressHydrationWarning
+    >
+      <body>
+        {/* Apply the stored theme to <html> before first paint (no light flash).
+            Light is the default. See @/lib/theme. */}
+        {/* eslint-disable-next-line react/no-danger */}
+        <script dangerouslySetInnerHTML={{ __html: themeBootScript }} />
+        {children}
+      </body>
     </html>
   );
 }

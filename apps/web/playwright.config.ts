@@ -2,10 +2,25 @@ import { defineConfig, devices } from "@playwright/test";
 
 const skipSafetyE2EOnEperm = process.env.BAYDAR_SKIP_SAFETY_E2E_ON_EPERM === "1";
 const e2eEnvFile = process.env.BAYDAR_E2E_ENV_FILE ?? "../../.env.qa.local";
-const e2eApiPort = process.env.BAYDAR_E2E_API_PORT ?? "4100";
+const defaultApiPort = process.env.BAYDAR_E2E_API_PORT ?? "4100";
 const e2eWebPort = process.env.BAYDAR_E2E_WEB_PORT ?? "3101";
-const e2eApiUrl = process.env.NEXT_PUBLIC_API_URL ?? `http://localhost:${e2eApiPort}/api/v1`;
+const e2eApiUrl = process.env.NEXT_PUBLIC_API_URL ?? `http://localhost:${defaultApiPort}/api/v1`;
 const e2eWebUrl = process.env.PLAYWRIGHT_BASE_URL ?? `http://localhost:${e2eWebPort}`;
+const e2eWebCommand = process.env.CI
+  ? `pnpm --filter @baydar/web exec next start -p ${e2eWebPort}`
+  : `pnpm --filter @baydar/web dev`;
+// The API must bind the same port its health URL is polled on. When CI
+// overrides NEXT_PUBLIC_API_URL (e.g. :4000) without setting
+// BAYDAR_E2E_API_PORT, the bind port (API_PORT) and the health URL diverged
+// and the webServer health check timed out. Derive the bind port from the
+// resolved API URL so the two always match.
+const e2eApiPort = (() => {
+  try {
+    return new URL(e2eApiUrl).port || defaultApiPort;
+  } catch {
+    return defaultApiPort;
+  }
+})();
 
 process.env.NEXT_PUBLIC_API_URL = e2eApiUrl;
 process.env.PLAYWRIGHT_BASE_URL = e2eWebUrl;
@@ -43,7 +58,7 @@ export default defineConfig({
           },
         },
         {
-          command: `pnpm --filter @baydar/web dev`,
+          command: e2eWebCommand,
           url: e2eWebUrl,
           reuseExistingServer: false,
           timeout: 120_000,

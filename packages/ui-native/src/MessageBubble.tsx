@@ -15,6 +15,7 @@ import { I18nManager, Pressable, Text, View } from "react-native";
 import { Avatar, type AvatarUser } from "./Avatar";
 import { Icon } from "./Icon";
 import { RetryChip } from "./RetryChip";
+import { useThemeTokens } from "./ThemeProvider";
 import { nativeTokens } from "./tokens";
 
 export type MessageStatus = "sending" | "sent" | "delivered" | "read" | "failed";
@@ -63,6 +64,7 @@ export function MessageBubble({
   children,
 }: MessageBubbleProps): JSX.Element {
   const mine = side === "mine";
+  const c = useThemeTokens().color;
   const srPrefix = mine
     ? labels.ownPrefix(timestamp ?? "")
     : labels.otherPrefix(authorName ?? "", timestamp ?? "");
@@ -106,7 +108,7 @@ export function MessageBubble({
           <Text
             numberOfLines={1}
             style={{
-              color: nativeTokens.color.inkMuted,
+              color: c.inkMuted,
               fontFamily: nativeTokens.type.family.sans,
               fontSize: nativeTokens.type.scale.caption.size,
               fontWeight: "600",
@@ -123,17 +125,9 @@ export function MessageBubble({
           borderWidth: 1,
           paddingHorizontal: 14,
           paddingVertical: 10,
-          backgroundColor: deleted
-            ? nativeTokens.color.surfaceSubtle
-            : mine
-              ? nativeTokens.color.brand100
-              : nativeTokens.color.surface,
-          borderColor: deleted
-            ? nativeTokens.color.lineSoft
-            : mine
-              ? nativeTokens.color.brand200
-              : nativeTokens.color.lineSoft,
-          ...(status === "failed" ? { borderColor: nativeTokens.color.danger } : null),
+          backgroundColor: deleted ? c.surfaceSubtle : mine ? c.brand100 : c.surface,
+          borderColor: deleted ? c.lineSoft : mine ? c.brand200 : c.lineSoft,
+          ...(status === "failed" ? { borderColor: c.danger } : null),
           ...ownTailCorner,
           ...theirTailCorner,
         }}
@@ -141,7 +135,7 @@ export function MessageBubble({
         {deleted ? (
           <Text
             style={{
-              color: nativeTokens.color.inkMuted,
+              color: c.inkMuted,
               fontFamily: nativeTokens.type.family.sans,
               fontSize: nativeTokens.type.scale.body.size,
               fontStyle: "italic",
@@ -153,7 +147,7 @@ export function MessageBubble({
         ) : typeof children === "string" ? (
           <Text
             style={{
-              color: nativeTokens.color.ink,
+              color: c.ink,
               fontFamily: nativeTokens.type.family.sans,
               fontSize: nativeTokens.type.scale.body.size,
               lineHeight: nativeTokens.type.scale.body.line,
@@ -180,7 +174,7 @@ export function MessageBubble({
               // Timestamps stay LTR even in Arabic threads (01:23 not ٢٣:٠١).
               style={{
                 writingDirection: "ltr",
-                color: nativeTokens.color.inkMuted,
+                color: c.inkMuted,
                 fontFamily: nativeTokens.type.family.sans,
                 fontSize: 11,
               }}
@@ -198,7 +192,7 @@ export function MessageBubble({
           {edited && !deleted ? (
             <Text
               style={{
-                color: nativeTokens.color.inkMuted,
+                color: c.inkMuted,
                 fontFamily: nativeTokens.type.family.sans,
                 fontSize: 11,
               }}
@@ -217,7 +211,7 @@ export function MessageBubble({
             <Text
               style={{
                 fontSize: 11,
-                color: nativeTokens.color.danger,
+                color: c.danger,
                 fontFamily: nativeTokens.type.family.sans,
               }}
             >
@@ -239,29 +233,30 @@ function StatusTick({
   labels: MessageBubbleLabels;
   onRetry?: () => void;
 }): JSX.Element {
+  const c = useThemeTokens().color;
   switch (status) {
     case "sending":
       return (
         <View accessibilityLabel={labels.statusSending}>
-          <Icon name="clock" size={12} color={nativeTokens.color.inkMuted} />
+          <Icon name="clock" size={12} color={c.inkMuted} />
         </View>
       );
     case "sent":
       return (
         <View accessibilityLabel={labels.statusSent}>
-          <Icon name="check" size={14} color={nativeTokens.color.inkMuted} />
+          <Icon name="check" size={14} color={c.inkMuted} />
         </View>
       );
     case "delivered":
       return (
         <View accessibilityLabel={labels.statusDelivered}>
-          <Icon name="check-double" size={14} color={nativeTokens.color.inkMuted} />
+          <Icon name="check-double" size={14} color={c.inkMuted} />
         </View>
       );
     case "read":
       return (
         <View accessibilityLabel={labels.statusRead}>
-          <Icon name="check-double" size={14} color={nativeTokens.color.brand600} />
+          <Icon name="check-double" size={14} color={c.brand600} />
         </View>
       );
     case "failed":
@@ -272,7 +267,7 @@ function StatusTick({
           accessibilityRole="button"
           hitSlop={8}
         >
-          <Icon name="x" size={14} color={nativeTokens.color.danger} />
+          <Icon name="x" size={14} color={c.danger} />
         </Pressable>
       );
     default:

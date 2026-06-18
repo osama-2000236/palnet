@@ -13,22 +13,19 @@
 import { Circle, Ellipse, Path, Rect, Svg } from "react-native-svg";
 
 import type { IconProps } from "./Icon.types";
-import { nativeTokens } from "./tokens";
+import { useThemeTokens } from "./ThemeProvider";
 
 export type { IconName, IconProps } from "./Icon.types";
 
-export function Icon({
-  name,
-  size = 20,
-  color = nativeTokens.color.ink,
-  strokeWidth = 1.8,
-}: IconProps): JSX.Element | null {
+export function Icon({ name, size = 20, color, strokeWidth = 1.8 }: IconProps): JSX.Element | null {
+  const tk = useThemeTokens();
+  const iconColor = color ?? tk.color.ink;
   const common = {
     width: size,
     height: size,
     viewBox: "0 0 24 24",
     fill: "none" as const,
-    stroke: color,
+    stroke: iconColor,
     strokeWidth,
     strokeLinecap: "round" as const,
     strokeLinejoin: "round" as const,
@@ -176,9 +173,9 @@ export function Icon({
     case "more":
       return (
         <Svg {...common}>
-          <Circle cx={5} cy={12} r={1.4} fill={color} stroke="none" />
-          <Circle cx={12} cy={12} r={1.4} fill={color} stroke="none" />
-          <Circle cx={19} cy={12} r={1.4} fill={color} stroke="none" />
+          <Circle cx={5} cy={12} r={1.4} fill={iconColor} stroke="none" />
+          <Circle cx={12} cy={12} r={1.4} fill={iconColor} stroke="none" />
+          <Circle cx={19} cy={12} r={1.4} fill={iconColor} stroke="none" />
         </Svg>
       );
     case "chevron-down":
@@ -204,15 +201,15 @@ export function Icon({
           accessibilityElementsHidden
           importantForAccessibility="no-hide-descendants"
         >
-          <Circle cx={32} cy={32} r={30} fill={nativeTokens.color.brand600} />
-          <Rect x={31} y={14} width={2} height={37} rx={1} fill={nativeTokens.color.brand50} />
+          <Circle cx={32} cy={32} r={30} fill={tk.color.brand600} />
+          <Rect x={31} y={14} width={2} height={37} rx={1} fill={tk.color.brand50} />
           <Ellipse
             cx={27}
             cy={19}
             rx={2.6}
             ry={4.6}
             transform="rotate(-28 27 19)"
-            fill={nativeTokens.color.brand50}
+            fill={tk.color.brand50}
           />
           <Ellipse
             cx={37}
@@ -220,7 +217,7 @@ export function Icon({
             rx={2.6}
             ry={4.6}
             transform="rotate(28 37 19)"
-            fill={nativeTokens.color.brand50}
+            fill={tk.color.brand50}
           />
           <Ellipse
             cx={26}
@@ -228,7 +225,7 @@ export function Icon({
             rx={2.8}
             ry={4.8}
             transform="rotate(-28 26 27)"
-            fill={nativeTokens.color.brand50}
+            fill={tk.color.brand50}
           />
           <Ellipse
             cx={38}
@@ -236,7 +233,7 @@ export function Icon({
             rx={2.8}
             ry={4.8}
             transform="rotate(28 38 27)"
-            fill={nativeTokens.color.brand50}
+            fill={tk.color.brand50}
           />
           <Ellipse
             cx={25}
@@ -244,7 +241,7 @@ export function Icon({
             rx={2.8}
             ry={4.8}
             transform="rotate(-28 25 35)"
-            fill={nativeTokens.color.brand50}
+            fill={tk.color.brand50}
           />
           <Ellipse
             cx={39}
@@ -252,7 +249,7 @@ export function Icon({
             rx={2.8}
             ry={4.8}
             transform="rotate(28 39 35)"
-            fill={nativeTokens.color.brand50}
+            fill={tk.color.brand50}
           />
           <Ellipse
             cx={24}
@@ -260,7 +257,7 @@ export function Icon({
             rx={2.8}
             ry={4.8}
             transform="rotate(-28 24 43)"
-            fill={nativeTokens.color.brand50}
+            fill={tk.color.brand50}
           />
           <Ellipse
             cx={40}
@@ -268,7 +265,7 @@ export function Icon({
             rx={2.8}
             ry={4.8}
             transform="rotate(28 40 43)"
-            fill={nativeTokens.color.brand50}
+            fill={tk.color.brand50}
           />
         </Svg>
       );

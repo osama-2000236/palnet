@@ -3,8 +3,8 @@
   "configurations": [
     {
       "name": "web",
-      "runtimeExecutable": ".claude\\dev-web.cmd",
-      "runtimeArgs": [],
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--filter", "@baydar/web", "exec", "next", "dev"],
       "port": 3000,
       "autoPort": true
     }

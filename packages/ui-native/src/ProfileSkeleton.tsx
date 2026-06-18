@@ -7,12 +7,13 @@
 import type { ReactElement } from "react";
 import { View } from "react-native";
 
+import { useThemeTokens } from "./ThemeProvider";
 import { nativeTokens } from "./tokens";
 
 export type ProfileSkeletonProps = Record<string, never>;
 
 export function ProfileSkeleton(_: ProfileSkeletonProps): ReactElement {
-  const c = nativeTokens.color;
+  const c = useThemeTokens().color;
   const s = nativeTokens.space;
   return (
     <View

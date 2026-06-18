@@ -637,7 +637,9 @@
       "privacy": "Privacy",
       "privacyDesc": "Review profile, message, and search visibility.",
       "security": "Security",
-      "securityDesc": "Review password, sessions, and two-factor status."
+      "securityDesc": "Review password, sessions, and two-factor status.",
+      "appearance": "Appearance",
+      "appearanceDesc": "Choose light, dark, or match your device."
     },
     "notifications": {
       "title": "Notifications",
@@ -744,6 +746,17 @@
           "state": "Not available"
         }
       }
+    },
+    "appearance": {
+      "title": "Appearance",
+      "subtitle": "Choose the interface theme. Light is the default.",
+      "light": "Light",
+      "lightDesc": "The default light background.",
+      "dark": "Dark",
+      "darkDesc": "Warm charcoal — easier on the eyes in low light.",
+      "system": "System",
+      "systemDesc": "Follow your device setting automatically.",
+      "hint": "We remember your choice on this device."
     }
   },
   "account": {

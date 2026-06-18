@@ -19,6 +19,7 @@ import {
   type ViewStyle,
 } from "react-native";
 
+import { useThemeTokens } from "./ThemeProvider";
 import { nativeTokens } from "./tokens";
 
 export type ButtonVariant =
@@ -41,35 +42,6 @@ export interface ButtonProps extends Omit<PressableProps, "style" | "children"> 
   textStyle?: StyleProp<TextStyle>;
   children?: ReactNode;
 }
-
-const c = nativeTokens.color;
-
-const VARIANT_BG: Record<ButtonVariant, string> = {
-  primary: c.brand600,
-  secondary: c.surface,
-  ghost: "transparent",
-  accent: c.accent600,
-  "danger-ghost": "transparent",
-  outline: "transparent",
-};
-
-const VARIANT_FG: Record<ButtonVariant, string> = {
-  primary: c.inkInverse,
-  secondary: c.ink,
-  ghost: c.ink,
-  accent: c.inkInverse,
-  "danger-ghost": c.danger,
-  outline: c.ink,
-};
-
-const VARIANT_BORDER: Record<ButtonVariant, string> = {
-  primary: c.brand600,
-  secondary: c.lineHard,
-  ghost: "transparent",
-  accent: c.accent600,
-  "danger-ghost": "transparent",
-  outline: c.lineHard,
-};
 
 // Spec heights: 28 / 36 / 44. Minimum touch target is 44pt on mobile
 // (spec: mobile hit area = 44 for sm/md, 48 for lg).
@@ -101,6 +73,34 @@ export function Button({
   const isDisabled = !!disabled || loading;
   const hit = SIZE_HIT_TARGET[size];
   const extraHit = Math.max(0, (hit - SIZE_HEIGHT[size]) / 2);
+  const c = useThemeTokens().color;
+
+  const VARIANT_BG: Record<ButtonVariant, string> = {
+    primary: c.brand600,
+    secondary: c.surface,
+    ghost: "transparent",
+    accent: c.accent600,
+    "danger-ghost": "transparent",
+    outline: "transparent",
+  };
+
+  const VARIANT_FG: Record<ButtonVariant, string> = {
+    primary: c.inkInverse,
+    secondary: c.ink,
+    ghost: c.ink,
+    accent: c.inkInverse,
+    "danger-ghost": c.danger,
+    outline: c.ink,
+  };
+
+  const VARIANT_BORDER: Record<ButtonVariant, string> = {
+    primary: c.brand600,
+    secondary: c.lineHard,
+    ghost: "transparent",
+    accent: c.accent600,
+    "danger-ghost": "transparent",
+    outline: c.lineHard,
+  };
 
   const base: ViewStyle = {
     flexDirection: "row",

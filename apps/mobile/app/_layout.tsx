@@ -9,10 +9,10 @@ import { useFonts } from "expo-font";
 import { router, Stack, SplashScreen } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
-import { I18nManager, Linking } from "react-native";
+import { Appearance, I18nManager, Linking } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import { ToastProvider } from "@baydar/ui-native";
+import { ThemeProvider, ToastProvider } from "@baydar/ui-native";
 import { useTranslation } from "react-i18next";
 
 import { ErrorBoundary } from "@/components/ErrorBoundary";
@@ -24,6 +24,7 @@ import { initObservability, wrapApp } from "@/lib/observability";
 import { installNotificationHandlers } from "@/lib/push";
 import { QueryProvider } from "@/lib/query-provider";
 import { useNetworkStore } from "@/store/network";
+import { useThemeStore } from "@/store/theme";
 
 import "../global.css";
 import "../src/i18n";
@@ -54,6 +55,16 @@ function RootLayout(): JSX.Element | null {
     NotoNaskhArabic: NotoNaskhArabic_400Regular,
   });
   const setConnected = useNetworkStore((state) => state.setConnected);
+  const scheme = useThemeStore((state) => state.scheme);
+  const hydrateTheme = useThemeStore((state) => state.hydrate);
+  const syncSystemTheme = useThemeStore((state) => state.syncSystem);
+
+  // Load the persisted theme choice once, then keep "system" in step with the OS.
+  useEffect(() => {
+    void hydrateTheme();
+    const subscription = Appearance.addChangeListener(() => syncSystemTheme());
+    return () => subscription.remove();
+  }, [hydrateTheme, syncSystemTheme]);
 
   useEffect(() => {
     if (fontsLoaded || fontError) {
@@ -109,17 +120,19 @@ function RootLayout(): JSX.Element | null {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <SafeAreaProvider>
-        <StatusBar style="dark" />
-        <QueryProvider>
-          <ToastProvider dismissLabel={t("toast.dismiss.aria")}>
-            <ErrorBoundary>
-              <Stack screenOptions={{ headerShown: false }} />
-            </ErrorBoundary>
-          </ToastProvider>
-        </QueryProvider>
-        <OfflineBanner />
-      </SafeAreaProvider>
+      <ThemeProvider scheme={scheme}>
+        <SafeAreaProvider>
+          <StatusBar style={scheme === "dark" ? "light" : "dark"} />
+          <QueryProvider>
+            <ToastProvider dismissLabel={t("toast.dismiss.aria")}>
+              <ErrorBoundary>
+                <Stack screenOptions={{ headerShown: false }} />
+              </ErrorBoundary>
+            </ToastProvider>
+          </QueryProvider>
+          <OfflineBanner />
+        </SafeAreaProvider>
+      </ThemeProvider>
     </GestureHandlerRootView>
   );
 }

@@ -5,6 +5,7 @@
 import type { ReactElement } from "react";
 import { Pressable, Text, type StyleProp, type ViewStyle } from "react-native";
 
+import { useThemeTokens } from "./ThemeProvider";
 import { nativeTokens } from "./tokens";
 
 export interface RetryChipProps {
@@ -22,7 +23,7 @@ export function RetryChip({
   inline,
   style,
 }: RetryChipProps): ReactElement {
-  const c = nativeTokens.color;
+  const c = useThemeTokens().color;
   return (
     <Pressable
       onPress={onRetry}

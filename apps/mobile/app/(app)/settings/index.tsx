@@ -7,6 +7,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 type SettingsHref =
   | "/settings/account"
   | "/settings/notifications"
+  | "/settings/appearance"
   | "/settings/privacy"
   | "/settings/security"
   | "/settings/blocked";
@@ -29,6 +30,11 @@ export default function SettingsLandingScreen(): JSX.Element {
       href: "/settings/notifications",
       label: t("settings.items.notifications"),
       desc: t("settings.items.notificationsDesc"),
+    },
+    {
+      href: "/settings/appearance",
+      label: t("settings.items.appearance"),
+      desc: t("settings.items.appearanceDesc"),
     },
     {
       href: "/settings/privacy",

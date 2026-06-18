@@ -163,4 +163,106 @@ export const nativeTokens = {
 } as const;
 
 export type NativeTokens = typeof nativeTokens;
+
+// ── Warm-dark theme ─────────────────────────────────────────────────────────
+// Designed in the Baydar Mobile Kit (May 2026). Warm charcoal, NOT pure black;
+// olive + terracotta identity preserved. LIGHT IS THE DEFAULT — opt in with
+// `getNativeTokens("dark")`. RN has no cascade, so this is a FULL bundle: it
+// spreads the light tokens and overrides only what changes.
+export const nativeTokensDark = {
+  ...nativeTokens,
+  color: {
+    ...nativeTokens.color,
+    brand50: "#262a1b",
+    brand100: "#39431f",
+    brand200: "#52612e",
+    brand600: "#7e9442",
+    brand700: "#9bb059",
+
+    accent50: "#3a241c",
+    accent100: "#4a2c20",
+    accent600: "#cf6743",
+    accent700: "#b5532f",
+
+    ink: "#f1efe8",
+    inkMuted: "#b3afa4",
+    inkSubtle: "#85827a",
+    inkInverse: "#1a1a17",
+
+    surface: "#232220",
+    surfaceMuted: "#1a1916",
+    surfaceSubtle: "#2d2b27",
+    surfaceSunken: "#37342f",
+
+    lineSoft: "rgba(255, 255, 255, 0.08)",
+    lineHard: "rgba(255, 255, 255, 0.17)",
+
+    // success + danger re-lit; warning + info read fine on warm charcoal.
+    success: "#6fae5f",
+    successSoft: "rgba(111, 174, 95, 0.14)",
+    successBorder: "rgba(111, 174, 95, 0.30)",
+    danger: "#d96b6b",
+    dangerSoft: "rgba(217, 107, 107, 0.14)",
+    dangerBorder: "rgba(217, 107, 107, 0.30)",
+    scrim: "rgba(0, 0, 0, 0.50)",
+  },
+  shadow: {
+    // Pure black, higher opacity — warm-ink shadows are invisible on dark.
+    card: {
+      shadowColor: "#000000",
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.42,
+      shadowRadius: 3,
+      elevation: 2,
+    },
+    pop: {
+      shadowColor: "#000000",
+      shadowOffset: { width: 0, height: 10 },
+      shadowOpacity: 0.5,
+      shadowRadius: 28,
+      elevation: 10,
+    },
+    nav: {
+      shadowColor: "#000000",
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.4,
+      shadowRadius: 0,
+      elevation: 0,
+    },
+    modal: {
+      shadowColor: "#000000",
+      shadowOffset: { width: 0, height: 24 },
+      shadowOpacity: 0.6,
+      shadowRadius: 60,
+      elevation: 14,
+    },
+  },
+  // Focus ring follows brand-600, which lightens to #7e9442 at dark depth.
+  focus: { ...nativeTokens.focus, ringColor: "#7e9442" },
+  // Avatar fg resolved light-on-dark (mirrors the web dark-scope overrides).
+  avatar: {
+    palette: [
+      { bg: "#39431f", fg: "#9bb059" },
+      { bg: "#4a2c20", fg: "#cf6743" },
+      { bg: "#37342f", fg: "#f1efe8" },
+      { bg: "#52612e", fg: "#9bb059" },
+      { bg: "#e8d5c2", fg: "#6e4424" },
+    ],
+  },
+} as const;
+
+// Both bundles share the same shape. We expose them under the light bundle's
+// type so consumers keep the precise literal types (e.g. fontWeight "600") —
+// this makes migrating an atom from `nativeTokens` to a theme-aware lookup a
+// friction-free find-replace with no new type errors. The dark bundle's colour
+// strings differ only in value, never in shape, so the cast is sound.
+export type NativeTheme = NativeTokens;
+
+export type ColorScheme = "light" | "dark";
+
+/** Pick the native token bundle for a color scheme. Light is the default. */
+export function getNativeTokens(scheme: ColorScheme = "light"): NativeTheme {
+  return scheme === "dark" ? (nativeTokensDark as unknown as NativeTokens) : nativeTokens;
+}
+
 export default nativeTokens;

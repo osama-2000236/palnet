@@ -28,6 +28,7 @@ import {
 } from "react-native";
 
 import { shadowStyle } from "./shadow";
+import { useThemeTokens } from "./ThemeProvider";
 import { nativeTokens } from "./tokens";
 
 export interface SheetProps {
@@ -61,6 +62,7 @@ export function Sheet({
 }: SheetProps): JSX.Element {
   const { height } = useWindowDimensions();
   const cardMaxHeight = Math.max(320, Math.floor(height * 0.85));
+  const c = useThemeTokens().color;
 
   return (
     <Modal
@@ -71,14 +73,14 @@ export function Sheet({
       statusBarTranslucent
     >
       <Pressable
-        style={styles.backdrop}
+        style={[styles.backdrop, { backgroundColor: c.scrim }]}
         onPress={onClose}
         accessibilityLabel={closeLabel}
         accessibilityRole="button"
       />
 
       <View
-        style={[styles.card, { maxHeight: cardMaxHeight }]}
+        style={[styles.card, { maxHeight: cardMaxHeight, backgroundColor: c.surface }]}
         pointerEvents="box-none"
         accessible
         accessibilityViewIsModal
@@ -86,7 +88,7 @@ export function Sheet({
         accessibilityLabel={accessibilityLabel ?? title}
       >
         <View style={styles.handleWrap}>
-          <View style={styles.handle} />
+          <View style={[styles.handle, { backgroundColor: c.lineHard }]} />
         </View>
 
         {title ? (
@@ -98,7 +100,7 @@ export function Sheet({
               I18nManager.isRTL ? { flexDirection: "row-reverse" } : { flexDirection: "row" },
             ]}
           >
-            <Text style={styles.title} numberOfLines={1}>
+            <Text style={[styles.title, { color: c.ink }]} numberOfLines={1}>
               {title}
             </Text>
             <Pressable
@@ -108,7 +110,7 @@ export function Sheet({
               accessibilityLabel={closeLabel}
               style={styles.closeBtn}
             >
-              <Text style={styles.closeGlyph}>✕</Text>
+              <Text style={[styles.closeGlyph, { color: c.inkMuted }]}>✕</Text>
             </Pressable>
           </View>
         ) : null}

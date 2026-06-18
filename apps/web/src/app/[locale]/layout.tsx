@@ -7,6 +7,7 @@ import type { ReactNode } from "react";
 
 import { locales, type Locale } from "@/i18n";
 import { QueryProvider } from "@/lib/query-provider";
+import { ThemeProvider } from "@/lib/theme-provider";
 import { ToastBridge } from "@/components/ToastBridge";
 
 export const metadata: Metadata = {
@@ -33,9 +34,11 @@ export default async function RootLayout(props: {
 
   return (
     <NextIntlClientProvider messages={messages} locale={locale}>
-      <QueryProvider>
-        <ToastBridge>{props.children}</ToastBridge>
-      </QueryProvider>
+      <ThemeProvider>
+        <QueryProvider>
+          <ToastBridge>{props.children}</ToastBridge>
+        </QueryProvider>
+      </ThemeProvider>
     </NextIntlClientProvider>
   );
 }

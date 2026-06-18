@@ -304,14 +304,19 @@ exports[`safety primitives renders ReportSheet content 1`] = `
     onResponderTerminationRequest={[Function]}
     onStartShouldSetResponder={[Function]}
     style={
-      {
-        "backgroundColor": "rgba(26, 26, 23, 0.40)",
-        "bottom": 0,
-        "left": 0,
-        "position": "absolute",
-        "right": 0,
-        "top": 0,
-      }
+      [
+        {
+          "backgroundColor": "rgba(26, 26, 23, 0.40)",
+          "bottom": 0,
+          "left": 0,
+          "position": "absolute",
+          "right": 0,
+          "top": 0,
+        },
+        {
+          "backgroundColor": "rgba(26, 26, 23, 0.40)",
+        },
+      ]
     }
   />
   <View
@@ -341,6 +346,7 @@ exports[`safety primitives renders ReportSheet content 1`] = `
           "start": 0,
         },
         {
+          "backgroundColor": "#ffffff",
           "maxHeight": 1133,
         },
       ]
@@ -356,12 +362,17 @@ exports[`safety primitives renders ReportSheet content 1`] = `
     >
       <View
         style={
-          {
-            "backgroundColor": "rgba(26, 26, 23, 0.16)",
-            "borderRadius": 2,
-            "height": 4,
-            "width": 36,
-          }
+          [
+            {
+              "backgroundColor": "rgba(26, 26, 23, 0.16)",
+              "borderRadius": 2,
+              "height": 4,
+              "width": 36,
+            },
+            {
+              "backgroundColor": "rgba(26, 26, 23, 0.16)",
+            },
+          ]
         }
       />
     </View>
@@ -383,14 +394,19 @@ exports[`safety primitives renders ReportSheet content 1`] = `
       <Text
         numberOfLines={1}
         style={
-          {
-            "color": "#1a1a17",
-            "flex": 1,
-            "fontFamily": "IBMPlexSansArabic",
-            "fontSize": 18,
-            "fontWeight": "600",
-            "lineHeight": 24,
-          }
+          [
+            {
+              "color": "#1a1a17",
+              "flex": 1,
+              "fontFamily": "IBMPlexSansArabic",
+              "fontSize": 18,
+              "fontWeight": "600",
+              "lineHeight": 24,
+            },
+            {
+              "color": "#1a1a17",
+            },
+          ]
         }
       >
         Report content
@@ -440,11 +456,16 @@ exports[`safety primitives renders ReportSheet content 1`] = `
       >
         <Text
           style={
-            {
-              "color": "#5c5a52",
-              "fontSize": 18,
-              "fontWeight": "600",
-            }
+            [
+              {
+                "color": "#5c5a52",
+                "fontSize": 18,
+                "fontWeight": "600",
+              },
+              {
+                "color": "#5c5a52",
+              },
+            ]
           }
         >
           ✕

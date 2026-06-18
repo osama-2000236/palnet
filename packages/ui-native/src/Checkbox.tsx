@@ -9,6 +9,7 @@ import {
   type ViewStyle,
 } from "react-native";
 
+import { useThemeTokens } from "./ThemeProvider";
 import { nativeTokens } from "./tokens";
 
 export interface CheckboxProps extends Omit<PressableProps, "children" | "style"> {
@@ -39,7 +40,7 @@ export function Checkbox({
   accessibilityState,
   ...rest
 }: CheckboxProps): JSX.Element {
-  const c = nativeTokens.color;
+  const c = useThemeTokens().color;
   const message = errorMessage ?? helper;
 
   return (

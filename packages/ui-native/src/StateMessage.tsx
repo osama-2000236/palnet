@@ -3,6 +3,7 @@ import { StyleSheet, Text, View, type StyleProp, type ViewStyle } from "react-na
 import { Button } from "./Button";
 import { Icon, type IconName } from "./Icon";
 import { Surface } from "./Surface";
+import { useThemeTokens } from "./ThemeProvider";
 import { nativeTokens } from "./tokens";
 
 export interface StateMessageProps {
@@ -30,6 +31,29 @@ export function StateMessage({
   style,
   testID,
 }: StateMessageProps): JSX.Element {
+  const tk = useThemeTokens();
+  const toneColors = {
+    neutral: {
+      background: tk.color.surfaceSubtle,
+      iconBackground: tk.color.brand100,
+      icon: tk.color.brand700,
+    },
+    error: {
+      background: tk.color.dangerSoft,
+      iconBackground: tk.color.surface,
+      icon: tk.color.danger,
+    },
+    offline: {
+      background: tk.color.warningSoft,
+      iconBackground: tk.color.surface,
+      icon: tk.color.warning,
+    },
+    success: {
+      background: tk.color.successSoft,
+      iconBackground: tk.color.surface,
+      icon: tk.color.success,
+    },
+  } as const;
   const colors = toneColors[tone];
   return (
     <Surface
@@ -46,11 +70,11 @@ export function StateMessage({
       ) : null}
       <View style={styles.copy}>
         {title ? (
-          <Text selectable style={styles.title}>
+          <Text selectable style={[styles.title, { color: tk.color.ink }]}>
             {title}
           </Text>
         ) : null}
-        <Text selectable style={styles.message}>
+        <Text selectable style={[styles.message, { color: tk.color.inkMuted }]}>
           {message}
         </Text>
       </View>
@@ -71,29 +95,6 @@ export function StateMessage({
     </Surface>
   );
 }
-
-const toneColors = {
-  neutral: {
-    background: nativeTokens.color.surfaceSubtle,
-    iconBackground: nativeTokens.color.brand100,
-    icon: nativeTokens.color.brand700,
-  },
-  error: {
-    background: nativeTokens.color.dangerSoft,
-    iconBackground: nativeTokens.color.surface,
-    icon: nativeTokens.color.danger,
-  },
-  offline: {
-    background: nativeTokens.color.warningSoft,
-    iconBackground: nativeTokens.color.surface,
-    icon: nativeTokens.color.warning,
-  },
-  success: {
-    background: nativeTokens.color.successSoft,
-    iconBackground: nativeTokens.color.surface,
-    icon: nativeTokens.color.success,
-  },
-} as const;
 
 const styles = StyleSheet.create({
   wrap: {

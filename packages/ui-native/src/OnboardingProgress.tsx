@@ -3,6 +3,7 @@
 
 import { StyleSheet, Text, View, type StyleProp, type ViewStyle } from "react-native";
 
+import { useThemeTokens } from "./ThemeProvider";
 import { nativeTokens } from "./tokens";
 
 export type OnboardingProgressStyle = "bar" | "dots" | "segmented";
@@ -33,6 +34,7 @@ export function OnboardingProgress({
   locale = "ar",
   containerStyle,
 }: OnboardingProgressProps): JSX.Element {
+  const c = useThemeTokens().color;
   const safe = Math.max(1, Math.min(total, current));
   const pct = (safe / total) * 100;
   const label = labels?.[safe - 1];
@@ -63,12 +65,7 @@ export function OnboardingProgress({
         {Array.from({ length: total }, (_, i) => {
           const n = i + 1;
           const state = n < safe ? "done" : n === safe ? "now" : "next";
-          const bg =
-            state === "now"
-              ? nativeTokens.color.brand600
-              : state === "done"
-                ? nativeTokens.color.brand300
-                : nativeTokens.color.surfaceSunken;
+          const bg = state === "now" ? c.brand600 : state === "done" ? c.brand300 : c.surfaceSunken;
           const w = state === "now" ? 24 : 8;
           return (
             <View
@@ -77,7 +74,7 @@ export function OnboardingProgress({
             />
           );
         })}
-        <Text style={[styles.counter, { marginStart: "auto" }]}>{counter}</Text>
+        <Text style={[styles.counter, { color: c.inkSubtle, marginStart: "auto" }]}>{counter}</Text>
       </View>
     );
   }
@@ -100,9 +97,7 @@ export function OnboardingProgress({
                 style={{
                   height: 4,
                   borderRadius: 2,
-                  backgroundColor: filled
-                    ? nativeTokens.color.brand600
-                    : nativeTokens.color.surfaceSunken,
+                  backgroundColor: filled ? c.brand600 : c.surfaceSunken,
                 }}
               />
               {labels?.[i] ? (
@@ -111,7 +106,7 @@ export function OnboardingProgress({
                     fontFamily: nativeTokens.type.family.mono,
                     fontSize: 10,
                     letterSpacing: 0.4,
-                    color: n === safe ? nativeTokens.color.brand700 : nativeTokens.color.inkSubtle,
+                    color: n === safe ? c.brand700 : c.inkSubtle,
                     fontWeight: n === safe ? "600" : "500",
                   }}
                 >
@@ -136,7 +131,7 @@ export function OnboardingProgress({
         {label ? (
           <Text
             style={{
-              color: nativeTokens.color.ink,
+              color: c.ink,
               fontFamily: nativeTokens.type.family.sans,
               fontSize: 13,
               fontWeight: "600",
@@ -147,12 +142,12 @@ export function OnboardingProgress({
         ) : (
           <View />
         )}
-        <Text style={styles.counter}>{counter}</Text>
+        <Text style={[styles.counter, { color: c.inkSubtle }]}>{counter}</Text>
       </View>
       <View
         style={{
           height: 6,
-          backgroundColor: nativeTokens.color.surfaceSunken,
+          backgroundColor: c.surfaceSunken,
           borderRadius: 9999,
           overflow: "hidden",
         }}
@@ -161,7 +156,7 @@ export function OnboardingProgress({
           style={{
             height: "100%",
             width: `${pct}%`,
-            backgroundColor: nativeTokens.color.brand600,
+            backgroundColor: c.brand600,
           }}
         />
       </View>
@@ -173,7 +168,6 @@ const styles = StyleSheet.create({
   counter: {
     fontFamily: nativeTokens.type.family.mono,
     fontSize: 11,
-    color: nativeTokens.color.inkSubtle,
     letterSpacing: 0.4,
   },
 });

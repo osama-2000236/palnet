@@ -2,9 +2,11 @@ import { View } from "react-native";
 
 import { Skeleton } from "./Skeleton";
 import { Surface } from "./Surface";
+import { useThemeTokens } from "./ThemeProvider";
 import { nativeTokens } from "./tokens";
 
 export function PostCardSkeleton(): JSX.Element {
+  const tk = useThemeTokens();
   return (
     <Surface
       variant="card"
@@ -61,7 +63,7 @@ export function PostCardSkeleton(): JSX.Element {
       <View
         style={{
           borderTopWidth: 1,
-          borderTopColor: nativeTokens.color.lineSoft,
+          borderTopColor: tk.color.lineSoft,
           flexDirection: "row",
           gap: nativeTokens.space[1],
           padding: nativeTokens.space[1],
