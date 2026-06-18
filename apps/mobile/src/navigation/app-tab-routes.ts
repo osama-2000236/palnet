@@ -60,6 +60,7 @@ export const HIDDEN_APP_TAB_ROUTES = [
   "saved",
   "search",
   "settings/account",
+  "settings/appearance",
   "settings/blocked",
   "settings/index",
   "settings/notifications",
