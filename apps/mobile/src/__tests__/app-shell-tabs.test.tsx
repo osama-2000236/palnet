@@ -5,11 +5,19 @@ import AppTabsLayout from "../../app/(app)/_layout";
 
 const visibleScreens: string[] = [];
 const hiddenScreens: string[] = [];
+let defaultTabBarButton: (() => ReactNode) | undefined;
 let mockIsConnected = true;
 let mockPathname = "/feed";
 
 jest.mock("expo-router", () => {
-  const Tabs = function MockTabs({ children }: { children: ReactNode }) {
+  const Tabs = function MockTabs({
+    children,
+    screenOptions,
+  }: {
+    children: ReactNode;
+    screenOptions?: { tabBarButton?: () => ReactNode };
+  }) {
+    defaultTabBarButton = screenOptions?.tabBarButton;
     return <>{children}</>;
   };
   Tabs.Screen = function MockTabsScreen({
@@ -114,6 +122,7 @@ describe("AppTabsLayout", () => {
       "notifications",
       "me/index",
     ]);
+    expect(defaultTabBarButton?.()).toBeNull();
     expect(hiddenScreens).toEqual(
       expect.arrayContaining([
         "jobs/index",

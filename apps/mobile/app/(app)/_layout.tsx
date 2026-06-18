@@ -164,6 +164,7 @@ export default function AppTabsLayout(): JSX.Element {
         headerShown: false,
         tabBarActiveTintColor: nativeTokens.color.brand700,
         tabBarInactiveTintColor: nativeTokens.color.inkMuted,
+        tabBarButton: () => null,
         tabBarStyle: {
           height: nativeTokens.chrome.tabHeight + Math.max(insets.bottom, nativeTokens.space[2]),
           paddingTop: nativeTokens.space[2],
