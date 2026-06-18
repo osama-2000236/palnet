@@ -8,6 +8,7 @@ import { nativeTokens } from "@baydar/ui-native";
 import { Tabs, router, usePathname } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { BackHandler } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { z } from "zod";
 
@@ -97,6 +98,15 @@ export default function AppTabsLayout(): JSX.Element {
     void verifyGate();
   }, [verifyGate]);
 
+  useEffect(() => {
+    if (pathname !== "/feed") return;
+    const subscription = BackHandler.addEventListener("hardwareBackPress", () => {
+      BackHandler.exitApp();
+      return true;
+    });
+    return () => subscription.remove();
+  }, [pathname]);
+
   const unsubscribeRef = useRef<(() => void) | undefined>(undefined);
 
   useEffect(() => {
@@ -164,6 +174,7 @@ export default function AppTabsLayout(): JSX.Element {
 
   return (
     <Tabs
+      backBehavior="history"
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: nativeTokens.color.brand700,
