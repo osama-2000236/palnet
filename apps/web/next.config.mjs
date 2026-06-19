@@ -20,6 +20,25 @@ const nextConfig = {
       { protocol: "https", hostname: "*.r2.dev" },
     ],
   },
+  async redirects() {
+    return [
+      {
+        source: "/:locale(ar-PS|ar|en)/terms",
+        destination: "/:locale/legal/terms",
+        permanent: true,
+      },
+      {
+        source: "/:locale(ar-PS|ar|en)/privacy",
+        destination: "/:locale/legal/privacy",
+        permanent: true,
+      },
+      {
+        source: "/:locale(ar-PS|ar|en)/community-guidelines",
+        destination: "/:locale/legal/community",
+        permanent: true,
+      },
+    ];
+  },
   async headers() {
     return [
       {
