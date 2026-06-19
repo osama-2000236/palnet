@@ -32,17 +32,18 @@ import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiTags } from "@nest
 import { Throttle } from "@nestjs/throttler";
 import type { Request, Response } from "express";
 
-import {
-  parseCookieHeader,
-  REFRESH_COOKIE_NAME,
-  serializeClearedRefreshCookie,
-  serializeRefreshCookie,
-} from "../../common/cookies";
+import { parseCookieHeader, REFRESH_COOKIE_NAME } from "../../common/cookies";
 import { DomainException } from "../../common/domain-exception";
 import { ZodValidationPipe } from "../../common/zod-pipe";
 
 import { AuthEmailThrottleService } from "./auth-email-throttle.service";
 import { AuthTokensService } from "./auth-tokens.service";
+import {
+  applyAuthTransport,
+  clearAuthTransport,
+  readTransport,
+  requestMeta,
+} from "./auth-transport";
 import { AuthService } from "./auth.service";
 import { CurrentUser, type AuthUser } from "./decorators/current-user.decorator";
 import { Public } from "./decorators/public.decorator";
@@ -60,26 +61,6 @@ const authTokenConsumeLimit =
   process.env.NODE_ENV === "production"
     ? 30
     : Number.parseInt(process.env.BAYDAR_DEV_AUTH_RATE_LIMIT ?? "300", 10);
-
-const TRANSPORT_HEADER = "x-auth-transport";
-type Transport = "body" | "cookie";
-
-function readTransport(req: Request): Transport {
-  const value = req.header(TRANSPORT_HEADER);
-  return value === "body" ? "body" : "cookie";
-}
-
-function requestMeta(req: Request): { userAgent?: string; ipAddress?: string } {
-  return {
-    userAgent: req.get("user-agent"),
-    ipAddress: req.ip,
-  };
-}
-
-function isSecureRequest(req: Request): boolean {
-  const forwardedProto = req.get("x-forwarded-proto")?.split(",")[0]?.trim().toLowerCase();
-  return req.secure || forwardedProto === "https" || process.env.NODE_ENV === "production";
-}
 
 @ApiTags("auth")
 @Controller("auth")
@@ -107,7 +88,7 @@ export class AuthController {
       body.deviceId ?? "register-bootstrap",
       requestMeta(req),
     );
-    return { data: this.applyTransport(req, res, session) };
+    return { data: applyAuthTransport(req, res, session) };
   }
 
   @Public()
@@ -122,7 +103,7 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
   ): Promise<{ data: AuthSession }> {
     const session = await this.auth.login(body, requestMeta(req));
-    return { data: this.applyTransport(req, res, session) };
+    return { data: applyAuthTransport(req, res, session) };
   }
 
   /**
@@ -169,7 +150,7 @@ export class AuthController {
       );
     }
     const session = await this.auth.refresh(parsed.data, requestMeta(req));
-    return { data: this.applyTransport(req, res, session) };
+    return { data: applyAuthTransport(req, res, session) };
   }
 
   @Public()
@@ -233,14 +214,7 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
   ): Promise<void> {
     await this.auth.logout(user.id, body.deviceId);
-    if (readTransport(req) === "cookie") {
-      res.setHeader(
-        "Set-Cookie",
-        serializeClearedRefreshCookie({
-          secure: isSecureRequest(req),
-        }),
-      );
-    }
+    clearAuthTransport(req, res);
   }
 
   @Post("change-password")
@@ -297,29 +271,5 @@ export class AuthController {
   ): Promise<{ data: StreamTokenResponse }> {
     const data = await this.authTokens.issueStreamToken(user.id, body.scope);
     return { data };
-  }
-
-  /**
-   * For the cookie transport (web), the refresh token must NEVER reach the
-   * JSON response body — that's the entire point of HttpOnly. We set the
-   * cookie and return the session with the refresh field redacted to an
-   * empty string (clients shouldn't read it; the cookie is the source of
-   * truth). The mobile transport leaves the body intact.
-   */
-  private applyTransport(req: Request, res: Response, session: AuthSession): AuthSession {
-    if (readTransport(req) === "body") return session;
-    const refreshExpiresMs = Date.parse(session.tokens.refreshExpiresAt) - Date.now();
-    const maxAgeSeconds = Math.max(0, Math.floor(refreshExpiresMs / 1000));
-    res.setHeader(
-      "Set-Cookie",
-      serializeRefreshCookie(session.tokens.refreshToken, {
-        maxAgeSeconds,
-        secure: isSecureRequest(req),
-      }),
-    );
-    return {
-      ...session,
-      tokens: { ...session.tokens, refreshToken: "" },
-    };
   }
 }

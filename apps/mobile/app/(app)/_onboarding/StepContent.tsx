@@ -4,7 +4,8 @@ import type { Control, FieldErrors, UseFormSetValue } from "react-hook-form";
 import type { PickedAsset } from "@/lib/uploads";
 
 import { NetworkStep } from "./NetworkStep";
-import { BackgroundStep, IdentityStep, LocationStep, PhotoStep, ProfileStep } from "./Steps";
+import { PhotoStep } from "./PhotoStep";
+import { BackgroundStep, IdentityStep, LocationStep, ProfileStep } from "./Steps";
 import type { PersonSuggestionDto } from "./api";
 import type { BackgroundKind, OnboardingFormValues, StepKey } from "./types";
 

@@ -1,0 +1,67 @@
+services:
+  - type: web
+    name: baydar-api
+    runtime: docker
+    region: frankfurt
+    plan: starter
+    dockerfilePath: ./apps/api/Dockerfile
+    dockerContext: .
+    healthCheckPath: /api/v1/health/ready
+    autoDeployTrigger: commit
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: API_PORT
+        value: 4000
+      - key: DATABASE_URL
+        sync: false
+      - key: DIRECT_URL
+        sync: false
+      - key: JWT_ACCESS_SECRET
+        generateValue: true
+      - key: JWT_REFRESH_SECRET
+        generateValue: true
+      - key: CORS_ORIGINS
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
+      - key: MAIL_FROM
+        sync: false
+      - key: BAYDAR_WEB_URL
+        sync: false
+      - key: INTERNAL_CRON_TOKEN
+        generateValue: true
+      - key: HYPERPAY_ENTITY_ID
+        sync: false
+      - key: HYPERPAY_ACCESS_TOKEN
+        sync: false
+      - key: HYPERPAY_WEBHOOK_SECRET
+        sync: false
+      - key: BANK_TRANSFER_IBAN
+        sync: false
+      - key: BANK_TRANSFER_BENEFICIARY
+        sync: false
+      - key: CLAMAV_SCAN_URL
+        sync: false
+      - key: CLOUDFLARE_IMAGES_SCAN_URL
+        sync: false
+      - key: SENTRY_DSN
+        sync: false
+      - key: SENTRY_RELEASE
+        sync: false
+
+  - type: cron
+    name: baydar-cron-account-retention
+    runtime: docker
+    region: frankfurt
+    plan: starter
+    schedule: "0 3 * * *"
+    dockerfilePath: ./apps/api/Dockerfile
+    dockerContext: .
+    dockerCommand: >-
+      node -e "fetch(process.env.BAYDAR_API_INTERNAL_URL + '/api/v1/admin/internal/account-retention/run', { method: 'POST', headers: { 'x-internal-token': process.env.INTERNAL_CRON_TOKEN } }).then(async response => { if (!response.ok) throw new Error(response.status + ' ' + await response.text()); console.log(await response.text()); })"
+    envVars:
+      - key: BAYDAR_API_INTERNAL_URL
+        value: https://api.baydar.ps
+      - key: INTERNAL_CRON_TOKEN
+        sync: false

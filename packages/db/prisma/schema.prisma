@@ -59,6 +59,7 @@ enum NotificationType {
   MESSAGE_RECEIVED
   JOB_APPLICATION_UPDATE
   PROFILE_VIEW
+  MODERATION_ACTION
 }
 
 enum DevicePlatform {

@@ -45,7 +45,8 @@ export const WalletProvider = {
 export type WalletProvider = (typeof WalletProvider)[keyof typeof WalletProvider];
 
 export const Plan = z.object({
-  id: z.string().cuid(),
+  // Seeded plan rows use stable readable ids (plan_user_premium), not cuids.
+  id: z.string().min(1),
   code: z.nativeEnum(PlanCode),
   name: z.string(),
   priceCents: z.number().int().nonnegative(),
@@ -59,7 +60,7 @@ export type Plan = z.infer<typeof Plan>;
 export const Invoice = z.object({
   id: z.string().cuid(),
   subscriptionId: z.string().cuid().nullable(),
-  planId: z.string().cuid().nullable(),
+  planId: z.string().min(1).nullable(),
   userId: z.string().cuid().nullable(),
   companyId: z.string().cuid().nullable(),
   amountCents: z.number().int().nonnegative(),
@@ -79,7 +80,7 @@ export const Subscription = z.object({
   id: z.string().cuid(),
   userId: z.string().cuid().nullable(),
   companyId: z.string().cuid().nullable(),
-  planId: z.string().cuid(),
+  planId: z.string().min(1),
   status: z.nativeEnum(SubscriptionStatus),
   currentPeriodStart: z.string().datetime().nullable(),
   currentPeriodEnd: z.string().datetime().nullable(),
@@ -88,6 +89,59 @@ export const Subscription = z.object({
   plan: Plan.optional(),
 });
 export type Subscription = z.infer<typeof Subscription>;
+
+// Plan as offered to the viewer: server converts the USD list price into the
+// viewer's display currency and attaches the Karama points price when the
+// plan is redeemable with points (currently USER_PREMIUM only).
+export const PlanOffer = Plan.extend({
+  displayAmountCents: z.number().int().nonnegative(),
+  displayCurrency: z.string().length(3),
+  pointsPrice: z.number().int().positive().nullable(),
+});
+export type PlanOffer = z.infer<typeof PlanOffer>;
+
+export const WalletAvailability = z.object({
+  provider: z.nativeEnum(WalletProvider),
+  configured: z.boolean(),
+});
+export type WalletAvailability = z.infer<typeof WalletAvailability>;
+
+export const BillingCatalog = z.object({
+  plans: z.array(PlanOffer),
+  wallets: z.array(WalletAvailability),
+});
+export type BillingCatalog = z.infer<typeof BillingCatalog>;
+
+// Viewer's own billing state: the active personal subscription (company
+// subscriptions live on the employer billing surface instead).
+export const BillingMe = z.object({
+  subscription: Subscription.nullable(),
+});
+export type BillingMe = z.infer<typeof BillingMe>;
+
+export const EmployerCreditKind = {
+  FEATURED_SLOT: "FEATURED_SLOT",
+  JOB_POST: "JOB_POST",
+  APPLICATION_BOOST: "APPLICATION_BOOST",
+} as const;
+export type EmployerCreditKind = (typeof EmployerCreditKind)[keyof typeof EmployerCreditKind];
+
+export const EmployerCreditSummary = z.object({
+  kind: z.nativeEnum(EmployerCreditKind),
+  remaining: z.number().int().nonnegative(),
+  expiresAt: z.string().datetime().nullable(),
+});
+export type EmployerCreditSummary = z.infer<typeof EmployerCreditSummary>;
+
+// Billing state of one company, for owners/admins: the active company
+// subscription, how much of the job quota is used, and unspent credits.
+export const CompanyBillingSummary = z.object({
+  subscription: Subscription.nullable(),
+  activeJobs: z.number().int().nonnegative(),
+  jobLimit: z.number().int().positive(),
+  credits: z.array(EmployerCreditSummary),
+});
+export type CompanyBillingSummary = z.infer<typeof CompanyBillingSummary>;
 
 export const CheckoutSessionBody = z.object({
   planCode: z.nativeEnum(PlanCode),

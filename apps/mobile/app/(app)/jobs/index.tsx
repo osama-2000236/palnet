@@ -5,11 +5,13 @@ import { Bookmark, BookmarkType, cursorPage, Job as JobSchema, type Job } from "
 import {
   AppHeader,
   Button,
+  Chip,
   Icon,
   RecordCardSkeleton,
   SearchField,
   nativeTokens,
 } from "@baydar/ui-native";
+import { useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { FlatList, RefreshControl, View } from "react-native";
@@ -33,13 +35,18 @@ const JobsPage = cursorPage(JobSchema);
 
 export default function JobsScreen(): JSX.Element {
   const { t } = useTranslation();
+  const params = useLocalSearchParams<{ companyId?: string; company?: string }>();
   const [items, setItems] = useState<Job[]>([]);
   const [cursor, setCursor] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(false);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [firstLoad, setFirstLoad] = useState(true);
-  const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS);
+  const [filters, setFilters] = useState<Filters>(() => ({
+    ...EMPTY_FILTERS,
+    companyId: typeof params.companyId === "string" ? params.companyId : "",
+    companyName: typeof params.company === "string" ? params.company : "",
+  }));
   const [sheetOpen, setSheetOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [savingId, setSavingId] = useState<string | null>(null);
@@ -168,6 +175,25 @@ export default function JobsScreen(): JSX.Element {
             />
           }
         />
+
+        {filters.companyId ? (
+          <View
+            style={{
+              flexDirection: "row",
+              paddingBottom: nativeTokens.space[3],
+            }}
+          >
+            <Chip
+              active
+              onPress={() =>
+                setFilters((current) => ({ ...current, companyId: "", companyName: "" }))
+              }
+              accessibilityLabel={t("jobs.clearCompanyFilter")}
+            >
+              {`${t("jobs.companyFilter", { name: filters.companyName || filters.companyId })} ✕`}
+            </Chip>
+          </View>
+        ) : null}
 
         {firstLoad ? (
           <View style={{ gap: nativeTokens.space[3] }}>

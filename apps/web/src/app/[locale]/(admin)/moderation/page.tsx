@@ -84,7 +84,13 @@ export default function ModerationPage(): JSX.Element {
       {error ? <p className="text-danger text-sm">{error}</p> : null}
       <section className="flex flex-col gap-3">
         {(reports ?? []).map((report) => (
-          <Surface key={report.id} as="article" variant="card" padding="4">
+          <Surface
+            key={report.id}
+            as="article"
+            variant="card"
+            padding="4"
+            data-testid={`moderation-report-${report.id}`}
+          >
             {(() => {
               const target =
                 report.targetUserId ??

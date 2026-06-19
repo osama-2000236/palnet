@@ -2,12 +2,14 @@ import { ErrorCode } from "@baydar/shared";
 import { Test } from "@nestjs/testing";
 
 import { KaramaService } from "../karama/karama.service";
+import { NotificationsService } from "../notifications/notifications.service";
 import { PrismaService } from "../prisma/prisma.service";
 
 import { AdminModerationService } from "./admin-moderation.service";
 
 interface TxStub {
   moderationAction: { create: jest.Mock };
+  post: { update: jest.Mock };
   user: { update: jest.Mock; delete: jest.Mock };
   report: { update: jest.Mock };
 }
@@ -20,6 +22,7 @@ type PrismaStub = {
 function buildTx(): TxStub {
   return {
     moderationAction: { create: jest.fn() },
+    post: { update: jest.fn() },
     user: { update: jest.fn(), delete: jest.fn() },
     report: { update: jest.fn() },
   };
@@ -29,6 +32,7 @@ describe("AdminModerationService", () => {
   let service: AdminModerationService;
   let prisma: PrismaStub;
   let karama: { award: jest.Mock };
+  let notifications: { notify: jest.Mock };
   let tx: TxStub;
 
   beforeEach(async () => {
@@ -38,12 +42,14 @@ describe("AdminModerationService", () => {
       $transaction: jest.fn(async (fn: (t: TxStub) => Promise<unknown>) => fn(tx)),
     };
     karama = { award: jest.fn().mockResolvedValue(undefined) };
+    notifications = { notify: jest.fn().mockResolvedValue(undefined) };
 
     const moduleRef = await Test.createTestingModule({
       providers: [
         AdminModerationService,
         { provide: PrismaService, useValue: prisma },
         { provide: KaramaService, useValue: karama },
+        { provide: NotificationsService, useValue: notifications },
       ],
     }).compile();
     service = moduleRef.get(AdminModerationService);
@@ -121,6 +127,24 @@ describe("AdminModerationService", () => {
       expect(tx.user.delete).toHaveBeenCalledWith({ where: { id: "u_bad" } });
     });
 
+    it("HARD_DELETE soft-deletes a reported post without deleting its author", async () => {
+      prisma.report.findUnique.mockResolvedValue({
+        id: "r_1",
+        reporterId: "u_reporter",
+        targetUserId: "u_bad",
+        targetPostId: "p_bad",
+        resolvedAt: null,
+      });
+
+      await service.act({ actorId: "u_admin", reportId: "r_1", action: "HARD_DELETE" });
+
+      expect(tx.post.update).toHaveBeenCalledWith({
+        where: { id: "p_bad" },
+        data: { deletedAt: expect.any(Date) },
+      });
+      expect(tx.user.delete).not.toHaveBeenCalled();
+    });
+
     it("awards REPORT_UPHELD Karama for any non-DISMISS action", async () => {
       prisma.report.findUnique.mockResolvedValue({
         id: "r_1",
@@ -147,6 +171,27 @@ describe("AdminModerationService", () => {
       await service.act({ actorId: "u_admin", reportId: "r_1", action: "DISMISS" });
 
       expect(karama.award).not.toHaveBeenCalled();
+    });
+
+    it("notifies the reporter when moderation resolves the report", async () => {
+      prisma.report.findUnique.mockResolvedValue({
+        id: "r_1",
+        reporterId: "u_reporter",
+        targetUserId: null,
+        targetPostId: "p_bad",
+        resolvedAt: null,
+      });
+
+      await service.act({ actorId: "u_admin", reportId: "r_1", action: "WARN" });
+
+      expect(notifications.notify).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: "MODERATION_ACTION",
+          recipientId: "u_reporter",
+          postId: "p_bad",
+          data: expect.objectContaining({ action: "WARN", upheld: true }),
+        }),
+      );
     });
 
     it("stamps resolvedAt + resolvedNote with the action label", async () => {

@@ -9,6 +9,8 @@ export type JobFiltersState = {
   city: string;
   type: JobType | "";
   locationMode: JobLocationMode | "";
+  companyId: string;
+  companyName: string;
 };
 
 export function JobFilters({

@@ -9,6 +9,7 @@ import type {
 import { Avatar, RetryChip, Skeleton, staggerDelay, Surface } from "@baydar/ui-web";
 import Image from "next/image";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 
 export function PeopleRow({
   item,
@@ -125,6 +126,7 @@ export function CompanyRow({
   item: SearchCompanyHit;
   index?: number;
 }): JSX.Element {
+  const t = useTranslations("search");
   const location = [item.city, item.country].filter(Boolean).join(", ");
   return (
     <Surface
@@ -135,7 +137,7 @@ export function CompanyRow({
       style={{ animationDelay: `${staggerDelay(index)}ms` }}
     >
       <Link
-        href={`/employer/${item.slug}`}
+        href={`/company/${item.slug}`}
         className="flex items-start gap-3 focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
       >
         <div className="bg-surface-sunken text-ink flex h-12 w-12 shrink-0 items-center justify-center rounded-md text-sm font-bold">
@@ -153,11 +155,21 @@ export function CompanyRow({
           )}
         </div>
         <div className="flex min-w-0 flex-col gap-1">
-          <span className="text-ink font-semibold">{item.name}</span>
+          <span className="text-ink font-semibold">
+            {item.name}
+            {item.verified ? (
+              <span className="text-brand-700 ms-2 text-xs font-semibold">{t("verified")}</span>
+            ) : null}
+          </span>
           {item.tagline ? <span className="text-ink-muted text-sm">{item.tagline}</span> : null}
           <span className="text-ink-muted text-xs">
             {[item.industry, location].filter(Boolean).join(" · ")}
           </span>
+          {item.activeJobs > 0 ? (
+            <span className="text-brand-700 text-xs font-semibold">
+              {t("activeJobsCount", { count: item.activeJobs })}
+            </span>
+          ) : null}
         </div>
       </Link>
     </Surface>

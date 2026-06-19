@@ -19,6 +19,7 @@ async function main(): Promise<void> {
   const { runId } = parseArgs(process.argv.slice(2));
   const passwordHash = await bcrypt.hash("Password123", 12);
   const peerEmail = `qa+${runId}.peer@baydar.test`;
+  const adminEmail = `qa+${runId}.admin@baydar.test`;
   const companySlug = `${runId}-baydar-labs`.toLowerCase();
 
   const peer = await prisma.user.upsert({
@@ -68,6 +69,61 @@ async function main(): Promise<void> {
       },
     },
   });
+
+  const admin = await prisma.user.upsert({
+    where: { email: adminEmail },
+    update: {
+      passwordHash,
+      role: "ADMIN",
+      locale: "en",
+      emailVerified: new Date(),
+      isActive: true,
+      deletedAt: null,
+    },
+    create: {
+      email: adminEmail,
+      passwordHash,
+      role: "ADMIN",
+      locale: "en",
+      emailVerified: new Date(),
+    },
+  });
+
+  const peerProfile = await prisma.profile.findUniqueOrThrow({ where: { userId: peer.id } });
+  const existingExperience = await prisma.experience.findFirst({
+    where: { profileId: peerProfile.id, title: "Engineering Lead" },
+    select: { id: true },
+  });
+  if (existingExperience) {
+    await prisma.experience.update({
+      where: { id: existingExperience.id },
+      data: { companyName: "Baydar Labs", startDate: new Date("2024-01-01T00:00:00.000Z") },
+    });
+  } else {
+    await prisma.experience.create({
+      data: {
+        profileId: peerProfile.id,
+        title: "Engineering Lead",
+        companyName: "Baydar Labs",
+        locationMode: "HYBRID",
+        startDate: new Date("2024-01-01T00:00:00.000Z"),
+      },
+    });
+  }
+
+  const moderationBody = `QA moderation target ${runId}`;
+  const existingPost = await prisma.post.findFirst({
+    where: { authorId: peer.id, body: moderationBody },
+    select: { id: true },
+  });
+  const moderationPost = existingPost
+    ? await prisma.post.update({
+        where: { id: existingPost.id },
+        data: { deletedAt: null },
+      })
+    : await prisma.post.create({
+        data: { authorId: peer.id, body: moderationBody, language: "en" },
+      });
 
   const company = await prisma.company.upsert({
     where: { slug: companySlug },
@@ -156,6 +212,11 @@ async function main(): Promise<void> {
         runId,
         peerEmail,
         peerPassword: "Password123",
+        adminEmail,
+        adminPassword: "Password123",
+        adminId: admin.id,
+        moderationPostId: moderationPost.id,
+        moderationBody,
         companySlug,
         jobId: job.id,
         jobTitle: job.title,

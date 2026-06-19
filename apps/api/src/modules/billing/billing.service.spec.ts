@@ -5,6 +5,7 @@ import { KaramaService } from "../karama/karama.service";
 import { PrismaService } from "../prisma/prisma.service";
 
 import { BillingService } from "./billing.service";
+import { EmployerEntitlementsService } from "./employer-entitlements.service";
 import { HyperPayClient } from "./hyperpay.client";
 import { WalletRegistry } from "./wallets/wallet-registry";
 
@@ -12,7 +13,9 @@ type PrismaStub = {
   plan: { upsert: jest.Mock };
   user: { findUnique: jest.Mock };
   companyMember: { findFirst: jest.Mock; findMany: jest.Mock };
-  subscription: { create: jest.Mock };
+  subscription: { create: jest.Mock; findFirst: jest.Mock };
+  job: { count: jest.Mock };
+  employerCredit: { findMany: jest.Mock };
   invoice: {
     create: jest.Mock;
     update: jest.Mock;
@@ -29,7 +32,9 @@ function buildPrisma(): PrismaStub {
     plan: { upsert: jest.fn() },
     user: { findUnique: jest.fn() },
     companyMember: { findFirst: jest.fn(), findMany: jest.fn() },
-    subscription: { create: jest.fn() },
+    subscription: { create: jest.fn(), findFirst: jest.fn() },
+    job: { count: jest.fn() },
+    employerCredit: { findMany: jest.fn() },
     invoice: {
       create: jest.fn(),
       update: jest.fn(),
@@ -91,6 +96,10 @@ describe("BillingService", () => {
           },
         },
         {
+          provide: EmployerEntitlementsService,
+          useValue: { activeJobLimit: jest.fn().mockResolvedValue(5) },
+        },
+        {
           provide: WalletRegistry,
           useValue: {
             get: jest.fn(() => ({
@@ -101,6 +110,11 @@ describe("BillingService", () => {
                 instructions: "Coming soon",
               }),
             })),
+            availability: jest.fn(() => [
+              { provider: "JAWWALPAY", configured: false },
+              { provider: "PALPAY", configured: false },
+              { provider: "REFLECT", configured: false },
+            ]),
           },
         },
       ],
@@ -254,6 +268,121 @@ describe("BillingService", () => {
     ).rejects.toMatchObject({ code: "AUTH_UNAUTHORIZED" });
     expect(prisma.invoice.findUnique).not.toHaveBeenCalled();
     expect(prisma.$transaction).not.toHaveBeenCalled();
+  });
+
+  it("prices the catalog in the viewer's display currency with points prices", async () => {
+    prisma.user.findUnique.mockResolvedValue({ locale: "ar-PS" });
+    prisma.plan.upsert.mockImplementation(({ where }: { where: { code: string } }) =>
+      Promise.resolve({
+        id: `plan-${where.code}`,
+        code: where.code,
+        name: where.code,
+        priceCents: where.code === "USER_PREMIUM" ? 500 : 2900,
+        currency: "USD",
+        intervalDays: 30,
+        features: {},
+        isActive: true,
+      }),
+    );
+
+    const catalog = await service.getCatalog("user-1");
+
+    const premium = catalog.plans.find((plan) => plan.code === "USER_PREMIUM");
+    expect(premium).toMatchObject({
+      displayCurrency: "ILS",
+      displayAmountCents: 1800, // 500 USD cents * 3.6 ILS/USD
+      pointsPrice: 500,
+    });
+    const employer = catalog.plans.find((plan) => plan.code === "EMPLOYER_BASIC");
+    expect(employer?.pointsPrice).toBeNull();
+    expect(catalog.wallets).toEqual([
+      { provider: "JAWWALPAY", configured: false },
+      { provider: "PALPAY", configured: false },
+      { provider: "REFLECT", configured: false },
+    ]);
+  });
+
+  it("returns the viewer's personal subscription with ISO dates", async () => {
+    prisma.subscription.findFirst.mockResolvedValue({
+      id: "sub-1",
+      userId: "user-1",
+      companyId: null,
+      planId: "plan-USER_PREMIUM",
+      status: "ACTIVE",
+      currentPeriodStart: new Date("2026-06-01T00:00:00Z"),
+      currentPeriodEnd: new Date("2026-07-01T00:00:00Z"),
+      providerSubscriptionId: null,
+      cancelAtPeriodEnd: false,
+      plan: {
+        id: "plan-USER_PREMIUM",
+        code: "USER_PREMIUM",
+        name: "Diaspora Premium User",
+        priceCents: 500,
+        currency: "USD",
+        intervalDays: 30,
+        features: {},
+        isActive: true,
+      },
+    });
+
+    const result = await service.getBillingMe("user-1");
+
+    expect(result.subscription).toMatchObject({
+      id: "sub-1",
+      status: "ACTIVE",
+      currentPeriodEnd: "2026-07-01T00:00:00.000Z",
+      plan: { code: "USER_PREMIUM" },
+    });
+    expect(prisma.subscription.findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { userId: "user-1", status: { in: ["TRIALING", "ACTIVE", "PAST_DUE"] } },
+      }),
+    );
+
+    prisma.subscription.findFirst.mockResolvedValue(null);
+    expect((await service.getBillingMe("user-1")).subscription).toBeNull();
+  });
+
+  it("summarizes company billing: plan, job quota, and live credits", async () => {
+    prisma.subscription.findFirst.mockResolvedValue({
+      id: "sub-9",
+      userId: null,
+      companyId: "company-1",
+      planId: "plan_employer_basic",
+      status: "ACTIVE",
+      currentPeriodStart: new Date("2026-06-01T00:00:00Z"),
+      currentPeriodEnd: new Date("2026-07-01T00:00:00Z"),
+      providerSubscriptionId: null,
+      cancelAtPeriodEnd: false,
+      plan: {
+        id: "plan_employer_basic",
+        code: "EMPLOYER_BASIC",
+        name: "Employer Basic",
+        priceCents: 2900,
+        currency: "USD",
+        intervalDays: 30,
+        features: { activeJobs: 5 },
+        isActive: true,
+      },
+    });
+    prisma.job.count.mockResolvedValue(3);
+    prisma.employerCredit.findMany.mockResolvedValue([
+      { kind: "FEATURED_SLOT", remaining: 1, expiresAt: new Date("2026-08-01T00:00:00Z") },
+    ]);
+
+    const summary = await service.getCompanyBillingSummary("company-1");
+
+    expect(summary).toMatchObject({
+      activeJobs: 3,
+      jobLimit: 5,
+      subscription: { plan: { code: "EMPLOYER_BASIC" } },
+      credits: [{ kind: "FEATURED_SLOT", remaining: 1, expiresAt: "2026-08-01T00:00:00.000Z" }],
+    });
+    expect(prisma.employerCredit.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ companyId: "company-1", remaining: { gt: 0 } }),
+      }),
+    );
   });
 
   it("lists bank-transfer receipts waiting for admin review", async () => {

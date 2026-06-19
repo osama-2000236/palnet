@@ -1,4 +1,5 @@
 import {
+  BillingMe,
   CheckoutSession,
   CheckoutSessionBody,
   KaramaBalance,
@@ -7,10 +8,12 @@ import {
   PaymentMethod,
   PlanCode,
   RedeemKaramaBody,
+  type BillingMe as BillingMeDto,
   type KaramaBalance as KaramaBalanceDto,
   type KaramaReward as KaramaRewardDto,
 } from "@baydar/shared";
 import { Button, Surface } from "@baydar/ui-native";
+import { useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ScrollView, Text, View } from "react-native";
@@ -28,7 +31,9 @@ type Notice = { kind: "success" | "error"; text: string };
 
 export default function KaramaScreen(): JSX.Element {
   const { t } = useTranslation();
+  const router = useRouter();
   const [balance, setBalance] = useState<KaramaBalanceDto | null>(null);
+  const [billingMe, setBillingMe] = useState<BillingMeDto | null>(null);
   const [loading, setLoading] = useState(true);
   const [notice, setNotice] = useState<Notice | null>(null);
   const [busyReward, setBusyReward] = useState<KaramaRewardDto | null>(null);
@@ -36,7 +41,12 @@ export default function KaramaScreen(): JSX.Element {
   const load = useCallback(async (): Promise<void> => {
     setNotice(null);
     try {
-      setBalance(await apiFetch("/karama/balance", KaramaBalance));
+      const [nextBalance, nextBillingMe] = await Promise.all([
+        apiFetch("/karama/balance", KaramaBalance),
+        apiFetch("/billing/me", BillingMe),
+      ]);
+      setBalance(nextBalance);
+      setBillingMe(nextBillingMe);
     } catch (caught) {
       setNotice({ kind: "error", text: apiErrorMessage(t, caught) });
     } finally {
@@ -100,6 +110,7 @@ export default function KaramaScreen(): JSX.Element {
   }
 
   const recent = balance?.recent ?? [];
+  const hasPremium = billingMe?.subscription?.plan?.code === PlanCode.USER_PREMIUM;
 
   return (
     <SafeAreaView style={styles.screen}>
@@ -131,8 +142,12 @@ export default function KaramaScreen(): JSX.Element {
         </Surface>
 
         {KARAMA_REWARDS.map((item) => {
-          const disabled = !balance || balance.balance < item.cost || busyReward !== null;
           const isPremium = item.reward === KaramaReward.PREMIUM_30D;
+          const disabled =
+            !balance ||
+            balance.balance < item.cost ||
+            busyReward !== null ||
+            (isPremium && hasPremium);
           return (
             <Surface key={item.reward} variant="card" padding="4" style={styles.rewardCard}>
               <View style={styles.rewardHeader}>
@@ -147,18 +162,32 @@ export default function KaramaScreen(): JSX.Element {
               <Text style={styles.rewardCost}>
                 <Text style={styles.ltr}>{item.cost}</Text> {t("karama.points")}
               </Text>
-              <Button
-                variant={isPremium ? "primary" : "secondary"}
-                size="md"
-                disabled={disabled}
-                loading={busyReward === item.reward}
-                onPress={() => void redeem(item.reward)}
-                accessibilityLabel={t("karama.redeemReward", {
-                  reward: t(`karama.rewards.${item.key}.title`),
-                })}
-              >
-                {t("karama.redeem")}
-              </Button>
+              {isPremium && hasPremium ? (
+                <>
+                  <Text style={styles.rewardBody}>{t("karama.premiumActive")}</Text>
+                  <Button
+                    variant="secondary"
+                    size="md"
+                    onPress={() => router.push("/(app)/me/premium" as never)}
+                    accessibilityLabel={t("karama.premiumLink")}
+                  >
+                    {t("karama.premiumLink")}
+                  </Button>
+                </>
+              ) : (
+                <Button
+                  variant={isPremium ? "primary" : "secondary"}
+                  size="md"
+                  disabled={disabled}
+                  loading={busyReward === item.reward}
+                  onPress={() => void redeem(item.reward)}
+                  accessibilityLabel={t("karama.redeemReward", {
+                    reward: t(`karama.rewards.${item.key}.title`),
+                  })}
+                >
+                  {t("karama.redeem")}
+                </Button>
+              )}
             </Surface>
           );
         })}

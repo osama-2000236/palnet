@@ -1,0 +1,96 @@
+import { nativeTokens } from "@baydar/ui-native";
+import { StyleSheet } from "react-native";
+
+export const companyBillingStyles = StyleSheet.create({
+  screen: { flex: 1, backgroundColor: nativeTokens.color.surfaceMuted },
+  centerScreen: {
+    flex: 1,
+    justifyContent: "center",
+    backgroundColor: nativeTokens.color.surfaceMuted,
+    padding: nativeTokens.space[4],
+  },
+  scrollBody: { padding: nativeTokens.space[4], gap: nativeTokens.space[4] },
+  kicker: {
+    color: nativeTokens.color.brand700,
+    fontFamily: nativeTokens.type.family.sans,
+    fontSize: nativeTokens.type.scale.small.size,
+    lineHeight: nativeTokens.type.scale.small.line,
+    fontWeight: "700",
+  },
+  title: {
+    color: nativeTokens.color.ink,
+    fontFamily: nativeTokens.type.family.sans,
+    fontSize: nativeTokens.type.scale.h1.size,
+    lineHeight: nativeTokens.type.scale.h1.line,
+    fontWeight: "700",
+  },
+  subtitle: {
+    color: nativeTokens.color.inkMuted,
+    fontFamily: nativeTokens.type.family.body,
+    fontSize: nativeTokens.type.scale.small.size,
+    lineHeight: nativeTokens.type.scale.small.line,
+  },
+  summaryCard: { gap: nativeTokens.space[1] },
+  summaryLabel: {
+    color: nativeTokens.color.inkMuted,
+    fontFamily: nativeTokens.type.family.sans,
+    fontSize: nativeTokens.type.scale.small.size,
+    lineHeight: nativeTokens.type.scale.small.line,
+  },
+  summarySpacer: { marginTop: nativeTokens.space[3] },
+  summaryValue: {
+    color: nativeTokens.color.ink,
+    fontFamily: nativeTokens.type.family.sans,
+    fontSize: nativeTokens.type.scale.h3.size,
+    lineHeight: nativeTokens.type.scale.h3.line,
+    fontWeight: "700",
+  },
+  sectionTitle: {
+    color: nativeTokens.color.ink,
+    fontFamily: nativeTokens.type.family.sans,
+    fontSize: nativeTokens.type.scale.h3.size,
+    lineHeight: nativeTokens.type.scale.h3.line,
+    fontWeight: "700",
+  },
+  bodyText: {
+    color: nativeTokens.color.inkMuted,
+    fontFamily: nativeTokens.type.family.body,
+    fontSize: nativeTokens.type.scale.small.size,
+    lineHeight: nativeTokens.type.scale.small.line,
+  },
+  warnText: {
+    color: nativeTokens.color.warning,
+    fontFamily: nativeTokens.type.family.sans,
+    fontSize: nativeTokens.type.scale.small.size,
+    lineHeight: nativeTokens.type.scale.small.line,
+  },
+  planCard: { gap: nativeTokens.space[2] },
+  selectedPlanCard: { borderColor: nativeTokens.color.brand600 },
+  planName: {
+    color: nativeTokens.color.ink,
+    fontFamily: nativeTokens.type.family.sans,
+    fontSize: nativeTokens.type.scale.h3.size,
+    lineHeight: nativeTokens.type.scale.h3.line,
+    fontWeight: "700",
+  },
+  planPrice: {
+    color: nativeTokens.color.ink,
+    fontFamily: nativeTokens.type.family.sans,
+    fontSize: nativeTokens.type.scale.h2.size,
+    lineHeight: nativeTokens.type.scale.h2.line,
+    fontWeight: "800",
+  },
+  featureList: { gap: nativeTokens.space[2] },
+  featureRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: nativeTokens.space[2],
+  },
+  featureItem: {
+    flexShrink: 1,
+    color: nativeTokens.color.ink,
+    fontFamily: nativeTokens.type.family.body,
+    fontSize: nativeTokens.type.scale.small.size,
+    lineHeight: nativeTokens.type.scale.small.line,
+  },
+});

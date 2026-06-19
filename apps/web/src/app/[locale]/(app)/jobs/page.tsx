@@ -22,10 +22,10 @@ import {
   Job as JobSchema,
   type Job,
 } from "@baydar/shared";
-import { Alert, Button, EmptyState, Surface } from "@baydar/ui-web";
-import { useRouter } from "next/navigation";
+import { Alert, Button, Chip, EmptyState, Surface } from "@baydar/ui-web";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
-import { useCallback, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useState } from "react";
 
 import { apiCall, apiFetch, apiFetchPage } from "@/lib/api";
 import { getErrorCode, toErrorMessage } from "@/lib/error-message";
@@ -35,7 +35,14 @@ import { JobListRow, JobRowSkeleton } from "./_components/JobListRow";
 
 const JobsPage = cursorPage(JobSchema);
 
-const EMPTY_FILTERS: JobFiltersState = { q: "", city: "", type: "", locationMode: "" };
+const EMPTY_FILTERS: JobFiltersState = {
+  q: "",
+  city: "",
+  type: "",
+  locationMode: "",
+  companyId: "",
+  companyName: "",
+};
 
 function buildQs(filters: JobFiltersState, after: string | null): string {
   const qs = new URLSearchParams({ limit: "20" });
@@ -44,6 +51,7 @@ function buildQs(filters: JobFiltersState, after: string | null): string {
   if (filters.city) qs.set("city", filters.city);
   if (filters.type) qs.set("type", filters.type);
   if (filters.locationMode) qs.set("locationMode", filters.locationMode);
+  if (filters.companyId) qs.set("companyId", filters.companyId);
   return qs.toString();
 }
 
@@ -61,14 +69,27 @@ function formatSalary(job: Job, t: (k: string) => string, locale: string): strin
 }
 
 export default function JobsPageRoute(): JSX.Element {
+  return (
+    <Suspense fallback={null}>
+      <JobsPageInner />
+    </Suspense>
+  );
+}
+
+function JobsPageInner(): JSX.Element {
   const t = useTranslations("jobs");
   const tCommon = useTranslations("common");
   const tErr = useTranslations("errors");
   const locale = useLocale();
   const router = useRouter();
+  const params = useSearchParams();
 
   const [token, setToken] = useState<string | null>(null);
-  const [filters, setFilters] = useState<JobFiltersState>(EMPTY_FILTERS);
+  const [filters, setFilters] = useState<JobFiltersState>(() => ({
+    ...EMPTY_FILTERS,
+    companyId: params.get("companyId") ?? "",
+    companyName: params.get("company") ?? "",
+  }));
   const [items, setItems] = useState<Job[]>([]);
   const [cursor, setCursor] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(false);
@@ -172,6 +193,20 @@ export default function JobsPageRoute(): JSX.Element {
 
       {/* ── Results main ─────────────────────────────────────────── */}
       <main>
+        {filters.companyId ? (
+          <div className="mb-3">
+            <Chip
+              active
+              onClick={() => {
+                setFilters((current) => ({ ...current, companyId: "", companyName: "" }));
+                router.replace(`/${locale}/jobs`);
+              }}
+              aria-label={t("clearCompanyFilter")}
+            >
+              {t("companyFilter", { name: filters.companyName || filters.companyId })} ×
+            </Chip>
+          </div>
+        ) : null}
         <div className="mb-4 flex items-center justify-between">
           <h1 className="text-ink text-xl font-semibold">{t("title")}</h1>
           <span className="text-ink-muted text-sm" aria-live="polite">

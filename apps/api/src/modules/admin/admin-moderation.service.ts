@@ -1,8 +1,9 @@
-import { ErrorCode } from "@baydar/shared";
+import { ErrorCode, NotificationType } from "@baydar/shared";
 import { Injectable } from "@nestjs/common";
 
 import { DomainException } from "../../common/domain-exception";
 import { KaramaService } from "../karama/karama.service";
+import { NotificationsService } from "../notifications/notifications.service";
 import { PrismaService } from "../prisma/prisma.service";
 
 export type ModerationActionKind = "DISMISS" | "WARN" | "SUSPEND" | "HARD_DELETE";
@@ -12,6 +13,7 @@ export class AdminModerationService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly karama: KaramaService,
+    private readonly notifications: NotificationsService,
   ) {}
 
   async listReports(status: "open" | "resolved" | "all", limit: number) {
@@ -59,7 +61,12 @@ export class AdminModerationService {
           data: { isActive: false },
         });
       }
-      if (input.action === "HARD_DELETE" && report.targetUserId) {
+      if (input.action === "HARD_DELETE" && report.targetPostId) {
+        await tx.post.update({
+          where: { id: report.targetPostId },
+          data: { deletedAt: new Date() },
+        });
+      } else if (input.action === "HARD_DELETE" && report.targetUserId) {
         await tx.user.delete({ where: { id: report.targetUserId } });
       }
 
@@ -79,6 +86,19 @@ export class AdminModerationService {
         refId: report.id,
       });
     }
+
+    await this.notifications.notify({
+      type: NotificationType.MODERATION_ACTION,
+      recipientId: report.reporterId,
+      actorId: input.actorId,
+      postId: report.targetPostId,
+      data: {
+        reportId: report.id,
+        action: input.action,
+        upheld: input.action !== "DISMISS",
+      },
+      dedupe: true,
+    });
 
     return this.getReport(input.reportId);
   }

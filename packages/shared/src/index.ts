@@ -16,7 +16,7 @@ export * from "./schemas/bookmark";
 export * from "./schemas/company";
 export * from "./schemas/search";
 export * from "./schemas/media";
-export * from "./schemas/safety";
+export * from "./schemas/moderation-safety";
 export * from "./schemas/account";
 export * from "./schemas/karama";
 export * from "./schemas/rating";

@@ -25,4 +25,11 @@ export class WalletRegistry {
   get(provider: WalletProvider): WalletClient {
     return this.byProvider[provider];
   }
+
+  availability(): { provider: WalletProvider; configured: boolean }[] {
+    return Object.values(this.byProvider).map((client) => ({
+      provider: client.provider,
+      configured: client.isConfigured(),
+    }));
+  }
 }

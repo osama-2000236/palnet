@@ -1,12 +1,13 @@
 import { Company, cursorPage, EmployerJob } from "@baydar/shared";
 import {
   AppHeader,
+  Button,
   EmptyState,
   RecordCard,
   RecordCardSkeleton,
   nativeTokens,
 } from "@baydar/ui-native";
-import { Link, Stack, useLocalSearchParams } from "expo-router";
+import { Link, Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { FlatList, Pressable, StyleSheet, View } from "react-native";
@@ -20,6 +21,7 @@ const JobsPage = cursorPage(EmployerJob);
 
 export default function CompanyJobsScreen(): JSX.Element {
   const { t } = useTranslation();
+  const router = useRouter();
   const { slug } = useLocalSearchParams<{ slug: string }>();
   const [companyId, setCompanyId] = useState<string | null>(null);
   const [jobs, setJobs] = useState<EmployerJob[]>([]);
@@ -63,6 +65,21 @@ export default function CompanyJobsScreen(): JSX.Element {
       <Stack.Screen options={{ title: t("employer.jobsTitle"), headerShown: false }} />
       <View style={styles.content}>
         <AppHeader title={t("employer.jobsTitle")} compact />
+        <View style={styles.actions}>
+          <Button
+            variant="secondary"
+            size="sm"
+            onPress={() =>
+              router.push({
+                pathname: "/(app)/employer/[slug]/billing",
+                params: { slug },
+              } as never)
+            }
+            accessibilityLabel={t("billing.employer.billingLink")}
+          >
+            {t("billing.employer.billingLink")}
+          </Button>
+        </View>
         <FlatList
           contentContainerStyle={styles.listContent}
           data={jobs}
@@ -118,6 +135,11 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: nativeTokens.space[4],
     paddingTop: nativeTokens.space[3],
+  },
+  actions: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    paddingBottom: nativeTokens.space[3],
   },
   listContent: {
     gap: nativeTokens.space[3],

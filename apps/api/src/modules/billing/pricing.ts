@@ -1,4 +1,14 @@
-import type { PlanCode } from "@baydar/shared";
+import { PlanCode } from "@baydar/shared";
+
+// Points price per plan when paying via Karama redemption. Only USER_PREMIUM
+// is redeemable for now — employer plans require real money to avoid letting
+// individuals offset a company's bill with their personal points. Must stay
+// in sync with REDEEM_COSTS in karama.service.ts.
+export const POINTS_PRICE_BY_PLAN: Partial<Record<PlanCode, number>> = {
+  USER_PREMIUM: 500,
+};
+
+export const ALL_PLAN_CODES = Object.values(PlanCode);
 
 export const PLAN_DEFS: Record<
   PlanCode,

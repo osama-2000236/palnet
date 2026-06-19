@@ -2,9 +2,13 @@ import { Prisma } from "@baydar/db";
 import {
   type AdminInvoiceActionBody,
   type BankTransferReceiptBody,
+  type BillingCatalog,
+  type BillingMe,
   type CheckoutSession,
   type CheckoutSessionBody,
+  type CompanyBillingSummary,
   type Invoice as InvoiceDto,
+  type Subscription as SubscriptionDto,
   ErrorCode,
   type PaymentMethod,
   type PlanCode,
@@ -19,16 +23,10 @@ import { KaramaService } from "../karama/karama.service";
 import { PrismaService } from "../prisma/prisma.service";
 
 import { convertCents, deriveDisplayCurrency } from "./currency";
+import { EmployerEntitlementsService } from "./employer-entitlements.service";
 import { HyperPayClient } from "./hyperpay.client";
-import { PLAN_DEFS } from "./pricing";
+import { ALL_PLAN_CODES, PLAN_DEFS, POINTS_PRICE_BY_PLAN } from "./pricing";
 import { WalletRegistry } from "./wallets/wallet-registry";
-
-// Points price per plan when paying via Karama redemption. Only USER_PREMIUM
-// is redeemable for now — employer plans require real money to avoid letting
-// individuals offset a company's bill with their personal points.
-const POINTS_PRICE_BY_PLAN: Partial<Record<PlanCode, number>> = {
-  USER_PREMIUM: 500,
-};
 
 const WALLET_METHODS = new Set<PaymentMethod>(["JAWWALPAY", "PALPAY", "REFLECT"]);
 
@@ -47,6 +45,7 @@ export class BillingService {
     private readonly config: ConfigService<Env, true>,
     private readonly karama: KaramaService,
     private readonly wallets: WalletRegistry,
+    private readonly entitlements: EmployerEntitlementsService,
   ) {}
 
   async createCheckoutSession(userId: string, body: CheckoutSessionBody): Promise<CheckoutSession> {
@@ -243,6 +242,84 @@ export class BillingService {
       wallet: null,
       displayAmountCents,
       displayCurrency,
+    };
+  }
+
+  // Catalog of plans priced for the viewer (display currency derived from
+  // their locale) plus which local wallets are actually configured, so the
+  // UI can render unconfigured providers as "coming soon" without creating
+  // dead invoices.
+  async getCatalog(userId: string): Promise<BillingCatalog> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { locale: true },
+    });
+    if (!user) throw new DomainException(ErrorCode.NOT_FOUND, "User not found.", 404);
+
+    const displayCurrency = deriveDisplayCurrency(user.locale);
+    const plans = await Promise.all(ALL_PLAN_CODES.map((code) => this.ensurePlan(code)));
+    return {
+      plans: plans.map((plan) => ({
+        id: plan.id,
+        code: plan.code,
+        name: plan.name,
+        priceCents: plan.priceCents,
+        currency: plan.currency,
+        intervalDays: plan.intervalDays,
+        features: (plan.features ?? {}) as Record<string, unknown>,
+        isActive: plan.isActive,
+        displayAmountCents: convertCents(plan.priceCents, plan.currency, displayCurrency),
+        displayCurrency,
+        pointsPrice: POINTS_PRICE_BY_PLAN[plan.code] ?? null,
+      })),
+      wallets: this.wallets.availability(),
+    };
+  }
+
+  // The viewer's personal subscription (latest non-canceled one, if any).
+  // Company subscriptions are intentionally excluded — they belong to the
+  // employer billing surface and are scoped by company membership there.
+  async getBillingMe(userId: string): Promise<BillingMe> {
+    const row = await this.prisma.subscription.findFirst({
+      where: { userId, status: { in: ["TRIALING", "ACTIVE", "PAST_DUE"] } },
+      orderBy: { createdAt: "desc" },
+      include: { plan: true },
+    });
+    return { subscription: row ? toSubscriptionDto(row) : null };
+  }
+
+  // Billing state for one company. Access (owner/admin membership) is
+  // enforced by CompanyRoleGuard on the controller route.
+  async getCompanyBillingSummary(companyId: string): Promise<CompanyBillingSummary> {
+    const now = new Date();
+    const [subscription, activeJobs, jobLimit, credits] = await Promise.all([
+      this.prisma.subscription.findFirst({
+        where: { companyId, status: { in: ["TRIALING", "ACTIVE", "PAST_DUE"] } },
+        orderBy: { createdAt: "desc" },
+        include: { plan: true },
+      }),
+      this.prisma.job.count({ where: { companyId, isActive: true, deletedAt: null } }),
+      this.entitlements.activeJobLimit(companyId),
+      this.prisma.employerCredit.findMany({
+        where: {
+          companyId,
+          remaining: { gt: 0 },
+          OR: [{ expiresAt: null }, { expiresAt: { gt: now } }],
+        },
+        orderBy: { expiresAt: "asc" },
+        select: { kind: true, remaining: true, expiresAt: true },
+      }),
+    ]);
+
+    return {
+      subscription: subscription ? toSubscriptionDto(subscription) : null,
+      activeJobs,
+      jobLimit,
+      credits: credits.map((credit) => ({
+        kind: credit.kind,
+        remaining: credit.remaining,
+        expiresAt: credit.expiresAt?.toISOString() ?? null,
+      })),
     };
   }
 
@@ -463,6 +540,52 @@ export class BillingService {
 
 function isHyperPaySuccess(code: string | undefined): boolean {
   return !!code && /^(000\.000\.|000\.100\.1|000\.[36])/.test(code);
+}
+
+function toSubscriptionDto(row: {
+  id: string;
+  userId: string | null;
+  companyId: string | null;
+  planId: string;
+  status: SubscriptionDto["status"];
+  currentPeriodStart: Date | null;
+  currentPeriodEnd: Date | null;
+  providerSubscriptionId: string | null;
+  cancelAtPeriodEnd: boolean;
+  plan?: {
+    id: string;
+    code: PlanCode;
+    name: string;
+    priceCents: number;
+    currency: string;
+    intervalDays: number | null;
+    features: unknown;
+    isActive: boolean;
+  };
+}): SubscriptionDto {
+  return {
+    id: row.id,
+    userId: row.userId,
+    companyId: row.companyId,
+    planId: row.planId,
+    status: row.status,
+    currentPeriodStart: row.currentPeriodStart?.toISOString() ?? null,
+    currentPeriodEnd: row.currentPeriodEnd?.toISOString() ?? null,
+    providerSubscriptionId: row.providerSubscriptionId,
+    cancelAtPeriodEnd: row.cancelAtPeriodEnd,
+    plan: row.plan
+      ? {
+          id: row.plan.id,
+          code: row.plan.code,
+          name: row.plan.name,
+          priceCents: row.plan.priceCents,
+          currency: row.plan.currency,
+          intervalDays: row.plan.intervalDays,
+          features: (row.plan.features ?? {}) as Record<string, unknown>,
+          isActive: row.plan.isActive,
+        }
+      : undefined,
+  };
 }
 
 function toInvoiceDto(row: {

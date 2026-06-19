@@ -91,7 +91,10 @@ const EXPECTED_ROUTES = [
   "GET /auth/me",
   "POST /auth/stream-token",
   "POST /billing/checkout-session",
+  "GET /billing/catalog",
+  "GET /billing/me",
   "GET /billing/invoices",
+  "GET /billing/companies/:companyId/summary",
   "POST /billing/invoices/:id/pay-by-transfer",
   "POST /billing/webhooks/hyperpay",
   "GET /bookmarks",
@@ -124,6 +127,7 @@ const EXPECTED_ROUTES = [
   "GET /connections/suggestions",
   "GET /feed",
   "GET /health",
+  "GET /health/ready",
   "GET /jobs",
   "GET /jobs/:id",
   "POST /jobs/:id/apply",
@@ -180,8 +184,8 @@ const EXPECTED_ROUTES = [
   "GET /blocks",
   "GET /search/people",
   "GET /search/posts",
-  "GET /search/jobs",
   "GET /search/companies",
+  "GET /search/jobs",
 ].sort();
 
 describe("API route coverage", () => {
