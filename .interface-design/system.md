@@ -4,7 +4,7 @@
 
 Baydar is an Arabic-first professional network for Arab professionals. The interface should feel serious, warm, local, and trustworthy: closer to a well-run professional majlis or regional hiring office than to a generic SaaS dashboard.
 
-The design language is built from Baydar's world: olive groves, wheat fields, warm paper, terracotta clay, limestone, and dark Arabic ink. The product should never drift toward LinkedIn blue, generic SaaS blue, dark mode, playful chrome, or marketing-page decoration.
+The design language is built from Baydar's world: olive groves, wheat fields, warm paper, terracotta clay, limestone, and dark Arabic ink. The product should never drift toward LinkedIn blue, generic SaaS blue, cold dark mode, playful chrome, or marketing-page decoration. A warm token-driven dark theme is supported.
 
 ## Human And Task
 
@@ -16,12 +16,11 @@ The interface should optimize for confidence and quick scanning: compact enough 
 
 ## Palette
 
-- Primary olive: `#526030`, used for core identity, selected navigation, primary actions, active tabs, and profile completion.
-- Terracotta: `#a8482c`, used for decisive actions and urgent emphasis: submit, send, apply, unread badges.
-- Warm off-white canvas: `#faf9f5`, used as the app background.
-- White surface: `#ffffff`, used for individual records, forms, and framed tools.
-- Warm inset surface: `#f1efe7` / `#ebe8dc`, used for inputs, empty states, rails, and quiet grouping.
-- Dark ink: `#1a1a17`, with muted levels for metadata and secondary text.
+- Primary olive brand tokens: core identity, selected navigation, primary actions, active tabs, and profile completion.
+- Terracotta accent tokens: decisive actions and urgent emphasis: submit, send, apply, unread badges.
+- Warm canvas and surface tokens: app background, records, forms, and framed tools.
+- Warm inset tokens: inputs, empty states, rails, and quiet grouping.
+- Ink tokens: primary, muted, subtle, and inverse text roles.
 
 All UI color must map through `nativeTokens`; no random screen-level hex values.
 
@@ -143,7 +142,7 @@ Do:
 ## Avoid
 
 - LinkedIn blue or generic SaaS blue.
-- Dark mode.
+- Cold or blue-tinted dark mode.
 - Nested cards.
 - Decorative gradients, orbs, bokeh, or empty illustration chrome.
 - Large hero type inside dense app screens.

@@ -8,9 +8,19 @@ export type Filters = {
   city: string;
   type: JobType | "";
   locationMode: JobLocationMode | "";
+  // Set when arriving from a company search hit ("jobs at this company").
+  companyId: string;
+  companyName: string;
 };
 
-export const EMPTY_FILTERS: Filters = { q: "", city: "", type: "", locationMode: "" };
+export const EMPTY_FILTERS: Filters = {
+  q: "",
+  city: "",
+  type: "",
+  locationMode: "",
+  companyId: "",
+  companyName: "",
+};
 
 export const TYPE_VALUES: JobType[] = [
   JobType.FULL_TIME,
@@ -34,6 +44,7 @@ export function buildQs(filters: Filters, after: string | null): string {
   if (filters.city) qs.set("city", filters.city);
   if (filters.type) qs.set("type", filters.type);
   if (filters.locationMode) qs.set("locationMode", filters.locationMode);
+  if (filters.companyId) qs.set("companyId", filters.companyId);
   return qs.toString();
 }
 
@@ -43,6 +54,7 @@ export function activeFilterCount(f: Filters): number {
   if (f.city) n += 1;
   if (f.type) n += 1;
   if (f.locationMode) n += 1;
+  if (f.companyId) n += 1;
   return n;
 }
 

@@ -6,6 +6,7 @@ import type {
 } from "@baydar/shared";
 import { Avatar, RecordCard } from "@baydar/ui-native";
 import { router } from "expo-router";
+import { useTranslation } from "react-i18next";
 
 type SearchType = "people" | "posts" | "jobs" | "companies";
 type SearchHit = SearchPersonHit | SearchPostHit | SearchJobHit | SearchCompanyHit;
@@ -82,14 +83,22 @@ function JobRow({ item }: { item: SearchJobHit }): JSX.Element {
 }
 
 function CompanyRow({ item }: { item: SearchCompanyHit }): JSX.Element {
+  const { t } = useTranslation();
   const location = [item.city, item.country].filter(Boolean).join(", ");
+  const jobsLabel =
+    item.activeJobs > 0 ? t("search.activeJobsCount", { count: item.activeJobs }) : null;
   return (
     <RecordCard
-      onPress={() => router.push(`/(app)/employer/${item.slug}`)}
+      onPress={() =>
+        router.push({
+          pathname: "/(app)/company/[slug]",
+          params: { slug: item.slug },
+        } as never)
+      }
       accessibilityLabel={item.name}
-      title={item.name}
-      subtitle={item.tagline}
-      meta={[item.industry, location].filter(Boolean).join(" · ")}
+      title={item.verified ? `${item.name} · ${t("search.verified")}` : item.name}
+      subtitle={item.tagline ?? item.industry}
+      meta={[item.industry, location, jobsLabel].filter(Boolean).join(" · ")}
     />
   );
 }

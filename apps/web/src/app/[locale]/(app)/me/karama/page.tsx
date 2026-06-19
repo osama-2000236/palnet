@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  BillingMe,
   CheckoutSession,
   CheckoutSessionBody,
   KaramaBalance,
@@ -9,12 +10,14 @@ import {
   PaymentMethod,
   PlanCode,
   RedeemKaramaBody,
+  type BillingMe as BillingMeDto,
   type KaramaBalance as KaramaBalanceDto,
   type KaramaReward as KaramaRewardDto,
 } from "@baydar/shared";
 import { Button, Surface } from "@baydar/ui-web";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 
 import { apiFetch, getValidAccessToken } from "@/lib/api";
@@ -31,7 +34,9 @@ const REWARDS: { reward: KaramaRewardDto; key: RewardKey; cost: number }[] = [
 export default function KaramaPage(): JSX.Element {
   const router = useRouter();
   const t = useTranslations("karama");
+  const locale = useLocale();
   const [balance, setBalance] = useState<KaramaBalanceDto | null>(null);
+  const [billingMe, setBillingMe] = useState<BillingMeDto | null>(null);
   const [notice, setNotice] = useState<Notice | null>(null);
   const [busyReward, setBusyReward] = useState<KaramaRewardDto | null>(null);
 
@@ -43,7 +48,12 @@ export default function KaramaPage(): JSX.Element {
     }
     setNotice(null);
     try {
-      setBalance(await apiFetch("/karama/balance", KaramaBalance, { token }));
+      const [nextBalance, nextBillingMe] = await Promise.all([
+        apiFetch("/karama/balance", KaramaBalance, { token }),
+        apiFetch("/billing/me", BillingMe, { token }),
+      ]);
+      setBalance(nextBalance);
+      setBillingMe(nextBillingMe);
     } catch {
       setNotice({ kind: "error", text: t("loadFailed") });
     }
@@ -97,6 +107,8 @@ export default function KaramaPage(): JSX.Element {
     }
   }
 
+  const hasPremium = billingMe?.subscription?.plan?.code === PlanCode.USER_PREMIUM;
+
   return (
     <main className="mx-auto flex w-full max-w-[880px] flex-col gap-5 px-6 py-8">
       <header className="flex flex-col gap-1">
@@ -127,8 +139,12 @@ export default function KaramaPage(): JSX.Element {
 
       <section className="grid gap-3 md:grid-cols-3">
         {REWARDS.map((item) => {
-          const disabled = !balance || balance.balance < item.cost || busyReward !== null;
           const isPremium = item.reward === KaramaReward.PREMIUM_30D;
+          const disabled =
+            !balance ||
+            balance.balance < item.cost ||
+            busyReward !== null ||
+            (isPremium && hasPremium);
           return (
             <Surface key={item.reward} as="article" variant="card" padding="4">
               <div className="flex h-full flex-col gap-3">
@@ -148,15 +164,27 @@ export default function KaramaPage(): JSX.Element {
                     <span dir="ltr">{item.cost}</span> {t("points")}
                   </p>
                 </div>
-                <Button
-                  variant={isPremium ? "primary" : "secondary"}
-                  size="md"
-                  disabled={disabled}
-                  loading={busyReward === item.reward}
-                  onClick={() => void redeem(item.reward)}
-                >
-                  {t("redeem")}
-                </Button>
+                {isPremium && hasPremium ? (
+                  <p className="text-ink-muted text-sm">
+                    {t("premiumActive")}{" "}
+                    <Link
+                      href={`/${locale}/me/premium`}
+                      className="text-brand-700 font-semibold underline focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+                    >
+                      {t("premiumLink")}
+                    </Link>
+                  </p>
+                ) : (
+                  <Button
+                    variant={isPremium ? "primary" : "secondary"}
+                    size="md"
+                    disabled={disabled}
+                    loading={busyReward === item.reward}
+                    onClick={() => void redeem(item.reward)}
+                  >
+                    {t("redeem")}
+                  </Button>
+                )}
               </div>
             </Surface>
           );

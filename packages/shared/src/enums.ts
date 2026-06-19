@@ -43,6 +43,7 @@ export const NotificationType = {
   MESSAGE_RECEIVED: "MESSAGE_RECEIVED",
   JOB_APPLICATION_UPDATE: "JOB_APPLICATION_UPDATE",
   PROFILE_VIEW: "PROFILE_VIEW",
+  MODERATION_ACTION: "MODERATION_ACTION",
 } as const;
 export type NotificationType = (typeof NotificationType)[keyof typeof NotificationType];
 

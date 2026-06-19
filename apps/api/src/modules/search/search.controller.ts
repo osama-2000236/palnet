@@ -48,16 +48,6 @@ export class SearchController {
     return this.search.searchPosts(user.id, query);
   }
 
-  @Get("jobs")
-  @RateLimit("search")
-  async jobs(
-    @CurrentUser() user: AuthUser,
-    @Query(new ZodValidationPipe(JobsSearchQuery))
-    query: JobsSearchQuery,
-  ): Promise<{ data: SearchJobHit[]; meta: CursorPageMeta }> {
-    return this.search.searchJobs(user.id, query);
-  }
-
   @Get("companies")
   @RateLimit("search")
   async companies(
@@ -66,5 +56,15 @@ export class SearchController {
     query: CompaniesSearchQuery,
   ): Promise<{ data: SearchCompanyHit[]; meta: CursorPageMeta }> {
     return this.search.searchCompanies(user.id, query);
+  }
+
+  @Get("jobs")
+  @RateLimit("search")
+  async jobs(
+    @CurrentUser() user: AuthUser,
+    @Query(new ZodValidationPipe(JobsSearchQuery))
+    query: JobsSearchQuery,
+  ): Promise<{ data: SearchJobHit[]; meta: CursorPageMeta }> {
+    return this.search.searchJobs(user.id, query);
   }
 }

@@ -19,6 +19,8 @@ const PURPOSE_ALLOWED_KINDS: Record<MediaPurpose, string[]> = {
   AVATAR: ["IMAGE"],
   COVER: ["IMAGE"],
   POST_MEDIA: ["IMAGE", "VIDEO", "DOCUMENT"],
+  // Bank-transfer receipts: a photo or a PDF of the transfer confirmation.
+  RECEIPT: ["IMAGE", "DOCUMENT"],
 };
 
 const MIME_RULES: Record<string, { kind: string; maxBytes: number; extension: string }> = {

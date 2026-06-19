@@ -1,5 +1,6 @@
 import { Module } from "@nestjs/common";
 
+import { CompanyRoleGuard } from "../companies/guards/company-role.guard";
 import { PrismaModule } from "../prisma/prisma.module";
 
 import { BillingController } from "./billing.controller";
@@ -22,6 +23,7 @@ import { WalletRegistry } from "./wallets/wallet-registry";
     PalPayClient,
     ReflectClient,
     WalletRegistry,
+    CompanyRoleGuard,
   ],
   exports: [BillingService, EmployerEntitlementsService],
 })

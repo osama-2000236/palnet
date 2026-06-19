@@ -12,10 +12,12 @@ You are resuming development of **Baydar** (بيدر) — an Arabic-first profes
 3. **`docs/design/RTL.md`** — RTL rules. Non-negotiable.
 4. **`docs/design/MOBILE.md`** — mobile-specific overrides to the web design.
 5. **`docs/_archive/prototype-2025/Baydar Prototype.html`** — the working visual ground truth. Open it in a browser when unsure what something should look like. This is the reference, not any old screenshot or LinkedIn mock.
+6. **`design-handoff-2026-06/README.md`** — current web/mobile parity ledger and Claude artifact entry point.
 
 ## Hard rules
 
 - **Tokens are the source of truth.** Every color, spacing, radius, font size, shadow comes from `packages/ui-tokens`. Never hardcode a hex, rem, or px. If you need a value that isn't tokenized, add a token first, then consume it.
+- **Theme values already exist.** Preserve the warm light/dark semantic token contract; components consume semantic roles and never branch on raw colors.
 - **No Tailwind blue.** The brand is olive (`--brand-*`). If you see `blue-500` anywhere in a component, it's a bug.
 - **RTL-safe CSS only.** Never `left` / `right` / `margin-left` / `padding-right`. Always `start` / `end` / logical properties. See `docs/design/RTL.md`.
 - **Web and mobile stay in lockstep.** When you build a component in `packages/ui-web`, stub the mobile twin in `packages/ui-native` in the same commit. Same prop names, same variant names. Drift is how design systems rot.

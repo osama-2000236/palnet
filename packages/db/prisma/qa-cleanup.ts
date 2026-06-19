@@ -32,6 +32,19 @@ async function main(): Promise<void> {
   const userIds = users.map((user) => user.id);
 
   if (userIds.length > 0) {
+    const reports = await prisma.report.findMany({
+      where: { OR: [{ reporterId: { in: userIds } }, { targetUserId: { in: userIds } }] },
+      select: { id: true },
+    });
+    await prisma.moderationAction.deleteMany({
+      where: {
+        OR: [
+          { reportId: { in: reports.map((report) => report.id) } },
+          { actorId: { in: userIds } },
+          { targetUserId: { in: userIds } },
+        ],
+      },
+    });
     await prisma.notification.deleteMany({
       where: { OR: [{ recipientId: { in: userIds } }, { actorId: { in: userIds } }] },
     });

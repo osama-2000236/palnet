@@ -39,6 +39,7 @@ const AUTHED_ROUTES = [
   "/ar-PS/me",
   "/ar-PS/me/edit",
   "/ar-PS/me/karama",
+  "/ar-PS/me/premium",
   "/ar-PS/onboarding",
   "/ar-PS/settings",
   "/ar-PS/settings/account",

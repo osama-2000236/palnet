@@ -58,6 +58,20 @@ export const SearchPostHit = z.object({
 });
 export type SearchPostHit = z.infer<typeof SearchPostHit>;
 
+export const SearchCompanyHit = z.object({
+  id: z.string().cuid(),
+  slug: z.string(),
+  name: z.string(),
+  tagline: z.string().nullable(),
+  industry: z.string().nullable(),
+  city: z.string().nullable(),
+  country: z.string(),
+  logoUrl: z.string().url().nullable(),
+  verified: z.boolean(),
+  activeJobs: z.number().int().nonnegative(),
+});
+export type SearchCompanyHit = z.infer<typeof SearchCompanyHit>;
+
 export const SearchJobHit = z.object({
   id: z.string().cuid(),
   title: z.string(),
@@ -70,16 +84,3 @@ export const SearchJobHit = z.object({
   createdAt: z.string().datetime(),
 });
 export type SearchJobHit = z.infer<typeof SearchJobHit>;
-
-export const SearchCompanyHit = z.object({
-  id: z.string().cuid(),
-  slug: z.string(),
-  name: z.string(),
-  tagline: z.string().nullable(),
-  industry: z.string().nullable(),
-  city: z.string().nullable(),
-  country: z.string(),
-  logoUrl: z.string().url().nullable(),
-  verified: z.boolean(),
-});
-export type SearchCompanyHit = z.infer<typeof SearchCompanyHit>;

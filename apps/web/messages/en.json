@@ -320,7 +320,9 @@
     "errorBody": "We could not load these results. Try again.",
     "retry": "Retry search",
     "loadMore": "Load more",
-    "loadingMore": "Loading…"
+    "loadingMore": "Loading…",
+    "verified": "Verified",
+    "activeJobsCount": "{count} open jobs"
   },
   "profile": {
     "title": "Profile",
@@ -363,7 +365,10 @@
     "endorseFailed": "Could not endorse this skill.",
     "endorseSignIn": "Sign in to endorse skills.",
     "posts": "Activity",
-    "postsEmpty": "No posts yet."
+    "postsEmpty": "No posts yet.",
+    "endorseCountLabel": "{count} endorsements",
+    "endorseThanks": "Skill endorsed.",
+    "endorseError": "Could not endorse this skill."
   },
   "karama": {
     "kicker": "Karama Points",
@@ -407,7 +412,13 @@
       "REDEEM_FEATURED_PROFILE": "Featured profile",
       "DECAY": "Monthly decay",
       "ADJUSTMENT": "Adjustment"
-    }
+    },
+    "loadError": "Could not load Karama balance.",
+    "redeemError": "Could not redeem this reward.",
+    "redeeming": "Redeeming…",
+    "premiumActive": "Premium is active — manage it on the Premium page.",
+    "premiumLink": "Baydar Premium",
+    "redeemed": "Redeemed: {reward}."
   },
   "network": {
     "title": "My network",
@@ -518,7 +529,8 @@
       "POST_MENTION": "{actor} mentioned you in a post.",
       "MESSAGE_RECEIVED": "{actor} sent you a message.",
       "JOB_APPLICATION_UPDATE": "Your application has an update.",
-      "PROFILE_VIEW": "{actor} viewed your profile."
+      "PROFILE_VIEW": "{actor} viewed your profile.",
+      "MODERATION_ACTION": "Your report was reviewed by the moderation team."
     }
   },
   "activity": {
@@ -657,7 +669,9 @@
       "ONSITE": "On-site",
       "HYBRID": "Hybrid",
       "REMOTE": "Remote"
-    }
+    },
+    "companyFilter": "Jobs at {name}",
+    "clearCompanyFilter": "Clear company filter"
   },
   "settings": {
     "title": "Settings",
@@ -674,7 +688,9 @@
       "security": "Security",
       "securityDesc": "Review password, sessions, and two-factor status.",
       "appearance": "Appearance",
-      "appearanceDesc": "Choose light, dark, or match your device."
+      "appearanceDesc": "Choose light, dark, or match your device.",
+      "premium": "Baydar Premium",
+      "premiumDesc": "Compare plans, upgrade, and pay your way"
     },
     "notifications": {
       "title": "Notifications",
@@ -907,7 +923,7 @@
       "reporter": "reporter",
       "target": "Target:",
       "unknown": "unknown",
-      "confirmHardDelete": "Hard-delete this reported account? This cannot be undone.",
+      "confirmHardDelete": "Remove this reported content or account? This cannot be undone.",
       "emptyTitle": "No open reports",
       "emptyBody": "New safety reports will appear here for moderator review.",
       "actions": {
@@ -956,7 +972,14 @@
   },
   "company": {
     "about": "About",
-    "jobs": "Jobs"
+    "jobs": "Jobs",
+    "openJobs": "Open jobs",
+    "noJobs": "No open roles right now.",
+    "loadError": "Could not load this company.",
+    "visitWebsite": "Visit website",
+    "verified": "Verified",
+    "viewAllJobs": "View all jobs",
+    "notFound": "Company not found."
   },
   "employer": {
     "title": "Employer workspace",
@@ -1020,6 +1043,139 @@
       "expiresAt": "Expires on",
       "submit": "Publish",
       "submitting": "Publishing…"
+    }
+  },
+  "premium": {
+    "kicker": "Baydar Premium",
+    "title": "Stand out where it matters",
+    "subtitle": "Premium gives your profile reach and insight — priced for our region, cancel anytime.",
+    "loadError": "Could not load plans.",
+    "current": {
+      "activeTitle": "Your Premium is active",
+      "renewsBody": "Your plan renews on {date}.",
+      "endsBody": "Your plan ends on {date}.",
+      "pastDueTitle": "Payment pending",
+      "pastDueBody": "We're confirming your last payment. Premium stays active meanwhile."
+    },
+    "free": {
+      "name": "Basic",
+      "price": "Free",
+      "tagline": "The essentials, forever free",
+      "features": {
+        "profile": "A full professional profile",
+        "connect": "Unlimited connections and messaging",
+        "jobs": "Apply to any job"
+      }
+    },
+    "plan": {
+      "name": "Baydar Premium",
+      "tagline": "Insight and visibility, 30 days at a time",
+      "perMonth": "{price} / month",
+      "originalUsd": "Billed as {price} USD",
+      "features": {
+        "analytics": "Profile analytics",
+        "whoViewed": "See who viewed your profile",
+        "diasporaBadge": "Diaspora badge on your profile"
+      }
+    },
+    "cta": "Upgrade to Premium"
+  },
+  "billing": {
+    "plans": {
+      "EMPLOYER_FREE": "Employer Free",
+      "EMPLOYER_BASIC": "Employer Basic",
+      "EMPLOYER_PRO": "Employer Pro",
+      "FEATURED_SLOT": "Featured job slot",
+      "USER_PREMIUM": "Baydar Premium"
+    },
+    "features": {
+      "activeJobs": "{count} active jobs",
+      "applicantInbox": "Applicant inbox",
+      "basicAnalytics": "Basic analytics",
+      "advancedAnalytics": "Advanced analytics",
+      "csvExport": "CSV export",
+      "featuredSlots": "{count} featured slot included",
+      "profileAnalytics": "Profile analytics",
+      "whoViewedMe": "See who viewed your profile",
+      "diasporaBadge": "Diaspora badge on your profile",
+      "durationDays": "Featured for {count} days"
+    },
+    "checkout": {
+      "title": "Choose how to pay",
+      "methods": {
+        "card": "Bank card",
+        "bankTransfer": "Bank transfer",
+        "points": "Karama Points",
+        "jawwalpay": "JawwalPay",
+        "palpay": "PalPay",
+        "reflect": "Reflect"
+      },
+      "comingSoon": "Coming soon",
+      "pointsBalance": "Your balance: {balance} points · costs {cost} points",
+      "pointsInsufficient": "You need {cost} Karama points. Earn points by contributing on Baydar.",
+      "earnPoints": "About Karama",
+      "confirm": "Continue",
+      "confirmPoints": "Redeem {cost} points",
+      "processing": "Processing…",
+      "cardRedirect": "You'll be redirected to our secure payment partner.",
+      "cardError": "Card payments are temporarily unavailable. Try a bank transfer.",
+      "bank": {
+        "title": "Bank transfer instructions",
+        "body": "Transfer the exact amount and keep the reference. We activate the purchase after reviewing the transfer — usually within two business days.",
+        "beneficiary": "Beneficiary",
+        "iban": "IBAN",
+        "reference": "Reference",
+        "amount": "Amount",
+        "due": "Complete the transfer within 7 days to keep this invoice open."
+      },
+      "pointsSuccess": {
+        "title": "Premium activated",
+        "body": "Enjoy 30 days of Premium — paid with your Karama points."
+      }
+    },
+    "invoices": {
+      "title": "Billing history",
+      "empty": "No invoices yet.",
+      "loadError": "Could not load invoices.",
+      "statuses": {
+        "DRAFT": "Draft",
+        "OPEN": "Awaiting payment",
+        "PAID": "Paid",
+        "VOID": "Voided",
+        "UNCOLLECTIBLE": "Uncollectible"
+      },
+      "dueBy": "Due {date}",
+      "uploadReceipt": "Upload transfer receipt",
+      "uploading": "Uploading…",
+      "receiptSubmitted": "Receipt submitted — pending review.",
+      "uploadError": "Could not upload the receipt.",
+      "viewReceipt": "View receipt"
+    },
+    "employer": {
+      "title": "Company billing",
+      "subtitle": "Plan, job quota, credits, and invoices for this company.",
+      "loadError": "Could not load company billing.",
+      "currentPlan": "Current plan",
+      "renewsBody": "Renews on {date}.",
+      "endsBody": "Ends on {date}.",
+      "pastDueBody": "Last payment is pending confirmation.",
+      "jobSlots": "Active jobs",
+      "jobSlotsValue": "{used} of {limit}",
+      "credits": "Credits",
+      "noCredits": "No unspent credits.",
+      "expires": "Expires {date}",
+      "creditKinds": {
+        "FEATURED_SLOT": "Featured job slot",
+        "JOB_POST": "Extra job post",
+        "APPLICATION_BOOST": "Application boost"
+      },
+      "choosePlan": "Upgrade your plan",
+      "perMonth": "{price} / month",
+      "oneTime": "{price} one-time",
+      "originalUsd": "Billed as {price} USD",
+      "select": "Select",
+      "selected": "Selected",
+      "billingLink": "Billing"
     }
   }
 }

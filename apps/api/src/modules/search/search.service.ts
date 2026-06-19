@@ -41,6 +41,19 @@ interface PostSearchRow {
   authorAvatarUrl: string | null;
 }
 
+interface CompanySearchRow {
+  id: string;
+  slug: string;
+  name: string;
+  tagline: string | null;
+  industry: string | null;
+  city: string | null;
+  country: string;
+  logoUrl: string | null;
+  verified: boolean;
+  activeJobs: bigint | number;
+}
+
 interface JobSearchRow {
   id: string;
   title: string;
@@ -202,6 +215,81 @@ export class SearchService {
     };
   }
 
+  async searchCompanies(
+    _viewerId: string,
+    query: CompaniesSearchQuery,
+  ): Promise<{ data: SearchCompanyHit[]; meta: CursorPageMeta }> {
+    const q = query.q.trim();
+    const limit = query.limit;
+    const now = new Date();
+
+    const cursorRow = query.after
+      ? await this.prisma.company.findUnique({
+          where: { id: query.after },
+          select: { name: true, id: true },
+        })
+      : null;
+
+    const cursorClause = cursorRow
+      ? Prisma.sql`AND (c."name", c."id") > (${cursorRow.name}, ${cursorRow.id})`
+      : Prisma.empty;
+
+    const rows = await this.prisma.$queryRaw<CompanySearchRow[]>(Prisma.sql`
+      SELECT
+        c."id"       AS "id",
+        c."slug"     AS "slug",
+        c."name"     AS "name",
+        c."tagline"  AS "tagline",
+        c."industry" AS "industry",
+        c."city"     AS "city",
+        c."country"  AS "country",
+        c."logoUrl"  AS "logoUrl",
+        c."verified" AS "verified",
+        (
+          SELECT COUNT(*)
+          FROM   "Job" j
+          WHERE  j."companyId" = c."id"
+            AND  j."isActive"  = TRUE
+            AND  j."deletedAt" IS NULL
+            AND  (j."expiresAt" IS NULL OR j."expiresAt" > ${now})
+        ) AS "activeJobs"
+      FROM   "Company" c
+      WHERE  to_tsvector(
+               'simple',
+               COALESCE(c."name",     '') || ' ' ||
+               COALESCE(c."slug",     '') || ' ' ||
+               COALESCE(c."tagline",  '') || ' ' ||
+               COALESCE(c."industry", '')
+             ) @@ plainto_tsquery('simple', ${q})
+        ${cursorClause}
+      ORDER  BY c."name" ASC, c."id" ASC
+      LIMIT  ${limit + 1}
+    `);
+
+    const hasMore = rows.length > limit;
+    const trimmed = hasMore ? rows.slice(0, limit) : rows;
+
+    return {
+      data: trimmed.map<SearchCompanyHit>((c) => ({
+        id: c.id,
+        slug: c.slug,
+        name: c.name,
+        tagline: c.tagline,
+        industry: c.industry,
+        city: c.city,
+        country: c.country,
+        logoUrl: c.logoUrl,
+        verified: c.verified,
+        activeJobs: Number(c.activeJobs),
+      })),
+      meta: {
+        nextCursor: hasMore ? trimmed[trimmed.length - 1]!.id : null,
+        hasMore,
+        limit,
+      },
+    };
+  }
+
   async searchJobs(
     _viewerId: string,
     query: JobsSearchQuery,
@@ -261,71 +349,6 @@ export class SearchService {
         country: j.country,
         type: j.type,
         createdAt: j.createdAt.toISOString(),
-      })),
-      meta: {
-        nextCursor: hasMore ? trimmed[trimmed.length - 1]!.id : null,
-        hasMore,
-        limit,
-      },
-    };
-  }
-
-  async searchCompanies(
-    _viewerId: string,
-    query: CompaniesSearchQuery,
-  ): Promise<{ data: SearchCompanyHit[]; meta: CursorPageMeta }> {
-    const q = query.q.trim();
-    const limit = query.limit;
-
-    const cursorRow = query.after
-      ? await this.prisma.company.findUnique({
-          where: { id: query.after },
-          select: { name: true, id: true },
-        })
-      : null;
-
-    const cursorClause = cursorRow
-      ? Prisma.sql`AND (c."name", c."id") > (${cursorRow.name}, ${cursorRow.id})`
-      : Prisma.empty;
-
-    const rows = await this.prisma.$queryRaw<CompanySearchRow[]>(Prisma.sql`
-      SELECT
-        c."id"       AS "id",
-        c."slug"     AS "slug",
-        c."name"     AS "name",
-        c."tagline"  AS "tagline",
-        c."industry" AS "industry",
-        c."city"     AS "city",
-        c."country"  AS "country",
-        c."logoUrl"  AS "logoUrl",
-        c."verified" AS "verified"
-      FROM   "Company" c
-      WHERE  to_tsvector(
-               'simple',
-               COALESCE(c."name",     '') || ' ' ||
-               COALESCE(c."tagline",  '') || ' ' ||
-               COALESCE(c."industry", '') || ' ' ||
-               COALESCE(c."city",     '')
-             ) @@ plainto_tsquery('simple', ${q})
-        ${cursorClause}
-      ORDER  BY c."name" ASC, c."id" ASC
-      LIMIT  ${limit + 1}
-    `);
-
-    const hasMore = rows.length > limit;
-    const trimmed = hasMore ? rows.slice(0, limit) : rows;
-
-    return {
-      data: trimmed.map<SearchCompanyHit>((c) => ({
-        id: c.id,
-        slug: c.slug,
-        name: c.name,
-        tagline: c.tagline,
-        industry: c.industry,
-        city: c.city,
-        country: c.country,
-        logoUrl: c.logoUrl,
-        verified: c.verified,
       })),
       meta: {
         nextCursor: hasMore ? trimmed[trimmed.length - 1]!.id : null,

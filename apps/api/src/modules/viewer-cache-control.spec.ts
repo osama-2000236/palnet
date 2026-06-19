@@ -1,5 +1,6 @@
 import { HEADERS_METADATA } from "@nestjs/common/constants";
 
+import { BillingController } from "./billing/billing.controller";
 import { JobsController } from "./jobs/jobs.controller";
 import { ProfilesController } from "./profiles/profiles.controller";
 
@@ -17,5 +18,12 @@ describe("viewer-scoped cache headers", () => {
 
   it("does not publicly cache profile responses with optional viewer state", () => {
     expect(cacheControlFor(ProfilesController.prototype.byHandle)).toBe("private, no-store");
+  });
+
+  it("does not publicly cache viewer-scoped billing reads", () => {
+    expect(cacheControlFor(BillingController.prototype.catalog)).toBe("private, no-store");
+    expect(cacheControlFor(BillingController.prototype.me)).toBe("private, no-store");
+    expect(cacheControlFor(BillingController.prototype.invoices)).toBe("private, no-store");
+    expect(cacheControlFor(BillingController.prototype.companySummary)).toBe("private, no-store");
   });
 });

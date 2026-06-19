@@ -344,7 +344,9 @@
     "noResults": "لا نتائج مطابقة.",
     "prompt": "جرّب اسمًا أو معرّفًا للبحث عن أشخاص.",
     "loadMore": "تحميل المزيد",
-    "loadingMore": "جارٍ التحميل…"
+    "loadingMore": "جارٍ التحميل…",
+    "verified": "موثّقة",
+    "activeJobsCount": "{{count}} وظائف شاغرة"
   },
   "profile": {
     "about": "نبذة",
@@ -395,7 +397,10 @@
       "date": "اكتب التاريخ بصيغة YYYY-MM-DD.",
       "school": "اكتب اسم المؤسسة التعليمية.",
       "skill": "اكتب مهارة صحيحة."
-    }
+    },
+    "endorseCountLabel": "{{count}} تزكيات",
+    "endorseThanks": "تمت تزكية المهارة.",
+    "endorseError": "تعذّرت تزكية هذه المهارة."
   },
   "karama": {
     "kicker": "نقاط الكرامة",
@@ -438,7 +443,13 @@
       "REDEEM_FEATURED_PROFILE": "ملف مميز",
       "DECAY": "انخفاض شهري",
       "ADJUSTMENT": "تسوية"
-    }
+    },
+    "loadError": "تعذّر تحميل رصيد كرامة.",
+    "redeemError": "تعذّر استبدال هذه المكافأة.",
+    "redeeming": "جارٍ الاستبدال…",
+    "premiumActive": "عضويتك المميزة فعّالة — أدرها من صفحة بيدر المميّز.",
+    "premiumLink": "بيدر المميّز",
+    "redeemed": "تم الاستبدال: {{reward}}."
   },
   "network": {
     "title": "شبكتي",
@@ -534,7 +545,8 @@
       "POST_MENTION": "أشار إليك {{actor}} في منشور.",
       "MESSAGE_RECEIVED": "أرسل لك {{actor}} رسالة.",
       "JOB_APPLICATION_UPDATE": "طرأ تحديث على طلبك الوظيفي.",
-      "PROFILE_VIEW": "شاهد {{actor}} ملفك الشخصي."
+      "PROFILE_VIEW": "شاهد {{actor}} ملفك الشخصي.",
+      "MODERATION_ACTION": "راجع فريق الإشراف بلاغك."
     }
   },
   "activity": {
@@ -612,7 +624,9 @@
       "ONSITE": "من المكتب",
       "HYBRID": "هجين",
       "REMOTE": "عن بُعد"
-    }
+    },
+    "companyFilter": "وظائف لدى {{name}}",
+    "clearCompanyFilter": "إزالة تصفية الشركة"
   },
   "saved": {
     "title": "المحفوظات",
@@ -794,7 +808,14 @@
   },
   "company": {
     "about": "عن الشركة",
-    "jobs": "الوظائف"
+    "jobs": "الوظائف",
+    "openJobs": "الوظائف المتاحة",
+    "noJobs": "لا وظائف متاحة حاليًا.",
+    "loadError": "تعذّر تحميل هذه الشركة.",
+    "visitWebsite": "زيارة الموقع",
+    "verified": "موثّقة",
+    "viewAllJobs": "عرض كل الوظائف",
+    "notFound": "الشركة غير موجودة."
   },
   "employer": {
     "title": "صاحب العمل",
@@ -818,6 +839,135 @@
       "REJECTED": "مرفوض",
       "HIRED": "تمّ التوظيف",
       "WITHDRAWN": "منسحب"
+    }
+  },
+  "premium": {
+    "entry": "بيدر المميّز",
+    "kicker": "بيدر المميّز",
+    "title": "تميّز حيث يهمّ الأمر",
+    "subtitle": "العضوية المميزة تمنح ملفك حضورًا ورؤى أوضح — بسعر يناسب منطقتنا، وألغِ متى شئت.",
+    "loadError": "تعذّر تحميل الباقات.",
+    "current": {
+      "activeTitle": "عضويتك المميزة فعّالة",
+      "renewsBody": "تتجدد باقتك في {{date}}.",
+      "endsBody": "تنتهي باقتك في {{date}}.",
+      "pastDueTitle": "الدفعة قيد التأكيد",
+      "pastDueBody": "نراجع دفعتك الأخيرة، وتبقى العضوية فعّالة خلال ذلك."
+    },
+    "free": {
+      "name": "الأساسية",
+      "price": "مجانًا",
+      "tagline": "الأساسيات، مجانًا دائمًا",
+      "features": {
+        "profile": "ملف مهني كامل",
+        "connect": "تواصل ومراسلة بلا حدود",
+        "jobs": "التقديم على أي وظيفة"
+      }
+    },
+    "plan": {
+      "name": "بيدر المميّز",
+      "tagline": "رؤى وحضور أقوى، ثلاثون يومًا في كل مرة",
+      "perMonth": "{{price}} / شهريًا",
+      "originalUsd": "تُحتسب {{price}} دولارًا أمريكيًا",
+      "features": {
+        "analytics": "إحصاءات الملف الشخصي",
+        "whoViewed": "اعرف من شاهد ملفك",
+        "diasporaBadge": "شارة المغترب على ملفك"
+      }
+    },
+    "cta": "الترقية إلى المميّز"
+  },
+  "billing": {
+    "plans": {
+      "EMPLOYER_FREE": "المُوظِّف المجانية",
+      "EMPLOYER_BASIC": "المُوظِّف الأساسية",
+      "EMPLOYER_PRO": "المُوظِّف الاحترافية",
+      "FEATURED_SLOT": "موضع وظيفة مميّز",
+      "USER_PREMIUM": "بيدر المميّز"
+    },
+    "features": {
+      "activeJobs": "{{count}} وظائف فعّالة",
+      "applicantInbox": "صندوق المتقدمين",
+      "basicAnalytics": "تحليلات أساسية",
+      "advancedAnalytics": "تحليلات متقدمة",
+      "csvExport": "تصدير CSV",
+      "featuredSlots": "موضع مميّز واحد مشمول",
+      "profileAnalytics": "إحصاءات الملف الشخصي",
+      "whoViewedMe": "اعرف من شاهد ملفك",
+      "diasporaBadge": "شارة المغترب على ملفك",
+      "durationDays": "تمييز لمدة {{count}} أيام"
+    },
+    "checkout": {
+      "title": "اختر طريقة الدفع",
+      "methods": {
+        "card": "بطاقة بنكية",
+        "bankTransfer": "حوالة بنكية",
+        "points": "نقاط كرامة",
+        "jawwalpay": "جوال باي",
+        "palpay": "بال باي",
+        "reflect": "ريفلكت"
+      },
+      "comingSoon": "قريبًا",
+      "pointsBalance": "رصيدك: {{balance}} نقطة · التكلفة {{cost}} نقطة",
+      "pointsInsufficient": "تحتاج إلى {{cost}} نقطة كرامة. اكسب النقاط بالمساهمة في بيدر.",
+      "confirm": "متابعة",
+      "confirmPoints": "استبدال {{cost}} نقطة",
+      "cardRedirect": "ستكمل الدفع في المتصفح مع شريك الدفع الآمن.",
+      "cardError": "الدفع بالبطاقة غير متاح مؤقتًا. جرّب الحوالة البنكية.",
+      "bank": {
+        "title": "تعليمات الحوالة البنكية",
+        "body": "حوّل المبلغ كما هو واحتفظ بالمرجع. نفعّل الشراء بعد مراجعة الحوالة — عادةً خلال يومي عمل.",
+        "beneficiary": "المستفيد",
+        "iban": "IBAN",
+        "reference": "المرجع",
+        "amount": "المبلغ",
+        "due": "أتمم الحوالة خلال ٧ أيام لإبقاء الفاتورة مفتوحة."
+      },
+      "pointsSuccess": {
+        "title": "تم تفعيل العضوية المميزة",
+        "body": "استمتع بثلاثين يومًا من المزايا — دفعتها نقاط كرامتك."
+      }
+    },
+    "invoices": {
+      "title": "سجل الفواتير",
+      "empty": "لا فواتير بعد.",
+      "statuses": {
+        "DRAFT": "مسودة",
+        "OPEN": "بانتظار الدفع",
+        "PAID": "مدفوعة",
+        "VOID": "ملغاة",
+        "UNCOLLECTIBLE": "متعذّر تحصيلها"
+      },
+      "dueBy": "تستحق في {{date}}",
+      "uploadReceipt": "رفع إيصال الحوالة",
+      "receiptSubmitted": "أُرسل الإيصال — قيد المراجعة.",
+      "uploadError": "تعذّر رفع الإيصال."
+    },
+    "employer": {
+      "title": "فوترة الشركة",
+      "subtitle": "الباقة وحصة الوظائف والأرصدة والفواتير لهذه الشركة.",
+      "loadError": "تعذّر تحميل فوترة الشركة.",
+      "currentPlan": "الباقة الحالية",
+      "renewsBody": "تتجدد في {{date}}.",
+      "endsBody": "تنتهي في {{date}}.",
+      "pastDueBody": "الدفعة الأخيرة قيد التأكيد.",
+      "jobSlots": "الوظائف الفعّالة",
+      "jobSlotsValue": "{{used}} من {{limit}}",
+      "credits": "الأرصدة",
+      "noCredits": "لا أرصدة غير مستخدمة.",
+      "expires": "ينتهي في {{date}}",
+      "creditKinds": {
+        "FEATURED_SLOT": "موضع وظيفة مميّز",
+        "JOB_POST": "نشر وظيفة إضافية",
+        "APPLICATION_BOOST": "تعزيز طلب"
+      },
+      "choosePlan": "رقِّ باقتك",
+      "perMonth": "{{price}} / شهريًا",
+      "oneTime": "{{price}} لمرة واحدة",
+      "originalUsd": "تُحتسب {{price}} دولارًا أمريكيًا",
+      "select": "اختيار",
+      "selected": "مختارة",
+      "billingLink": "الفوترة"
     }
   }
 }

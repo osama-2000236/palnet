@@ -13,6 +13,7 @@ import { apiErrorMessage } from "@/lib/api-errors";
 import { clearSession, getAccessToken } from "@/lib/session";
 
 import { Section } from "../_me/Section";
+import { ProfileQuickLinks } from "../_me/ProfileQuickLinks";
 import { styles } from "../_me/styles";
 
 type ProfileTab = "about" | "exp" | "edu" | "skills";
@@ -142,60 +143,7 @@ export default function MeScreen(): JSX.Element {
           </View>
         </Surface>
 
-        <Button
-          variant="secondary"
-          size="md"
-          fullWidth
-          onPress={() => router.push("/(app)/activity" as never)}
-          accessibilityLabel={t("activity.title")}
-        >
-          {t("activity.title")}
-        </Button>
-        <Button
-          variant="secondary"
-          size="md"
-          fullWidth
-          onPress={() => router.push("/(app)/saved" as never)}
-          accessibilityLabel={t("saved.title")}
-        >
-          {t("saved.title")}
-        </Button>
-        <Button
-          variant="secondary"
-          size="md"
-          fullWidth
-          onPress={() => router.push("/(app)/me/connections" as never)}
-          accessibilityLabel={t("network.myConnections")}
-        >
-          {t("network.myConnections")}
-        </Button>
-        <Button
-          variant="secondary"
-          size="md"
-          fullWidth
-          onPress={() => router.push("/(app)/me/karama" as never)}
-          accessibilityLabel={t("karama.kicker")}
-        >
-          {t("karama.kicker")}
-        </Button>
-        <Button
-          variant="secondary"
-          size="md"
-          fullWidth
-          onPress={() => router.push("/(app)/settings/blocked" as never)}
-          accessibilityLabel={t("safety.blocked.title")}
-        >
-          {t("safety.blocked.title")}
-        </Button>
-        <Button
-          variant="secondary"
-          size="md"
-          fullWidth
-          onPress={() => router.push("/(app)/settings/account" as never)}
-          accessibilityLabel={t("account.title")}
-        >
-          {t("account.title")}
-        </Button>
+        <ProfileQuickLinks />
 
         <Surface variant="tinted" padding="4" style={styles.progressRail}>
           <Text selectable style={styles.progressTitle}>
