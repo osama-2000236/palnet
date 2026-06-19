@@ -40,6 +40,7 @@ module.exports = {
       associatedDomains: ["applinks:baydar.ps"],
       infoPlist: {
         CFBundleAllowMixedLocalizations: true,
+        ITSAppUsesNonExemptEncryption: false,
       },
     },
     android: {

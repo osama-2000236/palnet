@@ -17,6 +17,12 @@
         "EXPO_PUBLIC_DEFAULT_LOCALE": "ar-PS"
       }
     },
+    "simulator": {
+      "extends": "preview",
+      "ios": {
+        "simulator": true
+      }
+    },
     "production": {
       "channel": "production",
       "autoIncrement": true,
