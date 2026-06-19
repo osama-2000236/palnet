@@ -179,7 +179,8 @@ jobs:
 
   deploy-web-production:
     name: Deploy Web (production) — Vercel
-    needs: migrate-production
+    needs: deploy-web-staging
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.target == 'production'
     runs-on: ubuntu-latest
     environment: production
     steps:
