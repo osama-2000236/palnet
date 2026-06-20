@@ -839,6 +839,48 @@
       "REJECTED": "مرفوض",
       "HIRED": "تمّ التوظيف",
       "WITHDRAWN": "منسحب"
+    },
+    "createCompany": "إنشاء شركة",
+    "publishJob": "نشر وظيفة",
+    "form": {
+      "title": "إنشاء صفحة شركة",
+      "name": "اسم الشركة",
+      "slug": "المُعرّف",
+      "slugHelp": "أحرف إنجليزية صغيرة وأرقام وشرطات.",
+      "tagline": "الشعار",
+      "website": "الموقع الإلكتروني",
+      "industry": "المجال",
+      "city": "المدينة",
+      "country": "الدولة",
+      "submit": "إنشاء",
+      "submitting": "جارٍ الإنشاء…",
+      "invalid": "تحقّق من الاسم والمُعرّف والحقول قبل الإنشاء."
+    },
+    "newJob": {
+      "title": "نشر وظيفة",
+      "fieldTitle": "المسمى الوظيفي",
+      "description": "الوصف",
+      "type": "نوع الدوام",
+      "locationMode": "نمط العمل",
+      "city": "المدينة",
+      "salaryMin": "أدنى راتب",
+      "salaryMax": "أعلى راتب",
+      "salaryCurrency": "العملة",
+      "submit": "نشر",
+      "submitting": "جارٍ النشر…"
+    },
+    "jobType": {
+      "FULL_TIME": "دوام كامل",
+      "PART_TIME": "دوام جزئي",
+      "CONTRACT": "عقد",
+      "INTERNSHIP": "تدريب",
+      "VOLUNTEER": "تطوّع",
+      "TEMPORARY": "مؤقّت"
+    },
+    "locationModeOptions": {
+      "ONSITE": "في الموقع",
+      "HYBRID": "هجين",
+      "REMOTE": "عن بُعد"
     }
   },
   "premium": {

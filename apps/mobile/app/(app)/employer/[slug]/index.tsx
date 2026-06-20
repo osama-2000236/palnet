@@ -79,6 +79,19 @@ export default function CompanyJobsScreen(): JSX.Element {
           >
             {t("billing.employer.billingLink")}
           </Button>
+          <Button
+            variant="primary"
+            size="sm"
+            onPress={() =>
+              router.push({
+                pathname: "/(app)/employer/[slug]/new-job",
+                params: { slug },
+              } as never)
+            }
+            accessibilityLabel={t("employer.newJob.title")}
+          >
+            {t("employer.publishJob")}
+          </Button>
         </View>
         <FlatList
           contentContainerStyle={styles.listContent}
@@ -139,6 +152,7 @@ const styles = StyleSheet.create({
   actions: {
     flexDirection: "row",
     justifyContent: "flex-end",
+    gap: nativeTokens.space[2],
     paddingBottom: nativeTokens.space[3],
   },
   listContent: {

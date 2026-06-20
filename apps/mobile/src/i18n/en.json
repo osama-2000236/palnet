@@ -837,6 +837,48 @@
       "REJECTED": "Rejected",
       "HIRED": "Hired",
       "WITHDRAWN": "Withdrew"
+    },
+    "createCompany": "Create company",
+    "publishJob": "Publish job",
+    "form": {
+      "title": "Create company page",
+      "name": "Company name",
+      "slug": "Handle",
+      "slugHelp": "Lowercase letters, numbers, and dashes.",
+      "tagline": "Tagline",
+      "website": "Website",
+      "industry": "Industry",
+      "city": "City",
+      "country": "Country",
+      "submit": "Create",
+      "submitting": "Creating…",
+      "invalid": "Check the name, handle, and fields before creating."
+    },
+    "newJob": {
+      "title": "Publish job",
+      "fieldTitle": "Job title",
+      "description": "Description",
+      "type": "Employment type",
+      "locationMode": "Work mode",
+      "city": "City",
+      "salaryMin": "Min salary",
+      "salaryMax": "Max salary",
+      "salaryCurrency": "Currency",
+      "submit": "Publish",
+      "submitting": "Publishing…"
+    },
+    "jobType": {
+      "FULL_TIME": "Full-time",
+      "PART_TIME": "Part-time",
+      "CONTRACT": "Contract",
+      "INTERNSHIP": "Internship",
+      "VOLUNTEER": "Volunteer",
+      "TEMPORARY": "Temporary"
+    },
+    "locationModeOptions": {
+      "ONSITE": "On-site",
+      "HYBRID": "Hybrid",
+      "REMOTE": "Remote"
     }
   },
   "premium": {

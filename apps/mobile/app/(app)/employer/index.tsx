@@ -1,12 +1,13 @@
 import { CompanySummary } from "@baydar/shared";
 import {
   AppHeader,
+  Button,
   EmptyState,
   RecordCard,
   RecordCardSkeleton,
   nativeTokens,
 } from "@baydar/ui-native";
-import { Link, Stack } from "expo-router";
+import { Link, Stack, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { FlatList, Pressable, StyleSheet, View } from "react-native";
@@ -21,6 +22,7 @@ const CompanyList = z.array(CompanySummary);
 
 export default function EmployerHomeScreen(): JSX.Element {
   const { t } = useTranslation();
+  const router = useRouter();
   const [items, setItems] = useState<CompanySummary[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
@@ -41,7 +43,21 @@ export default function EmployerHomeScreen(): JSX.Element {
     <SafeAreaView style={styles.screen}>
       <Stack.Screen options={{ title: t("employer.title"), headerShown: false }} />
       <View style={styles.content}>
-        <AppHeader title={t("employer.title")} subtitle={t("employer.subtitle")} compact />
+        <AppHeader
+          title={t("employer.title")}
+          subtitle={t("employer.subtitle")}
+          compact
+          trailing={
+            <Button
+              variant="primary"
+              size="sm"
+              onPress={() => router.push("/(app)/employer/new")}
+              accessibilityLabel={t("employer.createCompany")}
+            >
+              {t("employer.createCompany")}
+            </Button>
+          }
+        />
         <FlatList
           contentContainerStyle={styles.listContent}
           data={items ?? []}
