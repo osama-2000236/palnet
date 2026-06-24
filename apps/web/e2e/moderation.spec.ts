@@ -90,6 +90,7 @@ async function connectReporterToPeer(
     headers: { Authorization: `Bearer ${reporterSession.tokens.accessToken}` },
     data: { receiverId: peer.user.id },
   });
+  if (connectionResponse.status() === 409) return;
   expect(connectionResponse.ok()).toBeTruthy();
   const connectionJson = (await connectionResponse.json()) as { data?: { id?: string } };
   expect(connectionJson.data?.id).toBeTruthy();

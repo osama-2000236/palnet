@@ -23,25 +23,31 @@ export function ConnectivityBanner({
 
   if (state === "offline") {
     return (
-      <Banner kind="warning" live="assertive">
-        {t("offline")}
-      </Banner>
+      <div data-testid="connectivity-banner">
+        <Banner kind="warning" live="assertive">
+          {t("offline")}
+        </Banner>
+      </div>
     );
   }
 
   if (state === "restored") {
     return (
-      <Banner kind="success" live="polite" dismissible={false}>
-        {t("restored")}
-      </Banner>
+      <div data-testid="connectivity-banner">
+        <Banner kind="success" live="polite" dismissible={false}>
+          {t("restored")}
+        </Banner>
+      </div>
     );
   }
 
   if (degraded) {
     return (
-      <Banner kind="info" live="polite">
-        {t("degraded")}
-      </Banner>
+      <div data-testid="connectivity-banner">
+        <Banner kind="info" live="polite">
+          {t("degraded")}
+        </Banner>
+      </div>
     );
   }
 

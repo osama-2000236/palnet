@@ -1006,9 +1006,11 @@
     },
     "applicants": {
       "title": "المتقدمون",
+      "all": "الكل",
       "empty": "لا يوجد متقدمون بعد.",
       "applied": "قدّم في",
       "openResume": "افتح السيرة الذاتية",
+      "statusLabel": "حالة الطلب",
       "status": {
         "SUBMITTED": "جديد",
         "REVIEWING": "قيد المراجعة",

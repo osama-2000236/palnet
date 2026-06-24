@@ -1018,9 +1018,11 @@
     },
     "applicants": {
       "title": "Applicants",
+      "all": "All",
       "empty": "No applicants yet.",
       "applied": "Applied on",
       "openResume": "Open resume",
+      "statusLabel": "Application status",
       "status": {
         "SUBMITTED": "New",
         "REVIEWING": "Reviewing",

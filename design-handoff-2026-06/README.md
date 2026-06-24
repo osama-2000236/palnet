@@ -1,8 +1,10 @@
-# Baydar web + mobile design handoff — 2026-06-19
+# Baydar web + mobile design upgrade handoff — 2026-06-20
 
-This is the current Claude-ready design handoff. Start with
-`Baydar-Claude-Design-Handoff.html`; it is a self-contained artifact with no
-external requests, fonts, scripts, or backend dependency.
+Start with `Baydar-Claude-Design-Handoff.html`. It is a self-contained Claude
+artifact with embedded QA evidence, no runtime external requests, fonts, or
+backend dependency. For a plain-text paste, use
+`CLAUDE-DESIGN-UPGRADE-PROMPT.md`. Full findings and evidence live under
+`audit-2026-06-20/`.
 
 ## Source of truth
 
@@ -17,27 +19,32 @@ external requests, fonts, scripts, or backend dependency.
 Do not copy the HTML artifact into production. It explains the system; the repo
 tokens and shared atoms implement it.
 
-## Current parity contract
+## Current evidence-led parity contract
 
-| Flow               | Web       | Mobile              | Required shared behavior                                                |
-| ------------------ | --------- | ------------------- | ----------------------------------------------------------------------- |
-| Auth + onboarding  | Yes       | Yes                 | Arabic-first, field-local validation, recoverable errors                |
-| Feed + post safety | Yes       | Yes                 | Post, react, comment, save, report; stable loading/success/error states |
-| Search + company   | Yes       | Yes                 | People/jobs/companies, verified marker, public company route            |
-| Jobs               | Yes       | Yes                 | Company filter, job detail, application feedback                        |
-| Profile + skills   | Yes       | Yes                 | Public profile, edit, skill endorsements, Karama                        |
-| Personal premium   | Yes       | Yes                 | Catalog, checkout, invoices, active-plan state                          |
-| Employer billing   | Yes       | Yes                 | Plans, slots, credits, checkout, invoices                               |
-| Moderation         | Admin web | Reporter mobile/web | Report resolution notification and post takedown                        |
-| Theme              | Yes       | Yes                 | Warm light/dark tokens; no generic blue                                 |
+| Flow | Web | Mobile | Audit status |
+| --- | --- | --- | --- |
+| Auth + onboarding | Implemented | Implemented | Verified by unit/build; runtime smoke remains |
+| Core feed/network/search/jobs | Implemented | Implemented | Partial proof; full E2E gate is unstable |
+| Messages/notifications/activity/saved | Implemented | Implemented | Connectivity/offline proof blocked by nondeterministic E2E |
+| Profile/settings/premium | Implemented | Implemented | Partial proof |
+| Employer billing/applicants | Implemented | Implemented | Shared-control drift fixed; visual proof remains |
+| Employer create/job publish | Implemented | Implemented with reduced optional fields | Core intent landed; native runtime and expiry/skills decision remain |
+| Moderation | Admin + reporter | Reporter | Intended role difference; lifecycle E2E unstable |
+| Legal/admin | Implemented | Out of scope | Intentional platform exception |
+
+Do not read “implemented” as “fully verified.” The artifact distinguishes
+implementation coverage from current QA proof.
 
 ## Claude design platform use
 
-1. Upload or paste `Baydar-Claude-Design-Handoff.html` into Claude as an artifact.
-2. Give Claude the repository plus the prompt copied from the artifact.
-3. Ask for one flow at a time and require both web and mobile output.
-4. Require Claude to cite the exact token and atom files it will reuse before edits.
-5. Verify with Arabic RTL, English LTR, narrow mobile, desktop, keyboard, and touch.
+1. Attach `Baydar-Claude-Design-Handoff.html` and give Claude repository access.
+2. Copy the XML prompt from the artifact or the standalone prompt file.
+3. Resolve P0 evidence reliability first, then P1 flow gaps, then P2 coverage.
+4. Require file-level citations, matching-state before/after evidence, and explicit
+   Verified/Partial/Intentional/Blocked labels.
+5. Accept only after Arabic RTL, English LTR, 390 px web, desktop, native runtime,
+   keyboard, touch, and complete state checks pass.
 
-The artifact stays below Claude's 16 MiB limit and follows the single-page,
-inline-resource constraints documented for Claude Code visual artifacts.
+The artifact is about 0.30 MiB, below Claude's 16 MiB rendered-size limit, and
+follows the single-page inline-resource constraints in official Claude Code
+artifact documentation.

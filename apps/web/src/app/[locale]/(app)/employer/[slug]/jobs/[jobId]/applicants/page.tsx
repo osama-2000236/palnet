@@ -1,7 +1,7 @@
 "use client";
 
 import { ApplicationStatus, Company, cursorPage, EmployerApplicant } from "@baydar/shared";
-import { Surface } from "@baydar/ui-web";
+import { Chip, Surface } from "@baydar/ui-web";
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
@@ -98,14 +98,13 @@ export default function EmployerApplicantsPage(): JSX.Element {
       <h1 className="text-ink mb-4 text-2xl font-semibold">{t("title")}</h1>
 
       <div className="mb-3 flex flex-wrap gap-2">
-        <Chip active={filter === ""} onClick={() => setFilter("")} label="All" />
+        <Chip active={filter === ""} onClick={() => setFilter("")}>
+          {t("all")}
+        </Chip>
         {(Object.values(ApplicationStatus) as ApplicationStatus[]).map((s) => (
-          <Chip
-            key={s}
-            active={filter === s}
-            onClick={() => setFilter(s)}
-            label={t(`status.${s}`)}
-          />
+          <Chip key={s} active={filter === s} onClick={() => setFilter(s)}>
+            {t(`status.${s}`)}
+          </Chip>
         ))}
       </div>
 
@@ -163,9 +162,10 @@ export default function EmployerApplicantsPage(): JSX.Element {
                 </div>
                 <div className="flex flex-col items-end gap-2">
                   <select
+                    aria-label={t("statusLabel")}
                     value={a.status}
                     onChange={(e) => void changeStatus(a.id, e.target.value as ApplicationStatus)}
-                    className="border-line-hard bg-surface text-ink rounded-md border px-2 py-1 text-xs"
+                    className="border-line-hard bg-surface text-ink rounded-md border px-2 py-1 text-xs focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
                   >
                     {(Object.values(ApplicationStatus) as ApplicationStatus[]).map((s) => (
                       <option key={s} value={s}>
@@ -183,27 +183,5 @@ export default function EmployerApplicantsPage(): JSX.Element {
         ))}
       </ul>
     </main>
-  );
-}
-
-function Chip({
-  active,
-  onClick,
-  label,
-}: {
-  active: boolean;
-  onClick: () => void;
-  label: string;
-}): JSX.Element {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`rounded-full px-3 py-1 text-xs font-medium ${
-        active ? "bg-brand-500 text-white" : "bg-surface-muted text-ink"
-      }`}
-    >
-      {label}
-    </button>
   );
 }

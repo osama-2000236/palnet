@@ -9,7 +9,8 @@ test.skip(
   "Windows spawn EPERM guard: run without BAYDAR_SKIP_SAFETY_E2E_ON_EPERM on a machine that can spawn Playwright webServer/browser processes.",
 );
 
-test("safety: block from profile, view blocked list, unblock", async ({ page, request }) => {
+test("safety: block from profile, view blocked list, unblock", async ({ page, request }, testInfo) => {
+  test.skip(testInfo.project.name !== "chromium-ar", "Safety lifecycle runs once in Arabic.");
   const auth = await ensureA11yStorageState(request);
   const session = JSON.parse(auth.session) as { tokens: { accessToken: string } };
   const runId = process.env.BAYDAR_QA_RUN_ID ?? "qa-local";

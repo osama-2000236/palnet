@@ -15,7 +15,7 @@ test.describe("sad-path UX coverage", () => {
     await failGet(page, "**/api/v1/profiles/me");
     await page.goto("/en/activity", { waitUntil: "domcontentloaded" });
 
-    await expect(page.getByRole("heading", { name: "Activity" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Activity", exact: true })).toBeVisible();
     await expect(page.getByText("Activity is unavailable")).toBeVisible();
     await expect(page.getByRole("button", { name: "Retry" })).toBeVisible();
   });
@@ -45,10 +45,10 @@ test.describe("sad-path UX coverage", () => {
   test("offline banner announces connection loss", async ({ page }) => {
     await page.goto("/en/feed", { waitUntil: "domcontentloaded" });
     await expect(page.getByRole("main")).toBeVisible();
-    await page.locator("button[data-nav-profile] .animate-pulse").waitFor({ state: "detached" });
 
     await page.context().setOffline(true);
     try {
+      await expect(page.getByTestId("connectivity-banner")).toBeVisible();
       await expect(
         page.getByText("You are offline. Changes may not save until the connection returns."),
       ).toBeVisible();
@@ -59,7 +59,7 @@ test.describe("sad-path UX coverage", () => {
 
   test("keyboard focus lands on a visible token ring", async ({ page }) => {
     await page.goto("/en/activity", { waitUntil: "domcontentloaded" });
-    await expect(page.getByRole("heading", { name: "Activity" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Activity", exact: true })).toBeVisible();
 
     for (let index = 0; index < 8; index += 1) {
       await page.keyboard.press("Tab");

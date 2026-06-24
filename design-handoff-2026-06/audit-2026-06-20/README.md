@@ -52,7 +52,7 @@ The final focused visual run produced no assertion failure artifacts after the
 baseline repair, but the Playwright process did not exit cleanly in this Windows
 session. Therefore the gate remains Blocked, not Passed.
 
-### Resolved in branch — Employer creation and publishing are now on mobile
+### Core intent resolved in branch — Employer creation and publishing are now on mobile
 
 Prior route conflict:
 
@@ -70,10 +70,11 @@ Fix applied in this branch (commit `a7de0fe`):
 - Arabic-first `employer.form` / `employer.newJob` / `employer.jobType` /
   `employer.locationModeOptions` strings added to ar and en.
 
-Mobile parity matches web intent. Minor intentional reductions vs web: the native
-publish form omits the optional `expiresAt` date field and free-form skills list
-(API treats both as optional / empty). Verified: mobile `type-check`, `lint`,
-`lint:tokens`, and Jest (31 suites / 84 tests) all green.
+Mobile implementation now matches web's core intent. Field parity and runtime proof
+remain partial: the native publish form omits web's optional `expiresAt` date and
+free-form skills list (API accepts both as optional / empty), and Android flow smoke
+is still blocked at Expo bundling. Static evidence is green: mobile `type-check`,
+`lint`, `lint:tokens`, and Jest (31 suites / 84 tests).
 
 ### P1 — Connectivity state lacks a stable layout contract
 
