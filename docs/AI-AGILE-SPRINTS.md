@@ -225,6 +225,14 @@ Done:
 - Universal links and app links resolve with production values.
 - Rollback notes exist.
 
+Status (2026-07-02) — engineering half shipped:
+
+- `POST /admin/internal/account-retention/run` accepts `{"dryRun":true}` (no-write preview report) so the staging evidence step is one curl; service + tests updated.
+- `baydar-cron-karama-decay` added to `render.yaml` (monthly, 1st 04:00 UTC); account-retention cron already existed.
+- Scheduler contract documented in `docs/deployment.md` (owner, cadence, idempotency, timeout, retry, alert path) plus the hard-delete evidence procedure.
+- Email provider decision documented: Resend, already implemented in code; only the API key + domain DNS remain.
+- Remaining items are owner-credential ops: Apple Team ID + Android SHA256 for universal links, EAS project id + signing, production Sentry/PostHog values, and running the checks in the deployment environment. See `docs/deployment.md` §Production Pre-Flight.
+
 ## Sprint 27 - Claude Design Handoff Refresh
 
 Goal: refresh the design bundle after engineering gaps are closed, then ask Claude Design for focused design output.

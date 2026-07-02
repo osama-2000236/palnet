@@ -20,12 +20,12 @@ import { BillingService } from "../billing/billing.service";
 import { KaramaService, type KaramaDecayReport } from "../karama/karama.service";
 import { MediaScanService } from "../media/media-scan.service";
 
-const KaramaDecayRunBody = z
+const InternalDryRunBody = z
   .object({
     dryRun: z.boolean().default(false),
   })
   .default({ dryRun: false });
-type KaramaDecayRunBody = z.infer<typeof KaramaDecayRunBody>;
+type InternalDryRunBody = z.infer<typeof InternalDryRunBody>;
 
 @Controller("admin/internal")
 @UseGuards(InternalTokenGuard)
@@ -40,14 +40,16 @@ export class AdminInternalController {
 
   @Post("account-retention/run")
   @HttpCode(HttpStatus.OK)
-  async runAccountRetention(): Promise<RetentionReport> {
-    return this.retention.runRetention();
+  async runAccountRetention(
+    @Body(new ZodValidationPipe(InternalDryRunBody)) body: InternalDryRunBody,
+  ): Promise<RetentionReport> {
+    return this.retention.runRetention({ dryRun: body.dryRun });
   }
 
   @Post("karama-decay/run")
   @HttpCode(HttpStatus.OK)
   async runKaramaDecay(
-    @Body(new ZodValidationPipe(KaramaDecayRunBody)) body: KaramaDecayRunBody,
+    @Body(new ZodValidationPipe(InternalDryRunBody)) body: InternalDryRunBody,
   ): Promise<KaramaDecayReport> {
     return this.karama.runMonthlyDecay({ dryRun: body.dryRun });
   }
