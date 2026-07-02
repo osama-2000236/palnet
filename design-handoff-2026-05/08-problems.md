@@ -1,28 +1,35 @@
 # Design Problems — Confirmed Targets
 
-System-level weak spots identified in repo analysis. Independent of `08-pain.md` (subjective UX walk-through).
+> **Sprint 27 re-verification (2026-07-02):** every item re-checked against `main` after Sprints 22–26 and the Open Design implementation pass. Resolved items struck with evidence; open items renumbered for the Pass 2 ask.
 
-1. **`docs/design/SCREENS.md` is a stub.** No per-screen recipe matrix. Risks composition drift across feed/profile/network/jobs/messages/notifications/search/auth.
-2. **Dark mode undecided.** `tokens.css` comment says "No dark mode yet — do not add." Decide: ship light-only or scope dark.
-3. **Empty-state illustrations missing across all 8 screens.** `DESIGN.md §12` mandates illustration slot in empty states; none implemented. Style direction undefined.
-4. **Profile cover gradient palette unspecified.** `DESIGN.md §13` allows it as the single decorative gradient — but no token, no palette, no recipe.
-5. **Five surface variants under-utilized.** Likely "every section as `card`" anti-pattern in shipped screens. Surface scan needed per screen.
-6. **Mobile `Tabs` primitive: not started.** `DESIGN.md §7.3` flags ⏳. Gap in nav primitive parity.
-7. **Web `Sheet` primitive: not started.** `DESIGN.md §7.3` flags ⏳. Modal primitive missing on web.
-8. **Logo: still placeholder SVG.** `BRAND.md` says "Replace with the final mark when designed." Still unbuilt.
-9. **Onboarding flow: not in `DESIGN.md`.** High-impact first impression undocumented; route exists at `apps/web/src/app/[locale]/(app)/onboarding`.
-10. **No motion vocabulary doc.** Durations exist in tokens (`fast 80ms / base 120ms / slow 240ms`); choreography (page enter, list stagger, optimistic feedback) unspecified.
+## Resolved (verified in code)
 
-## Repo-specific addenda
+1. ~~`docs/design/SCREENS.md` is a stub~~ — **resolved**: real per-screen recipe matrix with global recipe, public/auth/core tables, and critique-score gate.
+2. ~~Dark mode undecided~~ — **resolved**: warm-dark theme shipped (`ab981a0`); semantic light/dark token contract on web + mobile (`ThemeProvider`, `useThemeTokens`).
+3. ~~Empty-state illustrations missing~~ — **resolved**: `EmptyState` + `Illustration` (harvest motif, tint/size scale) in `@baydar/ui-web` and `@baydar/ui-native`; consumed by 15 web routes.
+4. ~~Profile cover gradient unspecified~~ — **resolved**: `--cover-gradient` token (`tokens.css:174`, Olive Depth 135deg) — the single allowed decorative gradient per `DESIGN.md §13`.
+5. ~~Surface variants under-utilized~~ — **resolved** by the Open Design pass; all routes scored ≥8/10 in `docs/design/open-design-screen-critique.md`.
+6. ~~Mobile `Tabs` primitive not started~~ — **resolved via parity decision**: native uses `SegmentedControl` + Expo Router bottom tabs; web has `Tabs.tsx`.
+7. ~~Web `Sheet` primitive not started~~ — **partially resolved**: native `Sheet.tsx` shipped; web covers the role with `Dialog`/`Popover`/`Menu`. Revisit only if a real web use-case appears.
+8. **Logo** — mark exists: `packages/ui-tokens/assets/logo-mark.svg` (wheat head on olive circle), canonical source for web/native Icon, Expo app icon, splash, favicons. `BRAND.md` §logo text is stale ("replace when designed") — doc fix, plus optional brand-polish review in a future pass.
+9. ~~Onboarding flow not in `DESIGN.md`~~ — **resolved**: documented (bare-shell decision, `DESIGN.md §11.1`), `OnboardingProgress` shipped web + native.
+10. **No motion vocabulary doc** — **still open, narrowed**: `tokens.motion` (durations + stagger) and `useStagger` exist in code, but choreography (page enter, list stagger, optimistic feedback) is undocumented. See Pass 2 ask.
 
-- **PWA manifest hardcodes `#f4f6ef` and `#526030`** ([apps/web/src/app/manifest.ts:13-14](apps/web/src/app/manifest.ts:13)). Mirrors brand tokens but bypasses them. Tokenize.
-- **2 hex literals** flagged in `07-audits/hex-hits.json` — both PWA manifest above.
-- **Toast** primitive landed Sprint 21 ([packages/ui-web/src/Toast.tsx](packages/ui-web/src/Toast.tsx), [packages/ui-native/src/Toast.tsx](packages/ui-native/src/Toast.tsx)) — not yet added to component spec inventory or `DESIGN.md §7`.
-- **Authenticated dev mode shows "1 error" overlay** in feed snapshot — runtime error in dev that doesn't surface on home page. Worth investigating before design pass.
+## Resolved repo addenda
+
+- ~~PWA manifest hardcodes hex~~ — tokenized (no hex literals in `manifest.ts`).
+- ~~Toast missing from spec inventory~~ — Toast shipped web + native and is in the shared index.
+- ~~Dev "1 error" overlay~~ — fixed in the bug cascade recorded in `08-pain.md` v2.
+
+## Open (Pass 2 targets)
+
+1. **Post-critique surfaces have no design review.** `/me/premium` (plan comparison + checkout: card redirect, bank-transfer IBAN, Karama points, wallets coming-soon), invoices/receipts, `/saved`, and the public company route shipped after the 2026-05-21 critique. No critique scores, no pain walk, no mocks. These are the revenue surfaces.
+2. **Operator UX on admin `/moderation` + `/billing`.** Sprint 25 hardened correctness (conflict states, audit trail, denied states); layout/flow was engineering-composed and flagged in the handoff as needing a design-platform pass.
+3. **Motion vocabulary doc** (from #10 above) — document the existing token values into a choreography contract; small, systemic.
+4. **BRAND.md logo section stale** — align text with the shipped wheat mark (doc-only).
 
 ## See also
 
-- `08-pain.md` — subjective walkthrough notes (lead fills).
-- `07-audits/parity-matrix.md` — generated component coverage.
-- `07-audits/tokens-lint.txt` — token rule status.
-- `07-audits/hex-hits.json` — hardcoded hex sweep.
+- `08-pain.md` — v3 re-verification + v2 history.
+- `10-ask.md` — Pass 2 ask built from the open items above.
+- `docs/design/open-design-screen-critique.md` — per-route scores (2026-05-21; pre-premium/saved/company).

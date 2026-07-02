@@ -1,5 +1,7 @@
 # Bundle Status
 
+> **Sprint 27 refresh (2026-07-02):** `08-pain.md` (v3), `08-problems.md`, and `10-ask.md` (Pass 2) re-verified against `main`. Remaining `[HUMAN]` gaps unchanged: mobile simulator snapshots (T-B.7), moodboard captures (T-B.9). New gap: `04-screens/` web snapshots predate premium/saved/company surfaces. Ask gate: lead must approve Pass 2 before any design output is implemented.
+
 Generated: 2026-05-07. Branch: `claude/eloquent-yonath-6c4db3` @ `78b97a2`.
 
 | Task                   | Status  | Notes                                                                                                                                                   |

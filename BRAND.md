@@ -44,12 +44,12 @@ Default to Arabic. Use English only on localized surfaces.
 
 ## Logo
 
-- **Mark:** a stylized **ب** (Arabic letter _ba_) inside a squared, gently rounded frame. The letter evokes _baydar_'s first character and reads as a tight, grounded glyph.
-- **Colors:** frame in `--brand-600` (`#526030`), letter reversed to white. Never colored reverse (white frame, olive letter) — only the positive lockup.
-- **Do not** stylize the letter into a more decorative shape — calligraphic, swash, or hand-drawn. Keep it geometric.
+- **Mark:** a **wheat head** reversed out of an olive circle — the _baydar_ (threshing floor) metaphor made literal: a central stem with paired grain ellipses. Geometric, grounded, no calligraphy.
+- **Colors:** circle in `--brand-600` (`#526030`), wheat reversed in `--brand-50` (`#f4f6ef`). Never colored reverse (cream circle, olive wheat) — only the positive lockup.
+- **Do not** stylize the wheat into a decorative or hand-drawn shape. Keep it geometric.
 - **Clear space:** 1× logo height on all sides. Min size: 20px (favicon), 32px (header).
 
-The prototype ships a working SVG placeholder in `components/primitives.jsx` (`case "logo"`). Replace with the final mark when designed, but keep the same proportions and container.
+The canonical mark lives at `packages/ui-tokens/assets/logo-mark.svg` — the single source for web/native `Icon` (logo), Expo app icon, adaptive icon, splash, and favicons. Its hex literals are the tokens-of-record for the brand; do not copy them into source code.
 
 ## Colors
 

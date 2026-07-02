@@ -259,6 +259,14 @@ Done:
 - Claude Design output includes mockups, token diff, component diff, and rationale.
 - Engineering agents do not begin design implementation before this gate is approved.
 
+Status (2026-07-02) — bundle refreshed, awaiting lead gate:
+
+- Re-verified all bundle claims against `main`: Design Pass 1 (empty states, surface hierarchy, onboarding) is fully implemented — `EmptyState`/`Illustration` on 15 web routes + native twins, `SCREENS.md` real, warm-dark shipped, cover gradient tokenized, manifest hex fixed.
+- `08-pain.md` → v3, `08-problems.md` → resolved/open split, `10-ask.md` → **Pass 2 draft**: (1) monetization surfaces design review, (2) admin operator UX, (3) motion vocabulary doc.
+- `BRAND.md` logo section updated to the shipped wheat mark (`packages/ui-tokens/assets/logo-mark.svg`).
+- Still `[HUMAN]`: mobile simulator snapshots, moodboard captures, fresh web snapshots for premium/saved/company.
+- **Gate open:** lead must approve/override the Pass 2 ask before it goes to Claude Design; engineering implements nothing from it before approval (Sprint 28 gate).
+
 ## Sprint 28 - Design Foundation Implementation
 
 Goal: implement the Claude Design platform's approved tokens and component changes.
