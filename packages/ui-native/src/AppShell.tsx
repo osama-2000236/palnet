@@ -65,6 +65,16 @@ export interface AppShellProps {
   /** Fired when any nav item is activated (click, Enter, Space). */
   onNavigate(route: AppShellRoute): void;
 
+  /**
+   * Fired when the search pill is pressed. On native the pill is a button
+   * that hands off to the host's search screen (MOBILE.md override of the
+   * web inline input); the host owns navigation.
+   */
+  onSearchPress?(): void;
+
+  /** Fired when the profile trigger is pressed. The host owns the menu/route. */
+  onViewProfile?(): void;
+
   /** Route group to highlight "my profile" when on /me or /in/{myHandle}. */
   children: ReactNode;
 }
@@ -75,6 +85,8 @@ export function AppShell({
   me,
   labels,
   onNavigate,
+  onSearchPress,
+  onViewProfile,
   children,
 }: AppShellProps): ReactElement {
   const c = useThemeTokens().color;
@@ -99,12 +111,19 @@ export function AppShell({
           )}
         </TouchableOpacity>
 
-        {/* Search pill. */}
-        <View style={[styles.searchInputContainer, { backgroundColor: c.surfaceSubtle }]}>
+        {/* Search pill — a button that hands off to the host's search screen. */}
+        <TouchableOpacity
+          activeOpacity={0.7}
+          onPress={onSearchPress}
+          accessibilityRole="button"
+          accessibilityLabel={labels.searchLabel}
+          style={[styles.searchInputContainer, { backgroundColor: c.surfaceSubtle }]}
+        >
           <Icon name="search" size={16} color={c.ink} />
-          {/* TODO: Replace with actual TextInput when search is implemented */}
-          <View style={{ flex: 1 }} />
-        </View>
+          <Text numberOfLines={1} style={[styles.searchPlaceholder, { color: c.inkMuted }]}>
+            {labels.searchPlaceholder}
+          </Text>
+        </TouchableOpacity>
 
         {/* Right cluster: nav + divider + profile. */}
         <View style={styles.navContainer}>
@@ -153,10 +172,8 @@ export function AppShell({
           {/* Profile menu trigger. */}
           <TouchableOpacity
             activeOpacity={0.7}
-            onPress={() => {
-              // TODO: Implement profile menu
-              // onViewProfile?.();
-            }}
+            onPress={onViewProfile}
+            accessibilityRole="button"
             accessibilityLabel={labels.myProfile}
             style={styles.profileButton}
           >
@@ -216,6 +233,11 @@ const styles = StyleSheet.create({
   searchIcon: {
     marginRight: 8,
     color: nativeTokens.color.inkMuted,
+  },
+  searchPlaceholder: {
+    flex: 1,
+    marginStart: 8,
+    fontSize: 13,
   },
   navContainer: {
     flexDirection: "row",
