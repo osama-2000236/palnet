@@ -11,7 +11,7 @@ interface TxStub {
   moderationAction: { create: jest.Mock };
   post: { update: jest.Mock };
   user: { update: jest.Mock; delete: jest.Mock };
-  report: { update: jest.Mock };
+  report: { updateMany: jest.Mock };
 }
 
 type PrismaStub = {
@@ -24,7 +24,7 @@ function buildTx(): TxStub {
     moderationAction: { create: jest.fn() },
     post: { update: jest.fn() },
     user: { update: jest.fn(), delete: jest.fn() },
-    report: { update: jest.fn() },
+    report: { updateMany: jest.fn().mockResolvedValue({ count: 1 }) },
   };
 }
 
@@ -194,6 +194,43 @@ describe("AdminModerationService", () => {
       );
     });
 
+    it("409s on an already-resolved report without duplicating audit or rewards", async () => {
+      prisma.report.findUnique.mockResolvedValue({
+        id: "r_1",
+        reporterId: "u_reporter",
+        targetUserId: "u_bad",
+        resolvedAt: new Date("2026-07-01T00:00:00Z"),
+      });
+
+      await expect(
+        service.act({ actorId: "u_admin2", reportId: "r_1", action: "HARD_DELETE" }),
+      ).rejects.toMatchObject({ code: ErrorCode.CONFLICT });
+
+      expect(prisma.$transaction).not.toHaveBeenCalled();
+      expect(tx.moderationAction.create).not.toHaveBeenCalled();
+      expect(karama.award).not.toHaveBeenCalled();
+      expect(notifications.notify).not.toHaveBeenCalled();
+    });
+
+    it("409s when a concurrent operator resolves the report mid-transaction", async () => {
+      prisma.report.findUnique.mockResolvedValue({
+        id: "r_1",
+        reporterId: "u_reporter",
+        targetUserId: "u_bad",
+        resolvedAt: null,
+      });
+      tx.report.updateMany.mockResolvedValue({ count: 0 });
+
+      await expect(
+        service.act({ actorId: "u_admin2", reportId: "r_1", action: "SUSPEND" }),
+      ).rejects.toMatchObject({ code: ErrorCode.CONFLICT });
+
+      expect(tx.moderationAction.create).not.toHaveBeenCalled();
+      expect(tx.user.update).not.toHaveBeenCalled();
+      expect(karama.award).not.toHaveBeenCalled();
+      expect(notifications.notify).not.toHaveBeenCalled();
+    });
+
     it("stamps resolvedAt + resolvedNote with the action label", async () => {
       prisma.report.findUnique.mockResolvedValue({
         id: "r_1",
@@ -209,8 +246,8 @@ describe("AdminModerationService", () => {
         note: "stop posting spam",
       });
 
-      expect(tx.report.update).toHaveBeenCalledWith({
-        where: { id: "r_1" },
+      expect(tx.report.updateMany).toHaveBeenCalledWith({
+        where: { id: "r_1", resolvedAt: null },
         data: expect.objectContaining({
           resolvedAt: expect.any(Date),
           resolvedNote: "WARN: stop posting spam",

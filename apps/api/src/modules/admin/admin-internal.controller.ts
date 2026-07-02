@@ -58,7 +58,8 @@ export class AdminInternalController {
     @Param("invoiceId") invoiceId: string,
     @Body(new ZodValidationPipe(AdminInvoiceActionBody)) body: AdminInvoiceActionBody,
   ): Promise<InvoiceDto> {
-    return Invoice.parse(await this.billing.adminInvoiceAction(invoiceId, body));
+    // Token-authenticated automation path — no operator identity available.
+    return Invoice.parse(await this.billing.adminInvoiceAction(invoiceId, "system:internal", body));
   }
 
   @Post("media/scan")

@@ -41,7 +41,7 @@ export class AdminBillingController {
     @Body(new ZodValidationPipe(AdminInvoiceActionBody)) body: AdminInvoiceActionBody,
   ): Promise<InvoiceDto> {
     requireAdmin(user);
-    return Invoice.parse(await this.billing.adminInvoiceAction(invoiceId, body));
+    return Invoice.parse(await this.billing.adminInvoiceAction(invoiceId, user.id, body));
   }
 }
 

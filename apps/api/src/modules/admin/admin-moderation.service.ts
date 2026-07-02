@@ -42,9 +42,25 @@ export class AdminModerationService {
     note?: string;
   }) {
     const report = await this.getReport(input.reportId);
+    // Stale-item guard: a report is resolved exactly once. A second operator
+    // acting on the same report gets a conflict instead of duplicate audit
+    // rows, duplicate reporter notifications, or a crash re-deleting a user.
+    if (report.resolvedAt) {
+      throw new DomainException(ErrorCode.CONFLICT, "Report is already resolved.", 409);
+    }
     const note = input.note ?? null;
 
     await this.prisma.$transaction(async (tx) => {
+      // Conditional claim: only the first operator resolves the report. A
+      // concurrent second operator aborts the whole transaction with 409.
+      const claimed = await tx.report.updateMany({
+        where: { id: input.reportId, resolvedAt: null },
+        data: { resolvedAt: new Date(), resolvedNote: `${input.action}${note ? `: ${note}` : ""}` },
+      });
+      if (claimed.count === 0) {
+        throw new DomainException(ErrorCode.CONFLICT, "Report is already resolved.", 409);
+      }
+
       await tx.moderationAction.create({
         data: {
           actorId: input.actorId,
@@ -69,11 +85,6 @@ export class AdminModerationService {
       } else if (input.action === "HARD_DELETE" && report.targetUserId) {
         await tx.user.delete({ where: { id: report.targetUserId } });
       }
-
-      await tx.report.update({
-        where: { id: input.reportId },
-        data: { resolvedAt: new Date(), resolvedNote: `${input.action}${note ? `: ${note}` : ""}` },
-      });
     });
 
     // Reward the reporter when the report led to a real moderator action.

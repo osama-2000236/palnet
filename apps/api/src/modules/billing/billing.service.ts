@@ -407,18 +407,55 @@ export class BillingService {
     return this.activateInvoice(invoiceId, payload.paymentId ?? payload.id ?? "hyperpay");
   }
 
-  async adminInvoiceAction(invoiceId: string, body: AdminInvoiceActionBody): Promise<InvoiceDto> {
+  async adminInvoiceAction(
+    invoiceId: string,
+    actorId: string,
+    body: AdminInvoiceActionBody,
+  ): Promise<InvoiceDto> {
     if (body.action === "VOID") {
-      const invoice = await this.prisma.invoice.update({
-        where: { id: invoiceId },
-        data: { status: "VOID" },
+      const invoice = await this.prisma.invoice.findUnique({ where: { id: invoiceId } });
+      if (!invoice) throw new DomainException(ErrorCode.NOT_FOUND, "Invoice not found.", 404);
+      // Idempotent: a second VOID keeps the original reviewer's audit trail.
+      if (invoice.status === "VOID") return toInvoiceDto(invoice);
+      if (invoice.status === "PAID") {
+        throw new DomainException(
+          ErrorCode.CONFLICT,
+          "Invoice is already paid; it cannot be voided from the review queue.",
+          409,
+        );
+      }
+      // Conditional write: only void an invoice that is still in a voidable
+      // state, so a concurrent reviewer or payment cannot be overwritten.
+      const voided = await this.prisma.invoice.updateMany({
+        where: { id: invoiceId, status: { notIn: ["PAID", "VOID"] } },
+        data: {
+          status: "VOID",
+          reviewedById: actorId,
+          reviewedAt: new Date(),
+          reviewNote: body.note ?? null,
+        },
       });
-      return toInvoiceDto(invoice);
+      if (voided.count === 0) {
+        throw new DomainException(
+          ErrorCode.CONFLICT,
+          "Invoice was updated concurrently; refresh the review queue.",
+          409,
+        );
+      }
+      const row = await this.prisma.invoice.findUniqueOrThrow({ where: { id: invoiceId } });
+      return toInvoiceDto(row);
     }
-    return this.activateInvoice(invoiceId, "bank-transfer-admin");
+    return this.activateInvoice(invoiceId, "bank-transfer-admin", {
+      reviewedById: actorId,
+      reviewNote: body.note ?? null,
+    });
   }
 
-  private async activateInvoice(invoiceId: string, providerPaymentId: string): Promise<InvoiceDto> {
+  private async activateInvoice(
+    invoiceId: string,
+    providerPaymentId: string,
+    review?: { reviewedById: string; reviewNote: string | null },
+  ): Promise<InvoiceDto> {
     const now = new Date();
     const invoice = await this.prisma.invoice.findUnique({
       where: { id: invoiceId },
@@ -426,12 +463,36 @@ export class BillingService {
     });
     if (!invoice) throw new DomainException(ErrorCode.NOT_FOUND, "Invoice not found.", 404);
     if (invoice.status === "PAID") return toInvoiceDto(invoice);
+    if (invoice.status === "VOID") {
+      throw new DomainException(
+        ErrorCode.CONFLICT,
+        "Invoice is void; reopen it before marking it paid.",
+        409,
+      );
+    }
 
     const updated = await this.prisma.$transaction(async (tx) => {
-      const row = await tx.invoice.update({
-        where: { id: invoiceId },
-        data: { status: "PAID", paidAt: now },
+      // Conditional claim: exactly one caller (admin action or webhook) may
+      // transition the invoice to PAID; a concurrent second caller gets a
+      // conflict instead of creating a duplicate payment row.
+      const claimed = await tx.invoice.updateMany({
+        where: { id: invoiceId, status: { notIn: ["PAID", "VOID"] } },
+        data: {
+          status: "PAID",
+          paidAt: now,
+          ...(review
+            ? { reviewedById: review.reviewedById, reviewedAt: now, reviewNote: review.reviewNote }
+            : {}),
+        },
       });
+      if (claimed.count === 0) {
+        throw new DomainException(
+          ErrorCode.CONFLICT,
+          "Invoice was updated concurrently; refresh and retry.",
+          409,
+        );
+      }
+      const row = await tx.invoice.findUniqueOrThrow({ where: { id: invoiceId } });
       await tx.payment.create({
         data: {
           invoiceId,
@@ -603,6 +664,8 @@ function toInvoiceDto(row: {
   dueAt: Date | null;
   paidAt: Date | null;
   pdfUrl: string | null;
+  reviewedAt: Date | null;
+  reviewNote: string | null;
   createdAt: Date;
 }): InvoiceDto {
   return {
@@ -620,6 +683,8 @@ function toInvoiceDto(row: {
     dueAt: row.dueAt?.toISOString() ?? null,
     paidAt: row.paidAt?.toISOString() ?? null,
     pdfUrl: row.pdfUrl,
+    reviewedAt: row.reviewedAt?.toISOString() ?? null,
+    reviewNote: row.reviewNote,
     createdAt: row.createdAt.toISOString(),
   };
 }
