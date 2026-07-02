@@ -1,0 +1,99 @@
+# HANDOFF — Fable 5 High-Effort Session Brief (2026-07-02)
+
+> **Audience:** Claude Fable 5 (high effort), taking over Baydar to make it launch-ready for real users.
+> **Read order:** `CLAUDE.md` → `project-spec.md` → `DESIGN.md` → `BRAND.md` → `docs/HANDOFF-FABLE5.md` (June brief, still mostly valid) → **this file** (supersedes both handoffs on current status).
+> **Branch of record:** `main` @ `f4be7b3`. Verified 2026-07-02 in worktree `sad-euler-f8602d`.
+
+---
+
+## 1. What changed since the June brief (`docs/HANDOFF-FABLE5.md`)
+
+The June brief listed Monetization UI C1–C4/C7 as the headline deliverable. **That work shipped.** Commits since:
+
+- **PR #38 (`a326ca5`)** — web-mobile parity + release QA: `GET /billing/catalog` (viewer-priced) + `GET /billing/me`, web `/me/premium` plan comparison + full checkout flow (card redirect, bank-transfer IBAN, Karama points, wallets disabled as coming-soon), native twin on mobile, billing plan-id schema fix (seeded readable ids vs cuid — was 500ing every billing read), premium-page auth-refresh fix.
+- **PR #39 (`9ee1889`)** — deploy workflow: isolated mobile release-metadata gate; credential-free iOS QA build profile in `eas.json`.
+- **PR #40 (`da6a7c0`)** — decoupled Vercel production deploy in `deploy.yml`.
+- **PR #41 (`f4be7b3`)** — restored public legal route aliases on web.
+- Also on main: warm-dark theme (`ab981a0`), mobile tab-history/internal-route fixes, staging CORS + preview-build API URL fixes, forwarded-HTTPS cookie trust, onboarding connection suggestions fix.
+
+Per `design-handoff-2026-06/README.md` parity ledger: **all rows Yes/Yes** — auth/onboarding, feed+safety, search+company, jobs, profile+skills+Karama, personal premium, employer billing, moderation (admin web + reporter both), warm light/dark theme.
+
+## 2. Verified gate state (this session, 2026-07-02)
+
+Run in a fresh worktree off `f4be7b3`:
+
+| Check | Result |
+| --- | --- |
+| `pnpm install --frozen-lockfile` | green |
+| `pnpm --filter @baydar/db generate` | green — **must run before type-check/test in a fresh clone**, otherwise `@baydar/db` fails with `TS2305: no exported member 'PrismaClient'` |
+| `pnpm lint:tokens` | green |
+| `pnpm lint` | green |
+| `pnpm type-check` | 13/13 green |
+| `pnpm test` | **all green: shared 19, web 20, api 260, mobile 84 = 383 tests** (previously flaky `onboarding-flow.test.tsx` passed this run) |
+| `pnpm check:release-placeholders` | clean |
+
+## 3. Bugs / problems found this session (fix these)
+
+### 3.1 i18n gaps in the DEFAULT locale (launch bug — Arabic-first rule)
+
+Web live locales are only `ar-PS` (default, RTL) and `en` (`apps/web/src/i18n.ts`). Key-parity audit:
+
+- **`apps/web/messages/ar-PS.json` is missing 10 keys that exist in `en.json`:**
+  `onboarding.success.title|body|goToFeed`, `feed.rail.saved`, `connections.title|subtitle`, `connections.tabs.accepted|pending`, `connections.connections.empty|emptyDesc`.
+  → Onboarding success screen and connections surfaces degrade in the default Arabic locale. Direct violation of the Arabic-first hard rule.
+- `en.json` missing 2 keys present in ar-PS: `feed.rail.saved.title|subtitle` (note the shape conflict with `feed.rail.saved` string key in en — reconcile the shape, not just copy).
+- **`apps/web/messages/ar.json` is a dead file** — not in the `locales` array, 139 keys stale vs en. Delete it or wire it; today it's a trap for editors.
+- Mobile `en.json` missing 2 keys: `api.errors.ACCOUNT_DELETED_PENDING_RESTORE`, `api.errors.ACCOUNT_DELETED`.
+- **Enhancement:** add a CI test that fails on locale key drift (flatten + set-diff across ar-PS/en and mobile ar/en). Trivial to write; this class of bug never returns.
+
+### 3.2 Known code TODOs still open (verified present)
+
+- `packages/ui-native/src/AppShell.tsx:105` — search is a fake placeholder (no real `TextInput`); `:157` — profile menu unimplemented. Only real UI TODOs in shared packages. Check whether app-level screens bypass these before "fixing" — mobile has a real search screen at `app/(app)/search.tsx`; the AppShell affordance may just need to route there.
+- `apps/api/src/modules/billing/currency.ts` — hardcoded FX snapshot, TODO live rate feed. Acceptable for beta; display shows USD original alongside.
+- `apps/api/src/modules/billing/employer-entitlements.service.ts:23` — residual race window on the under-limit fast path. Documented as MVP-acceptable; tighten with `SELECT FOR UPDATE` if job caps get exceeded.
+- Wallet clients (`jawwalpay|palpay|reflect.client.ts`) throw NOT_IMPLEMENTED by design until merchant onboarding — UI correctly shows coming-soon. Do NOT fake success.
+
+### 3.3 Docs drift (again)
+
+`docs/HANDOFF.md` and `docs/HANDOFF-FABLE5.md` both predate PRs #38–41 and still describe C1–C4/C7 as open. Reconcile them (or mark them superseded by this file) so there is one source of truth.
+
+## 4. Launch blockers (environment/ops, not code)
+
+Code paths exist; these are configuration/evidence tasks. `apps/api/src/config/env.ts` hard-fails production boot without: `CORS_ORIGINS`, `RESEND_API_KEY`+`MAIL_FROM`, `BAYDAR_WEB_URL`, `INTERNAL_CRON_TOKEN`, HyperPay trio, bank-transfer IBAN+beneficiary, `CLAMAV_SCAN_URL`+`CLOUDFLARE_IMAGES_SCAN_URL`, `SENTRY_DSN`+`SENTRY_RELEASE`. So production API literally cannot start until these are provisioned.
+
+1. **Secrets provisioning** — Render (see `render.yaml`), Vercel env, GitHub environments (staging/production), EAS secrets. Full list: `docs/deployment.md`, `.github/SECRETS.md`.
+2. **HyperPay merchant onboarding** — card checkout is redirect-based; needs real entity id/token/webhook secret. Until then only bank-transfer + Karama points are real payment paths.
+3. **Media scanning endpoints** — ClamAV / Cloudflare Images scan URLs required in prod; stand these up or relax the env gate consciously.
+4. **Universal links** — `/.well-known/apple-app-site-association` + `assetlinks.json` are drafts; need real `BAYDAR_APPLE_TEAM_ID` + `BAYDAR_ANDROID_SHA256_CERT_FINGERPRINTS`.
+5. **EAS project id + signing credentials**; production Sentry/PostHog values. `check:release-production` gate enforces these in the deploy workflow.
+6. **Render cron** for account retention exists in `render.yaml` (daily 03:00) plus documented karama-decay and media-scan crons — confirm all three are configured in the live Render account.
+7. **Real-device smoke evidence** — refresh, deep links, push, haptics, offline/SSE resume, swipe archive, cross-device messaging. Owed since Sprint 11.5.
+8. **Native-speaker Arabic copy review** and **legal/privacy counsel review** — human tasks, still open.
+9. **Staging perf baseline** — `pnpm load:api:baseline` vs `docs/perf-baseline-*.md` per pre-flight checklist in `docs/deployment.md`.
+
+## 5. Enhancement backlog (post-blocker, prioritized)
+
+1. **Locale-drift CI test** (§3.1) — cheapest, prevents regressions of a launch-class bug.
+2. **AppShell native search + profile menu** (§3.2) — last placeholder in shared UI.
+3. **Operator QA for `/moderation` and `/billing` admin surfaces** — shipped + localized, never operator-tested.
+4. **Redis-backed rate-limit + SSE fanout** — `RateLimitBackend` interface ready; in-memory today. Required before multi-instance API scaling, not before single-instance launch.
+5. **Live FX feed** for `billing/currency.ts`.
+6. **Real email provider is DONE in code** (Resend transport in `apps/api/src/modules/mail/resend.transport.ts`, console fallback dev/test) — only the API key remains (see §4.1). Older docs saying "console-only" are stale.
+7. **Workspace-aware dead-export sweep** (`knip --workspaces`) — deferred from Phase 7.
+8. Stabilize `apps/mobile/src/__tests__/onboarding-flow.test.tsx` (historically flaky; green this run).
+
+## 6. Deploy runbook (as wired today)
+
+- **CI:** `.github/workflows/ci.yml`; deploy: `deploy.yml` — push to `main` = gate → migrate staging (Neon) → Render staging hook + Vercel preview. Production only via manual `workflow_dispatch` `target=production` (+ optional `submit_mobile=true` for EAS build+submit). Mobile QA: credential-free iOS build profile in `eas.json` (PR #39).
+- Full pre-flight checklist + rollback: `docs/deployment.md` (§Production Pre-Flight, §Rollback).
+- Owner has **no Vercel CLI/token locally** — production pushes go through the GitHub workflow, not local CLI.
+
+## 7. Mission framing for this session
+
+Bar is unchanged from June brief §6: every primary action (sign up → profile → connect → post → message → job → apply → upgrade) works end-to-end with real loading/empty/error/offline states. Code is essentially there; the remaining distance to real users is (a) the §3 bugs, (b) the §4 env/ops provisioning, (c) evidence (real-device smoke, staging soak, operator QA). Suggested order: fix §3.1 i18n + drift test → reconcile docs → walk §4 with the owner (most items need his accounts/credentials — HyperPay, Apple, Render, Resend) → staging soak → production dispatch.
+
+Hard borders unchanged (`CLAUDE.md` law): tokens only, RTL-safe logical CSS, Arabic-first, web↔mobile lockstep, framework-neutral `ui-*`, no viewer-scoped public caching, no placeholder production routes, SSE stays the realtime transport, design work routes to the Claude Design platform channel (`design-handoff-2026-06/`).
+
+## 8. Fresh-clone gotcha
+
+Always run `pnpm --filter @baydar/db generate` immediately after install and before `type-check`/`test`. HANDOFF.md's verification snippet lists it last — it must be first; skipping it fails the whole gate with a misleading Prisma type error.
