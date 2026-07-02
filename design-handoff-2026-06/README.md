@@ -41,3 +41,17 @@ tokens and shared atoms implement it.
 
 The artifact stays below Claude's 16 MiB limit and follows the single-page,
 inline-resource constraints documented for Claude Code visual artifacts.
+
+## Sprint 27 refresh (2026-07-02)
+
+Design Pass 1 (empty states, surface hierarchy, onboarding) is fully
+implemented in code. The pain inventory, problems list, and design ask were
+re-verified against `main` after Sprints 22–26:
+
+- `design-handoff-2026-05/08-pain.md` — v3 re-verification (most v2 items resolved).
+- `design-handoff-2026-05/08-problems.md` — resolved/open split with code evidence.
+- `design-handoff-2026-05/10-ask.md` — **Pass 2 ask, awaiting lead approval**: monetization surfaces review, admin operator UX, motion vocabulary doc.
+
+Known truth gaps: `04-screens/` snapshots predate premium/saved/company
+surfaces; mobile simulator snapshots and moodboard captures remain `[HUMAN]`
+lead tasks. Engineering does not implement Pass 2 output before lead approval.

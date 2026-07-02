@@ -1,91 +1,77 @@
-# Ask for Claude Design — Pass 1
+# Ask for Claude Design — Pass 2 (drafted 2026-07-02, Sprint 27)
 
-> AI proposed scope below. Lead overrides if wrong. Picks based on leverage:
-> screens affected × shipped-state weakness × system-level impact.
+> **Pass 1 is closed.** All three Pass 1 asks (empty-state system, surface hierarchy, onboarding flow) were delivered and implemented in code — see `08-problems.md` §Resolved. This is the Pass 2 ask.
+>
+> AI-proposed scope below. **Lead confirms or overrides before anything goes to Claude Design** (Sprint 27 gate). Picks based on leverage: revenue impact × never-reviewed surfaces × system-level reach.
 
-## Pre-conditions (fix before design pass)
+## Pre-conditions
 
-These are launch-blocking bugs found in the snapshot walk (`08-pain.md`). Engineering fix, not design:
-
-1. `/ar-PS/settings` returns Next.js 404. Restore route or auth-gate it correctly.
-2. Search tab pills show raw i18n keys (`search.tabs.jobs` etc.). Add Arabic + English translations.
-3. Jobs empty state shows raw `API 403 PROFILE_ONBOARDING_REQUIRED`. Replace with friendly copy + onboarding redirect CTA.
-4. Runtime errors (`1 error` / `7 errors` dev overlay) on most screens. Investigate root cause before shipping snapshots to Claude Design — design pass on broken state wastes effort.
-
-Lead acknowledges these are out of scope for the design pass and tracked separately.
+None launch-blocking. The Pass 1 preconditions (settings 404, raw i18n keys, raw 403, dev overlays) are all fixed. Current snapshots in `04-screens/` are stale for the new surfaces — capture fresh web snapshots for premium/saved/company before the pass if mocks should build on real state.
 
 ## In scope (this pass) — 3 items
 
-### 1. Empty-state system + illustration direction
+### 1. Monetization surfaces — design review + polish (web + mobile)
 
-**Problem:** Every shipped screen has bare empty state — single line of copy in tinted surface, no illustration, no recoverable action. Confirmed in `08-pain.md` for: feed, network, messages, notifications, search. `DESIGN.md §12` mandates illustration + action.
-
-**Deliverable:**
-
-- Illustration style direction (1 reference + style notes — line-art? geometric? photographic? agrarian motif aligned with Baydar metaphor?).
-- Per-screen empty state mock for all 8 screens (Arabic + English).
-- New tokens if needed (illustration size scale, illustration tint).
-- Empty-state component spec for `@baydar/ui-web` + `@baydar/ui-native` (props: illustration, title, description, action).
-
-### 2. Surface hierarchy audit + redesign
-
-**Problem:** Most shipped screens use single `card` or `flat` surface and no inner hierarchy (`08-problems.md` #5). Right rails inconsistent across screens (Feed has 2, Jobs has 1, Network/Notifications/Settings have none) — eye doesn't know if rail is part of the pattern. Confirms "every section as card" anti-pattern.
+**Problem:** `/me/premium` (plan comparison, checkout method picker: card redirect / bank-transfer IBAN / Karama points / wallets coming-soon), invoices + receipt upload, and karama-as-payment shipped engineering-first after the 2026-05-21 critique. Zero design review on the surfaces that make money. Trust cues, plan-comparison hierarchy, payment-state feedback (pending bank review, failed card, karama balance) all engineering-composed.
 
 **Deliverable:**
 
-- Per-screen surface map: which of the 5 variants (`flat`, `card`, `hero`, `tinted`, `row`) goes where, and why.
-- Right-rail policy: when does a screen get a rail? What goes in it?
-- Mocks for top 4 screens (feed, network, jobs, messages) showing corrected hierarchy.
-- Update `docs/design/SCREENS.md` from stub → real per-screen recipe.
+- Critique scores (5 dimensions, ship gate ≥7) for premium, checkout, invoices — web + mobile.
+- Mocks for the checkout method picker and bank-transfer pending/reviewed/rejected states, Arabic first.
+- Token diff if trust/payment cues need new semantic roles.
+- Component changes with web + native parity.
 
-### 3. Onboarding flow — full design + integration with shell
+### 2. Operator UX — admin `/moderation` + `/billing` queues
 
-**Problem:** `apps/web/src/app/[locale]/(app)/onboarding` exists but has no shell (per snapshot — bare form, no top nav). `DESIGN.md` doesn't document onboarding. First-impression screen for every new user.
+**Problem:** Sprint 25 hardened correctness (conflict 409 states, audit trail, denied states, rejection-reason prompt) but composition is engineering-made: dense review rows, no design pass on scan-speed, action affordance, or error-recovery hierarchy. Solo operator today; queue efficiency is launch-ops critical.
 
 **Deliverable:**
 
-- Flow design: signup → email verify → profile complete → first connect → feed (5 steps).
-- Decision: does onboarding use AppShell or a focused single-purpose shell? Document either way.
-- Per-step mock (Arabic first, English second).
-- Empty + completion states for each step.
-- Add onboarding section to `docs/design/SCREENS.md`.
+- Operator-flow walk of both queues (claim → act → conflict → refresh) with pain notes.
+- Mocks for queue row, action confirmation, conflict/stale state — web only (admin is web-only).
+- Rationale for row density vs. card layout at operator scale.
+
+### 3. Motion vocabulary — document the existing system
+
+**Problem:** `tokens.motion` (fast 80ms / base 120ms / slow 240ms + stagger step/max) and `useStagger` exist in code, but there is no choreography contract: page enter, list stagger, optimistic feedback, toast timing. Risk: every new surface invents its own timing.
+
+**Deliverable:**
+
+- `docs/design/MOTION.md`: when each duration applies, stagger rules, reduced-motion policy, web/native parity notes.
+- Audit of current usages vs. the contract; diff list of violations if any.
 
 ## Out of scope (future passes)
 
-- Dark mode design (decide first: ship light-only?). `08-problems.md` #2.
-- Motion vocabulary doc. `08-problems.md` #10.
-- Final logo mark. `08-problems.md` #8 — run as separate brand contract.
-- Profile cover gradient palette. `08-problems.md` #4.
-- Mobile `Tabs` + Web `Sheet` primitives. `08-problems.md` #6, #7 — engineering, not design.
-- Toast inventory addition to `DESIGN.md §7`. Repo addendum, low effort, dev pass.
+- Brand-polish review of the wheat logo mark (mark shipped; `BRAND.md` text fix is a dev chore, not a design ask).
+- Moodboard captures + mobile simulator snapshots — still `[HUMAN]` lead tasks, tracked in `STATUS.md`.
+- Richer admin/employer empty-state copy (watchlist item; blocked on final product messaging).
 
 ## Constraints (must respect)
 
-- All hard rules from `00-README.md`.
-- Tokens only. Propose new tokens if needed; never inline values.
-- Web + mobile parity. Every component change ships both twins.
-- Arabic-first. Show Arabic mocks first, English second.
-- Five surface variants — use intentionally, never nest cards.
-- RTL-safe (logical CSS only).
-- No dark mode this pass.
+- All hard rules from `00-README.md` / repo `CLAUDE.md`.
+- Tokens only; propose new tokens, never inline values.
+- Web + mobile parity for every component change (item 2 exempt: admin is web-only).
+- Arabic-first; Arabic mocks first, English second.
+- Five surface variants used intentionally; no nested cards.
+- RTL-safe logical CSS only.
+- Both themes: every mock must work in warm light AND warm dark.
 
 ## Deliverables expected back
 
-For each in-scope item, deliver under `design-out/{problem-slug}/`:
+For each in-scope item, under `design-out/{problem-slug}/`:
 
-- `mock-{screen}-{platform}-{locale}.png` — Arabic first, English second.
-- `token-diff.md` — additions/changes to `02-system/tokens.ts`.
-- `component-changes.md` — list of component prop/variant changes (web + native parity).
-- `rationale.md` — ≤200 words. What changed, why, what tradeoffs considered.
+- `mock-{screen}-{platform}-{locale}.png` — Arabic first, English second, light + dark where relevant.
+- `token-diff.md` — additions/changes to tokens.
+- `component-changes.md` — prop/variant changes (web + native parity noted).
+- `rationale.md` — ≤200 words.
 
 ## Acceptance criteria
 
-- All deliverables present.
-- Mocks render against current `06-fixtures/content.json` strings without clipping.
-- Token diff applies cleanly to `02-system/tokens.ts` (no untokenized inline values).
-- Web + mobile twin shown for every component touched.
+- All deliverables present; mocks render against `06-fixtures/content.json` strings without clipping.
+- Token diff applies cleanly; no untokenized inline values.
+- Web + mobile twin shown for every component touched (except admin).
 - No LinkedIn-derivative compositions.
 
 ## Review loop
 
-Lead reviews → APPROVED | CHANGES_REQUESTED. CHANGES_REQUESTED returns concrete fixes; Claude Design reworks. Max 3 rounds per pass.
+Lead reviews → APPROVED | CHANGES_REQUESTED. Max 3 rounds. **Engineering does not implement anything from this pass before the lead approves (Sprint 27 → 28 gate).**

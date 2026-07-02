@@ -1,4 +1,25 @@
-# Pain Inventory — v2 (post-bug-fix walk)
+# Pain Inventory — v3 (Sprint 27 re-verification, 2026-07-02)
+
+> **v3 status:** code re-verified against `main` after Sprints 22–26 + the Open Design implementation pass. Most v2 items are RESOLVED in code. v2 kept below as history.
+
+## Resolved since v2 (verified in code, 2026-07-02)
+
+- **Empty states everywhere:** `EmptyState` (illustration + title + body + CTA, harvest motif) is consumed by 15 web routes — feed, network, notifications, messages (inbox/room/list), search, jobs, saved, activity, settings/blocked, moderation, billing, app error. Native twin exists. v2 items "notifications empty", "network body empty", and the `DESIGN.md §12` gap are closed.
+- **Surface hierarchy:** `docs/design/SCREENS.md` is a real per-screen recipe matrix (no longer a stub); every route was scored ≥8/10 in `docs/design/open-design-screen-critique.md` (2026-05-21).
+- **Onboarding:** progress component shipped (`OnboardingProgress`, web + native); bare-shell decision documented.
+- **Dark mode:** warm-dark theme shipped (`ab981a0`); light/dark semantic token contract live on web + mobile.
+- **Feed hero / composer `?` avatar:** snapshot-era auth-fixture artifacts; profile fallbacks render via shared atoms now.
+
+## Still open (v3)
+
+- **Mobile snapshots:** still `[HUMAN]` — needs simulator run per `04-screens/MOBILE-SNAPSHOTS.md`.
+- **Moodboard captures:** still `[HUMAN]`.
+- **Post-critique surfaces never walked:** `/me/premium` + checkout flow, `/saved`, public company route, karama-payment — shipped after the 2026-05-21 critique, no pain walk or critique scores exist for them. This is the v3 pain-walk gap and the core of the Pass 2 ask (`10-ask.md`).
+- **Operator UX on `/moderation` + `/billing`:** correctness hardened (Sprint 25) but never operator-walked or design-reviewed.
+
+---
+
+# Pain Inventory — v2 (post-bug-fix walk) [HISTORY]
 
 > **Source:** AI walkthrough of 8 web screen snapshots (desktop-ar-PS) at `04-screens/{screen}/web/` after fixing bugs 0-3.
 > v1 was based on broken-state snapshots (settings 404, search untranslated, jobs raw error). v2 reflects current real state.
