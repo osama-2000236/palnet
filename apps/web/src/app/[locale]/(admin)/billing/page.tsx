@@ -7,7 +7,8 @@ import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { z } from "zod";
 
-import { apiFetch, getValidAccessToken } from "@/lib/api";
+import { apiFetch, ApiRequestError, getValidAccessToken } from "@/lib/api";
+import { readSession } from "@/lib/session";
 
 type InvoiceDto = z.infer<typeof Invoice>;
 type InvoiceAction = z.infer<typeof AdminInvoiceActionBody>["action"];
@@ -36,6 +37,7 @@ export default function AdminBillingPage(): JSX.Element {
   const [invoices, setInvoices] = useState<InvoiceDto[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pendingAction, setPendingAction] = useState<string | null>(null);
+  const [forbidden, setForbidden] = useState(false);
 
   async function load(): Promise<void> {
     const token = await getValidAccessToken();
@@ -54,6 +56,12 @@ export default function AdminBillingPage(): JSX.Element {
   }
 
   useEffect(() => {
+    // The (admin) layout admits ADMIN and MODERATOR; billing review is
+    // ADMIN-only. Show a denied state instead of a raw API 403.
+    if (readSession()?.user.role !== "ADMIN") {
+      setForbidden(true);
+      return;
+    }
     void load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -61,7 +69,13 @@ export default function AdminBillingPage(): JSX.Element {
   async function act(invoiceId: string, action: InvoiceAction): Promise<void> {
     const token = await getValidAccessToken();
     if (!token) return;
-    if (action === "VOID" && !window.confirm(t("confirmVoid"))) return;
+    let note: string | undefined;
+    if (action === "VOID") {
+      const reason = window.prompt(t("voidReasonPrompt"));
+      if (reason === null) return;
+      // Contract caps the note at 500 chars; truncate rather than 400.
+      note = reason.trim().slice(0, 500) || undefined;
+    }
     const key = `${invoiceId}:${action}`;
     setPendingAction(key);
     setError(null);
@@ -69,14 +83,31 @@ export default function AdminBillingPage(): JSX.Element {
       await apiFetch(`/admin/billing/invoices/${invoiceId}/action`, Invoice, {
         method: "POST",
         token,
-        body: { action },
+        body: note === undefined ? { action } : { action, note },
       });
       await load();
-    } catch {
-      setError(t("actionFailed"));
+    } catch (err) {
+      // Another operator may have handled the item; refresh so the queue
+      // does not keep offering actions on a stale row.
+      await load();
+      setError(
+        err instanceof ApiRequestError && err.status === 409
+          ? t("actionConflict")
+          : t("actionFailed"),
+      );
     } finally {
       setPendingAction(null);
     }
+  }
+
+  if (forbidden) {
+    return (
+      <main className="mx-auto flex w-full max-w-[1040px] flex-col gap-5 px-6 py-8">
+        <Surface variant="flat" padding="4">
+          <EmptyState motif="settings" title={t("forbiddenTitle")} body={t("forbiddenBody")} />
+        </Surface>
+      </main>
+    );
   }
 
   return (

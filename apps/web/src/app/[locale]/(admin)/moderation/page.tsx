@@ -6,7 +6,7 @@ import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { z } from "zod";
 
-import { apiFetch, getValidAccessToken } from "@/lib/api";
+import { apiFetch, ApiRequestError, getValidAccessToken } from "@/lib/api";
 
 const Report = z.object({
   id: z.string(),
@@ -68,8 +68,15 @@ export default function ModerationPage(): JSX.Element {
         body: { action },
       });
       await load();
-    } catch {
-      setError(t("actionFailed"));
+    } catch (err) {
+      // Another moderator may have resolved the report; refresh so the queue
+      // does not keep offering actions on a stale row.
+      await load();
+      setError(
+        err instanceof ApiRequestError && err.status === 409
+          ? t("actionConflict")
+          : t("actionFailed"),
+      );
     } finally {
       setPendingAction(null);
     }
@@ -140,6 +147,11 @@ export default function ModerationPage(): JSX.Element {
           </Surface>
         ))}
       </section>
+      {reports === null && !error ? (
+        <Surface variant="flat" padding="4">
+          <p className="text-ink-muted text-sm">{t("loading")}</p>
+        </Surface>
+      ) : null}
       {reports?.length === 0 ? (
         <Surface variant="flat" padding="4">
           <EmptyState motif="settings" title={t("emptyTitle")} body={t("emptyBody")} />

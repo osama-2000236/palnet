@@ -797,6 +797,11 @@ model Invoice {
   dueAt             DateTime?
   paidAt            DateTime?
   pdfUrl            String?
+  // Operator review audit trail (bank-transfer review queue): who approved or
+  // voided the invoice, when, and the stated reason. Null for automated paths.
+  reviewedById      String?
+  reviewedAt        DateTime?
+  reviewNote        String?       @db.Text
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
 

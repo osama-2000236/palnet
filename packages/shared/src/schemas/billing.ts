@@ -72,6 +72,10 @@ export const Invoice = z.object({
   dueAt: z.string().datetime().nullable(),
   paidAt: z.string().datetime().nullable(),
   pdfUrl: z.string().url().nullable(),
+  // Operator review audit trail — set when an admin approves or voids a
+  // bank-transfer invoice. Null for automated payment paths.
+  reviewedAt: z.string().datetime().nullable(),
+  reviewNote: z.string().nullable(),
   createdAt: z.string().datetime(),
 });
 export type Invoice = z.infer<typeof Invoice>;

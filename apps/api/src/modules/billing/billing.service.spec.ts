@@ -19,6 +19,7 @@ type PrismaStub = {
   invoice: {
     create: jest.Mock;
     update: jest.Mock;
+    updateMany: jest.Mock;
     findMany: jest.Mock;
     findUnique: jest.Mock;
     findUniqueOrThrow: jest.Mock;
@@ -38,6 +39,7 @@ function buildPrisma(): PrismaStub {
     invoice: {
       create: jest.fn(),
       update: jest.fn(),
+      updateMany: jest.fn().mockResolvedValue({ count: 1 }),
       findMany: jest.fn(),
       findUnique: jest.fn(),
       findUniqueOrThrow: jest.fn(),
@@ -52,7 +54,7 @@ describe("BillingService", () => {
   let prisma: PrismaStub;
   let hyperpay: { createCheckout: jest.Mock; verifyWebhookSignature: jest.Mock };
   let tx: {
-    invoice: { update: jest.Mock };
+    invoice: { updateMany: jest.Mock; findUniqueOrThrow: jest.Mock };
     payment: { create: jest.Mock };
     subscription: { update: jest.Mock };
     employerCredit: { create: jest.Mock };
@@ -65,7 +67,10 @@ describe("BillingService", () => {
       verifyWebhookSignature: jest.fn().mockReturnValue(true),
     };
     tx = {
-      invoice: { update: jest.fn() },
+      invoice: {
+        updateMany: jest.fn().mockResolvedValue({ count: 1 }),
+        findUniqueOrThrow: jest.fn(),
+      },
       payment: { create: jest.fn() },
       subscription: { update: jest.fn() },
       employerCredit: { create: jest.fn() },
@@ -187,7 +192,7 @@ describe("BillingService", () => {
       subscription: { id: "sub-1" },
     };
     prisma.invoice.findUnique.mockResolvedValue(invoice);
-    tx.invoice.update.mockResolvedValue({
+    tx.invoice.findUniqueOrThrow.mockResolvedValue({
       ...invoice,
       status: "PAID",
       paidAt: new Date("2026-05-15T00:00:00Z"),
@@ -242,19 +247,177 @@ describe("BillingService", () => {
       subscription: { id: "sub-2" },
     };
     prisma.invoice.findUnique.mockResolvedValue(invoice);
-    tx.invoice.update.mockResolvedValue({
+    tx.invoice.findUniqueOrThrow.mockResolvedValue({
       ...invoice,
       status: "PAID",
       paidAt: new Date("2026-05-15T00:00:00Z"),
     });
 
-    const result = await service.adminInvoiceAction("inv-2", { action: "MARK_PAID" });
+    const result = await service.adminInvoiceAction("inv-2", "admin-1", { action: "MARK_PAID" });
 
     expect(result.status).toBe("PAID");
     expect(tx.subscription.update).toHaveBeenCalledWith({
       where: { id: "sub-2" },
       data: expect.objectContaining({ status: "ACTIVE" }),
     });
+    // Operator approval leaves an audit trail on the invoice itself, and the
+    // PAID transition is a conditional claim so it can only happen once.
+    expect(tx.invoice.updateMany).toHaveBeenCalledWith({
+      where: { id: "inv-2", status: { notIn: ["PAID", "VOID"] } },
+      data: expect.objectContaining({
+        status: "PAID",
+        reviewedById: "admin-1",
+        reviewedAt: expect.any(Date),
+      }),
+    });
+  });
+
+  it("409s when a concurrent caller pays the invoice mid-transaction", async () => {
+    prisma.invoice.findUnique.mockResolvedValue({
+      id: "inv-7",
+      status: "OPEN",
+      amountCents: 2900,
+      currency: "USD",
+      subscriptionId: null,
+      plan: null,
+      subscription: null,
+    });
+    tx.invoice.updateMany.mockResolvedValue({ count: 0 });
+
+    await expect(
+      service.adminInvoiceAction("inv-7", "admin-1", { action: "MARK_PAID" }),
+    ).rejects.toMatchObject({ code: "CONFLICT" });
+    expect(tx.payment.create).not.toHaveBeenCalled();
+  });
+
+  it("admin mark-paid 404s on a missing invoice and 409s on a void one", async () => {
+    prisma.invoice.findUnique.mockResolvedValue(null);
+    await expect(
+      service.adminInvoiceAction("inv-missing", "admin-1", { action: "MARK_PAID" }),
+    ).rejects.toMatchObject({ code: "NOT_FOUND" });
+
+    prisma.invoice.findUnique.mockResolvedValue({
+      id: "inv-4",
+      status: "VOID",
+      plan: null,
+      subscription: null,
+    });
+    await expect(
+      service.adminInvoiceAction("inv-4", "admin-1", { action: "MARK_PAID" }),
+    ).rejects.toMatchObject({ code: "CONFLICT" });
+    expect(prisma.$transaction).not.toHaveBeenCalled();
+  });
+
+  it("admin void records reviewer, reason, and timestamp", async () => {
+    const invoice = {
+      id: "inv-5",
+      subscriptionId: null,
+      planId: "plan-5",
+      userId: "user-1",
+      companyId: null,
+      amountCents: 500,
+      currency: "USD",
+      status: "OPEN",
+      method: "BANK_TRANSFER",
+      providerInvoiceId: null,
+      bankReceiptUrl: "https://media.baydar.ps/receipt.jpg",
+      dueAt: null,
+      paidAt: null,
+      pdfUrl: null,
+      reviewedAt: null,
+      reviewNote: null,
+      createdAt: new Date("2026-07-01T00:00:00Z"),
+    };
+    prisma.invoice.findUnique.mockResolvedValue(invoice);
+    prisma.invoice.findUniqueOrThrow.mockResolvedValue({
+      ...invoice,
+      status: "VOID",
+      reviewedAt: new Date("2026-07-02T00:00:00Z"),
+      reviewNote: "receipt unreadable",
+    });
+
+    const result = await service.adminInvoiceAction("inv-5", "admin-1", {
+      action: "VOID",
+      note: "receipt unreadable",
+    });
+
+    expect(result.status).toBe("VOID");
+    expect(result.reviewNote).toBe("receipt unreadable");
+    expect(prisma.invoice.updateMany).toHaveBeenCalledWith({
+      where: { id: "inv-5", status: { notIn: ["PAID", "VOID"] } },
+      data: expect.objectContaining({
+        status: "VOID",
+        reviewedById: "admin-1",
+        reviewNote: "receipt unreadable",
+        reviewedAt: expect.any(Date),
+      }),
+    });
+  });
+
+  it("409s when a void loses a race with a concurrent payment", async () => {
+    prisma.invoice.findUnique.mockResolvedValue({
+      id: "inv-8",
+      status: "OPEN",
+      subscriptionId: null,
+      planId: null,
+      userId: "user-1",
+      companyId: null,
+      amountCents: 500,
+      currency: "USD",
+      method: "BANK_TRANSFER",
+      providerInvoiceId: null,
+      bankReceiptUrl: null,
+      dueAt: null,
+      paidAt: null,
+      pdfUrl: null,
+      reviewedAt: null,
+      reviewNote: null,
+      createdAt: new Date("2026-07-01T00:00:00Z"),
+    });
+    prisma.invoice.updateMany.mockResolvedValue({ count: 0 });
+
+    await expect(
+      service.adminInvoiceAction("inv-8", "admin-1", { action: "VOID" }),
+    ).rejects.toMatchObject({ code: "CONFLICT" });
+  });
+
+  it("admin void is idempotent and refuses to void a paid invoice", async () => {
+    const base = {
+      id: "inv-6",
+      subscriptionId: null,
+      planId: "plan-6",
+      userId: "user-1",
+      companyId: null,
+      amountCents: 500,
+      currency: "USD",
+      method: "BANK_TRANSFER",
+      providerInvoiceId: null,
+      bankReceiptUrl: null,
+      dueAt: null,
+      paidAt: null,
+      pdfUrl: null,
+      reviewedAt: null,
+      reviewNote: null,
+      createdAt: new Date("2026-07-01T00:00:00Z"),
+    };
+    prisma.invoice.findUnique.mockResolvedValue({ ...base, status: "VOID" });
+    const result = await service.adminInvoiceAction("inv-6", "admin-2", { action: "VOID" });
+    expect(result.status).toBe("VOID");
+    expect(prisma.invoice.updateMany).not.toHaveBeenCalled();
+
+    prisma.invoice.findUnique.mockResolvedValue({
+      ...base,
+      status: "PAID",
+      paidAt: new Date("2026-07-01T12:00:00Z"),
+    });
+    await expect(
+      service.adminInvoiceAction("inv-6", "admin-2", { action: "VOID" }),
+    ).rejects.toMatchObject({ code: "CONFLICT" });
+
+    prisma.invoice.findUnique.mockResolvedValue(null);
+    await expect(
+      service.adminInvoiceAction("inv-missing", "admin-2", { action: "VOID" }),
+    ).rejects.toMatchObject({ code: "NOT_FOUND" });
   });
 
   it("rejects HyperPay webhook with an invalid signature", async () => {
