@@ -22,17 +22,26 @@ Per `design-handoff-2026-06/README.md` parity ledger: **all rows Yes/Yes** — a
 
 Run in a fresh worktree off `f4be7b3`:
 
-| Check | Result |
-| --- | --- |
-| `pnpm install --frozen-lockfile` | green |
+| Check                               | Result                                                                                                                                      |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pnpm install --frozen-lockfile`    | green                                                                                                                                       |
 | `pnpm --filter @baydar/db generate` | green — **must run before type-check/test in a fresh clone**, otherwise `@baydar/db` fails with `TS2305: no exported member 'PrismaClient'` |
-| `pnpm lint:tokens` | green |
-| `pnpm lint` | green |
-| `pnpm type-check` | 13/13 green |
-| `pnpm test` | **all green: shared 19, web 20, api 260, mobile 84 = 383 tests** (previously flaky `onboarding-flow.test.tsx` passed this run) |
-| `pnpm check:release-placeholders` | clean |
+| `pnpm lint:tokens`                  | green                                                                                                                                       |
+| `pnpm lint`                         | green                                                                                                                                       |
+| `pnpm type-check`                   | 13/13 green                                                                                                                                 |
+| `pnpm test`                         | **all green: shared 19, web 20, api 260, mobile 84 = 383 tests** (previously flaky `onboarding-flow.test.tsx` passed this run)              |
+| `pnpm check:release-placeholders`   | clean                                                                                                                                       |
 
-## 3. Bugs / problems found this session (fix these)
+## 3. Bugs / problems found this session
+
+> **Status update (same session, 2026-07-02): §3.1 and the AppShell item in §3.2 are FIXED on this branch.**
+>
+> - i18n: dead mismatched keys pruned from `en.json`/`ar-PS.json` (`onboarding.success`, `feed.rail.saved`, top-level `connections` — verified consumed by no code), dead `apps/web/messages/ar.json` deleted, the two `ACCOUNT_DELETED*` strings added to mobile `en.json` (real runtime bug — `api-errors.ts` renders `api.errors.${code}`). Key-set parity now 0/0 both apps.
+> - Drift guard: `apps/web/src/lib/__tests__/messages-parity.test.ts` + `apps/mobile/src/__tests__/i18n-parity.test.ts` fail CI on any future key drift.
+> - AppShell (ui-native): search pill is a real button firing new optional `onSearchPress` (native hands off to host search screen per MOBILE.md), profile trigger fires `onViewProfile` (web-twin prop name). Covered by `packages/ui-native/src/__tests__/AppShell.test.tsx`.
+> - Docs: `HANDOFF.md` and `HANDOFF-FABLE5.md` carry superseded banners pointing here.
+>
+> The subsections below are kept as found-state record.
 
 ### 3.1 i18n gaps in the DEFAULT locale (launch bug — Arabic-first rule)
 
@@ -73,8 +82,8 @@ Code paths exist; these are configuration/evidence tasks. `apps/api/src/config/e
 
 ## 5. Enhancement backlog (post-blocker, prioritized)
 
-1. **Locale-drift CI test** (§3.1) — cheapest, prevents regressions of a launch-class bug.
-2. **AppShell native search + profile menu** (§3.2) — last placeholder in shared UI.
+1. ~~**Locale-drift CI test** (§3.1)~~ — **done 2026-07-02** (parity tests on web + mobile).
+2. ~~**AppShell native search + profile menu** (§3.2)~~ — **done 2026-07-02** (`onSearchPress`/`onViewProfile` callbacks).
 3. **Operator QA for `/moderation` and `/billing` admin surfaces** — shipped + localized, never operator-tested.
 4. **Redis-backed rate-limit + SSE fanout** — `RateLimitBackend` interface ready; in-memory today. Required before multi-instance API scaling, not before single-instance launch.
 5. **Live FX feed** for `billing/currency.ts`.

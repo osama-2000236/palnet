@@ -1,5 +1,7 @@
 # HANDOFF.md — Current State
 
+> **⚠️ SUPERSEDED 2026-07-02.** The live status document is `docs/HANDOFF-FABLE5-2026-07.md`. Monetization UI C1–C7 shipped in PR #38; this file's "remaining C1–C4/C7" status below is stale. Keep this file as history only.
+
 > **2026-06-13 update — reconciled with `docs/HANDOFF-FABLE5.md`.** F-04 company admin is closed, companies search is now shipped, and monetization C5/C6 are implemented. Remaining monetization UI is C1–C4 plus broader C7 parity/review.
 
 > Read after `project-spec.md`, `DESIGN.md`, and `BRAND.md`.
