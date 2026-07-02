@@ -65,3 +65,22 @@ services:
         value: https://api.baydar.ps
       - key: INTERNAL_CRON_TOKEN
         sync: false
+
+  - type: cron
+    name: baydar-cron-karama-decay
+    runtime: docker
+    region: frankfurt
+    plan: starter
+    # Monthly on the 1st at 04:00 UTC. The decay run is idempotent per
+    # calendar period (already-decayed users are skipped), so re-running
+    # inside the same month is safe.
+    schedule: "0 4 1 * *"
+    dockerfilePath: ./apps/api/Dockerfile
+    dockerContext: .
+    dockerCommand: >-
+      node -e "fetch(process.env.BAYDAR_API_INTERNAL_URL + '/api/v1/admin/internal/karama-decay/run', { method: 'POST', headers: { 'x-internal-token': process.env.INTERNAL_CRON_TOKEN, 'content-type': 'application/json' }, body: JSON.stringify({ dryRun: false }) }).then(async response => { if (!response.ok) throw new Error(response.status + ' ' + await response.text()); console.log(await response.text()); })"
+    envVars:
+      - key: BAYDAR_API_INTERNAL_URL
+        value: https://api.baydar.ps
+      - key: INTERNAL_CRON_TOKEN
+        sync: false

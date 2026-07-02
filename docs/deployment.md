@@ -81,7 +81,42 @@ curl -X POST $API_URL/admin/internal/karama-decay/run -H "X-Internal-Token: $INT
 curl -X POST $API_URL/admin/internal/media/scan -H "X-Internal-Token: $INTERNAL_CRON_TOKEN" -H "Content-Type: application/json" -d '{"key":"post_media/u_1/example.png","publicUrl":"https://media.baydar.ps/post_media/u_1/example.png","kind":"IMAGE","mimeType":"image/png"}'
 ```
 
-For a no-write Karama preview, post JSON `{"dryRun":true}` to `/admin/internal/karama-decay/run`.
+Both `account-retention/run` and `karama-decay/run` accept an optional JSON body `{"dryRun":true}` for a no-write preview that reports what the run would do.
+
+#### Scheduler contract
+
+Both scheduled jobs are defined as Render cron services in `render.yaml`; the media scan endpoint is not a cron — it runs inline on `POST /media/confirm` after every upload, and the internal endpoint exists only for manual re-scans.
+
+| Job                                    | Render service                  | Cadence (UTC)      | Endpoint                                     | Idempotency                                                                                                          | Timeout                                                                                            | Retry policy                                                                                                                                                                                               | Alert path                                                                                                                                                                                             |
+| -------------------------------------- | ------------------------------- | ------------------ | -------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Account hard-delete after 30-day grace | `baydar-cron-account-retention` | daily 03:00        | `POST /admin/internal/account-retention/run` | Safe to re-run: only rows past the cutoff are deleted; an empty run is a no-op.                                      | Render cron default (job fails if the fetch throws; endpoint responds in seconds at launch scale). | No automatic retry. A missed day self-heals on the next daily run because eligibility is cutoff-based, not schedule-based. Manual re-run: trigger the cron from the Render dashboard or curl the endpoint. | Render cron failure notification (email to the service owner) + Sentry — the API logs a `warn` with the deleted count on every destructive run; absence of the daily log line is the secondary signal. |
+| Monthly Karama decay                   | `baydar-cron-karama-decay`      | monthly, 1st 04:00 | `POST /admin/internal/karama-decay/run`      | Idempotent per calendar period: users already decayed this period are skipped, so re-runs within the month are safe. | Same as above.                                                                                     | No automatic retry. A failed run can be re-triggered any time in the same month with no double-decay risk.                                                                                                 | Same as above.                                                                                                                                                                                         |
+
+Owner: the Render account owner (solo operator today). Both crons authenticate with `INTERNAL_CRON_TOKEN` (`sync: false` in `render.yaml` — set it in the Render dashboard to the same value as the API service).
+
+#### Hard-delete dry-run evidence (pre-launch gate)
+
+Before the first production retention run, capture evidence from staging:
+
+1. Soft-delete a staging test account and backdate `deletedAt` beyond 30 days (or use an already-expired account).
+2. `curl -X POST $STAGING_API_URL/api/v1/admin/internal/account-retention/run -H "X-Internal-Token: $INTERNAL_CRON_TOKEN" -H "Content-Type: application/json" -d '{"dryRun":true}'` — confirm the report lists the expected user ids with `"dryRun": true` and the row still exists.
+3. Re-run without the body to execute the real delete; confirm `deletedCount` matches and the user row plus dependent rows are gone.
+4. Save both JSON reports to `docs/evidence/` with the run date.
+
+### Email Provider (decided: Resend)
+
+The provider decision is closed — **Resend** is implemented in
+`apps/api/src/modules/mail/resend.transport.ts`; dev/test fall back to the
+console transport automatically. Migration plan to go live:
+
+1. Create the Resend account and verify the sending domain (SPF + DKIM DNS
+   records on `baydar.ps`).
+2. Set `RESEND_API_KEY`, `MAIL_FROM`, and `MAIL_REPLY_TO` in the Render API
+   environment (production boot hard-fails without the key).
+3. Smoke on staging: trigger a password-reset email and confirm delivery +
+   Arabic RTL rendering in a real inbox.
+4. No code change is required; there is no dual-provider window because the
+   console transport never ran in production.
 
 ### Vercel Web
 

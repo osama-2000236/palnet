@@ -75,7 +75,7 @@ Code paths exist; these are configuration/evidence tasks. `apps/api/src/config/e
 3. **Media scanning endpoints** — ClamAV / Cloudflare Images scan URLs required in prod; stand these up or relax the env gate consciously.
 4. **Universal links** — `/.well-known/apple-app-site-association` + `assetlinks.json` are drafts; need real `BAYDAR_APPLE_TEAM_ID` + `BAYDAR_ANDROID_SHA256_CERT_FINGERPRINTS`.
 5. **EAS project id + signing credentials**; production Sentry/PostHog values. `check:release-production` gate enforces these in the deploy workflow.
-6. **Render cron** for account retention exists in `render.yaml` (daily 03:00) plus documented karama-decay and media-scan crons — confirm all three are configured in the live Render account.
+6. **Render cron** — account retention (daily 03:00) and karama decay (monthly, 1st 04:00) are both defined in `render.yaml` as of Sprint 26; media scan is not a cron (inline on `POST /media/confirm`). Confirm both cron services exist in the live Render account with `INTERNAL_CRON_TOKEN` set. Retention endpoint now supports `{"dryRun":true}` for the staging evidence step (scheduler contract: `docs/deployment.md`).
 7. **Real-device smoke evidence** — refresh, deep links, push, haptics, offline/SSE resume, swipe archive, cross-device messaging. Owed since Sprint 11.5.
 8. **Native-speaker Arabic copy review** and **legal/privacy counsel review** — human tasks, still open.
 9. **Staging perf baseline** — `pnpm load:api:baseline` vs `docs/perf-baseline-*.md` per pre-flight checklist in `docs/deployment.md`.

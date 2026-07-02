@@ -37,10 +37,11 @@ describe("AccountRetentionService", () => {
     prisma.user.findMany.mockResolvedValue([]);
 
     const now = new Date("2026-05-15T03:00:00.000Z");
-    const result = await service.runRetention(now);
+    const result = await service.runRetention({ now });
 
     expect(result.deletedCount).toBe(0);
     expect(result.deletedUserIds).toEqual([]);
+    expect(result.dryRun).toBe(false);
     expect(prisma.user.deleteMany).not.toHaveBeenCalled();
   });
 
@@ -52,7 +53,7 @@ describe("AccountRetentionService", () => {
     prisma.user.deleteMany.mockResolvedValue({ count: 2 });
 
     const now = new Date("2026-05-15T03:00:00.000Z");
-    const result = await service.runRetention(now);
+    const result = await service.runRetention({ now });
 
     const cutoff = new Date(now.getTime() - RESTORE_GRACE_MS);
     expect(prisma.user.findMany).toHaveBeenCalledWith({
@@ -64,5 +65,31 @@ describe("AccountRetentionService", () => {
     });
     expect(result.deletedCount).toBe(2);
     expect(result.deletedUserIds).toEqual(["user-a", "user-b"]);
+    expect(result.dryRun).toBe(false);
+    expect(result.cutoff).toBe(cutoff.toISOString());
+  });
+
+  it("dry run reports eligible users without deleting any rows", async () => {
+    prisma.user.findMany.mockResolvedValue([
+      { id: "user-a", deletedAt: new Date("2026-04-01T00:00:00.000Z") },
+    ]);
+
+    const now = new Date("2026-05-15T03:00:00.000Z");
+    const result = await service.runRetention({ now, dryRun: true });
+
+    expect(result.dryRun).toBe(true);
+    expect(result.deletedCount).toBe(1);
+    expect(result.deletedUserIds).toEqual(["user-a"]);
+    expect(prisma.user.deleteMany).not.toHaveBeenCalled();
+  });
+
+  it("dry run with no candidates reports dryRun true and deletes nothing", async () => {
+    prisma.user.findMany.mockResolvedValue([]);
+
+    const result = await service.runRetention({ dryRun: true });
+
+    expect(result.dryRun).toBe(true);
+    expect(result.deletedCount).toBe(0);
+    expect(prisma.user.deleteMany).not.toHaveBeenCalled();
   });
 });
