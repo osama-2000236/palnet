@@ -178,12 +178,7 @@
     "handleHint": "Appears as /in/{handle}",
     "headline": "Headline",
     "location": "Location (city)",
-    "submit": "Save and continue",
-    "success": {
-      "title": "Profile saved!",
-      "body": "Your profile has been updated successfully.",
-      "goToFeed": "Go to feed"
-    }
+    "submit": "Save and continue"
   },
   "feed": {
     "title": "Feed",
@@ -205,7 +200,6 @@
       "followers": "Profile followers",
       "connections": "Connections",
       "quickAccess": "Quick access",
-      "saved": "Saved items",
       "groups": "My groups",
       "events": "Events",
       "pymk": "People you may know",
@@ -612,18 +606,6 @@
     "types": {
       "POST": "Post",
       "JOB": "Job"
-    }
-  },
-  "connections": {
-    "title": "Connections",
-    "subtitle": "Manage your professional network",
-    "tabs": {
-      "accepted": "Accepted",
-      "pending": "Pending"
-    },
-    "connections": {
-      "empty": "No connections yet",
-      "emptyDesc": "Start connecting with professionals to build your network"
     }
   },
   "jobs": {

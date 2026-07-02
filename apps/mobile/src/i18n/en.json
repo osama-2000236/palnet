@@ -228,6 +228,8 @@
       "NETWORK_ERROR": "We could not reach Baydar. Check your connection and try again.",
       "INVALID_RESPONSE": "Baydar returned data we could not read. Try again.",
       "AUTH_UNAUTHORIZED": "Your session expired. Sign in again.",
+      "ACCOUNT_DELETED_PENDING_RESTORE": "This account is pending deletion. Restore it before signing in.",
+      "ACCOUNT_DELETED": "This account has been deleted.",
       "AUTH_TOKEN_EXPIRED": "Your session expired. Sign in again.",
       "AUTH_TOKEN_INVALID": "Your session expired. Sign in again.",
       "PROFILE_ONBOARDING_REQUIRED": "Complete your professional profile before continuing.",

@@ -1,5 +1,7 @@
 # HANDOFF — Fable 5 Onboarding & Continuation Brief
 
+> **⚠️ SUPERSEDED 2026-07-02 by `docs/HANDOFF-FABLE5-2026-07.md`.** The §5 headline deliverable (Monetization UI C1–C7) shipped in PR #38; §1.1 worktree state and §4 gate snapshot are stale. The repo map (§3), mission borders (§6), and design-platform routing rule (§6.3) remain valid.
+
 > **Audience:** Claude Fable 5, taking over active development of Baydar.
 > **Date:** 2026-06-12 · **Branch of record:** `main` · **Repo root:** `C:\LinkedIn`
 > **Read this AFTER** `CLAUDE.md`, `project-spec.md`, `DESIGN.md`, `BRAND.md`, then this file. This file supersedes the stale status in `docs/HANDOFF.md` (see §2).
