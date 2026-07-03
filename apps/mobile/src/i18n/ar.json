@@ -839,6 +839,20 @@
       "REJECTED": "مرفوض",
       "HIRED": "تمّ التوظيف",
       "WITHDRAWN": "منسحب"
+    },
+    "newJob": {
+      "title": "وظيفة جديدة",
+      "fieldTitle": "عنوان الوظيفة",
+      "description": "الوصف",
+      "descriptionHint": "٣٠ حرفًا على الأقل.",
+      "type": "نوع التعاقد",
+      "locationMode": "مكان العمل",
+      "city": "المدينة",
+      "salaryMin": "الحد الأدنى للراتب",
+      "salaryMax": "الحد الأعلى للراتب",
+      "salaryCurrency": "العملة",
+      "submit": "انشر",
+      "submitting": "جارٍ النشر…"
     }
   },
   "premium": {

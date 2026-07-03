@@ -67,6 +67,19 @@ export default function CompanyJobsScreen(): JSX.Element {
         <AppHeader title={t("employer.jobsTitle")} compact />
         <View style={styles.actions}>
           <Button
+            variant="primary"
+            size="sm"
+            onPress={() =>
+              router.push({
+                pathname: "/(app)/employer/[slug]/jobs/new",
+                params: { slug },
+              } as never)
+            }
+            accessibilityLabel={t("employer.newJob.title")}
+          >
+            {t("employer.newJob.title")}
+          </Button>
+          <Button
             variant="secondary"
             size="sm"
             onPress={() =>
