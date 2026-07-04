@@ -467,6 +467,9 @@
   "messaging": {
     "title": "Messages",
     "newMessage": "New message",
+    "tabFocused": "Focused",
+    "tabRequests": "Requests",
+    "emptyRequests": "No message requests. When someone outside your network messages you, it shows up here.",
     "emptyList": "No conversations yet.",
     "emptyThread": "No messages yet — say hi.",
     "composePlaceholder": "Write a message…",

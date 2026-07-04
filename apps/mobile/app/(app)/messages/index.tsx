@@ -2,7 +2,14 @@
 // like the web `/messages` left rail instead of the raw-RN cards.
 
 import { ChatRoom as ChatRoomSchema, type ChatRoom } from "@baydar/shared";
-import { AppHeader, Button, Icon, RecordCardSkeleton, nativeTokens } from "@baydar/ui-native";
+import {
+  AppHeader,
+  Button,
+  Icon,
+  RecordCardSkeleton,
+  SegmentedControl,
+  nativeTokens,
+} from "@baydar/ui-native";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -28,6 +35,12 @@ export default function MessagesListScreen(): JSX.Element {
   const [error, setError] = useState<string | null>(null);
   const loadPromiseRef = useRef<Promise<void> | null>(null);
   const latestLoadRef = useRef<() => Promise<void>>(async () => undefined);
+  // Message requests: DMs from outside the accepted network get their own tab.
+  const [tab, setTab] = useState<"focused" | "requests">("focused");
+  const requestCount = rooms.filter((room) => room.isRequest).length;
+  const visibleRooms = rooms.filter((room) =>
+    tab === "requests" ? room.isRequest : !room.isRequest,
+  );
 
   const load = useCallback(async (): Promise<void> => {
     if (loadPromiseRef.current) return loadPromiseRef.current;
@@ -122,9 +135,26 @@ export default function MessagesListScreen(): JSX.Element {
           }
         />
 
+        <SegmentedControl
+          testID="messages-tabs"
+          style={{ marginBottom: nativeTokens.space[3] }}
+          selectedKey={tab}
+          onChange={(key) => setTab(key)}
+          items={[
+            { key: "focused" as const, label: t("messaging.tabFocused") },
+            {
+              key: "requests" as const,
+              label:
+                requestCount > 0
+                  ? `${t("messaging.tabRequests")} (${requestCount})`
+                  : t("messaging.tabRequests"),
+            },
+          ]}
+        />
+
         <FlatList
           testID="room-list"
-          data={rooms}
+          data={visibleRooms}
           keyExtractor={(r) => r.id}
           contentContainerStyle={styles.listContent}
           renderItem={({ item, index }) => (
@@ -161,7 +191,10 @@ export default function MessagesListScreen(): JSX.Element {
                 testID="messages-list-error"
               />
             ) : (
-              <StateMessage message={t("messaging.emptyList")} role="text" />
+              <StateMessage
+                message={t(tab === "requests" ? "messaging.emptyRequests" : "messaging.emptyList")}
+                role="text"
+              />
             )
           }
           initialNumToRender={10}

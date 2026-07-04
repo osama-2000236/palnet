@@ -467,6 +467,9 @@
   "messaging": {
     "title": "الرسائل",
     "newMessage": "رسالة جديدة",
+    "tabFocused": "الرئيسية",
+    "tabRequests": "طلبات الرسائل",
+    "emptyRequests": "لا توجد طلبات رسائل. عندما يراسلك شخص من خارج شبكتك سيظهر هنا.",
     "emptyList": "لا توجد محادثات بعد.",
     "emptyThread": "لا توجد رسائل بعد — ابدأ بالسلام.",
     "composePlaceholder": "اكتب رسالة…",
