@@ -1,7 +1,9 @@
 import { JobLocationMode, JobType } from "@baydar/shared";
-import { Button, Chip, Input, Sheet, nativeTokens } from "@baydar/ui-native";
+import { Button, Chip, Sheet, nativeTokens } from "@baydar/ui-native";
 import { useTranslation } from "react-i18next";
 import { Text, View } from "react-native";
+
+import { CityField } from "@/components/CityField";
 
 export type Filters = {
   q: string;
@@ -77,13 +79,7 @@ export function FilterSheet({
   return (
     <Sheet open={open} onClose={onClose} title={t("jobs.filters")}>
       <Field label={t("jobs.city")}>
-        <Input
-          fullWidth
-          size="lg"
-          value={filters.city}
-          onChangeText={(v) => set("city", v)}
-          placeholder={t("jobs.cityPlaceholder")}
-        />
+        <CityField allowEmpty value={filters.city} onChange={(v) => set("city", v)} />
       </Field>
       <Field label={t("jobs.type")}>
         <ChipRow

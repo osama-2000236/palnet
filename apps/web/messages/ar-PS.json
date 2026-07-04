@@ -1,6 +1,14 @@
 {
   "common": {
     "appName": "بيدر",
+    "cityField": {
+      "label": "المدينة",
+      "placeholder": "اختر مدينة",
+      "all": "كل المدن",
+      "other": "أخرى (مدينة أخرى)",
+      "otherLabel": "مدينة أخرى",
+      "otherPlaceholder": "اكتب اسم المدينة"
+    },
     "loading": "جارٍ التحميل…",
     "redirecting": "جارٍ التحويل…",
     "retry": "إعادة المحاولة",

@@ -6,6 +6,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 
+import { CityField } from "@/components/CityField";
 import { apiFetch } from "@/lib/api";
 import { toErrorMessage } from "@/lib/error-message";
 import { readSession } from "@/lib/session";
@@ -158,11 +159,7 @@ export default function NewJobPage(): JSX.Element {
             </Field>
           </div>
           <Field label={t("city")}>
-            <input
-              value={form.city}
-              onChange={(e) => setForm((f) => ({ ...f, city: e.target.value }))}
-              className="border-line-hard bg-surface text-ink w-full rounded-md border px-3 py-1.5 text-sm"
-            />
+            <CityField value={form.city} onChange={(city) => setForm((f) => ({ ...f, city }))} />
           </Field>
           <div className="grid grid-cols-3 gap-3">
             <Field label={t("salaryMin")}>

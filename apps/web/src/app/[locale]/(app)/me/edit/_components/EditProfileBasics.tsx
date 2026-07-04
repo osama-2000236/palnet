@@ -5,6 +5,7 @@ import { Avatar, Surface } from "@baydar/ui-web";
 import { useTranslations } from "next-intl";
 import { useState, type ChangeEvent, type ReactNode } from "react";
 
+import { CityField } from "@/components/CityField";
 import { apiFetch } from "@/lib/api";
 import { getAccessToken } from "@/lib/session";
 import { uploadFile } from "@/lib/uploads";
@@ -146,11 +147,9 @@ export function BasicsSection({
         />
       </Field>
       <Field label={tOn("location")}>
-        <input
-          className={inputClass}
+        <CityField
           value={state.location}
-          onChange={(e) => setState({ ...state, location: e.target.value })}
-          maxLength={120}
+          onChange={(city) => setState({ ...state, location: city })}
         />
       </Field>
       {error ? <p className="text-danger text-sm">{error}</p> : null}
