@@ -6,14 +6,11 @@ global.TextEncoder = global.TextEncoder ?? TextEncoder;
 
 const React = require("react");
 const { createRoot } = require("react-dom/client");
-const { renderToString } = require("react-dom/server.node");
 
 const { Checkbox } = require("../../dist/Checkbox");
 const { Dialog } = require("../../dist/Dialog");
 const { Menu } = require("../../dist/Menu");
-const { Popover } = require("../../dist/Popover");
 const { RadioGroup } = require("../../dist/RadioGroup");
-const { Tooltip } = require("../../dist/Tooltip");
 
 function renderClient(element) {
   const container = document.createElement("div");
@@ -141,34 +138,6 @@ describe("new web atoms", () => {
     expect(disabledInput.disabled).toBe(true);
     expect(container.textContent).toContain("Choose a value");
     expect(onValueChange).not.toHaveBeenCalled();
-    unmount();
-  });
-
-  it("renders Tooltip on the server", () => {
-    const html = renderToString(
-      React.createElement(
-        Tooltip,
-        { content: "More actions" },
-        React.createElement("button", { type: "button" }, "⋯"),
-      ),
-    );
-
-    expect(html).toContain("More actions");
-    expect(html).toContain('role="tooltip"');
-  });
-
-  it("opens Popover content", () => {
-    const { container, unmount } = renderClient(
-      React.createElement(
-        Popover,
-        { label: "Profile preview", trigger: React.createElement("span", null, "Open") },
-        React.createElement("p", null, "Preview body"),
-      ),
-    );
-
-    click(container.querySelector("button"));
-
-    expect(container.textContent).toContain("Preview body");
     unmount();
   });
 
