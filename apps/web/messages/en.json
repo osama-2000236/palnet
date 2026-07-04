@@ -446,6 +446,10 @@
   "messaging": {
     "title": "Messages",
     "newMessage": "New message",
+    "tabsLabel": "Message folders",
+    "tabFocused": "Focused",
+    "tabRequests": "Requests",
+    "emptyRequests": "No message requests. When someone outside your network messages you, it shows up here.",
     "searchPlaceholder": "Search messages",
     "searchNoResults": "No matching conversations.",
     "emptyList": "No conversations yet.",

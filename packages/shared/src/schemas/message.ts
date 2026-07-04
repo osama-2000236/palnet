@@ -46,6 +46,13 @@ export const ChatRoom = z.object({
   title: z.string().nullable(),
   lastMessage: Message.nullable(),
   unreadCount: z.number().int().nonnegative(),
+  /**
+   * Message request: a 1:1 room whose counterpart is not an accepted
+   * connection. UIs list these under "Requests" instead of the main inbox.
+   * ponytail: derived flag over existing rooms — no MessageRequest entity;
+   * add one only if per-request accept/decline state is ever needed.
+   */
+  isRequest: z.boolean().default(false),
   members: z.array(
     z.object({
       userId: z.string().cuid(),

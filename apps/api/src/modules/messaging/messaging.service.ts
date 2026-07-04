@@ -201,8 +201,16 @@ export class MessagingService {
       rooms.map((r) => r.id),
       excludedUserIds,
     );
+    const acceptedPeerIds = await this.getAcceptedPeerIds(viewerId, dmPeerIds(rooms, viewerId));
 
-    return rooms.map((row) => this.toChatRoomDto(row, viewerId, unreadByRoom.get(row.id) ?? 0));
+    return rooms.map((row) =>
+      this.toChatRoomDto(
+        row,
+        viewerId,
+        unreadByRoom.get(row.id) ?? 0,
+        isRequestRoom(row, viewerId, acceptedPeerIds),
+      ),
+    );
   }
 
   async getRoomDto(roomId: string, viewerId: string): Promise<ChatRoomDto> {
@@ -245,7 +253,13 @@ export class MessagingService {
       throw new DomainException(ErrorCode.NOT_FOUND, "Room not found.", 404);
     }
     const unreadByRoom = await this.getUnreadCounts(viewerId, [row.id], excludedUserIds);
-    return this.toChatRoomDto(row, viewerId, unreadByRoom.get(row.id) ?? 0);
+    const acceptedPeerIds = await this.getAcceptedPeerIds(viewerId, dmPeerIds([row], viewerId));
+    return this.toChatRoomDto(
+      row,
+      viewerId,
+      unreadByRoom.get(row.id) ?? 0,
+      isRequestRoom(row, viewerId, acceptedPeerIds),
+    );
   }
 
   // ─────────────────────────────────────────────────────────────────────
@@ -538,7 +552,29 @@ export class MessagingService {
     return new Map(rows.map((r) => [r.roomId, Number(r.unread)]));
   }
 
-  private toChatRoomDto(row: RoomRow, viewerId: string, unreadCount: number): ChatRoomDto {
+  // Message requests are derived, not stored: a 1:1 room whose counterpart is
+  // not an accepted connection renders under the "Requests" tab client-side.
+  private async getAcceptedPeerIds(viewerId: string, peerIds: string[]): Promise<Set<string>> {
+    if (peerIds.length === 0) return new Set();
+    const rows = await this.prisma.connection.findMany({
+      where: {
+        status: "ACCEPTED",
+        OR: [
+          { requesterId: viewerId, receiverId: { in: peerIds } },
+          { receiverId: viewerId, requesterId: { in: peerIds } },
+        ],
+      },
+      select: { requesterId: true, receiverId: true },
+    });
+    return new Set(rows.map((r) => (r.requesterId === viewerId ? r.receiverId : r.requesterId)));
+  }
+
+  private toChatRoomDto(
+    row: RoomRow,
+    viewerId: string,
+    unreadCount: number,
+    isRequest = false,
+  ): ChatRoomDto {
     const lastMessage = row.messages[0] ? toMessageDto(row.messages[0]) : null;
     return {
       id: row.id,
@@ -546,6 +582,7 @@ export class MessagingService {
       title: row.title,
       lastMessage,
       unreadCount,
+      isRequest,
       members: row.members.map((m) => ({
         userId: m.userId,
         handle: m.user.deletedAt ? m.userId : (m.user.profile?.handle ?? m.userId),
@@ -578,6 +615,24 @@ export class MessagingService {
       );
     }
   }
+}
+
+function dmPeerIds(rooms: RoomRow[], viewerId: string): string[] {
+  return Array.from(
+    new Set(
+      rooms
+        .filter((room) => !room.isGroup)
+        .flatMap((room) =>
+          room.members.map((m) => m.userId).filter((userId) => userId !== viewerId),
+        ),
+    ),
+  );
+}
+
+function isRequestRoom(row: RoomRow, viewerId: string, acceptedPeerIds: Set<string>): boolean {
+  if (row.isGroup) return false;
+  const peer = row.members.find((m) => m.userId !== viewerId);
+  return peer ? !acceptedPeerIds.has(peer.userId) : false;
 }
 
 function toMessageDto(row: MessageRow): MessageDto {

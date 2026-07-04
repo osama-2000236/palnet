@@ -23,6 +23,7 @@ type PrismaStub = {
   };
   connection: {
     count: jest.Mock;
+    findMany: jest.Mock;
   };
   message: {
     findFirst: jest.Mock;
@@ -52,6 +53,9 @@ function buildPrisma(): PrismaStub {
     },
     connection: {
       count: jest.fn(),
+      // Accepted-connection lookup for the derived isRequest flag. Default:
+      // no accepted connections — specific tests override per case.
+      findMany: jest.fn().mockResolvedValue([]),
     },
     message: {
       findFirst: jest.fn(),
@@ -304,6 +308,25 @@ describe("MessagingService", () => {
 
       const out = await service.listMyRooms("u_me");
       expect(out[0]?.unreadCount).toBe(0);
+    });
+
+    it("flags 1:1 rooms with non-connections as message requests", async () => {
+      prisma.chatRoom.findMany.mockResolvedValue([roomRow()]);
+      prisma.connection.findMany.mockResolvedValue([]);
+
+      const out = await service.listMyRooms("u_me");
+      expect(out[0]?.isRequest).toBe(true);
+    });
+
+    it("keeps accepted-connection DMs and group rooms out of requests", async () => {
+      prisma.chatRoom.findMany.mockResolvedValue([
+        roomRow(),
+        roomRow({ id: "room_group", isGroup: true, title: "Team" }),
+      ]);
+      prisma.connection.findMany.mockResolvedValue([{ requesterId: "u_me", receiverId: "u_them" }]);
+
+      const out = await service.listMyRooms("u_me");
+      expect(out.map((room) => room.isRequest)).toEqual([false, false]);
     });
 
     it("hides rooms archived by the viewer", async () => {
