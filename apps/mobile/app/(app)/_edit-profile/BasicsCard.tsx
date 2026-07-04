@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { View } from "react-native";
 
+import { CityField } from "@/components/CityField";
 import { apiFetch } from "@/lib/api";
 import { apiErrorMessage } from "@/lib/api-errors";
 import { getAccessToken } from "@/lib/session";
@@ -153,12 +154,7 @@ export function BasicsCard({ profile, onChanged, onError }: ProfileCardProps): J
         error={fieldErrors.about}
         fullWidth
       />
-      <Input
-        value={location}
-        onChangeText={setLocation}
-        placeholder={t("profile.location")}
-        error={fieldErrors.location}
-      />
+      <CityField value={location} onChange={setLocation} />
       <Button onPress={save} disabled={busy} loading={busy} fullWidth>
         {t("common.saveChanges")}
       </Button>

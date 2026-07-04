@@ -10,6 +10,7 @@ import { useTranslation } from "react-i18next";
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { CityField } from "@/components/CityField";
 import { StateMessage } from "@/components/StateMessage";
 import { apiFetch } from "@/lib/api";
 import { apiErrorMessage } from "@/lib/api-errors";
@@ -140,13 +141,7 @@ export default function NewJobScreen(): JSX.Element {
                 label: t(`jobs.locationLabels.${v}`),
               }))}
             />
-            <Input
-              fullWidth
-              value={form.city}
-              onChangeText={(v) => setForm((f) => ({ ...f, city: v }))}
-              placeholder={t("employer.newJob.city")}
-              accessibilityLabel={t("employer.newJob.city")}
-            />
+            <CityField value={form.city} onChange={(city) => setForm((f) => ({ ...f, city }))} />
             <View style={styles.salaryRow}>
               <Input
                 style={styles.salaryField}

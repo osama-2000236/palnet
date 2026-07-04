@@ -55,7 +55,7 @@ async function main() {
     firstName: "ديمو",
     lastName: "المستخدم",
     headline: "مهندس برمجيات في رام الله",
-    location: "Ramallah",
+    location: "رام الله",
   });
 
   await upsertSeedUser({
@@ -66,7 +66,7 @@ async function main() {
     firstName: "A11y",
     lastName: "Test",
     headline: "Accessibility smoke profile",
-    location: "Ramallah",
+    location: "رام الله",
   });
 
   const ownerUser = await upsertSeedUser({
@@ -78,7 +78,7 @@ async function main() {
     firstName: "Owner",
     lastName: "Baydar",
     headline: "Hiring manager",
-    location: "Ramallah",
+    location: "رام الله",
   });
 
   const company = await prisma.company.upsert({
@@ -87,7 +87,7 @@ async function main() {
       name: "Baydar",
       tagline: "Palestine-first professional network",
       about: "Baydar is building the Arabic-first professional graph for Palestine.",
-      city: "Ramallah",
+      city: "رام الله",
       country: "PS",
       website: "https://baydar.ps",
       industry: "Technology",
@@ -99,7 +99,7 @@ async function main() {
       name: "Baydar",
       tagline: "Palestine-first professional network",
       about: "Baydar is building the Arabic-first professional graph for Palestine.",
-      city: "Ramallah",
+      city: "رام الله",
       country: "PS",
       website: "https://baydar.ps",
       industry: "Technology",
@@ -131,7 +131,7 @@ async function main() {
       "Own API modules, shape Prisma-backed product surfaces, and ship production-grade NestJS services for Baydar's hiring and social graph features.",
     type: "FULL_TIME",
     locationMode: "REMOTE",
-    city: "Ramallah",
+    city: "رام الله",
     salaryMin: 3000,
     salaryMax: 5000,
     skillsRequired: ["NestJS", "Prisma", "PostgreSQL"],
@@ -145,7 +145,7 @@ async function main() {
       "Build platform primitives for Baydar, improve deployment pipelines, and help teams ship reliable product changes across web and mobile surfaces.",
     type: "FULL_TIME",
     locationMode: "HYBRID",
-    city: "Ramallah",
+    city: "رام الله",
     salaryMin: 2500,
     salaryMax: 4500,
     skillsRequired: ["TypeScript", "Platform", "CI/CD"],

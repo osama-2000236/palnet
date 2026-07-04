@@ -3,6 +3,8 @@ import { Controller, type Control, type FieldErrors } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { I18nManager, Pressable, Switch, Text, View } from "react-native";
 
+import { CityField } from "@/components/CityField";
+
 import { ChoiceButton, ControlledField, FieldError } from "./Fields";
 import { toHandle } from "./api";
 import type { BackgroundKind, OnboardingFormValues } from "./types";
@@ -144,14 +146,34 @@ export function LocationStep({
 
   return (
     <View style={{ gap: nativeTokens.space[3] }}>
-      <ControlledField
+      <Controller
         control={control}
-        error={errors.location?.message}
-        hint={t("onboarding.locationHint")}
-        label={t("onboarding.location")}
         name="location"
-        testID="onboarding-location"
-        textContentType="addressCity"
+        render={({ field: { onChange, value } }) => (
+          <View style={{ gap: nativeTokens.space[1] }}>
+            <Text
+              selectable
+              style={{
+                color: nativeTokens.color.ink,
+                fontFamily: nativeTokens.type.family.sans,
+                fontSize: nativeTokens.type.scale.small.size,
+                fontWeight: "700",
+                lineHeight: nativeTokens.type.scale.small.line,
+                textAlign: I18nManager.isRTL ? "right" : "left",
+              }}
+            >
+              {t("onboarding.location")}
+            </Text>
+            <CityField
+              testID="onboarding-location"
+              value={String(value ?? "")}
+              onChange={onChange}
+            />
+            {errors.location?.message ? (
+              <FieldError message={String(errors.location.message)} />
+            ) : null}
+          </View>
+        )}
       />
       <ControlledField
         autoCapitalize="characters"

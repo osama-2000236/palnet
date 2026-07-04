@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 
+import { CityField } from "@/components/CityField";
 import { apiFetch, ApiRequestError } from "@/lib/api";
 import { getAccessToken, writeOnboardingHandoff, writeProfileCache } from "@/lib/session";
 
@@ -144,11 +145,9 @@ export default function OnboardingPage(): JSX.Element {
 
         <label className="flex flex-col gap-1">
           <span className="text-ink-muted text-sm">{t("location")}</span>
-          <Input
+          <CityField
             value={state.location}
-            onChange={(e) => updateField("location", e.target.value)}
-            maxLength={120}
-            fullWidth
+            onChange={(city) => updateField("location", city)}
           />
         </label>
 

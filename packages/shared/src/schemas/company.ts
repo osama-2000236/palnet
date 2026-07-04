@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { CompanyMemberRole } from "../enums";
+import { normalizeCity } from "../palestine";
 
 export const CompanySlug = z
   .string()
@@ -21,7 +22,7 @@ export const CreateCompanyBody = z.object({
   logoUrl: z.string().url().optional(),
   coverUrl: z.string().url().optional(),
   country: z.string().length(2).default("PS"),
-  city: z.string().max(120).optional(),
+  city: z.string().max(120).transform(normalizeCity).optional(),
 });
 export type CreateCompanyBody = z.infer<typeof CreateCompanyBody>;
 

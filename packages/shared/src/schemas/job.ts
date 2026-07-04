@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { ApplicationStatus, JobLocationMode, JobType } from "../enums";
+import { normalizeCity } from "../palestine";
 
 export const CreateJobBody = z.object({
   companyId: z.string().cuid(),
@@ -8,7 +9,8 @@ export const CreateJobBody = z.object({
   description: z.string().min(30).max(20000),
   type: z.nativeEnum(JobType),
   locationMode: z.nativeEnum(JobLocationMode),
-  city: z.string().max(120).optional(),
+  // canonicalize Palestinian city names so filters match across ar/en input
+  city: z.string().max(120).transform(normalizeCity).optional(),
   country: z.string().length(2).default("PS"),
   salaryMin: z.number().int().positive().optional(),
   salaryMax: z.number().int().positive().optional(),
@@ -64,7 +66,7 @@ export type UpdateApplicationStatusBody = z.infer<typeof UpdateApplicationStatus
 
 export const JobSearchQuery = z.object({
   q: z.string().max(120).optional(),
-  city: z.string().max(120).optional(),
+  city: z.string().max(120).transform(normalizeCity).optional(),
   type: z.nativeEnum(JobType).optional(),
   locationMode: z.nativeEnum(JobLocationMode).optional(),
   skills: z.array(z.string()).max(10).optional(),

@@ -174,7 +174,8 @@ describe("OnboardingScreen", () => {
     fireEvent.press(screen.getByTestId("onboarding-next"));
 
     await waitFor(() => expect(screen.getByTestId("onboarding-location")).toBeTruthy());
-    fireEvent.changeText(screen.getByTestId("onboarding-location"), "رام الله");
+    fireEvent.press(screen.getByTestId("onboarding-location"));
+    fireEvent.press(await screen.findByText("رام الله"));
     fireEvent.press(screen.getByTestId("onboarding-next"));
 
     await waitFor(() => expect(screen.getByTestId("onboarding-work-title")).toBeTruthy());
@@ -244,7 +245,8 @@ describe("OnboardingScreen", () => {
     fireEvent.press(screen.getByTestId("onboarding-next"));
 
     await waitFor(() => expect(screen.getByTestId("onboarding-location")).toBeTruthy());
-    fireEvent.changeText(screen.getByTestId("onboarding-location"), "رام الله");
+    fireEvent.press(screen.getByTestId("onboarding-location"));
+    fireEvent.press(await screen.findByText("رام الله"));
     fireEvent.press(screen.getByTestId("onboarding-next"));
 
     await waitFor(() => expect(screen.getByTestId("onboarding-work-title")).toBeTruthy());

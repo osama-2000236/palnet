@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { JobLocationMode } from "../enums";
+import { normalizeCity } from "../palestine";
 
 // Handle: /in/<handle> — lowercase ascii, digits, dash; 3-30 chars; unique.
 export const Handle = z
@@ -67,7 +68,12 @@ export const Profile = z.object({
   lastName: z.string().min(1).max(60),
   headline: z.string().max(220).nullish(),
   about: z.string().max(4000).nullish(),
-  location: z.string().max(120).nullish(),
+  // canonicalize Palestinian city names (ar/en → canonical ar); passes others through
+  location: z
+    .string()
+    .max(120)
+    .transform((v) => normalizeCity(v))
+    .nullish(),
   country: z.string().length(2).default("PS"),
   avatarUrl: z.string().url().nullish(),
   coverUrl: z.string().url().nullish(),
@@ -113,7 +119,7 @@ export const OnboardProfileBody = z.object({
   firstName: z.string().min(1).max(60),
   lastName: z.string().min(1).max(60),
   headline: z.string().max(220).optional(),
-  location: z.string().max(120).optional(),
+  location: z.string().max(120).transform(normalizeCity).optional(),
   country: z.string().length(2).default("PS"),
 });
 export type OnboardProfileBody = z.infer<typeof OnboardProfileBody>;

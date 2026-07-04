@@ -1,6 +1,14 @@
 {
   "common": {
     "appName": "Baydar",
+    "cityField": {
+      "label": "City",
+      "placeholder": "Choose a city",
+      "all": "All cities",
+      "other": "Other (another city)",
+      "otherLabel": "Other city",
+      "otherPlaceholder": "Type the city name"
+    },
     "loading": "Loading…",
     "redirecting": "Redirecting…",
     "retry": "Retry",

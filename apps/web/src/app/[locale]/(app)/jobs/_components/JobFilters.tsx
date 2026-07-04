@@ -4,6 +4,8 @@ import { JobLocationMode, JobType } from "@baydar/shared";
 import { Chip, Icon, Input, Surface } from "@baydar/ui-web";
 import { useTranslations } from "next-intl";
 
+import { CityField } from "@/components/CityField";
+
 export type JobFiltersState = {
   q: string;
   city: string;
@@ -47,15 +49,10 @@ export function JobFilters({
         <label htmlFor="jobs-city" className="text-ink-muted mb-1 block text-xs">
           {t("city")}
         </label>
-        <Input
-          id="jobs-city"
-          type="text"
-          size="sm"
-          fullWidth
+        <CityField
+          allowEmpty
           value={filters.city}
-          onChange={(e) => onChange({ ...filters, city: e.target.value })}
-          placeholder={t("cityPlaceholder")}
-          aria-label={t("city")}
+          onChange={(city) => onChange({ ...filters, city })}
         />
       </div>
 
