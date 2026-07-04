@@ -1,9 +1,9 @@
 import { Button, useToast } from "@baydar/ui-native";
-import { yupResolver } from "@hookform/resolvers/yup";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { router, useLocalSearchParams } from "expo-router";
 import { Controller, useForm, type Resolver } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import * as yup from "yup";
+import { z } from "zod";
 
 import { AuthScaffold, AuthTextField } from "@/components/auth/AuthScaffold";
 import { ApiRequestError, resetPasswordAction } from "@/lib/auth-actions";
@@ -13,19 +13,20 @@ interface ResetPasswordFormValues {
   confirmPassword: string;
 }
 
-const resetSchema = yup.object({
-  newPassword: yup
-    .string()
-    .min(10, "auth.reset.validation.passwordMin")
-    .matches(/[a-z]/, "auth.reset.validation.passwordLower")
-    .matches(/[A-Z]/, "auth.reset.validation.passwordUpper")
-    .matches(/\d/, "auth.reset.validation.passwordDigit")
-    .required("auth.validation.required"),
-  confirmPassword: yup
-    .string()
-    .oneOf([yup.ref("newPassword")], "auth.reset.passwordMismatch")
-    .required("auth.validation.required"),
-});
+const resetSchema = z
+  .object({
+    newPassword: z
+      .string()
+      .min(10, "auth.reset.validation.passwordMin")
+      .regex(/[a-z]/, "auth.reset.validation.passwordLower")
+      .regex(/[A-Z]/, "auth.reset.validation.passwordUpper")
+      .regex(/\d/, "auth.reset.validation.passwordDigit"),
+    confirmPassword: z.string().min(1, "auth.validation.required"),
+  })
+  .refine((v) => v.confirmPassword === v.newPassword, {
+    path: ["confirmPassword"],
+    message: "auth.reset.passwordMismatch",
+  });
 
 export default function ResetPasswordScreen(): JSX.Element {
   const { t } = useTranslation();
@@ -39,7 +40,7 @@ export default function ResetPasswordScreen(): JSX.Element {
   } = useForm<ResetPasswordFormValues>({
     defaultValues: { newPassword: "", confirmPassword: "" },
     mode: "onTouched",
-    resolver: yupResolver(resetSchema) as Resolver<ResetPasswordFormValues>,
+    resolver: zodResolver(resetSchema) as Resolver<ResetPasswordFormValues>,
   });
 
   async function onSubmit(values: ResetPasswordFormValues): Promise<void> {

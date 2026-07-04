@@ -1,9 +1,9 @@
 import { Button, nativeTokens, useToast } from "@baydar/ui-native";
-import { yupResolver } from "@hookform/resolvers/yup";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { router } from "expo-router";
 import { Controller, useForm, type Resolver } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import * as yup from "yup";
+import { z } from "zod";
 
 import { AuthScaffold, AuthTextField } from "@/components/auth/AuthScaffold";
 import { ApiRequestError, forgotPasswordAction } from "@/lib/auth-actions";
@@ -13,8 +13,8 @@ interface ForgotPasswordFormValues {
   email: string;
 }
 
-const forgotSchema = yup.object({
-  email: yup.string().trim().email("auth.validation.email").required("auth.validation.required"),
+const forgotSchema = z.object({
+  email: z.string().trim().min(1, "auth.validation.required").email("auth.validation.email"),
 });
 
 export default function ForgotPasswordScreen(): JSX.Element {
@@ -29,7 +29,7 @@ export default function ForgotPasswordScreen(): JSX.Element {
   } = useForm<ForgotPasswordFormValues>({
     defaultValues: { email: "" },
     mode: "onTouched",
-    resolver: yupResolver(forgotSchema) as Resolver<ForgotPasswordFormValues>,
+    resolver: zodResolver(forgotSchema) as Resolver<ForgotPasswordFormValues>,
   });
 
   async function onSubmit(values: ForgotPasswordFormValues): Promise<void> {
