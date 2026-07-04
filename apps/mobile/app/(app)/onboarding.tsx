@@ -1,5 +1,5 @@
 import { nativeTokens } from "@baydar/ui-native";
-import { yupResolver } from "@hookform/resolvers/yup";
+import { zodResolver } from "@hookform/resolvers/zod";
 import * as ImagePicker from "expo-image-picker";
 import { router, useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -71,7 +71,7 @@ export default function OnboardingScreen(): JSX.Element {
   } = useForm<OnboardingFormValues>({
     defaultValues: defaultOnboardingValues(params),
     mode: "onTouched",
-    resolver: yupResolver(onboardingSchema) as Resolver<OnboardingFormValues>,
+    resolver: zodResolver(onboardingSchema) as Resolver<OnboardingFormValues>,
   });
 
   const backgroundKind = useWatch({ control, name: "backgroundKind" });

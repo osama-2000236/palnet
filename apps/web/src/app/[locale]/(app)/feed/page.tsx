@@ -166,9 +166,7 @@ function FeedInner(): JSX.Element {
       {/* Left: Feed */}
       <Suspense fallback={null}>
         <div className="w-full max-w-[520px] flex-1">
-          {t("title") === undefined ? null : (
-            <h1 className="text-ink mb-4 text-3xl font-bold">{t("title")}</h1>
-          )}
+          <h1 className="text-ink mb-4 text-3xl font-bold">{t("title")}</h1>
           <OnboardingDoneCard forceVisible={onboarded} onDismiss={clearOnboardingQuery} />
           {me ? <ProfileCompletenessCard profile={me} /> : null}
           <div className="mb-4">

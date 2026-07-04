@@ -47,11 +47,6 @@ export type {
   PostCardCounts,
 } from "./PostCard";
 export { PostCardSkeleton } from "./PostCardSkeleton";
-export { ProfileSkeleton } from "./ProfileSkeleton";
-export { RoomListSkeleton } from "./RoomListSkeleton";
-export { SearchResultSkeleton } from "./SearchResultSkeleton";
-export { Table } from "./Table";
-export type { TableProps } from "./Table";
 
 // ── Messaging ────────────────────────────────────────────────────────
 export { MessageBubble } from "./MessageBubble";
@@ -80,8 +75,6 @@ export { Input } from "./Input";
 export type { InputProps, InputSize } from "./Input";
 export { Menu } from "./Menu";
 export type { MenuEntry, MenuPlacement, MenuProps } from "./Menu";
-export { Popover } from "./Popover";
-export type { PopoverPlacement, PopoverProps } from "./Popover";
 export { RadioGroup } from "./RadioGroup";
 export type { RadioGroupItem, RadioGroupProps } from "./RadioGroup";
 export { RetryChip } from "./RetryChip";
@@ -92,8 +85,6 @@ export { Switch } from "./Switch";
 export type { SwitchProps } from "./Switch";
 export { Tabs, Tab } from "./Tabs";
 export type { TabsProps, TabProps } from "./Tabs";
-export { Tooltip } from "./Tooltip";
-export type { TooltipPlacement, TooltipProps } from "./Tooltip";
 export { Toast, ToastHost, ToastProvider, useToast } from "./Toast";
 export type {
   ShowToastInput,

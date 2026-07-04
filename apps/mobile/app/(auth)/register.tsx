@@ -1,11 +1,11 @@
 import { Button, Surface, nativeTokens } from "@baydar/ui-native";
-import { yupResolver } from "@hookform/resolvers/yup";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { router } from "expo-router";
 import { useState } from "react";
 import { Controller, useForm, type Resolver } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { Pressable, Switch, Text, View } from "react-native";
-import * as yup from "yup";
+import { z } from "zod";
 
 import {
   AuthError,
@@ -24,27 +24,20 @@ interface RegisterFormValues {
   acceptTerms: boolean;
 }
 
-const registerSchema = yup.object({
-  firstName: yup
+const registerSchema = z.object({
+  firstName: z
     .string()
     .trim()
     .min(1, "auth.validation.required")
-    .max(60, "auth.validation.nameMax")
-    .required("auth.validation.required"),
-  lastName: yup
-    .string()
-    .trim()
-    .min(1, "auth.validation.required")
-    .max(60, "auth.validation.nameMax")
-    .required("auth.validation.required"),
-  email: yup.string().trim().email("auth.validation.email").required("auth.validation.required"),
-  password: yup
+    .max(60, "auth.validation.nameMax"),
+  lastName: z.string().trim().min(1, "auth.validation.required").max(60, "auth.validation.nameMax"),
+  email: z.string().trim().min(1, "auth.validation.required").email("auth.validation.email"),
+  password: z
     .string()
     .min(8, "auth.validation.passwordMin")
-    .matches(/[A-Za-z]/, "auth.validation.passwordLetter")
-    .matches(/\d/, "auth.validation.passwordDigit")
-    .required("auth.validation.required"),
-  acceptTerms: yup.boolean().oneOf([true], "auth.validation.terms").required(),
+    .regex(/[A-Za-z]/, "auth.validation.passwordLetter")
+    .regex(/\d/, "auth.validation.passwordDigit"),
+  acceptTerms: z.boolean().refine((v) => v, "auth.validation.terms"),
 });
 
 export default function RegisterScreen(): JSX.Element {
@@ -67,7 +60,7 @@ export default function RegisterScreen(): JSX.Element {
       acceptTerms: false,
     },
     mode: "onTouched",
-    resolver: yupResolver(registerSchema) as Resolver<RegisterFormValues>,
+    resolver: zodResolver(registerSchema) as Resolver<RegisterFormValues>,
   });
 
   const accept = watch("acceptTerms");

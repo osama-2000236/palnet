@@ -11,13 +11,10 @@ import { OnboardingProgress } from "../OnboardingProgress";
 import { RecordCard } from "../RecordCard";
 import { RecordCardSkeleton } from "../RecordCardSkeleton";
 import { RetryChip } from "../RetryChip";
-import { RoomListSkeleton } from "../RoomListSkeleton";
 import { SearchField } from "../SearchField";
-import { SearchResultSkeleton } from "../SearchResultSkeleton";
 import { SegmentedControl } from "../SegmentedControl";
 import { StateMessage } from "../StateMessage";
 import { Switch } from "../Switch";
-import { Table } from "../Table";
 
 const user = {
   id: "u1",
@@ -67,17 +64,12 @@ describe("native exported component coverage", () => {
           <Text>Record child</Text>
         </RecordCard>
         <RecordCardSkeleton testID="record-skeleton" />
-        <RoomListSkeleton />
-        <SearchResultSkeleton />
         <StateMessage
           title="Offline"
           message="Reconnect and try again"
           tone="offline"
           icon="clock"
         />
-        <Table>
-          <Text>Table cell</Text>
-        </Table>
       </View>,
     );
 
@@ -88,7 +80,6 @@ describe("native exported component coverage", () => {
     expect(screen.getByText("Two")).toBeTruthy();
     expect(screen.getByText("Record child")).toBeTruthy();
     expect(screen.getByText("Reconnect and try again")).toBeTruthy();
-    expect(screen.getByText("Table cell")).toBeTruthy();
   });
 
   it("fires callbacks for native input and action primitives", () => {

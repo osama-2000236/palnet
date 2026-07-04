@@ -1,11 +1,11 @@
 import { Button, Surface, nativeTokens } from "@baydar/ui-native";
-import { yupResolver } from "@hookform/resolvers/yup";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { router, type Href } from "expo-router";
 import { useState } from "react";
 import { Controller, useForm, type Resolver } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { Text, View } from "react-native";
-import * as yup from "yup";
+import { z } from "zod";
 
 import {
   AuthError,
@@ -22,9 +22,9 @@ interface LoginFormValues {
   password: string;
 }
 
-const loginSchema = yup.object({
-  email: yup.string().trim().email("auth.validation.email").required("auth.validation.required"),
-  password: yup.string().required("auth.validation.required"),
+const loginSchema = z.object({
+  email: z.string().trim().min(1, "auth.validation.required").email("auth.validation.email"),
+  password: z.string().min(1, "auth.validation.required"),
 });
 
 export default function LoginScreen(): JSX.Element {
@@ -39,7 +39,7 @@ export default function LoginScreen(): JSX.Element {
   } = useForm<LoginFormValues>({
     defaultValues: { email: "", password: "" },
     mode: "onTouched",
-    resolver: yupResolver(loginSchema) as Resolver<LoginFormValues>,
+    resolver: zodResolver(loginSchema) as Resolver<LoginFormValues>,
   });
 
   async function onSubmit(values: LoginFormValues): Promise<void> {

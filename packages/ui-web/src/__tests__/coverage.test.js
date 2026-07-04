@@ -21,20 +21,14 @@ const { Icon } = require("../../dist/Icon");
 const { Illustration } = require("../../dist/Illustration");
 const { Input } = require("../../dist/Input");
 const { OnboardingProgress } = require("../../dist/OnboardingProgress");
-const { Popover } = require("../../dist/Popover");
 const { PostCardSkeleton } = require("../../dist/PostCardSkeleton");
-const { ProfileSkeleton } = require("../../dist/ProfileSkeleton");
 const { RadioGroup } = require("../../dist/RadioGroup");
 const { RetryChip } = require("../../dist/RetryChip");
-const { RoomListSkeleton } = require("../../dist/RoomListSkeleton");
-const { SearchResultSkeleton } = require("../../dist/SearchResultSkeleton");
 const { Skeleton } = require("../../dist/Skeleton");
 const { Surface } = require("../../dist/Surface");
 const { Switch } = require("../../dist/Switch");
-const { Table } = require("../../dist/Table");
 const { Tab, Tabs } = require("../../dist/Tabs");
 const { Toast } = require("../../dist/Toast");
-const { Tooltip } = require("../../dist/Tooltip");
 const { TypingIndicator } = require("../../dist/TypingIndicator");
 
 const user = {
@@ -99,25 +93,8 @@ describe("public web component coverage", () => {
         labels: ["One", "Two", "Three", "Four"],
       }),
       React.createElement(PostCardSkeleton),
-      React.createElement(ProfileSkeleton),
-      React.createElement(RoomListSkeleton),
-      React.createElement(SearchResultSkeleton),
       React.createElement(Skeleton, { width: 16, height: 16, kind: "circle" }),
       React.createElement(Surface, { variant: "card" }, "Surface body"),
-      React.createElement(
-        Table,
-        null,
-        React.createElement(
-          "tbody",
-          null,
-          React.createElement("tr", null, React.createElement("td", null, "Cell")),
-        ),
-      ),
-      React.createElement(
-        Tooltip,
-        { content: "More" },
-        React.createElement("button", { type: "button" }, "Action"),
-      ),
       React.createElement(TypingIndicator, { label: "Layan is typing" }),
     ];
 
@@ -127,7 +104,6 @@ describe("public web component coverage", () => {
     expect(html).toContain("Layan");
     expect(html).toContain("Nothing found");
     expect(html).toContain("progressbar");
-    expect(html).toContain("Cell");
     expect(html).toContain("Layan is typing");
   });
 
@@ -209,18 +185,12 @@ describe("public web component coverage", () => {
           { open: true, onClose: onDismiss, title: "Confirm", closeLabel: "Close" },
           React.createElement("button", { type: "button", "data-autofocus": true }, "Inside"),
         ),
-        React.createElement(
-          Popover,
-          { label: "More", trigger: React.createElement("span", null, "Open") },
-          React.createElement("p", null, "Popover body"),
-        ),
         React.createElement(Toast, { message: "Saved", kind: "success", onDismiss }),
       ),
     );
 
     click(container.querySelector('[aria-label="إغلاق"]'));
     click(container.querySelector('[aria-label="Close"]'));
-    click(container.querySelector('[aria-label="More"]'));
     click(container.querySelector('input[type="checkbox"]'));
     click(container.querySelector('[role="switch"][aria-checked="true"]'));
     click(container.querySelector('button[aria-label="Enabled"]'));
@@ -232,7 +202,6 @@ describe("public web component coverage", () => {
     expect(onDismiss).toHaveBeenCalledTimes(2);
     expect(onChange).toHaveBeenCalled();
     expect(onRetry).toHaveBeenCalled();
-    expect(container.textContent).toContain("Popover body");
     expect(container.querySelector('[role="tab"][aria-selected="true"]').textContent).toContain(
       "One",
     );
