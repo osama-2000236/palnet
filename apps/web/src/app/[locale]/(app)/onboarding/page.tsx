@@ -145,10 +145,7 @@ export default function OnboardingPage(): JSX.Element {
 
         <label className="flex flex-col gap-1">
           <span className="text-ink-muted text-sm">{t("location")}</span>
-          <CityField
-            value={state.location}
-            onChange={(city) => updateField("location", city)}
-          />
+          <CityField value={state.location} onChange={(city) => updateField("location", city)} />
         </label>
 
         {error ? <Alert kind="danger">{error}</Alert> : null}
