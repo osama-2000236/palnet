@@ -323,9 +323,7 @@ describe("MessagingService", () => {
         roomRow(),
         roomRow({ id: "room_group", isGroup: true, title: "Team" }),
       ]);
-      prisma.connection.findMany.mockResolvedValue([
-        { requesterId: "u_me", receiverId: "u_them" },
-      ]);
+      prisma.connection.findMany.mockResolvedValue([{ requesterId: "u_me", receiverId: "u_them" }]);
 
       const out = await service.listMyRooms("u_me");
       expect(out.map((room) => room.isRequest)).toEqual([false, false]);
