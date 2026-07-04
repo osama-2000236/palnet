@@ -839,6 +839,20 @@
       "REJECTED": "Rejected",
       "HIRED": "Hired",
       "WITHDRAWN": "Withdrew"
+    },
+    "newJob": {
+      "title": "New job",
+      "fieldTitle": "Job title",
+      "description": "Description",
+      "descriptionHint": "At least 30 characters.",
+      "type": "Contract type",
+      "locationMode": "Work location",
+      "city": "City",
+      "salaryMin": "Salary min",
+      "salaryMax": "Salary max",
+      "salaryCurrency": "Currency",
+      "submit": "Publish",
+      "submitting": "Publishing…"
     }
   },
   "premium": {

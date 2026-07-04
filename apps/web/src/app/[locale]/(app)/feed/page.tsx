@@ -13,6 +13,7 @@ import {
   Job as JobSchema,
   PersonSuggestion as PersonSuggestionSchema,
   Post as PostSchema,
+  Profile as ProfileSchema,
 } from "@baydar/shared";
 import type { Job, PersonSuggestion, Post } from "@baydar/shared";
 import {
@@ -23,9 +24,11 @@ import {
   staggerDelay,
   Surface,
 } from "@baydar/ui-web";
+import { Composer } from "@/components/Composer";
 import { PostCard } from "@/components/PostCard";
 import { RightRail } from "../components/RightRail";
 import { OnboardingDoneCard } from "./OnboardingDoneCard";
+import { ProfileCompletenessCard } from "./ProfileCompletenessCard";
 
 const PostsPage = cursorPage(PostSchema);
 const JobsPage = cursorPage(JobSchema);
@@ -68,6 +71,19 @@ function FeedInner(): JSX.Element {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [jobsLoading, setJobsLoading] = useState(true);
   const [jobsError, setJobsError] = useState(false);
+
+  // Viewer profile feeds the composer avatar and the completeness card.
+  // Non-blocking: the feed renders without it, the extras appear when it lands.
+  const meQuery = useQuery({
+    queryKey: ["profiles", "me"],
+    queryFn: async () => {
+      const token = getAccessToken() ?? undefined;
+      return apiFetch("/profiles/me", ProfileSchema, { token });
+    },
+    retry: false,
+    staleTime: 5 * 60 * 1000,
+  });
+  const me = meQuery.data ?? null;
 
   const query = useQuery({
     queryKey: ["feed", requestAfter],
@@ -154,15 +170,13 @@ function FeedInner(): JSX.Element {
             <h1 className="text-ink mb-4 text-3xl font-bold">{t("title")}</h1>
           )}
           <OnboardingDoneCard forceVisible={onboarded} onDismiss={clearOnboardingQuery} />
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              // Handle submit via Composer's onSubmit
-            }}
-            className="mb-4 flex gap-2"
-          >
-            {/* Composer will handle input and submit */}
-          </form>
+          {me ? <ProfileCompletenessCard profile={me} /> : null}
+          <div className="mb-4">
+            <Composer
+              me={me}
+              onPosted={(post) => setPosts((prev) => ({ ...prev, posts: [post, ...prev.posts] }))}
+            />
+          </div>
 
           {loadingInitial ? (
             <ul className="flex flex-col gap-3" aria-hidden="true">
