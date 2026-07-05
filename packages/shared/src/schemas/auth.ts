@@ -102,6 +102,8 @@ export const AuthSession = z.object({
     email: Email,
     role: z.enum(["USER", "COMPANY_ADMIN", "MODERATOR", "ADMIN"]),
     locale: z.string(),
+    // Present on GET /auth/me; login/register omit it.
+    emailVerified: z.string().datetime().nullable().optional(),
   }),
   tokens: AuthTokens,
 });

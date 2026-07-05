@@ -62,6 +62,14 @@ export async function confirmVerifyEmailAction(token: string): Promise<{ emailVe
   });
 }
 
+export async function sendVerifyEmailAction(email: string): Promise<void> {
+  await apiCall("/auth/verify-email/send", {
+    method: "POST",
+    body: { email },
+    skipAuth: true,
+  });
+}
+
 export async function forgotPasswordAction(email: string): Promise<void> {
   await apiCall("/auth/forgot-password", {
     method: "POST",
