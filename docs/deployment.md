@@ -32,6 +32,7 @@ SSE is the active realtime transport for current app flows.
 - `HYPERPAY_ENTITY_ID`, `HYPERPAY_ACCESS_TOKEN`, `HYPERPAY_WEBHOOK_SECRET`
 - `BANK_TRANSFER_IBAN`, `BANK_TRANSFER_BENEFICIARY`
 - `SENTRY_DSN`, `SENTRY_RELEASE`
+- `REDIS_URL` — optional; required only when running more than one API instance (shares custom rate-limit counters and SSE fanout across instances; unset = in-memory)
 - Expo push and observability keys where enabled
 
 ### Web

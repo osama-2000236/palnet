@@ -1,14 +1,21 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, Logger } from "@nestjs/common";
+import type { Redis } from "ioredis";
+
+export interface RateLimitResult {
+  allowed: boolean;
+  resetAt: number;
+}
 
 /**
  * Storage backend for a fixed-window rate limiter. Two reasons it's an
  * interface and not just the in-memory class:
- *   1. Redis is the planned scale-out target — we want to be able to swap
- *      in a Redis implementation without touching every consumer.
+ *   1. Redis is the scale-out target (RedisRateLimitStore below) so multiple
+ *      API instances share counters.
  *   2. Tests can substitute a fake store with deterministic time.
+ * `hit` may be sync (memory) or async (Redis); the guard awaits either.
  */
 export interface RateLimitBackend {
-  hit(key: string, limit: number, windowMs: number): { allowed: boolean; resetAt: number };
+  hit(key: string, limit: number, windowMs: number): RateLimitResult | Promise<RateLimitResult>;
   clear(): void;
 }
 
@@ -26,7 +33,7 @@ export class RateLimitStore implements RateLimitBackend {
   private readonly sweepIntervalMs = 60_000;
   private lastSweepAt = 0;
 
-  hit(key: string, limit: number, windowMs: number): { allowed: boolean; resetAt: number } {
+  hit(key: string, limit: number, windowMs: number): RateLimitResult {
     const now = Date.now();
     this.maybeSweep(now);
 
@@ -58,5 +65,45 @@ export class RateLimitStore implements RateLimitBackend {
     for (const [key, bucket] of this.buckets) {
       if (bucket.resetAt <= now) this.buckets.delete(key);
     }
+  }
+}
+
+// One round-trip fixed window: INCR, set the window TTL on first hit, and
+// repair a missing TTL (possible if a prior client died between INCR and
+// PEXPIRE). Returns [count, remaining-ttl-ms].
+const HIT_SCRIPT = `
+local c = redis.call('INCR', KEYS[1])
+if c == 1 then redis.call('PEXPIRE', KEYS[1], ARGV[1]) end
+local ttl = redis.call('PTTL', KEYS[1])
+if ttl < 0 then
+  redis.call('PEXPIRE', KEYS[1], ARGV[1])
+  ttl = tonumber(ARGV[1])
+end
+return {c, ttl}
+`;
+
+export class RedisRateLimitStore implements RateLimitBackend {
+  private readonly log = new Logger(RedisRateLimitStore.name);
+
+  constructor(private readonly redis: Redis) {}
+
+  async hit(key: string, limit: number, windowMs: number): Promise<RateLimitResult> {
+    try {
+      const [count, ttlMs] = (await this.redis.eval(
+        HIT_SCRIPT,
+        1,
+        `rl:${key}`,
+        String(windowMs),
+      )) as [number, number];
+      return { allowed: count <= limit, resetAt: Date.now() + Math.max(ttlMs, 0) };
+    } catch (err) {
+      // Fail open: availability beats throttling when Redis is unreachable.
+      this.log.warn(`rate-limit hit failed, allowing request: ${(err as Error).message}`);
+      return { allowed: true, resetAt: Date.now() + windowMs };
+    }
+  }
+
+  clear(): void {
+    // Test-only affordance on the memory store; Redis keys expire via TTL.
   }
 }

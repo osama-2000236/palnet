@@ -27,6 +27,7 @@ import { ProfilesModule } from "./modules/profiles/profiles.module";
 import { RateLimitModule } from "./modules/rate-limit/rate-limit.module";
 import { RatingsModule } from "./modules/ratings/ratings.module";
 import { ReactionsModule } from "./modules/reactions/reactions.module";
+import { RedisModule } from "./modules/redis/redis.module";
 import { RepostsModule } from "./modules/reposts/reposts.module";
 import { SafetyModule } from "./modules/safety/safety.module";
 import { SearchModule } from "./modules/search/search.module";
@@ -50,8 +51,11 @@ const defaultThrottleLimit =
         }),
       },
     }),
+    // ponytail: throttler storage is per-instance; add @nest-lab/throttler-storage-redis
+    // alongside REDIS_URL if auth-route limits must be exact across >1 instance.
     ThrottlerModule.forRoot([{ name: "default", ttl: 60_000, limit: defaultThrottleLimit }]),
     PrismaModule,
+    RedisModule,
     RateLimitModule,
     HealthModule,
     AuthModule,

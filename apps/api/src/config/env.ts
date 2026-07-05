@@ -16,6 +16,9 @@ const EnvSchema = z.object({
   BCRYPT_COST: z.coerce.number().int().min(10).max(15).default(12),
   BAYDAR_DEV_RATE_LIMIT: z.coerce.number().int().positive().optional(),
   BAYDAR_DEV_AUTH_RATE_LIMIT: z.coerce.number().int().positive().optional(),
+  // Redis — optional. When set, custom rate limiting and SSE fanout share
+  // state across API instances. Unset = in-memory (single instance).
+  REDIS_URL: z.string().url().optional(),
   // R2 — optional until Sprint 2 media upload.
   R2_ACCOUNT_ID: z.string().optional(),
   R2_ACCESS_KEY_ID: z.string().optional(),

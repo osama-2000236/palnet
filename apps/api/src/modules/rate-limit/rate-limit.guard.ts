@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 
 import { ErrorCode } from "@baydar/shared";
-import { CanActivate, ExecutionContext, Injectable } from "@nestjs/common";
+import { CanActivate, ExecutionContext, Inject, Injectable } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
 import type { Request, Response } from "express";
 
@@ -9,16 +9,18 @@ import { DomainException } from "../../common/domain-exception";
 import type { AuthUser } from "../auth/decorators/current-user.decorator";
 
 import { RATE_LIMIT_KEY, RATE_LIMITS, type RateLimitClass } from "./rate-limit.constants";
-import { RateLimitStore } from "./rate-limit.store";
+import { RateLimitStore, type RateLimitBackend } from "./rate-limit.store";
 
 @Injectable()
 export class RateLimitGuard implements CanActivate {
   constructor(
     private readonly reflector: Reflector,
-    private readonly store: RateLimitStore,
+    // Token stays the class; the module factory may bind it to the Redis
+    // implementation when REDIS_URL is set.
+    @Inject(RateLimitStore) private readonly store: RateLimitBackend,
   ) {}
 
-  canActivate(ctx: ExecutionContext): boolean {
+  async canActivate(ctx: ExecutionContext): Promise<boolean> {
     const limitClass = this.reflector.getAllAndOverride<RateLimitClass>(RATE_LIMIT_KEY, [
       ctx.getHandler(),
       ctx.getClass(),
@@ -30,7 +32,7 @@ export class RateLimitGuard implements CanActivate {
     const req = http.getRequest<Request & { user?: AuthUser }>();
     const res = http.getResponse<Response>();
     const key = `${limitClass}:${trackerFor(req)}`;
-    const result = this.store.hit(key, config.limit, config.windowMs);
+    const result = await this.store.hit(key, config.limit, config.windowMs);
     const retryAfterSeconds = Math.max(1, Math.ceil((result.resetAt - Date.now()) / 1000));
 
     res.setHeader("X-RateLimit-Limit", String(config.limit));

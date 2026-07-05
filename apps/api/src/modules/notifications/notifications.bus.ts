@@ -1,10 +1,11 @@
-import { EventEmitter } from "node:events";
-
 import type { Notification } from "@baydar/shared";
 import { Injectable } from "@nestjs/common";
 
-// In-memory fanout for notifications, keyed by recipient userId. Same pattern
-// as MessagingBus — swap for Redis pub/sub when we scale horizontally.
+import { LocalFanout, RedisFanout, type Fanout } from "../../common/fanout";
+import { RedisClients } from "../redis/redis.clients";
+
+// Fanout for notifications, keyed by recipient userId. Same pattern as
+// MessagingBus: in-memory by default, Redis pub/sub when REDIS_URL is set.
 export type NotificationEvent =
   | { type: "notification.new"; payload: Notification }
   | { type: "notification.read"; payload: { ids: string[]; at: string } }
@@ -12,20 +13,20 @@ export type NotificationEvent =
 
 @Injectable()
 export class NotificationsBus {
-  private readonly emitter = new EventEmitter();
+  private readonly fanout: Fanout<NotificationEvent>;
 
-  constructor() {
-    this.emitter.setMaxListeners(0);
+  constructor(redis: RedisClients) {
+    this.fanout =
+      redis.pub && redis.sub
+        ? new RedisFanout<NotificationEvent>("notif", redis.pub, redis.sub)
+        : new LocalFanout<NotificationEvent>();
   }
 
   publish(userId: string, event: NotificationEvent): void {
-    this.emitter.emit(userId, event);
+    this.fanout.publish(userId, event);
   }
 
   subscribe(userId: string, handler: (event: NotificationEvent) => void): () => void {
-    this.emitter.on(userId, handler);
-    return () => {
-      this.emitter.off(userId, handler);
-    };
+    return this.fanout.subscribe(userId, handler);
   }
 }
