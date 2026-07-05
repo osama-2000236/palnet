@@ -38,6 +38,22 @@ export async function loginAction(input: {
   return session;
 }
 
+/** Restore a soft-deleted account within its grace window, then sign in. */
+export async function restoreAccountAction(input: {
+  email: string;
+  password: string;
+}): Promise<AuthSession> {
+  const session = await apiFetch("/account/restore", AuthSession, {
+    method: "POST",
+    body: { email: input.email, password: input.password, deviceId: await getDeviceId() },
+    skipAuth: true,
+  });
+  await writeSession(session);
+  await clearProfileCache();
+  track("auth.restore", { method: "password" });
+  return session;
+}
+
 export async function confirmVerifyEmailAction(token: string): Promise<{ emailVerified: true }> {
   return apiFetch("/auth/verify-email/confirm", z.object({ emailVerified: z.literal(true) }), {
     method: "POST",

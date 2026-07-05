@@ -13,13 +13,16 @@ import {
   HttpCode,
   HttpStatus,
   Post,
+  Req,
   Res,
   UsePipes,
 } from "@nestjs/common";
 import { ApiBearerAuth, ApiOkResponse, ApiTags } from "@nestjs/swagger";
-import type { Response } from "express";
+import { Throttle } from "@nestjs/throttler";
+import type { Request, Response } from "express";
 
 import { ZodValidationPipe } from "../../common/zod-pipe";
+import { applyAuthTransport } from "../auth/auth-transport";
 import { CurrentUser, type AuthUser } from "../auth/decorators/current-user.decorator";
 import { Public } from "../auth/decorators/public.decorator";
 
@@ -52,10 +55,18 @@ export class AccountController {
   @Public()
   @Post("restore")
   @HttpCode(HttpStatus.OK)
+  // Credential-testing surface (email+password), same brute-force posture as auth routes.
+  @Throttle({ default: { limit: 5, ttl: 3_600_000 } })
   @UsePipes(new ZodValidationPipe(RestoreAccountBody))
   @ApiOkResponse({ description: "Restored account; returns tokens." })
-  async restore(@Body() body: RestoreAccountBodyType): Promise<{ data: AuthSession }> {
+  async restore(
+    @Body() body: RestoreAccountBodyType,
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<{ data: AuthSession }> {
     const data = await this.account.restore(body);
-    return { data };
+    // Same transport contract as login: web gets an HttpOnly refresh cookie,
+    // mobile keeps body transport.
+    return { data: applyAuthTransport(req, res, data) };
   }
 }

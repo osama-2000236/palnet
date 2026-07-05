@@ -94,7 +94,7 @@ describe("AccountController", () => {
     }
   });
 
-  it("restores without auth and returns a session envelope", async () => {
+  it("restores without auth and returns a session envelope (body transport)", async () => {
     const session = {
       user: { id: authUser.id, email: "u@example.com", role: "USER", locale: "ar-PS" },
       tokens: {
@@ -109,6 +109,7 @@ describe("AccountController", () => {
     try {
       await request(app.getHttpServer())
         .post("/account/restore")
+        .set("X-Auth-Transport", "body")
         .send({ email: "u@example.com", password: "Password1", deviceId: "device-1" })
         .expect(200)
         .expect({ data: session });
@@ -117,6 +118,32 @@ describe("AccountController", () => {
         password: "Password1",
         deviceId: "device-1",
       });
+    } finally {
+      await app.close();
+    }
+  });
+
+  it("restores with cookie transport: refresh token moves to an HttpOnly cookie", async () => {
+    const session = {
+      user: { id: authUser.id, email: "u@example.com", role: "USER", locale: "ar-PS" },
+      tokens: {
+        accessToken: "access",
+        refreshToken: "refresh",
+        accessExpiresAt: "2026-05-06T00:15:00.000Z",
+        refreshExpiresAt: "2099-06-06T00:00:00.000Z",
+      },
+    };
+    const account = { restore: jest.fn().mockResolvedValue(session) };
+    const app = await createApp(account);
+    try {
+      const res = await request(app.getHttpServer())
+        .post("/account/restore")
+        .send({ email: "u@example.com", password: "Password1", deviceId: "device-1" })
+        .expect(200);
+      expect(res.body.data.tokens.refreshToken).toBe("");
+      const setCookie = res.headers["set-cookie"]?.[0] ?? "";
+      expect(setCookie).toContain("baydar_refresh=refresh");
+      expect(setCookie).toContain("HttpOnly");
     } finally {
       await app.close();
     }

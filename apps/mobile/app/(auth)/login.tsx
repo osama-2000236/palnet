@@ -13,7 +13,7 @@ import {
   AuthScaffold,
   AuthTextField,
 } from "@/components/auth/AuthScaffold";
-import { ApiRequestError, loginAction } from "@/lib/auth-actions";
+import { ApiRequestError, loginAction, restoreAccountAction } from "@/lib/auth-actions";
 import { resolvePostAuthRoute } from "@/lib/profile-state";
 import { useNetworkStore } from "@/store/network";
 
@@ -30,11 +30,13 @@ const loginSchema = z.object({
 export default function LoginScreen(): JSX.Element {
   const { t } = useTranslation();
   const [error, setError] = useState<string | null>(null);
+  const [errorCode, setErrorCode] = useState<string | null>(null);
   const isConnected = useNetworkStore((state) => state.isConnected);
 
   const {
     control,
     handleSubmit,
+    getValues,
     formState: { errors, isSubmitting },
   } = useForm<LoginFormValues>({
     defaultValues: { email: "", password: "" },
@@ -42,8 +44,19 @@ export default function LoginScreen(): JSX.Element {
     resolver: zodResolver(loginSchema) as Resolver<LoginFormValues>,
   });
 
+  function showError(e: unknown): void {
+    if (e instanceof ApiRequestError) {
+      setErrorCode(e.code);
+      setError(t(`auth.errors.${e.code}`, { defaultValue: t("auth.errors.INTERNAL") }));
+    } else {
+      setErrorCode(null);
+      setError(t("auth.errors.INTERNAL"));
+    }
+  }
+
   async function onSubmit(values: LoginFormValues): Promise<void> {
     setError(null);
+    setErrorCode(null);
     if (!isConnected) {
       setError(t("auth.errors.OFFLINE"));
       return;
@@ -56,11 +69,23 @@ export default function LoginScreen(): JSX.Element {
       const route = await resolvePostAuthRoute(session);
       router.replace(route);
     } catch (e) {
-      if (e instanceof ApiRequestError) {
-        setError(t(`auth.errors.${e.code}`, { defaultValue: t("auth.errors.INTERNAL") }));
-      } else {
-        setError(t("auth.errors.INTERNAL"));
-      }
+      showError(e);
+    }
+  }
+
+  async function onRestore(): Promise<void> {
+    setError(null);
+    setErrorCode(null);
+    const values = getValues();
+    try {
+      const session = await restoreAccountAction({
+        email: values.email.trim().toLowerCase(),
+        password: values.password,
+      });
+      const route = await resolvePostAuthRoute(session);
+      router.replace(route);
+    } catch (e) {
+      showError(e);
     }
   }
 
@@ -147,6 +172,20 @@ export default function LoginScreen(): JSX.Element {
       >
         {t("auth.submitLogin")}
       </Button>
+
+      {errorCode === "ACCOUNT_DELETED_PENDING_RESTORE" ? (
+        <Button
+          fullWidth
+          variant="secondary"
+          size="lg"
+          disabled={!isConnected}
+          testID="login-restore"
+          accessibilityLabel={t("auth.restoreCta")}
+          onPress={() => void onRestore()}
+        >
+          {t("auth.restoreCta")}
+        </Button>
+      ) : null}
 
       <Surface variant="tinted" padding="3">
         <View style={{ gap: nativeTokens.space[1] }}>

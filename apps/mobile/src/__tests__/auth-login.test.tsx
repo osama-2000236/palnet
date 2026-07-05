@@ -8,6 +8,7 @@ import { useNetworkStore } from "../store/network";
 
 const mockReplace = jest.fn();
 const mockLoginAction = jest.fn();
+const mockRestoreAccountAction = jest.fn();
 const mockResolvePostAuthRoute = jest.fn();
 
 jest.mock("expo-router", () => ({
@@ -26,6 +27,7 @@ jest.mock("@/lib/auth-actions", () => ({
     }
   },
   loginAction: (...args: unknown[]) => mockLoginAction(...args),
+  restoreAccountAction: (...args: unknown[]) => mockRestoreAccountAction(...args),
 }));
 
 jest.mock("@/lib/profile-state", () => ({
@@ -52,6 +54,8 @@ jest.mock("react-i18next", () => ({
         "auth.validation.email": "اكتب بريدًا إلكترونيًا صحيحًا.",
         "auth.errors.OFFLINE": "تحتاج اتصالًا بالإنترنت لإكمال هذه الخطوة.",
         "auth.errors.INTERNAL": "حدث خطأ غير متوقع.",
+        "auth.errors.ACCOUNT_DELETED_PENDING_RESTORE": "هذا الحساب قيد الحذف.",
+        "auth.restoreCta": "استعادة الحساب والدخول",
       };
       return translations[key] ?? key;
     },
@@ -101,6 +105,39 @@ describe("LoginScreen", () => {
         password: "Password1",
       });
       expect(mockReplace).toHaveBeenCalledWith("/(app)/onboarding");
+    });
+  });
+
+  it("offers account restore when login hits the deletion grace window", async () => {
+    const { ApiRequestError } = jest.requireMock("@/lib/auth-actions") as {
+      ApiRequestError: new (status: number, code: string) => Error;
+    };
+    mockLoginAction.mockRejectedValue(new ApiRequestError(403, "ACCOUNT_DELETED_PENDING_RESTORE"));
+    mockRestoreAccountAction.mockResolvedValue({
+      user: { id: "user-1", email: "demo@baydar.ps", role: "USER", locale: "ar-PS" },
+      tokens: {
+        accessToken: "access-token",
+        refreshToken: "refresh-token",
+        accessExpiresAt: new Date().toISOString(),
+        refreshExpiresAt: new Date().toISOString(),
+      },
+    });
+    mockResolvePostAuthRoute.mockResolvedValue("/(app)/feed");
+
+    const screen = render(<LoginScreen />);
+    fireEvent.changeText(screen.getByTestId("login-email-input"), "demo@baydar.ps");
+    fireEvent.changeText(screen.getByTestId("login-password-input"), "Password1");
+    fireEvent.press(screen.getByTestId("login-submit"));
+
+    const restoreButton = await screen.findByTestId("login-restore");
+    fireEvent.press(restoreButton);
+
+    await waitFor(() => {
+      expect(mockRestoreAccountAction).toHaveBeenCalledWith({
+        email: "demo@baydar.ps",
+        password: "Password1",
+      });
+      expect(mockReplace).toHaveBeenCalledWith("/(app)/feed");
     });
   });
 });
