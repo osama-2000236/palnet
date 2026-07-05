@@ -34,6 +34,19 @@ export async function loginAction(input: {
   return session;
 }
 
+/** Restore a soft-deleted account within its grace window, then sign in. */
+export async function restoreAccountAction(input: {
+  email: string;
+  password: string;
+}): Promise<AuthSession> {
+  const session = await apiFetch("/account/restore", AuthSession, {
+    method: "POST",
+    body: { email: input.email, password: input.password, deviceId: getDeviceId() },
+  });
+  writeSession(session);
+  return session;
+}
+
 export async function sendVerifyEmailAction(email: string): Promise<void> {
   await apiCall("/auth/verify-email/send", {
     method: "POST",

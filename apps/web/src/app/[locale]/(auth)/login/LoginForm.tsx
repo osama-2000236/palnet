@@ -19,7 +19,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 
-import { ApiRequestError, loginAction } from "@/lib/auth-actions";
+import { ApiRequestError, loginAction, restoreAccountAction } from "@/lib/auth-actions";
 
 export function LoginForm(): JSX.Element {
   const t = useTranslations("auth");
@@ -29,26 +29,48 @@ export function LoginForm(): JSX.Element {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [errorCode, setErrorCode] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+
+  function showError(err: unknown): void {
+    if (err instanceof ApiRequestError) {
+      setErrorCode(err.code);
+      const key = `errors.${err.code}`;
+      try {
+        setError(t(key as Parameters<typeof t>[0]));
+      } catch {
+        setError(t("errors.INTERNAL"));
+      }
+    } else {
+      setErrorCode(null);
+      setError(t("errors.INTERNAL"));
+    }
+  }
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>): Promise<void> {
     e.preventDefault();
     setError(null);
+    setErrorCode(null);
     setBusy(true);
     try {
       await loginAction({ email, password });
       router.push("/feed");
     } catch (err) {
-      if (err instanceof ApiRequestError) {
-        const key = `errors.${err.code}`;
-        try {
-          setError(t(key as Parameters<typeof t>[0]));
-        } catch {
-          setError(t("errors.INTERNAL"));
-        }
-      } else {
-        setError(t("errors.INTERNAL"));
-      }
+      showError(err);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function onRestore(): Promise<void> {
+    setError(null);
+    setErrorCode(null);
+    setBusy(true);
+    try {
+      await restoreAccountAction({ email, password });
+      router.push("/feed");
+    } catch (err) {
+      showError(err);
     } finally {
       setBusy(false);
     }
@@ -103,6 +125,12 @@ export function LoginForm(): JSX.Element {
       <Button type="submit" variant="primary" loading={busy} fullWidth>
         {t("submitLogin")}
       </Button>
+
+      {errorCode === "ACCOUNT_DELETED_PENDING_RESTORE" ? (
+        <Button type="button" variant="secondary" loading={busy} fullWidth onClick={onRestore}>
+          {t("restoreCta")}
+        </Button>
+      ) : null}
     </form>
   );
 }

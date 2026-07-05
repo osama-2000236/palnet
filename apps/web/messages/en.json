@@ -161,6 +161,7 @@
       "backToLogin": "Back to sign in"
     },
     "deletedGraceBanner": "Your account is scheduled for deletion. You can restore it within 30 days by signing in through account restore.",
+    "restoreCta": "Restore account and sign in",
     "reset": {
       "kicker": "Password recovery",
       "title": "Choose a new password",
