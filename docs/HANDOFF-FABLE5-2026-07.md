@@ -59,7 +59,7 @@ Web live locales are only `ar-PS` (default, RTL) and `en` (`apps/web/src/i18n.ts
 
 - `packages/ui-native/src/AppShell.tsx:105` — search is a fake placeholder (no real `TextInput`); `:157` — profile menu unimplemented. Only real UI TODOs in shared packages. Check whether app-level screens bypass these before "fixing" — mobile has a real search screen at `app/(app)/search.tsx`; the AppShell affordance may just need to route there.
 - `apps/api/src/modules/billing/currency.ts` — hardcoded FX snapshot, TODO live rate feed. Acceptable for beta; display shows USD original alongside.
-- `apps/api/src/modules/billing/employer-entitlements.service.ts:23` — residual race window on the under-limit fast path. Documented as MVP-acceptable; tighten with `SELECT FOR UPDATE` if job caps get exceeded.
+- ~~`apps/api/src/modules/billing/employer-entitlements.service.ts:23` — residual race window on the under-limit fast path.~~ **FIXED 2026-07-05:** `CompaniesService.createJob` now wraps limit check + credit spend + job insert in one transaction holding a per-company `pg_advisory_xact_lock`; also closes the credit-spent-but-create-failed leak.
 - Wallet clients (`jawwalpay|palpay|reflect.client.ts`) throw NOT_IMPLEMENTED by design until merchant onboarding — UI correctly shows coming-soon. Do NOT fake success.
 
 ### 3.3 Docs drift (again)
@@ -89,7 +89,8 @@ Code paths exist; these are configuration/evidence tasks. `apps/api/src/config/e
 5. **Live FX feed** for `billing/currency.ts`.
 6. **Real email provider is DONE in code** (Resend transport in `apps/api/src/modules/mail/resend.transport.ts`, console fallback dev/test) — only the API key remains (see §4.1). Older docs saying "console-only" are stale.
 7. **Workspace-aware dead-export sweep** (`knip --workspaces`) — deferred from Phase 7.
-8. Stabilize `apps/mobile/src/__tests__/onboarding-flow.test.tsx` (historically flaky; green this run).
+8. ~~Stabilize `apps/mobile/src/__tests__/onboarding-flow.test.tsx`~~ — **done 2026-07-05** (30s suite timeout; the flow test is integration-scale, 5s Jest default was the flake).
+9. **Enhancement sprint 2026-07-05** (worktree `adoring-aryabhata-a4b065`): `/account/restore` gained login-parity brute-force throttle (5/hour) and `applyAuthTransport` (web HttpOnly refresh cookie, mobile body transport — was leaking refresh token into web response body); login screens on web + mobile now show a "استعادة الحساب والدخول" CTA when login fails with `ACCOUNT_DELETED_PENDING_RESTORE` (previously a dead-end error with no restore UI anywhere). Audits run clean: all list endpoints paginated, no RTL-physical CSS, no hardcoded hex outside tokens, error/loading boundaries complete, guard/throttle coverage verified (webhook signature-checked, internal routes token-gated, company billing role-gated).
 
 ## 6. Deploy runbook (as wired today)
 

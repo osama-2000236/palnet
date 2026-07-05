@@ -134,6 +134,10 @@ const baseProfile = {
   skills: [],
 };
 
+// Full six-step flow renders + 8 waitFor rounds routinely exceed Jest's 5s
+// default on slower CI machines; this is an integration-style test, not a unit.
+jest.setTimeout(30_000);
+
 describe("OnboardingScreen", () => {
   beforeEach(() => {
     jest.clearAllMocks();
