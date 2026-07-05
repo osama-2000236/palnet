@@ -27,10 +27,11 @@ type PrismaStub = {
   job: { findFirst: jest.Mock; findMany: jest.Mock; create: jest.Mock; update: jest.Mock };
   application: { findFirst: jest.Mock; findMany: jest.Mock; update: jest.Mock; count: jest.Mock };
   $transaction: jest.Mock;
+  $executeRaw: jest.Mock;
 };
 
 function buildPrisma(): PrismaStub {
-  return {
+  const stub: PrismaStub = {
     company: {
       findUnique: jest.fn(),
       findFirst: jest.fn(),
@@ -59,7 +60,15 @@ function buildPrisma(): PrismaStub {
       count: jest.fn().mockResolvedValue(0),
     },
     $transaction: jest.fn(),
+    $executeRaw: jest.fn().mockResolvedValue(0),
   };
+  // Interactive-transaction callbacks run against the same stub as the tx client.
+  stub.$transaction.mockImplementation((arg: unknown) =>
+    typeof arg === "function"
+      ? (arg as (tx: PrismaStub) => unknown)(stub)
+      : Promise.all(arg as Array<Promise<unknown>>),
+  );
+  return stub;
 }
 
 function jobRow(overrides: Partial<Record<string, unknown>> = {}) {
@@ -229,7 +238,7 @@ describe("CompaniesService", () => {
         skillsRequired: [],
       });
 
-      expect(entitlements.assertCanCreateJob).toHaveBeenCalledWith("co_1");
+      expect(entitlements.assertCanCreateJob).toHaveBeenCalledWith("co_1", expect.anything());
       expect(prisma.job.create).toHaveBeenCalled();
     });
   });

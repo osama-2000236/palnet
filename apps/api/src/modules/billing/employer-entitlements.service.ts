@@ -1,3 +1,4 @@
+import type { Prisma } from "@baydar/db";
 import { ErrorCode } from "@baydar/shared";
 import { Injectable } from "@nestjs/common";
 
@@ -10,20 +11,23 @@ import { jobLimitFromFeatures } from "./pricing";
 export class EmployerEntitlementsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async assertCanCreateJob(companyId: string): Promise<void> {
-    const activeJobs = await this.prisma.job.count({
+  // Callers that create a job must pass their transaction client and hold the
+  // per-company advisory lock (see CompaniesService.createJob) so the limit
+  // check, credit spend, and job insert are one atomic unit.
+  async assertCanCreateJob(
+    companyId: string,
+    db: Prisma.TransactionClient = this.prisma,
+  ): Promise<void> {
+    const activeJobs = await db.job.count({
       where: { companyId, isActive: true, deletedAt: null },
     });
-    const limit = await this.activeJobLimit(companyId);
+    const limit = await this.activeJobLimit(companyId, db);
     if (activeJobs < limit) return;
 
     // Atomic conditional decrement: at most one concurrent caller wins the
     // row, even under racing parallel requests. We retry by picking the next
     // eligible credit if the conditional update missed.
-    // TODO: the under-limit fast path (`activeJobs < limit`) still has a
-    // residual race window. Acceptable for MVP volume; tighten with
-    // SELECT FOR UPDATE on the Job count if the cap is ever exceeded.
-    const candidate = await this.prisma.employerCredit.findFirst({
+    const candidate = await db.employerCredit.findFirst({
       where: {
         companyId,
         kind: "JOB_POST",
@@ -34,7 +38,7 @@ export class EmployerEntitlementsService {
       select: { id: true },
     });
     if (candidate) {
-      const decremented = await this.prisma.employerCredit.updateMany({
+      const decremented = await db.employerCredit.updateMany({
         where: {
           id: candidate.id,
           remaining: { gt: 0 },
@@ -52,8 +56,11 @@ export class EmployerEntitlementsService {
     );
   }
 
-  async activeJobLimit(companyId: string): Promise<number> {
-    const sub = await this.prisma.subscription.findFirst({
+  async activeJobLimit(
+    companyId: string,
+    db: Prisma.TransactionClient = this.prisma,
+  ): Promise<number> {
+    const sub = await db.subscription.findFirst({
       where: {
         companyId,
         status: "ACTIVE",

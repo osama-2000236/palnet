@@ -259,24 +259,28 @@ export class CompaniesService {
         400,
       );
     }
-    await this.entitlements.assertCanCreateJob(companyId);
-
-    const job = await this.prisma.job.create({
-      data: {
-        companyId,
-        postedById: posterId,
-        title: body.title,
-        description: body.description,
-        type: body.type,
-        locationMode: body.locationMode,
-        city: body.city ?? null,
-        country: body.country,
-        salaryMin: body.salaryMin ?? null,
-        salaryMax: body.salaryMax ?? null,
-        salaryCurrency: body.salaryCurrency,
-        skillsRequired: body.skillsRequired,
-        expiresAt: body.expiresAt ? new Date(body.expiresAt) : null,
-      },
+    // Per-company advisory lock serializes limit check + credit spend + job
+    // insert, closing the under-limit race and the credit-spent-but-create-failed leak.
+    const job = await this.prisma.$transaction(async (tx) => {
+      await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${companyId}))`;
+      await this.entitlements.assertCanCreateJob(companyId, tx);
+      return tx.job.create({
+        data: {
+          companyId,
+          postedById: posterId,
+          title: body.title,
+          description: body.description,
+          type: body.type,
+          locationMode: body.locationMode,
+          city: body.city ?? null,
+          country: body.country,
+          salaryMin: body.salaryMin ?? null,
+          salaryMax: body.salaryMax ?? null,
+          salaryCurrency: body.salaryCurrency,
+          skillsRequired: body.skillsRequired,
+          expiresAt: body.expiresAt ? new Date(body.expiresAt) : null,
+        },
+      });
     });
     return this.attachJobCounts(job);
   }
