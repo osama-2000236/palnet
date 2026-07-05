@@ -883,6 +883,15 @@
   },
   "account": {
     "title": "Account",
+    "email": {
+      "title": "Email",
+      "verified": "Verified",
+      "unverified": "Not verified",
+      "body": "Verify your email to secure your account and enable password recovery.",
+      "sendButton": "Send verification link",
+      "sentToast": "If the email is correct, a verification link has been sent.",
+      "error": "Could not send the verification link. Try again later."
+    },
     "export": {
       "title": "Download my data",
       "body": "Download a JSON file containing your profile, content, messages, notifications, and safety records.",

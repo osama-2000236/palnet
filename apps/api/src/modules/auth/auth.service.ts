@@ -197,6 +197,7 @@ export class AuthService {
       email: user.email,
       role: user.role,
       locale: user.locale,
+      emailVerified: user.emailVerified?.toISOString() ?? null,
     };
   }
 

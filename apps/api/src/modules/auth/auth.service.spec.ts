@@ -204,6 +204,31 @@ describe("AuthService", () => {
     });
   });
 
+  describe("me", () => {
+    it("exposes emailVerified as ISO string or null", async () => {
+      const verifiedAt = new Date("2026-07-01T10:00:00Z");
+      prisma.user.findUniqueOrThrow.mockResolvedValue({
+        id: "user_1",
+        email: "a@b.co",
+        role: "USER",
+        locale: "ar-PS",
+        emailVerified: verifiedAt,
+      });
+      await expect(service.me("user_1")).resolves.toMatchObject({
+        emailVerified: verifiedAt.toISOString(),
+      });
+
+      prisma.user.findUniqueOrThrow.mockResolvedValue({
+        id: "user_1",
+        email: "a@b.co",
+        role: "USER",
+        locale: "ar-PS",
+        emailVerified: null,
+      });
+      await expect(service.me("user_1")).resolves.toMatchObject({ emailVerified: null });
+    });
+  });
+
   describe("sessions", () => {
     it("lists one active row per device id", async () => {
       prisma.refreshToken.findMany.mockResolvedValue([

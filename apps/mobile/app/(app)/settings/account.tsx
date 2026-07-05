@@ -1,16 +1,20 @@
+import { AuthSession } from "@baydar/shared";
 import { Button, Input, Surface, nativeTokens, useToast } from "@baydar/ui-native";
 import * as FileSystem from "expo-file-system/legacy";
 import { router } from "expo-router";
 // eslint-disable-next-line import/no-unresolved -- dependency is pinned for Expo install; absent only in this offline sandbox.
 import * as Sharing from "expo-sharing";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Modal, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { API_BASE, apiCall } from "@/lib/api";
+import { API_BASE, apiCall, apiFetch } from "@/lib/api";
 import { apiErrorMessage } from "@/lib/api-errors";
+import { sendVerifyEmailAction } from "@/lib/auth-actions";
 import { clearSession, getAccessToken } from "@/lib/session";
+
+const MeUser = AuthSession.shape.user;
 
 const CONFIRMATION = "DELETE_MY_ACCOUNT";
 
@@ -19,7 +23,33 @@ export default function AccountSettingsScreen(): JSX.Element {
   const { showToast } = useToast();
   const [confirming, setConfirming] = useState(false);
   const [phrase, setPhrase] = useState("");
-  const [busy, setBusy] = useState<"export" | "delete" | null>(null);
+  const [busy, setBusy] = useState<"export" | "delete" | "verify" | null>(null);
+  const [me, setMe] = useState<{ email: string; emailVerified: string | null } | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    apiFetch("/auth/me", MeUser)
+      .then((user) => {
+        if (!cancelled) setMe({ email: user.email, emailVerified: user.emailVerified ?? null });
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  async function sendVerification(): Promise<void> {
+    if (!me) return;
+    setBusy("verify");
+    try {
+      await sendVerifyEmailAction(me.email);
+      showToast({ message: t("account.email.sentToast"), kind: "success" });
+    } catch {
+      showToast({ message: t("account.email.error"), kind: "error" });
+    } finally {
+      setBusy(null);
+    }
+  }
 
   async function exportData(): Promise<void> {
     setBusy("export");
@@ -81,6 +111,33 @@ export default function AccountSettingsScreen(): JSX.Element {
         <Text accessibilityRole="header" style={styles.title}>
           {t("account.title")}
         </Text>
+
+        {me ? (
+          <Surface variant="flat" padding="4" style={styles.section}>
+            <Text style={styles.sectionTitle}>{t("account.email.title")}</Text>
+            <View style={styles.emailRow}>
+              <Text style={styles.emailText}>{me.email}</Text>
+              <Text style={me.emailVerified ? styles.verifiedBadge : styles.unverifiedBadge}>
+                {me.emailVerified ? t("account.email.verified") : t("account.email.unverified")}
+              </Text>
+            </View>
+            {me.emailVerified ? null : (
+              <>
+                <Text style={styles.copy}>{t("account.email.body")}</Text>
+                <Button
+                  variant="secondary"
+                  loading={busy === "verify"}
+                  disabled={busy !== null}
+                  testID="account-send-verification"
+                  accessibilityLabel={t("account.email.sendButton")}
+                  onPress={() => void sendVerification()}
+                >
+                  {t("account.email.sendButton")}
+                </Button>
+              </>
+            )}
+          </Surface>
+        ) : null}
 
         <Surface variant="flat" padding="4" style={styles.section}>
           <Text style={styles.sectionTitle}>{t("account.export.title")}</Text>
@@ -190,6 +247,39 @@ const styles = StyleSheet.create({
     fontFamily: nativeTokens.type.family.sans,
     fontSize: nativeTokens.type.scale.small.size,
     lineHeight: nativeTokens.type.scale.small.line,
+  },
+  emailRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    alignItems: "center",
+    gap: nativeTokens.space[2],
+  },
+  emailText: {
+    color: nativeTokens.color.ink,
+    fontFamily: nativeTokens.type.family.sans,
+    fontSize: nativeTokens.type.scale.body.size,
+    lineHeight: nativeTokens.type.scale.body.line,
+    writingDirection: "ltr",
+  },
+  verifiedBadge: {
+    color: nativeTokens.color.brand700,
+    backgroundColor: nativeTokens.color.brand50,
+    borderRadius: nativeTokens.radius.full,
+    paddingHorizontal: nativeTokens.space[2],
+    paddingVertical: 2,
+    fontFamily: nativeTokens.type.family.sans,
+    fontSize: nativeTokens.type.scale.caption.size,
+    fontWeight: "600",
+  },
+  unverifiedBadge: {
+    color: nativeTokens.color.inkMuted,
+    backgroundColor: nativeTokens.color.surfaceSubtle,
+    borderRadius: nativeTokens.radius.full,
+    paddingHorizontal: nativeTokens.space[2],
+    paddingVertical: 2,
+    fontFamily: nativeTokens.type.family.sans,
+    fontSize: nativeTokens.type.scale.caption.size,
+    fontWeight: "600",
   },
   modalBackdrop: {
     flex: 1,
