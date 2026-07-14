@@ -158,7 +158,13 @@ export default function AdminBillingPage(): JSX.Element {
       {error ? <p className="text-danger text-sm">{error}</p> : null}
       <section className="flex flex-col gap-3">
         {(invoices ?? []).map((invoice) => (
-          <Surface key={invoice.id} as="article" variant="card" padding="4">
+          <Surface
+            key={invoice.id}
+            as="article"
+            variant="card"
+            padding="4"
+            data-testid={`billing-invoice-${invoice.id}`}
+          >
             <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
               <div className="min-w-0">
                 <p className="text-ink text-sm font-semibold">
