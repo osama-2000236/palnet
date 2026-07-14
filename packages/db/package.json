@@ -17,7 +17,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "dev": "tsc -p tsconfig.json --watch",
-    "clean": "rimraf dist",
+    "clean": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\"",
     "generate": "node scripts/generate.mjs",
     "migrate:dev": "node scripts/migrate-dev.mjs",
     "db:generate": "node scripts/generate.mjs",
@@ -42,7 +42,6 @@
     "bcrypt": "^5.1.1",
     "dotenv": "16.4.7",
     "prisma": "^5.22.0",
-    "rimraf": "^6.0.1",
     "tsx": "^4.19.0",
     "typescript": "~5.9.2"
   },

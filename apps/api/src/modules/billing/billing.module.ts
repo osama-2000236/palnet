@@ -6,10 +6,8 @@ import { PrismaModule } from "../prisma/prisma.module";
 import { BillingController } from "./billing.controller";
 import { BillingService } from "./billing.service";
 import { EmployerEntitlementsService } from "./employer-entitlements.service";
+import { FxService } from "./fx.service";
 import { HyperPayClient } from "./hyperpay.client";
-import { JawwalPayClient } from "./wallets/jawwalpay.client";
-import { PalPayClient } from "./wallets/palpay.client";
-import { ReflectClient } from "./wallets/reflect.client";
 import { WalletRegistry } from "./wallets/wallet-registry";
 
 @Module({
@@ -17,11 +15,9 @@ import { WalletRegistry } from "./wallets/wallet-registry";
   controllers: [BillingController],
   providers: [
     BillingService,
+    FxService,
     HyperPayClient,
     EmployerEntitlementsService,
-    JawwalPayClient,
-    PalPayClient,
-    ReflectClient,
     WalletRegistry,
     CompanyRoleGuard,
   ],

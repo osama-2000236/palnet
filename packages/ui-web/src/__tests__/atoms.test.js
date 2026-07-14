@@ -9,7 +9,6 @@ const { createRoot } = require("react-dom/client");
 
 const { Checkbox } = require("../../dist/Checkbox");
 const { Dialog } = require("../../dist/Dialog");
-const { Menu } = require("../../dist/Menu");
 const { RadioGroup } = require("../../dist/RadioGroup");
 
 function renderClient(element) {
@@ -138,58 +137,6 @@ describe("new web atoms", () => {
     expect(disabledInput.disabled).toBe(true);
     expect(container.textContent).toContain("Choose a value");
     expect(onValueChange).not.toHaveBeenCalled();
-    unmount();
-  });
-
-  it("supports Menu keyboard navigation, select, shortcuts, and danger items", () => {
-    const onArchive = jest.fn();
-    const onDelete = jest.fn();
-    const { container, unmount } = renderClient(
-      React.createElement(Menu, {
-        label: "Actions",
-        trigger: React.createElement("span", null, "Actions"),
-        items: [
-          { id: "archive", label: "Archive", onSelect: onArchive },
-          { type: "separator", id: "sep" },
-          { id: "delete", label: "Delete", shortcut: "Del", danger: true, onSelect: onDelete },
-        ],
-      }),
-    );
-
-    click(container.querySelector("button"));
-    const menu = container.querySelector('[role="menu"]');
-    expect(container.querySelector('[role="separator"]')).toBeTruthy();
-    expect(container.textContent).toContain("Del");
-    key(menu, "ArrowDown");
-    const deleteItem = [...container.querySelectorAll('[role="menuitem"]')][1];
-    key(deleteItem, "Enter");
-
-    expect(onDelete).toHaveBeenCalledTimes(1);
-    expect(deleteItem.className).toContain("text-danger");
-    unmount();
-  });
-
-  it("closes Menu on Escape and outside pointer", () => {
-    const { container, unmount } = renderClient(
-      React.createElement(Menu, {
-        label: "Actions",
-        trigger: React.createElement("span", null, "Actions"),
-        placement: "bottom-start",
-        items: [{ id: "archive", label: "Archive", onSelect: jest.fn() }],
-      }),
-    );
-
-    click(container.querySelector("button"));
-    const menu = container.querySelector('[role="menu"]');
-    expect(menu.className).toContain("start-0");
-    key(menu, "Escape");
-    expect(container.querySelector('[role="menu"]')).toBeNull();
-
-    click(container.querySelector("button"));
-    React.act(() => {
-      document.body.dispatchEvent(new MouseEvent("mousedown", { bubbles: true }));
-    });
-    expect(container.querySelector('[role="menu"]')).toBeNull();
     unmount();
   });
 

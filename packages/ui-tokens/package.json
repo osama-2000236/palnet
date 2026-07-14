@@ -39,13 +39,12 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "dev": "tsc -p tsconfig.json --watch",
-    "clean": "rimraf dist",
+    "clean": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\"",
     "lint": "eslint .",
     "type-check": "tsc --noEmit"
   },
   "devDependencies": {
     "@baydar/config": "workspace:*",
-    "rimraf": "^6.0.1",
     "typescript": "~5.9.2"
   }
 }
