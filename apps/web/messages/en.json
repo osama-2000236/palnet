@@ -940,7 +940,13 @@
         "SUSPEND": "Suspend",
         "HARD_DELETE": "Hard delete"
       },
-      "targetDeleted": "Content deleted"
+      "targetDeleted": "Content deleted",
+      "tabsLabel": "Filter reports",
+      "tabs": {
+        "open": "Open",
+        "resolved": "Resolved"
+      },
+      "resolvedNote": "Resolution:"
     },
     "billing": {
       "kicker": "Admin",
@@ -980,7 +986,15 @@
         "VOID": "Void",
         "UNCOLLECTIBLE": "Uncollectible"
       },
-      "confirmMarkPaid": "Confirm the transfer was received and activate the purchase?"
+      "confirmMarkPaid": "Confirm the transfer was received and activate the purchase?",
+      "filters": {
+        "label": "Filter invoices",
+        "NEEDS_REVIEW": "Needs review",
+        "PAID": "Paid",
+        "VOID": "Voided",
+        "ALL": "All"
+      },
+      "reviewNote": "Review note"
     },
     "nav": {
       "label": "Admin navigation",

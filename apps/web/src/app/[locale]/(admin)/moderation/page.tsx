@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, EmptyState, Surface } from "@baydar/ui-web";
+import { Button, EmptyState, Surface, Tab, Tabs } from "@baydar/ui-web";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
@@ -42,10 +42,11 @@ export default function ModerationPage(): JSX.Element {
   const locale = useLocale();
   const t = useTranslations("admin.moderation");
   const [reports, setReports] = useState<Report[] | null>(null);
+  const [tab, setTab] = useState<"open" | "resolved">("open");
   const [error, setError] = useState<string | null>(null);
   const [pendingAction, setPendingAction] = useState<string | null>(null);
 
-  async function load(): Promise<void> {
+  async function load(status: "open" | "resolved" = tab): Promise<void> {
     const token = await getValidAccessToken();
     if (!token) {
       router.replace("/login");
@@ -54,7 +55,7 @@ export default function ModerationPage(): JSX.Element {
     setError(null);
     try {
       setReports(
-        await apiFetch("/admin/moderation/reports?status=open", z.array(Report), { token }),
+        await apiFetch(`/admin/moderation/reports?status=${status}`, z.array(Report), { token }),
       );
     } catch {
       setError(t("loadFailed"));
@@ -62,9 +63,10 @@ export default function ModerationPage(): JSX.Element {
   }
 
   useEffect(() => {
-    void load();
+    setReports(null);
+    void load(tab);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [tab]);
 
   async function act(reportId: string, action: ModerationAction): Promise<void> {
     const token = await getValidAccessToken();
@@ -100,6 +102,14 @@ export default function ModerationPage(): JSX.Element {
         <p className="text-brand-700 text-sm font-semibold">{t("kicker")}</p>
         <h1 className="text-ink text-3xl font-bold">{t("title")}</h1>
       </header>
+      <Tabs
+        value={tab}
+        onChange={(next) => setTab(next as "open" | "resolved")}
+        label={t("tabsLabel")}
+      >
+        <Tab value="open">{t("tabs.open")}</Tab>
+        <Tab value="resolved">{t("tabs.resolved")}</Tab>
+      </Tabs>
       {error ? <p className="text-danger text-sm">{error}</p> : null}
       <section className="flex flex-col gap-3">
         {(reports ?? []).map((report) => (
@@ -148,27 +158,36 @@ export default function ModerationPage(): JSX.Element {
                     {report.details ? (
                       <p className="text-ink mt-2 text-sm">{report.details}</p>
                     ) : null}
+                    {report.resolvedAt ? (
+                      <p className="text-ink-muted mt-2 text-sm">
+                        {t("resolvedNote")}{" "}
+                        <span dir="ltr">{formatDate(report.resolvedAt, locale)}</span>
+                        {report.resolvedNote ? <> · {report.resolvedNote}</> : null}
+                      </p>
+                    ) : null}
                   </div>
-                  <div className="flex flex-wrap gap-2">
-                    {ACTIONS.map((action) => (
-                      <Button
-                        key={action}
-                        size="sm"
-                        variant={
-                          action === "DISMISS"
-                            ? "secondary"
-                            : action === "WARN"
-                              ? "outline"
-                              : "danger-ghost"
-                        }
-                        loading={pendingAction === `${report.id}:${action}`}
-                        disabled={pendingAction !== null}
-                        onClick={() => void act(report.id, action)}
-                      >
-                        {t(`actions.${action}`)}
-                      </Button>
-                    ))}
-                  </div>
+                  {report.resolvedAt === null ? (
+                    <div className="flex flex-wrap gap-2">
+                      {ACTIONS.map((action) => (
+                        <Button
+                          key={action}
+                          size="sm"
+                          variant={
+                            action === "DISMISS"
+                              ? "secondary"
+                              : action === "WARN"
+                                ? "outline"
+                                : "danger-ghost"
+                          }
+                          loading={pendingAction === `${report.id}:${action}`}
+                          disabled={pendingAction !== null}
+                          onClick={() => void act(report.id, action)}
+                        >
+                          {t(`actions.${action}`)}
+                        </Button>
+                      ))}
+                    </div>
+                  ) : null}
                 </div>
               );
             })()}

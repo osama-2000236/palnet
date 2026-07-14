@@ -1,7 +1,8 @@
 "use client";
 
 import { AdminInvoice, AdminInvoiceActionBody, Invoice } from "@baydar/shared";
-import { Button, EmptyState, Surface } from "@baydar/ui-web";
+import { Button, EmptyState, Surface, Tab, Tabs } from "@baydar/ui-web";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
@@ -14,6 +15,25 @@ type InvoiceDto = z.infer<typeof AdminInvoice>;
 type InvoiceAction = z.infer<typeof AdminInvoiceActionBody>["action"];
 
 const ACTIONS: InvoiceAction[] = ["MARK_PAID", "VOID"];
+
+type InvoiceFilter = "NEEDS_REVIEW" | "PAID" | "VOID" | "ALL";
+const FILTERS: InvoiceFilter[] = ["NEEDS_REVIEW", "PAID", "VOID", "ALL"];
+
+// Only rows still in the review queue get action buttons; history rows are
+// read-only. Mirrors the API's NEEDS_REVIEW predicate.
+function isActionable(invoice: InvoiceDto): boolean {
+  return (
+    invoice.status === "OPEN" &&
+    invoice.method === "BANK_TRANSFER" &&
+    invoice.bankReceiptUrl !== null
+  );
+}
+
+// next/image only accepts hosts from next.config remotePatterns; receipts
+// normally live on media.baydar.ps / R2, anything else keeps the plain link.
+function canPreviewReceipt(url: string): boolean {
+  return /^https:\/\/(media\.baydar\.ps|[^/]+\.r2\.dev)\//.test(url);
+}
 
 function formatAmount(amountCents: number, currency: string, locale: string): string {
   return new Intl.NumberFormat(locale, {
@@ -35,11 +55,12 @@ export default function AdminBillingPage(): JSX.Element {
   const locale = useLocale();
   const t = useTranslations("admin.billing");
   const [invoices, setInvoices] = useState<InvoiceDto[] | null>(null);
+  const [filter, setFilter] = useState<InvoiceFilter>("NEEDS_REVIEW");
   const [error, setError] = useState<string | null>(null);
   const [pendingAction, setPendingAction] = useState<string | null>(null);
   const [forbidden, setForbidden] = useState(false);
 
-  async function load(): Promise<void> {
+  async function load(status: InvoiceFilter = filter): Promise<void> {
     const token = await getValidAccessToken();
     if (!token) {
       router.replace("/login");
@@ -48,7 +69,7 @@ export default function AdminBillingPage(): JSX.Element {
     setError(null);
     try {
       setInvoices(
-        await apiFetch("/admin/billing/invoices?status=NEEDS_REVIEW", z.array(AdminInvoice), {
+        await apiFetch(`/admin/billing/invoices?status=${status}`, z.array(AdminInvoice), {
           token,
         }),
       );
@@ -64,9 +85,10 @@ export default function AdminBillingPage(): JSX.Element {
       setForbidden(true);
       return;
     }
-    void load();
+    setInvoices(null);
+    void load(filter);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [filter]);
 
   async function act(invoiceId: string, action: InvoiceAction): Promise<void> {
     const token = await getValidAccessToken();
@@ -122,6 +144,17 @@ export default function AdminBillingPage(): JSX.Element {
         <h1 className="text-ink text-3xl font-bold">{t("title")}</h1>
         <p className="text-ink-muted mt-1 text-sm">{t("subtitle")}</p>
       </header>
+      <Tabs
+        value={filter}
+        onChange={(next) => setFilter(next as InvoiceFilter)}
+        label={t("filters.label")}
+      >
+        {FILTERS.map((status) => (
+          <Tab key={status} value={status}>
+            {t(`filters.${status}`)}
+          </Tab>
+        ))}
+      </Tabs>
       {error ? <p className="text-danger text-sm">{error}</p> : null}
       <section className="flex flex-col gap-3">
         {(invoices ?? []).map((invoice) => (
@@ -160,31 +193,47 @@ export default function AdminBillingPage(): JSX.Element {
                 <p className="text-ink-muted mt-1 text-sm">
                   {t("status")} {t(`statuses.${invoice.status}`)}
                 </p>
+                {invoice.reviewNote ? (
+                  <p className="text-ink-muted mt-1 text-sm">
+                    {t("reviewNote")}: {invoice.reviewNote}
+                  </p>
+                ) : null}
                 {invoice.bankReceiptUrl ? (
                   <a
                     href={invoice.bankReceiptUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="text-brand-700 mt-2 inline-flex rounded-sm text-sm font-semibold hover:underline focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+                    className="text-brand-700 mt-2 inline-flex flex-col gap-2 rounded-sm text-sm font-semibold hover:underline focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
                   >
                     {t("receipt")}
+                    {canPreviewReceipt(invoice.bankReceiptUrl) ? (
+                      <Image
+                        src={invoice.bankReceiptUrl}
+                        alt={t("receipt")}
+                        width={192}
+                        height={128}
+                        className="border-line-soft rounded-md border object-cover"
+                      />
+                    ) : null}
                   </a>
                 ) : null}
               </div>
-              <div className="flex flex-wrap gap-2">
-                {ACTIONS.map((action) => (
-                  <Button
-                    key={action}
-                    size="sm"
-                    variant={action === "VOID" ? "danger-ghost" : "secondary"}
-                    loading={pendingAction === `${invoice.id}:${action}`}
-                    disabled={pendingAction !== null}
-                    onClick={() => void act(invoice.id, action)}
-                  >
-                    {t(`actions.${action}`)}
-                  </Button>
-                ))}
-              </div>
+              {isActionable(invoice) ? (
+                <div className="flex flex-wrap gap-2">
+                  {ACTIONS.map((action) => (
+                    <Button
+                      key={action}
+                      size="sm"
+                      variant={action === "VOID" ? "danger-ghost" : "secondary"}
+                      loading={pendingAction === `${invoice.id}:${action}`}
+                      disabled={pendingAction !== null}
+                      onClick={() => void act(invoice.id, action)}
+                    >
+                      {t(`actions.${action}`)}
+                    </Button>
+                  ))}
+                </div>
+              ) : null}
             </div>
           </Surface>
         ))}
