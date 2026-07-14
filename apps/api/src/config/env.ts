@@ -72,7 +72,11 @@ const EnvSchema = z.object({
 export type Env = z.infer<typeof EnvSchema>;
 
 export function loadEnv(): Env {
-  const parsed = EnvSchema.safeParse(process.env);
+  // Empty string means "unset": dashboards (Render, Vercel) and template
+  // .env files ship blank values, which would otherwise fail url/min
+  // validators on optional vars with a confusing boot error.
+  const env = Object.fromEntries(Object.entries(process.env).filter(([, value]) => value !== ""));
+  const parsed = EnvSchema.safeParse(env);
   if (!parsed.success) {
     failEnv(parsed.error.flatten().fieldErrors);
   }
