@@ -17,7 +17,7 @@ export class AdminModerationService {
   ) {}
 
   async listReports(status: "open" | "resolved" | "all", limit: number) {
-    return this.prisma.report.findMany({
+    const reports = await this.prisma.report.findMany({
       where:
         status === "all"
           ? {}
@@ -26,6 +26,33 @@ export class AdminModerationService {
             : { resolvedAt: { not: null } },
       orderBy: { createdAt: "desc" },
       take: Math.min(Math.max(limit, 1), 100),
+      include: {
+        reporter: {
+          select: { profile: { select: { handle: true, firstName: true, lastName: true } } },
+        },
+      },
+    });
+    // Operators must see the reported content, not a cuid: one batched
+    // lookup for post excerpts covering every post-targeted report in page.
+    const postIds = [...new Set(reports.flatMap((r) => (r.targetPostId ? [r.targetPostId] : [])))];
+    const posts = postIds.length
+      ? await this.prisma.post.findMany({
+          where: { id: { in: postIds } },
+          select: { id: true, body: true, deletedAt: true },
+        })
+      : [];
+    const postById = new Map(posts.map((post) => [post.id, post]));
+    return reports.map(({ reporter, ...report }) => {
+      const post = report.targetPostId ? postById.get(report.targetPostId) : undefined;
+      return {
+        ...report,
+        reporterHandle: reporter?.profile?.handle ?? null,
+        reporterName: reporter?.profile
+          ? `${reporter.profile.firstName} ${reporter.profile.lastName}`.trim()
+          : null,
+        targetPostExcerpt: post ? post.body.slice(0, 180) : null,
+        targetPostDeleted: post ? post.deletedAt !== null : null,
+      };
     });
   }
 

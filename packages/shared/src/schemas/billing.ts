@@ -80,6 +80,15 @@ export const Invoice = z.object({
 });
 export type Invoice = z.infer<typeof Invoice>;
 
+// Admin billing-review shape: Invoice plus payer identity, so operators see
+// who paid instead of cuids. Only the admin list endpoint returns these.
+export const AdminInvoice = Invoice.extend({
+  userEmail: z.string().nullable(),
+  userName: z.string().nullable(),
+  companyName: z.string().nullable(),
+});
+export type AdminInvoice = z.infer<typeof AdminInvoice>;
+
 export const Subscription = z.object({
   id: z.string().cuid(),
   userId: z.string().cuid().nullable(),

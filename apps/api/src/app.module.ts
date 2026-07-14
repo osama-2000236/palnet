@@ -25,8 +25,10 @@ import { PostsModule } from "./modules/posts/posts.module";
 import { PrismaModule } from "./modules/prisma/prisma.module";
 import { ProfilesModule } from "./modules/profiles/profiles.module";
 import { RateLimitModule } from "./modules/rate-limit/rate-limit.module";
+import { RedisThrottlerStorage } from "./modules/rate-limit/redis-throttler.storage";
 import { RatingsModule } from "./modules/ratings/ratings.module";
 import { ReactionsModule } from "./modules/reactions/reactions.module";
+import { RedisClients } from "./modules/redis/redis.clients";
 import { RedisModule } from "./modules/redis/redis.module";
 import { RepostsModule } from "./modules/reposts/reposts.module";
 import { SafetyModule } from "./modules/safety/safety.module";
@@ -51,9 +53,16 @@ const defaultThrottleLimit =
         }),
       },
     }),
-    // ponytail: throttler storage is per-instance; add @nest-lab/throttler-storage-redis
-    // alongside REDIS_URL if auth-route limits must be exact across >1 instance.
-    ThrottlerModule.forRoot([{ name: "default", ttl: 60_000, limit: defaultThrottleLimit }]),
+    // With REDIS_URL set, auth-route limits are exact across instances via
+    // RedisThrottlerStorage; unset falls back to the bundled per-instance store.
+    ThrottlerModule.forRootAsync({
+      imports: [RedisModule],
+      inject: [RedisClients],
+      useFactory: (redis: RedisClients) => ({
+        throttlers: [{ name: "default", ttl: 60_000, limit: defaultThrottleLimit }],
+        ...(redis.pub ? { storage: new RedisThrottlerStorage(redis.pub) } : {}),
+      }),
+    }),
     PrismaModule,
     RedisModule,
     RateLimitModule,

@@ -73,8 +73,6 @@ export { Dialog } from "./Dialog";
 export type { DialogProps } from "./Dialog";
 export { Input } from "./Input";
 export type { InputProps, InputSize } from "./Input";
-export { Menu } from "./Menu";
-export type { MenuEntry, MenuPlacement, MenuProps } from "./Menu";
 export { RadioGroup } from "./RadioGroup";
 export type { RadioGroupItem, RadioGroupProps } from "./RadioGroup";
 export { RetryChip } from "./RetryChip";

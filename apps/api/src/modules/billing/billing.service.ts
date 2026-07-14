@@ -1,5 +1,6 @@
 import { Prisma } from "@baydar/db";
 import {
+  type AdminInvoice as AdminInvoiceDto,
   type AdminInvoiceActionBody,
   type BankTransferReceiptBody,
   type BillingCatalog,
@@ -22,8 +23,9 @@ import type { Env } from "../../config/env";
 import { KaramaService } from "../karama/karama.service";
 import { PrismaService } from "../prisma/prisma.service";
 
-import { convertCents, deriveDisplayCurrency } from "./currency";
+import { deriveDisplayCurrency } from "./currency";
 import { EmployerEntitlementsService } from "./employer-entitlements.service";
+import { FxService } from "./fx.service";
 import { HyperPayClient } from "./hyperpay.client";
 import { ALL_PLAN_CODES, PLAN_DEFS, POINTS_PRICE_BY_PLAN } from "./pricing";
 import { WalletRegistry } from "./wallets/wallet-registry";
@@ -46,6 +48,7 @@ export class BillingService {
     private readonly karama: KaramaService,
     private readonly wallets: WalletRegistry,
     private readonly entitlements: EmployerEntitlementsService,
+    private readonly fx: FxService,
   ) {}
 
   async createCheckoutSession(userId: string, body: CheckoutSessionBody): Promise<CheckoutSession> {
@@ -59,7 +62,11 @@ export class BillingService {
     if (!user) throw new DomainException(ErrorCode.NOT_FOUND, "User not found.", 404);
 
     const displayCurrency = deriveDisplayCurrency(user.locale);
-    const displayAmountCents = convertCents(plan.priceCents, plan.currency, displayCurrency);
+    const displayAmountCents = this.fx.convertCents(
+      plan.priceCents,
+      plan.currency,
+      displayCurrency,
+    );
 
     // Karama POINTS payment — gated to USER_PREMIUM and processed inline.
     if (body.method === "POINTS") {
@@ -268,7 +275,7 @@ export class BillingService {
         intervalDays: plan.intervalDays,
         features: (plan.features ?? {}) as Record<string, unknown>,
         isActive: plan.isActive,
-        displayAmountCents: convertCents(plan.priceCents, plan.currency, displayCurrency),
+        displayAmountCents: this.fx.convertCents(plan.priceCents, plan.currency, displayCurrency),
         displayCurrency,
         pointsPrice: POINTS_PRICE_BY_PLAN[plan.code] ?? null,
       })),
@@ -342,7 +349,7 @@ export class BillingService {
   async adminListInvoices(
     status: "NEEDS_REVIEW" | "OPEN" | "PAID" | "VOID" | "ALL",
     limit: number,
-  ): Promise<InvoiceDto[]> {
+  ): Promise<AdminInvoiceDto[]> {
     const where: Prisma.InvoiceWhereInput =
       status === "NEEDS_REVIEW"
         ? { method: "BANK_TRANSFER", status: "OPEN", bankReceiptUrl: { not: null } }
@@ -353,8 +360,20 @@ export class BillingService {
       where,
       orderBy: { createdAt: "desc" },
       take: limit,
+      // Payer identity for the operator review queue — names, not cuids.
+      include: {
+        user: {
+          select: { email: true, profile: { select: { firstName: true, lastName: true } } },
+        },
+        company: { select: { name: true } },
+      },
     });
-    return rows.map(toInvoiceDto);
+    return rows.map(({ user, company, ...row }) => ({
+      ...toInvoiceDto(row),
+      userEmail: user?.email ?? null,
+      userName: user?.profile ? `${user.profile.firstName} ${user.profile.lastName}`.trim() : null,
+      companyName: company?.name ?? null,
+    }));
   }
 
   async submitBankReceipt(

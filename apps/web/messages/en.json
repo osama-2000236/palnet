@@ -939,7 +939,8 @@
         "WARN": "Warn",
         "SUSPEND": "Suspend",
         "HARD_DELETE": "Hard delete"
-      }
+      },
+      "targetDeleted": "Content deleted"
     },
     "billing": {
       "kicker": "Admin",
@@ -978,7 +979,14 @@
         "PAID": "Paid",
         "VOID": "Void",
         "UNCOLLECTIBLE": "Uncollectible"
-      }
+      },
+      "confirmMarkPaid": "Confirm the transfer was received and activate the purchase?"
+    },
+    "nav": {
+      "label": "Admin navigation",
+      "moderation": "Moderation",
+      "billing": "Billing review",
+      "backToApp": "Back to Baydar"
     }
   },
   "company": {

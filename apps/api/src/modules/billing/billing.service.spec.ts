@@ -5,6 +5,7 @@ import { KaramaService } from "../karama/karama.service";
 import { PrismaService } from "../prisma/prisma.service";
 
 import { BillingService } from "./billing.service";
+import { FxService } from "./fx.service";
 import { EmployerEntitlementsService } from "./employer-entitlements.service";
 import { HyperPayClient } from "./hyperpay.client";
 import { WalletRegistry } from "./wallets/wallet-registry";
@@ -79,6 +80,7 @@ describe("BillingService", () => {
     const moduleRef = await Test.createTestingModule({
       providers: [
         BillingService,
+        FxService,
         { provide: PrismaService, useValue: prisma },
         { provide: HyperPayClient, useValue: hyperpay },
         {
@@ -566,16 +568,25 @@ describe("BillingService", () => {
         paidAt: null,
         pdfUrl: null,
         createdAt: new Date("2026-05-15T00:00:00Z"),
+        user: null,
+        company: { name: "شركة بيدر" },
       },
     ]);
 
     const result = await service.adminListInvoices("NEEDS_REVIEW", 25);
 
     expect(result).toHaveLength(1);
-    expect(prisma.invoice.findMany).toHaveBeenCalledWith({
-      where: { method: "BANK_TRANSFER", status: "OPEN", bankReceiptUrl: { not: null } },
-      orderBy: { createdAt: "desc" },
-      take: 25,
+    expect(result[0]).toMatchObject({
+      companyName: "شركة بيدر",
+      userEmail: null,
+      userName: null,
     });
+    expect(prisma.invoice.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { method: "BANK_TRANSFER", status: "OPEN", bankReceiptUrl: { not: null } },
+        orderBy: { createdAt: "desc" },
+        take: 25,
+      }),
+    );
   });
 });

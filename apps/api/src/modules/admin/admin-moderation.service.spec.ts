@@ -16,6 +16,7 @@ interface TxStub {
 
 type PrismaStub = {
   report: { findMany: jest.Mock; findUnique: jest.Mock };
+  post: { findMany: jest.Mock };
   $transaction: jest.Mock;
 };
 
@@ -39,6 +40,7 @@ describe("AdminModerationService", () => {
     tx = buildTx();
     prisma = {
       report: { findMany: jest.fn(), findUnique: jest.fn() },
+      post: { findMany: jest.fn().mockResolvedValue([]) },
       $transaction: jest.fn(async (fn: (t: TxStub) => Promise<unknown>) => fn(tx)),
     };
     karama = { award: jest.fn().mockResolvedValue(undefined) };
@@ -76,6 +78,41 @@ describe("AdminModerationService", () => {
       prisma.report.findMany.mockResolvedValue([]);
       await service.listReports("all", 9999);
       expect(prisma.report.findMany).toHaveBeenCalledWith(expect.objectContaining({ take: 100 }));
+    });
+
+    it("enriches rows with reporter identity and a batched post excerpt", async () => {
+      prisma.report.findMany.mockResolvedValue([
+        {
+          id: "r_1",
+          reporterId: "u_reporter",
+          targetPostId: "p_1",
+          reporter: { profile: { handle: "demo", firstName: "ديمو", lastName: "المستخدم" } },
+        },
+        {
+          id: "r_2",
+          reporterId: "u_gone",
+          targetPostId: "p_1",
+          reporter: { profile: null },
+        },
+      ]);
+      prisma.post.findMany.mockResolvedValue([
+        { id: "p_1", body: "spam ".repeat(60), deletedAt: null },
+      ]);
+
+      const [first, second] = await service.listReports("open", 50);
+
+      expect(prisma.post.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({ where: { id: { in: ["p_1"] } } }),
+      );
+      expect(first).toMatchObject({
+        reporterHandle: "demo",
+        reporterName: "ديمو المستخدم",
+        targetPostDeleted: false,
+      });
+      expect(first?.targetPostExcerpt).toHaveLength(180);
+      expect(second).toMatchObject({ reporterHandle: null, reporterName: null });
+      // the raw relation object must not leak into the API response
+      expect(first).not.toHaveProperty("reporter");
     });
   });
 

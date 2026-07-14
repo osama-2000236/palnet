@@ -939,7 +939,8 @@
         "WARN": "تحذير",
         "SUSPEND": "تعليق",
         "HARD_DELETE": "حذف نهائي"
-      }
+      },
+      "targetDeleted": "المحتوى محذوف"
     },
     "billing": {
       "kicker": "الإدارة",
@@ -978,7 +979,14 @@
         "PAID": "مدفوعة",
         "VOID": "ملغاة",
         "UNCOLLECTIBLE": "متعذّرة التحصيل"
-      }
+      },
+      "confirmMarkPaid": "تأكيد استلام التحويل وتفعيل الاشتراك؟"
+    },
+    "nav": {
+      "label": "تنقل الإدارة",
+      "moderation": "الإشراف",
+      "billing": "مراجعة المدفوعات",
+      "backToApp": "العودة إلى بيدر"
     }
   },
   "company": {

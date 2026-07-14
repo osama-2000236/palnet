@@ -1,6 +1,6 @@
 "use client";
 
-import { AdminInvoiceActionBody, Invoice } from "@baydar/shared";
+import { AdminInvoice, AdminInvoiceActionBody, Invoice } from "@baydar/shared";
 import { Button, EmptyState, Surface } from "@baydar/ui-web";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
@@ -10,7 +10,7 @@ import { z } from "zod";
 import { apiFetch, ApiRequestError, getValidAccessToken } from "@/lib/api";
 import { readSession } from "@/lib/session";
 
-type InvoiceDto = z.infer<typeof Invoice>;
+type InvoiceDto = z.infer<typeof AdminInvoice>;
 type InvoiceAction = z.infer<typeof AdminInvoiceActionBody>["action"];
 
 const ACTIONS: InvoiceAction[] = ["MARK_PAID", "VOID"];
@@ -48,7 +48,9 @@ export default function AdminBillingPage(): JSX.Element {
     setError(null);
     try {
       setInvoices(
-        await apiFetch("/admin/billing/invoices?status=NEEDS_REVIEW", z.array(Invoice), { token }),
+        await apiFetch("/admin/billing/invoices?status=NEEDS_REVIEW", z.array(AdminInvoice), {
+          token,
+        }),
       );
     } catch {
       setError(t("loadFailed"));
@@ -76,6 +78,9 @@ export default function AdminBillingPage(): JSX.Element {
       // Contract caps the note at 500 chars; truncate rather than 400.
       note = reason.trim().slice(0, 500) || undefined;
     }
+    // Money action: marking paid activates the purchase immediately, so a
+    // misclick needs a gate. Native confirm matches the VOID prompt idiom.
+    if (action === "MARK_PAID" && !window.confirm(t("confirmMarkPaid"))) return;
     const key = `${invoiceId}:${action}`;
     setPendingAction(key);
     setError(null);
@@ -137,10 +142,20 @@ export default function AdminBillingPage(): JSX.Element {
                 </p>
                 <p className="text-ink-muted mt-2 text-sm">
                   {t("company")}{" "}
-                  {invoice.companyId ? <span dir="ltr">{invoice.companyId}</span> : t("missing")}
+                  {invoice.companyName ??
+                    (invoice.companyId ? <span dir="ltr">{invoice.companyId}</span> : t("missing"))}
                   {" · "}
                   {t("user")}{" "}
-                  {invoice.userId ? <span dir="ltr">{invoice.userId}</span> : t("missing")}
+                  {(invoice.userName ?? invoice.userEmail) ? (
+                    <>
+                      {invoice.userName}
+                      {invoice.userEmail ? <span dir="ltr"> ({invoice.userEmail})</span> : null}
+                    </>
+                  ) : invoice.userId ? (
+                    <span dir="ltr">{invoice.userId}</span>
+                  ) : (
+                    t("missing")
+                  )}
                 </p>
                 <p className="text-ink-muted mt-1 text-sm">
                   {t("status")} {t(`statuses.${invoice.status}`)}
