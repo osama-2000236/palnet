@@ -940,7 +940,13 @@
         "SUSPEND": "تعليق",
         "HARD_DELETE": "حذف نهائي"
       },
-      "targetDeleted": "المحتوى محذوف"
+      "targetDeleted": "المحتوى محذوف",
+      "tabsLabel": "تصفية البلاغات",
+      "tabs": {
+        "open": "مفتوحة",
+        "resolved": "تمت معالجتها"
+      },
+      "resolvedNote": "القرار:"
     },
     "billing": {
       "kicker": "الإدارة",
@@ -980,7 +986,15 @@
         "VOID": "ملغاة",
         "UNCOLLECTIBLE": "متعذّرة التحصيل"
       },
-      "confirmMarkPaid": "تأكيد استلام التحويل وتفعيل الاشتراك؟"
+      "confirmMarkPaid": "تأكيد استلام التحويل وتفعيل الاشتراك؟",
+      "filters": {
+        "label": "تصفية الفواتير",
+        "NEEDS_REVIEW": "بحاجة لمراجعة",
+        "PAID": "مدفوعة",
+        "VOID": "ملغاة",
+        "ALL": "الكل"
+      },
+      "reviewNote": "ملاحظة المراجعة"
     },
     "nav": {
       "label": "تنقل الإدارة",
