@@ -85,8 +85,8 @@ Code paths exist; these are configuration/evidence tasks. `apps/api/src/config/e
 1. ~~**Locale-drift CI test** (§3.1)~~ — **done 2026-07-02** (parity tests on web + mobile).
 2. ~~**AppShell native search + profile menu** (§3.2)~~ — **done 2026-07-02** (`onSearchPress`/`onViewProfile` callbacks).
 3. **Operator QA for `/moderation` and `/billing` admin surfaces** — shipped + localized, never operator-tested.
-4. ~~**Redis-backed rate-limit + SSE fanout**~~ — **done 2026-07-05 (PR #53):** `REDIS_URL` env-gated; `RedisRateLimitStore` (Lua fixed window, fail-open) bound to the `RateLimitStore` token by factory, `MessagingBus`/`NotificationsBus` delegate to a shared `Fanout` (local or Redis pub/sub). Unset = in-memory, unchanged. Note: `@nestjs/throttler` (auth routes) storage is still per-instance — see ponytail comment in `app.module.ts`.
-5. **Live FX feed** for `billing/currency.ts`.
+4. ~~**Redis-backed rate-limit + SSE fanout**~~ — **done 2026-07-05 (PR #53):** `REDIS_URL` env-gated; `RedisRateLimitStore` (Lua fixed window, fail-open) bound to the `RateLimitStore` token by factory, `MessagingBus`/`NotificationsBus` delegate to a shared `Fanout` (local or Redis pub/sub). Unset = in-memory, unchanged. ~~Note: `@nestjs/throttler` (auth routes) storage is still per-instance.~~ **Closed 2026-07-14:** `RedisThrottlerStorage` (`apps/api/src/modules/rate-limit/redis-throttler.storage.ts`, Lua fixed window + block key, fail-open) is bound via `ThrottlerModule.forRootAsync` when `REDIS_URL` is set; unset keeps the bundled in-memory store.
+5. ~~**Live FX feed** for `billing/currency.ts`~~ — **done 2026-07-14:** `FxService` (`apps/api/src/modules/billing/fx.service.ts`) overlays USD-relative rates from optional `FX_FEED_URL` (shape `{ rates: { ILS: 3.6 } }`, e.g. open.er-api.com/v6/latest/USD) on the hardcoded snapshot, lazy 6h refresh on the read path, feed failure keeps last known rates. Unset env = snapshot behavior, unchanged.
 6. **Real email provider is DONE in code** (Resend transport in `apps/api/src/modules/mail/resend.transport.ts`, console fallback dev/test) — only the API key remains (see §4.1). Older docs saying "console-only" are stale.
 7. ~~**Workspace-aware dead-export sweep** (`knip --workspaces`)~~ — **investigated and rejected 2026-07-05:** knip 6.24 fails to load the metro/next jest configs in this monorepo; 6 of 11 spot-checked "unused" web exports were false positives. Do not rerun without investing in per-workspace `knip.json` — payoff too small. (The sweep did surface one real gap, shipped as PR #54.)
 8. ~~Stabilize `apps/mobile/src/__tests__/onboarding-flow.test.tsx`~~ — **done 2026-07-05** (30s suite timeout; the flow test is integration-scale, 5s Jest default was the flake).
@@ -108,3 +108,14 @@ Hard borders unchanged (`CLAUDE.md` law): tokens only, RTL-safe logical CSS, Ara
 ## 8. Fresh-clone gotcha
 
 Always run `pnpm --filter @baydar/db generate` immediately after install and before `type-check`/`test`. HANDOFF.md's verification snippet lists it last — it must be first; skipping it fails the whole gate with a misleading Prisma type error.
+
+## 9. Ponytail audit session (2026-07-14)
+
+Repo-wide over-engineering audit; cuts applied on branch `claude/ponytail-audit-scopes-1ad1f5`:
+
+- **Deleted dead code:** `packages/ui-web/src/Menu.tsx` (189 lines, zero consumers, no native twin), `scripts/capture-snapshots.mjs`, `scripts/check-api-readiness.mjs`, `tools/agentflow/baydar_mobile_qa_pipeline.py` — all unreferenced.
+- **Deleted dead deps:** web `@next/bundle-analyzer` + `next-bundle-analyzer` + `cross-env` + the `bundle:analyze` script (`next.config.mjs` never wired either analyzer; `ANALYZE=true` was a no-op). Root/package `rimraf` replaced with `node -e "require('fs').rmSync(...)"` clean scripts. Api `pino-pretty` moved to devDependencies (only loads when `NODE_ENV!=="production"`).
+- **Wallet clients collapsed:** `jawwalpay|palpay|reflect.client.ts` (3 near-identical stub classes) folded into a data table inside `wallet-registry.ts`. Same NOT_IMPLEMENTED/coming-soon semantics, same env keys; a real client class replaces its table entry when merchant onboarding lands.
+- **Deferred, deliberately:** archiving `design-handoff-2026-05/` (83 doc references, churn > value — revisit if the tree bothers anyone); unused ui-native twins are lockstep policy, not bloat.
+- **Also shipped this session:** Redis throttler storage (backlog #4 note) and live FX feed (backlog #5) — see above.
+- **Still open (priority order):** operator QA for `/moderation` + `/billing` (needs a running stack — env-blocked in this worktree); Sentry wiring (sharper finding: only mobile has a Sentry SDK — the api merely *validates* `SENTRY_DSN` in `env.ts` and never initializes an SDK, web has PostHog only; adding `@sentry/node` + `@sentry/nextjs` is an owner dep decision); §4 env/ops blockers (owner accounts).
