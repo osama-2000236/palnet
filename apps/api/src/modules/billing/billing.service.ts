@@ -1,5 +1,6 @@
 import { Prisma } from "@baydar/db";
 import {
+  type AdminInvoice as AdminInvoiceDto,
   type AdminInvoiceActionBody,
   type BankTransferReceiptBody,
   type BillingCatalog,
@@ -348,7 +349,7 @@ export class BillingService {
   async adminListInvoices(
     status: "NEEDS_REVIEW" | "OPEN" | "PAID" | "VOID" | "ALL",
     limit: number,
-  ): Promise<InvoiceDto[]> {
+  ): Promise<AdminInvoiceDto[]> {
     const where: Prisma.InvoiceWhereInput =
       status === "NEEDS_REVIEW"
         ? { method: "BANK_TRANSFER", status: "OPEN", bankReceiptUrl: { not: null } }
@@ -359,8 +360,20 @@ export class BillingService {
       where,
       orderBy: { createdAt: "desc" },
       take: limit,
+      // Payer identity for the operator review queue — names, not cuids.
+      include: {
+        user: {
+          select: { email: true, profile: { select: { firstName: true, lastName: true } } },
+        },
+        company: { select: { name: true } },
+      },
     });
-    return rows.map(toInvoiceDto);
+    return rows.map(({ user, company, ...row }) => ({
+      ...toInvoiceDto(row),
+      userEmail: user?.email ?? null,
+      userName: user?.profile ? `${user.profile.firstName} ${user.profile.lastName}`.trim() : null,
+      companyName: company?.name ?? null,
+    }));
   }
 
   async submitBankReceipt(

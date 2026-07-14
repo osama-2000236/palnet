@@ -1,7 +1,9 @@
 import {
+  AdminInvoice,
   AdminInvoiceActionBody,
   ErrorCode,
   Invoice,
+  type AdminInvoice as AdminInvoiceDto,
   type Invoice as InvoiceDto,
 } from "@baydar/shared";
 import { Body, Controller, Get, Param, Post, Query } from "@nestjs/common";
@@ -29,9 +31,11 @@ export class AdminBillingController {
   async listInvoices(
     @CurrentUser() user: AuthUser,
     @Query(new ZodValidationPipe(AdminInvoiceListQuery)) query: AdminInvoiceListQuery,
-  ): Promise<InvoiceDto[]> {
+  ): Promise<AdminInvoiceDto[]> {
     requireAdmin(user);
-    return z.array(Invoice).parse(await this.billing.adminListInvoices(query.status, query.limit));
+    return z
+      .array(AdminInvoice)
+      .parse(await this.billing.adminListInvoices(query.status, query.limit));
   }
 
   @Post("invoices/:invoiceId/action")

@@ -1,6 +1,6 @@
 "use client";
 
-import { AdminInvoiceActionBody, Invoice } from "@baydar/shared";
+import { AdminInvoice, AdminInvoiceActionBody, Invoice } from "@baydar/shared";
 import { Button, EmptyState, Surface } from "@baydar/ui-web";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
@@ -10,7 +10,7 @@ import { z } from "zod";
 import { apiFetch, ApiRequestError, getValidAccessToken } from "@/lib/api";
 import { readSession } from "@/lib/session";
 
-type InvoiceDto = z.infer<typeof Invoice>;
+type InvoiceDto = z.infer<typeof AdminInvoice>;
 type InvoiceAction = z.infer<typeof AdminInvoiceActionBody>["action"];
 
 const ACTIONS: InvoiceAction[] = ["MARK_PAID", "VOID"];
@@ -48,7 +48,9 @@ export default function AdminBillingPage(): JSX.Element {
     setError(null);
     try {
       setInvoices(
-        await apiFetch("/admin/billing/invoices?status=NEEDS_REVIEW", z.array(Invoice), { token }),
+        await apiFetch("/admin/billing/invoices?status=NEEDS_REVIEW", z.array(AdminInvoice), {
+          token,
+        }),
       );
     } catch {
       setError(t("loadFailed"));
@@ -140,10 +142,20 @@ export default function AdminBillingPage(): JSX.Element {
                 </p>
                 <p className="text-ink-muted mt-2 text-sm">
                   {t("company")}{" "}
-                  {invoice.companyId ? <span dir="ltr">{invoice.companyId}</span> : t("missing")}
+                  {invoice.companyName ??
+                    (invoice.companyId ? <span dir="ltr">{invoice.companyId}</span> : t("missing"))}
                   {" · "}
                   {t("user")}{" "}
-                  {invoice.userId ? <span dir="ltr">{invoice.userId}</span> : t("missing")}
+                  {(invoice.userName ?? invoice.userEmail) ? (
+                    <>
+                      {invoice.userName}
+                      {invoice.userEmail ? <span dir="ltr"> ({invoice.userEmail})</span> : null}
+                    </>
+                  ) : invoice.userId ? (
+                    <span dir="ltr">{invoice.userId}</span>
+                  ) : (
+                    t("missing")
+                  )}
                 </p>
                 <p className="text-ink-muted mt-1 text-sm">
                   {t("status")} {t(`statuses.${invoice.status}`)}
