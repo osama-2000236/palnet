@@ -5,8 +5,8 @@ import { KaramaService } from "../karama/karama.service";
 import { PrismaService } from "../prisma/prisma.service";
 
 import { BillingService } from "./billing.service";
-import { FxService } from "./fx.service";
 import { EmployerEntitlementsService } from "./employer-entitlements.service";
+import { FxService } from "./fx.service";
 import { HyperPayClient } from "./hyperpay.client";
 import { WalletRegistry } from "./wallets/wallet-registry";
 
