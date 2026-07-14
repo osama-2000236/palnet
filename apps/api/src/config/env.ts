@@ -39,6 +39,9 @@ const EnvSchema = z.object({
   BAYDAR_WEB_URL: z.string().url().optional(),
   // Cron endpoint shared secret.
   INTERNAL_CRON_TOKEN: z.string().min(24).optional(),
+  // FX — optional USD-relative rate feed ({ rates: { ILS: 3.6, ... } }).
+  // Unset = hardcoded snapshot in billing/currency.ts (acceptable for beta).
+  FX_FEED_URL: z.string().url().optional(),
   // Billing — HyperPay cards + manual bank transfer.
   HYPERPAY_ENTITY_ID: z.string().optional(),
   HYPERPAY_ACCESS_TOKEN: z.string().optional(),

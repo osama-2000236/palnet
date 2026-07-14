@@ -22,8 +22,9 @@ import type { Env } from "../../config/env";
 import { KaramaService } from "../karama/karama.service";
 import { PrismaService } from "../prisma/prisma.service";
 
-import { convertCents, deriveDisplayCurrency } from "./currency";
+import { deriveDisplayCurrency } from "./currency";
 import { EmployerEntitlementsService } from "./employer-entitlements.service";
+import { FxService } from "./fx.service";
 import { HyperPayClient } from "./hyperpay.client";
 import { ALL_PLAN_CODES, PLAN_DEFS, POINTS_PRICE_BY_PLAN } from "./pricing";
 import { WalletRegistry } from "./wallets/wallet-registry";
@@ -46,6 +47,7 @@ export class BillingService {
     private readonly karama: KaramaService,
     private readonly wallets: WalletRegistry,
     private readonly entitlements: EmployerEntitlementsService,
+    private readonly fx: FxService,
   ) {}
 
   async createCheckoutSession(userId: string, body: CheckoutSessionBody): Promise<CheckoutSession> {
@@ -59,7 +61,11 @@ export class BillingService {
     if (!user) throw new DomainException(ErrorCode.NOT_FOUND, "User not found.", 404);
 
     const displayCurrency = deriveDisplayCurrency(user.locale);
-    const displayAmountCents = convertCents(plan.priceCents, plan.currency, displayCurrency);
+    const displayAmountCents = this.fx.convertCents(
+      plan.priceCents,
+      plan.currency,
+      displayCurrency,
+    );
 
     // Karama POINTS payment — gated to USER_PREMIUM and processed inline.
     if (body.method === "POINTS") {
@@ -268,7 +274,7 @@ export class BillingService {
         intervalDays: plan.intervalDays,
         features: (plan.features ?? {}) as Record<string, unknown>,
         isActive: plan.isActive,
-        displayAmountCents: convertCents(plan.priceCents, plan.currency, displayCurrency),
+        displayAmountCents: this.fx.convertCents(plan.priceCents, plan.currency, displayCurrency),
         displayCurrency,
         pointsPrice: POINTS_PRICE_BY_PLAN[plan.code] ?? null,
       })),

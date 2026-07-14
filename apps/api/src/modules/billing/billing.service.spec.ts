@@ -5,6 +5,7 @@ import { KaramaService } from "../karama/karama.service";
 import { PrismaService } from "../prisma/prisma.service";
 
 import { BillingService } from "./billing.service";
+import { FxService } from "./fx.service";
 import { EmployerEntitlementsService } from "./employer-entitlements.service";
 import { HyperPayClient } from "./hyperpay.client";
 import { WalletRegistry } from "./wallets/wallet-registry";
@@ -79,6 +80,7 @@ describe("BillingService", () => {
     const moduleRef = await Test.createTestingModule({
       providers: [
         BillingService,
+        FxService,
         { provide: PrismaService, useValue: prisma },
         { provide: HyperPayClient, useValue: hyperpay },
         {
