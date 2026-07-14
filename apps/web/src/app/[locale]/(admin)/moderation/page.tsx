@@ -2,7 +2,7 @@
 
 import { Button, EmptyState, Surface } from "@baydar/ui-web";
 import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { z } from "zod";
 
@@ -20,14 +20,26 @@ const Report = z.object({
   resolvedAt: z.string().datetime().nullable(),
   resolvedNote: z.string().nullable(),
   createdAt: z.string().datetime(),
+  reporterHandle: z.string().nullable().optional(),
+  reporterName: z.string().nullable().optional(),
+  targetPostExcerpt: z.string().nullable().optional(),
+  targetPostDeleted: z.boolean().nullable().optional(),
 });
 type Report = z.infer<typeof Report>;
 type ModerationAction = "DISMISS" | "WARN" | "SUSPEND" | "HARD_DELETE";
 
 const ACTIONS: ModerationAction[] = ["DISMISS", "WARN", "SUSPEND", "HARD_DELETE"];
 
+function formatDate(value: string, locale: string): string {
+  return new Intl.DateTimeFormat(locale, {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(new Date(value));
+}
+
 export default function ModerationPage(): JSX.Element {
   const router = useRouter();
+  const locale = useLocale();
   const t = useTranslations("admin.moderation");
   const [reports, setReports] = useState<Report[] | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -110,13 +122,29 @@ export default function ModerationPage(): JSX.Element {
                   <div className="min-w-0">
                     <p className="text-ink text-sm font-semibold">{report.reason}</p>
                     <p className="text-ink-muted text-xs">
-                      <span dir="ltr">{new Date(report.createdAt).toLocaleString()}</span>
+                      <span dir="ltr">{formatDate(report.createdAt, locale)}</span>
                       {" · "}
-                      {t("reporter")} <span dir="ltr">{report.reporterId}</span>
+                      {t("reporter")}{" "}
+                      {report.reporterName ? (
+                        <>
+                          {report.reporterName}
+                          {report.reporterHandle ? (
+                            <span dir="ltr"> (@{report.reporterHandle})</span>
+                          ) : null}
+                        </>
+                      ) : (
+                        <span dir="ltr">{report.reporterId}</span>
+                      )}
                     </p>
                     <p className="text-ink-muted mt-2 text-sm">
                       {t("target")} {target ? <span dir="ltr">{target}</span> : t("unknown")}
+                      {report.targetPostDeleted ? <> · {t("targetDeleted")}</> : null}
                     </p>
+                    {report.targetPostExcerpt ? (
+                      <blockquote className="border-line-soft bg-surface-muted text-ink mt-2 border-s-2 p-2 text-sm">
+                        {report.targetPostExcerpt}
+                      </blockquote>
+                    ) : null}
                     {report.details ? (
                       <p className="text-ink mt-2 text-sm">{report.details}</p>
                     ) : null}

@@ -76,6 +76,9 @@ export default function AdminBillingPage(): JSX.Element {
       // Contract caps the note at 500 chars; truncate rather than 400.
       note = reason.trim().slice(0, 500) || undefined;
     }
+    // Money action: marking paid activates the purchase immediately, so a
+    // misclick needs a gate. Native confirm matches the VOID prompt idiom.
+    if (action === "MARK_PAID" && !window.confirm(t("confirmMarkPaid"))) return;
     const key = `${invoiceId}:${action}`;
     setPendingAction(key);
     setError(null);
