@@ -135,17 +135,34 @@ export class JobsService {
     });
     if (existing) return existing;
 
-    const created = await this.prisma.application.create({
-      data: {
-        jobId: id,
-        applicantId: viewerId,
-        resumeUrl: body.resumeUrl ?? null,
-        coverLetter: body.coverLetter ?? null,
-      },
-      select: { id: true, status: true },
-    });
-    return created;
+    try {
+      return await this.prisma.application.create({
+        data: {
+          jobId: id,
+          applicantId: viewerId,
+          resumeUrl: body.resumeUrl ?? null,
+          coverLetter: body.coverLetter ?? null,
+        },
+        select: { id: true, status: true },
+      });
+    } catch (err) {
+      // Concurrent duplicate apply lost the race to the unique constraint
+      // (P2002) — still idempotent: return the row the winner created.
+      if (isUniqueViolation(err)) {
+        return this.prisma.application.findUniqueOrThrow({
+          where: { jobId_applicantId: { jobId: id, applicantId: viewerId } },
+          select: { id: true, status: true },
+        });
+      }
+      throw err;
+    }
   }
+}
+
+function isUniqueViolation(error: unknown): boolean {
+  return (
+    typeof error === "object" && error !== null && (error as { code?: unknown }).code === "P2002"
+  );
 }
 
 function toJobDto(row: JobRow): JobDto {

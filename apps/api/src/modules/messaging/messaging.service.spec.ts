@@ -213,6 +213,30 @@ describe("MessagingService", () => {
       expect(prisma.message.create).not.toHaveBeenCalled();
     });
 
+    it("returns the winner's message when a concurrent duplicate loses the unique race", async () => {
+      const winner = {
+        id: "msg_winner",
+        roomId: "room_1",
+        authorId: "u_me",
+        body: "hello",
+        mediaUrl: null,
+        clientMessageId: "c_1",
+        createdAt: new Date("2026-04-18T10:00:00Z"),
+        editedAt: null,
+        deletedAt: null,
+      };
+      // Pre-create check misses, insert hits the (roomId, authorId,
+      // clientMessageId) unique, re-fetch finds the winner's row.
+      prisma.message.findFirst.mockResolvedValueOnce(null).mockResolvedValueOnce(winner);
+      prisma.message.create.mockRejectedValue({ code: "P2002" });
+
+      const out = await service.sendMessage("u_me", "room_1", {
+        body: "hello",
+        clientMessageId: "c_1",
+      });
+      expect(out.id).toBe("msg_winner");
+    });
+
     it("creates a new message and fans out to every member", async () => {
       prisma.message.findFirst.mockResolvedValue(null);
       const created = {

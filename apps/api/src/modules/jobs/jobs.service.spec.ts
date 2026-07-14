@@ -13,6 +13,7 @@ type PrismaStub = {
   application: {
     create: jest.Mock;
     findUnique: jest.Mock;
+    findUniqueOrThrow: jest.Mock;
   };
 };
 
@@ -25,6 +26,7 @@ function buildPrisma(): PrismaStub {
     application: {
       create: jest.fn(),
       findUnique: jest.fn(),
+      findUniqueOrThrow: jest.fn(),
     },
   };
 }
@@ -72,6 +74,21 @@ describe("JobsService", () => {
         status: "SUBMITTED",
       });
       expect(prisma.application.create).not.toHaveBeenCalled();
+    });
+
+    it("stays idempotent when a concurrent apply wins the unique race", async () => {
+      prisma.job.findFirst.mockResolvedValue({ id: "job_1" });
+      prisma.application.findUnique.mockResolvedValue(null);
+      prisma.application.create.mockRejectedValue({ code: "P2002" });
+      prisma.application.findUniqueOrThrow.mockResolvedValue({
+        id: "app_winner",
+        status: "SUBMITTED",
+      });
+
+      await expect(service.apply("user_1", "job_1", {})).resolves.toEqual({
+        id: "app_winner",
+        status: "SUBMITTED",
+      });
     });
 
     it("404s when the job is unavailable", async () => {

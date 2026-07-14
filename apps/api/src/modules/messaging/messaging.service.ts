@@ -317,15 +317,28 @@ export class MessagingService {
       return toMessageDto(existing);
     }
 
-    const created = (await this.prisma.message.create({
-      data: {
-        roomId,
-        authorId: viewerId,
-        body: body.body,
-        mediaUrl: body.mediaUrl ?? null,
-        clientMessageId: body.clientMessageId,
-      },
-    })) as unknown as MessageRow;
+    let created: MessageRow;
+    try {
+      created = (await this.prisma.message.create({
+        data: {
+          roomId,
+          authorId: viewerId,
+          body: body.body,
+          mediaUrl: body.mediaUrl ?? null,
+          clientMessageId: body.clientMessageId,
+        },
+      })) as unknown as MessageRow;
+    } catch (err) {
+      // Concurrent duplicate send lost the race to the idempotency unique
+      // (P2002): return the winner's row instead of 500ing the retry.
+      if (isUniqueViolation(err)) {
+        const winner = (await this.prisma.message.findFirst({
+          where: { roomId, authorId: viewerId, clientMessageId: body.clientMessageId },
+        })) as unknown as MessageRow | null;
+        if (winner) return toMessageDto(winner);
+      }
+      throw err;
+    }
 
     // Bump room.updatedAt so listings re-sort, and mark the sender as having
     // "read" their own message so their unread count doesn't tick.
@@ -615,6 +628,12 @@ export class MessagingService {
       );
     }
   }
+}
+
+function isUniqueViolation(error: unknown): boolean {
+  return (
+    typeof error === "object" && error !== null && (error as { code?: unknown }).code === "P2002"
+  );
 }
 
 function dmPeerIds(rooms: RoomRow[], viewerId: string): string[] {
