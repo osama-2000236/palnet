@@ -25,6 +25,10 @@ export default function AccountSettingsScreen(): JSX.Element {
   const [phrase, setPhrase] = useState("");
   const [busy, setBusy] = useState<"export" | "delete" | "verify" | null>(null);
   const [me, setMe] = useState<{ email: string; emailVerified: string | null } | null>(null);
+  const badgeStyle = [
+    styles.badge,
+    me?.emailVerified ? styles.verifiedBadge : styles.unverifiedBadge,
+  ];
 
   useEffect(() => {
     let cancelled = false;
@@ -57,8 +61,7 @@ export default function AccountSettingsScreen(): JSX.Element {
       const token = await getAccessToken();
       if (!token) throw new Error("AUTH_UNAUTHORIZED");
 
-      const available = await Sharing.isAvailableAsync();
-      if (!available) {
+      if (!(await Sharing.isAvailableAsync())) {
         showToast({ message: t("account.export.sharingUnavailable"), kind: "error" });
         return;
       }
@@ -69,7 +72,12 @@ export default function AccountSettingsScreen(): JSX.Element {
       if (!response.ok) throw new Error("EXPORT_FAILED");
 
       const raw = await response.text();
-      const body = formatJson(raw);
+      let body: string;
+      try {
+        body = JSON.stringify(JSON.parse(raw), null, 2);
+      } catch {
+        body = raw;
+      }
       const root = FileSystem.documentDirectory ?? FileSystem.cacheDirectory;
       if (!root) throw new Error("FILE_SYSTEM_UNAVAILABLE");
 
@@ -117,7 +125,7 @@ export default function AccountSettingsScreen(): JSX.Element {
             <Text style={styles.sectionTitle}>{t("account.email.title")}</Text>
             <View style={styles.emailRow}>
               <Text style={styles.emailText}>{me.email}</Text>
-              <Text style={me.emailVerified ? styles.verifiedBadge : styles.unverifiedBadge}>
+              <Text style={badgeStyle}>
                 {me.emailVerified ? t("account.email.verified") : t("account.email.unverified")}
               </Text>
             </View>
@@ -153,7 +161,7 @@ export default function AccountSettingsScreen(): JSX.Element {
         </Surface>
 
         <Surface variant="flat" padding="4" style={styles.section}>
-          <Text style={styles.dangerTitle}>{t("account.delete.title")}</Text>
+          <Text style={[styles.sectionTitle, styles.dangerTitle]}>{t("account.delete.title")}</Text>
           <Text style={styles.copy}>{t("account.delete.body")}</Text>
           <Button variant="danger-ghost" onPress={() => setConfirming(true)}>
             {t("account.delete.button")}
@@ -201,14 +209,6 @@ export default function AccountSettingsScreen(): JSX.Element {
   );
 }
 
-function formatJson(raw: string): string {
-  try {
-    return JSON.stringify(JSON.parse(raw), null, 2);
-  } catch {
-    return raw;
-  }
-}
-
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
@@ -237,10 +237,6 @@ const styles = StyleSheet.create({
   },
   dangerTitle: {
     color: nativeTokens.color.danger,
-    fontFamily: nativeTokens.type.family.sans,
-    fontSize: nativeTokens.type.scale.h3.size,
-    lineHeight: nativeTokens.type.scale.h3.line,
-    fontWeight: "700",
   },
   copy: {
     color: nativeTokens.color.inkMuted,
@@ -261,9 +257,7 @@ const styles = StyleSheet.create({
     lineHeight: nativeTokens.type.scale.body.line,
     writingDirection: "ltr",
   },
-  verifiedBadge: {
-    color: nativeTokens.color.brand700,
-    backgroundColor: nativeTokens.color.brand50,
+  badge: {
     borderRadius: nativeTokens.radius.full,
     paddingHorizontal: nativeTokens.space[2],
     paddingVertical: 2,
@@ -271,15 +265,13 @@ const styles = StyleSheet.create({
     fontSize: nativeTokens.type.scale.caption.size,
     fontWeight: "600",
   },
+  verifiedBadge: {
+    color: nativeTokens.color.brand700,
+    backgroundColor: nativeTokens.color.brand50,
+  },
   unverifiedBadge: {
     color: nativeTokens.color.inkMuted,
     backgroundColor: nativeTokens.color.surfaceSubtle,
-    borderRadius: nativeTokens.radius.full,
-    paddingHorizontal: nativeTokens.space[2],
-    paddingVertical: 2,
-    fontFamily: nativeTokens.type.family.sans,
-    fontSize: nativeTokens.type.scale.caption.size,
-    fontWeight: "600",
   },
   modalBackdrop: {
     flex: 1,

@@ -57,6 +57,9 @@ jobs:
       - run: pnpm --filter @baydar/db db:generate
       - run: pnpm lint
       - run: pnpm format:check
+      - run: pnpm lint:tokens
+      - run: pnpm qa:design
+      - run: pnpm check:release-placeholders
 
   type-check:
     needs: install

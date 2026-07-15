@@ -289,8 +289,11 @@ export default function AppLayout({ children }: { children: ReactNode }): JSX.El
       onOpenSettings={onOpenSettings}
       onSignOut={onSignOut}
     >
-      <ConnectivityBanner degraded={notificationsConnectionDropped} />
-      {children}
+      {/* Unkeyed RSC `children` beside a sibling trips React 19's dev key warning. */}
+      <div>
+        <ConnectivityBanner degraded={notificationsConnectionDropped} />
+        {children}
+      </div>
     </AppShell>
   );
 }
