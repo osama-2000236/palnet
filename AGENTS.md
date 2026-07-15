@@ -26,9 +26,9 @@ Turborepo · pnpm · Next.js 15 App Router · Expo SDK 51
 
 ## Design handoff location
 
-All source files from the design review are in:
-design-handoff-2026-05/code/
-They mirror the repo tree 1:1. NEW = brand-new file. MODIFIED = replaces existing.
+The May 2026 design-review source tree merged into the repo on 2026-06-04
+(`design-handoff-2026-05/code/` is deleted — the repo tree is the source).
+Current parity ledger and design docs: `design-handoff-2026-06/README.md`.
 
 ## Atom architecture
 
