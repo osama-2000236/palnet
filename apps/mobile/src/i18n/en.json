@@ -602,6 +602,7 @@
     "search": "Search jobs",
     "searchPlaceholder": "Title, company, keyword…",
     "city": "City",
+    "industry": "Sector",
     "cityPlaceholder": "e.g. Ramallah",
     "type": "Type",
     "location": "Location",

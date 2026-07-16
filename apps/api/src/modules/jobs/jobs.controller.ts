@@ -23,6 +23,7 @@ const JobListQuery = CursorPageQuery.extend({
   type: z.nativeEnum(JobType).optional(),
   locationMode: z.nativeEnum(JobLocationMode).optional(),
   companyId: z.string().cuid().optional(),
+  industry: z.string().max(120).optional(),
 });
 type JobListQuery = z.infer<typeof JobListQuery>;
 
@@ -44,6 +45,7 @@ export class JobsController {
       type: query.type ?? null,
       locationMode: query.locationMode ?? null,
       companyId: query.companyId ?? null,
+      industry: query.industry ?? null,
     });
   }
 

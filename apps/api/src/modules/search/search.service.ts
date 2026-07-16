@@ -124,11 +124,13 @@ export class SearchService {
       WHERE  u."deletedAt" IS NULL
         AND  to_tsvector(
                'simple',
-               COALESCE(p."handle",    '') || ' ' ||
-               COALESCE(p."firstName", '') || ' ' ||
-               COALESCE(p."lastName",  '') || ' ' ||
-               COALESCE(p."headline",  '')
-             ) @@ plainto_tsquery('simple', ${q})
+               baydar_fold(
+                 COALESCE(p."handle",    '') || ' ' ||
+                 COALESCE(p."firstName", '') || ' ' ||
+                 COALESCE(p."lastName",  '') || ' ' ||
+                 COALESCE(p."headline",  '')
+               )
+             ) @@ plainto_tsquery('simple', baydar_fold(${q}))
         ${excludedClause}
         ${cursorClause}
       ORDER  BY p."handle" ASC, p."id" ASC
@@ -195,7 +197,8 @@ export class SearchService {
       LEFT JOIN "Profile" pr ON pr."userId" = au."id"
       WHERE  po."deletedAt" IS NULL
         AND  au."deletedAt" IS NULL
-        AND  to_tsvector('simple', COALESCE(po."body", '')) @@ plainto_tsquery('simple', ${q})
+        AND  to_tsvector('simple', baydar_fold(COALESCE(po."body", '')))
+             @@ plainto_tsquery('simple', baydar_fold(${q}))
         ${excludedClause}
         ${cursorClause}
       ORDER  BY po."createdAt" DESC, po."id" DESC
@@ -256,11 +259,13 @@ export class SearchService {
       FROM   "Company" c
       WHERE  to_tsvector(
                'simple',
-               COALESCE(c."name",     '') || ' ' ||
-               COALESCE(c."slug",     '') || ' ' ||
-               COALESCE(c."tagline",  '') || ' ' ||
-               COALESCE(c."industry", '')
-             ) @@ plainto_tsquery('simple', ${q})
+               baydar_fold(
+                 COALESCE(c."name",     '') || ' ' ||
+                 COALESCE(c."slug",     '') || ' ' ||
+                 COALESCE(c."tagline",  '') || ' ' ||
+                 COALESCE(c."industry", '')
+               )
+             ) @@ plainto_tsquery('simple', baydar_fold(${q}))
         ${cursorClause}
       ORDER  BY c."name" ASC, c."id" ASC
       LIMIT  ${limit + 1}
@@ -327,9 +332,11 @@ export class SearchService {
         AND  (j."expiresAt" IS NULL OR j."expiresAt" > ${now})
         AND  to_tsvector(
                'simple',
-               COALESCE(j."title",       '') || ' ' ||
-               COALESCE(j."description", '')
-             ) @@ plainto_tsquery('simple', ${q})
+               baydar_fold(
+                 COALESCE(j."title",       '') || ' ' ||
+                 COALESCE(j."description", '')
+               )
+             ) @@ plainto_tsquery('simple', baydar_fold(${q}))
         ${cursorClause}
       ORDER  BY j."createdAt" DESC, j."id" DESC
       LIMIT  ${limit + 1}
@@ -391,12 +398,25 @@ function toPostHit(row: PostSearchRow, q: string): SearchPostHit {
   };
 }
 
+// Position-safe subset of baydar_fold: only the 1:1 character maps (hamza
+// variants, alef maqsura, teh marbuta) + lowercase, so indexOf positions in
+// the folded string are valid in the original. Tashkeel/tatweel (removals,
+// position-shifting) are left alone — a match through them just skips the
+// highlight, same as before folding existed.
+function positionSafeFold(input: string): string {
+  return input
+    .toLowerCase()
+    .replace(/[أإآٱ]/g, "ا")
+    .replace(/ى/g, "ي")
+    .replace(/ة/g, "ه");
+}
+
 function buildExcerpt(
   body: string,
   q: string,
 ): { text: string; matchStart: number | null; matchEnd: number | null } {
   const normalizedBody = body.replace(/\s+/g, " ").trim();
-  const matchIndex = normalizedBody.toLowerCase().indexOf(q.toLowerCase());
+  const matchIndex = positionSafeFold(normalizedBody).indexOf(positionSafeFold(q));
   if (normalizedBody.length <= 220) {
     return {
       text: normalizedBody,

@@ -1,5 +1,10 @@
-import { EducationBody, Profile as ProfileSchema } from "@baydar/shared";
-import { Button, Icon, Surface, nativeTokens } from "@baydar/ui-native";
+import {
+  EducationBody,
+  PS_UNIVERSITIES,
+  Profile as ProfileSchema,
+  foldArabic,
+} from "@baydar/shared";
+import { Button, Chip, Icon, Surface, nativeTokens } from "@baydar/ui-native";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Text, View } from "react-native";
@@ -109,6 +114,7 @@ export function EducationsCard({ profile, onChanged, onError }: ProfileCardProps
               inputDirection="auto"
               fullWidth
             />
+            <SchoolSuggestions query={school} onPick={setSchool} />
             <Input
               value={degree}
               onChangeText={setDegree}
@@ -146,6 +152,38 @@ export function EducationsCard({ profile, onChanged, onError }: ProfileCardProps
         </Button>
       )}
     </Card>
+  );
+}
+
+// Web twin: the <datalist> on the school input in
+// EditProfileEducationSkills.tsx. Fold-filtered Palestinian university
+// chips; picking one writes the canonical Arabic name (free text stays
+// allowed for any other school).
+function SchoolSuggestions({
+  query,
+  onPick,
+}: {
+  query: string;
+  onPick: (school: string) => void;
+}): JSX.Element | null {
+  const { i18n } = useTranslation();
+  const isArabic = i18n.language.startsWith("ar");
+  const q = foldArabic(query.trim());
+  const lower = query.trim().toLowerCase();
+  const hits = PS_UNIVERSITIES.filter(
+    (u) =>
+      foldArabic(u.ar) !== q &&
+      (q === "" || foldArabic(u.ar).includes(q) || u.en.toLowerCase().includes(lower)),
+  );
+  if (hits.length === 0) return null;
+  return (
+    <View style={{ flexDirection: "row", flexWrap: "wrap", gap: nativeTokens.space[2] }}>
+      {hits.map((u) => (
+        <Chip key={u.key} accessibilityLabel={isArabic ? u.ar : u.en} onPress={() => onPick(u.ar)}>
+          {isArabic ? u.ar : u.en}
+        </Chip>
+      ))}
+    </View>
   );
 }
 

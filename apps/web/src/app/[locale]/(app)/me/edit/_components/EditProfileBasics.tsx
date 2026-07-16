@@ -114,14 +114,14 @@ export function BasicsSection({
       </div>
 
       <div className="grid gap-3 md:grid-cols-2">
-        <Field label={tOn("firstName" as never) as string}>
+        <Field label={tOn("firstName")}>
           <input
             className={inputClass}
             value={state.firstName}
             onChange={(e) => setState({ ...state, firstName: e.target.value })}
           />
         </Field>
-        <Field label={tOn("lastName" as never) as string}>
+        <Field label={tOn("lastName")}>
           <input
             className={inputClass}
             value={state.lastName}
