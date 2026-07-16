@@ -1,8 +1,8 @@
 "use client";
 
-import type { ActiveSession } from "@baydar/shared";
+import { formatRelativeTime, type ActiveSession } from "@baydar/shared";
 import { Button, Input, Skeleton } from "@baydar/ui-web";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 
 export function PasswordField({
@@ -96,8 +96,9 @@ export function SessionsList({
 
 function SessionMeta({ session }: { session: ActiveSession }): JSX.Element | null {
   const t = useTranslations("settings.security");
+  const locale = useLocale();
   const location = [session.city, session.country].filter(Boolean).join(", ");
-  const lastActive = session.lastActiveAt ? formatRelative(session.lastActiveAt) : null;
+  const lastActive = session.lastActiveAt ? formatRelativeTime(session.lastActiveAt, locale) : null;
   if (!location && !lastActive) return null;
 
   return (
@@ -106,7 +107,7 @@ function SessionMeta({ session }: { session: ActiveSession }): JSX.Element | nul
       {lastActive ? (
         <>
           {location ? " · " : null}
-          {t("sessions.lastActive", { when: "" }).trim()} <span dir="ltr">{lastActive}</span>
+          {t("sessions.lastActive", { when: "" }).trim()} <span>{lastActive}</span>
         </>
       ) : null}
     </div>
@@ -133,10 +134,4 @@ export function SessionsSkeleton(): JSX.Element {
       ))}
     </ul>
   );
-}
-
-export function formatRelative(iso: string): string {
-  const date = new Date(iso);
-  if (Number.isNaN(date.getTime())) return iso;
-  return date.toLocaleString();
 }

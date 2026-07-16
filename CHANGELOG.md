@@ -4,6 +4,14 @@ All notable Baydar changes are documented here.
 
 ## [Unreleased]
 
+### Removed
+
+- Ponytail audit 3: deleted the stale `design-handoff-2026-05/code/` snapshot (merged into the repo tree 2026-06-04; AGENTS.md now points at the live tree), dead `NotificationsBell` (web) and `LanguageToggle` (mobile) components, and their orphaned mobile i18n keys (`common.language|arabic|english`).
+
+### Fixed
+
+- Settings → Security sessions list now formats "last active" with the page locale via shared `formatRelativeTime` (was browser-default `toLocaleString()`, rendering English dates on Arabic pages).
+
 ### Changed
 
 - Updated repo docs to reflect the real current `main` state after Sprint 11.5.
