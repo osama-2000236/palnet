@@ -3,6 +3,7 @@
 import {
   AddSkillBody,
   EducationBody,
+  PS_UNIVERSITIES,
   Profile as ProfileSchema,
   type Education,
   type Profile,
@@ -128,7 +129,18 @@ export function EducationsSection({
             placeholder={t("school")}
             value={draft.school}
             onChange={(e) => setDraft({ ...draft, school: e.target.value })}
+            list="ps-universities"
           />
+          {/* Native datalist: Palestinian universities as canonical-Arabic
+              suggestions (English label matches en typing too). Free text
+              stays allowed for any other school. */}
+          <datalist id="ps-universities">
+            {PS_UNIVERSITIES.map((u) => (
+              <option key={u.key} value={u.ar}>
+                {u.en}
+              </option>
+            ))}
+          </datalist>
           <input
             className={inputClass}
             placeholder={t("degree")}

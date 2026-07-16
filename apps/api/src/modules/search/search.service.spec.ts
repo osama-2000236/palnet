@@ -177,7 +177,8 @@ describe("SearchService", () => {
 
     const sql = rawSqlFromCall(prisma.$queryRaw.mock.calls[0]!);
     expect(sql).toMatch(/to_tsvector\(/);
-    expect(sql).toMatch(/plainto_tsquery\(/);
+    expect(sql).toMatch(/plainto_tsquery\('simple', baydar_fold\(/);
+    expect(sql).toMatch(/baydar_fold\(\s*COALESCE\(p\."handle"/);
     expect(sql).toMatch(/"User"/);
     expect(sql).toMatch(/"deletedAt" IS NULL/);
   });
@@ -198,8 +199,8 @@ describe("SearchService", () => {
     const page = await service.searchPosts("viewer", { q: "hiring", limit: 20 });
 
     const sql = rawSqlFromCall(prisma.$queryRaw.mock.calls[0]!);
-    expect(sql).toMatch(/to_tsvector\('simple', COALESCE\(po\."body"/);
-    expect(sql).toMatch(/plainto_tsquery/);
+    expect(sql).toMatch(/to_tsvector\('simple', baydar_fold\(COALESCE\(po\."body"/);
+    expect(sql).toMatch(/plainto_tsquery\('simple', baydar_fold\(/);
     expect(sql).toMatch(/au\."deletedAt"\s+IS\s+NULL/);
     expect(page.data).toEqual([
       expect.objectContaining({
@@ -211,6 +212,18 @@ describe("SearchService", () => {
         createdAt: "2026-05-05T10:00:00.000Z",
       }),
     ]);
+  });
+
+  it("highlights folded Arabic matches in the excerpt (hamza/teh-marbuta variants)", async () => {
+    prisma.$queryRaw.mockResolvedValue([{ ...postRow(), body: "مطلوب مبرمجة أولى" }]);
+
+    const page = await service.searchPosts("viewer", { q: "مبرمجه", limit: 20 });
+
+    expect(page.data[0]).toMatchObject({
+      bodyExcerpt: "مطلوب مبرمجة أولى",
+      matchStart: 6,
+      matchEnd: 12,
+    });
   });
 
   it("excludes blocked post authors via a NOT IN clause", async () => {
@@ -232,6 +245,7 @@ describe("SearchService", () => {
     expect(sql).toMatch(/"isActive"\s+=\s+TRUE/);
     expect(sql).toMatch(/"deletedAt" IS NULL/);
     expect(sql).toMatch(/"expiresAt" IS NULL OR/);
+    expect(sql).toMatch(/plainto_tsquery\('simple', baydar_fold\(/);
     expect(page.data).toEqual([
       expect.objectContaining({
         id: "job_1",
@@ -251,7 +265,7 @@ describe("SearchService", () => {
     const sql = rawSqlFromCall(prisma.$queryRaw.mock.calls[0]!);
     expect(sql).toMatch(/FROM\s+"Company"/);
     expect(sql).toMatch(/to_tsvector\(/);
-    expect(sql).toMatch(/plainto_tsquery/);
+    expect(sql).toMatch(/plainto_tsquery\('simple', baydar_fold\(/);
     expect(page.data).toEqual([
       expect.objectContaining({
         id: "company_1",

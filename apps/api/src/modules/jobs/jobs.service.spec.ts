@@ -6,6 +6,7 @@ import { PrismaService } from "../prisma/prisma.service";
 import { JobsService } from "./jobs.service";
 
 type PrismaStub = {
+  $queryRaw: jest.Mock;
   job: {
     findFirst: jest.Mock;
     findMany: jest.Mock;
@@ -19,6 +20,7 @@ type PrismaStub = {
 
 function buildPrisma(): PrismaStub {
   return {
+    $queryRaw: jest.fn(),
     job: {
       findFirst: jest.fn(),
       findMany: jest.fn(),
@@ -41,6 +43,55 @@ describe("JobsService", () => {
       providers: [JobsService, { provide: PrismaService, useValue: prisma }],
     }).compile();
     service = moduleRef.get(JobsService);
+  });
+
+  describe("list", () => {
+    it("prefilters q through the folded ILIKE raw query and drops the naive contains OR", async () => {
+      prisma.$queryRaw.mockResolvedValue([{ id: "job_1" }]);
+      prisma.job.findMany.mockResolvedValue([]);
+
+      await service.list("user_1", null, 20, { q: "مبرمجة 100%" });
+
+      const sqlArg = prisma.$queryRaw.mock.calls[0]![0] as {
+        strings: string[];
+        values: unknown[];
+      };
+      expect(sqlArg.strings.join("?")).toMatch(/baydar_fold/);
+      // LIKE wildcards in user input arrive escaped.
+      expect(sqlArg.values).toContain("مبرمجة 100\\%");
+
+      const where = prisma.job.findMany.mock.calls[0]![0].where;
+      expect(where.id).toEqual({ in: ["job_1"] });
+      expect(where.OR).toBeUndefined();
+    });
+
+    it("short-circuits to an empty page when no job matches q", async () => {
+      prisma.$queryRaw.mockResolvedValue([]);
+
+      const page = await service.list("user_1", null, 20, { q: "زيتون" });
+
+      expect(page).toEqual({ data: [], meta: { nextCursor: null, hasMore: false, limit: 20 } });
+      expect(prisma.job.findMany).not.toHaveBeenCalled();
+    });
+
+    it("skips the raw prefilter entirely when q is absent", async () => {
+      prisma.job.findMany.mockResolvedValue([]);
+
+      await service.list("user_1", null, 20, { city: "رام الله" });
+
+      expect(prisma.$queryRaw).not.toHaveBeenCalled();
+    });
+
+    it("filters by company industry when the sector facet is set", async () => {
+      prisma.job.findMany.mockResolvedValue([]);
+
+      await service.list("user_1", null, 20, { industry: "منظمات أهلية وغير حكومية" });
+
+      const where = prisma.job.findMany.mock.calls[0]![0].where;
+      expect(where.company).toEqual({
+        industry: { contains: "منظمات أهلية وغير حكومية", mode: "insensitive" },
+      });
+    });
   });
 
   describe("apply", () => {

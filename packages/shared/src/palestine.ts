@@ -4,6 +4,8 @@
 // city string into the existing free-text columns. Add a `governorate` column
 // only if governorate-level filtering is ever needed.
 
+import { foldArabic } from "./arabic-fold";
+
 export interface PsCity {
   /** stable ascii key */
   key: string;
@@ -81,6 +83,29 @@ export const PS_UNIVERSITIES: readonly { key: string; ar: string; en: string }[]
   { key: "ptuk", ar: "جامعة فلسطين التقنية - خضوري", en: "Palestine Technical University" },
 ] as const;
 
+// Job-market sectors, NGO/international organizations first — they are the
+// largest formal employers in the Palestinian market (jobs.ps lists NGO jobs
+// as its headline category). Free text stays allowed everywhere; these are
+// canonical suggestion/filter values, Arabic as the stored form.
+export const PS_INDUSTRIES: readonly { key: string; ar: string; en: string }[] = [
+  { key: "ngo", ar: "منظمات أهلية وغير حكومية", en: "NGOs & Civil Society" },
+  { key: "intl-org", ar: "منظمات دولية وأممية", en: "International & UN Organizations" },
+  { key: "tech", ar: "التكنولوجيا والبرمجيات", en: "Technology & Software" },
+  { key: "education", ar: "التعليم والتدريب", en: "Education & Training" },
+  { key: "health", ar: "الصحة والرعاية الطبية", en: "Healthcare & Medical" },
+  { key: "finance", ar: "البنوك والتمويل", en: "Banking & Finance" },
+  { key: "engineering", ar: "الهندسة والإنشاءات", en: "Engineering & Construction" },
+  { key: "agriculture", ar: "الزراعة", en: "Agriculture" },
+  { key: "media", ar: "الإعلام والتصميم", en: "Media & Design" },
+  { key: "trade", ar: "التجارة والبيع", en: "Commerce & Retail" },
+  { key: "tourism", ar: "السياحة والضيافة", en: "Tourism & Hospitality" },
+  { key: "government", ar: "القطاع الحكومي", en: "Government & Public Sector" },
+  { key: "telecom", ar: "الاتصالات", en: "Telecommunications" },
+  { key: "logistics", ar: "النقل والخدمات اللوجستية", en: "Transport & Logistics" },
+  { key: "legal", ar: "القانون", en: "Legal" },
+  { key: "manufacturing", ar: "الصناعة والتصنيع", en: "Manufacturing" },
+] as const;
+
 /**
  * Canonicalize a city input: known Palestinian cities (Arabic or English,
  * case/whitespace-insensitive) map to their canonical Arabic name — the value
@@ -90,6 +115,10 @@ export function normalizeCity(input: string): string {
   const cleaned = input.trim().replace(/\s+/g, " ");
   if (!cleaned) return "";
   const lower = cleaned.toLowerCase();
-  const hit = PS_CITIES.find((city) => city.ar === cleaned || city.en.toLowerCase() === lower);
+  // Fold Arabic orthography so قلقيليه / رام اللة variants still canonicalize.
+  const folded = foldArabic(cleaned);
+  const hit = PS_CITIES.find(
+    (city) => foldArabic(city.ar) === folded || city.en.toLowerCase() === lower,
+  );
   return hit ? hit.ar : cleaned;
 }

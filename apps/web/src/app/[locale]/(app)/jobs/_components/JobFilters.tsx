@@ -1,8 +1,8 @@
 "use client";
 
-import { JobLocationMode, JobType } from "@baydar/shared";
+import { JobLocationMode, JobType, PS_INDUSTRIES } from "@baydar/shared";
 import { Chip, Icon, Input, Surface } from "@baydar/ui-web";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 import { CityField } from "@/components/CityField";
 
@@ -13,6 +13,7 @@ export type JobFiltersState = {
   locationMode: JobLocationMode | "";
   companyId: string;
   companyName: string;
+  industry: string;
 };
 
 export function JobFilters({
@@ -23,6 +24,8 @@ export function JobFilters({
   onChange: (filters: JobFiltersState) => void;
 }): JSX.Element {
   const t = useTranslations("jobs");
+  const locale = useLocale();
+  const isArabic = locale.startsWith("ar");
 
   return (
     <Surface variant="card" padding="4" as="aside">
@@ -54,6 +57,27 @@ export function JobFilters({
           value={filters.city}
           onChange={(city) => onChange({ ...filters, city })}
         />
+      </div>
+
+      <div className="mb-3">
+        <label htmlFor="jobs-industry" className="text-ink-muted mb-1 block text-xs">
+          {t("industry")}
+        </label>
+        {/* Sector facet — canonical PS_INDUSTRIES Arabic values on the wire,
+            localized labels in the UI. NGO/intl-org lead the list on purpose. */}
+        <select
+          id="jobs-industry"
+          value={filters.industry}
+          onChange={(e) => onChange({ ...filters, industry: e.target.value })}
+          className="bg-surface text-ink border-line-hard hover:border-line-hard focus-visible:border-brand-600 h-9 w-full rounded-md border px-3 text-sm focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+        >
+          <option value="">{t("any")}</option>
+          {PS_INDUSTRIES.map((industry) => (
+            <option key={industry.key} value={industry.ar}>
+              {isArabic ? industry.ar : industry.en}
+            </option>
+          ))}
+        </select>
       </div>
 
       <fieldset className="mb-3">

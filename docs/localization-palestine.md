@@ -49,6 +49,22 @@ Locale is stored on `User.locale` (Prisma default `"ar-PS"`) and echoed in `Cont
 - Cities enum (drop-down source of truth for job posting + profile location): القدس (Jerusalem), رام الله (Ramallah), نابلس (Nablus), الخليل (Hebron), غزة (Gaza), خان يونس (Khan Younis), بيت لحم (Bethlehem), جنين (Jenin), طولكرم (Tulkarm), قلقيلية (Qalqilya), أريحا (Jericho), رفح (Rafah), دير البلح (Deir al-Balah), بيت جالا (Beit Jala). Allow free-text for diaspora cities.
 - Universities list (for education field): Birzeit, An-Najah, Islamic University of Gaza, Al-Quds, Bethlehem, Hebron, Palestine Polytechnic, Arab American University, Al-Azhar (Gaza), Palestine Technical. Allow free-text.
 - Holidays & calendar considerations for notifications (avoid push during: الجمعة العظيمة, عيد الفطر, عيد الأضحى, رمضان pre-iftar window for evening digest).
+- Industries list (sector facet for jobs + company form suggestions): `PS_INDUSTRIES` in `packages/shared/src/palestine.ts`, NGO/international organizations first (largest formal employers). Canonical Arabic is the stored/filtered value; free-text stays allowed.
+
+## Arabic Search Folding
+
+All text search folds Arabic orthography on both the index and query side —
+without it "احمد" never matches "أحمد" and any tashkeel breaks matching:
+
+- Rules (Lucene ArabicNormalizer semantics): strip tashkeel (U+064B–U+0652),
+  superscript alef (U+0670), tatweel (U+0640); fold أ إ آ ٱ → ا, ى → ي, ة → ه.
+- Twins that MUST stay equivalent: SQL `baydar_fold()` (migration
+  `202607160001_arabic_search_folding`, used by the FTS GIN indexes and every
+  `plainto_tsquery` in `search.service.ts` + the jobs-list `q` prefilter) and
+  JS `foldArabic()` (`packages/shared/src/arabic-fold.ts`, used by
+  `normalizeCity` and client-side suggestion matching).
+- The GIN index expression and the query expression must match exactly or the
+  planner falls back to a sequential scan.
 
 ## Testing Requirements
 

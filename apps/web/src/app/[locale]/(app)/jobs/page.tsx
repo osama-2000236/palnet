@@ -42,6 +42,7 @@ const EMPTY_FILTERS: JobFiltersState = {
   locationMode: "",
   companyId: "",
   companyName: "",
+  industry: "",
 };
 
 function buildQs(filters: JobFiltersState, after: string | null): string {
@@ -52,6 +53,7 @@ function buildQs(filters: JobFiltersState, after: string | null): string {
   if (filters.type) qs.set("type", filters.type);
   if (filters.locationMode) qs.set("locationMode", filters.locationMode);
   if (filters.companyId) qs.set("companyId", filters.companyId);
+  if (filters.industry) qs.set("industry", filters.industry);
   return qs.toString();
 }
 

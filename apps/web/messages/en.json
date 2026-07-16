@@ -185,6 +185,8 @@
     "subtitle": "This helps others find you.",
     "handle": "Your handle",
     "handleHint": "Appears as /in/{handle}",
+    "firstName": "First name",
+    "lastName": "Last name",
     "headline": "Headline",
     "location": "Location (city)",
     "submit": "Save and continue"
@@ -629,6 +631,7 @@
     "search": "Search jobs",
     "searchPlaceholder": "Title, company, keyword…",
     "city": "City",
+    "industry": "Sector",
     "cityPlaceholder": "e.g. Ramallah",
     "type": "Type",
     "location": "Location",

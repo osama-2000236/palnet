@@ -1,6 +1,6 @@
 "use client";
 
-import { Company, CreateCompanyBody } from "@baydar/shared";
+import { Company, CreateCompanyBody, PS_INDUSTRIES } from "@baydar/shared";
 import { Surface } from "@baydar/ui-web";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
@@ -112,11 +112,21 @@ export default function NewCompanyPage(): JSX.Element {
             />
           </Field>
           <Field label={t("industry")}>
+            {/* Canonical PS_INDUSTRIES suggestions so the jobs sector facet
+                matches; free text stays allowed. */}
             <input
               value={form.industry}
               onChange={(e) => setForm((f) => ({ ...f, industry: e.target.value }))}
+              list="ps-industries"
               className="border-line-hard bg-surface text-ink w-full rounded-md border px-3 py-1.5 text-sm"
             />
+            <datalist id="ps-industries">
+              {PS_INDUSTRIES.map((industry) => (
+                <option key={industry.key} value={industry.ar}>
+                  {industry.en}
+                </option>
+              ))}
+            </datalist>
           </Field>
           <div className="grid grid-cols-2 gap-3">
             <Field label={t("city")}>

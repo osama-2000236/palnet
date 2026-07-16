@@ -5,6 +5,7 @@ import {
   ErrorCode,
   type Job as JobDto,
 } from "@baydar/shared";
+import { Prisma } from "@baydar/db";
 import { Injectable } from "@nestjs/common";
 
 import { DomainException } from "../../common/domain-exception";
@@ -66,24 +67,47 @@ export class JobsService {
       type?: JobDto["type"] | null;
       locationMode?: JobDto["locationMode"] | null;
       companyId?: string | null;
+      industry?: string | null;
     },
   ): Promise<{ data: JobDto[]; meta: CursorPageMeta }> {
+    // Folded substring prefilter: baydar_fold (SQL twin of shared foldArabic)
+    // makes احمد match أحمد etc.; ILIKE covers Latin case. Substring semantics
+    // kept on purpose — this is the jobs page filter-as-you-type box, not the
+    // word-level FTS in search.service.ts.
+    // ponytail: seq scan at beta scale; move to the folded FTS GIN index if
+    // the jobs table ever gets big.
+    let qIds: string[] | null = null;
+    if (filters.q) {
+      const pattern = filters.q.replace(/[\\%_]/g, (m) => `\\${m}`);
+      const rows = await this.prisma.$queryRaw<{ id: string }[]>(Prisma.sql`
+        SELECT "id"
+        FROM   "Job"
+        WHERE  "isActive"  = TRUE
+          AND  "deletedAt" IS NULL
+          AND  baydar_fold(COALESCE("title", '') || ' ' || COALESCE("description", ''))
+               ILIKE '%' || baydar_fold(${pattern}) || '%'
+      `);
+      qIds = rows.map((r) => r.id);
+      if (qIds.length === 0) {
+        return { data: [], meta: { nextCursor: null, hasMore: false, limit } };
+      }
+    }
+
     const rows = (await this.prisma.job.findMany({
       where: {
         isActive: true,
         deletedAt: null,
         ...(filters.companyId ? { companyId: filters.companyId } : {}),
-        ...(filters.q
-          ? {
-              OR: [
-                { title: { contains: filters.q, mode: "insensitive" } },
-                { description: { contains: filters.q, mode: "insensitive" } },
-              ],
-            }
-          : {}),
+        ...(qIds ? { id: { in: qIds } } : {}),
         ...(filters.city ? { city: { contains: filters.city, mode: "insensitive" } } : {}),
         ...(filters.type ? { type: filters.type } : {}),
         ...(filters.locationMode ? { locationMode: filters.locationMode } : {}),
+        // Sector facet over the company's free-text industry. Filter chips and
+        // the company form both write canonical PS_INDUSTRIES Arabic values, so
+        // contains-insensitive is enough; fold like q if legacy variants show up.
+        ...(filters.industry
+          ? { company: { industry: { contains: filters.industry, mode: "insensitive" } } }
+          : {}),
       },
       orderBy: [{ createdAt: "desc" }, { id: "desc" }],
       take: limit + 1,

@@ -1,4 +1,33 @@
-import { PS_CITIES, PS_GOVERNORATES, PS_UNIVERSITIES, normalizeCity } from "./palestine";
+import {
+  PS_CITIES,
+  PS_GOVERNORATES,
+  PS_INDUSTRIES,
+  PS_UNIVERSITIES,
+  normalizeCity,
+} from "./palestine";
+
+describe("PS_INDUSTRIES", () => {
+  it("has unique keys and both language labels", () => {
+    const keys = PS_INDUSTRIES.map((i) => i.key);
+    expect(new Set(keys).size).toBe(keys.length);
+    for (const industry of PS_INDUSTRIES) {
+      expect(industry.ar.length).toBeGreaterThan(0);
+      expect(industry.en.length).toBeGreaterThan(0);
+    }
+  });
+
+  it("leads with NGO and international-organization sectors", () => {
+    expect(PS_INDUSTRIES[0]!.key).toBe("ngo");
+    expect(PS_INDUSTRIES[1]!.key).toBe("intl-org");
+  });
+});
+
+describe("normalizeCity Arabic folding", () => {
+  it("canonicalizes teh-marbuta and hamza variants", () => {
+    expect(normalizeCity("قلقيليه")).toBe("قلقيلية");
+    expect(normalizeCity("اريحا")).toBe("أريحا");
+  });
+});
 
 describe("palestine data", () => {
   it("has governorates each with ar/en names and at least one city", () => {

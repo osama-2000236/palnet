@@ -1,4 +1,4 @@
-import { JobLocationMode, JobType } from "@baydar/shared";
+import { JobLocationMode, JobType, PS_INDUSTRIES } from "@baydar/shared";
 import { Button, Chip, Sheet, nativeTokens } from "@baydar/ui-native";
 import { useTranslation } from "react-i18next";
 import { Text, View } from "react-native";
@@ -13,6 +13,7 @@ export type Filters = {
   // Set when arriving from a company search hit ("jobs at this company").
   companyId: string;
   companyName: string;
+  industry: string;
 };
 
 export const EMPTY_FILTERS: Filters = {
@@ -22,6 +23,7 @@ export const EMPTY_FILTERS: Filters = {
   locationMode: "",
   companyId: "",
   companyName: "",
+  industry: "",
 };
 
 export const TYPE_VALUES: JobType[] = [
@@ -47,6 +49,7 @@ export function buildQs(filters: Filters, after: string | null): string {
   if (filters.type) qs.set("type", filters.type);
   if (filters.locationMode) qs.set("locationMode", filters.locationMode);
   if (filters.companyId) qs.set("companyId", filters.companyId);
+  if (filters.industry) qs.set("industry", filters.industry);
   return qs.toString();
 }
 
@@ -57,6 +60,7 @@ export function activeFilterCount(f: Filters): number {
   if (f.type) n += 1;
   if (f.locationMode) n += 1;
   if (f.companyId) n += 1;
+  if (f.industry) n += 1;
   return n;
 }
 
@@ -71,7 +75,8 @@ export function FilterSheet({
   onClose: () => void;
   open: boolean;
 }): JSX.Element {
-  const { t } = useTranslation();
+  const { i18n, t } = useTranslation();
+  const isArabic = i18n.language.startsWith("ar");
   const set = <K extends keyof Filters>(key: K, value: Filters[K]): void => {
     onChange({ ...filters, [key]: value });
   };
@@ -80,6 +85,22 @@ export function FilterSheet({
     <Sheet open={open} onClose={onClose} title={t("jobs.filters")}>
       <Field label={t("jobs.city")}>
         <CityField allowEmpty value={filters.city} onChange={(v) => set("city", v)} />
+      </Field>
+      <Field label={t("jobs.industry")}>
+        {/* Sector facet — canonical PS_INDUSTRIES Arabic on the wire, localized
+            labels; NGO/intl-org lead. Web twin: JobFilters.tsx industry select. */}
+        <View style={{ flexDirection: "row", flexWrap: "wrap", gap: nativeTokens.space[2] }}>
+          {PS_INDUSTRIES.map((industry) => (
+            <Chip
+              key={industry.key}
+              selected={filters.industry === industry.ar}
+              accessibilityLabel={isArabic ? industry.ar : industry.en}
+              onPress={() => set("industry", filters.industry === industry.ar ? "" : industry.ar)}
+            >
+              {isArabic ? industry.ar : industry.en}
+            </Chip>
+          ))}
+        </View>
       </Field>
       <Field label={t("jobs.type")}>
         <ChipRow
