@@ -8,7 +8,7 @@ import { useState } from "react";
 
 import { CityField } from "@/components/CityField";
 import { apiFetch, ApiRequestError } from "@/lib/api";
-import { getAccessToken, writeOnboardingHandoff, writeProfileCache } from "@/lib/session";
+import { getAccessToken, writeOnboardingHandoff } from "@/lib/session";
 
 export default function OnboardingPage(): JSX.Element {
   const t = useTranslations("onboarding");
@@ -50,14 +50,11 @@ export default function OnboardingPage(): JSX.Element {
 
     setBusy(true);
     try {
-      const profile = await apiFetch("/profiles/onboard", Profile.partial(), {
+      await apiFetch("/profiles/onboard", Profile.partial(), {
         method: "POST",
         body: parsed.data,
         token,
       });
-      if (profile.userId && profile.handle) {
-        writeProfileCache({ userId: profile.userId, handle: profile.handle });
-      }
       writeOnboardingHandoff({
         name: [parsed.data.firstName, parsed.data.lastName].filter(Boolean).join(" "),
       });

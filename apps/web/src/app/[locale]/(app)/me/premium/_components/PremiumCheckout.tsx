@@ -16,7 +16,7 @@ import { useState } from "react";
 import { apiFetch, getValidAccessToken } from "@/lib/api";
 import { toErrorMessage } from "@/lib/error-message";
 
-import { formatMoney } from "../format";
+import { formatMoney } from "@/lib/money";
 
 interface PremiumCheckoutProps {
   plan: PlanOfferDto;

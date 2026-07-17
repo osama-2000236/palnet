@@ -12,6 +12,7 @@ All notable Baydar changes are documented here.
 
 ### Removed
 
+- Ponytail audit 4: deleted the stale `design-handoff-2026-05/03-components/` + `04-screens/` source snapshots (~14.2k lines; referenced pain/problems/ask docs kept for the Pass 2 gate), the web write-only profile-completion cache and `clearDeviceId` in `lib/session.ts`, a twice-declared `CompanySearchRow` interface, a byte-copy premium `format.ts`, and the never-rendered Illustration `outline`/`block` direction kits (harvest-only now on web + native; kits recoverable from git history). Added shared `takePage()` and replaced the hand-rolled cursor-trim block in 8 list endpoints.
 - Ponytail audit 3: deleted the stale `design-handoff-2026-05/code/` snapshot (merged into the repo tree 2026-06-04; AGENTS.md now points at the live tree), dead `NotificationsBell` (web) and `LanguageToggle` (mobile) components, and their orphaned mobile i18n keys (`common.language|arabic|english`).
 
 ### Fixed

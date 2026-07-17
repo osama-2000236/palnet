@@ -1,4 +1,5 @@
 import { Prisma } from "@baydar/db";
+import { takePage } from "@baydar/shared";
 import type {
   CompaniesSearchQuery,
   CursorPageMeta,
@@ -66,18 +67,6 @@ interface JobSearchRow {
   companyLogoUrl: string | null;
 }
 
-interface CompanySearchRow {
-  id: string;
-  slug: string;
-  name: string;
-  tagline: string | null;
-  industry: string | null;
-  city: string | null;
-  country: string;
-  logoUrl: string | null;
-  verified: boolean;
-}
-
 @Injectable()
 export class SearchService {
   constructor(
@@ -137,11 +126,9 @@ export class SearchService {
       LIMIT  ${limit + 1}
     `);
 
-    const hasMore = rows.length > limit;
-    const trimmed = hasMore ? rows.slice(0, limit) : rows;
-
+    const { rows: page, meta } = takePage(rows, limit);
     return {
-      data: trimmed.map<SearchPersonHit>((p) => ({
+      data: page.map<SearchPersonHit>((p) => ({
         userId: p.userId,
         handle: p.handle,
         firstName: p.firstName,
@@ -150,11 +137,7 @@ export class SearchService {
         location: p.location,
         avatarUrl: p.avatarUrl,
       })),
-      meta: {
-        nextCursor: hasMore ? trimmed[trimmed.length - 1]!.id : null,
-        hasMore,
-        limit,
-      },
+      meta,
     };
   }
 
@@ -205,17 +188,8 @@ export class SearchService {
       LIMIT  ${limit + 1}
     `);
 
-    const hasMore = rows.length > limit;
-    const trimmed = hasMore ? rows.slice(0, limit) : rows;
-
-    return {
-      data: trimmed.map((p) => toPostHit(p, q)),
-      meta: {
-        nextCursor: hasMore ? trimmed[trimmed.length - 1]!.id : null,
-        hasMore,
-        limit,
-      },
-    };
+    const { rows: page, meta } = takePage(rows, limit);
+    return { data: page.map((p) => toPostHit(p, q)), meta };
   }
 
   async searchCompanies(
@@ -271,11 +245,9 @@ export class SearchService {
       LIMIT  ${limit + 1}
     `);
 
-    const hasMore = rows.length > limit;
-    const trimmed = hasMore ? rows.slice(0, limit) : rows;
-
+    const { rows: page, meta } = takePage(rows, limit);
     return {
-      data: trimmed.map<SearchCompanyHit>((c) => ({
+      data: page.map<SearchCompanyHit>((c) => ({
         id: c.id,
         slug: c.slug,
         name: c.name,
@@ -287,11 +259,7 @@ export class SearchService {
         verified: c.verified,
         activeJobs: Number(c.activeJobs),
       })),
-      meta: {
-        nextCursor: hasMore ? trimmed[trimmed.length - 1]!.id : null,
-        hasMore,
-        limit,
-      },
+      meta,
     };
   }
 
@@ -342,11 +310,9 @@ export class SearchService {
       LIMIT  ${limit + 1}
     `);
 
-    const hasMore = rows.length > limit;
-    const trimmed = hasMore ? rows.slice(0, limit) : rows;
-
+    const { rows: page, meta } = takePage(rows, limit);
     return {
-      data: trimmed.map<SearchJobHit>((j) => ({
+      data: page.map<SearchJobHit>((j) => ({
         id: j.id,
         title: j.title,
         companyName: j.companyName,
@@ -357,11 +323,7 @@ export class SearchService {
         type: j.type,
         createdAt: j.createdAt.toISOString(),
       })),
-      meta: {
-        nextCursor: hasMore ? trimmed[trimmed.length - 1]!.id : null,
-        hasMore,
-        limit,
-      },
+      meta,
     };
   }
 }

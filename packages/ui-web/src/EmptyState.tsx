@@ -11,7 +11,6 @@ import { Button } from "./Button";
 import { cx } from "./cx";
 import {
   Illustration,
-  type IllustrationDirection,
   type IllustrationMotif,
   type IllustrationSize,
   type IllustrationTint,
@@ -19,7 +18,6 @@ import {
 
 export interface EmptyStateProps {
   motif: IllustrationMotif;
-  direction?: IllustrationDirection;
   tint?: IllustrationTint;
   size?: IllustrationSize;
   title: string;
@@ -41,7 +39,6 @@ export interface EmptyStateProps {
 
 export function EmptyState({
   motif,
-  direction = "harvest",
   tint = "sand",
   size,
   title,
@@ -65,7 +62,7 @@ export function EmptyState({
         className,
       )}
     >
-      <Illustration motif={motif} direction={direction} tint={tint} size={resolvedSize} />
+      <Illustration motif={motif} tint={tint} size={resolvedSize} />
       <div className={cx("flex flex-col", inline ? "gap-1" : "gap-1.5")}>
         {/* Intentionally not a heading — EmptyState appears inside arbitrary
          * sections; emitting an <h*> would force a heading-order audit on

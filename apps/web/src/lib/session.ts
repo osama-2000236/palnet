@@ -1,6 +1,6 @@
 "use client";
 
-import type { AuthSession, Profile } from "@baydar/shared";
+import type { AuthSession } from "@baydar/shared";
 
 // We store the current access token in memory to avoid XSS risks from localStorage.
 let accessToken: string | null = null;
@@ -72,52 +72,6 @@ export function getDeviceId(): string {
   const id = `web-${crypto.randomUUID()}`;
   window.localStorage.setItem("baydar.deviceId", id);
   return id;
-}
-
-export function clearDeviceId(): void {
-  if (typeof window === "undefined") return;
-  window.localStorage.removeItem("baydar.deviceId");
-}
-
-// Profile cache (non-sensitive)
-const PROFILE_CACHE_KEY = "baydar.profile-cache.v1";
-const PROFILE_CACHE_TTL_MS = 1000 * 60 * 60 * 24; // 24h
-
-export interface ProfileCompletionCache {
-  userId: string;
-  handle: string;
-  completedAt: string;
-  expiresAt: string;
-}
-
-export function readProfileCache(): ProfileCompletionCache | null {
-  if (typeof window === "undefined") return null;
-  const raw = window.localStorage.getItem(PROFILE_CACHE_KEY);
-  if (!raw) return null;
-  try {
-    const parsed = JSON.parse(raw) as ProfileCompletionCache;
-    if (!parsed.expiresAt || Number.isNaN(Date.parse(parsed.expiresAt))) return null;
-    if (Date.parse(parsed.expiresAt) <= Date.now()) return null;
-    return parsed;
-  } catch {
-    return null;
-  }
-}
-
-export function writeProfileCache(profile: Pick<Profile, "userId" | "handle">): void {
-  if (typeof window === "undefined") return;
-  const cache: ProfileCompletionCache = {
-    userId: profile.userId,
-    handle: profile.handle,
-    completedAt: new Date().toISOString(),
-    expiresAt: new Date(Date.now() + PROFILE_CACHE_TTL_MS).toISOString(),
-  };
-  window.localStorage.setItem(PROFILE_CACHE_KEY, JSON.stringify(cache));
-}
-
-export function clearProfileCache(): void {
-  if (typeof window === "undefined") return;
-  window.localStorage.removeItem(PROFILE_CACHE_KEY);
 }
 
 const ONBOARDING_HANDOFF_KEY = "baydar.onboarding-handoff.v1";
