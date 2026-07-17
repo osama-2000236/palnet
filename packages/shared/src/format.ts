@@ -66,20 +66,6 @@ export function formatCurrency(
   ).format(value);
 }
 
-/**
- * Compact counts like "1.2k" or "١٫٢ ألف" for feed stats.
- */
-export function formatCompact(value: number, locale: string): string {
-  if (!Number.isFinite(value)) return "";
-  return new Intl.NumberFormat(
-    resolveLocale(locale),
-    withDigits(locale, {
-      notation: "compact",
-      maximumFractionDigits: 1,
-    }),
-  ).format(value);
-}
-
 type RelativeLabelUnit =
   | "year"
   | "quarter"

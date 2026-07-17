@@ -4,7 +4,6 @@ import { ConfigModule, ConfigService } from "@nestjs/config";
 import type { Env } from "../../config/env";
 
 import { ConsoleMailTransport, type MailTransport } from "./console-mail.transport";
-import { MailService } from "./mail.service";
 import { MAIL_TRANSPORT } from "./mail.tokens";
 import { ResendTransport } from "./resend.transport";
 
@@ -35,7 +34,7 @@ const transportProvider: Provider = {
 
 @Module({
   imports: [ConfigModule],
-  providers: [transportProvider, MailService],
-  exports: [MailService],
+  providers: [transportProvider],
+  exports: [MAIL_TRANSPORT],
 })
 export class MailModule {}

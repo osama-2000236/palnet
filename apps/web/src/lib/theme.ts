@@ -10,7 +10,6 @@ export type ThemeChoice = "light" | "dark" | "system";
 export type ResolvedTheme = "light" | "dark";
 
 export const THEME_STORAGE_KEY = "baydar-theme";
-export const THEME_CHOICES: readonly ThemeChoice[] = ["light", "dark", "system"];
 
 export function isThemeChoice(value: unknown): value is ThemeChoice {
   return value === "light" || value === "dark" || value === "system";

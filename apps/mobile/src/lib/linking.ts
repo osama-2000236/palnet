@@ -1,27 +1,5 @@
 import type { Href } from "expo-router";
 
-export const LinkingOptions = {
-  prefixes: ["baydar://", "https://baydar.ps"],
-  config: {
-    screens: {
-      "(app)": {
-        screens: {
-          "in/[handle]": "u/:handle",
-          feed: "post/:postId",
-          "messages/[roomId]": "messages/:roomId",
-          "jobs/[id]": "jobs/:id",
-        },
-      },
-      "(auth)": {
-        screens: {
-          "verify-email/[token]": "verify-email/:token",
-          "reset-password/[token]": "reset-password/:token",
-        },
-      },
-    },
-  },
-} as const;
-
 export function routeFromUrl(url: string): Href | null {
   let parsed: URL;
   try {

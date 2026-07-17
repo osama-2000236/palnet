@@ -135,6 +135,28 @@ for (const scanDir of SCAN_DIRS) {
   }
 }
 
+// ── Preset drift guard ──────────────────────────────────────────────────────
+// packages/config/tailwind-preset.js hand-mirrors token values for NativeWind
+// (Metro loads tailwind config with plain Node, so it can't require the TS
+// token source without a build step). Every hex it declares must exist in the
+// ui-tokens source; a token edit that skips the mirror fails here instead of
+// drifting silently.
+{
+  const presetPath = "packages/config/tailwind-preset.js";
+  const presetLines = readFileSync(join(ROOT, presetPath), "utf8").split(/\r?\n/);
+  const tokensSrc =
+    readFileSync(join(ROOT, "packages/ui-tokens/src/tokens.css"), "utf8") +
+    readFileSync(join(ROOT, "packages/ui-tokens/src/index.ts"), "utf8");
+  const tokenHexes = new Set((tokensSrc.match(hexRe) ?? []).map((h) => h.toLowerCase()));
+  presetLines.forEach((line, i) => {
+    for (const m of line.matchAll(hexRe)) {
+      if (!tokenHexes.has(m[0].toLowerCase())) {
+        hits.push({ rel: presetPath, line: i + 1, kind: "preset-token-drift", match: m[0], raw: line });
+      }
+    }
+  });
+}
+
 if (hits.length === 0) {
   console.log("lint:tokens — clean.");
   process.exit(0);

@@ -64,15 +64,6 @@ export const UpdateApplicationStatusBody = z.object({
 });
 export type UpdateApplicationStatusBody = z.infer<typeof UpdateApplicationStatusBody>;
 
-export const JobSearchQuery = z.object({
-  q: z.string().max(120).optional(),
-  city: z.string().max(120).transform(normalizeCity).optional(),
-  type: z.nativeEnum(JobType).optional(),
-  locationMode: z.nativeEnum(JobLocationMode).optional(),
-  skills: z.array(z.string()).max(10).optional(),
-});
-export type JobSearchQuery = z.infer<typeof JobSearchQuery>;
-
 export const EmployerJob = z.object({
   id: z.string().cuid(),
   companyId: z.string().cuid(),

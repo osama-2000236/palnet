@@ -177,10 +177,9 @@ cookie; mobile logout stays a no-op against the cookie.
 
 ## Required Secrets at a Glance
 
-Add `MOBILE_PREVIEW_BUILD_URL` to the GitHub Actions secrets when
-enabling the opt-in `mobile-e2e` workflow (Maestro). Without it the job
-fails fast with a clear error. See `.github/SECRETS.md` for the full
-list.
+See `.github/SECRETS.md` for the full list. (The former opt-in
+`mobile-e2e` Maestro workflow was deleted — it was a non-functional
+scaffold; `apps/mobile/.maestro/` flows remain for local runs.)
 
 ## Migrations
 
