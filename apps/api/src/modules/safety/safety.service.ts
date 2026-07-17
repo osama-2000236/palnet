@@ -3,6 +3,7 @@ import {
   type CursorPageMeta,
   ErrorCode,
   type ReportBody,
+  takePage,
 } from "@baydar/shared";
 import { Injectable } from "@nestjs/common";
 
@@ -130,16 +131,8 @@ export class SafetyService {
       },
     })) as BlockedListRow[];
 
-    const hasMore = rows.length > limit;
-    const trimmed = hasMore ? rows.slice(0, limit) : rows;
-    return {
-      data: trimmed.map((row) => toBlockedUserDto(row)),
-      meta: {
-        nextCursor: hasMore ? trimmed[trimmed.length - 1]!.id : null,
-        hasMore,
-        limit,
-      },
-    };
+    const { rows: page, meta } = takePage(rows, limit);
+    return { data: page.map((row) => toBlockedUserDto(row)), meta };
   }
 
   async isBlockedEither(userIdA: string, userIdB: string): Promise<boolean> {

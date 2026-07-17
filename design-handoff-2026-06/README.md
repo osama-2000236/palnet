@@ -52,6 +52,8 @@ re-verified against `main` after Sprints 22–26:
 - `design-handoff-2026-05/08-problems.md` — resolved/open split with code evidence.
 - `design-handoff-2026-05/10-ask.md` — **Pass 2 ask, awaiting lead approval**: monetization surfaces review, admin operator UX, motion vocabulary doc.
 
-Known truth gaps: `04-screens/` snapshots predate premium/saved/company
-surfaces; mobile simulator snapshots and moodboard captures remain `[HUMAN]`
-lead tasks. Engineering does not implement Pass 2 output before lead approval.
+The `03-components/` and `04-screens/` code snapshots were removed in the
+2026-07 audit — they had drifted behind premium/saved/company surfaces; the
+repo tree is the source (see git history for the frozen copies). Mobile
+simulator snapshots and moodboard captures remain `[HUMAN]` lead tasks.
+Engineering does not implement Pass 2 output before lead approval.

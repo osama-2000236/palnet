@@ -4,6 +4,7 @@ import {
   type CursorPageMeta,
   ErrorCode,
   NotificationType,
+  takePage,
 } from "@baydar/shared";
 import { Injectable } from "@nestjs/common";
 
@@ -166,16 +167,8 @@ export class CommentsService {
       ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
       include: COMMENT_INCLUDE,
     });
-    const hasMore = rows.length > limit;
-    const trimmed = hasMore ? rows.slice(0, limit) : rows;
-    return {
-      data: trimmed.map((r) => toCommentDto(r as unknown as CommentWithAuthor)),
-      meta: {
-        nextCursor: hasMore ? trimmed[trimmed.length - 1]!.id : null,
-        hasMore,
-        limit,
-      },
-    };
+    const { rows: page, meta } = takePage(rows, limit);
+    return { data: page.map((r) => toCommentDto(r as unknown as CommentWithAuthor)), meta };
   }
 
   async delete(viewerId: string, commentId: string): Promise<void> {

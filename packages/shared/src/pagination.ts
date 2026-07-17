@@ -20,3 +20,23 @@ export const cursorPage = <T extends z.ZodTypeAny>(item: T) =>
     data: z.array(item),
     meta: CursorPageMeta,
   });
+
+/**
+ * Trim a `limit + 1` overfetch into the page rows + CursorPageMeta.
+ * Cursor is the last kept row's `id` — the convention every list endpoint uses.
+ */
+export function takePage<T extends { id: string }>(
+  rows: T[],
+  limit: number,
+): { rows: T[]; meta: CursorPageMeta } {
+  const hasMore = rows.length > limit;
+  const page = hasMore ? rows.slice(0, limit) : rows;
+  return {
+    rows: page,
+    meta: {
+      nextCursor: hasMore ? (page[page.length - 1]?.id ?? null) : null,
+      hasMore,
+      limit,
+    },
+  };
+}

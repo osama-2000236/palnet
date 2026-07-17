@@ -1,4 +1,4 @@
-import type { CursorPageMeta, Post as PostDto } from "@baydar/shared";
+import { takePage, type CursorPageMeta, type Post as PostDto } from "@baydar/shared";
 import { Injectable } from "@nestjs/common";
 
 import { postInclude, toPostDto, type PostWithIncludes } from "../posts/posts.mapper";
@@ -50,16 +50,7 @@ export class FeedService {
       include: postInclude(viewerId, excludedUserIds),
     });
 
-    const hasMore = rows.length > limit;
-    const trimmed = hasMore ? rows.slice(0, limit) : rows;
-
-    return {
-      data: trimmed.map((p) => toPostDto(p as unknown as PostWithIncludes)),
-      meta: {
-        nextCursor: hasMore ? trimmed[trimmed.length - 1]!.id : null,
-        hasMore,
-        limit,
-      },
-    };
+    const { rows: page, meta } = takePage(rows, limit);
+    return { data: page.map((p) => toPostDto(p as unknown as PostWithIncludes)), meta };
   }
 }

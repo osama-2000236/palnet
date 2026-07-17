@@ -1,5 +1,5 @@
 // EmptyState — native twin of packages/ui-web/src/EmptyState.tsx.
-// Same prop API (motif/direction/tint/size/title/body/cta/altCta/variant/align).
+// Same prop API (motif/tint/size/title/body/cta/altCta/variant/align).
 // Uses Pressable for the press feedback per nativeTokens conventions.
 
 import { StyleSheet, Text, View, type StyleProp, type ViewStyle } from "react-native";
@@ -7,7 +7,6 @@ import { StyleSheet, Text, View, type StyleProp, type ViewStyle } from "react-na
 import { Button } from "./Button";
 import {
   Illustration,
-  type IllustrationDirection,
   type IllustrationMotif,
   type IllustrationSize,
   type IllustrationTint,
@@ -17,7 +16,6 @@ import { nativeTokens } from "./tokens";
 
 export interface EmptyStateProps {
   motif: IllustrationMotif;
-  direction?: IllustrationDirection;
   tint?: IllustrationTint;
   size?: IllustrationSize;
   title: string;
@@ -34,7 +32,6 @@ export interface EmptyStateProps {
 
 export function EmptyState({
   motif,
-  direction = "harvest",
   tint = "sand",
   size,
   title,
@@ -66,7 +63,7 @@ export function EmptyState({
       ]}
       testID={testID}
     >
-      <Illustration motif={motif} direction={direction} tint={tint} size={resolvedSize} />
+      <Illustration motif={motif} tint={tint} size={resolvedSize} />
       <View
         style={{
           gap: inline ? nativeTokens.space[1] : nativeTokens.space[2],

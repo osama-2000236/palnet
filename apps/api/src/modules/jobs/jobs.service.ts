@@ -1,11 +1,12 @@
+import { Prisma } from "@baydar/db";
 import {
   ApplicationStatus,
   type ApplyToJobBody,
   type CursorPageMeta,
   ErrorCode,
   type Job as JobDto,
+  takePage,
 } from "@baydar/shared";
-import { Prisma } from "@baydar/db";
 import { Injectable } from "@nestjs/common";
 
 import { DomainException } from "../../common/domain-exception";
@@ -115,16 +116,8 @@ export class JobsService {
       include: jobInclude(viewerId),
     })) as unknown as JobRow[];
 
-    const hasMore = rows.length > limit;
-    const trimmed = hasMore ? rows.slice(0, limit) : rows;
-    return {
-      data: trimmed.map(toJobDto),
-      meta: {
-        nextCursor: hasMore ? trimmed[trimmed.length - 1]!.id : null,
-        hasMore,
-        limit,
-      },
-    };
+    const { rows: page, meta } = takePage(rows, limit);
+    return { data: page.map(toJobDto), meta };
   }
 
   async getOne(viewerId: string, id: string): Promise<JobDto> {
