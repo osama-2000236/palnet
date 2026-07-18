@@ -13,7 +13,3 @@ export function apiErrorMessage(t: TFunction, error: unknown): string {
 
   return t("common.genericError");
 }
-
-export function apiErrorCode(error: unknown): string | null {
-  return error instanceof ApiRequestError ? error.code : null;
-}

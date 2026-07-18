@@ -6,7 +6,7 @@ export { Surface } from "./Surface";
 export type { SurfaceProps, SurfaceVariant, SurfacePadding } from "./Surface";
 export { shadowStyle } from "./shadow";
 export type { ShadowKind } from "./shadow";
-export { Illustration, ILLUSTRATION_MOTIFS } from "./Illustration";
+export { Illustration } from "./Illustration";
 export type {
   IllustrationProps,
   IllustrationMotif,

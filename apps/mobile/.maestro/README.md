@@ -34,8 +34,8 @@ maestro test .maestro/send-message.yaml
 
 ## CI
 
-The `.github/workflows/mobile-e2e.yml` workflow runs all flows via
-`workflow_dispatch` only — full Android emulator + EAS build chain is
-expensive enough that we don't gate every PR on it. Promote to a
-nightly cron once the fixture pipeline is stable. Closes #8 in scaffold
-form.
+Not wired into CI. A previous `mobile-e2e.yml` scaffold was deleted
+(ponytail audit 4): it verified a preview-build URL secret but never
+downloaded the APK and booted no emulator, so it could not pass. Add a
+real workflow (emulator + APK install + `maestro test`) once the EAS
+preview pipeline exists; these flows stay runnable locally meanwhile.

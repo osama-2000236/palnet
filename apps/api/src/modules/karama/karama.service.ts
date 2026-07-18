@@ -10,6 +10,7 @@ import {
 import { Injectable, Logger } from "@nestjs/common";
 
 import { DomainException } from "../../common/domain-exception";
+import { USER_PREMIUM_POINTS_PRICE } from "../billing/pricing";
 import { PrismaService } from "../prisma/prisma.service";
 
 export const KARAMA_BALANCE_CAP = 5000;
@@ -33,7 +34,7 @@ export const KARAMA_EARN: Record<KaramaReason, number> = {
 
 const REDEEM_COSTS: Record<KaramaReward, { reason: KaramaReason; cost: number }> = {
   BOOST_APPLICATION: { reason: "REDEEM_BOOST_APPLICATION", cost: 100 },
-  PREMIUM_30D: { reason: "REDEEM_PREMIUM", cost: 500 },
+  PREMIUM_30D: { reason: "REDEEM_PREMIUM", cost: USER_PREMIUM_POINTS_PRICE },
   FEATURED_PROFILE_7D: { reason: "REDEEM_FEATURED_PROFILE", cost: 1000 },
 };
 

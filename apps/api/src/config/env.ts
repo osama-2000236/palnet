@@ -27,10 +27,6 @@ const EnvSchema = z.object({
   R2_PUBLIC_URL: z.string().url().optional(),
   CLAMAV_SCAN_URL: z.string().url().optional(),
   CLOUDFLARE_IMAGES_SCAN_URL: z.string().url().optional(),
-  // Google OAuth — optional until Sprint 1.5.
-  GOOGLE_CLIENT_ID: z.string().optional(),
-  GOOGLE_CLIENT_SECRET: z.string().optional(),
-  GOOGLE_REDIRECT_URI: z.string().url().optional(),
   // Mail — Resend in production, console in dev/test.
   RESEND_API_KEY: z.string().min(1).optional(),
   MAIL_FROM: z.string().min(3).optional(),
@@ -51,19 +47,14 @@ const EnvSchema = z.object({
   BANK_TRANSFER_BENEFICIARY: z.string().optional(),
   // Local-wallet providers (Palestinian market). All optional — wallet
   // checkout stays in "Coming soon" mode until a merchant_id + api_key pair
-  // is set for at least one provider.
+  // is set for at least one provider. Webhook-secret / base-url vars land
+  // with each provider's real client when merchant onboarding completes.
   JAWWALPAY_MERCHANT_ID: z.string().optional(),
   JAWWALPAY_API_KEY: z.string().optional(),
-  JAWWALPAY_WEBHOOK_SECRET: z.string().optional(),
-  JAWWALPAY_BASE_URL: z.string().url().optional(),
   PALPAY_MERCHANT_ID: z.string().optional(),
   PALPAY_API_KEY: z.string().optional(),
-  PALPAY_WEBHOOK_SECRET: z.string().optional(),
-  PALPAY_BASE_URL: z.string().url().optional(),
   REFLECT_MERCHANT_ID: z.string().optional(),
   REFLECT_API_KEY: z.string().optional(),
-  REFLECT_WEBHOOK_SECRET: z.string().optional(),
-  REFLECT_BASE_URL: z.string().url().optional(),
   // Observability.
   SENTRY_DSN: z.string().url().optional(),
   SENTRY_RELEASE: z.string().min(7).optional(),

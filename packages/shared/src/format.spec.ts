@@ -1,10 +1,4 @@
-import {
-  formatCompact,
-  formatCurrency,
-  formatNumber,
-  formatRelativeTime,
-  formatSalaryRange,
-} from "./format";
+import { formatCurrency, formatNumber, formatRelativeTime, formatSalaryRange } from "./format";
 
 // Arabic-Indic reference digits for clarity in expectations.
 const AR_DIGITS = "٠١٢٣٤٥٦٧٨٩";
@@ -44,18 +38,6 @@ describe("formatCurrency", () => {
   it("uses Arabic-Indic digits for ar-PS", () => {
     const out = formatCurrency(80000, "USD", "ar-PS");
     expect(out).toContain("٨٠");
-  });
-});
-
-describe("formatCompact", () => {
-  it("compacts thousands in en", () => {
-    expect(formatCompact(12000, "en")).toMatch(/12K/i);
-  });
-
-  it("compacts thousands in ar with Arabic digits", () => {
-    const out = formatCompact(12000, "ar");
-    // Should contain Arabic digits, not Latin "12".
-    expect(out).not.toMatch(/[0-9]/);
   });
 });
 

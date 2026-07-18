@@ -1,5 +1,7 @@
-// Shared Tailwind preset for web (Next.js) and mobile (NativeWind).
-// Mirrors packages/ui-tokens/src/index.ts — keep them in sync.
+// Tailwind preset for mobile (NativeWind). Web uses @baydar/ui-tokens/tailwind-preset;
+// this file stays standalone CJS because Metro loads tailwind config with plain
+// Node (no build step). Values mirror packages/ui-tokens — `pnpm lint:tokens`
+// fails on any hex here that no longer exists in the token source.
 // Any new color/spacing/font lives in ui-tokens first, then lands here.
 
 /** @type {import('tailwindcss').Config} */

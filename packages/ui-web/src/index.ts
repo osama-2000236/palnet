@@ -10,7 +10,7 @@ export { Surface } from "./layout";
 export type { SurfaceProps, SurfaceVariant, SurfacePadding } from "./layout";
 
 // ── Illustration & empty states ──────────────────────────────────────
-export { Illustration, ILLUSTRATION_MOTIFS } from "./Illustration";
+export { Illustration } from "./Illustration";
 export type {
   IllustrationProps,
   IllustrationMotif,

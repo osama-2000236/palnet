@@ -1,3 +1,4 @@
-// Injection token for the MailTransport implementation. Kept in its own file so
-// MailService can @Inject it without a circular import on MailModule.
+// Injection token for the MailTransport implementation (Resend in prod,
+// console in dev/test — see MailModule's factory). Consumers @Inject this
+// token and call transport.send() directly.
 export const MAIL_TRANSPORT = Symbol("MAIL_TRANSPORT");

@@ -3,7 +3,7 @@ import { ConfigService } from "@nestjs/config";
 import { Test } from "@nestjs/testing";
 import * as bcrypt from "bcrypt";
 
-import { MailService } from "../mail/mail.service";
+import { MAIL_TRANSPORT } from "../mail/mail.tokens";
 import { PrismaService } from "../prisma/prisma.service";
 
 import { AuthTokensService, hashToken } from "./auth-tokens.service";
@@ -72,7 +72,7 @@ describe("AuthTokensService", () => {
       providers: [
         AuthTokensService,
         { provide: PrismaService, useValue: prisma },
-        { provide: MailService, useValue: mail },
+        { provide: MAIL_TRANSPORT, useValue: mail },
         {
           provide: ConfigService,
           useValue: { getOrThrow: jest.fn().mockReturnValue("4") },

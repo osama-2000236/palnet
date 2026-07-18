@@ -26,9 +26,3 @@ export const CreateBookmarkBody = z.object({
   targetId: z.string().cuid(),
 });
 export type CreateBookmarkBody = z.infer<typeof CreateBookmarkBody>;
-
-export const BookmarkState = z.object({
-  bookmarked: z.boolean(),
-  bookmarkId: z.string().cuid().nullable(),
-});
-export type BookmarkState = z.infer<typeof BookmarkState>;

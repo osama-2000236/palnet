@@ -59,14 +59,3 @@ export const PersonSuggestion = z.object({
   reasonCount: z.number().int().nonnegative().nullish(),
 });
 export type PersonSuggestion = z.infer<typeof PersonSuggestion>;
-
-// Viewer-scoped connection state between the viewer and another user.
-// Used on profile pages and anywhere we need a single badge.
-export const ViewerConnectionState = z.object({
-  // null → not connected, no pending
-  status: z.nativeEnum(ConnectionStatus).nullable(),
-  // direction of the *most recent* row, or null
-  direction: z.enum(["OUTGOING", "INCOMING", "SELF"]).nullable(),
-  connectionId: z.string().cuid().nullable(),
-});
-export type ViewerConnectionState = z.infer<typeof ViewerConnectionState>;

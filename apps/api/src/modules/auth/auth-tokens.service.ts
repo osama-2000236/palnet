@@ -1,13 +1,14 @@
 import * as crypto from "node:crypto";
 
 import { ErrorCode, type StreamTokenResponse, type StreamTokenScope } from "@baydar/shared";
-import { HttpStatus, Injectable, Logger } from "@nestjs/common";
+import { HttpStatus, Inject, Injectable, Logger } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import * as bcrypt from "bcrypt";
 
 import { DomainException } from "../../common/domain-exception";
 import type { Env } from "../../config/env";
-import { MailService } from "../mail/mail.service";
+import type { MailTransport } from "../mail/console-mail.transport";
+import { MAIL_TRANSPORT } from "../mail/mail.tokens";
 import { PrismaService } from "../prisma/prisma.service";
 
 const VERIFY_TTL_MS = 24 * 60 * 60 * 1000;
@@ -87,7 +88,7 @@ export class AuthTokensService {
   constructor(
     prisma: PrismaService,
     private readonly config: ConfigService<Env, true>,
-    private readonly mail: MailService,
+    @Inject(MAIL_TRANSPORT) private readonly mail: MailTransport,
   ) {
     this.db = prisma as unknown as AuthTokenPrisma;
   }
