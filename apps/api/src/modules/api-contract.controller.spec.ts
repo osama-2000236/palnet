@@ -14,6 +14,7 @@ import { AuthController } from "./auth/auth.controller";
 import { AuthService } from "./auth/auth.service";
 import type { AuthUser } from "./auth/decorators/current-user.decorator";
 import { JwtAuthGuard } from "./auth/guards/jwt-auth.guard";
+import { JobAlertsService } from "./jobs/job-alerts.service";
 import { JobsController } from "./jobs/jobs.controller";
 import { JobsService } from "./jobs/jobs.service";
 import { MediaScanService } from "./media/media-scan.service";
@@ -349,7 +350,10 @@ describe("API controller contract", () => {
     const jobs = { getOne: jest.fn().mockResolvedValue(job) };
     const app = await createApp({
       controllers: [JobsController],
-      providers: [{ provide: JobsService, useValue: jobs }],
+      providers: [
+        { provide: JobsService, useValue: jobs },
+        { provide: JobAlertsService, useValue: {} },
+      ],
     });
 
     try {
@@ -359,6 +363,54 @@ describe("API controller contract", () => {
         .expect((res) => {
           expect(res.body).toEqual(job);
           expect(res.body).not.toHaveProperty("data");
+        });
+    } finally {
+      await app.close();
+    }
+  });
+
+  it("serves the public job share DTO without viewer state and with public caching", async () => {
+    const publicJob = {
+      id: "cm00000000000000000000003",
+      companyId: "cm00000000000000000000004",
+      title: "Senior Product Engineer",
+      description: "Build Baydar hiring workflows.",
+      type: JobType.FULL_TIME,
+      locationMode: JobLocationMode.HYBRID,
+      city: "Ramallah",
+      country: "PS",
+      salaryMin: null,
+      salaryMax: null,
+      salaryCurrency: null,
+      skillsRequired: ["TypeScript"],
+      isActive: true,
+      expiresAt: null,
+      createdAt: "2026-05-05T00:00:00.000Z",
+      company: {
+        id: "cm00000000000000000000004",
+        slug: "baydar",
+        name: "Baydar",
+        logoUrl: null,
+      },
+    };
+    const jobs = { getPublic: jest.fn().mockResolvedValue(publicJob) };
+    const app = await createApp({
+      controllers: [JobsController],
+      providers: [
+        { provide: JobsService, useValue: jobs },
+        { provide: JobAlertsService, useValue: {} },
+      ],
+    });
+
+    try {
+      await request(app.getHttpServer())
+        .get("/jobs/public/cm00000000000000000000003")
+        .expect(200)
+        .expect("Cache-Control", "public, max-age=300")
+        .expect((res) => {
+          expect(res.body).toEqual(publicJob);
+          expect(res.body).not.toHaveProperty("viewer");
+          expect(res.body).not.toHaveProperty("postedById");
         });
     } finally {
       await app.close();

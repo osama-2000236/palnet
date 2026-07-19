@@ -1,20 +1,39 @@
 import {
   type ApplicationStatus,
   ApplyToJobBody,
+  CreateJobAlertBody,
   CursorPageQuery,
   type CursorPageMeta,
   type Job as JobDto,
+  type JobAlert as JobAlertDto,
   JobLocationMode,
   JobType,
+  type PublicJob,
 } from "@baydar/shared";
-import { Body, Controller, Get, Header, Param, Post, Query } from "@nestjs/common";
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Header,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Post,
+  Query,
+} from "@nestjs/common";
 import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 import { z } from "zod";
 
-import { RequireCompleteProfile } from "../../common/require-complete-profile.decorator";
+import {
+  AllowIncompleteProfile,
+  RequireCompleteProfile,
+} from "../../common/require-complete-profile.decorator";
 import { ZodValidationPipe } from "../../common/zod-pipe";
 import { CurrentUser, type AuthUser } from "../auth/decorators/current-user.decorator";
+import { Public } from "../auth/decorators/public.decorator";
 
+import { JobAlertsService } from "./job-alerts.service";
 import { JobsService } from "./jobs.service";
 
 const JobListQuery = CursorPageQuery.extend({
@@ -32,7 +51,10 @@ type JobListQuery = z.infer<typeof JobListQuery>;
 @RequireCompleteProfile()
 @Controller("jobs")
 export class JobsController {
-  constructor(private readonly jobs: JobsService) {}
+  constructor(
+    private readonly jobs: JobsService,
+    private readonly jobAlerts: JobAlertsService,
+  ) {}
 
   @Get()
   async list(
@@ -47,6 +69,38 @@ export class JobsController {
       companyId: query.companyId ?? null,
       industry: query.industry ?? null,
     });
+  }
+
+  // ── Job alerts (declared before ":id" so "alerts" isn't captured) ──────
+
+  @Get("alerts")
+  async listAlerts(@CurrentUser() user: AuthUser): Promise<{ data: JobAlertDto[] }> {
+    return { data: await this.jobAlerts.list(user.id) };
+  }
+
+  @Post("alerts")
+  @HttpCode(HttpStatus.CREATED)
+  async createAlert(
+    @CurrentUser() user: AuthUser,
+    @Body(new ZodValidationPipe(CreateJobAlertBody)) body: CreateJobAlertBody,
+  ): Promise<{ data: JobAlertDto }> {
+    return { data: await this.jobAlerts.create(user.id, body) };
+  }
+
+  @Delete("alerts/:id")
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async removeAlert(@CurrentUser() user: AuthUser, @Param("id") id: string): Promise<void> {
+    await this.jobAlerts.remove(user.id, id);
+  }
+
+  // Declared before ":id" so "public" isn't swallowed by the param route.
+  // Viewer-free DTO → public caching is safe (WhatsApp/OG share pages hit this).
+  @Public()
+  @AllowIncompleteProfile()
+  @Get("public/:id")
+  @Header("Cache-Control", "public, max-age=300")
+  async getPublic(@Param("id") id: string): Promise<PublicJob> {
+    return this.jobs.getPublic(id);
   }
 
   @Get(":id")

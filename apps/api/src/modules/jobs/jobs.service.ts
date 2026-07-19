@@ -5,6 +5,7 @@ import {
   type CursorPageMeta,
   ErrorCode,
   type Job as JobDto,
+  type PublicJob as PublicJobDto,
   takePage,
 } from "@baydar/shared";
 import { Injectable } from "@nestjs/common";
@@ -118,6 +119,37 @@ export class JobsService {
 
     const { rows: page, meta } = takePage(rows, limit);
     return { data: page.map(toJobDto), meta };
+  }
+
+  // Anonymous share-page read: no viewer fields, so the response is safe to
+  // cache publicly. Inactive jobs still resolve — the share page renders a
+  // "no longer available" state instead of a dead link.
+  async getPublic(id: string): Promise<PublicJobDto> {
+    const row = await this.prisma.job.findFirst({
+      where: { id, deletedAt: null },
+      include: { company: { select: { id: true, slug: true, name: true, logoUrl: true } } },
+    });
+    if (!row) {
+      throw new DomainException(ErrorCode.NOT_FOUND, "Job not found.", 404);
+    }
+    return {
+      id: row.id,
+      companyId: row.companyId,
+      title: row.title,
+      description: row.description,
+      type: row.type as PublicJobDto["type"],
+      locationMode: row.locationMode as PublicJobDto["locationMode"],
+      city: row.city,
+      country: row.country,
+      salaryMin: row.salaryMin,
+      salaryMax: row.salaryMax,
+      salaryCurrency: row.salaryCurrency,
+      skillsRequired: row.skillsRequired,
+      isActive: row.isActive,
+      expiresAt: row.expiresAt ? row.expiresAt.toISOString() : null,
+      createdAt: row.createdAt.toISOString(),
+      company: row.company,
+    };
   }
 
   async getOne(viewerId: string, id: string): Promise<JobDto> {

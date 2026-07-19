@@ -555,7 +555,8 @@
       "MESSAGE_RECEIVED": "أرسل لك {{actor}} رسالة.",
       "JOB_APPLICATION_UPDATE": "طرأ تحديث على طلبك الوظيفي.",
       "PROFILE_VIEW": "شاهد {{actor}} ملفك الشخصي.",
-      "MODERATION_ACTION": "راجع فريق الإشراف بلاغك."
+      "MODERATION_ACTION": "راجع فريق الإشراف بلاغك.",
+      "JOB_ALERT": "وظيفة جديدة تناسب تنبيهك: {{jobTitle}}"
     }
   },
   "activity": {
@@ -636,7 +637,17 @@
       "REMOTE": "عن بُعد"
     },
     "companyFilter": "وظائف لدى {{name}}",
-    "clearCompanyFilter": "إزالة تصفية الشركة"
+    "clearCompanyFilter": "إزالة تصفية الشركة",
+    "share": {
+      "share": "مشاركة"
+    },
+    "alerts": {
+      "title": "تنبيهات الوظائف",
+      "create": "أنشئ تنبيهًا لهذا البحث",
+      "hint": "اختر فلاتر البحث أولًا ليصلك تنبيه عند نشر وظيفة مطابقة.",
+      "deleteAria": "حذف التنبيه",
+      "error": "تعذر حفظ التنبيه. حاول مجددًا."
+    }
   },
   "saved": {
     "title": "المحفوظات",

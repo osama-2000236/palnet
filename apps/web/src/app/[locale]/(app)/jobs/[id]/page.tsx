@@ -22,11 +22,11 @@ import { useParams, useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 
-import { apiCall, apiFetch } from "@/lib/api";
+import { apiCall, apiFetch, getValidAccessToken } from "@/lib/api";
 import { getErrorCode, toErrorMessage } from "@/lib/error-message";
-import { readSession } from "@/lib/session";
 import { ApplyDialog } from "./_components/ApplyDialog";
 import { JobDetailSkeleton } from "./_components/JobDetailSkeleton";
+import { ShareJobButtons } from "./_components/ShareJobButtons";
 
 export default function JobDetailPage(): JSX.Element {
   const t = useTranslations("jobs");
@@ -43,13 +43,21 @@ export default function JobDetailPage(): JSX.Element {
   const [applyOpen, setApplyOpen] = useState(false);
   const [saveBusy, setSaveBusy] = useState(false);
 
+  // getValidAccessToken (not readSession) — on a hard reload the persisted
+  // session has no access token until the refresh flow runs.
   useEffect(() => {
-    const session = readSession();
-    if (!session) {
-      router.replace("/login");
-      return;
-    }
-    setToken(session.tokens.accessToken);
+    let cancelled = false;
+    void getValidAccessToken().then((tk) => {
+      if (cancelled) return;
+      if (!tk) {
+        router.replace("/login");
+        return;
+      }
+      setToken(tk);
+    });
+    return (): void => {
+      cancelled = true;
+    };
   }, [router]);
 
   useEffect(() => {
@@ -199,6 +207,9 @@ export default function JobDetailPage(): JSX.Element {
               </Button>
             )}
           </div>
+        </div>
+        <div className="border-line-soft mt-4 border-t pt-3">
+          <ShareJobButtons jobId={job.id} title={`${job.title} — ${job.company.name}`} />
         </div>
       </Surface>
 

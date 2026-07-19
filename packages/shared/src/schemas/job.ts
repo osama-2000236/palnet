@@ -53,6 +53,39 @@ export const Job = z.object({
 });
 export type Job = z.infer<typeof Job>;
 
+// Public share DTO — the job without viewer-scoped fields (and without the
+// poster's user id). Safe for public caching and anonymous share pages.
+export const PublicJob = Job.omit({ viewer: true, postedById: true });
+export type PublicJob = z.infer<typeof PublicJob>;
+
+// ── Job alerts — saved search → notification on matching new job ──────────
+
+export const JOB_ALERTS_MAX_PER_USER = 10;
+
+export const JobAlert = z.object({
+  id: z.string().cuid(),
+  q: z.string().nullable(),
+  city: z.string().nullable(),
+  type: z.nativeEnum(JobType).nullable(),
+  locationMode: z.nativeEnum(JobLocationMode).nullable(),
+  industry: z.string().nullable(),
+  createdAt: z.string().datetime(),
+});
+export type JobAlert = z.infer<typeof JobAlert>;
+
+export const CreateJobAlertBody = z
+  .object({
+    q: z.string().trim().min(1).max(120).optional(),
+    city: z.string().trim().min(1).max(120).transform(normalizeCity).optional(),
+    type: z.nativeEnum(JobType).optional(),
+    locationMode: z.nativeEnum(JobLocationMode).optional(),
+    industry: z.string().trim().min(1).max(120).optional(),
+  })
+  .refine((v) => v.q || v.city || v.type || v.locationMode || v.industry, {
+    message: "AT_LEAST_ONE_FILTER_REQUIRED",
+  });
+export type CreateJobAlertBody = z.infer<typeof CreateJobAlertBody>;
+
 export const ApplyToJobBody = z.object({
   resumeUrl: z.string().url().optional(),
   coverLetter: z.string().max(8000).optional(),

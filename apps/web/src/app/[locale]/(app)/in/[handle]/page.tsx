@@ -157,12 +157,20 @@ export default function ProfileRoute(): JSX.Element {
         }
         actions={
           profile.viewer?.isSelf ? (
-            <Link
-              href="/me/edit"
-              className="border-ink-muted/30 text-ink hover:bg-ink-muted/5 rounded-md border px-4 py-2 text-sm focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
-            >
-              {t("edit")}
-            </Link>
+            <>
+              <Link
+                href="/me/edit"
+                className="border-ink-muted/30 text-ink hover:bg-ink-muted/5 rounded-md border px-4 py-2 text-sm focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+              >
+                {t("edit")}
+              </Link>
+              <Link
+                href="/cv"
+                className="border-ink-muted/30 text-ink hover:bg-ink-muted/5 rounded-md border px-4 py-2 text-sm focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+              >
+                {t("cvLink")}
+              </Link>
+            </>
           ) : (
             <>
               <ConnectButton

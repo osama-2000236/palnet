@@ -2,12 +2,12 @@
 // Applied badge flips optimistically on press, rolls back on failure.
 
 import { ApplyToJobBody, Bookmark, BookmarkType, Job as JobSchema, type Job } from "@baydar/shared";
-import { AppHeader, Button, Icon, Input, Surface, nativeTokens } from "@baydar/ui-native";
+import { AppHeader, Button, Icon, Surface, nativeTokens } from "@baydar/ui-native";
 import { Image } from "expo-image";
 import { router, useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ScrollView, Text, View } from "react-native";
+import { ScrollView, Share, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { StateMessage } from "@/components/StateMessage";
@@ -15,12 +15,14 @@ import { apiCall, apiFetch } from "@/lib/api";
 import { apiErrorMessage } from "@/lib/api-errors";
 import { track } from "@/lib/analytics";
 import { successHaptic, tapHaptic } from "@/lib/haptics";
+import { WEB_ORIGIN } from "@/lib/linking";
 import { getAccessToken } from "@/lib/session";
 
+import { ApplyCard } from "../_jobs/ApplyCard";
 import { styles } from "../_jobs/detailStyles";
 
 export default function JobDetailScreen(): JSX.Element {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const params = useLocalSearchParams<{ id: string }>();
   const jobId = typeof params.id === "string" ? params.id : "";
 
@@ -123,6 +125,17 @@ export default function JobDetailScreen(): JSX.Element {
     }
   }, [job, saveBusy]);
 
+  // OS share sheet (WhatsApp lands first for our users). Links to the PUBLIC
+  // share page so recipients without an account still see the role.
+  const shareJob = useCallback(async (): Promise<void> => {
+    if (!job) return;
+    const locale = i18n.language.startsWith("ar") ? "ar-PS" : "en";
+    const url = `${WEB_ORIGIN}/${locale}/j/${job.id}`;
+    await Share.share({ message: `${job.title} — ${job.company.name}\n${url}` }).catch(
+      () => undefined,
+    );
+  }, [job, i18n.language]);
+
   if (loading) {
     return (
       <SafeAreaView style={styles.screen}>
@@ -204,6 +217,14 @@ export default function JobDetailScreen(): JSX.Element {
             >
               {job.viewer.bookmarkId ? t("jobs.saved") : t("jobs.save")}
             </Button>
+            <Button
+              variant="secondary"
+              onPress={() => void shareJob()}
+              accessibilityLabel={t("jobs.share.share")}
+              leading={<Icon name="share" size={16} color={nativeTokens.color.ink} />}
+            >
+              {t("jobs.share.share")}
+            </Button>
             {job.viewer.hasApplied ? (
               <View style={styles.appliedBadge}>
                 <Text style={styles.appliedBadgeText}>✓ {t("jobs.appliedBadge")}</Text>
@@ -217,51 +238,16 @@ export default function JobDetailScreen(): JSX.Element {
         </Surface>
 
         {applyOpen && !job.viewer.hasApplied ? (
-          <Surface variant="card" padding="6">
-            <View style={{ gap: nativeTokens.space[3] }}>
-              <View style={{ gap: nativeTokens.space[1] }}>
-                <Text style={styles.section}>{t("jobs.applyTitle", { title: job.title })}</Text>
-                <Text style={styles.muted}>
-                  {t("jobs.applySubtitle", { company: job.company.name })}
-                </Text>
-              </View>
-
-              <View style={{ gap: nativeTokens.space[1] }}>
-                <Text style={styles.fieldLabel}>{t("jobs.coverLetterLabel")}</Text>
-                <Input
-                  fullWidth
-                  value={coverLetter}
-                  onChangeText={setCoverLetter}
-                  placeholder={t("jobs.coverLetterPlaceholder")}
-                  multiline
-                  maxLength={8000}
-                  inputStyle={styles.coverLetterInput}
-                />
-                <Text style={styles.hint}>{t("jobs.coverLetterHint")}</Text>
-              </View>
-
-              {submitError ? (
-                <View accessibilityRole="alert" style={styles.inlineError}>
-                  <Text style={styles.inlineErrorText}>{submitError}</Text>
-                </View>
-              ) : null}
-
-              <View style={styles.formActions}>
-                <Button variant="ghost" onPress={() => setApplyOpen(false)} disabled={submitting}>
-                  {t("common.cancel")}
-                </Button>
-                <Button
-                  variant="accent"
-                  onPress={() => void submitApply()}
-                  loading={submitting}
-                  testID="job-apply-submit"
-                  leading={<Icon name="send" size={16} color={nativeTokens.color.inkInverse} />}
-                >
-                  {t("jobs.submitApplication")}
-                </Button>
-              </View>
-            </View>
-          </Surface>
+          <ApplyCard
+            title={job.title}
+            company={job.company.name}
+            coverLetter={coverLetter}
+            onChangeCoverLetter={setCoverLetter}
+            submitting={submitting}
+            submitError={submitError}
+            onCancel={() => setApplyOpen(false)}
+            onSubmit={() => void submitApply()}
+          />
         ) : null}
 
         <Surface variant="card" padding="6">

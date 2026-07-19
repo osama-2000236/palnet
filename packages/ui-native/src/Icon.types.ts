@@ -18,6 +18,7 @@ export type IconName =
   | "search"
   | "send"
   | "send-paper"
+  | "share"
   | "thumb"
   | "user"
   | "users"

@@ -1,0 +1,193 @@
+// Public job share page — /{locale}/j/{id}
+//
+// This is the URL that gets shared into WhatsApp groups, Telegram, and
+// Facebook: it must render WITHOUT a session (anonymous recruits see the
+// role + a register/login CTA) and it must carry Open Graph metadata so the
+// link unfurls with a real title/description instead of a bare URL.
+//
+// Server Component. Data comes from the viewer-free `GET /jobs/public/:id`
+// endpoint (public cache, no auth) — fetch() memoization dedupes the
+// generateMetadata + page calls into one upstream request per render.
+
+import { PublicJob as PublicJobSchema, formatSalaryRange, type PublicJob } from "@baydar/shared";
+import type { Metadata } from "next";
+import Image from "next/image";
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { getTranslations, setRequestLocale } from "next-intl/server";
+import type { JSX } from "react";
+
+import type { Locale } from "@/i18n";
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000/api/v1";
+
+async function fetchPublicJob(id: string): Promise<PublicJob | null> {
+  // cuid guard — skip the upstream round trip for junk ids.
+  if (!/^c[a-z0-9]{8,40}$/i.test(id)) return null;
+  const res = await fetch(`${API_BASE}/jobs/public/${id}`, { next: { revalidate: 300 } });
+  if (!res.ok) return null;
+  const parsed = PublicJobSchema.safeParse(await res.json());
+  return parsed.success ? parsed.data : null;
+}
+
+export async function generateMetadata(props: {
+  params: Promise<{ locale: Locale; id: string }>;
+}): Promise<Metadata> {
+  const { locale, id } = await props.params;
+  const job = await fetchPublicJob(id);
+  if (!job) return {};
+  const title = `${job.title} — ${job.company.name}`;
+  const description = job.description.replace(/\s+/g, " ").slice(0, 160);
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      type: "article",
+      siteName: locale === "en" ? "Baydar" : "بيدر",
+      locale: locale === "en" ? "en_US" : "ar_PS",
+    },
+  };
+}
+
+export default async function PublicJobPage(props: {
+  params: Promise<{ locale: Locale; id: string }>;
+}): Promise<JSX.Element> {
+  const { locale, id } = await props.params;
+  setRequestLocale(locale);
+  const [job, t, tJobs, tLanding] = await Promise.all([
+    fetchPublicJob(id),
+    getTranslations("publicJob"),
+    getTranslations("jobs"),
+    getTranslations("landing"),
+  ]);
+  if (!job) notFound();
+
+  const metaParts = [
+    job.city,
+    tJobs(`locationLabels.${job.locationMode}`),
+    tJobs(`typeLabels.${job.type}`),
+  ].filter(Boolean);
+  const salary = formatSalaryRange(
+    job.salaryMin,
+    job.salaryMax,
+    job.salaryCurrency ?? "ILS",
+    locale,
+  );
+
+  return (
+    <main className="bg-surface-muted text-ink min-h-screen">
+      {/* Minimal public chrome — same treatment as the marketing landing. */}
+      <header className="mx-auto flex w-full max-w-[760px] items-center justify-between px-6 py-5">
+        <Link
+          href={`/${locale}`}
+          aria-label={tLanding("brand")}
+          className="flex items-center gap-2 rounded-md focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+        >
+          <span
+            className="bg-brand-600 text-ink-inverse flex h-9 w-9 items-center justify-center rounded-lg font-sans text-xl font-bold"
+            aria-hidden="true"
+          >
+            {tLanding("markGlyph")}
+          </span>
+          <span className="font-sans text-lg font-semibold">{tLanding("brand")}</span>
+        </Link>
+        <Link
+          href={`/${locale}/login?next=${encodeURIComponent(`/jobs/${job.id}`)}`}
+          className="text-ink hover:bg-surface-subtle rounded-md px-4 py-2 text-sm font-semibold focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+        >
+          {tLanding("nav.signIn")}
+        </Link>
+      </header>
+
+      <div className="mx-auto flex w-full max-w-[760px] flex-col gap-5 px-6 pb-16">
+        {/* Job hero */}
+        <section className="bg-surface border-line-soft shadow-card rounded-lg border p-6">
+          <div className="flex items-start gap-4">
+            <span
+              aria-hidden="true"
+              className="bg-brand-100 text-brand-700 flex h-14 w-14 flex-none items-center justify-center overflow-hidden rounded-lg text-xl font-bold"
+            >
+              {job.company.logoUrl ? (
+                <Image
+                  src={job.company.logoUrl}
+                  alt=""
+                  width={56}
+                  height={56}
+                  className="h-full w-full object-cover"
+                  sizes="56px"
+                />
+              ) : (
+                (job.company.name[0] ?? "?").toUpperCase()
+              )}
+            </span>
+            <div className="min-w-0">
+              <h1 className="text-ink font-sans text-2xl font-bold leading-tight">{job.title}</h1>
+              <p className="text-ink-muted mt-1 text-base">{job.company.name}</p>
+              <p className="text-ink-muted mt-1 text-sm">{metaParts.join(" · ")}</p>
+              {salary ? (
+                <p className="text-brand-700 mt-1 text-sm font-semibold">{salary}</p>
+              ) : null}
+            </div>
+          </div>
+
+          {job.isActive ? (
+            <div className="mt-5 flex flex-wrap items-center gap-3">
+              <Link
+                href={`/${locale}/login?next=${encodeURIComponent(`/jobs/${job.id}`)}`}
+                className="bg-brand-600 text-ink-inverse hover:bg-brand-700 inline-flex items-center rounded-md px-5 py-2.5 text-sm font-semibold focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+              >
+                {t("applyCta")}
+              </Link>
+              <Link
+                href={`/${locale}/register`}
+                className="border-line-hard text-ink hover:bg-surface-subtle inline-flex items-center rounded-md border px-5 py-2.5 text-sm font-semibold focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+              >
+                {t("registerCta")}
+              </Link>
+            </div>
+          ) : (
+            <div className="bg-surface-subtle border-line-soft mt-5 rounded-md border p-4">
+              <p className="text-ink text-sm font-semibold">{t("closed.title")}</p>
+              <p className="text-ink-muted mt-1 text-sm">{t("closed.body")}</p>
+            </div>
+          )}
+        </section>
+
+        {/* Description */}
+        <section className="bg-surface border-line-soft shadow-card rounded-lg border p-6">
+          <h2 className="text-ink mb-3 font-sans text-lg font-semibold">{tJobs("description")}</h2>
+          <p className="text-ink whitespace-pre-wrap text-base leading-7">{job.description}</p>
+        </section>
+
+        {/* Skills */}
+        {job.skillsRequired.length > 0 ? (
+          <section className="bg-surface border-line-soft shadow-card rounded-lg border p-6">
+            <h2 className="text-ink mb-3 font-sans text-lg font-semibold">{tJobs("skills")}</h2>
+            <ul className="flex flex-wrap gap-2">
+              {job.skillsRequired.map((skill) => (
+                <li
+                  key={skill}
+                  className="bg-brand-50 text-brand-700 rounded-full px-3 py-1 text-sm font-medium"
+                >
+                  {skill}
+                </li>
+              ))}
+            </ul>
+          </section>
+        ) : null}
+
+        <p className="text-ink-muted text-center text-sm">
+          {t("footerLine")}{" "}
+          <Link
+            href={`/${locale}/register`}
+            className="text-brand-700 hover:text-brand-800 font-semibold"
+          >
+            {t("footerCta")}
+          </Link>
+        </p>
+      </div>
+    </main>
+  );
+}

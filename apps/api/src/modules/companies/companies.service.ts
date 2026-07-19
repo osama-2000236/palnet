@@ -19,6 +19,7 @@ import { Injectable } from "@nestjs/common";
 
 import { DomainException } from "../../common/domain-exception";
 import { EmployerEntitlementsService } from "../billing/employer-entitlements.service";
+import { JobAlertsService } from "../jobs/job-alerts.service";
 import { KaramaService } from "../karama/karama.service";
 import { NotificationsService } from "../notifications/notifications.service";
 import { PrismaService } from "../prisma/prisma.service";
@@ -30,6 +31,7 @@ export class CompaniesService {
     private readonly notifications: NotificationsService,
     private readonly karama: KaramaService,
     private readonly entitlements: EmployerEntitlementsService,
+    private readonly jobAlerts: JobAlertsService,
   ) {}
 
   // ───────────────────────── Company CRUD ─────────────────────────
@@ -282,6 +284,8 @@ export class CompaniesService {
         },
       });
     });
+    // Post-commit, fire-and-forget: alert subscribers about the new role.
+    void this.jobAlerts.notifyMatches(job);
     return this.attachJobCounts(job);
   }
 

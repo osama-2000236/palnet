@@ -21,11 +21,18 @@ import { useState } from "react";
 
 import { ApiRequestError, loginAction, restoreAccountAction } from "@/lib/auth-actions";
 
+// Post-login destination — only same-origin paths (public share pages link to
+// /login?next=/jobs/:id so the recruit lands on the job, not the feed).
+function safeNext(raw: string | null): string | null {
+  return raw && raw.startsWith("/") && !raw.startsWith("//") ? raw : null;
+}
+
 export function LoginForm(): JSX.Element {
   const t = useTranslations("auth");
   const locale = useLocale();
   const router = useRouter();
   const params = useSearchParams();
+  const next = safeNext(params.get("next"));
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -54,7 +61,7 @@ export function LoginForm(): JSX.Element {
     setBusy(true);
     try {
       await loginAction({ email, password });
-      router.push("/feed");
+      router.push(next ?? "/feed");
     } catch (err) {
       showError(err);
     } finally {
@@ -68,7 +75,7 @@ export function LoginForm(): JSX.Element {
     setBusy(true);
     try {
       await restoreAccountAction({ email, password });
-      router.push("/feed");
+      router.push(next ?? "/feed");
     } catch (err) {
       showError(err);
     } finally {

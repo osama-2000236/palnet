@@ -11,6 +11,8 @@ export const HIDDEN_APP_TAB_ROUTES = [
   "_edit-profile/styles",
   "_feed/FeedParts",
   "_feed/styles",
+  "_jobs/AlertsSection",
+  "_jobs/ApplyCard",
   "_jobs/detailStyles",
   "_jobs/filters",
   "_karama/data",

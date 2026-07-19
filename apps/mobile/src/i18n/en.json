@@ -555,7 +555,8 @@
       "MESSAGE_RECEIVED": "{{actor}} sent you a message.",
       "JOB_APPLICATION_UPDATE": "Your application has an update.",
       "PROFILE_VIEW": "{{actor}} viewed your profile.",
-      "MODERATION_ACTION": "Your report was reviewed by the moderation team."
+      "MODERATION_ACTION": "Your report was reviewed by the moderation team.",
+      "JOB_ALERT": "New job matches your alert: {{jobTitle}}"
     }
   },
   "activity": {
@@ -636,7 +637,17 @@
       "REMOTE": "Remote"
     },
     "companyFilter": "Jobs at {{name}}",
-    "clearCompanyFilter": "Clear company filter"
+    "clearCompanyFilter": "Clear company filter",
+    "share": {
+      "share": "Share"
+    },
+    "alerts": {
+      "title": "Job alerts",
+      "create": "Create an alert for this search",
+      "hint": "Pick search filters first — we'll notify you when a matching job is posted.",
+      "deleteAria": "Delete alert",
+      "error": "Couldn't save the alert. Try again."
+    }
   },
   "saved": {
     "title": "Saved",

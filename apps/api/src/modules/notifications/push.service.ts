@@ -82,7 +82,10 @@ function buildDeepLink(notification: NotificationDto): string | null {
     return roomId ? `baydar://messages/${roomId}` : null;
   }
 
-  if (notification.type === NotificationType.JOB_APPLICATION_UPDATE) {
+  if (
+    notification.type === NotificationType.JOB_APPLICATION_UPDATE ||
+    notification.type === NotificationType.JOB_ALERT
+  ) {
     return notification.jobId ? `baydar://jobs/${notification.jobId}` : null;
   }
 
@@ -143,6 +146,13 @@ function buildBody(notification: NotificationDto, locale: string): string {
         : en(`New message from ${actor}`, "You have a new message");
     case NotificationType.JOB_APPLICATION_UPDATE:
       return lang === "ar" ? "هناك تحديث على طلبك الوظيفي" : "Update on your job application";
+    case NotificationType.JOB_ALERT: {
+      const jobTitle = dataString(notification, "jobTitle");
+      if (lang === "ar") {
+        return jobTitle ? `وظيفة جديدة تناسب تنبيهك: ${jobTitle}` : "وظيفة جديدة تناسب تنبيهك";
+      }
+      return jobTitle ? `New job matches your alert: ${jobTitle}` : "New job matches your alert";
+    }
     case NotificationType.PROFILE_VIEW:
       return lang === "ar"
         ? ar(`${actor} شاهد ملفك`, "هناك زيارة جديدة لملفك")
