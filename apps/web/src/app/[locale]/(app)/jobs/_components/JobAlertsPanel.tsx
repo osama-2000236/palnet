@@ -98,7 +98,7 @@ export function JobAlertsPanel({
       .join(" · ");
 
   return (
-    <Surface variant="card" padding="4" className="mt-4">
+    <Surface variant="card" padding="4" className="mt-4" as="aside" aria-label={t("alerts.title")}>
       <h2 className="text-ink mb-2 flex items-center gap-1.5 text-sm font-semibold">
         <Icon name="bell" size={14} aria-hidden="true" />
         {t("alerts.title")}
