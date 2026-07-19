@@ -5,6 +5,7 @@ import { headers } from "next/headers";
 import type { ReactNode } from "react";
 
 import { defaultLocale, localeDir, locales, type Locale } from "@/i18n";
+import { hiddenTabRafBootScript } from "@/lib/hidden-tab-raf";
 import { themeBootScript } from "@/lib/theme";
 
 import "./globals.css";
@@ -37,6 +38,9 @@ const bodyArabic = Noto_Naskh_Arabic({
 
 export default async function RootLayout({ children }: { children: ReactNode }) {
   const headerStore = await headers();
+  // Minted by middleware; without it enforced-CSP production silently blocks
+  // our handwritten inline scripts (Next only nonces its own).
+  const nonce = headerStore.get("x-nonce") ?? undefined;
   const headerLocale = headerStore.get("x-baydar-locale");
   const locale = locales.includes(headerLocale as Locale)
     ? (headerLocale as Locale)
@@ -56,7 +60,12 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
         {/* Apply the stored theme to <html> before first paint (no light flash).
             Light is the default. See @/lib/theme. */}
         {/* eslint-disable-next-line react/no-danger */}
-        <script dangerouslySetInnerHTML={{ __html: themeBootScript }} />
+        <script nonce={nonce} dangerouslySetInnerHTML={{ __html: themeBootScript }} />
+        {/* Keep streamed-Suspense reveal + hydration alive in hidden tabs.
+            Must run before the first streamed completion script. See
+            @/lib/hidden-tab-raf. */}
+        {/* eslint-disable-next-line react/no-danger */}
+        <script nonce={nonce} dangerouslySetInnerHTML={{ __html: hiddenTabRafBootScript }} />
         {children}
       </body>
     </html>
