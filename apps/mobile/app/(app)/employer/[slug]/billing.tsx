@@ -205,11 +205,16 @@ export default function CompanyBillingScreen(): JSX.Element {
                 plan={selectedPlan}
                 companyId={company.id}
                 wallets={catalog?.wallets ?? []}
+                bankTransfer={catalog?.bankTransfer ?? null}
                 onActivated={() => void load()}
               />
             ) : null}
 
-            <InvoiceList invoices={invoices} onChanged={() => void load()} />
+            <InvoiceList
+              invoices={invoices}
+              bankTransfer={catalog?.bankTransfer ?? null}
+              onChanged={() => void load()}
+            />
           </>
         ) : null}
       </ScrollView>

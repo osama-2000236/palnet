@@ -119,9 +119,19 @@ export const WalletAvailability = z.object({
 });
 export type WalletAvailability = z.infer<typeof WalletAvailability>;
 
+// Static bank-transfer destination (env-configured). Null when the rail is
+// not configured — clients must then withhold the bank-transfer method
+// instead of ever showing a placeholder IBAN.
+export const BankTransferDestination = z.object({
+  beneficiary: z.string(),
+  iban: z.string(),
+});
+export type BankTransferDestination = z.infer<typeof BankTransferDestination>;
+
 export const BillingCatalog = z.object({
   plans: z.array(PlanOffer),
   wallets: z.array(WalletAvailability),
+  bankTransfer: BankTransferDestination.nullable(),
 });
 export type BillingCatalog = z.infer<typeof BillingCatalog>;
 

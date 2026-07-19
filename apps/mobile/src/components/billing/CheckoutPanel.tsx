@@ -1,6 +1,7 @@
 import {
   CheckoutSession,
   PaymentMethod,
+  type BankTransferDestination as BankTransferDestinationDto,
   type CheckoutSession as CheckoutSessionDto,
   type KaramaBalance as KaramaBalanceDto,
   type PlanOffer as PlanOfferDto,
@@ -31,6 +32,8 @@ export interface CheckoutPanelProps {
   /** Company scope for employer plans; omit for personal plans. */
   companyId?: string;
   wallets: WalletAvailabilityDto[];
+  /** Bank-transfer destination from the catalog; null = rail unconfigured. */
+  bankTransfer?: BankTransferDestinationDto | null;
   /** Karama balance enables the POINTS method (personal plans only). */
   karama?: KaramaBalanceDto | null;
   /** Called after a payment method completes synchronously (POINTS). */
@@ -41,6 +44,7 @@ export function CheckoutPanel({
   plan,
   companyId,
   wallets,
+  bankTransfer = null,
   karama = null,
   onActivated,
 }: CheckoutPanelProps): JSX.Element {
@@ -55,7 +59,14 @@ export function CheckoutPanel({
 
   const items = [
     { value: PaymentMethod.CARD, label: t("billing.checkout.methods.card") },
-    { value: PaymentMethod.BANK_TRANSFER, label: t("billing.checkout.methods.bankTransfer") },
+    {
+      value: PaymentMethod.BANK_TRANSFER,
+      label:
+        bankTransfer === null
+          ? `${t("billing.checkout.methods.bankTransfer")} — ${t("billing.checkout.comingSoon")}`
+          : t("billing.checkout.methods.bankTransfer"),
+      disabled: bankTransfer === null,
+    },
     ...(pointsPrice !== null
       ? [
           {

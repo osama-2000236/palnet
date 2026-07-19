@@ -4,6 +4,7 @@ import {
   Invoice as InvoiceSchema,
   InvoiceStatus,
   PaymentMethod,
+  type BankTransferDestination as BankTransferDestinationDto,
   type Invoice as InvoiceDto,
 } from "@baydar/shared";
 import { Alert, Button, Surface } from "@baydar/ui-web";
@@ -17,6 +18,9 @@ import { uploadFile } from "@/lib/uploads";
 
 interface InvoiceListProps {
   invoices: InvoiceDto[];
+  /** Bank-transfer destination so open transfer invoices can re-show the
+   *  IBAN + reference after the checkout panel is gone. Null = rail off. */
+  bankTransfer?: BankTransferDestinationDto | null;
   /** Called after a receipt submission changes an invoice. */
   onChanged: () => void;
 }
@@ -29,7 +33,11 @@ const STATUS_TONE: Record<InvoiceStatus, string> = {
   UNCOLLECTIBLE: "text-danger bg-danger/10",
 };
 
-export function InvoiceList({ invoices, onChanged }: InvoiceListProps): JSX.Element {
+export function InvoiceList({
+  invoices,
+  bankTransfer = null,
+  onChanged,
+}: InvoiceListProps): JSX.Element {
   const t = useTranslations("billing.invoices");
   const tBilling = useTranslations("billing");
   const tErrors = useTranslations("errors");
@@ -106,6 +114,26 @@ export function InvoiceList({ invoices, onChanged }: InvoiceListProps): JSX.Elem
                   </p>
                   {awaitingReceipt && invoice.bankReceiptUrl ? (
                     <p className="text-ink-muted mt-1 text-xs">{t("receiptSubmitted")}</p>
+                  ) : null}
+                  {awaitingReceipt && !invoice.bankReceiptUrl && bankTransfer ? (
+                    <dl className="text-ink-muted mt-2 flex flex-col gap-1 text-xs">
+                      <div className="flex flex-wrap gap-1">
+                        <dt>{tBilling("checkout.bank.beneficiary")}</dt>
+                        <dd className="text-ink font-semibold">{bankTransfer.beneficiary}</dd>
+                      </div>
+                      <div className="flex flex-wrap gap-1">
+                        <dt>{tBilling("checkout.bank.iban")}</dt>
+                        <dd className="text-ink font-mono" dir="ltr">
+                          {bankTransfer.iban}
+                        </dd>
+                      </div>
+                      <div className="flex flex-wrap gap-1">
+                        <dt>{tBilling("checkout.bank.reference")}</dt>
+                        <dd className="text-ink font-mono" dir="ltr">
+                          {invoice.id}
+                        </dd>
+                      </div>
+                    </dl>
                   ) : null}
                 </div>
 

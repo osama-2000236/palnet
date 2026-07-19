@@ -176,13 +176,18 @@ export default function PremiumPage(): JSX.Element {
         <CheckoutPanel
           plan={plan}
           wallets={catalog?.wallets ?? []}
+          bankTransfer={catalog?.bankTransfer ?? null}
           karama={karama}
           onActivated={() => void load()}
         />
       ) : null}
 
       {!loading && !error && invoices.length > 0 ? (
-        <InvoiceList invoices={invoices} onChanged={() => void load()} />
+        <InvoiceList
+          invoices={invoices}
+          bankTransfer={catalog?.bankTransfer ?? null}
+          onChanged={() => void load()}
+        />
       ) : null}
     </main>
   );
