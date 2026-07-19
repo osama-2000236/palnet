@@ -1,7 +1,7 @@
 "use client";
 
 import { AdminInvoice, AdminInvoiceActionBody, Invoice } from "@baydar/shared";
-import { Button, EmptyState, Surface, Tab, Tabs } from "@baydar/ui-web";
+import { Button, EmptyState, Surface, Tab, Tabs, useToast } from "@baydar/ui-web";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
@@ -54,6 +54,7 @@ export default function AdminBillingPage(): JSX.Element {
   const router = useRouter();
   const locale = useLocale();
   const t = useTranslations("admin.billing");
+  const { showToast } = useToast();
   const [invoices, setInvoices] = useState<InvoiceDto[] | null>(null);
   const [filter, setFilter] = useState<InvoiceFilter>("NEEDS_REVIEW");
   const [error, setError] = useState<string | null>(null);
@@ -112,6 +113,7 @@ export default function AdminBillingPage(): JSX.Element {
         token,
         body: note === undefined ? { action } : { action, note },
       });
+      showToast({ kind: "success", message: t("actionDone", { action: t(`actions.${action}`) }) });
       await load();
     } catch (err) {
       // Another operator may have handled the item; refresh so the queue
@@ -179,21 +181,30 @@ export default function AdminBillingPage(): JSX.Element {
                   {" · "}
                   {t("invoice")} <span dir="ltr">{invoice.id}</span>
                 </p>
+                {/* One attribution line per scope — a personal invoice never
+                 * prints a "company: n/a" placeholder and vice versa. */}
                 <p className="text-ink-muted mt-2 text-sm">
-                  {t("company")}{" "}
-                  {invoice.companyName ??
-                    (invoice.companyId ? <span dir="ltr">{invoice.companyId}</span> : t("missing"))}
-                  {" · "}
-                  {t("user")}{" "}
-                  {(invoice.userName ?? invoice.userEmail) ? (
+                  {invoice.companyId || invoice.companyName ? (
                     <>
-                      {invoice.userName}
-                      {invoice.userEmail ? <span dir="ltr"> ({invoice.userEmail})</span> : null}
+                      {t("company")}{" "}
+                      {invoice.companyName ?? <span dir="ltr">{invoice.companyId}</span>}
                     </>
-                  ) : invoice.userId ? (
-                    <span dir="ltr">{invoice.userId}</span>
+                  ) : invoice.userId || invoice.userName || invoice.userEmail ? (
+                    <>
+                      {t("user")}{" "}
+                      {(invoice.userName ?? invoice.userEmail) ? (
+                        <>
+                          {invoice.userName}
+                          {invoice.userEmail ? <span dir="ltr"> ({invoice.userEmail})</span> : null}
+                        </>
+                      ) : (
+                        <span dir="ltr">{invoice.userId}</span>
+                      )}
+                    </>
                   ) : (
-                    t("missing")
+                    <>
+                      {t("user")} {t("missing")}
+                    </>
                   )}
                 </p>
                 <p className="text-ink-muted mt-1 text-sm">
@@ -251,7 +262,15 @@ export default function AdminBillingPage(): JSX.Element {
       ) : null}
       {invoices?.length === 0 ? (
         <Surface variant="flat" padding="4">
-          <EmptyState motif="settings" title={t("emptyTitle")} body={t("emptyBody")} />
+          {filter === "NEEDS_REVIEW" ? (
+            <EmptyState motif="settings" title={t("emptyTitle")} body={t("emptyBody")} />
+          ) : (
+            <EmptyState
+              motif="settings"
+              title={t("emptyFilteredTitle")}
+              body={t("emptyFilteredBody")}
+            />
+          )}
         </Surface>
       ) : null}
     </main>
