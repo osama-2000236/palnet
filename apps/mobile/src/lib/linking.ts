@@ -1,5 +1,9 @@
 import type { Href } from "expo-router";
 
+// Canonical web origin — share links built in the app point here so recipients
+// without the app land on the public web page (and app holders deep-link back).
+export const WEB_ORIGIN = "https://baydar.ps";
+
 export function routeFromUrl(url: string): Href | null {
   let parsed: URL;
   try {
@@ -30,7 +34,9 @@ export function routeFromUrl(url: string): Href | null {
   if (resource === "messages") {
     return { pathname: "/(app)/messages/[roomId]", params: { roomId: id } } as Href;
   }
-  if (resource === "jobs") {
+  // "j" is the public share path (baydar.ps/{locale}/j/{id}) — app holders
+  // tapping a shared link land straight on the in-app job detail.
+  if (resource === "jobs" || resource === "j") {
     return { pathname: "/(app)/jobs/[id]", params: { id } } as Href;
   }
   if (resource === "auth" && id === "verify-email" && token) {

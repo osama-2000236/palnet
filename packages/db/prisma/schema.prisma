@@ -58,6 +58,7 @@ enum NotificationType {
   POST_MENTION
   MESSAGE_RECEIVED
   JOB_APPLICATION_UPDATE
+  JOB_ALERT
   PROFILE_VIEW
   MODERATION_ACTION
 }
@@ -219,6 +220,7 @@ model User {
   ratingsGiven            UserRating[]             @relation("RatingRater")
   ratingsReceived         UserRating[]             @relation("RatingRatee")
   bookmarks               Bookmark[]
+  jobAlerts               JobAlert[]
 
   @@index([email])
   @@index([role])
@@ -678,6 +680,22 @@ model Job {
 
   @@index([companyId])
   @@index([isActive, createdAt])
+}
+
+// Saved job search → notification on matching new job. All filter fields are
+// optional; creation requires at least one (enforced in the shared schema).
+model JobAlert {
+  id           String           @id @default(cuid())
+  user         User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId       String
+  q            String?
+  city         String?
+  type         JobType?
+  locationMode JobLocationMode?
+  industry     String?
+  createdAt    DateTime         @default(now())
+
+  @@index([userId])
 }
 
 model Application {

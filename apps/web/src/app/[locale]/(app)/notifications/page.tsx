@@ -11,9 +11,8 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 
-import { apiCall, apiFetchPage } from "@/lib/api";
+import { apiCall, apiFetchPage, getValidAccessToken } from "@/lib/api";
 import { useDismissNotification } from "@/lib/api/notifications";
-import { readSession } from "@/lib/session";
 import { openStream } from "@/lib/sse";
 import {
   NotificationsErrorState,
@@ -38,14 +37,21 @@ export default function NotificationsPageRoute(): JSX.Element {
   const [loadError, setLoadError] = useState(false);
   const [sseLive, setSseLive] = useState(false);
 
-  // Session bootstrap.
+  // Session bootstrap — getValidAccessToken (not readSession): on a hard
+  // reload the persisted session has no access token until the refresh runs.
   useEffect(() => {
-    const session = readSession();
-    if (!session) {
-      router.replace("/login");
-      return;
-    }
-    setToken(session.tokens.accessToken);
+    let cancelled = false;
+    void getValidAccessToken().then((tk) => {
+      if (cancelled) return;
+      if (!tk) {
+        router.replace("/login");
+        return;
+      }
+      setToken(tk);
+    });
+    return (): void => {
+      cancelled = true;
+    };
   }, [router]);
 
   const load = useCallback(async (after: string | null, tk: string): Promise<void> => {

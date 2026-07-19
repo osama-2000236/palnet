@@ -2,6 +2,7 @@ import { type ApplicationStatus, ErrorCode } from "@baydar/shared";
 import { Test } from "@nestjs/testing";
 
 import { EmployerEntitlementsService } from "../billing/employer-entitlements.service";
+import { JobAlertsService } from "../jobs/job-alerts.service";
 import { KaramaService } from "../karama/karama.service";
 import { NotificationsService } from "../notifications/notifications.service";
 import { PrismaService } from "../prisma/prisma.service";
@@ -120,12 +121,14 @@ describe("CompaniesService", () => {
   let notifications: { notify: jest.Mock };
   let karama: { award: jest.Mock };
   let entitlements: { assertCanCreateJob: jest.Mock };
+  let jobAlerts: { notifyMatches: jest.Mock };
 
   beforeEach(async () => {
     prisma = buildPrisma();
     notifications = { notify: jest.fn().mockResolvedValue(undefined) };
     karama = { award: jest.fn().mockResolvedValue(undefined) };
     entitlements = { assertCanCreateJob: jest.fn().mockResolvedValue(undefined) };
+    jobAlerts = { notifyMatches: jest.fn().mockResolvedValue(undefined) };
 
     const moduleRef = await Test.createTestingModule({
       providers: [
@@ -134,6 +137,7 @@ describe("CompaniesService", () => {
         { provide: NotificationsService, useValue: notifications },
         { provide: KaramaService, useValue: karama },
         { provide: EmployerEntitlementsService, useValue: entitlements },
+        { provide: JobAlertsService, useValue: jobAlerts },
       ],
     }).compile();
     service = moduleRef.get(CompaniesService);

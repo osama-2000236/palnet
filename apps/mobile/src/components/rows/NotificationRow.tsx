@@ -13,7 +13,11 @@ export const NotificationRow = memo(function NotificationRow({
   const { t, i18n } = useTranslation();
   const actor = item.actor;
   const actorName = actor ? `${actor.firstName} ${actor.lastName}`.trim() || actor.handle : "";
-  const body = t(`notifications.templates.${item.type}`, { actor: actorName });
+  const data = item.data as { jobTitle?: string } | null;
+  const body = t(`notifications.templates.${item.type}`, {
+    actor: actorName,
+    jobTitle: data?.jobTitle ?? "",
+  });
   const unread = item.readAt === null;
   const destination = hrefFor(item);
 
@@ -77,6 +81,12 @@ function hrefFor(n: Notification): string | null {
     n.type === NotificationType.POST_MENTION
   ) {
     return "/(app)/feed";
+  }
+  if (
+    (n.type === NotificationType.JOB_ALERT || n.type === NotificationType.JOB_APPLICATION_UPDATE) &&
+    n.jobId
+  ) {
+    return `/(app)/jobs/${n.jobId}`;
   }
   if (n.type === NotificationType.PROFILE_VIEW && n.actor?.handle) {
     return `/(app)/in/${n.actor.handle}`;

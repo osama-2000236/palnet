@@ -5,6 +5,8 @@ import { Text, View } from "react-native";
 
 import { CityField } from "@/components/CityField";
 
+import { AlertsSection } from "./AlertsSection";
+
 export type Filters = {
   q: string;
   city: string;
@@ -117,6 +119,9 @@ export function FilterSheet({
           onSelect={(v) => set("locationMode", filters.locationMode === v ? "" : v)}
           labelFor={(v) => t(`jobs.locationLabels.${v}`)}
         />
+      </Field>
+      <Field label={t("jobs.alerts.title")}>
+        <AlertsSection filters={filters} />
       </Field>
       <View
         style={{

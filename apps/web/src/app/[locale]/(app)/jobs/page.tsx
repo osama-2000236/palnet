@@ -27,9 +27,9 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { Suspense, useCallback, useEffect, useState } from "react";
 
-import { apiCall, apiFetch, apiFetchPage } from "@/lib/api";
+import { apiCall, apiFetch, apiFetchPage, getValidAccessToken } from "@/lib/api";
 import { getErrorCode, toErrorMessage } from "@/lib/error-message";
-import { readSession } from "@/lib/session";
+import { JobAlertsPanel } from "./_components/JobAlertsPanel";
 import { JobFilters, type JobFiltersState } from "./_components/JobFilters";
 import { JobListRow, JobRowSkeleton } from "./_components/JobListRow";
 
@@ -100,13 +100,22 @@ function JobsPageInner(): JSX.Element {
   const [error, setError] = useState<string | null>(null);
   const [savingId, setSavingId] = useState<string | null>(null);
 
+  // getValidAccessToken (not readSession) — on a hard reload the persisted
+  // session has no access token until the refresh flow runs; reading it
+  // directly left the page stuck on skeletons.
   useEffect(() => {
-    const session = readSession();
-    if (!session) {
-      router.replace("/login");
-      return;
-    }
-    setToken(session.tokens.accessToken);
+    let cancelled = false;
+    void getValidAccessToken().then((tk) => {
+      if (cancelled) return;
+      if (!tk) {
+        router.replace("/login");
+        return;
+      }
+      setToken(tk);
+    });
+    return (): void => {
+      cancelled = true;
+    };
   }, [router]);
 
   const load = useCallback(
@@ -191,6 +200,7 @@ function JobsPageInner(): JSX.Element {
       {/* ── Filters rail ─────────────────────────────────────────── */}
       <div className="hidden lg:block">
         <JobFilters filters={filters} onChange={setFilters} />
+        <JobAlertsPanel token={token} filters={filters} />
       </div>
 
       {/* ── Results main ─────────────────────────────────────────── */}

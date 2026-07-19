@@ -144,6 +144,16 @@ export function Icon({ name, size = 20, color, strokeWidth = 1.8 }: IconProps): 
           <Path d="M6 12h15" />
         </Svg>
       );
+    case "share":
+      return (
+        <Svg {...common}>
+          <Circle cx={18} cy={5} r={3} />
+          <Circle cx={6} cy={12} r={3} />
+          <Circle cx={18} cy={19} r={3} />
+          <Path d="m8.6 13.5 6.8 3.9" />
+          <Path d="M15.4 6.6 8.6 10.5" />
+        </Svg>
+      );
     case "check":
       return (
         <Svg {...common}>

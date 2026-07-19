@@ -101,7 +101,11 @@ function NotificationRow({
   const locale = useLocale();
   const actor = item.actor;
   const actorName = actor ? `${actor.firstName} ${actor.lastName}`.trim() || actor.handle : "";
-  const body = tTemplates(templateKeyFor(item.type), { actor: actorName });
+  const data = item.data as { jobTitle?: string } | null;
+  const body = tTemplates(templateKeyFor(item.type), {
+    actor: actorName,
+    jobTitle: data?.jobTitle ?? "",
+  });
   const unread = item.readAt === null;
   const href = hrefFor(item);
 
@@ -183,6 +187,13 @@ function hrefFor(notification: Notification): string | null {
   ) {
     if (notification.postId) return `/feed#post-${notification.postId}`;
     return "/feed";
+  }
+  if (
+    (notification.type === NotificationType.JOB_ALERT ||
+      notification.type === NotificationType.JOB_APPLICATION_UPDATE) &&
+    notification.jobId
+  ) {
+    return `/jobs/${notification.jobId}`;
   }
   if (notification.type === NotificationType.PROFILE_VIEW && notification.actor?.handle) {
     return `/in/${notification.actor.handle}`;
