@@ -33,6 +33,12 @@ None launch-blocking. The Pass 1 preconditions (settings 404, raw i18n keys, raw
 
 ### 3. Motion vocabulary — document the existing system
 
+> **Delivered by engineering 2026-07-19** — `docs/design/MOTION.md` ships the
+> choreography contract plus the usage audit; the three violations found
+> (`Button`/`Input`/`Switch` on untokenized `duration-150`) were fixed in the
+> same change. Lead can strike this item from the pass or review the doc as
+> part of it.
+
 **Problem:** `tokens.motion` (fast 80ms / base 120ms / slow 240ms + stagger step/max) and `useStagger` exist in code, but there is no choreography contract: page enter, list stagger, optimistic feedback, toast timing. Risk: every new surface invents its own timing.
 
 **Deliverable:**

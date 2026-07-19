@@ -25,8 +25,8 @@
 
 1. **Post-critique surfaces have no design review.** `/me/premium` (plan comparison + checkout: card redirect, bank-transfer IBAN, Karama points, wallets coming-soon), invoices/receipts, `/saved`, and the public company route shipped after the 2026-05-21 critique. No critique scores, no pain walk, no mocks. These are the revenue surfaces.
 2. **Operator UX on admin `/moderation` + `/billing`.** Sprint 25 hardened correctness (conflict states, audit trail, denied states); layout/flow was engineering-composed and flagged in the handoff as needing a design-platform pass.
-3. **Motion vocabulary doc** (from #10 above) — document the existing token values into a choreography contract; small, systemic.
-4. **BRAND.md logo section stale** — align text with the shipped wheat mark (doc-only).
+3. ~~**Motion vocabulary doc** (from #10 above)~~ — **resolved 2026-07-19**: `docs/design/MOTION.md` documents durations, easings, stagger, the single `enter-up` entrance, reduced-motion handling, and the native gap (no `nativeTokens.motion` yet).
+4. ~~**BRAND.md logo section stale**~~ — **resolved**: BRAND.md §Logo already matches the shipped mark (`packages/ui-tokens/assets/logo-mark.svg` — wheat on olive circle, brand-600/brand-50, canonical-asset path cited); verified 2026-07-19, no edit needed.
 
 ## See also
 
