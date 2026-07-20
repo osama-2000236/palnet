@@ -1,0 +1,23 @@
+appId: ps.baydar.app
+name: "search"
+tags:
+  - smoke
+---
+- runFlow: login-to-feed.yaml
+
+- tapOn:
+    id: "feed-search-button"
+- extendedWaitUntil:
+    visible:
+      id: "search-input"
+    timeout: 15000
+- tapOn:
+    id: "search-input"
+- inputText: "مهندس"
+- hideKeyboard
+
+# Result tabs rendering with a query in place = search pipeline alive.
+- extendedWaitUntil:
+    visible:
+      id: "search-tabs"
+    timeout: 15000

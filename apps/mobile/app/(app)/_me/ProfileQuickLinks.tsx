@@ -8,8 +8,9 @@ const QUICK_LINKS = [
   { route: "/(app)/me/connections", label: "network.myConnections" },
   { route: "/(app)/me/karama", label: "karama.kicker" },
   { route: "/(app)/me/premium", label: "premium.entry" },
-  { route: "/(app)/settings/blocked", label: "safety.blocked.title" },
-  { route: "/(app)/settings/account", label: "account.title" },
+  // One settings entry — the settings landing screen owns account, blocked,
+  // appearance, privacy, security, and notification prefs.
+  { route: "/(app)/settings", label: "settings.title" },
 ] as const;
 
 export function ProfileQuickLinks(): JSX.Element {

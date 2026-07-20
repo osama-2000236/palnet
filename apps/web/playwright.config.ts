@@ -27,6 +27,9 @@ process.env.PLAYWRIGHT_BASE_URL = e2eWebUrl;
 
 export default defineConfig({
   testDir: "./e2e",
+  // 30s default flakes locally: parallel workers vs `next dev` cold route
+  // compiles push page.goto past 30s. CI uses `next start` and is unaffected.
+  timeout: 60_000,
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,

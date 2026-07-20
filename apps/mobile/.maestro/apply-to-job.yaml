@@ -1,0 +1,37 @@
+appId: ps.baydar.app
+name: "apply to job"
+tags:
+  - smoke
+---
+- runFlow: login-to-feed.yaml
+
+- tapOn:
+    id: "jobs-entry-card"
+- extendedWaitUntil:
+    visible:
+      id: "jobs-search-input"
+    timeout: 15000
+- extendedWaitUntil:
+    visible:
+      id: "job-row-.*"
+    timeout: 15000
+- tapOn:
+    id: "job-row-.*"
+    index: 0
+
+# Re-runs land on an already-applied job — only apply when the CTA shows.
+- runFlow:
+    when:
+      visible: "قدّم طلبك"
+    commands:
+      - tapOn: "قدّم طلبك"
+      - extendedWaitUntil:
+          visible:
+            id: "job-apply-submit"
+          timeout: 5000
+      - tapOn:
+          id: "job-apply-submit"
+
+- extendedWaitUntil:
+    visible: ".*تم التقديم.*"
+    timeout: 15000
