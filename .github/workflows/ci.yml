@@ -19,6 +19,10 @@ env:
   JWT_ACCESS_SECRET: "ci-access-secret-at-least-32-characters-long"
   JWT_REFRESH_SECRET: "ci-refresh-secret-at-least-32-characters-long"
   CORS_ORIGINS: "http://localhost:3000"
+  # Bank rail must be configured for the e2e bank-transfer lifecycle test —
+  # the API refuses bank checkouts when unset (by design, no placeholder IBAN).
+  BANK_TRANSFER_IBAN: "PS00CI00000000000000000000000"
+  BANK_TRANSFER_BENEFICIARY: "Baydar CI"
 
 jobs:
   install:

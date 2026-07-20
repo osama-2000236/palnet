@@ -12,6 +12,12 @@ None launch-blocking. The Pass 1 preconditions (settings 404, raw i18n keys, raw
 
 ### 1. Monetization surfaces — design review + polish (web + mobile)
 
+> **Engineering pre-work 2026-07-19** — `docs/design/screen-critique-2026-07.md`
+> delivers the critique scores (all surfaces now ≥7) and fixes the flow-level
+> findings (bank-rail honesty, recoverable IBAN, invoice attribution). What
+> remains for this ask is the persuasion/mock layer: trust cues,
+> plan-comparison emphasis, bank-transfer state mocks.
+
 **Problem:** `/me/premium` (plan comparison, checkout method picker: card redirect / bank-transfer IBAN / Karama points / wallets coming-soon), invoices + receipt upload, and karama-as-payment shipped engineering-first after the 2026-05-21 critique. Zero design review on the surfaces that make money. Trust cues, plan-comparison hierarchy, payment-state feedback (pending bank review, failed card, karama balance) all engineering-composed.
 
 **Deliverable:**
@@ -23,6 +29,12 @@ None launch-blocking. The Pass 1 preconditions (settings 404, raw i18n keys, raw
 
 ### 2. Operator UX — admin `/moderation` + `/billing` queues
 
+> **Engineering pre-work 2026-07-19** — operator-flow walk done (see
+> `screen-critique-2026-07.md`): id-soup replaced with names/avatars/typed
+> targets, enums localized, tab-aware empty states, action toasts, scoped
+> attribution. Remaining ask scope: scan-speed layout + row density rationale
+> at multi-operator scale.
+
 **Problem:** Sprint 25 hardened correctness (conflict 409 states, audit trail, denied states, rejection-reason prompt) but composition is engineering-made: dense review rows, no design pass on scan-speed, action affordance, or error-recovery hierarchy. Solo operator today; queue efficiency is launch-ops critical.
 
 **Deliverable:**
@@ -32,6 +44,12 @@ None launch-blocking. The Pass 1 preconditions (settings 404, raw i18n keys, raw
 - Rationale for row density vs. card layout at operator scale.
 
 ### 3. Motion vocabulary — document the existing system
+
+> **Delivered by engineering 2026-07-19** — `docs/design/MOTION.md` ships the
+> choreography contract plus the usage audit; the three violations found
+> (`Button`/`Input`/`Switch` on untokenized `duration-150`) were fixed in the
+> same change. Lead can strike this item from the pass or review the doc as
+> part of it.
 
 **Problem:** `tokens.motion` (fast 80ms / base 120ms / slow 240ms + stagger step/max) and `useStagger` exist in code, but there is no choreography contract: page enter, list stagger, optimistic feedback, toast timing. Risk: every new surface invents its own timing.
 

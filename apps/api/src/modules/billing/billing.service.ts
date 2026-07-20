@@ -88,6 +88,17 @@ export class BillingService {
       );
     }
 
+    // Guard before creating any subscription/invoice: an unconfigured rail
+    // must fail honestly, never mint an invoice pointing at a placeholder IBAN.
+    const bankDestination = this.bankTransferDestination();
+    if (body.method === "BANK_TRANSFER" && bankDestination === null) {
+      throw new DomainException(
+        ErrorCode.VALIDATION_FAILED,
+        "Bank transfer is not available yet.",
+        400,
+      );
+    }
+
     const subscription =
       plan.intervalDays === null
         ? null
@@ -120,15 +131,15 @@ export class BillingService {
       await this.activateInvoice(invoice.id, "free-plan");
     }
 
-    if (body.method === "BANK_TRANSFER") {
+    if (body.method === "BANK_TRANSFER" && bankDestination !== null) {
       return {
         invoiceId: invoice.id,
         method: "BANK_TRANSFER",
         providerCheckoutId: null,
         checkoutUrl: null,
         bankTransfer: {
-          beneficiary: this.config.get("BANK_TRANSFER_BENEFICIARY", { infer: true }) ?? "Baydar",
-          iban: this.config.get("BANK_TRANSFER_IBAN", { infer: true }) ?? "CONFIGURE_BANK_IBAN",
+          beneficiary: bankDestination.beneficiary,
+          iban: bankDestination.iban,
           reference: invoice.id,
           amountCents: invoice.amountCents,
           currency: invoice.currency,
@@ -280,6 +291,19 @@ export class BillingService {
         pointsPrice: POINTS_PRICE_BY_PLAN[plan.code] ?? null,
       })),
       wallets: this.wallets.availability(),
+      bankTransfer: this.bankTransferDestination(),
+    };
+  }
+
+  // Null until BANK_TRANSFER_IBAN is configured — the catalog contract tells
+  // clients to withhold the bank-transfer method rather than render a
+  // placeholder IBAN to a paying user.
+  private bankTransferDestination(): { beneficiary: string; iban: string } | null {
+    const iban = this.config.get("BANK_TRANSFER_IBAN", { infer: true });
+    if (!iban) return null;
+    return {
+      beneficiary: this.config.get("BANK_TRANSFER_BENEFICIARY", { infer: true }) ?? "Baydar",
+      iban,
     };
   }
 

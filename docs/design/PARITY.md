@@ -24,19 +24,38 @@ Back-compat aliases are allowed during migration, but new screen code should use
 
 ## Shared Primitive Matrix
 
-| Primitive          | Web                   | Native              | Parity status | Notes                                                                                |
-| ------------------ | --------------------- | ------------------- | ------------- | ------------------------------------------------------------------------------------ |
-| `Button`           | `@baydar/ui-web`      | `@baydar/ui-native` | Good          | Shared `variant`, `size`, `disabled`, `loading`, `leading`, `trailing`, `fullWidth`. |
-| `Surface`          | `@baydar/ui-web`      | `@baydar/ui-native` | Good          | Shared surface variants; mobile usage must avoid floating desktop card density.      |
-| `Input`            | `@baydar/ui-web`      | `@baydar/ui-native` | Good          | `helperText` is preferred; `helper` remains an alias.                                |
-| `Chip`             | `@baydar/ui-web`      | `@baydar/ui-native` | Good          | `selected` is preferred; `active` remains an alias.                                  |
-| `Banner`           | `@baydar/ui-web`      | `@baydar/ui-native` | Good          | Use for top/status notices such as offline and staged settings.                      |
-| `Alert`            | `@baydar/ui-web`      | n/a                 | Partial       | Native can use `Banner` or `StateMessage` until a persistent native alert is needed. |
-| `EmptyState`       | `@baydar/ui-web`      | `@baydar/ui-native` | Good          | Must include recoverable action when possible.                                       |
-| `Skeleton`         | app utility / partial | `@baydar/ui-native` | Partial       | Web should promote a shared skeleton primitive if repeated beyond local patterns.    |
-| `Switch`           | `@baydar/ui-web`      | `@baydar/ui-native` | Good          | Use for binary settings only.                                                        |
-| `Dialog` / `Sheet` | `Dialog`              | `Dialog`, `Sheet`   | Good          | Use modal/sheet by platform convention.                                              |
-| `Avatar`           | `@baydar/ui-web`      | `@baydar/ui-native` | Good          | Both now use token-backed deterministic palettes.                                    |
+Re-audited 2026-07-19 against both barrel files (`packages/ui-web/src/index.ts`,
+`packages/ui-native/src/index.ts`).
+
+| Primitive                                                                        | Web              | Native              | Parity status | Notes                                                                                |
+| -------------------------------------------------------------------------------- | ---------------- | ------------------- | ------------- | ------------------------------------------------------------------------------------ |
+| `Button`                                                                         | `@baydar/ui-web` | `@baydar/ui-native` | Good          | Shared `variant`, `size`, `disabled`, `loading`, `leading`, `trailing`, `fullWidth`. |
+| `Surface`                                                                        | `@baydar/ui-web` | `@baydar/ui-native` | Good          | Shared surface variants; mobile usage must avoid floating desktop card density.      |
+| `Input`                                                                          | `@baydar/ui-web` | `@baydar/ui-native` | Good          | `helperText` is preferred; `helper` remains an alias.                                |
+| `Checkbox`                                                                       | `@baydar/ui-web` | `@baydar/ui-native` | Good          |                                                                                      |
+| `RadioGroup`                                                                     | `@baydar/ui-web` | `@baydar/ui-native` | Good          |                                                                                      |
+| `Chip`                                                                           | `@baydar/ui-web` | `@baydar/ui-native` | Good          | `selected` is preferred; `active` remains an alias.                                  |
+| `Banner`                                                                         | `@baydar/ui-web` | `@baydar/ui-native` | Good          | Use for top/status notices such as offline and staged settings.                      |
+| `Alert`                                                                          | `@baydar/ui-web` | n/a                 | Partial       | Native can use `Banner` or `StateMessage` until a persistent native alert is needed. |
+| `EmptyState`                                                                     | `@baydar/ui-web` | `@baydar/ui-native` | Good          | Must include recoverable action when possible.                                       |
+| `Illustration`                                                                   | `@baydar/ui-web` | `@baydar/ui-native` | Good          | 10 motifs × 3 direction kits (`outline`/`block`/`harvest`, restored 2026-07-19).     |
+| `OnboardingProgress`                                                             | `@baydar/ui-web` | `@baydar/ui-native` | Good          |                                                                                      |
+| `Skeleton`                                                                       | `@baydar/ui-web` | `@baydar/ui-native` | Good          | Shared primitive shipped on both; `PostCardSkeleton` twins too.                      |
+| `Switch`                                                                         | `@baydar/ui-web` | `@baydar/ui-native` | Good          | Use for binary settings only.                                                        |
+| `Dialog` / `Sheet`                                                               | `Dialog`         | `Dialog`, `Sheet`   | Good          | Use modal/sheet by platform convention.                                              |
+| `Avatar`                                                                         | `@baydar/ui-web` | `@baydar/ui-native` | Good          | Both now use token-backed deterministic palettes.                                    |
+| `Icon`                                                                           | `@baydar/ui-web` | `@baydar/ui-native` | Good          | Same name set; brand mark sourced from `ui-tokens/assets/logo-mark.svg`.             |
+| `Toast`                                                                          | `@baydar/ui-web` | `@baydar/ui-native` | Good          |                                                                                      |
+| `AppShell`                                                                       | `@baydar/ui-web` | `@baydar/ui-native` | Good          | Layout differs by platform (desktop nav vs tabs); same name and intent.              |
+| `PostCard`                                                                       | `@baydar/ui-web` | `@baydar/ui-native` | Good          |                                                                                      |
+| `MessageBubble`                                                                  | `@baydar/ui-web` | `@baydar/ui-native` | Good          |                                                                                      |
+| `RetryChip`                                                                      | `@baydar/ui-web` | `@baydar/ui-native` | Good          |                                                                                      |
+| `Tabs`                                                                           | `Tabs`           | `SegmentedControl`  | Naming drift  | Same intent, different names — reconcile on next touch of either.                    |
+| `ReportDialog`                                                                   | `ReportDialog`   | `ReportSheet`       | Naming drift  | Dialog/sheet by platform convention, but the name should share a stem.               |
+| `Composer`                                                                       | `Composer`       | `ComposerEntry`     | Partial       | Native ships the entry point only; full composer lives in the route.                 |
+| `ProfileHeader`                                                                  | `@baydar/ui-web` | n/a                 | Web-only      | Native composes profile header in-screen; promote a twin if a third screen needs it. |
+| `RoomRow` / `TypingIndicator`                                                    | `@baydar/ui-web` | n/a                 | Web-only      | Native builds these inside `_message-thread/`; same 3-screen promotion rule.         |
+| `AppHeader` / `SearchField` / `SegmentedControl` / `StateMessage` / `RecordCard` | n/a              | `@baydar/ui-native` | Native-only   | Platform idioms (header bar, search field, list record); no web demand yet.          |
 
 ## Screen Parity Rules
 
@@ -49,7 +68,9 @@ Back-compat aliases are allowed during migration, but new screen code should use
 ## Current Known Gaps
 
 - Native persistent `Alert` is not yet promoted; use `Banner`/`StateMessage` until three screens need it.
-- Web shared `Skeleton` should be promoted if more screen-local skeletons are added.
+- `Tabs`/`SegmentedControl` and `ReportDialog`/`ReportSheet` naming drift — pick one stem when either component is next touched.
+- Native has no date-picker primitive (`expiresAt` omitted from native post-a-job; server default applies).
+- No screen consumes Illustration `direction="outline"|"block"` yet — placement is a Pass 2 design decision.
 - Large route files still need split passes before deeper visual polish:
   - `apps/mobile/app/(app)/onboarding.tsx`
   - `apps/web/src/app/[locale]/(app)/messages/page.tsx`

@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, EmptyState, Surface, Tab, Tabs } from "@baydar/ui-web";
+import { Avatar, Button, EmptyState, Surface, Tab, Tabs, useToast } from "@baydar/ui-web";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
@@ -41,6 +41,7 @@ export default function ModerationPage(): JSX.Element {
   const router = useRouter();
   const locale = useLocale();
   const t = useTranslations("admin.moderation");
+  const { showToast } = useToast();
   const [reports, setReports] = useState<Report[] | null>(null);
   const [tab, setTab] = useState<"open" | "resolved">("open");
   const [error, setError] = useState<string | null>(null);
@@ -81,6 +82,7 @@ export default function ModerationPage(): JSX.Element {
         token,
         body: { action },
       });
+      showToast({ kind: "success", message: t("actionDone", { action: t(`actions.${action}`) }) });
       await load();
     } catch (err) {
       // Another moderator may have resolved the report; refresh so the queue
@@ -121,7 +123,18 @@ export default function ModerationPage(): JSX.Element {
             data-testid={`moderation-report-${report.id}`}
           >
             {(() => {
-              const target =
+              // Operator scan order: what kind of thing, then who reported it.
+              // Raw ids stay reachable via title tooltips for forensics.
+              const targetKind = report.targetUserId
+                ? "user"
+                : report.targetPostId
+                  ? "post"
+                  : report.targetCommentId
+                    ? "comment"
+                    : report.targetMessageId
+                      ? "message"
+                      : null;
+              const targetId =
                 report.targetUserId ??
                 report.targetPostId ??
                 report.targetCommentId ??
@@ -130,24 +143,39 @@ export default function ModerationPage(): JSX.Element {
               return (
                 <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                   <div className="min-w-0">
-                    <p className="text-ink text-sm font-semibold">{report.reason}</p>
-                    <p className="text-ink-muted text-xs">
+                    <p className="text-ink text-sm font-semibold">
+                      {t(`reasons.${report.reason}`)}
+                    </p>
+                    <div className="text-ink-muted flex items-center gap-1.5 text-xs">
                       <span dir="ltr">{formatDate(report.createdAt, locale)}</span>
                       {" · "}
-                      {t("reporter")}{" "}
+                      <span>{t("reporter")}</span>
+                      <Avatar
+                        user={{
+                          id: report.reporterId,
+                          handle: report.reporterHandle,
+                          firstName: report.reporterName,
+                        }}
+                        size="xs"
+                      />
                       {report.reporterName ? (
-                        <>
+                        <span>
                           {report.reporterName}
                           {report.reporterHandle ? (
                             <span dir="ltr"> (@{report.reporterHandle})</span>
                           ) : null}
-                        </>
+                        </span>
                       ) : (
-                        <span dir="ltr">{report.reporterId}</span>
+                        <span title={report.reporterId}>{t("unknown")}</span>
                       )}
-                    </p>
+                    </div>
                     <p className="text-ink-muted mt-2 text-sm">
-                      {t("target")} {target ? <span dir="ltr">{target}</span> : t("unknown")}
+                      {t("target")}{" "}
+                      {targetKind ? (
+                        <span title={targetId ?? undefined}>{t(`targets.${targetKind}`)}</span>
+                      ) : (
+                        t("unknown")
+                      )}
                       {report.targetPostDeleted ? <> · {t("targetDeleted")}</> : null}
                     </p>
                     {report.targetPostExcerpt ? (
@@ -162,7 +190,14 @@ export default function ModerationPage(): JSX.Element {
                       <p className="text-ink-muted mt-2 text-sm">
                         {t("resolvedNote")}{" "}
                         <span dir="ltr">{formatDate(report.resolvedAt, locale)}</span>
-                        {report.resolvedNote ? <> · {report.resolvedNote}</> : null}
+                        {report.resolvedNote ? (
+                          <>
+                            {" · "}
+                            {(ACTIONS as string[]).includes(report.resolvedNote)
+                              ? t(`actions.${report.resolvedNote}`)
+                              : report.resolvedNote}
+                          </>
+                        ) : null}
                       </p>
                     ) : null}
                   </div>
@@ -201,7 +236,15 @@ export default function ModerationPage(): JSX.Element {
       ) : null}
       {reports?.length === 0 ? (
         <Surface variant="flat" padding="4">
-          <EmptyState motif="settings" title={t("emptyTitle")} body={t("emptyBody")} />
+          {tab === "open" ? (
+            <EmptyState motif="settings" title={t("emptyTitle")} body={t("emptyBody")} />
+          ) : (
+            <EmptyState
+              motif="settings"
+              title={t("emptyResolvedTitle")}
+              body={t("emptyResolvedBody")}
+            />
+          )}
         </Surface>
       ) : null}
     </main>

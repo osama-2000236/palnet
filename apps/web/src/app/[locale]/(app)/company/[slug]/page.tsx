@@ -57,7 +57,14 @@ export default function CompanyPage(): JSX.Element {
     void load();
   }, [load]);
 
-  const location = company ? [company.city, company.country].filter(Boolean).join(", ") : "";
+  // Country is stored as an ISO region code ("PS") — render its localized
+  // name; fall back to the raw code for anything Intl doesn't know.
+  const countryName = company?.country
+    ? (new Intl.DisplayNames([locale], { type: "region" }).of(company.country) ?? company.country)
+    : null;
+  const location = company
+    ? [company.city, countryName].filter(Boolean).join(locale.startsWith("ar") ? "، " : ", ")
+    : "";
 
   return (
     <main className="mx-auto flex w-full max-w-[880px] flex-col gap-5 px-6 py-8">

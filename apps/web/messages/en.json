@@ -655,7 +655,7 @@
     "emptyDesc": "Try widening your search or clearing a filter.",
     "notFound": "This job is no longer available.",
     "loadFailedTitle": "Could not load jobs",
-    "countSummary": "{count} jobs",
+    "countSummary": "{count, plural, one {# job} other {# jobs}}",
     "noneSummary": "No results",
     "from": "from",
     "upTo": "up to",
@@ -950,9 +950,27 @@
       "reporter": "reporter",
       "target": "Target:",
       "unknown": "unknown",
+      "actionDone": "Done — {action}.",
       "confirmHardDelete": "Remove this reported content or account? This cannot be undone.",
       "emptyTitle": "No open reports",
       "emptyBody": "New safety reports will appear here for moderator review.",
+      "emptyResolvedTitle": "No resolved reports",
+      "emptyResolvedBody": "Handled reports appear here with their resolution.",
+      "reasons": {
+        "SPAM": "Spam",
+        "HARASSMENT": "Harassment or abuse",
+        "HATE": "Hate speech",
+        "MISINFORMATION": "Misinformation",
+        "NUDITY": "Inappropriate content",
+        "VIOLENCE": "Violence",
+        "OTHER": "Other"
+      },
+      "targets": {
+        "user": "user account",
+        "post": "post",
+        "comment": "comment",
+        "message": "message"
+      },
       "actions": {
         "DISMISS": "Dismiss",
         "WARN": "Warn",
@@ -986,6 +1004,9 @@
       "forbiddenBody": "Payment review is limited to admins. Moderators can use the moderation queue.",
       "emptyTitle": "No receipts need review",
       "emptyBody": "New bank-transfer uploads will appear here for finance review.",
+      "emptyFilteredTitle": "No invoices in this filter",
+      "emptyFilteredBody": "Try another filter, or go back to the review queue.",
+      "actionDone": "Done — {action}.",
       "actions": {
         "MARK_PAID": "Mark paid",
         "VOID": "Void"

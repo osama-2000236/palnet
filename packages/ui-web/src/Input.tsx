@@ -115,7 +115,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
             // layout / shape
             "bg-surface text-ink w-full rounded-md border",
             "placeholder:text-ink-subtle",
-            "transition-colors duration-150 ease-out",
+            "duration-base ease-standard transition-colors",
             // focus ring (keyboard-only — matches Button)
             "focus-visible:border-brand-600 focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]",
             // hover (only when not focused/disabled — outline strengthens)

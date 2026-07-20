@@ -43,7 +43,7 @@ export function Switch({
       disabled={disabled}
       onClick={() => onChange(!checked)}
       className={cx(
-        "relative inline-flex h-5 w-9 flex-none rounded-full transition-colors duration-150 focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]",
+        "duration-base ease-standard relative inline-flex h-5 w-9 flex-none rounded-full transition-colors focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]",
         disabled && "cursor-not-allowed opacity-55",
         checked ? "bg-brand-600" : "bg-surface-sunken",
       )}
@@ -51,7 +51,7 @@ export function Switch({
       <span
         aria-hidden="true"
         className={
-          "absolute top-0.5 h-4 w-4 rounded-full bg-white shadow-sm transition-transform duration-150 " +
+          "duration-base ease-standard absolute top-0.5 h-4 w-4 rounded-full bg-white shadow-sm transition-transform " +
           (checked ? "start-[18px]" : "start-0.5")
         }
       />

@@ -72,7 +72,7 @@ export function Button({
       className={cx(
         // layout / shape
         "inline-flex select-none items-center justify-center rounded-md font-semibold",
-        "transition-colors duration-150 ease-out",
+        "duration-base ease-standard transition-colors",
         // focus ring: keyboard-only
         "focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]",
         // active: spec says 1px press on web

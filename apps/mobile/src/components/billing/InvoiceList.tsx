@@ -2,6 +2,7 @@ import {
   Invoice as InvoiceSchema,
   InvoiceStatus,
   PaymentMethod,
+  type BankTransferDestination as BankTransferDestinationDto,
   type Invoice as InvoiceDto,
 } from "@baydar/shared";
 import { Button, Surface, nativeTokens } from "@baydar/ui-native";
@@ -18,6 +19,9 @@ import { uploadAsset } from "@/lib/uploads";
 
 interface InvoiceListProps {
   invoices: InvoiceDto[];
+  /** Bank-transfer destination so open transfer invoices can re-show the
+   *  IBAN + reference after the checkout panel is gone. Null = rail off. */
+  bankTransfer?: BankTransferDestinationDto | null;
   /** Called after a receipt submission changes an invoice. */
   onChanged: () => void;
 }
@@ -39,7 +43,11 @@ const STATUS_COLOR: Record<InvoiceStatus, string> = {
   UNCOLLECTIBLE: nativeTokens.color.danger,
 };
 
-export function InvoiceList({ invoices, onChanged }: InvoiceListProps): JSX.Element {
+export function InvoiceList({
+  invoices,
+  bankTransfer = null,
+  onChanged,
+}: InvoiceListProps): JSX.Element {
   const { t } = useTranslation();
   const [busyInvoice, setBusyInvoice] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -111,6 +119,26 @@ export function InvoiceList({ invoices, onChanged }: InvoiceListProps): JSX.Elem
                 </Text>
                 {awaitingReceipt && invoice.bankReceiptUrl ? (
                   <Text style={styles.meta}>{t("billing.invoices.receiptSubmitted")}</Text>
+                ) : null}
+                {awaitingReceipt && !invoice.bankReceiptUrl && bankTransfer ? (
+                  <View style={styles.bankDetails}>
+                    <Text style={styles.meta}>
+                      {t("billing.checkout.bank.beneficiary")}{" "}
+                      <Text style={styles.bankValue}>{bankTransfer.beneficiary}</Text>
+                    </Text>
+                    <Text style={styles.meta}>
+                      {t("billing.checkout.bank.iban")}{" "}
+                      <Text selectable style={[styles.bankValue, styles.ltrValue]}>
+                        {bankTransfer.iban}
+                      </Text>
+                    </Text>
+                    <Text style={styles.meta}>
+                      {t("billing.checkout.bank.reference")}{" "}
+                      <Text selectable style={[styles.bankValue, styles.ltrValue]}>
+                        {invoice.id}
+                      </Text>
+                    </Text>
+                  </View>
                 ) : null}
               </View>
               {awaitingReceipt && !invoice.bankReceiptUrl ? (
@@ -188,5 +216,16 @@ const styles = StyleSheet.create({
     fontSize: nativeTokens.type.scale.small.size,
     lineHeight: nativeTokens.type.scale.small.line,
     fontWeight: "700",
+  },
+  bankDetails: {
+    gap: nativeTokens.space[1],
+    paddingTop: nativeTokens.space[1],
+  },
+  bankValue: {
+    color: nativeTokens.color.ink,
+    fontWeight: "700",
+  },
+  ltrValue: {
+    writingDirection: "ltr",
   },
 });

@@ -655,7 +655,7 @@
     "emptyDesc": "جرّب توسيع البحث أو إلغاء فلتر.",
     "notFound": "هذه الوظيفة لم تعد متاحة.",
     "loadFailedTitle": "تعذّر تحميل الوظائف",
-    "countSummary": "{count} وظيفة",
+    "countSummary": "{count, plural, zero {لا وظائف} one {وظيفة واحدة} two {وظيفتان} few {# وظائف} many {# وظيفة} other {# وظيفة}}",
     "noneSummary": "لا نتائج",
     "from": "من",
     "upTo": "حتى",
@@ -950,9 +950,27 @@
       "reporter": "المبلّغ",
       "target": "الهدف:",
       "unknown": "غير معروف",
+      "actionDone": "تم — {action}.",
       "confirmHardDelete": "بدك تحذف هذا الحساب نهائيًا؟ ما بترجع عن هذا الإجراء.",
       "emptyTitle": "ما في بلاغات مفتوحة",
       "emptyBody": "بلاغات السلامة الجديدة بتظهر هون لمراجعة فريق الإشراف.",
+      "emptyResolvedTitle": "ما في بلاغات معالجة",
+      "emptyResolvedBody": "البلاغات اللي بتتم معالجتها بتظهر هون مع قرارها.",
+      "reasons": {
+        "SPAM": "بريد مزعج",
+        "HARASSMENT": "تحرّش أو إساءة",
+        "HATE": "خطاب كراهية",
+        "MISINFORMATION": "معلومات مضلّلة",
+        "NUDITY": "محتوى غير لائق",
+        "VIOLENCE": "عنف",
+        "OTHER": "سبب آخر"
+      },
+      "targets": {
+        "user": "حساب مستخدم",
+        "post": "منشور",
+        "comment": "تعليق",
+        "message": "رسالة"
+      },
       "actions": {
         "DISMISS": "رفض البلاغ",
         "WARN": "تحذير",
@@ -986,6 +1004,9 @@
       "forbiddenBody": "مراجعة المدفوعات متاحة للمشرفين الإداريين فقط. مشرفو المحتوى بيقدروا يستخدموا قائمة الإشراف.",
       "emptyTitle": "ما في إيصالات بحاجة لمراجعة",
       "emptyBody": "إيصالات التحويل البنكي الجديدة بتظهر هون لمراجعة فريق المالية.",
+      "emptyFilteredTitle": "ما في فواتير بهذا التصنيف",
+      "emptyFilteredBody": "جرّب تصنيف ثاني أو ارجع لقائمة المراجعة.",
+      "actionDone": "تم — {action}.",
       "actions": {
         "MARK_PAID": "تأكيد الدفع",
         "VOID": "إلغاء"
