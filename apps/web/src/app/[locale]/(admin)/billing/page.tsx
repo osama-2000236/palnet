@@ -133,7 +133,12 @@ export default function AdminBillingPage(): JSX.Element {
     return (
       <main className="mx-auto flex w-full max-w-[1040px] flex-col gap-5 px-6 py-8">
         <Surface variant="flat" padding="4">
-          <EmptyState motif="settings" title={t("forbiddenTitle")} body={t("forbiddenBody")} />
+          <EmptyState
+            motif="settings"
+            direction="outline"
+            title={t("forbiddenTitle")}
+            body={t("forbiddenBody")}
+          />
         </Surface>
       </main>
     );
@@ -263,10 +268,16 @@ export default function AdminBillingPage(): JSX.Element {
       {invoices?.length === 0 ? (
         <Surface variant="flat" padding="4">
           {filter === "NEEDS_REVIEW" ? (
-            <EmptyState motif="settings" title={t("emptyTitle")} body={t("emptyBody")} />
+            <EmptyState
+              motif="settings"
+              direction="outline"
+              title={t("emptyTitle")}
+              body={t("emptyBody")}
+            />
           ) : (
             <EmptyState
               motif="settings"
+              direction="outline"
               title={t("emptyFilteredTitle")}
               body={t("emptyFilteredBody")}
             />

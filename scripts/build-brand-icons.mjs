@@ -9,6 +9,7 @@
 //   apps/mobile/assets/splash.png          (2048, brand-50 bg, 45% pad)
 //   apps/web/public/icon-192.png           (192,  transparent)
 //   apps/web/public/icon-512.png           (512,  transparent)
+//   apps/web/public/og-card.png            (1200x630, brand-50 bg — link previews)
 //
 // Run:  pnpm tokens:icons
 // Re-run any time logo-mark.svg changes.
@@ -24,20 +25,65 @@ const SRC_MARK = resolve(repoRoot, "packages/ui-tokens/assets/logo-mark.svg");
 const MOBILE_ASSETS = resolve(repoRoot, "apps/mobile/assets");
 
 const OUTPUTS = [
-  { file: "icon.png",          size: 1024, src: SRC_MARK, background: null },
-  { file: "adaptive-icon.png", size: 1024, src: SRC_MARK,
-    background: { r: 244, g: 246, b: 239, alpha: 1 }, pad: 0.22 },
-  { file: "favicon.png",       size: 48,   src: SRC_MARK, background: null },
-  { file: "splash.png",        size: 2048, src: SRC_MARK,
-    background: { r: 244, g: 246, b: 239, alpha: 1 }, pad: 0.45 },
-  { file: "icon-192.png",      size: 192,  src: SRC_MARK, background: null,
-    dest: resolve(repoRoot, "apps/web/public/icon-192.png") },
-  { file: "icon-512.png",      size: 512,  src: SRC_MARK, background: null,
-    dest: resolve(repoRoot, "apps/web/public/icon-512.png") },
+  { file: "icon.png", size: 1024, src: SRC_MARK, background: null },
+  {
+    file: "adaptive-icon.png",
+    size: 1024,
+    src: SRC_MARK,
+    background: { r: 244, g: 246, b: 239, alpha: 1 },
+    pad: 0.22,
+  },
+  { file: "favicon.png", size: 48, src: SRC_MARK, background: null },
+  {
+    file: "splash.png",
+    size: 2048,
+    src: SRC_MARK,
+    background: { r: 244, g: 246, b: 239, alpha: 1 },
+    pad: 0.45,
+  },
+  {
+    file: "icon-192.png",
+    size: 192,
+    src: SRC_MARK,
+    background: null,
+    dest: resolve(repoRoot, "apps/web/public/icon-192.png"),
+  },
+  {
+    file: "icon-512.png",
+    size: 512,
+    src: SRC_MARK,
+    background: null,
+    dest: resolve(repoRoot, "apps/web/public/icon-512.png"),
+  },
 ];
+
+// Open Graph card: the mark centered on parchment. Deliberately text-free —
+// og:title/og:description carry the words, and SVG text would depend on
+// Arabic-capable fonts existing on whatever machine renders this.
+async function buildOgCard(svgBuf) {
+  const dest = resolve(repoRoot, "apps/web/public/og-card.png");
+  const mark = await sharp(svgBuf, { density: 384 })
+    .resize(360, 360, { fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } })
+    .png()
+    .toBuffer();
+  await sharp({
+    create: {
+      width: 1200,
+      height: 630,
+      channels: 4,
+      background: { r: 244, g: 246, b: 239, alpha: 1 },
+    },
+  })
+    .composite([{ input: mark, gravity: "center" }])
+    .png()
+    .toFile(dest);
+  // eslint-disable-next-line no-console
+  console.warn(`✓ ${dest}`);
+}
 
 async function build() {
   const svgBuf = readFileSync(SRC_MARK);
+  await buildOgCard(svgBuf);
   for (const out of OUTPUTS) {
     const dest = out.dest ?? join(MOBILE_ASSETS, out.file);
     mkdirSync(dirname(dest), { recursive: true });
@@ -46,7 +92,10 @@ async function build() {
       // Render the mark inset by `pad`, composited onto the brand-50 bg.
       const innerSize = Math.round(out.size * (1 - out.pad * 2));
       const inner = await sharp(svgBuf, { density: 384 })
-        .resize(innerSize, innerSize, { fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } })
+        .resize(innerSize, innerSize, {
+          fit: "contain",
+          background: { r: 0, g: 0, b: 0, alpha: 0 },
+        })
         .png()
         .toBuffer();
       await sharp({

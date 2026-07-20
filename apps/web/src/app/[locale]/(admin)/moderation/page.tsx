@@ -237,10 +237,16 @@ export default function ModerationPage(): JSX.Element {
       {reports?.length === 0 ? (
         <Surface variant="flat" padding="4">
           {tab === "open" ? (
-            <EmptyState motif="settings" title={t("emptyTitle")} body={t("emptyBody")} />
+            <EmptyState
+              motif="settings"
+              direction="outline"
+              title={t("emptyTitle")}
+              body={t("emptyBody")}
+            />
           ) : (
             <EmptyState
               motif="settings"
+              direction="outline"
               title={t("emptyResolvedTitle")}
               body={t("emptyResolvedBody")}
             />

@@ -70,9 +70,5 @@ Re-audited 2026-07-19 against both barrel files (`packages/ui-web/src/index.ts`,
 - Native persistent `Alert` is not yet promoted; use `Banner`/`StateMessage` until three screens need it.
 - `Tabs`/`SegmentedControl` and `ReportDialog`/`ReportSheet` naming drift — pick one stem when either component is next touched.
 - Native has no date-picker primitive (`expiresAt` omitted from native post-a-job; server default applies).
-- No screen consumes Illustration `direction="outline"|"block"` yet — placement is a Pass 2 design decision.
-- Large route files still need split passes before deeper visual polish:
-  - `apps/mobile/app/(app)/onboarding.tsx`
-  - `apps/web/src/app/[locale]/(app)/messages/page.tsx`
-  - `apps/mobile/app/(app)/messages/[roomId].tsx`
-  - `apps/web/src/app/[locale]/(app)/me/edit/page.tsx`
+- Illustration `direction` placement decided 2026-07-20: admin/internal surfaces use the `outline` kit (differentiates operator tools from the warm product surface); `block` stays unconsumed until a design pass claims it.
+- Route-split pass done: web messages, mobile room thread, and web me/edit are thin shells over `_components`/`_hooks`; mobile onboarding sits at ~280 LOC, under the qa-design ceiling — split only if it grows.
