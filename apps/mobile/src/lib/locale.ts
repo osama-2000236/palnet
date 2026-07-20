@@ -36,8 +36,21 @@ function readWebPreference(): SupportedLocale | null {
   }
 }
 
+function readNativePreference(): SupportedLocale | null {
+  if (Platform.OS === "web") return null;
+  try {
+    const raw = SecureStore.getItem(KEY);
+    return raw ? normalizeLocale(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+// Must stay synchronous: i18n and I18nManager.forceRTL both run at module
+// import, before the first render. An async read lands too late and the app
+// boots in the device language with the wrong layout direction.
 export function getInitialLocale(): SupportedLocale {
-  return readWebPreference() ?? deviceLocale();
+  return readWebPreference() ?? readNativePreference() ?? deviceLocale();
 }
 
 export async function readLocalePreference(): Promise<SupportedLocale | null> {
@@ -52,6 +65,16 @@ export async function writeLocalePreference(locale: SupportedLocale): Promise<vo
     return;
   }
   await SecureStore.setItemAsync(KEY, locale);
+}
+
+// Captured at import, before applyLocaleDirection mutates the flag. Android
+// keeps the native direction until the next launch, so this — not the live
+// I18nManager value — is the direction the current session actually renders in.
+const bootIsRTL = I18nManager.isRTL;
+
+/** True when `locale` disagrees with the direction this launch rendered in. */
+export function needsRestartForDirection(locale: SupportedLocale): boolean {
+  return bootIsRTL !== (locale === "ar-PS");
 }
 
 export function applyLocaleDirection(locale: SupportedLocale): void {

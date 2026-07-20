@@ -4,7 +4,7 @@
 // pushable hidden routes so primary navigation stays focused and touch-safe.
 
 import { WsNotificationEvent } from "@baydar/shared";
-import { nativeTokens } from "@baydar/ui-native";
+import { nativeTokens, useThemeTokens } from "@baydar/ui-native";
 import { Tabs, router, usePathname } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -39,6 +39,7 @@ export default function AppTabsLayout(): JSX.Element {
   const { t } = useTranslation();
   const pathname = usePathname();
   const insets = useSafeAreaInsets();
+  const tk = useThemeTokens();
   const isConnected = useNetworkStore((state) => state.isConnected);
   const [notificationBadge, setNotificationBadge] = useState<number>(0);
   const [gateState, setGateState] = useState<"checking" | "ready" | "error">("checking");
@@ -177,14 +178,14 @@ export default function AppTabsLayout(): JSX.Element {
       backBehavior="history"
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: nativeTokens.color.brand700,
-        tabBarInactiveTintColor: nativeTokens.color.inkMuted,
+        tabBarActiveTintColor: tk.color.brand700,
+        tabBarInactiveTintColor: tk.color.inkMuted,
         tabBarStyle: {
           height: nativeTokens.chrome.tabHeight + Math.max(insets.bottom, nativeTokens.space[2]),
           paddingTop: nativeTokens.space[2],
           paddingBottom: Math.max(insets.bottom, nativeTokens.space[2]),
-          backgroundColor: nativeTokens.color.surface,
-          borderTopColor: nativeTokens.color.lineSoft,
+          backgroundColor: tk.color.surface,
+          borderTopColor: tk.color.lineSoft,
           borderTopWidth: 1,
         },
         tabBarItemStyle: {

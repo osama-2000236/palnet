@@ -1,7 +1,7 @@
 import { Surface, nativeTokens } from "@baydar/ui-native";
 import { router } from "expo-router";
 import { useTranslation } from "react-i18next";
-import { Pressable, Text, View } from "react-native";
+import { I18nManager, Pressable, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 type SettingsHref =
@@ -134,10 +134,9 @@ export default function SettingsLandingScreen(): JSX.Element {
                   style={{
                     color: nativeTokens.color.inkSubtle,
                     fontSize: nativeTokens.type.scale.body.size,
-                    transform: [{ scaleX: -1 }],
                   }}
                 >
-                  ›
+                  {I18nManager.isRTL ? "‹" : "›"}
                 </Text>
               </Pressable>
             ))}

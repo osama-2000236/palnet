@@ -20,13 +20,14 @@ import { track } from "@/lib/analytics";
 import { getAccessToken, readSession } from "@/lib/session";
 
 import { FeedTopBar, JobsEntry, ProfileSummary } from "./_feed/FeedParts";
-import { feedStyles } from "./_feed/styles";
+import { useFeedStyles } from "./_feed/styles";
 
 const FeedPage = cursorPage(PostSchema);
 const UnreadCountEnvelope = z.object({ count: z.number().int().nonnegative() });
 
 export default function FeedScreen(): JSX.Element {
   const { t } = useTranslation();
+  const feedStyles = useFeedStyles();
   const [posts, setPosts] = useState<Post[]>([]);
   const [cursor, setCursor] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
