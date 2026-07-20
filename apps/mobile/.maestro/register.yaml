@@ -1,0 +1,49 @@
+appId: ps.baydar.app
+name: "register → onboarding"
+tags:
+  - smoke
+---
+- launchApp:
+    clearState: true
+- runFlow:
+    when:
+      visible: "تخطي"
+    commands:
+      - tapOn: "تخطي"
+
+- extendedWaitUntil:
+    visible:
+      id: "landing-primary-cta"
+    timeout: 30000
+- tapOn:
+    id: "landing-primary-cta"
+
+- extendedWaitUntil:
+    visible:
+      id: "register-first-name-input"
+    timeout: 15000
+# Unique email per run so re-runs never collide with an existing account.
+- evalScript: ${output.email = "qa+maestro-" + Date.now() + "@baydar.test"}
+- tapOn:
+    id: "register-first-name-input"
+- inputText: "ميسترو"
+- tapOn:
+    id: "register-last-name-input"
+- inputText: "تجربة"
+- tapOn:
+    id: "register-email-input"
+- inputText: ${output.email}
+- tapOn:
+    id: "register-password-input"
+- inputText: "Password123"
+- hideKeyboard
+- tapOn:
+    id: "register-accept-terms"
+- tapOn:
+    id: "register-submit"
+
+# Fresh accounts have no professional background → mandatory onboarding.
+- extendedWaitUntil:
+    visible:
+      id: "onboarding-screen"
+    timeout: 30000

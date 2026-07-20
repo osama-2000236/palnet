@@ -1,6 +1,6 @@
 # Maestro smoke flows
 
-Three opt-in E2E flows that exercise the critical mobile paths. Run them
+Opt-in E2E flows that exercise the critical mobile paths. Run them
 against a local Expo dev build or an EAS preview build before tagging a
 release.
 
@@ -9,6 +9,10 @@ release.
 - `login-to-feed.yaml` — onboarding skip → login form → feed shell.
 - `compose-post.yaml` — login → composer modal → optimistic insert.
 - `send-message.yaml` — login → first room → send message → assert echo.
+- `register.yaml` — landing CTA → register (unique email per run) → mandatory onboarding.
+- `search.yaml` — feed search entry → query → result tabs render.
+- `apply-to-job.yaml` — jobs list → first job → apply (skipped if already applied) → applied badge.
+- `profile-edit.yaml` — me tab → edit profile → basics card renders.
 
 All flows assume the completed local QA fixture user
 `qa+qa-android-0520.0000@baydar.test` (password `Password123`) and at least

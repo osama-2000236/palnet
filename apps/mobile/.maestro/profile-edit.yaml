@@ -1,0 +1,20 @@
+appId: ps.baydar.app
+name: "profile edit"
+tags:
+  - smoke
+---
+- runFlow: login-to-feed.yaml
+
+- tapOn:
+    id: "tab-me"
+- extendedWaitUntil:
+    visible:
+      id: "profile-edit-button"
+    timeout: 15000
+- tapOn:
+    id: "profile-edit-button"
+
+# Edit screen success criterion: the basics card save action renders.
+- extendedWaitUntil:
+    visible: "حفظ"
+    timeout: 15000
