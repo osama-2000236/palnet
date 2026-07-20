@@ -16,12 +16,11 @@ import {
   Surface,
   nativeTokens,
   useThemeTokens,
-  type NativeTheme,
 } from "@baydar/ui-native";
 import { router } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
+import { FlatList, Pressable, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { z } from "zod";
 
@@ -29,6 +28,7 @@ import { apiFetch, apiFetchPage } from "@/lib/api";
 import { apiErrorMessage } from "@/lib/api-errors";
 import { successHaptic, tapHaptic } from "@/lib/haptics";
 import { getAccessToken } from "@/lib/session";
+import { useStyles } from "@/styles/new-room";
 
 const ConnectionsEnvelope = z.object({ data: z.array(ConnectionListItem) });
 
@@ -244,65 +244,4 @@ export default function NewGroupRoomScreen(): JSX.Element {
       </View>
     </SafeAreaView>
   );
-}
-
-function makeStyles(c: NativeTheme["color"]) {
-  return StyleSheet.create({
-    screen: {
-      flex: 1,
-      backgroundColor: c.surfaceMuted,
-    },
-    wrap: {
-      flex: 1,
-      gap: nativeTokens.space[3],
-      paddingHorizontal: nativeTokens.space[4],
-      paddingTop: nativeTokens.space[6],
-      paddingBottom: nativeTokens.space[4],
-    },
-    label: {
-      color: c.ink,
-      fontFamily: nativeTokens.type.family.sans,
-      fontSize: nativeTokens.type.scale.small.size,
-      fontWeight: "700",
-    },
-    spaced: {
-      marginTop: nativeTokens.space[3],
-    },
-    inputSpacing: {
-      marginTop: nativeTokens.space[1],
-    },
-    error: {
-      color: c.danger,
-      fontFamily: nativeTokens.type.family.sans,
-      fontSize: nativeTokens.type.scale.small.size,
-    },
-    list: {
-      paddingBottom: nativeTokens.space[3],
-    },
-    row: {
-      flexDirection: "row",
-      alignItems: "center",
-      gap: nativeTokens.space[3],
-    },
-    personText: {
-      flex: 1,
-      minWidth: 0,
-    },
-    name: {
-      color: c.ink,
-      fontFamily: nativeTokens.type.family.sans,
-      fontSize: nativeTokens.type.scale.h3.size,
-      fontWeight: "700",
-    },
-    headline: {
-      color: c.inkMuted,
-      fontFamily: nativeTokens.type.family.sans,
-      fontSize: nativeTokens.type.scale.small.size,
-    },
-  });
-}
-
-function useStyles() {
-  const c = useThemeTokens().color;
-  return useMemo(() => makeStyles(c), [c]);
 }
