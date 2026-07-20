@@ -26,7 +26,6 @@ import { QueryProvider } from "@/lib/query-provider";
 import { useNetworkStore } from "@/store/network";
 import { useThemeStore } from "@/store/theme";
 
-import "../global.css";
 import "../src/i18n";
 
 initObservability();
