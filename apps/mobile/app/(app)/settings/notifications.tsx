@@ -8,7 +8,7 @@ import {
   NotificationPreferences as NotificationPreferencesSchema,
   type NotificationPreferences,
 } from "@baydar/shared";
-import { Button, Surface, Switch, nativeTokens, useToast } from "@baydar/ui-native";
+import { Button, Surface, Switch, nativeTokens, useToast, useThemeTokens } from "@baydar/ui-native";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ScrollView, Text, View } from "react-native";
@@ -44,6 +44,7 @@ const EVENT_GROUPS: EventGroup[] = [
 const LOCKED_EVENTS: ReadonlySet<EventKey> = new Set(["moderationAction"]);
 
 export default function NotificationsSettingsScreen(): JSX.Element {
+  const c = useThemeTokens().color;
   const { t } = useTranslation();
   const { showToast } = useToast();
   const [prefs, setPrefs] = useState<NotificationPreferences | null>(null);
@@ -111,7 +112,7 @@ export default function NotificationsSettingsScreen(): JSX.Element {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: nativeTokens.color.surfaceMuted }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: c.surfaceMuted }}>
       <ScrollView
         contentContainerStyle={{ padding: nativeTokens.space[4], gap: nativeTokens.space[3] }}
       >
@@ -119,7 +120,7 @@ export default function NotificationsSettingsScreen(): JSX.Element {
           <Text
             accessibilityRole="header"
             style={{
-              color: nativeTokens.color.ink,
+              color: c.ink,
               fontSize: nativeTokens.type.scale.h1.size,
               lineHeight: nativeTokens.type.scale.h1.line,
               fontWeight: "700",
@@ -130,7 +131,7 @@ export default function NotificationsSettingsScreen(): JSX.Element {
           </Text>
           <Text
             style={{
-              color: nativeTokens.color.inkMuted,
+              color: c.inkMuted,
               fontSize: nativeTokens.type.scale.small.size,
               lineHeight: nativeTokens.type.scale.small.line,
               textAlign: "auto",
@@ -142,7 +143,7 @@ export default function NotificationsSettingsScreen(): JSX.Element {
 
         {loading ? (
           <Surface variant="card" padding="6">
-            <Text style={{ color: nativeTokens.color.inkMuted }}>{t("common.loading")}</Text>
+            <Text style={{ color: c.inkMuted }}>{t("common.loading")}</Text>
           </Surface>
         ) : prefs ? (
           <>
@@ -153,12 +154,12 @@ export default function NotificationsSettingsScreen(): JSX.Element {
                     paddingHorizontal: nativeTokens.space[4],
                     paddingVertical: nativeTokens.space[3],
                     borderBottomWidth: 1,
-                    borderBottomColor: nativeTokens.color.lineSoft,
+                    borderBottomColor: c.lineSoft,
                   }}
                 >
                   <Text
                     style={{
-                      color: nativeTokens.color.ink,
+                      color: c.ink,
                       fontSize: nativeTokens.type.scale.body.size,
                       fontWeight: "600",
                       textAlign: "auto",
@@ -168,7 +169,7 @@ export default function NotificationsSettingsScreen(): JSX.Element {
                   </Text>
                   <Text
                     style={{
-                      color: nativeTokens.color.inkMuted,
+                      color: c.inkMuted,
                       fontSize: nativeTokens.type.scale.small.size,
                       marginTop: 2,
                       textAlign: "auto",
@@ -186,7 +187,7 @@ export default function NotificationsSettingsScreen(): JSX.Element {
                         paddingHorizontal: nativeTokens.space[4],
                         paddingVertical: nativeTokens.space[3],
                         borderBottomWidth: 1,
-                        borderBottomColor: nativeTokens.color.lineSoft,
+                        borderBottomColor: c.lineSoft,
                         flexDirection: "row",
                         alignItems: "center",
                         gap: nativeTokens.space[3],
@@ -195,7 +196,7 @@ export default function NotificationsSettingsScreen(): JSX.Element {
                       <View style={{ flex: 1, minWidth: 0 }}>
                         <Text
                           style={{
-                            color: nativeTokens.color.ink,
+                            color: c.ink,
                             fontSize: nativeTokens.type.scale.body.size,
                             fontWeight: "500",
                             textAlign: "auto",
@@ -205,7 +206,7 @@ export default function NotificationsSettingsScreen(): JSX.Element {
                         </Text>
                         <Text
                           style={{
-                            color: nativeTokens.color.inkMuted,
+                            color: c.inkMuted,
                             fontSize: nativeTokens.type.scale.small.size,
                             marginTop: 2,
                             textAlign: "auto",
@@ -217,7 +218,7 @@ export default function NotificationsSettingsScreen(): JSX.Element {
                       <View style={{ alignItems: "center", width: 56 }}>
                         <Text
                           style={{
-                            color: nativeTokens.color.inkSubtle,
+                            color: c.inkSubtle,
                             fontSize: 11,
                             fontWeight: "600",
                             marginBottom: 4,
@@ -235,7 +236,7 @@ export default function NotificationsSettingsScreen(): JSX.Element {
                       <View style={{ alignItems: "center", width: 56 }}>
                         <Text
                           style={{
-                            color: nativeTokens.color.inkSubtle,
+                            color: c.inkSubtle,
                             fontSize: 11,
                             fontWeight: "600",
                             marginBottom: 4,
@@ -256,9 +257,7 @@ export default function NotificationsSettingsScreen(): JSX.Element {
               </Surface>
             ))}
 
-            {error ? (
-              <Text style={{ color: nativeTokens.color.danger, textAlign: "auto" }}>{error}</Text>
-            ) : null}
+            {error ? <Text style={{ color: c.danger, textAlign: "auto" }}>{error}</Text> : null}
 
             <View
               style={{
@@ -282,7 +281,7 @@ export default function NotificationsSettingsScreen(): JSX.Element {
               {dirty ? (
                 <Text
                   style={{
-                    color: nativeTokens.color.inkMuted,
+                    color: c.inkMuted,
                     fontSize: nativeTokens.type.scale.small.size,
                     alignSelf: "center",
                   }}

@@ -1,10 +1,18 @@
 import { AuthSession } from "@baydar/shared";
-import { Button, Input, Surface, nativeTokens, useToast } from "@baydar/ui-native";
+import {
+  Button,
+  Input,
+  Surface,
+  nativeTokens,
+  useToast,
+  useThemeTokens,
+  type NativeTheme,
+} from "@baydar/ui-native";
 import * as FileSystem from "expo-file-system/legacy";
 import { router } from "expo-router";
 // eslint-disable-next-line import/no-unresolved -- dependency is pinned for Expo install; absent only in this offline sandbox.
 import * as Sharing from "expo-sharing";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Modal, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -19,6 +27,7 @@ const MeUser = AuthSession.shape.user;
 const CONFIRMATION = "DELETE_MY_ACCOUNT";
 
 export default function AccountSettingsScreen(): JSX.Element {
+  const styles = useStyles();
   const { t } = useTranslation();
   const { showToast } = useToast();
   const [confirming, setConfirming] = useState(false);
@@ -209,90 +218,97 @@ export default function AccountSettingsScreen(): JSX.Element {
   );
 }
 
-const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: nativeTokens.color.surfaceMuted,
-  },
-  body: {
-    padding: nativeTokens.space[4],
-    gap: nativeTokens.space[4],
-  },
-  title: {
-    color: nativeTokens.color.ink,
-    fontFamily: nativeTokens.type.family.sans,
-    fontSize: nativeTokens.type.scale.h1.size,
-    lineHeight: nativeTokens.type.scale.h1.line,
-    fontWeight: "700",
-  },
-  section: {
-    gap: nativeTokens.space[3],
-  },
-  sectionTitle: {
-    color: nativeTokens.color.ink,
-    fontFamily: nativeTokens.type.family.sans,
-    fontSize: nativeTokens.type.scale.h3.size,
-    lineHeight: nativeTokens.type.scale.h3.line,
-    fontWeight: "700",
-  },
-  dangerTitle: {
-    color: nativeTokens.color.danger,
-  },
-  copy: {
-    color: nativeTokens.color.inkMuted,
-    fontFamily: nativeTokens.type.family.sans,
-    fontSize: nativeTokens.type.scale.small.size,
-    lineHeight: nativeTokens.type.scale.small.line,
-  },
-  emailRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    alignItems: "center",
-    gap: nativeTokens.space[2],
-  },
-  emailText: {
-    color: nativeTokens.color.ink,
-    fontFamily: nativeTokens.type.family.sans,
-    fontSize: nativeTokens.type.scale.body.size,
-    lineHeight: nativeTokens.type.scale.body.line,
-    writingDirection: "ltr",
-  },
-  badge: {
-    borderRadius: nativeTokens.radius.full,
-    paddingHorizontal: nativeTokens.space[2],
-    paddingVertical: 2,
-    fontFamily: nativeTokens.type.family.sans,
-    fontSize: nativeTokens.type.scale.caption.size,
-    fontWeight: "600",
-  },
-  verifiedBadge: {
-    color: nativeTokens.color.brand700,
-    backgroundColor: nativeTokens.color.brand50,
-  },
-  unverifiedBadge: {
-    color: nativeTokens.color.inkMuted,
-    backgroundColor: nativeTokens.color.surfaceSubtle,
-  },
-  modalBackdrop: {
-    flex: 1,
-    justifyContent: "center",
-    backgroundColor: nativeTokens.color.scrim,
-    padding: nativeTokens.space[4],
-  },
-  modal: {
-    gap: nativeTokens.space[3],
-    borderRadius: nativeTokens.radius.lg,
-    backgroundColor: nativeTokens.color.surface,
-    padding: nativeTokens.space[4],
-  },
-  input: {
-    color: nativeTokens.color.ink,
-    fontFamily: nativeTokens.type.family.mono,
-    writingDirection: "ltr",
-  },
-  actions: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: nativeTokens.space[2],
-  },
-});
+function makeStyles(c: NativeTheme["color"]) {
+  return StyleSheet.create({
+    screen: {
+      flex: 1,
+      backgroundColor: c.surfaceMuted,
+    },
+    body: {
+      padding: nativeTokens.space[4],
+      gap: nativeTokens.space[4],
+    },
+    title: {
+      color: c.ink,
+      fontFamily: nativeTokens.type.family.sans,
+      fontSize: nativeTokens.type.scale.h1.size,
+      lineHeight: nativeTokens.type.scale.h1.line,
+      fontWeight: "700",
+    },
+    section: {
+      gap: nativeTokens.space[3],
+    },
+    sectionTitle: {
+      color: c.ink,
+      fontFamily: nativeTokens.type.family.sans,
+      fontSize: nativeTokens.type.scale.h3.size,
+      lineHeight: nativeTokens.type.scale.h3.line,
+      fontWeight: "700",
+    },
+    dangerTitle: {
+      color: c.danger,
+    },
+    copy: {
+      color: c.inkMuted,
+      fontFamily: nativeTokens.type.family.sans,
+      fontSize: nativeTokens.type.scale.small.size,
+      lineHeight: nativeTokens.type.scale.small.line,
+    },
+    emailRow: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      alignItems: "center",
+      gap: nativeTokens.space[2],
+    },
+    emailText: {
+      color: c.ink,
+      fontFamily: nativeTokens.type.family.sans,
+      fontSize: nativeTokens.type.scale.body.size,
+      lineHeight: nativeTokens.type.scale.body.line,
+      writingDirection: "ltr",
+    },
+    badge: {
+      borderRadius: nativeTokens.radius.full,
+      paddingHorizontal: nativeTokens.space[2],
+      paddingVertical: 2,
+      fontFamily: nativeTokens.type.family.sans,
+      fontSize: nativeTokens.type.scale.caption.size,
+      fontWeight: "600",
+    },
+    verifiedBadge: {
+      color: c.brand700,
+      backgroundColor: c.brand50,
+    },
+    unverifiedBadge: {
+      color: c.inkMuted,
+      backgroundColor: c.surfaceSubtle,
+    },
+    modalBackdrop: {
+      flex: 1,
+      justifyContent: "center",
+      backgroundColor: c.scrim,
+      padding: nativeTokens.space[4],
+    },
+    modal: {
+      gap: nativeTokens.space[3],
+      borderRadius: nativeTokens.radius.lg,
+      backgroundColor: c.surface,
+      padding: nativeTokens.space[4],
+    },
+    input: {
+      color: c.ink,
+      fontFamily: nativeTokens.type.family.mono,
+      writingDirection: "ltr",
+    },
+    actions: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: nativeTokens.space[2],
+    },
+  });
+}
+
+function useStyles() {
+  const c = useThemeTokens().color;
+  return useMemo(() => makeStyles(c), [c]);
+}

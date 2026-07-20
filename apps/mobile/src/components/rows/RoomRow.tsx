@@ -1,7 +1,7 @@
 import { type ChatRoom } from "@baydar/shared";
-import { Avatar, Surface, nativeTokens } from "@baydar/ui-native";
+import { Avatar, Surface, nativeTokens, useThemeTokens, type NativeTheme } from "@baydar/ui-native";
 import { router } from "expo-router";
-import { memo } from "react";
+import { memo, useMemo } from "react";
 import { I18nManager, Pressable, StyleSheet, Text, View } from "react-native";
 import { Swipeable } from "react-native-gesture-handler";
 
@@ -20,6 +20,7 @@ export const RoomRow = memo(function RoomRow({
   onArchive,
   testID,
 }: RoomRowProps): JSX.Element {
+  const styles = useStyles();
   const other = viewerId ? room.members.find((m) => m.userId !== viewerId) : null;
   const label = room.isGroup
     ? (room.title ?? room.id)
@@ -103,56 +104,63 @@ function areEqual(prev: RoomRowProps, next: RoomRowProps): boolean {
   );
 }
 
-const styles = StyleSheet.create({
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: nativeTokens.space[3],
-  },
-  textWrap: {
-    flex: 1,
-    minWidth: 0,
-  },
-  title: {
-    color: nativeTokens.color.ink,
-    fontFamily: nativeTokens.type.family.sans,
-    fontSize: nativeTokens.type.scale.h3.size,
-    lineHeight: nativeTokens.type.scale.h3.line,
-    fontWeight: "600",
-  },
-  preview: {
-    color: nativeTokens.color.inkMuted,
-    fontFamily: nativeTokens.type.family.sans,
-    fontSize: nativeTokens.type.scale.small.size,
-  },
-  badge: {
-    marginStart: nativeTokens.space[2],
-    minWidth: nativeTokens.space[6],
-    height: nativeTokens.space[6],
-    paddingHorizontal: nativeTokens.space[2],
-    borderRadius: nativeTokens.radius.full,
-    backgroundColor: nativeTokens.color.accent600,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  badgeText: {
-    color: nativeTokens.color.inkInverse,
-    fontFamily: nativeTokens.type.family.sans,
-    fontSize: nativeTokens.type.scale.caption.size,
-    fontWeight: "700",
-  },
-  archiveAction: {
-    minWidth: nativeTokens.space[20],
-    borderRadius: nativeTokens.radius.md,
-    backgroundColor: nativeTokens.color.danger,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: nativeTokens.space[3],
-  },
-  archiveText: {
-    color: nativeTokens.color.inkInverse,
-    fontFamily: nativeTokens.type.family.sans,
-    fontSize: nativeTokens.type.scale.small.size,
-    fontWeight: "700",
-  },
-});
+function makeStyles(c: NativeTheme["color"]) {
+  return StyleSheet.create({
+    row: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: nativeTokens.space[3],
+    },
+    textWrap: {
+      flex: 1,
+      minWidth: 0,
+    },
+    title: {
+      color: c.ink,
+      fontFamily: nativeTokens.type.family.sans,
+      fontSize: nativeTokens.type.scale.h3.size,
+      lineHeight: nativeTokens.type.scale.h3.line,
+      fontWeight: "600",
+    },
+    preview: {
+      color: c.inkMuted,
+      fontFamily: nativeTokens.type.family.sans,
+      fontSize: nativeTokens.type.scale.small.size,
+    },
+    badge: {
+      marginStart: nativeTokens.space[2],
+      minWidth: nativeTokens.space[6],
+      height: nativeTokens.space[6],
+      paddingHorizontal: nativeTokens.space[2],
+      borderRadius: nativeTokens.radius.full,
+      backgroundColor: c.accent600,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    badgeText: {
+      color: c.inkInverse,
+      fontFamily: nativeTokens.type.family.sans,
+      fontSize: nativeTokens.type.scale.caption.size,
+      fontWeight: "700",
+    },
+    archiveAction: {
+      minWidth: nativeTokens.space[20],
+      borderRadius: nativeTokens.radius.md,
+      backgroundColor: c.danger,
+      alignItems: "center",
+      justifyContent: "center",
+      paddingHorizontal: nativeTokens.space[3],
+    },
+    archiveText: {
+      color: c.inkInverse,
+      fontFamily: nativeTokens.type.family.sans,
+      fontSize: nativeTokens.type.scale.small.size,
+      fontWeight: "700",
+    },
+  });
+}
+
+function useStyles() {
+  const c = useThemeTokens().color;
+  return useMemo(() => makeStyles(c), [c]);
+}

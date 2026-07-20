@@ -14,7 +14,7 @@ import { clearSession, getAccessToken } from "@/lib/session";
 
 import { Section } from "../_me/Section";
 import { ProfileQuickLinks } from "../_me/ProfileQuickLinks";
-import { styles } from "../_me/styles";
+import { useStyles } from "../_me/styles";
 
 type ProfileTab = "about" | "exp" | "edu" | "skills";
 
@@ -26,6 +26,7 @@ const TABS: { key: ProfileTab; i18n: string }[] = [
 ];
 
 export default function MeScreen(): JSX.Element {
+  const styles = useStyles();
   const { t } = useTranslation();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);

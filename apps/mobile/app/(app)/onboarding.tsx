@@ -1,4 +1,4 @@
-import { nativeTokens } from "@baydar/ui-native";
+import { nativeTokens, useThemeTokens } from "@baydar/ui-native";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as ImagePicker from "expo-image-picker";
 import { router, useLocalSearchParams } from "expo-router";
@@ -32,6 +32,7 @@ import {
 } from "./_onboarding/types";
 
 export default function OnboardingScreen(): JSX.Element {
+  const c = useThemeTokens().color;
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const params = useLocalSearchParams<{ firstName?: string; lastName?: string }>();
@@ -226,10 +227,7 @@ export default function OnboardingScreen(): JSX.Element {
   }
 
   return (
-    <SafeAreaView
-      testID="onboarding-screen"
-      style={{ flex: 1, backgroundColor: nativeTokens.color.surfaceMuted }}
-    >
+    <SafeAreaView testID="onboarding-screen" style={{ flex: 1, backgroundColor: c.surfaceMuted }}>
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : undefined}
         style={{ flex: 1 }}

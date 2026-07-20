@@ -11,8 +11,8 @@ import {
   Icon,
   RecordCardSkeleton,
   Surface,
-  nativeTokens,
   useToast,
+  useThemeTokens,
 } from "@baydar/ui-native";
 import { Image } from "expo-image";
 import { router } from "expo-router";
@@ -26,7 +26,7 @@ import { apiCall, apiFetchPage } from "@/lib/api";
 import { apiErrorMessage } from "@/lib/api-errors";
 import { getAccessToken } from "@/lib/session";
 
-import { styles } from "./_saved/styles";
+import { useStyles } from "./_saved/styles";
 
 const SavedPage = cursorPage(Bookmark);
 
@@ -37,6 +37,8 @@ function buildQs(after: string | null): string {
 }
 
 export default function SavedScreen(): JSX.Element {
+  const c = useThemeTokens().color;
+  const styles = useStyles();
   const { t, i18n } = useTranslation();
   const { showToast } = useToast();
   const [items, setItems] = useState<BookmarkDto[]>([]);
@@ -145,8 +147,8 @@ export default function SavedScreen(): JSX.Element {
               <RefreshControl
                 refreshing={refreshing}
                 onRefresh={() => void refreshSaved()}
-                tintColor={nativeTokens.color.brand600}
-                colors={[nativeTokens.color.brand600]}
+                tintColor={c.brand600}
+                colors={[c.brand600]}
               />
             }
             ListEmptyComponent={
@@ -192,6 +194,8 @@ function SavedRow({
   onOpen: () => void;
   onRemove: () => void;
 }): JSX.Element {
+  const c = useThemeTokens().color;
+  const styles = useStyles();
   return (
     <Surface variant="card" padding="4">
       <Pressable
@@ -211,7 +215,7 @@ function SavedRow({
             <Icon
               name={item.type === BookmarkType.JOB ? "briefcase" : "bookmark"}
               size={20}
-              color={nativeTokens.color.inkMuted}
+              color={c.inkMuted}
             />
           )}
         </View>
@@ -245,7 +249,7 @@ function SavedRow({
             removing ? styles.disabled : null,
           ]}
         >
-          <Icon name="x" size={18} color={nativeTokens.color.inkMuted} />
+          <Icon name="x" size={18} color={c.inkMuted} />
         </Pressable>
       </Pressable>
     </Surface>

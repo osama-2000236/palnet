@@ -3,7 +3,7 @@ import { BlockButton, Button, type BlockButtonLabels } from "@baydar/ui-native";
 import { useTranslation } from "react-i18next";
 import { View } from "react-native";
 
-import { profileStyles } from "./styles";
+import { useProfileStyles } from "./styles";
 
 export type ConnectionAction = "CONNECT" | "WITHDRAW" | "ACCEPT" | "DECLINE" | "REMOVE";
 
@@ -28,6 +28,7 @@ export function ProfileActions({
   onMessage: () => void;
   onReport: () => void;
 }): JSX.Element | null {
+  const profileStyles = useProfileStyles();
   const { t } = useTranslation();
   const conn = profile.viewer?.connection;
 

@@ -6,9 +6,11 @@ import {
   RecordCard,
   RecordCardSkeleton,
   nativeTokens,
+  useThemeTokens,
+  type NativeTheme,
 } from "@baydar/ui-native";
 import { Link, Stack, useLocalSearchParams, useRouter } from "expo-router";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { FlatList, Pressable, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -20,6 +22,7 @@ import { apiErrorMessage } from "@/lib/api-errors";
 const JobsPage = cursorPage(EmployerJob);
 
 export default function CompanyJobsScreen(): JSX.Element {
+  const styles = useStyles();
   const { t } = useTranslation();
   const router = useRouter();
   const { slug } = useLocalSearchParams<{ slug: string }>();
@@ -139,26 +142,33 @@ export default function CompanyJobsScreen(): JSX.Element {
   );
 }
 
-const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: nativeTokens.color.surfaceMuted,
-  },
-  content: {
-    flex: 1,
-    paddingHorizontal: nativeTokens.space[4],
-    paddingTop: nativeTokens.space[3],
-  },
-  actions: {
-    flexDirection: "row",
-    justifyContent: "flex-end",
-    paddingBottom: nativeTokens.space[3],
-  },
-  listContent: {
-    gap: nativeTokens.space[3],
-    paddingBottom: nativeTokens.space[6],
-  },
-  skeletonStack: {
-    gap: nativeTokens.space[3],
-  },
-});
+function makeStyles(c: NativeTheme["color"]) {
+  return StyleSheet.create({
+    screen: {
+      flex: 1,
+      backgroundColor: c.surfaceMuted,
+    },
+    content: {
+      flex: 1,
+      paddingHorizontal: nativeTokens.space[4],
+      paddingTop: nativeTokens.space[3],
+    },
+    actions: {
+      flexDirection: "row",
+      justifyContent: "flex-end",
+      paddingBottom: nativeTokens.space[3],
+    },
+    listContent: {
+      gap: nativeTokens.space[3],
+      paddingBottom: nativeTokens.space[6],
+    },
+    skeletonStack: {
+      gap: nativeTokens.space[3],
+    },
+  });
+}
+
+function useStyles() {
+  const c = useThemeTokens().color;
+  return useMemo(() => makeStyles(c), [c]);
+}

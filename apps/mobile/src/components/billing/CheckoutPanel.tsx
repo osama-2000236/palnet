@@ -7,8 +7,15 @@ import {
   type PlanOffer as PlanOfferDto,
   type WalletAvailability as WalletAvailabilityDto,
 } from "@baydar/shared";
-import { Button, RadioGroup, Surface, nativeTokens } from "@baydar/ui-native";
-import { useState } from "react";
+import {
+  Button,
+  RadioGroup,
+  Surface,
+  nativeTokens,
+  useThemeTokens,
+  type NativeTheme,
+} from "@baydar/ui-native";
+import { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Linking, StyleSheet, Text, View } from "react-native";
 
@@ -48,6 +55,7 @@ export function CheckoutPanel({
   karama = null,
   onActivated,
 }: CheckoutPanelProps): JSX.Element {
+  const styles = useStyles();
   const { t } = useTranslation();
   const [method, setMethod] = useState<PaymentMethod>(PaymentMethod.CARD);
   const [busy, setBusy] = useState(false);
@@ -204,6 +212,7 @@ function BankRow({
   value: string;
   ltr?: boolean;
 }): JSX.Element {
+  const styles = useStyles();
   return (
     <View style={styles.bankRow}>
       <Text style={styles.bankLabel}>{label}</Text>
@@ -214,47 +223,54 @@ function BankRow({
   );
 }
 
-const styles = StyleSheet.create({
-  checkoutCard: {
-    gap: nativeTokens.space[3],
-  },
-  bankCard: {
-    gap: nativeTokens.space[2],
-  },
-  sectionTitle: {
-    color: nativeTokens.color.ink,
-    fontFamily: nativeTokens.type.family.sans,
-    fontSize: nativeTokens.type.scale.h3.size,
-    lineHeight: nativeTokens.type.scale.h3.line,
-    fontWeight: "700",
-  },
-  bodyText: {
-    color: nativeTokens.color.inkMuted,
-    fontFamily: nativeTokens.type.family.body,
-    fontSize: nativeTokens.type.scale.small.size,
-    lineHeight: nativeTokens.type.scale.small.line,
-  },
-  bankRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    gap: nativeTokens.space[3],
-    paddingVertical: nativeTokens.space[1],
-  },
-  bankLabel: {
-    color: nativeTokens.color.inkMuted,
-    fontFamily: nativeTokens.type.family.sans,
-    fontSize: nativeTokens.type.scale.small.size,
-    lineHeight: nativeTokens.type.scale.small.line,
-  },
-  bankValue: {
-    flexShrink: 1,
-    color: nativeTokens.color.ink,
-    fontFamily: nativeTokens.type.family.sans,
-    fontSize: nativeTokens.type.scale.small.size,
-    lineHeight: nativeTokens.type.scale.small.line,
-    fontWeight: "700",
-  },
-  ltrValue: {
-    writingDirection: "ltr",
-  },
-});
+function makeStyles(c: NativeTheme["color"]) {
+  return StyleSheet.create({
+    checkoutCard: {
+      gap: nativeTokens.space[3],
+    },
+    bankCard: {
+      gap: nativeTokens.space[2],
+    },
+    sectionTitle: {
+      color: c.ink,
+      fontFamily: nativeTokens.type.family.sans,
+      fontSize: nativeTokens.type.scale.h3.size,
+      lineHeight: nativeTokens.type.scale.h3.line,
+      fontWeight: "700",
+    },
+    bodyText: {
+      color: c.inkMuted,
+      fontFamily: nativeTokens.type.family.body,
+      fontSize: nativeTokens.type.scale.small.size,
+      lineHeight: nativeTokens.type.scale.small.line,
+    },
+    bankRow: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      gap: nativeTokens.space[3],
+      paddingVertical: nativeTokens.space[1],
+    },
+    bankLabel: {
+      color: c.inkMuted,
+      fontFamily: nativeTokens.type.family.sans,
+      fontSize: nativeTokens.type.scale.small.size,
+      lineHeight: nativeTokens.type.scale.small.line,
+    },
+    bankValue: {
+      flexShrink: 1,
+      color: c.ink,
+      fontFamily: nativeTokens.type.family.sans,
+      fontSize: nativeTokens.type.scale.small.size,
+      lineHeight: nativeTokens.type.scale.small.line,
+      fontWeight: "700",
+    },
+    ltrValue: {
+      writingDirection: "ltr",
+    },
+  });
+}
+
+function useStyles() {
+  const c = useThemeTokens().color;
+  return useMemo(() => makeStyles(c), [c]);
+}

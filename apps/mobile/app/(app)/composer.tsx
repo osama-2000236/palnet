@@ -8,6 +8,7 @@ import {
   Surface,
   nativeTokens,
   type AvatarUser,
+  useThemeTokens,
 } from "@baydar/ui-native";
 import { Image } from "expo-image";
 import * as ImagePicker from "expo-image-picker";
@@ -24,12 +25,14 @@ import { successHaptic, tapHaptic } from "@/lib/haptics";
 import { getAccessToken, readSession } from "@/lib/session";
 import { uploadAsset } from "@/lib/uploads";
 
-import { styles } from "./_composer/styles";
+import { useStyles } from "./_composer/styles";
 
 const MAX_BODY = 3000;
 const MAX_MEDIA = 8;
 
 export default function ComposerScreen(): JSX.Element {
+  const c = useThemeTokens().color;
+  const styles = useStyles();
   const { t, i18n } = useTranslation();
   const [body, setBody] = useState("");
   const [media, setMedia] = useState<MediaRef[]>([]);
@@ -194,11 +197,7 @@ export default function ComposerScreen(): JSX.Element {
                   placeholder={m.blurhash ? { blurhash: m.blurhash } : undefined}
                 />
                 <View style={styles.removeBadge}>
-                  <Icon
-                    name="x"
-                    size={nativeTokens.space[4]}
-                    color={nativeTokens.color.inkInverse}
-                  />
+                  <Icon name="x" size={nativeTokens.space[4]} color={c.inkInverse} />
                 </View>
               </Pressable>
             ))}
@@ -209,9 +208,7 @@ export default function ComposerScreen(): JSX.Element {
           <Button
             variant="secondary"
             size="md"
-            leading={
-              <Icon name="image" size={nativeTokens.space[5]} color={nativeTokens.color.ink} />
-            }
+            leading={<Icon name="image" size={nativeTokens.space[5]} color={c.ink} />}
             onPress={pickImage}
             disabled={uploading || media.length >= MAX_MEDIA}
             accessibilityLabel={t("composer.addImage")}
@@ -235,7 +232,7 @@ export default function ComposerScreen(): JSX.Element {
           disabled={body.trim().length === 0}
           loading={busy}
           accessibilityLabel={t("composer.submit")}
-          leading={<Icon name="send" size={18} color={nativeTokens.color.inkInverse} />}
+          leading={<Icon name="send" size={18} color={c.inkInverse} />}
         >
           {t("composer.submit")}
         </Button>

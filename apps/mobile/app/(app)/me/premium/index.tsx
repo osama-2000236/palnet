@@ -9,8 +9,15 @@ import {
   type Invoice as InvoiceDto,
   type KaramaBalance as KaramaBalanceDto,
 } from "@baydar/shared";
-import { Button, Icon, Surface, nativeTokens } from "@baydar/ui-native";
-import { useCallback, useEffect, useState } from "react";
+import {
+  Button,
+  Icon,
+  Surface,
+  nativeTokens,
+  useThemeTokens,
+  type NativeTheme,
+} from "@baydar/ui-native";
+import { useCallback, useEffect, useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -29,6 +36,7 @@ const FREE_FEATURE_KEYS = ["profile", "connect", "jobs"] as const;
 const PREMIUM_FEATURE_KEYS = ["analytics", "whoViewed", "diasporaBadge"] as const;
 
 export default function PremiumScreen(): JSX.Element {
+  const styles = useStyles();
   const { t } = useTranslation();
 
   const [catalog, setCatalog] = useState<BillingCatalogDto | null>(null);
@@ -184,11 +192,13 @@ export default function PremiumScreen(): JSX.Element {
 }
 
 function FeatureList({ items }: { items: string[] }): JSX.Element {
+  const c = useThemeTokens().color;
+  const styles = useStyles();
   return (
     <View style={styles.featureList}>
       {items.map((item) => (
         <View key={item} style={styles.featureRow}>
-          <Icon name="check" size={16} color={nativeTokens.color.brand600} />
+          <Icon name="check" size={16} color={c.brand600} />
           <Text style={styles.featureItem}>{item}</Text>
         </View>
       ))}
@@ -196,86 +206,93 @@ function FeatureList({ items }: { items: string[] }): JSX.Element {
   );
 }
 
-const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: nativeTokens.color.surfaceMuted,
-  },
-  centerScreen: {
-    flex: 1,
-    justifyContent: "center",
-    backgroundColor: nativeTokens.color.surfaceMuted,
-    padding: nativeTokens.space[4],
-  },
-  scrollBody: {
-    padding: nativeTokens.space[4],
-    gap: nativeTokens.space[4],
-  },
-  kicker: {
-    color: nativeTokens.color.brand700,
-    fontFamily: nativeTokens.type.family.sans,
-    fontSize: nativeTokens.type.scale.small.size,
-    lineHeight: nativeTokens.type.scale.small.line,
-    fontWeight: "700",
-  },
-  title: {
-    color: nativeTokens.color.ink,
-    fontFamily: nativeTokens.type.family.sans,
-    fontSize: nativeTokens.type.scale.h1.size,
-    lineHeight: nativeTokens.type.scale.h1.line,
-    fontWeight: "700",
-  },
-  subtitle: {
-    color: nativeTokens.color.inkMuted,
-    fontFamily: nativeTokens.type.family.body,
-    fontSize: nativeTokens.type.scale.small.size,
-    lineHeight: nativeTokens.type.scale.small.line,
-  },
-  planCard: {
-    gap: nativeTokens.space[2],
-  },
-  premiumCard: {
-    borderColor: nativeTokens.color.brand600,
-  },
-  planName: {
-    color: nativeTokens.color.ink,
-    fontFamily: nativeTokens.type.family.sans,
-    fontSize: nativeTokens.type.scale.h3.size,
-    lineHeight: nativeTokens.type.scale.h3.line,
-    fontWeight: "700",
-  },
-  planTagline: {
-    color: nativeTokens.color.inkMuted,
-    fontFamily: nativeTokens.type.family.body,
-    fontSize: nativeTokens.type.scale.small.size,
-    lineHeight: nativeTokens.type.scale.small.line,
-  },
-  planPrice: {
-    color: nativeTokens.color.ink,
-    fontFamily: nativeTokens.type.family.sans,
-    fontSize: nativeTokens.type.scale.h2.size,
-    lineHeight: nativeTokens.type.scale.h2.line,
-    fontWeight: "800",
-  },
-  planOriginal: {
-    color: nativeTokens.color.inkMuted,
-    fontFamily: nativeTokens.type.family.body,
-    fontSize: nativeTokens.type.scale.small.size,
-    lineHeight: nativeTokens.type.scale.small.line,
-  },
-  featureList: {
-    gap: nativeTokens.space[2],
-  },
-  featureRow: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    gap: nativeTokens.space[2],
-  },
-  featureItem: {
-    flexShrink: 1,
-    color: nativeTokens.color.ink,
-    fontFamily: nativeTokens.type.family.body,
-    fontSize: nativeTokens.type.scale.small.size,
-    lineHeight: nativeTokens.type.scale.small.line,
-  },
-});
+function makeStyles(c: NativeTheme["color"]) {
+  return StyleSheet.create({
+    screen: {
+      flex: 1,
+      backgroundColor: c.surfaceMuted,
+    },
+    centerScreen: {
+      flex: 1,
+      justifyContent: "center",
+      backgroundColor: c.surfaceMuted,
+      padding: nativeTokens.space[4],
+    },
+    scrollBody: {
+      padding: nativeTokens.space[4],
+      gap: nativeTokens.space[4],
+    },
+    kicker: {
+      color: c.brand700,
+      fontFamily: nativeTokens.type.family.sans,
+      fontSize: nativeTokens.type.scale.small.size,
+      lineHeight: nativeTokens.type.scale.small.line,
+      fontWeight: "700",
+    },
+    title: {
+      color: c.ink,
+      fontFamily: nativeTokens.type.family.sans,
+      fontSize: nativeTokens.type.scale.h1.size,
+      lineHeight: nativeTokens.type.scale.h1.line,
+      fontWeight: "700",
+    },
+    subtitle: {
+      color: c.inkMuted,
+      fontFamily: nativeTokens.type.family.body,
+      fontSize: nativeTokens.type.scale.small.size,
+      lineHeight: nativeTokens.type.scale.small.line,
+    },
+    planCard: {
+      gap: nativeTokens.space[2],
+    },
+    premiumCard: {
+      borderColor: c.brand600,
+    },
+    planName: {
+      color: c.ink,
+      fontFamily: nativeTokens.type.family.sans,
+      fontSize: nativeTokens.type.scale.h3.size,
+      lineHeight: nativeTokens.type.scale.h3.line,
+      fontWeight: "700",
+    },
+    planTagline: {
+      color: c.inkMuted,
+      fontFamily: nativeTokens.type.family.body,
+      fontSize: nativeTokens.type.scale.small.size,
+      lineHeight: nativeTokens.type.scale.small.line,
+    },
+    planPrice: {
+      color: c.ink,
+      fontFamily: nativeTokens.type.family.sans,
+      fontSize: nativeTokens.type.scale.h2.size,
+      lineHeight: nativeTokens.type.scale.h2.line,
+      fontWeight: "800",
+    },
+    planOriginal: {
+      color: c.inkMuted,
+      fontFamily: nativeTokens.type.family.body,
+      fontSize: nativeTokens.type.scale.small.size,
+      lineHeight: nativeTokens.type.scale.small.line,
+    },
+    featureList: {
+      gap: nativeTokens.space[2],
+    },
+    featureRow: {
+      flexDirection: "row",
+      alignItems: "flex-start",
+      gap: nativeTokens.space[2],
+    },
+    featureItem: {
+      flexShrink: 1,
+      color: c.ink,
+      fontFamily: nativeTokens.type.family.body,
+      fontSize: nativeTokens.type.scale.small.size,
+      lineHeight: nativeTokens.type.scale.small.line,
+    },
+  });
+}
+
+function useStyles() {
+  const c = useThemeTokens().color;
+  return useMemo(() => makeStyles(c), [c]);
+}

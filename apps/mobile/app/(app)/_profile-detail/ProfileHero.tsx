@@ -6,7 +6,7 @@ import { Text, View } from "react-native";
 
 import { FieldCover } from "@/components/FieldCover";
 
-import { profileStyles } from "./styles";
+import { useProfileStyles } from "./styles";
 
 export function ProfileHero({
   actionSlot,
@@ -17,6 +17,7 @@ export function ProfileHero({
   profile: Profile;
   onEdit?: () => void;
 }): JSX.Element {
+  const profileStyles = useProfileStyles();
   const { t } = useTranslation();
 
   return (

@@ -15,6 +15,8 @@ import {
   SearchField,
   SegmentedControl,
   nativeTokens,
+  useThemeTokens,
+  type NativeTheme,
 } from "@baydar/ui-native";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -37,6 +39,7 @@ type SearchType = "people" | "posts" | "jobs" | "companies";
 type SearchHit = SearchPersonHit | SearchPostHit | SearchJobHit | SearchCompanyHit;
 
 export default function SearchScreen(): JSX.Element {
+  const styles = useStyles();
   const { t } = useTranslation();
   const [type, setType] = useState<SearchType>("people");
   const [q, setQ] = useState("");
@@ -192,26 +195,33 @@ async function fetchSearchPage(type: SearchType, qs: string, token: string | und
   return apiFetchPage(path, CompaniesPage, { token });
 }
 
-const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: nativeTokens.color.surfaceMuted,
-  },
-  content: {
-    flex: 1,
-    paddingHorizontal: nativeTokens.space[4],
-    paddingTop: nativeTokens.space[3],
-  },
-  tabs: {
-    marginBottom: nativeTokens.space[3],
-  },
-  listContent: {
-    paddingBottom: nativeTokens.space[6],
-  },
-  separator: {
-    height: nativeTokens.space[2],
-  },
-  skeletonStack: {
-    gap: nativeTokens.space[2],
-  },
-});
+function makeStyles(c: NativeTheme["color"]) {
+  return StyleSheet.create({
+    screen: {
+      flex: 1,
+      backgroundColor: c.surfaceMuted,
+    },
+    content: {
+      flex: 1,
+      paddingHorizontal: nativeTokens.space[4],
+      paddingTop: nativeTokens.space[3],
+    },
+    tabs: {
+      marginBottom: nativeTokens.space[3],
+    },
+    listContent: {
+      paddingBottom: nativeTokens.space[6],
+    },
+    separator: {
+      height: nativeTokens.space[2],
+    },
+    skeletonStack: {
+      gap: nativeTokens.space[2],
+    },
+  });
+}
+
+function useStyles() {
+  const c = useThemeTokens().color;
+  return useMemo(() => makeStyles(c), [c]);
+}

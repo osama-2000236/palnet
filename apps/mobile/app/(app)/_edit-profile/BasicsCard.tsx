@@ -11,9 +11,10 @@ import { apiErrorMessage } from "@/lib/api-errors";
 import { getAccessToken } from "@/lib/session";
 import { uploadAsset } from "@/lib/uploads";
 import { Card, Input, type ProfileCardProps } from "./shared";
-import { styles } from "./styles";
+import { useStyles } from "./styles";
 
 export function BasicsCard({ profile, onChanged, onError }: ProfileCardProps): JSX.Element {
+  const styles = useStyles();
   const { t } = useTranslation();
   const [firstName, setFirstName] = useState(profile.firstName);
   const [lastName, setLastName] = useState(profile.lastName);

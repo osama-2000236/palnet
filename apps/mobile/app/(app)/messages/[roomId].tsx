@@ -1,4 +1,10 @@
-import { AppHeader, Button, nativeTokens, type MessageBubbleLabels } from "@baydar/ui-native";
+import {
+  AppHeader,
+  Button,
+  nativeTokens,
+  type MessageBubbleLabels,
+  useThemeTokens,
+} from "@baydar/ui-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
@@ -12,20 +18,21 @@ import { ThreadErrorBanner, UnreadJumpBanner } from "../_message-thread/MessageT
 import { useMessageThread } from "../_message-thread/useMessageThread";
 
 export default function MessageThreadScreen(): JSX.Element {
+  const c = useThemeTokens().color;
   const { t, i18n } = useTranslation();
   const params = useLocalSearchParams<{ roomId: string }>();
   const thread = useMessageThread(params.roomId);
   const bubbleLabels = useBubbleLabels();
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: nativeTokens.color.surfaceMuted }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: c.surfaceMuted }}>
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : undefined}
         style={{ flex: 1 }}
       >
         <View
           style={{
-            backgroundColor: nativeTokens.color.surface,
+            backgroundColor: c.surface,
             paddingHorizontal: nativeTokens.space[4],
           }}
         >

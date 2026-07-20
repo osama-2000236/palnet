@@ -10,6 +10,7 @@ import {
   RecordCardSkeleton,
   SearchField,
   nativeTokens,
+  useThemeTokens,
 } from "@baydar/ui-native";
 import { useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -34,6 +35,7 @@ import {
 const JobsPage = cursorPage(JobSchema);
 
 export default function JobsScreen(): JSX.Element {
+  const c = useThemeTokens().color;
   const { t } = useTranslation();
   const params = useLocalSearchParams<{ companyId?: string; company?: string }>();
   const [items, setItems] = useState<Job[]>([]);
@@ -134,7 +136,7 @@ export default function JobsScreen(): JSX.Element {
   );
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: nativeTokens.color.surfaceMuted }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: c.surfaceMuted }}>
       <View
         style={{
           flex: 1,
@@ -150,11 +152,7 @@ export default function JobsScreen(): JSX.Element {
               variant={activeCount > 0 ? "primary" : "secondary"}
               size="sm"
               leading={
-                <Icon
-                  name="search"
-                  size={16}
-                  color={activeCount > 0 ? nativeTokens.color.inkInverse : nativeTokens.color.ink}
-                />
+                <Icon name="search" size={16} color={activeCount > 0 ? c.inkInverse : c.ink} />
               }
               onPress={() => setSheetOpen(true)}
               accessibilityLabel={t("jobs.filters")}
@@ -231,8 +229,8 @@ export default function JobsScreen(): JSX.Element {
                 <RefreshControl
                   refreshing={refreshing}
                   onRefresh={() => void refreshJobs()}
-                  tintColor={nativeTokens.color.brand600}
-                  colors={[nativeTokens.color.brand600]}
+                  tintColor={c.brand600}
+                  colors={[c.brand600]}
                 />
               }
               ListEmptyComponent={

@@ -1,7 +1,7 @@
-import { Surface, nativeTokens } from "@baydar/ui-native";
+import { Surface, nativeTokens, useThemeTokens } from "@baydar/ui-native";
 import { router } from "expo-router";
 import { useTranslation } from "react-i18next";
-import { I18nManager, Pressable, Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 type SettingsHref =
@@ -19,6 +19,7 @@ interface Item {
 }
 
 export default function SettingsLandingScreen(): JSX.Element {
+  const c = useThemeTokens().color;
   const { t } = useTranslation();
   const items: Item[] = [
     {
@@ -54,13 +55,13 @@ export default function SettingsLandingScreen(): JSX.Element {
   ];
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: nativeTokens.color.surfaceMuted }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: c.surfaceMuted }}>
       <View style={{ flex: 1, padding: nativeTokens.space[4], gap: nativeTokens.space[3] }}>
         <View style={{ gap: nativeTokens.space[1] }}>
           <Text
             accessibilityRole="header"
             style={{
-              color: nativeTokens.color.ink,
+              color: c.ink,
               fontFamily: nativeTokens.type.family.sans,
               fontSize: nativeTokens.type.scale.h1.size,
               lineHeight: nativeTokens.type.scale.h1.line,
@@ -72,7 +73,7 @@ export default function SettingsLandingScreen(): JSX.Element {
           </Text>
           <Text
             style={{
-              color: nativeTokens.color.inkMuted,
+              color: c.inkMuted,
               fontFamily: nativeTokens.type.family.body,
               fontSize: nativeTokens.type.scale.small.size,
               lineHeight: nativeTokens.type.scale.small.line,
@@ -95,7 +96,7 @@ export default function SettingsLandingScreen(): JSX.Element {
                   paddingVertical: nativeTokens.space[4],
                   paddingHorizontal: nativeTokens.space[4],
                   borderTopWidth: i > 0 ? 1 : 0,
-                  borderTopColor: nativeTokens.color.lineSoft,
+                  borderTopColor: c.lineSoft,
                   opacity: pressed ? 0.85 : 1,
                   flexDirection: "row",
                   alignItems: "flex-start",
@@ -106,7 +107,7 @@ export default function SettingsLandingScreen(): JSX.Element {
                 <View style={{ flex: 1, minWidth: 0 }}>
                   <Text
                     style={{
-                      color: nativeTokens.color.ink,
+                      color: c.ink,
                       fontFamily: nativeTokens.type.family.sans,
                       fontSize: nativeTokens.type.scale.body.size,
                       lineHeight: nativeTokens.type.scale.body.line,
@@ -118,7 +119,7 @@ export default function SettingsLandingScreen(): JSX.Element {
                   </Text>
                   <Text
                     style={{
-                      color: nativeTokens.color.inkMuted,
+                      color: c.inkMuted,
                       fontFamily: nativeTokens.type.family.body,
                       fontSize: nativeTokens.type.scale.small.size,
                       lineHeight: nativeTokens.type.scale.small.line,
@@ -129,15 +130,8 @@ export default function SettingsLandingScreen(): JSX.Element {
                     {item.desc}
                   </Text>
                 </View>
-                <Text
-                  accessibilityElementsHidden
-                  style={{
-                    color: nativeTokens.color.inkSubtle,
-                    fontSize: nativeTokens.type.scale.body.size,
-                  }}
-                >
-                  {I18nManager.isRTL ? "‹" : "›"}
-                </Text>
+                {/* No chevron: the row is already a labelled link, and a bare
+                    glyph can't be mirrored reliably across RTL launches. */}
               </Pressable>
             ))}
           </View>

@@ -1,4 +1,4 @@
-import { AppHeader, Button, Surface, nativeTokens } from "@baydar/ui-native";
+import { AppHeader, Button, Surface, nativeTokens, useThemeTokens } from "@baydar/ui-native";
 import { router } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -13,13 +13,14 @@ import {
   ActivityMetrics,
   ActivitySkeleton,
   ActivityTaskList,
-  bodyStyle,
-  sectionTitleStyle,
+  useActivityTextStyles,
 } from "./_activity/ActivityParts";
 import { buildActivityMetrics, buildActivityTasks, fetchActivityState } from "./_activity/api";
 import type { ActivityState } from "./_activity/types";
 
 export default function ActivityScreen(): JSX.Element {
+  const textStyles = useActivityTextStyles();
+  const c = useThemeTokens().color;
   const { t } = useTranslation();
   const [state, setState] = useState<ActivityState | null>(null);
   const [loading, setLoading] = useState(true);
@@ -62,14 +63,14 @@ export default function ActivityScreen(): JSX.Element {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: nativeTokens.color.surfaceMuted }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: c.surfaceMuted }}>
       <ScrollView
         contentInsetAdjustmentBehavior="automatic"
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
-            tintColor={nativeTokens.color.brand600}
-            colors={[nativeTokens.color.brand600]}
+            tintColor={c.brand600}
+            colors={[c.brand600]}
             onRefresh={() => void refresh()}
           />
         }
@@ -97,11 +98,11 @@ export default function ActivityScreen(): JSX.Element {
               tasks={tasks}
             />
             <Surface variant="card" padding="4" style={{ gap: nativeTokens.space[3] }}>
-              <Text selectable style={sectionTitleStyle}>
+              <Text selectable style={textStyles.sectionTitle}>
                 {t("activity.jobs.title")}
               </Text>
               {state.jobs.length === 0 ? (
-                <Text selectable style={bodyStyle}>
+                <Text selectable style={textStyles.body}>
                   {t("activity.jobs.empty")}
                 </Text>
               ) : (

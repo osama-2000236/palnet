@@ -5,7 +5,7 @@ import {
   type Post,
   type Profile,
 } from "@baydar/shared";
-import { ComposerEntry, PostCardSkeleton, nativeTokens } from "@baydar/ui-native";
+import { ComposerEntry, PostCardSkeleton, useThemeTokens } from "@baydar/ui-native";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { z } from "zod";
@@ -26,6 +26,7 @@ const FeedPage = cursorPage(PostSchema);
 const UnreadCountEnvelope = z.object({ count: z.number().int().nonnegative() });
 
 export default function FeedScreen(): JSX.Element {
+  const c = useThemeTokens().color;
   const { t } = useTranslation();
   const feedStyles = useFeedStyles();
   const [posts, setPosts] = useState<Post[]>([]);
@@ -169,8 +170,8 @@ export default function FeedScreen(): JSX.Element {
             <RefreshControl
               refreshing={refreshing}
               onRefresh={() => void refreshFeed()}
-              tintColor={nativeTokens.color.brand600}
-              colors={[nativeTokens.color.brand600]}
+              tintColor={c.brand600}
+              colors={[c.brand600]}
             />
           }
           ListEmptyComponent={

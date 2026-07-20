@@ -1,4 +1,4 @@
-import { Icon, type IconName, nativeTokens } from "@baydar/ui-native";
+import { Icon, type IconName, nativeTokens, useThemeTokens } from "@baydar/ui-native";
 import type { BottomTabBarButtonProps } from "@react-navigation/bottom-tabs";
 import { Pressable, Text, View } from "react-native";
 
@@ -63,6 +63,7 @@ export function TabIcon({
   color: string;
   focused: boolean;
 }): JSX.Element {
+  const c = useThemeTokens().color;
   return (
     <View
       style={{
@@ -71,7 +72,7 @@ export function TabIcon({
         borderRadius: nativeTokens.radius.full,
         alignItems: "center",
         justifyContent: "center",
-        backgroundColor: focused ? nativeTokens.color.brand50 : "transparent",
+        backgroundColor: focused ? c.brand50 : "transparent",
       }}
     >
       <Icon

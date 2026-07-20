@@ -1,7 +1,15 @@
 import { cursorPage, Notification as NotificationSchema, type Notification } from "@baydar/shared";
-import { AppHeader, Icon, RecordCardSkeleton, nativeTokens, useToast } from "@baydar/ui-native";
+import {
+  AppHeader,
+  Icon,
+  RecordCardSkeleton,
+  nativeTokens,
+  useToast,
+  useThemeTokens,
+  type NativeTheme,
+} from "@baydar/ui-native";
 import { router, useFocusEffect } from "expo-router";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { FlatList, I18nManager, RefreshControl, StyleSheet, Text, View } from "react-native";
 import { Swipeable } from "react-native-gesture-handler";
@@ -17,6 +25,8 @@ import { getAccessToken, readSession } from "@/lib/session";
 const NotificationsPage = cursorPage(NotificationSchema);
 
 export default function NotificationsScreen(): JSX.Element {
+  const c = useThemeTokens().color;
+  const styles = useStyles();
   const { t } = useTranslation();
   const { showToast } = useToast();
   const { mutate: dismissNotification } = useDismissNotification();
@@ -143,8 +153,8 @@ export default function NotificationsScreen(): JSX.Element {
             <RefreshControl
               refreshing={refreshing}
               onRefresh={() => void refreshNotifications()}
-              tintColor={nativeTokens.color.brand600}
-              colors={[nativeTokens.color.brand600]}
+              tintColor={c.brand600}
+              colors={[c.brand600]}
             />
           }
           ListEmptyComponent={
@@ -178,15 +188,17 @@ function DismissibleNotificationRow({
   item: Notification;
   onDismiss(item: Notification): void;
 }): JSX.Element {
+  const c = useThemeTokens().color;
+  const styles = useStyles();
   const { t } = useTranslation();
   const renderDismissAction = useCallback(
     () => (
       <View style={styles.dismissAction}>
-        <Icon name="x" size={nativeTokens.space[5]} color={nativeTokens.color.inkInverse} />
+        <Icon name="x" size={nativeTokens.space[5]} color={c.inkInverse} />
         <Text style={styles.dismissActionText}>{t("notifications.dismiss.action")}</Text>
       </View>
     ),
-    [t],
+    [c.inkInverse, styles.dismissAction, styles.dismissActionText, t],
   );
 
   return (
@@ -207,40 +219,47 @@ function restoreNotification(items: Notification[], item: Notification): Notific
   return [...items, item].sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt));
 }
 
-const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: nativeTokens.color.surfaceMuted,
-  },
-  content: {
-    flex: 1,
-    paddingHorizontal: nativeTokens.space[4],
-    paddingTop: nativeTokens.space[3],
-  },
-  listContent: {
-    paddingBottom: nativeTokens.space[6],
-  },
-  separator: {
-    height: nativeTokens.space[2],
-  },
-  skeletonStack: {
-    gap: nativeTokens.space[2],
-  },
-  dismissAction: {
-    minWidth: nativeTokens.space[24],
-    borderRadius: nativeTokens.radius.md,
-    backgroundColor: nativeTokens.color.danger,
-    alignItems: "center",
-    justifyContent: "center",
-    gap: nativeTokens.space[1],
-    paddingHorizontal: nativeTokens.space[3],
-  },
-  dismissActionText: {
-    color: nativeTokens.color.inkInverse,
-    fontFamily: nativeTokens.type.family.sans,
-    fontSize: nativeTokens.type.scale.caption.size,
-    lineHeight: nativeTokens.type.scale.caption.line,
-    fontWeight: "700",
-    textAlign: "center",
-  },
-});
+function makeStyles(c: NativeTheme["color"]) {
+  return StyleSheet.create({
+    screen: {
+      flex: 1,
+      backgroundColor: c.surfaceMuted,
+    },
+    content: {
+      flex: 1,
+      paddingHorizontal: nativeTokens.space[4],
+      paddingTop: nativeTokens.space[3],
+    },
+    listContent: {
+      paddingBottom: nativeTokens.space[6],
+    },
+    separator: {
+      height: nativeTokens.space[2],
+    },
+    skeletonStack: {
+      gap: nativeTokens.space[2],
+    },
+    dismissAction: {
+      minWidth: nativeTokens.space[24],
+      borderRadius: nativeTokens.radius.md,
+      backgroundColor: c.danger,
+      alignItems: "center",
+      justifyContent: "center",
+      gap: nativeTokens.space[1],
+      paddingHorizontal: nativeTokens.space[3],
+    },
+    dismissActionText: {
+      color: c.inkInverse,
+      fontFamily: nativeTokens.type.family.sans,
+      fontSize: nativeTokens.type.scale.caption.size,
+      lineHeight: nativeTokens.type.scale.caption.line,
+      fontWeight: "700",
+      textAlign: "center",
+    },
+  });
+}
+
+function useStyles() {
+  const c = useThemeTokens().color;
+  return useMemo(() => makeStyles(c), [c]);
+}

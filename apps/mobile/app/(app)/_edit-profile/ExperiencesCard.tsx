@@ -1,5 +1,5 @@
 import { ExperienceBody, JobLocationMode, Profile as ProfileSchema } from "@baydar/shared";
-import { Button, Icon, Surface, nativeTokens } from "@baydar/ui-native";
+import { Button, Icon, Surface, nativeTokens, useThemeTokens } from "@baydar/ui-native";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Text, View } from "react-native";
@@ -8,9 +8,11 @@ import { apiFetch } from "@/lib/api";
 import { apiErrorMessage } from "@/lib/api-errors";
 import { getAccessToken } from "@/lib/session";
 import { Card, Input, parseDateInput, type ProfileCardProps } from "./shared";
-import { styles } from "./styles";
+import { useStyles } from "./styles";
 
 export function ExperiencesCard({ profile, onChanged, onError }: ProfileCardProps): JSX.Element {
+  const c = useThemeTokens().color;
+  const styles = useStyles();
   const { t } = useTranslation();
   const [show, setShow] = useState(false);
   const [title, setTitle] = useState("");
@@ -153,9 +155,7 @@ export function ExperiencesCard({ profile, onChanged, onError }: ProfileCardProp
         <Button
           variant="ghost"
           size="sm"
-          leading={
-            <Icon name="plus" size={nativeTokens.space[4]} color={nativeTokens.color.brand700} />
-          }
+          leading={<Icon name="plus" size={nativeTokens.space[4]} color={c.brand700} />}
           onPress={() => setShow(true)}
         >
           {t("profile.add")}

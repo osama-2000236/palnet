@@ -67,14 +67,14 @@ export async function writeLocalePreference(locale: SupportedLocale): Promise<vo
   await SecureStore.setItemAsync(KEY, locale);
 }
 
-// Captured at import, before applyLocaleDirection mutates the flag. Android
-// keeps the native direction until the next launch, so this — not the live
-// I18nManager value — is the direction the current session actually renders in.
-const bootIsRTL = I18nManager.isRTL;
+// The locale this launch actually rendered with. I18nManager.isRTL is not a
+// usable comparison here: forceRTL only lands on the next launch, so the JS
+// flag and the native layout disagree for a whole session.
+const bootLocale = getInitialLocale();
 
-/** True when `locale` disagrees with the direction this launch rendered in. */
+/** True when `locale` needs a restart to take effect (ar-PS and en differ in direction). */
 export function needsRestartForDirection(locale: SupportedLocale): boolean {
-  return bootIsRTL !== (locale === "ar-PS");
+  return locale !== bootLocale;
 }
 
 export function applyLocaleDirection(locale: SupportedLocale): void {

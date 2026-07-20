@@ -1,4 +1,4 @@
-import { Button, Surface, nativeTokens } from "@baydar/ui-native";
+import { Button, Surface, nativeTokens, useThemeTokens } from "@baydar/ui-native";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { router } from "expo-router";
 import { useState } from "react";
@@ -41,6 +41,7 @@ const registerSchema = z.object({
 });
 
 export default function RegisterScreen(): JSX.Element {
+  const c = useThemeTokens().color;
   const { i18n, t } = useTranslation();
   const [error, setError] = useState<string | null>(null);
   const isConnected = useNetworkStore((state) => state.isConnected);
@@ -217,7 +218,7 @@ export default function RegisterScreen(): JSX.Element {
             selectable
             style={{
               flex: 1,
-              color: nativeTokens.color.ink,
+              color: c.ink,
               fontFamily: nativeTokens.type.family.body,
               fontSize: nativeTokens.type.scale.small.size,
               lineHeight: nativeTokens.type.scale.small.line,
@@ -233,10 +234,10 @@ export default function RegisterScreen(): JSX.Element {
             }
             disabled={isSubmitting}
             trackColor={{
-              false: nativeTokens.color.surfaceSunken,
-              true: nativeTokens.color.brand200,
+              false: c.surfaceSunken,
+              true: c.brand200,
             }}
-            thumbColor={accept ? nativeTokens.color.brand600 : nativeTokens.color.surface}
+            thumbColor={accept ? c.brand600 : c.surface}
           />
         </Pressable>
         {errors.acceptTerms?.message ? (
@@ -244,7 +245,7 @@ export default function RegisterScreen(): JSX.Element {
             selectable
             accessibilityRole="alert"
             style={{
-              color: nativeTokens.color.danger,
+              color: c.danger,
               fontFamily: nativeTokens.type.family.sans,
               fontSize: nativeTokens.type.scale.caption.size,
               lineHeight: nativeTokens.type.scale.caption.line,

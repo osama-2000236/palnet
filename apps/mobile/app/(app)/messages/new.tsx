@@ -15,6 +15,8 @@ import {
   Skeleton,
   Surface,
   nativeTokens,
+  useThemeTokens,
+  type NativeTheme,
 } from "@baydar/ui-native";
 import { router } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -31,6 +33,8 @@ import { getAccessToken } from "@/lib/session";
 const ConnectionsEnvelope = z.object({ data: z.array(ConnectionListItem) });
 
 export default function NewGroupRoomScreen(): JSX.Element {
+  const c = useThemeTokens().color;
+  const styles = useStyles();
   const { t } = useTranslation();
   const [token, setToken] = useState<string | null>(null);
   const [connections, setConnections] = useState<ConnectionListItemType[]>([]);
@@ -233,7 +237,7 @@ export default function NewGroupRoomScreen(): JSX.Element {
           onPress={() => void submit()}
           accessibilityLabel={t("messaging.newGroup.submit")}
           loading={submitting}
-          leading={<Icon name="send" size={18} color={nativeTokens.color.inkInverse} />}
+          leading={<Icon name="send" size={18} color={c.inkInverse} />}
         >
           {t("messaging.newGroup.submit")}
         </Button>
@@ -242,56 +246,63 @@ export default function NewGroupRoomScreen(): JSX.Element {
   );
 }
 
-const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: nativeTokens.color.surfaceMuted,
-  },
-  wrap: {
-    flex: 1,
-    gap: nativeTokens.space[3],
-    paddingHorizontal: nativeTokens.space[4],
-    paddingTop: nativeTokens.space[6],
-    paddingBottom: nativeTokens.space[4],
-  },
-  label: {
-    color: nativeTokens.color.ink,
-    fontFamily: nativeTokens.type.family.sans,
-    fontSize: nativeTokens.type.scale.small.size,
-    fontWeight: "700",
-  },
-  spaced: {
-    marginTop: nativeTokens.space[3],
-  },
-  inputSpacing: {
-    marginTop: nativeTokens.space[1],
-  },
-  error: {
-    color: nativeTokens.color.danger,
-    fontFamily: nativeTokens.type.family.sans,
-    fontSize: nativeTokens.type.scale.small.size,
-  },
-  list: {
-    paddingBottom: nativeTokens.space[3],
-  },
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: nativeTokens.space[3],
-  },
-  personText: {
-    flex: 1,
-    minWidth: 0,
-  },
-  name: {
-    color: nativeTokens.color.ink,
-    fontFamily: nativeTokens.type.family.sans,
-    fontSize: nativeTokens.type.scale.h3.size,
-    fontWeight: "700",
-  },
-  headline: {
-    color: nativeTokens.color.inkMuted,
-    fontFamily: nativeTokens.type.family.sans,
-    fontSize: nativeTokens.type.scale.small.size,
-  },
-});
+function makeStyles(c: NativeTheme["color"]) {
+  return StyleSheet.create({
+    screen: {
+      flex: 1,
+      backgroundColor: c.surfaceMuted,
+    },
+    wrap: {
+      flex: 1,
+      gap: nativeTokens.space[3],
+      paddingHorizontal: nativeTokens.space[4],
+      paddingTop: nativeTokens.space[6],
+      paddingBottom: nativeTokens.space[4],
+    },
+    label: {
+      color: c.ink,
+      fontFamily: nativeTokens.type.family.sans,
+      fontSize: nativeTokens.type.scale.small.size,
+      fontWeight: "700",
+    },
+    spaced: {
+      marginTop: nativeTokens.space[3],
+    },
+    inputSpacing: {
+      marginTop: nativeTokens.space[1],
+    },
+    error: {
+      color: c.danger,
+      fontFamily: nativeTokens.type.family.sans,
+      fontSize: nativeTokens.type.scale.small.size,
+    },
+    list: {
+      paddingBottom: nativeTokens.space[3],
+    },
+    row: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: nativeTokens.space[3],
+    },
+    personText: {
+      flex: 1,
+      minWidth: 0,
+    },
+    name: {
+      color: c.ink,
+      fontFamily: nativeTokens.type.family.sans,
+      fontSize: nativeTokens.type.scale.h3.size,
+      fontWeight: "700",
+    },
+    headline: {
+      color: c.inkMuted,
+      fontFamily: nativeTokens.type.family.sans,
+      fontSize: nativeTokens.type.scale.small.size,
+    },
+  });
+}
+
+function useStyles() {
+  const c = useThemeTokens().color;
+  return useMemo(() => makeStyles(c), [c]);
+}

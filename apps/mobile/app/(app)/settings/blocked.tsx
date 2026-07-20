@@ -1,4 +1,11 @@
-import { BlockedListItem, Button, Surface, nativeTokens, useToast } from "@baydar/ui-native";
+import {
+  BlockedListItem,
+  Button,
+  Surface,
+  nativeTokens,
+  useToast,
+  useThemeTokens,
+} from "@baydar/ui-native";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { FlatList, Text, View } from "react-native";
@@ -8,6 +15,7 @@ import { useBlockedUsers, useUnblock } from "@/api/safety";
 import { StateMessage } from "@/components/StateMessage";
 
 export default function BlockedUsersScreen(): JSX.Element {
+  const c = useThemeTokens().color;
   const { t } = useTranslation();
   const { showToast } = useToast();
   const [cursor, setCursor] = useState<string | null>(null);
@@ -16,12 +24,12 @@ export default function BlockedUsersScreen(): JSX.Element {
   const items = blocked.data?.data ?? [];
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: nativeTokens.color.surfaceMuted }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: c.surfaceMuted }}>
       <View style={{ flex: 1, padding: nativeTokens.space[4], gap: nativeTokens.space[3] }}>
         <Text
           accessibilityRole="header"
           style={{
-            color: nativeTokens.color.ink,
+            color: c.ink,
             fontFamily: nativeTokens.type.family.sans,
             fontSize: nativeTokens.type.scale.h1.size,
             lineHeight: nativeTokens.type.scale.h1.line,

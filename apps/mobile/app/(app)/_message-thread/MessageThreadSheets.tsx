@@ -6,6 +6,7 @@ import {
   Sheet,
   nativeTokens,
   type ReportSheetLabels,
+  useThemeTokens,
 } from "@baydar/ui-native";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
@@ -34,6 +35,7 @@ export function MessageThreadSheets({
   onCloseReport(): void;
   onError(message: string): void;
 }): JSX.Element {
+  const c = useThemeTokens().color;
   const { t } = useTranslation();
   const report = useReport();
   const reportLabels = useReportLabels();
@@ -55,7 +57,7 @@ export function MessageThreadSheets({
           placeholder={t("messaging.composePlaceholder")}
           inputStyle={{
             minHeight: nativeTokens.space[24],
-            color: nativeTokens.color.ink,
+            color: c.ink,
             fontFamily: nativeTokens.type.family.sans,
             fontSize: nativeTokens.type.scale.body.size,
             textAlignVertical: "top",

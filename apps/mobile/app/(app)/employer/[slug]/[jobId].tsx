@@ -6,9 +6,11 @@ import {
   RecordCardSkeleton,
   Surface,
   nativeTokens,
+  useThemeTokens,
+  type NativeTheme,
 } from "@baydar/ui-native";
 import { Stack, useLocalSearchParams } from "expo-router";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { FlatList, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -28,6 +30,7 @@ const STATUSES: ApplicationStatus[] = [
 ];
 
 export default function ApplicantsInboxScreen(): JSX.Element {
+  const styles = useStyles();
   const { t } = useTranslation();
   const { slug, jobId } = useLocalSearchParams<{ slug: string; jobId: string }>();
   const [companyId, setCompanyId] = useState<string | null>(null);
@@ -145,45 +148,52 @@ export default function ApplicantsInboxScreen(): JSX.Element {
   );
 }
 
-const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: nativeTokens.color.surfaceMuted,
-  },
-  content: {
-    flex: 1,
-    paddingHorizontal: nativeTokens.space[4],
-    paddingTop: nativeTokens.space[3],
-  },
-  listContent: {
-    gap: nativeTokens.space[3],
-    paddingBottom: nativeTokens.space[6],
-  },
-  skeletonStack: {
-    gap: nativeTokens.space[3],
-  },
-  applicantCard: {
-    gap: nativeTokens.space[2],
-  },
-  applicantName: {
-    color: nativeTokens.color.ink,
-    fontFamily: nativeTokens.type.family.sans,
-    fontSize: nativeTokens.type.scale.h3.size,
-    lineHeight: nativeTokens.type.scale.h3.line,
-    fontWeight: "700",
-    textAlign: "right",
-  },
-  applicantHeadline: {
-    color: nativeTokens.color.inkMuted,
-    fontFamily: nativeTokens.type.family.sans,
-    fontSize: nativeTokens.type.scale.caption.size,
-    lineHeight: nativeTokens.type.scale.caption.line,
-    textAlign: "right",
-  },
-  statusRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: nativeTokens.space[2],
-    marginTop: nativeTokens.space[1],
-  },
-});
+function makeStyles(c: NativeTheme["color"]) {
+  return StyleSheet.create({
+    screen: {
+      flex: 1,
+      backgroundColor: c.surfaceMuted,
+    },
+    content: {
+      flex: 1,
+      paddingHorizontal: nativeTokens.space[4],
+      paddingTop: nativeTokens.space[3],
+    },
+    listContent: {
+      gap: nativeTokens.space[3],
+      paddingBottom: nativeTokens.space[6],
+    },
+    skeletonStack: {
+      gap: nativeTokens.space[3],
+    },
+    applicantCard: {
+      gap: nativeTokens.space[2],
+    },
+    applicantName: {
+      color: c.ink,
+      fontFamily: nativeTokens.type.family.sans,
+      fontSize: nativeTokens.type.scale.h3.size,
+      lineHeight: nativeTokens.type.scale.h3.line,
+      fontWeight: "700",
+      textAlign: "right",
+    },
+    applicantHeadline: {
+      color: c.inkMuted,
+      fontFamily: nativeTokens.type.family.sans,
+      fontSize: nativeTokens.type.scale.caption.size,
+      lineHeight: nativeTokens.type.scale.caption.line,
+      textAlign: "right",
+    },
+    statusRow: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: nativeTokens.space[2],
+      marginTop: nativeTokens.space[1],
+    },
+  });
+}
+
+function useStyles() {
+  const c = useThemeTokens().color;
+  return useMemo(() => makeStyles(c), [c]);
+}

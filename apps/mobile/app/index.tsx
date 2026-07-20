@@ -1,4 +1,4 @@
-import { Button, Icon, Surface, nativeTokens } from "@baydar/ui-native";
+import { Button, Icon, Surface, nativeTokens, useThemeTokens } from "@baydar/ui-native";
 import { router } from "expo-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -9,6 +9,7 @@ import { resolvePostAuthRoute } from "@/lib/profile-state";
 import { readSession } from "@/lib/session";
 
 export default function Landing(): JSX.Element {
+  const c = useThemeTokens().color;
   const { t } = useTranslation();
   const [checkingSession, setCheckingSession] = useState(true);
   const intro = useRef(new Animated.Value(0)).current;
@@ -64,10 +65,7 @@ export default function Landing(): JSX.Element {
   );
 
   return (
-    <SafeAreaView
-      testID="landing-screen"
-      style={{ flex: 1, backgroundColor: nativeTokens.color.surfaceMuted }}
-    >
+    <SafeAreaView testID="landing-screen" style={{ flex: 1, backgroundColor: c.surfaceMuted }}>
       <ScrollView
         contentInsetAdjustmentBehavior="automatic"
         contentContainerStyle={{
@@ -93,21 +91,21 @@ export default function Landing(): JSX.Element {
                 height: nativeTokens.space[24],
                 borderRadius: nativeTokens.radius.xl,
                 borderWidth: 1,
-                borderColor: nativeTokens.color.lineSoft,
-                backgroundColor: nativeTokens.color.surface,
+                borderColor: c.lineSoft,
+                backgroundColor: c.surface,
                 alignItems: "center",
                 justifyContent: "center",
                 ...nativeTokens.shadow.card,
               }}
             >
-              <Icon name="logo" size={nativeTokens.space[12]} color={nativeTokens.color.brand600} />
+              <Icon name="logo" size={nativeTokens.space[12]} color={c.brand600} />
             </View>
 
             <View style={{ gap: nativeTokens.space[2], alignItems: "center" }}>
               <Text
                 selectable
                 style={{
-                  color: nativeTokens.color.brand600,
+                  color: c.brand600,
                   fontFamily: nativeTokens.type.family.sans,
                   fontSize: nativeTokens.type.scale.caption.size,
                   fontWeight: nativeTokens.type.scale.caption.weight,
@@ -120,7 +118,7 @@ export default function Landing(): JSX.Element {
               <Text
                 selectable
                 style={{
-                  color: nativeTokens.color.ink,
+                  color: c.ink,
                   fontFamily: nativeTokens.type.family.sans,
                   fontSize: nativeTokens.type.scale.display.size,
                   fontWeight: nativeTokens.type.scale.display.weight,
@@ -133,7 +131,7 @@ export default function Landing(): JSX.Element {
               <Text
                 selectable
                 style={{
-                  color: nativeTokens.color.inkMuted,
+                  color: c.inkMuted,
                   fontFamily: nativeTokens.type.family.body,
                   fontSize: nativeTokens.type.scale.body.size,
                   lineHeight: nativeTokens.type.scale.body.line,
@@ -162,7 +160,7 @@ export default function Landing(): JSX.Element {
                   <Text
                     selectable
                     style={{
-                      color: nativeTokens.color.ink,
+                      color: c.ink,
                       fontFamily: nativeTokens.type.family.sans,
                       fontSize: nativeTokens.type.scale.caption.size,
                       fontWeight: nativeTokens.type.scale.caption.weight,
@@ -203,7 +201,7 @@ export default function Landing(): JSX.Element {
             <Text
               selectable
               style={{
-                color: nativeTokens.color.inkSubtle,
+                color: c.inkSubtle,
                 fontFamily: nativeTokens.type.family.sans,
                 fontSize: nativeTokens.type.scale.caption.size,
                 lineHeight: nativeTokens.type.scale.caption.line,

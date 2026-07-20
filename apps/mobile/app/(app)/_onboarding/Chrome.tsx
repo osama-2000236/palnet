@@ -1,4 +1,4 @@
-import { Button, Surface, nativeTokens } from "@baydar/ui-native";
+import { Button, Surface, nativeTokens, useThemeTokens } from "@baydar/ui-native";
 import { useTranslation } from "react-i18next";
 import { I18nManager, Text, View } from "react-native";
 
@@ -15,6 +15,7 @@ export function OnboardingHeader({
   label: string;
   step: StepKey;
 }): JSX.Element {
+  const c = useThemeTokens().color;
   const { t } = useTranslation();
 
   return (
@@ -22,7 +23,7 @@ export function OnboardingHeader({
       <Text
         selectable
         style={{
-          color: nativeTokens.color.brand600,
+          color: c.brand600,
           fontFamily: nativeTokens.type.family.sans,
           fontSize: nativeTokens.type.scale.caption.size,
           fontWeight: "700",
@@ -35,7 +36,7 @@ export function OnboardingHeader({
       <Text
         selectable
         style={{
-          color: nativeTokens.color.ink,
+          color: c.ink,
           fontFamily: nativeTokens.type.family.sans,
           fontSize: nativeTokens.type.scale.display.size,
           fontWeight: "700",
@@ -48,7 +49,7 @@ export function OnboardingHeader({
       <Text
         selectable
         style={{
-          color: nativeTokens.color.inkMuted,
+          color: c.inkMuted,
           fontFamily: nativeTokens.type.family.body,
           fontSize: nativeTokens.type.scale.body.size,
           lineHeight: nativeTokens.type.scale.body.line,
@@ -62,6 +63,7 @@ export function OnboardingHeader({
 }
 
 export function StepDots({ active, count }: { active: number; count: number }): JSX.Element {
+  const c = useThemeTokens().color;
   return (
     <View
       accessibilityElementsHidden
@@ -74,8 +76,7 @@ export function StepDots({ active, count }: { active: number; count: number }): 
             width: index === active ? nativeTokens.space[6] : nativeTokens.space[2],
             height: nativeTokens.space[2],
             borderRadius: nativeTokens.radius.full,
-            backgroundColor:
-              index === active ? nativeTokens.color.brand600 : nativeTokens.color.surfaceSunken,
+            backgroundColor: index === active ? c.brand600 : c.surfaceSunken,
           }}
         />
       ))}
@@ -90,20 +91,20 @@ export function StateMessage({
   message: string;
   tone: "danger" | "warning";
 }): JSX.Element {
+  const c = useThemeTokens().color;
   return (
     <Surface
       accessibilityRole={tone === "danger" ? "alert" : "text"}
       padding="3"
       variant="tinted"
       style={{
-        backgroundColor:
-          tone === "danger" ? nativeTokens.color.dangerSoft : nativeTokens.color.warningSoft,
+        backgroundColor: tone === "danger" ? c.dangerSoft : c.warningSoft,
       }}
     >
       <Text
         selectable
         style={{
-          color: tone === "danger" ? nativeTokens.color.danger : nativeTokens.color.ink,
+          color: tone === "danger" ? c.danger : c.ink,
           fontFamily: nativeTokens.type.family.sans,
           fontSize: nativeTokens.type.scale.small.size,
           lineHeight: nativeTokens.type.scale.small.line,
@@ -133,6 +134,7 @@ export function OnboardingFooter({
   showBack: boolean;
   submitting: boolean;
 }): JSX.Element {
+  const c = useThemeTokens().color;
   const { t } = useTranslation();
 
   return (
@@ -144,8 +146,8 @@ export function OnboardingFooter({
         paddingTop: nativeTokens.space[3],
         paddingBottom: Math.max(bottomInset, nativeTokens.space[4]),
         borderTopWidth: 1,
-        borderTopColor: nativeTokens.color.lineSoft,
-        backgroundColor: nativeTokens.color.surfaceMuted,
+        borderTopColor: c.lineSoft,
+        backgroundColor: c.surfaceMuted,
         position: "absolute",
         start: 0,
         end: 0,

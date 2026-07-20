@@ -1,4 +1,4 @@
-import { Avatar, Button, Icon, Surface, nativeTokens } from "@baydar/ui-native";
+import { Avatar, Button, Icon, Surface, nativeTokens, useThemeTokens } from "@baydar/ui-native";
 import { type Control, type FieldErrors } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { ActivityIndicator, Pressable, Text, View, I18nManager } from "react-native";
@@ -27,6 +27,7 @@ export function NetworkStep({
   selectedIds: Set<string>;
   suggestions: PersonSuggestionDto[];
 }): JSX.Element {
+  const c = useThemeTokens().color;
   const { t } = useTranslation();
 
   return (
@@ -42,12 +43,12 @@ export function NetworkStep({
       />
       {loading ? (
         <View style={{ paddingVertical: nativeTokens.space[6], alignItems: "center" }}>
-          <ActivityIndicator color={nativeTokens.color.brand600} />
+          <ActivityIndicator color={c.brand600} />
           <Text
             selectable
             style={{
               marginTop: nativeTokens.space[2],
-              color: nativeTokens.color.inkMuted,
+              color: c.inkMuted,
               fontFamily: nativeTokens.type.family.sans,
               fontSize: nativeTokens.type.scale.small.size,
             }}
@@ -89,6 +90,7 @@ function SuggestionRow({
   selected: boolean;
   suggestion: PersonSuggestionDto;
 }): JSX.Element {
+  const c = useThemeTokens().color;
   const { t } = useTranslation();
   const name = `${suggestion.user.firstName} ${suggestion.user.lastName}`.trim();
 
@@ -120,7 +122,7 @@ function SuggestionRow({
           <Text
             selectable
             style={{
-              color: nativeTokens.color.ink,
+              color: c.ink,
               fontFamily: nativeTokens.type.family.sans,
               fontSize: nativeTokens.type.scale.h3.size,
               fontWeight: "700",
@@ -135,7 +137,7 @@ function SuggestionRow({
               numberOfLines={2}
               selectable
               style={{
-                color: nativeTokens.color.inkMuted,
+                color: c.inkMuted,
                 fontFamily: nativeTokens.type.family.sans,
                 fontSize: nativeTokens.type.scale.small.size,
                 lineHeight: nativeTokens.type.scale.small.line,
@@ -152,21 +154,21 @@ function SuggestionRow({
             height: nativeTokens.space[5],
             borderRadius: nativeTokens.radius.sm,
             borderWidth: 1,
-            borderColor: selected ? nativeTokens.color.brand600 : nativeTokens.color.lineHard,
-            backgroundColor: selected ? nativeTokens.color.brand600 : nativeTokens.color.surface,
+            borderColor: selected ? c.brand600 : c.lineHard,
+            backgroundColor: selected ? c.brand600 : c.surface,
             alignItems: "center",
             justifyContent: "center",
           }}
         >
           {selected ? (
-            <Icon name="check" size={nativeTokens.space[4]} color={nativeTokens.color.inkInverse} />
+            <Icon name="check" size={nativeTokens.space[4]} color={c.inkInverse} />
           ) : null}
         </View>
         <Text
           selectable
           style={{
             minWidth: nativeTokens.space[16],
-            color: selected ? nativeTokens.color.brand700 : nativeTokens.color.inkMuted,
+            color: selected ? c.brand700 : c.inkMuted,
             fontFamily: nativeTokens.type.family.sans,
             fontSize: nativeTokens.type.scale.caption.size,
             fontWeight: "700",

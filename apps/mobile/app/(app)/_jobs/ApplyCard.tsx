@@ -1,11 +1,11 @@
 // Inline apply form card — extracted from jobs/[id].tsx (300-LOC design QA
 // budget). Presentational only; the screen owns state and submission.
 
-import { Button, Icon, Input, Surface, nativeTokens } from "@baydar/ui-native";
+import { Button, Icon, Input, Surface, nativeTokens, useThemeTokens } from "@baydar/ui-native";
 import { useTranslation } from "react-i18next";
 import { Text, View } from "react-native";
 
-import { styles } from "./detailStyles";
+import { useStyles } from "./detailStyles";
 
 export function ApplyCard({
   title,
@@ -26,6 +26,8 @@ export function ApplyCard({
   onCancel: () => void;
   onSubmit: () => void;
 }): JSX.Element {
+  const c = useThemeTokens().color;
+  const styles = useStyles();
   const { t } = useTranslation();
   return (
     <Surface variant="card" padding="6">
@@ -64,7 +66,7 @@ export function ApplyCard({
             onPress={onSubmit}
             loading={submitting}
             testID="job-apply-submit"
-            leading={<Icon name="send" size={16} color={nativeTokens.color.inkInverse} />}
+            leading={<Icon name="send" size={16} color={c.inkInverse} />}
           >
             {t("jobs.submitApplication")}
           </Button>

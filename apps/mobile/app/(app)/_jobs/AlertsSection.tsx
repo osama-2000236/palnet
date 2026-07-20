@@ -3,8 +3,8 @@
 // jobs/_components/JobAlertsPanel.tsx.
 
 import { JobAlert, type JobAlert as JobAlertType } from "@baydar/shared";
-import { Button, Icon, nativeTokens } from "@baydar/ui-native";
-import { useCallback, useEffect, useState } from "react";
+import { Button, Icon, nativeTokens, useThemeTokens, type NativeTheme } from "@baydar/ui-native";
+import { useCallback, useEffect, useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, Text, View } from "react-native";
 import { z } from "zod";
@@ -19,6 +19,8 @@ import type { Filters } from "./filters";
 const AlertList = z.array(JobAlert);
 
 export function AlertsSection({ filters }: { filters: Filters }): JSX.Element {
+  const styles = useStyles();
+  const c = useThemeTokens().color;
   const { t } = useTranslation();
   const [alerts, setAlerts] = useState<JobAlertType[]>([]);
   const [busy, setBusy] = useState(false);
@@ -109,7 +111,7 @@ export function AlertsSection({ filters }: { filters: Filters }): JSX.Element {
         disabled={!hasFilters}
         loading={busy}
         onPress={() => void createAlert()}
-        leading={<Icon name="bell" size={16} color={nativeTokens.color.ink} />}
+        leading={<Icon name="bell" size={16} color={c.ink} />}
       >
         {t("jobs.alerts.create")}
       </Button>
@@ -131,7 +133,7 @@ export function AlertsSection({ filters }: { filters: Filters }): JSX.Element {
             style={styles.deleteButton}
             onPress={() => void removeAlert(alert.id)}
           >
-            <Icon name="x" size={16} color={nativeTokens.color.inkMuted} />
+            <Icon name="x" size={16} color={c.inkMuted} />
           </Pressable>
         </View>
       ))}
@@ -139,39 +141,46 @@ export function AlertsSection({ filters }: { filters: Filters }): JSX.Element {
   );
 }
 
-const styles = {
-  hint: {
-    color: nativeTokens.color.inkMuted,
-    fontFamily: nativeTokens.type.family.sans,
-    fontSize: nativeTokens.type.scale.caption.size,
-    lineHeight: nativeTokens.type.scale.caption.line,
-  },
-  error: {
-    color: nativeTokens.color.danger,
-    fontFamily: nativeTokens.type.family.sans,
-    fontSize: nativeTokens.type.scale.caption.size,
-    lineHeight: nativeTokens.type.scale.caption.line,
-  },
-  row: {
-    flexDirection: "row" as const,
-    alignItems: "center" as const,
-    gap: nativeTokens.space[2],
-    borderWidth: 1,
-    borderColor: nativeTokens.color.lineSoft,
-    borderRadius: nativeTokens.radius.md,
-    padding: nativeTokens.space[2],
-  },
-  rowText: {
-    flex: 1,
-    color: nativeTokens.color.ink,
-    fontFamily: nativeTokens.type.family.sans,
-    fontSize: nativeTokens.type.scale.caption.size,
-    lineHeight: nativeTokens.type.scale.caption.line,
-  },
-  deleteButton: {
-    width: nativeTokens.space[8],
-    height: nativeTokens.space[8],
-    alignItems: "center" as const,
-    justifyContent: "center" as const,
-  },
-};
+function makeStyles(c: NativeTheme["color"]) {
+  return {
+    hint: {
+      color: c.inkMuted,
+      fontFamily: nativeTokens.type.family.sans,
+      fontSize: nativeTokens.type.scale.caption.size,
+      lineHeight: nativeTokens.type.scale.caption.line,
+    },
+    error: {
+      color: c.danger,
+      fontFamily: nativeTokens.type.family.sans,
+      fontSize: nativeTokens.type.scale.caption.size,
+      lineHeight: nativeTokens.type.scale.caption.line,
+    },
+    row: {
+      flexDirection: "row" as const,
+      alignItems: "center" as const,
+      gap: nativeTokens.space[2],
+      borderWidth: 1,
+      borderColor: c.lineSoft,
+      borderRadius: nativeTokens.radius.md,
+      padding: nativeTokens.space[2],
+    },
+    rowText: {
+      flex: 1,
+      color: c.ink,
+      fontFamily: nativeTokens.type.family.sans,
+      fontSize: nativeTokens.type.scale.caption.size,
+      lineHeight: nativeTokens.type.scale.caption.line,
+    },
+    deleteButton: {
+      width: nativeTokens.space[8],
+      height: nativeTokens.space[8],
+      alignItems: "center" as const,
+      justifyContent: "center" as const,
+    },
+  };
+}
+
+function useStyles() {
+  const c = useThemeTokens().color;
+  return useMemo(() => makeStyles(c), [c]);
+}

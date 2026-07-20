@@ -4,7 +4,7 @@ import {
   Profile as ProfileSchema,
   foldArabic,
 } from "@baydar/shared";
-import { Button, Chip, Icon, Surface, nativeTokens } from "@baydar/ui-native";
+import { Button, Chip, Icon, Surface, nativeTokens, useThemeTokens } from "@baydar/ui-native";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Text, View } from "react-native";
@@ -13,9 +13,11 @@ import { apiFetch } from "@/lib/api";
 import { apiErrorMessage } from "@/lib/api-errors";
 import { getAccessToken } from "@/lib/session";
 import { Card, Input, type ProfileCardProps } from "./shared";
-import { styles } from "./styles";
+import { useStyles } from "./styles";
 
 export function EducationsCard({ profile, onChanged, onError }: ProfileCardProps): JSX.Element {
+  const c = useThemeTokens().color;
+  const styles = useStyles();
   const { t } = useTranslation();
   const [show, setShow] = useState(false);
   const [school, setSchool] = useState("");
@@ -143,9 +145,7 @@ export function EducationsCard({ profile, onChanged, onError }: ProfileCardProps
         <Button
           variant="ghost"
           size="sm"
-          leading={
-            <Icon name="plus" size={nativeTokens.space[4]} color={nativeTokens.color.brand700} />
-          }
+          leading={<Icon name="plus" size={nativeTokens.space[4]} color={c.brand700} />}
           onPress={() => setShow(true)}
         >
           {t("profile.add")}

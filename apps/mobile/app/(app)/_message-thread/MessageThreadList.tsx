@@ -1,5 +1,11 @@
 import { type ChatRoom, type Message } from "@baydar/shared";
-import { MessageBubble, Surface, nativeTokens, type MessageBubbleLabels } from "@baydar/ui-native";
+import {
+  MessageBubble,
+  Surface,
+  nativeTokens,
+  type MessageBubbleLabels,
+  useThemeTokens,
+} from "@baydar/ui-native";
 import { FlatList, Pressable, RefreshControl, Text, View } from "react-native";
 
 import { computeStatus, shortTime } from "./utils";
@@ -39,6 +45,7 @@ export function MessageThreadList({
   onOpenOwnActions(message: Message): void;
   onReportOther(message: Message): void;
 }): JSX.Element {
+  const c = useThemeTokens().color;
   return (
     <FlatList
       ref={listRef}
@@ -67,7 +74,7 @@ export function MessageThreadList({
         <Surface variant="tinted" padding="6">
           <Text
             style={{
-              color: nativeTokens.color.inkMuted,
+              color: c.inkMuted,
               fontFamily: nativeTokens.type.family.sans,
               fontSize: nativeTokens.type.scale.body.size,
               textAlign: "center",
@@ -82,8 +89,8 @@ export function MessageThreadList({
         <RefreshControl
           refreshing={refreshing}
           onRefresh={onRefresh}
-          tintColor={nativeTokens.color.brand600}
-          colors={[nativeTokens.color.brand600]}
+          tintColor={c.brand600}
+          colors={[c.brand600]}
         />
       }
     />
