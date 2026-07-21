@@ -119,8 +119,8 @@ them honestly.
 1. ~~`Illustration`: `error`/`saved` motifs drew nothing.~~ **Fixed upstream in #72** —
    all ten motifs now draw in every direction, and the EmptyState/Illustration
    previews were restored to use the real motifs.
-2. `Icon`: no `case "building"` — `<Icon name="building" />` renders nothing even
-   though the name is in the public `IconName` union.
+2. ~~`Icon`: no `case "building"`.~~ **Fixed upstream in #73** — the glyph now
+   renders on both the web and native shells.
 3. ~~Numeric runs with a separator reversed under RTL~~ — **fixed in this
    branch.** Composer's counter, both OnboardingProgress render paths and
    RoomRow's timestamp now carry `dir="ltr"`, and the native OnboardingProgress
@@ -130,9 +130,10 @@ them honestly.
    **fixed in this branch.** Both that form and `Dialog`'s own panel (the
    fallback focus target) now set `focus:outline-none`.
 
-`conventions.md` lists the still-open gaps under "Known gaps" (currently only
-the Icon one). **Delete a line there as soon as its fix lands** — a stale gap
-note sends the design agent around art that already exists.
+All four are now fixed, so `conventions.md` has **no** "Known gaps" section — it
+was deleted rather than left listing bugs that no longer reproduce. If you add
+one back, **delete the line as soon as its fix lands**: a stale gap note sends
+the design agent around art that already exists, and it trusts that file.
 
 ## Re-sync risks
 
