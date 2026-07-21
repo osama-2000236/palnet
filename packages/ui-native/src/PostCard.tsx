@@ -56,6 +56,15 @@ export function PostCard({
 }: PostCardProps): JSX.Element {
   const c = useThemeTokens().color;
   const styles = useMemo(() => makeStyles(c), [c]);
+  const stat = (icon: IconName, value: number | string | undefined, wrap: StyleProp<ViewStyle>) =>
+    value === undefined ? null : (
+      <View style={wrap}>
+        <Icon name={icon} size={12} color={icon === "thumb" ? c.brand700 : c.inkMuted} />
+        <Text selectable style={styles.statText}>
+          {value}
+        </Text>
+      </View>
+    );
   const header = (
     <View style={styles.header}>
       <Avatar user={author} size="md" />
@@ -107,31 +116,10 @@ export function PostCard({
           "0 ⇄ 0" noise; the row hides entirely when every stat is empty. */}
       {reactionCount !== undefined || commentCount !== undefined || repostCount !== undefined ? (
         <View style={styles.stats}>
-          {reactionCount !== undefined ? (
-            <View style={styles.reactionPill}>
-              <Icon name="thumb" size={12} color={c.brand700} />
-              <Text selectable style={styles.statText}>
-                {reactionCount}
-              </Text>
-            </View>
-          ) : null}
+          {stat("thumb", reactionCount, styles.reactionPill)}
           <View style={styles.statEnd}>
-            {commentCount !== undefined ? (
-              <View style={styles.statItem}>
-                <Icon name="comment" size={12} color={c.inkMuted} />
-                <Text selectable style={styles.statText}>
-                  {commentCount}
-                </Text>
-              </View>
-            ) : null}
-            {repostCount !== undefined ? (
-              <View style={styles.statItem}>
-                <Icon name="repost" size={12} color={c.inkMuted} />
-                <Text selectable style={styles.statText}>
-                  {repostCount}
-                </Text>
-              </View>
-            ) : null}
+            {stat("comment", commentCount, styles.statItem)}
+            {stat("repost", repostCount, styles.statItem)}
           </View>
         </View>
       ) : null}

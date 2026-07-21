@@ -16,41 +16,9 @@
 
 import type { SVGProps } from "react";
 
-export type IconName =
-  | "bell"
-  | "bookmark"
-  | "briefcase"
-  | "building"
-  | "calendar"
-  | "check"
-  | "check-double"
-  | "chevron-down"
-  | "clock"
-  | "comment"
-  | "gear"
-  | "home"
-  | "image"
-  | "logo"
-  | "message"
-  | "more"
-  | "plus"
-  | "repost"
-  | "search"
-  | "send"
-  | "send-paper"
-  | "share"
-  | "thumb"
-  | "users"
-  | "video"
-  | "x"
-  | "employer";
+import type { IconProps } from "./Icon.types";
 
-export interface IconProps extends Omit<SVGProps<SVGSVGElement>, "name" | "ref"> {
-  name: IconName;
-  size?: number;
-  strokeWidth?: number;
-  title?: string;
-}
+export type { IconName, IconProps } from "./Icon.types";
 
 export function Icon({
   name,
