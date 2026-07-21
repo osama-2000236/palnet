@@ -5,8 +5,10 @@ import {
   nativeTokens,
   useThemeTokens,
 } from "@baydar/ui-native";
+import { formatNumber } from "@baydar/shared";
 import { router } from "expo-router";
 import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { Text, View } from "react-native";
 
 import type { ActivityMetric, ActivityTask } from "./types";
@@ -29,6 +31,9 @@ export function ActivitySkeleton(): JSX.Element {
 
 export function ActivityMetrics({ metrics }: { metrics: ActivityMetric[] }): JSX.Element {
   const text = useActivityTextStyles();
+  const { i18n } = useTranslation();
+  const digits = (value: number | string): string =>
+    typeof value === "number" ? formatNumber(value, i18n.language) : value;
   return (
     <View style={{ flexDirection: "row", gap: nativeTokens.space[2] }}>
       {metrics.map((metric) => (
@@ -38,11 +43,11 @@ export function ActivityMetrics({ metrics }: { metrics: ActivityMetric[] }): JSX
           size="md"
           style={{ flex: 1, minHeight: nativeTokens.space[24] }}
           onPress={() => router.push(metric.route as never)}
-          accessibilityLabel={`${metric.label}: ${metric.value}`}
+          accessibilityLabel={`${metric.label}: ${digits(metric.value)}`}
         >
           <View style={{ alignItems: "center", gap: nativeTokens.space[1] }}>
             <Text selectable style={text.metricValue}>
-              {metric.value}
+              {digits(metric.value)}
             </Text>
             <Text selectable numberOfLines={2} style={text.metricLabel}>
               {metric.label}
