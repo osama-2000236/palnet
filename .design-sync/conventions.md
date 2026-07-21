@@ -89,8 +89,3 @@ they mean different things: `flat` (secondary section), `card` (a standalone uni
 - `components/<group>/<Name>/<Name>.prompt.md` — per-component usage and examples.
 - `guidelines/` — `DESIGN.md`, `BRAND.md`, `RTL.md`, `MOTION.md`, `NAV.md`,
   `SCREENS.md`. Read `RTL.md` and `DESIGN.md` before laying out a screen.
-
-## Known gaps
-
-- `<Icon name="building" />` renders nothing — no glyph exists for that name,
-  even though it is in the `IconName` union. Use `employer` or `briefcase`.
