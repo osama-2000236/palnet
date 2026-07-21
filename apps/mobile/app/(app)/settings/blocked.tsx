@@ -1,11 +1,4 @@
-import {
-  BlockedListItem,
-  Button,
-  Surface,
-  nativeTokens,
-  useToast,
-  useThemeTokens,
-} from "@baydar/ui-native";
+import { BlockedListItem, Button, nativeTokens, useToast, useThemeTokens } from "@baydar/ui-native";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { FlatList, Text, View } from "react-native";
@@ -39,43 +32,43 @@ export default function BlockedUsersScreen(): JSX.Element {
         >
           {t("safety.blocked.title")}
         </Text>
-        <Surface variant="flat" padding="4" style={{ flex: 1 }}>
-          <FlatList
-            data={items}
-            keyExtractor={(item) => item.id}
-            renderItem={({ item }) => (
-              <BlockedListItem
-                item={item}
-                labels={{ unblock: t("safety.blocked.unblock") }}
-                loading={unblock.isPending}
-                onUnblock={(blockedUserId) =>
-                  unblock.mutate(blockedUserId, {
-                    onSuccess: () =>
-                      showToast({ message: t("safety.unblock.success"), kind: "success" }),
-                    onError: () => showToast({ message: t("safety.unblock.error"), kind: "error" }),
-                  })
-                }
-              />
-            )}
-            ListEmptyComponent={
-              <StateMessage
-                message={blocked.isLoading ? t("common.loading") : t("safety.blocked.empty")}
-                role="text"
-              />
-            }
-            ListFooterComponent={
-              blocked.data?.meta.hasMore ? (
-                <Button
-                  variant="secondary"
-                  onPress={() => setCursor(blocked.data?.meta.nextCursor ?? null)}
-                  accessibilityLabel={t("safety.blocked.loadMore")}
-                >
-                  {t("safety.blocked.loadMore")}
-                </Button>
-              ) : null
-            }
-          />
-        </Surface>
+        {/* No wrapper Surface: rows and the empty state bring their own, and a
+            flex:1 card renders an empty full-height slab (matches saved.tsx). */}
+        <FlatList
+          data={items}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => (
+            <BlockedListItem
+              item={item}
+              labels={{ unblock: t("safety.blocked.unblock") }}
+              loading={unblock.isPending}
+              onUnblock={(blockedUserId) =>
+                unblock.mutate(blockedUserId, {
+                  onSuccess: () =>
+                    showToast({ message: t("safety.unblock.success"), kind: "success" }),
+                  onError: () => showToast({ message: t("safety.unblock.error"), kind: "error" }),
+                })
+              }
+            />
+          )}
+          ListEmptyComponent={
+            <StateMessage
+              message={blocked.isLoading ? t("common.loading") : t("safety.blocked.empty")}
+              role="text"
+            />
+          }
+          ListFooterComponent={
+            blocked.data?.meta.hasMore ? (
+              <Button
+                variant="secondary"
+                onPress={() => setCursor(blocked.data?.meta.nextCursor ?? null)}
+                accessibilityLabel={t("safety.blocked.loadMore")}
+              >
+                {t("safety.blocked.loadMore")}
+              </Button>
+            ) : null
+          }
+        />
       </View>
     </SafeAreaView>
   );
