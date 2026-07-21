@@ -1,5 +1,5 @@
 // Illustration — native twin of packages/ui-web/src/Illustration.tsx.
-// 8 motifs × 3 directions, drawn via react-native-svg. Same viewBox + token kit as web.
+// 10 motifs × 3 directions, drawn via react-native-svg. Same viewBox + token kit as web.
 
 import { View, type StyleProp, type ViewStyle } from "react-native";
 import { Circle, G, Line, Path, Rect, Svg } from "react-native-svg";
@@ -17,6 +17,7 @@ export const ILLUSTRATION_MOTIFS = [
   "jobs",
   "onboarding",
   "settings",
+  "error",
   "saved",
 ] as const;
 export type IllustrationMotif = (typeof ILLUSTRATION_MOTIFS)[number];
@@ -200,6 +201,14 @@ function OutlineSet({ motif }: { motif: IllustrationMotif }): JSX.Element | null
           <Line x1="50" y1="52" x2="50" y2="76" />
         </G>
       );
+    case "error":
+      return (
+        <G {...common}>
+          <Circle cx="70" cy="50" r="22" />
+          <Line x1="70" y1="38" x2="70" y2="54" />
+          <Circle cx="70" cy="64" r="2.5" fill={accent} stroke="none" />
+        </G>
+      );
     default:
       return null;
   }
@@ -291,6 +300,22 @@ function BlockSet({ motif }: { motif: IllustrationMotif }): JSX.Element | null {
           <Path d="M70 22 L98 36 V58 Q98 78 70 86 Q42 78 42 58 V36 Z" fill={tint1} />
           <Rect x="58" y="50" width="24" height="14" rx="3" fill={ink} />
           <Rect x="66" y="44" width="8" height="10" rx="2" fill={accent} />
+        </G>
+      );
+    case "saved":
+      return (
+        <G>
+          <Path d="M48 34 q0 -4 4 -4 h36 q4 0 4 4 v50 l-22 -14 l-22 14 z" fill={tint1} />
+          <Rect x="58" y="44" width="24" height="4" rx="2" fill={ink} />
+          <Rect x="58" y="54" width="14" height="4" rx="2" fill={accent} />
+        </G>
+      );
+    case "error":
+      return (
+        <G>
+          <Circle cx="70" cy="50" r="26" fill={tint1} />
+          <Rect x="66" y="34" width="8" height="22" rx="4" fill={ink} />
+          <Circle cx="70" cy="66" r="5" fill={accent} />
         </G>
       );
     default:

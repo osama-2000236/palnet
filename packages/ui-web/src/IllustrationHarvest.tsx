@@ -120,6 +120,30 @@ export function HarvestSet({ motif }: { motif: IllustrationMotif }): JSX.Element
         </g>
       );
       break;
+    case "saved":
+      symbol = (
+        <g>
+          <path d="M58 47 q0 -3 3 -3 h18 q3 0 3 3 v29 l-12 -8 l-12 8 z" fill={ink} />
+          <path
+            d="M64 55 l4 4 l9 -9"
+            stroke={cream}
+            strokeWidth={2.2}
+            fill="none"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </g>
+      );
+      break;
+    case "error":
+      symbol = (
+        <g>
+          <circle cx="70" cy="60" r="14" fill={ink} />
+          <rect x="68" y="52" width="4" height="10" rx="2" fill={cream} />
+          <circle cx="70" cy="68" r="2.5" fill={accent} />
+        </g>
+      );
+      break;
   }
 
   return (

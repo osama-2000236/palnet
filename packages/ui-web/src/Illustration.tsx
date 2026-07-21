@@ -1,4 +1,4 @@
-// Illustration — 8 motifs × 3 direction kits, used by EmptyState and any
+// Illustration — 10 motifs × 3 direction kits, used by EmptyState and any
 // screen that needs a per-motif graphic without inventing a new SVG. Lifted
 // from the Design Pass 1 spec (component-changes.md) so motifs stay in sync
 // with the design system.
@@ -172,6 +172,14 @@ function OutlineSet({ motif }: { motif: IllustrationMotif }): JSX.Element | null
           <line x1="50" y1="52" x2="50" y2="76" />
         </g>
       );
+    case "error":
+      return (
+        <g {...common}>
+          <circle cx="70" cy="50" r="22" />
+          <line x1="70" y1="38" x2="70" y2="54" />
+          <circle cx="70" cy="64" r="2.5" fill={accent} stroke="none" />
+        </g>
+      );
     default:
       return null;
   }
@@ -262,6 +270,22 @@ function BlockSet({ motif }: { motif: IllustrationMotif }): JSX.Element | null {
           <path d="M70 22 L98 36 V58 Q98 78 70 86 Q42 78 42 58 V36 Z" fill={tint1} />
           <rect x="58" y="50" width="24" height="14" rx="3" fill={ink} />
           <rect x="66" y="44" width="8" height="10" rx="2" fill={accent} />
+        </g>
+      );
+    case "saved":
+      return (
+        <g>
+          <path d="M48 34 q0 -4 4 -4 h36 q4 0 4 4 v50 l-22 -14 l-22 14 z" fill={tint1} />
+          <rect x="58" y="44" width="24" height="4" rx="2" fill={ink} />
+          <rect x="58" y="54" width="14" height="4" rx="2" fill={accent} />
+        </g>
+      );
+    case "error":
+      return (
+        <g>
+          <circle cx="70" cy="50" r="26" fill={tint1} />
+          <rect x="66" y="34" width="8" height="22" rx="4" fill={ink} />
+          <circle cx="70" cy="66" r="5" fill={accent} />
         </g>
       );
     default:
