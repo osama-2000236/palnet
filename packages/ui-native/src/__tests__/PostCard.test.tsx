@@ -31,4 +31,26 @@ describe("PostCard", () => {
     expect(screen.getByText("إعادة نشر")).toBeTruthy();
     expect(screen.getByText("إرسال")).toBeTruthy();
   });
+
+  it("renders the header overflow button only when the host wires it", () => {
+    const onMorePress = jest.fn();
+    const props = {
+      author: { id: "u1", firstName: "ليان", lastName: "خليل", handle: "layan" },
+      authorName: "ليان خليل",
+      body: "تحديث مهني قصير",
+      actions: [{ key: "like", label: "أعجبني", icon: "thumb" as const }],
+    };
+
+    // Without a handler the glyph must not render at all — a button that does
+    // nothing reads as broken.
+    const bare = render(<PostCard {...props} />);
+    expect(bare.queryByLabelText("إبلاغ")).toBeNull();
+
+    const screen = render(
+      <PostCard {...props} onMorePress={onMorePress} moreAccessibilityLabel="إبلاغ" />,
+    );
+    fireEvent.press(screen.getByLabelText("إبلاغ"));
+
+    expect(onMorePress).toHaveBeenCalledTimes(1);
+  });
 });

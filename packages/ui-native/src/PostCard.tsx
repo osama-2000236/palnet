@@ -1,41 +1,14 @@
-import { useMemo, type ReactNode } from "react";
+import { useMemo } from "react";
 import { Pressable, StyleSheet, Text, View, type StyleProp, type ViewStyle } from "react-native";
 
-import { Avatar, type AvatarUser } from "./Avatar";
+import { Avatar } from "./Avatar";
 import { Icon, type IconName } from "./Icon";
+import type { PostCardProps } from "./PostCard.types";
 import { Surface } from "./Surface";
 import { useThemeTokens } from "./ThemeProvider";
 import { nativeTokens } from "./tokens";
 
-export interface PostCardAction {
-  key: string;
-  label: string;
-  icon: IconName;
-  selected?: boolean;
-  disabled?: boolean;
-  accessibilityLabel?: string;
-  testID?: string;
-  onPress?: () => void;
-}
-
-export interface PostCardProps {
-  author: AvatarUser;
-  authorName: string;
-  authorHeadline?: string | null;
-  timestamp?: string | null;
-  body: string;
-  media?: ReactNode;
-  // number | string so callers can pass locale-formatted digits (Arabic-Indic).
-  reactionCount?: number | string;
-  commentCount?: number | string;
-  repostCount?: number | string;
-  actions: PostCardAction[];
-  comments?: ReactNode;
-  onAuthorPress?: () => void;
-  authorAccessibilityLabel?: string;
-  style?: StyleProp<ViewStyle>;
-  testID?: string;
-}
+export type { PostCardAction, PostCardProps } from "./PostCard.types";
 
 export function PostCard({
   author,
@@ -51,6 +24,8 @@ export function PostCard({
   comments,
   onAuthorPress,
   authorAccessibilityLabel,
+  onMorePress,
+  moreAccessibilityLabel,
   style,
   testID,
 }: PostCardProps): JSX.Element {
@@ -83,9 +58,21 @@ export function PostCard({
           </Text>
         ) : null}
       </View>
-      <View style={styles.moreWrap}>
-        <Icon name="more" size={18} color={c.inkMuted} />
-      </View>
+      {/* Nested inside the author Pressable: RN's responder system gives the
+          inner Pressable the touch, so this never opens the profile. Rendered
+          only when the host wires it — a glyph that does nothing is worse
+          than no glyph. Mirrors web's header `more` → onReport. */}
+      {onMorePress ? (
+        <Pressable
+          onPress={onMorePress}
+          accessibilityRole="button"
+          accessibilityLabel={moreAccessibilityLabel}
+          hitSlop={8}
+          style={({ pressed }) => [styles.moreWrap, pressed ? styles.pressed : null]}
+        >
+          <Icon name="more" size={18} color={c.inkMuted} />
+        </Pressable>
+      ) : null}
     </View>
   );
 
@@ -182,21 +169,21 @@ const makeStyles = (c: typeof nativeTokens.color) =>
       fontSize: nativeTokens.type.scale.h3.size,
       lineHeight: nativeTokens.type.scale.h3.line,
       fontWeight: "700",
-      textAlign: "right",
+      textAlign: "auto",
     },
     authorMeta: {
       color: c.inkMuted,
       fontFamily: nativeTokens.type.family.sans,
       fontSize: nativeTokens.type.scale.small.size,
       lineHeight: nativeTokens.type.scale.small.line,
-      textAlign: "right",
+      textAlign: "auto",
     },
     timestamp: {
       color: c.inkSubtle,
       fontFamily: nativeTokens.type.family.sans,
       fontSize: nativeTokens.type.scale.caption.size,
       lineHeight: nativeTokens.type.scale.caption.line,
-      textAlign: "right",
+      textAlign: "auto",
     },
     moreWrap: {
       minWidth: nativeTokens.space[8],
@@ -213,7 +200,7 @@ const makeStyles = (c: typeof nativeTokens.color) =>
       fontFamily: nativeTokens.type.family.body,
       fontSize: nativeTokens.type.scale.body.size,
       lineHeight: nativeTokens.type.scale.body.line,
-      textAlign: "right",
+      textAlign: "auto",
     },
     media: {
       overflow: "hidden",

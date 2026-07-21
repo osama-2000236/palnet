@@ -157,12 +157,8 @@ export const PostRow = memo(function PostRow({ post, onChange }: PostRowProps): 
       testID: `post-save-${post.id}`,
       onPress: () => void toggleSave(),
     },
-    {
-      key: "report",
-      label: t("safety.report.action"),
-      icon: "more",
-      onPress: () => setReportOpen(true),
-    },
+    // Report lives on the header overflow button, not the action bar — it is
+    // not a peer of like/comment/save, and 4 buttons truncate their labels.
   ];
 
   const reportLabels: ReportSheetLabels = {
@@ -209,6 +205,8 @@ export const PostRow = memo(function PostRow({ post, onChange }: PostRowProps): 
         actions={actions}
         onAuthorPress={() => router.push(`/(app)/in/${post.author.handle}`)}
         authorAccessibilityLabel={authorName}
+        onMorePress={() => setReportOpen(true)}
+        moreAccessibilityLabel={t("safety.report.action")}
         comments={
           showComments ? (
             <CommentsList

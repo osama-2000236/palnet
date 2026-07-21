@@ -159,6 +159,10 @@ export function makeFeedStyles(c: NativeTheme["color"]) {
       marginBottom: nativeTokens.space[3],
       backgroundColor: c.warningSoft,
     },
+    // Keeps the last card off the tab bar now that posts scroll the full height.
+    listContent: {
+      paddingBottom: nativeTokens.space[4],
+    },
     skeletonStack: {
       gap: nativeTokens.space[3],
     },
