@@ -1,7 +1,14 @@
 // Mobile jobs list. Jobs are reached from feed/search content rather than the
 // bottom shell, so this route keeps a compact header and dense record rhythm.
 
-import { Bookmark, BookmarkType, cursorPage, Job as JobSchema, type Job } from "@baydar/shared";
+import {
+  Bookmark,
+  BookmarkType,
+  cursorPage,
+  formatNumber,
+  Job as JobSchema,
+  type Job,
+} from "@baydar/shared";
 import {
   AppHeader,
   Button,
@@ -36,7 +43,7 @@ const JobsPage = cursorPage(JobSchema);
 
 export default function JobsScreen(): JSX.Element {
   const c = useThemeTokens().color;
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const params = useLocalSearchParams<{ companyId?: string; company?: string }>();
   const [items, setItems] = useState<Job[]>([]);
   const [cursor, setCursor] = useState<string | null>(null);
@@ -146,7 +153,6 @@ export default function JobsScreen(): JSX.Element {
       >
         <AppHeader
           title={t("jobs.title")}
-          subtitle={t("jobs.searchPlaceholder")}
           trailing={
             <Button
               variant={activeCount > 0 ? "primary" : "secondary"}
@@ -157,7 +163,9 @@ export default function JobsScreen(): JSX.Element {
               onPress={() => setSheetOpen(true)}
               accessibilityLabel={t("jobs.filters")}
             >
-              {activeCount > 0 ? `${t("jobs.filters")} ${activeCount}` : t("jobs.filters")}
+              {activeCount > 0
+                ? `${t("jobs.filters")} ${formatNumber(activeCount, i18n.language)}`
+                : t("jobs.filters")}
             </Button>
           }
           search={

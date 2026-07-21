@@ -8,6 +8,7 @@ export type IconName =
   | "chevron-down"
   | "clock"
   | "comment"
+  | "gear"
   | "home"
   | "image"
   | "logo"

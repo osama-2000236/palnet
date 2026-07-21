@@ -83,3 +83,6 @@ export function PhotoStep({
     </View>
   );
 }
+
+// expo-router colocation: not a screen.
+export default (): null => null;

@@ -67,11 +67,18 @@ function paletteFor(seed: string): string {
   return PALETTES[idx] ?? PALETTES[0]!;
 }
 
+// Skip the Arabic definite article so "الخطيب" yields "خ" — otherwise
+// names like "ليان الخطيب" spell "لا" ("no") as their initials.
+function initialLetter(word: string): string {
+  const bare = word.startsWith("ال") && word.length > 2 ? word.slice(2) : word;
+  return bare[0] ?? "";
+}
+
 function initialsOf(user: AvatarUser): string {
   const first = (user.firstName ?? "").trim();
   const last = (user.lastName ?? "").trim();
   if (first || last) {
-    return `${first[0] ?? ""}${last[0] ?? ""}`.toUpperCase() || "?";
+    return `${initialLetter(first)}${initialLetter(last)}`.toUpperCase() || "?";
   }
   const handle = (user.handle ?? "").trim();
   if (handle) return handle.slice(0, 2).toUpperCase();

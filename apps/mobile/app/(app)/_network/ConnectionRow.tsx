@@ -94,3 +94,6 @@ export function ConnectionRow({
     />
   );
 }
+
+// expo-router colocation: not a screen.
+export default (): null => null;

@@ -1,4 +1,11 @@
-import { CreatePostBody, formatNumber, MediaKind, type MediaRef, Post } from "@baydar/shared";
+import {
+  CreatePostBody,
+  formatNumber,
+  MediaKind,
+  Post,
+  Profile as ProfileSchema,
+  type MediaRef,
+} from "@baydar/shared";
 import {
   AppHeader,
   Avatar,
@@ -45,14 +52,22 @@ export default function ComposerScreen(): JSX.Element {
     void (async () => {
       const session = await readSession();
       if (!session) return;
-      const handle = session.user.email.split("@")[0] ?? session.user.email;
-      setAuthor({
-        id: session.user.id,
-        handle,
-        firstName: handle,
-        lastName: "",
-        avatarUrl: null,
-      });
+      try {
+        const profile = await apiFetch("/profiles/me", ProfileSchema, {
+          token: session.tokens.accessToken,
+        });
+        setAuthor({
+          id: profile.userId,
+          handle: profile.handle,
+          firstName: profile.firstName,
+          lastName: profile.lastName,
+          avatarUrl: profile.avatarUrl,
+        });
+      } catch {
+        // ponytail: offline fallback — email localpart beats an empty chip.
+        const handle = session.user.email.split("@")[0] ?? session.user.email;
+        setAuthor({ id: session.user.id, handle, firstName: handle, lastName: "", avatarUrl: null });
+      }
     })();
   }, []);
 
@@ -161,7 +176,9 @@ export default function ComposerScreen(): JSX.Element {
 
         <Surface variant="tinted" padding="3" style={styles.authorChip}>
           <Avatar user={author} size="sm" />
-          <Text style={styles.authorText}>{author?.handle ?? t("common.appName")}</Text>
+          <Text style={styles.authorText}>
+            {author ? `${author.firstName} ${author.lastName}`.trim() : t("common.appName")}
+          </Text>
         </Surface>
 
         <Surface variant="flat" padding="4">

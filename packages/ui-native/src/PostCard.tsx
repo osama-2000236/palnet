@@ -25,9 +25,10 @@ export interface PostCardProps {
   timestamp?: string | null;
   body: string;
   media?: ReactNode;
-  reactionCount?: number;
-  commentCount?: number;
-  repostCount?: number;
+  // number | string so callers can pass locale-formatted digits (Arabic-Indic).
+  reactionCount?: number | string;
+  commentCount?: number | string;
+  repostCount?: number | string;
   actions: PostCardAction[];
   comments?: ReactNode;
   onAuthorPress?: () => void;

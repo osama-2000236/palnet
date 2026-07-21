@@ -32,6 +32,7 @@ export function Input({
   maxLength,
   style,
   inputStyle,
+  label,
 }: {
   value: string;
   onChangeText: (v: string) => void;
@@ -43,9 +44,12 @@ export function Input({
   maxLength?: number;
   style?: ViewStyle;
   inputStyle?: TextStyle;
+  /** Visible label above the field; defaults to the placeholder so filled fields stay identifiable. */
+  label?: string | null;
 }): JSX.Element {
   const styles = useStyles();
-  return (
+  const labelText = label === null ? null : (label ?? placeholder);
+  const field = (
     <NativeInput
       fullWidth={fullWidth}
       value={value}
@@ -68,6 +72,13 @@ export function Input({
         inputStyle,
       ].filter(Boolean)}
     />
+  );
+  if (!labelText) return field;
+  return (
+    <View style={fullWidth ? styles.labeledField : undefined}>
+      <Text style={styles.fieldLabel}>{labelText}</Text>
+      {field}
+    </View>
   );
 }
 

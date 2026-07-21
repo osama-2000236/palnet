@@ -8,6 +8,7 @@ import {
   PaymentMethod,
   PlanCode,
   RedeemKaramaBody,
+  formatNumber,
   type BillingMe as BillingMeDto,
   type KaramaBalance as KaramaBalanceDto,
   type KaramaReward as KaramaRewardDto,
@@ -31,7 +32,7 @@ type Notice = { kind: "success" | "error"; text: string };
 
 export default function KaramaScreen(): JSX.Element {
   const styles = useKaramaStyles();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const router = useRouter();
   const [balance, setBalance] = useState<KaramaBalanceDto | null>(null);
   const [billingMe, setBillingMe] = useState<BillingMeDto | null>(null);
@@ -136,9 +137,10 @@ export default function KaramaScreen(): JSX.Element {
 
         <Surface variant="tinted" padding="4" style={styles.balanceCard}>
           <Text style={styles.balanceLabel}>{t("karama.balance")}</Text>
-          <Text style={styles.balanceValue}>{balance?.balance ?? 0}</Text>
+          <Text style={styles.balanceValue}>{formatNumber(balance?.balance ?? 0, i18n.language)}</Text>
           <Text style={styles.balanceLabel}>
-            {t("karama.cap")} <Text style={styles.ltr}>{balance?.cap ?? 5000}</Text>
+            {t("karama.cap")}{" "}
+            <Text style={styles.ltr}>{formatNumber(balance?.cap ?? 5000, i18n.language)}</Text>
           </Text>
         </Surface>
 
@@ -161,7 +163,8 @@ export default function KaramaScreen(): JSX.Element {
               </View>
               <Text style={styles.rewardBody}>{t(`karama.rewards.${item.key}.body`)}</Text>
               <Text style={styles.rewardCost}>
-                <Text style={styles.ltr}>{item.cost}</Text> {t("karama.points")}
+                <Text style={styles.ltr}>{formatNumber(item.cost, i18n.language)}</Text>{" "}
+                {t("karama.points")}
               </Text>
               {isPremium && hasPremium ? (
                 <>

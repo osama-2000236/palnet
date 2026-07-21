@@ -49,6 +49,8 @@ export function makeFeedStyles(c: NativeTheme["color"]) {
       fontFamily: nativeTokens.type.family.sans,
     },
     searchEntry: {
+      // flex:1 here collapses AppHeader's auto-height search slot to 0 and the
+      // composer card paints over the pill — keep it height-driven.
       minHeight: nativeTokens.chrome.minHit,
       borderRadius: nativeTokens.radius.full,
       borderWidth: 1,
@@ -58,7 +60,6 @@ export function makeFeedStyles(c: NativeTheme["color"]) {
       flexDirection: "row",
       alignItems: "center",
       gap: nativeTokens.space[2],
-      flex: 1,
     },
     searchText: {
       flex: 1,
@@ -176,3 +177,6 @@ export function useFeedStyles(): FeedStyles {
   const c = useThemeTokens().color;
   return useMemo(() => makeFeedStyles(c), [c]);
 }
+
+// expo-router colocation: not a screen.
+export default (): null => null;

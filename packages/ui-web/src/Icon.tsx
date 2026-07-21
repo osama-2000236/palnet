@@ -27,6 +27,7 @@ export type IconName =
   | "chevron-down"
   | "clock"
   | "comment"
+  | "gear"
   | "home"
   | "image"
   | "logo"
@@ -215,6 +216,14 @@ export function Icon({
           {title ? <title>{title}</title> : null}
           <path d="m3 12 4 4L15 7" />
           <path d="m10 16 1 1L22 7" />
+        </svg>
+      );
+    case "gear":
+      return (
+        <svg {...common}>
+          {title ? <title>{title}</title> : null}
+          <circle cx="12" cy="12" r="3.2" />
+          <path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.5 5.5l1.7 1.7M16.8 16.8l1.7 1.7M18.5 5.5l-1.7 1.7M7.2 16.8l-1.7 1.7" />
         </svg>
       );
     case "clock":

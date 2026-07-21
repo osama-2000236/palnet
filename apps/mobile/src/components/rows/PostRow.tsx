@@ -2,6 +2,7 @@ import {
   Bookmark,
   BookmarkType,
   ReportReason,
+  formatNumber,
   formatRelativeTime,
   type Post,
 } from "@baydar/shared";
@@ -196,9 +197,9 @@ export const PostRow = memo(function PostRow({ post, onChange }: PostRowProps): 
         timestamp={formatRelativeTime(post.createdAt, i18n.language)}
         body={post.body}
         media={media}
-        reactionCount={post.counts.reactions}
-        commentCount={post.counts.comments}
-        repostCount={post.counts.reposts}
+        reactionCount={formatNumber(post.counts.reactions, i18n.language)}
+        commentCount={formatNumber(post.counts.comments, i18n.language)}
+        repostCount={formatNumber(post.counts.reposts, i18n.language)}
         actions={actions}
         onAuthorPress={() => router.push(`/(app)/in/${post.author.handle}`)}
         authorAccessibilityLabel={authorName}

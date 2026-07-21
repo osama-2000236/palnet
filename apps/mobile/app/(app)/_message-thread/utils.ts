@@ -35,3 +35,6 @@ export function shortTime(iso: string, locale: string): string {
     return "";
   }
 }
+
+// expo-router colocation: not a screen.
+export default (): null => null;

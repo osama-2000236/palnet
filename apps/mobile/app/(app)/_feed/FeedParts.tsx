@@ -1,4 +1,4 @@
-import type { Profile } from "@baydar/shared";
+import { formatNumber, type Profile } from "@baydar/shared";
 import { AppHeader, Avatar, Button, Icon, Surface, useThemeTokens } from "@baydar/ui-native";
 import { router } from "expo-router";
 import { useTranslation } from "react-i18next";
@@ -7,7 +7,7 @@ import { Pressable, Text, View } from "react-native";
 import { useFeedStyles } from "./styles";
 
 export function FeedTopBar({ unread }: { unread: number }): JSX.Element {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const feedStyles = useFeedStyles();
   const c = useThemeTokens().color;
 
@@ -33,7 +33,9 @@ export function FeedTopBar({ unread }: { unread: number }): JSX.Element {
           <Icon name="bell" size={20} color={unread > 0 ? c.inkInverse : c.ink} />
           {unread > 0 ? (
             <View style={feedStyles.unreadDot}>
-              <Text style={feedStyles.unreadText}>{unread > 99 ? "99+" : String(unread)}</Text>
+              <Text style={feedStyles.unreadText}>
+                {unread > 99 ? `${formatNumber(99, i18n.language)}+` : formatNumber(unread, i18n.language)}
+              </Text>
             </View>
           ) : null}
         </Pressable>
@@ -142,3 +144,6 @@ export function ProfileSummary({ profile }: { profile: Profile }): JSX.Element {
     </Surface>
   );
 }
+
+// expo-router colocation: not a screen.
+export default (): null => null;

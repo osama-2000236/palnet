@@ -113,3 +113,6 @@ function useReportLabels(): ReportSheetLabels {
     [t],
   );
 }
+
+// expo-router colocation: not a screen.
+export default (): null => null;
