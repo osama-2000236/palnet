@@ -20,6 +20,23 @@ describe("Avatar", () => {
     expect(screen.getByText("OS", { includeHiddenElements: true })).toBeTruthy();
   });
 
+  it("skips the Arabic definite article when building initials", () => {
+    const screen = render(
+      <Avatar
+        user={{
+          id: "u2",
+          handle: "layan",
+          firstName: "ليان",
+          lastName: "الخطيب",
+          avatarUrl: null,
+        }}
+      />,
+    );
+
+    // "لخ", never "لا" ("no").
+    expect(screen.getByText("لخ", { includeHiddenElements: true })).toBeTruthy();
+  });
+
   it("passes blurhash placeholders to expo-image avatars", () => {
     const screen = render(
       <Avatar

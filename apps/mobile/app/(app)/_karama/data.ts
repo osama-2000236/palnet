@@ -11,3 +11,6 @@ export const KARAMA_REWARDS: {
   { reward: KaramaReward.PREMIUM_30D, key: "premium", cost: 500 },
   { reward: KaramaReward.FEATURED_PROFILE_7D, key: "featured", cost: 1000 },
 ];
+
+// expo-router colocation: not a screen.
+export default (): null => null;

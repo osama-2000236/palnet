@@ -55,6 +55,18 @@ export function makeStyles(c: NativeTheme["color"]) {
       textAlign: "left",
       writingDirection: "ltr",
     },
+    labeledField: {
+      alignSelf: "stretch",
+    },
+    fieldLabel: {
+      color: c.inkMuted,
+      fontSize: nativeTokens.type.scale.small.size,
+      lineHeight: nativeTokens.type.scale.small.line,
+      fontWeight: "600",
+      fontFamily: nativeTokens.type.family.sans,
+      marginBottom: nativeTokens.space[1],
+      textAlign: "right",
+    },
     inputRtl: {
       textAlign: "right",
       writingDirection: "rtl",
@@ -133,3 +145,6 @@ export function useStyles(): StylesSheet {
   const c = useThemeTokens().color;
   return useMemo(() => makeStyles(c), [c]);
 }
+
+// expo-router colocation: not a screen.
+export default (): null => null;

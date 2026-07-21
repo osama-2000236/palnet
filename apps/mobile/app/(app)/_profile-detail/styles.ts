@@ -162,3 +162,6 @@ export function useProfileStyles(): ProfileStylesSheet {
   const c = useThemeTokens().color;
   return useMemo(() => makeProfileStyles(c), [c]);
 }
+
+// expo-router colocation: not a screen.
+export default (): null => null;

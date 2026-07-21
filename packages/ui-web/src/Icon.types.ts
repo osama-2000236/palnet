@@ -1,7 +1,14 @@
+// IconName/IconProps for the web Icon — split out to mirror
+// packages/ui-native/src/Icon.types.ts. Both unions stay in lockstep
+// (web additionally has "building" and "employer").
+
+import type { SVGProps } from "react";
+
 export type IconName =
   | "bell"
   | "bookmark"
   | "briefcase"
+  | "building"
   | "calendar"
   | "check"
   | "check-double"
@@ -21,14 +28,14 @@ export type IconName =
   | "send-paper"
   | "share"
   | "thumb"
-  | "user"
   | "users"
   | "video"
-  | "x";
+  | "x"
+  | "employer";
 
-export interface IconProps {
+export interface IconProps extends Omit<SVGProps<SVGSVGElement>, "name" | "ref"> {
   name: IconName;
   size?: number;
-  color?: string;
   strokeWidth?: number;
+  title?: string;
 }

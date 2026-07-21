@@ -3,7 +3,7 @@
 // Jobs, search, composer, detail routes, onboarding, and edit screens stay
 // pushable hidden routes so primary navigation stays focused and touch-safe.
 
-import { WsNotificationEvent } from "@baydar/shared";
+import { WsNotificationEvent, formatNumber } from "@baydar/shared";
 import { nativeTokens, useThemeTokens } from "@baydar/ui-native";
 import { Tabs, router, usePathname } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -36,7 +36,7 @@ import {
 const UnreadCountEnvelope = z.object({ count: z.number().int().nonnegative() });
 
 export default function AppTabsLayout(): JSX.Element {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const pathname = usePathname();
   const insets = useSafeAreaInsets();
   const tk = useThemeTokens();
@@ -246,8 +246,8 @@ export default function AppTabsLayout(): JSX.Element {
           tabBarBadge:
             notificationBadge > 0
               ? notificationBadge > 99
-                ? "99+"
-                : notificationBadge
+                ? `${formatNumber(99, i18n.language)}+`
+                : formatNumber(notificationBadge, i18n.language)
               : undefined,
           tabBarIcon: ({ color, focused }) => (
             <TabIcon name="bell" color={color} focused={focused} />

@@ -39,3 +39,6 @@ export function useThreadDerived({
     unreadCount: firstUnreadIndex >= 0 ? messages.length - firstUnreadIndex : 0,
   };
 }
+
+// expo-router colocation: not a screen.
+export default (): null => null;

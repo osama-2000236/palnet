@@ -102,3 +102,6 @@ export function ProfileActions({
     </View>
   );
 }
+
+// expo-router colocation: not a screen.
+export default (): null => null;

@@ -56,3 +56,6 @@ export function AppGateError({
     </SafeAreaView>
   );
 }
+
+// expo-router colocation: not a screen.
+export default (): null => null;

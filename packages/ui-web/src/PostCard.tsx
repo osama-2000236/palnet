@@ -199,24 +199,27 @@ export function PostCard({
         </ul>
       ) : null}
 
-      {/* Stats row */}
-      <div className="flex items-center gap-2 px-4 py-2.5">
-        <span
-          aria-hidden="true"
-          className="bg-brand-600 text-ink-inverse inline-flex h-[18px] w-[18px] items-center justify-center rounded-full"
-        >
-          <Icon name="thumb" size={10} strokeWidth={2.4} />
-        </span>
-        <span aria-live="polite" className="text-ink-muted text-xs tabular-nums">
-          {counts.reactions}
-        </span>
-        <div className="flex-1" />
-        <span className="text-ink-muted text-xs">
-          {labels.commentsCount(counts.comments)}
-          {" · "}
-          {labels.repostsCount(counts.reposts)}
-        </span>
-      </div>
+      {/* Stats row — hidden entirely for untouched posts (no "0 · 0" noise),
+          matching the native twin's behavior. */}
+      {counts.reactions + counts.comments + counts.reposts > 0 ? (
+        <div className="flex items-center gap-2 px-4 py-2.5">
+          <span
+            aria-hidden="true"
+            className="bg-brand-600 text-ink-inverse inline-flex h-[18px] w-[18px] items-center justify-center rounded-full"
+          >
+            <Icon name="thumb" size={10} strokeWidth={2.4} />
+          </span>
+          <span aria-live="polite" className="text-ink-muted text-xs tabular-nums">
+            {counts.reactions}
+          </span>
+          <div className="flex-1" />
+          <span className="text-ink-muted text-xs">
+            {labels.commentsCount(counts.comments)}
+            {" · "}
+            {labels.repostsCount(counts.reposts)}
+          </span>
+        </div>
+      ) : null}
 
       <div className="border-line-soft border-t" />
 

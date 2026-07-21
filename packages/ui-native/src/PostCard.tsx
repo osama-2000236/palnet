@@ -25,9 +25,10 @@ export interface PostCardProps {
   timestamp?: string | null;
   body: string;
   media?: ReactNode;
-  reactionCount?: number;
-  commentCount?: number;
-  repostCount?: number;
+  // number | string so callers can pass locale-formatted digits (Arabic-Indic).
+  reactionCount?: number | string;
+  commentCount?: number | string;
+  repostCount?: number | string;
   actions: PostCardAction[];
   comments?: ReactNode;
   onAuthorPress?: () => void;
@@ -43,9 +44,9 @@ export function PostCard({
   timestamp,
   body,
   media,
-  reactionCount = 0,
-  commentCount = 0,
-  repostCount = 0,
+  reactionCount,
+  commentCount,
+  repostCount,
   actions,
   comments,
   onAuthorPress,
@@ -55,6 +56,15 @@ export function PostCard({
 }: PostCardProps): JSX.Element {
   const c = useThemeTokens().color;
   const styles = useMemo(() => makeStyles(c), [c]);
+  const stat = (icon: IconName, value: number | string | undefined, wrap: StyleProp<ViewStyle>) =>
+    value === undefined ? null : (
+      <View style={wrap}>
+        <Icon name={icon} size={12} color={icon === "thumb" ? c.brand700 : c.inkMuted} />
+        <Text selectable style={styles.statText}>
+          {value}
+        </Text>
+      </View>
+    );
   const header = (
     <View style={styles.header}>
       <Avatar user={author} size="md" />
@@ -102,28 +112,17 @@ export function PostCard({
 
       {media ? <View style={styles.media}>{media}</View> : null}
 
-      <View style={styles.stats}>
-        <View style={styles.reactionPill}>
-          <Icon name="thumb" size={12} color={c.brand700} />
-          <Text selectable style={styles.statText}>
-            {reactionCount}
-          </Text>
-        </View>
-        <View style={styles.statEnd}>
-          <View style={styles.statItem}>
-            <Icon name="comment" size={12} color={c.inkMuted} />
-            <Text selectable style={styles.statText}>
-              {commentCount}
-            </Text>
-          </View>
-          <View style={styles.statItem}>
-            <Icon name="repost" size={12} color={c.inkMuted} />
-            <Text selectable style={styles.statText}>
-              {repostCount}
-            </Text>
+      {/* Callers pass undefined for zero counts so an untouched post shows no
+          "0 ⇄ 0" noise; the row hides entirely when every stat is empty. */}
+      {reactionCount !== undefined || commentCount !== undefined || repostCount !== undefined ? (
+        <View style={styles.stats}>
+          {stat("thumb", reactionCount, styles.reactionPill)}
+          <View style={styles.statEnd}>
+            {stat("comment", commentCount, styles.statItem)}
+            {stat("repost", repostCount, styles.statItem)}
           </View>
         </View>
-      </View>
+      ) : null}
 
       <View style={styles.actionBar}>
         {actions.map((action) => (

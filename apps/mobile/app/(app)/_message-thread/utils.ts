@@ -35,3 +35,31 @@ export function shortTime(iso: string, locale: string): string {
     return "";
   }
 }
+
+// "اليوم"-style day label for thread separators. Weekday+date reads better
+// than a bare date in a chat context; Arabic locales get Arabic-Indic digits.
+export function dayLabel(iso: string, locale: string): string {
+  try {
+    const tag = locale.toLowerCase().startsWith("ar") ? `${locale}-u-nu-arab` : locale;
+    return new Date(iso).toLocaleDateString(tag, {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+    });
+  } catch {
+    return "";
+  }
+}
+
+export function isSameDay(a: string, b: string): boolean {
+  const da = new Date(a);
+  const db = new Date(b);
+  return (
+    da.getFullYear() === db.getFullYear() &&
+    da.getMonth() === db.getMonth() &&
+    da.getDate() === db.getDate()
+  );
+}
+
+// expo-router colocation: not a screen.
+export default (): null => null;

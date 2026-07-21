@@ -8,7 +8,7 @@ import {
 } from "@baydar/ui-native";
 import { FlatList, Pressable, RefreshControl, Text, View } from "react-native";
 
-import { computeStatus, shortTime } from "./utils";
+import { computeStatus, dayLabel, isSameDay, shortTime } from "./utils";
 
 export function MessageThreadList({
   listRef,
@@ -128,15 +128,37 @@ function MessageRow({
   onOpenOwnActions(message: Message): void;
   onReportOther(message: Message): void;
 }): JSX.Element {
+  const c = useThemeTokens().color;
   const prev = messages[index - 1];
   const next = messages[index + 1];
   const mine = item.authorId === viewerId;
   const prevSameAuthor = prev && prev.authorId === item.authorId;
   const nextSameAuthor = next && next.authorId === item.authorId;
   const author = memberById.get(item.authorId);
+  const newDay = !prev || !isSameDay(prev.createdAt, item.createdAt);
 
   return (
     <View style={{ marginTop: prevSameAuthor ? 0 : nativeTokens.space[2] }}>
+      {newDay ? (
+        <Text
+          accessibilityRole="header"
+          style={{
+            alignSelf: "center",
+            color: c.inkSubtle,
+            fontFamily: nativeTokens.type.family.sans,
+            fontSize: nativeTokens.type.scale.caption.size,
+            fontWeight: "600",
+            backgroundColor: c.surfaceSubtle,
+            borderRadius: nativeTokens.radius.full,
+            paddingHorizontal: nativeTokens.space[3],
+            paddingVertical: nativeTokens.space[1],
+            marginVertical: nativeTokens.space[2],
+            overflow: "hidden",
+          }}
+        >
+          {dayLabel(item.createdAt, locale)}
+        </Text>
+      ) : null}
       <Pressable
         disabled={item.id.startsWith("pending-") || Boolean(item.deletedAt)}
         onLongPress={() => (mine ? onOpenOwnActions(item) : onReportOther(item))}
@@ -173,3 +195,6 @@ function MessageRow({
     </View>
   );
 }
+
+// expo-router colocation: not a screen.
+export default (): null => null;
