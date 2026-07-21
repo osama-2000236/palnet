@@ -16,6 +16,9 @@ const allowedColorPaths = [
   /^apps\/mobile\/android\//,
   /^docs\/_archive\//,
   /__snapshots__\//,
+  // Design-sync preview fixtures: placeholder imagery is inline SVG data URIs,
+  // which can't read CSS vars. Never shipped in the app bundle.
+  /^\.design-sync\//,
 ];
 
 const legacyOversizeAllowlist = new Set([

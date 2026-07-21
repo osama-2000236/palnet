@@ -1,0 +1,58 @@
+{
+  "projectId": "c6957d8f-df0f-47ed-a91d-6e252067a70f",
+  "shape": "package",
+  "pkg": "@baydar/ui-web",
+  "globalName": "BaydarUI",
+  "buildCmd": "pnpm -F \"@baydar/ui-web...\" build && (cd .design-sync/ds-styles && ../../apps/web/node_modules/.bin/tailwindcss -c ./tailwind.config.cjs -i ./input.css -o ../../packages/ui-web/dist/ds-styles.css --minify)",
+  "srcDir": "src",
+  "tsconfig": "tsconfig.json",
+  "cssEntry": "dist/ds-styles.css",
+  "tokensPkg": "@baydar/ui-tokens",
+  "tokensGlob": "src/tokens.css",
+  "extraFonts": ["../../.design-sync/fonts/fonts.css"],
+  "docsDir": "../../docs/components",
+  "overrides": {
+    "AppShell": {
+      "cardMode": "single",
+      "primaryStory": "FeedRoute",
+      "viewport": "1280x820"
+    },
+    "Dialog": {
+      "cardMode": "single",
+      "primaryStory": "Confirm",
+      "viewport": "760x440"
+    },
+    "ReportDialog": {
+      "cardMode": "single",
+      "primaryStory": "ReportPost",
+      "viewport": "760x520"
+    },
+    "ToastProvider": {
+      "cardMode": "single",
+      "primaryStory": "Success",
+      "viewport": "760x400"
+    },
+    "ToastHost": {
+      "cardMode": "single",
+      "viewport": "760x360"
+    },
+    "Composer": {
+      "cardMode": "column"
+    },
+    "Avatar": {
+      "cardMode": "column"
+    },
+    "Illustration": {
+      "cardMode": "column"
+    }
+  },
+  "guidelinesGlob": [
+    "../../DESIGN.md",
+    "../../BRAND.md",
+    "../../docs/design/RTL.md",
+    "../../docs/design/MOTION.md",
+    "../../docs/design/NAV.md",
+    "../../docs/design/SCREENS.md"
+  ],
+  "readmeHeader": ".design-sync/conventions.md"
+}

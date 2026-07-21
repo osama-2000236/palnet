@@ -94,7 +94,12 @@ export function ReportDialog({
         id={formId}
         tabIndex={-1}
         data-autofocus
-        className="flex flex-col gap-4"
+        // `focus:outline-none` (not focus-visible): Dialog focuses this
+        // tabIndex={-1} form programmatically on open, and the UA outline would
+        // paint a box around the whole form. No ring replaces it here on
+        // purpose — the form isn't keyboard-reachable, and the real controls
+        // inside carry their own focus rings.
+        className="flex flex-col gap-4 focus:outline-none"
         onSubmit={(event) => {
           event.preventDefault();
           onSubmit({ target, reason, details: details.trim() || undefined });

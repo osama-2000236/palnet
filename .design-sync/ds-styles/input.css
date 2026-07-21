@@ -1,0 +1,27 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Mirrors apps/web/src/app/globals.css so preview cards sit on the same
+ * surface the real app renders on. Tokens themselves come from
+ * @baydar/ui-tokens/tokens.css, which styles.css @imports separately. */
+html {
+  font-family: var(--font-sans), "IBM Plex Sans Arabic", system-ui, sans-serif;
+  /* Baydar is RTL by default (docs/design/RTL.md). Every component styles with
+   * logical properties, so setting direction here — not per-preview — is what
+   * makes cards and generated designs read the way the product actually does.
+   * Override with dir="ltr" on a subtree for Latin-only screens. */
+  direction: rtl;
+}
+
+body {
+  @apply bg-surface-muted text-ink antialiased font-body;
+}
+
+pre,
+code,
+kbd,
+samp {
+  direction: ltr;
+  unicode-bidi: embed;
+}
