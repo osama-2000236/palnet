@@ -198,9 +198,7 @@ export const PostRow = memo(function PostRow({ post, onChange }: PostRowProps): 
         body={post.body}
         media={media}
         reactionCount={
-          post.counts.reactions > 0
-            ? formatNumber(post.counts.reactions, i18n.language)
-            : undefined
+          post.counts.reactions > 0 ? formatNumber(post.counts.reactions, i18n.language) : undefined
         }
         commentCount={
           post.counts.comments > 0 ? formatNumber(post.counts.comments, i18n.language) : undefined

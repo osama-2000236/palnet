@@ -66,7 +66,13 @@ export default function ComposerScreen(): JSX.Element {
       } catch {
         // ponytail: offline fallback — email localpart beats an empty chip.
         const handle = session.user.email.split("@")[0] ?? session.user.email;
-        setAuthor({ id: session.user.id, handle, firstName: handle, lastName: "", avatarUrl: null });
+        setAuthor({
+          id: session.user.id,
+          handle,
+          firstName: handle,
+          lastName: "",
+          avatarUrl: null,
+        });
       }
     })();
   }, []);

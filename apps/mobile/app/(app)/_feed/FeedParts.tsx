@@ -34,7 +34,9 @@ export function FeedTopBar({ unread }: { unread: number }): JSX.Element {
           {unread > 0 ? (
             <View style={feedStyles.unreadDot}>
               <Text style={feedStyles.unreadText}>
-                {unread > 99 ? `${formatNumber(99, i18n.language)}+` : formatNumber(unread, i18n.language)}
+                {unread > 99
+                  ? `${formatNumber(99, i18n.language)}+`
+                  : formatNumber(unread, i18n.language)}
               </Text>
             </View>
           ) : null}

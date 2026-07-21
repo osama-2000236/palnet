@@ -90,7 +90,9 @@ export const RoomRow = memo(function RoomRow({
 
             {room.unreadCount > 0 ? (
               <View style={styles.badge}>
-                <Text style={styles.badgeText}>{formatNumber(room.unreadCount, i18n.language)}</Text>
+                <Text style={styles.badgeText}>
+                  {formatNumber(room.unreadCount, i18n.language)}
+                </Text>
               </View>
             ) : null}
           </View>

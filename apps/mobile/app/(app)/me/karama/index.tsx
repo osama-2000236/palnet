@@ -137,7 +137,9 @@ export default function KaramaScreen(): JSX.Element {
 
         <Surface variant="tinted" padding="4" style={styles.balanceCard}>
           <Text style={styles.balanceLabel}>{t("karama.balance")}</Text>
-          <Text style={styles.balanceValue}>{formatNumber(balance?.balance ?? 0, i18n.language)}</Text>
+          <Text style={styles.balanceValue}>
+            {formatNumber(balance?.balance ?? 0, i18n.language)}
+          </Text>
           <Text style={styles.balanceLabel}>
             {t("karama.cap")}{" "}
             <Text style={styles.ltr}>{formatNumber(balance?.cap ?? 5000, i18n.language)}</Text>
