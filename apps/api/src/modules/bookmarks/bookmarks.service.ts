@@ -209,7 +209,9 @@ function toBookmarkDto(row: BookmarkRow): BookmarkDto {
       type: row.type,
       targetId: row.post.id,
       title: name,
-      subtitle: "Post",
+      // No subtitle: the client already renders a localized type label
+      // ("منشور"), and a hardcoded English "Post" shipped straight through it.
+      subtitle: null,
       description: excerpt(row.post.body),
       href: `/feed?postId=${row.post.id}`,
       imageUrl: profile?.avatarUrl ?? null,

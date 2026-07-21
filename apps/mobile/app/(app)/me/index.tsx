@@ -1,15 +1,16 @@
 import { Profile as ProfileSchema, type Profile } from "@baydar/shared";
 import { Avatar, Button, SegmentedControl, Surface } from "@baydar/ui-native";
-import { router } from "expo-router";
-import { useCallback, useEffect, useState } from "react";
+import { router, useFocusEffect } from "expo-router";
+import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ScrollView, Text, View } from "react-native";
+import { Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { FieldCover } from "@/components/FieldCover";
 import { StateMessage } from "@/components/StateMessage";
 import { apiFetch } from "@/lib/api";
 import { apiErrorMessage } from "@/lib/api-errors";
+import { profileCompletion } from "@/lib/profile-completion";
 import { clearSession, getAccessToken } from "@/lib/session";
 
 import { Section } from "../_me/Section";
@@ -51,9 +52,13 @@ export default function MeScreen(): JSX.Element {
     }
   }, [t]);
 
-  useEffect(() => {
-    void load();
-  }, [load]);
+  // On focus, not just mount — otherwise editing the profile and coming back
+  // leaves the identity block and the completion rail showing stale values.
+  useFocusEffect(
+    useCallback(() => {
+      void load();
+    }, [load]),
+  );
 
   const logout = useCallback(async (): Promise<void> => {
     setLoggingOut(true);
@@ -81,13 +86,8 @@ export default function MeScreen(): JSX.Element {
     );
   }
 
-  const completed = [
-    Boolean(profile.avatarUrl),
-    Boolean(profile.headline),
-    Boolean(profile.location),
-    profile.experiences.length > 0 || profile.educations.length > 0,
-    profile.skills.length > 0,
-  ].filter(Boolean).length;
+  const { completed, total, next } = profileCompletion(profile);
+  const nextLabel = next ? t(`profile.completion.next.${next}`) : t("profile.completion.complete");
 
   return (
     <SafeAreaView style={styles.screen}>
@@ -146,14 +146,29 @@ export default function MeScreen(): JSX.Element {
 
         <ProfileQuickLinks />
 
-        <Surface variant="tinted" padding="4" style={styles.progressRail}>
-          <Text selectable style={styles.progressTitle}>
-            {t("feed.profileCompletion", { completed, total: 5 })}
-          </Text>
-          <View style={styles.progressTrack}>
-            <View style={[styles.progressFill, { width: `${(completed / 5) * 100}%` }]} />
-          </View>
-        </Surface>
+        {/* The rail used to be a dead metric — it told you 4 of 5 and offered
+            no way to fix the fifth. It now names the missing step and is the
+            button that takes you there. */}
+        <Pressable
+          onPress={() => router.push("/(app)/me/edit")}
+          disabled={next === null}
+          accessibilityRole="button"
+          accessibilityLabel={`${t("feed.profileCompletion", { completed, total })} — ${nextLabel}`}
+          testID="profile-completion-rail"
+          style={({ pressed }) => (pressed && next ? styles.pressed : null)}
+        >
+          <Surface variant="tinted" padding="4" style={styles.progressRail}>
+            <Text selectable style={styles.progressTitle}>
+              {t("feed.profileCompletion", { completed, total })}
+            </Text>
+            <View style={styles.progressTrack}>
+              <View style={[styles.progressFill, { width: `${(completed / total) * 100}%` }]} />
+            </View>
+            <Text selectable style={styles.progressNext}>
+              {nextLabel}
+            </Text>
+          </Surface>
+        </Pressable>
 
         <SegmentedControl
           items={TABS.map((tab) => ({ key: tab.key, label: t(tab.i18n) }))}

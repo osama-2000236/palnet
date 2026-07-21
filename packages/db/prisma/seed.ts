@@ -4,6 +4,8 @@ import { dirname, resolve } from "node:path";
 import { PrismaClient } from "@prisma/client";
 import * as bcrypt from "bcrypt";
 
+import { seedPeople } from "./seed-people";
+
 loadRootEnvLocal();
 
 const prisma = new PrismaClient();
@@ -170,9 +172,11 @@ async function main() {
     },
   });
 
+  const people = await seedPeople(prisma, demoUser.id, passwordHash);
+
   // eslint-disable-next-line no-console
   console.warn(
-    `[seed] ready — demo user ${demoUser.email}, owner ${ownerUser.email} (password: Password123)`,
+    `[seed] ready — demo user ${demoUser.email}, owner ${ownerUser.email}, ${people} people (password: Password123)`,
   );
 }
 

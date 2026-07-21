@@ -93,6 +93,14 @@ export function makeStyles(c: NativeTheme["color"]) {
       borderRadius: nativeTokens.radius.full,
       backgroundColor: c.brand600,
     },
+    progressNext: {
+      color: c.inkMuted,
+      fontFamily: nativeTokens.type.family.sans,
+      fontSize: nativeTokens.type.scale.caption.size,
+      lineHeight: nativeTokens.type.scale.caption.line,
+      textAlign: "auto",
+    },
+    pressed: { opacity: 0.88 },
     section: {
       gap: nativeTokens.space[2],
     },

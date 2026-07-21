@@ -31,6 +31,11 @@ const WHEAT_GRAINS: ReadonlyArray<[number, number, number, number, number]> = [
   [40, 43, 2.8, 4.8, 28],
 ];
 
+// Cog outline for the `gear` glyph. Shared verbatim with the web twin so the
+// two icons stay identical. Data, not markup.
+const GEAR_TEETH =
+  "M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z";
+
 export function Icon({ name, size = 20, color, strokeWidth = 1.8 }: IconProps): JSX.Element | null {
   const tk = useThemeTokens();
   const iconColor = color ?? tk.color.ink;
@@ -191,10 +196,12 @@ export function Icon({ name, size = 20, color, strokeWidth = 1.8 }: IconProps): 
         </Svg>
       );
     case "gear":
+      // A toothed cog, not a circle with straight spokes — spokes read as a
+      // sun/brightness glyph, which is what settings rows were showing.
       return (
         <Svg {...common}>
           <Circle cx={12} cy={12} r={3.2} />
-          <Path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.5 5.5l1.7 1.7M16.8 16.8l1.7 1.7M18.5 5.5l-1.7 1.7M7.2 16.8l-1.7 1.7" />
+          <Path d={GEAR_TEETH} />
         </Svg>
       );
     case "clock":

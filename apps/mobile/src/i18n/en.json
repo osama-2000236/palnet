@@ -406,7 +406,17 @@
     },
     "endorseCountLabel": "{{count}} endorsements",
     "endorseThanks": "Skill endorsed.",
-    "endorseError": "Could not endorse this skill."
+    "endorseError": "Could not endorse this skill.",
+    "completion": {
+      "next": {
+        "avatar": "Add a profile photo",
+        "headline": "Add your headline",
+        "location": "Add your location",
+        "experience": "Add experience or education",
+        "skills": "Add your skills"
+      },
+      "complete": "Your profile is complete"
+    }
   },
   "karama": {
     "kicker": "Karama Points",

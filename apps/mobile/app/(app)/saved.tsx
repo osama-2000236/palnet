@@ -15,8 +15,8 @@ import {
   useThemeTokens,
 } from "@baydar/ui-native";
 import { Image } from "expo-image";
-import { router } from "expo-router";
-import { useCallback, useEffect, useState } from "react";
+import { router, useFocusEffect } from "expo-router";
+import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -71,9 +71,14 @@ export default function SavedScreen(): JSX.Element {
     [t],
   );
 
-  useEffect(() => {
-    void load(null);
-  }, [load]);
+  // Reload on focus, not just on mount: expo-router keeps this screen mounted,
+  // so saving a post from the feed and coming back showed the stale (usually
+  // empty) list forever. Same pattern as feed/messages/notifications.
+  useFocusEffect(
+    useCallback(() => {
+      void load(null);
+    }, [load]),
+  );
 
   const refreshSaved = useCallback(async (): Promise<void> => {
     setRefreshing(true);

@@ -4,6 +4,8 @@ import { router } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { Pressable, Text, View } from "react-native";
 
+import { profileCompletion } from "@/lib/profile-completion";
+
 import { useFeedStyles } from "./styles";
 
 export function FeedTopBar({ unread }: { unread: number }): JSX.Element {
@@ -93,13 +95,7 @@ export function ProfileSummary({ profile }: { profile: Profile }): JSX.Element {
   const { t } = useTranslation();
   const feedStyles = useFeedStyles();
   const name = `${profile.firstName} ${profile.lastName}`.trim();
-  const completed = [
-    Boolean(profile.avatarUrl),
-    Boolean(profile.headline),
-    Boolean(profile.location),
-    profile.experiences.length > 0 || profile.educations.length > 0,
-    profile.skills.length > 0,
-  ].filter(Boolean).length;
+  const { completed, total } = profileCompletion(profile);
 
   return (
     <Surface variant="card" padding="4" style={feedStyles.profileCard}>
@@ -132,7 +128,7 @@ export function ProfileSummary({ profile }: { profile: Profile }): JSX.Element {
       </View>
       <View style={feedStyles.profileFooter}>
         <Text selectable style={feedStyles.profileProgress}>
-          {t("feed.profileCompletion", { completed, total: 5 })}
+          {t("feed.profileCompletion", { completed, total })}
         </Text>
         <Button
           variant="secondary"
