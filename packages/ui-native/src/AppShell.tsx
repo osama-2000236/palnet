@@ -21,6 +21,21 @@ export type AppShellRoute =
   | "saved"
   | "employer";
 
+// Annotated, not cast — `as IconName` here would silently accept a glyph the
+// Icon switch has no case for, which renders nothing. Web twin: AppShell.constants.ts.
+const NAV_ITEMS: ReadonlyArray<{
+  key: Exclude<AppShellRoute, "profile">;
+  icon: IconName;
+}> = [
+  { key: "feed", icon: "home" },
+  { key: "network", icon: "users" },
+  { key: "jobs", icon: "briefcase" },
+  { key: "messages", icon: "message" },
+  { key: "notifications", icon: "bell" },
+  { key: "saved", icon: "bookmark" },
+  { key: "employer", icon: "building" },
+];
+
 export interface AppShellLabels {
   /** Alt text for the logo button (announced to screen readers). */
   logoAlt: string;
@@ -129,15 +144,7 @@ export function AppShell({
         <View style={styles.navContainer}>
           {/* Nav items */}
           <View style={styles.navItems}>
-            {[
-              { key: "feed" as AppShellRoute, icon: "home" as IconName },
-              { key: "network" as AppShellRoute, icon: "users" as IconName },
-              { key: "jobs" as AppShellRoute, icon: "briefcase" as IconName },
-              { key: "messages" as AppShellRoute, icon: "message" as IconName },
-              { key: "notifications" as AppShellRoute, icon: "bell" as IconName },
-              { key: "saved" as AppShellRoute, icon: "bookmark" as IconName },
-              { key: "employer" as AppShellRoute, icon: "building" as IconName },
-            ].map((item) => {
+            {NAV_ITEMS.map((item) => {
               const active = currentRoute === item.key;
               return (
                 <TouchableOpacity
@@ -146,9 +153,7 @@ export function AppShell({
                   onPress={() => onNavigate(item.key)}
                   accessibilityState={{ selected: active }}
                   accessibilityLabel={
-                    active
-                      ? `${labels.nav[item.key as Exclude<AppShellRoute, "profile">]}, ${labels.myProfile}`
-                      : labels.nav[item.key as Exclude<AppShellRoute, "profile">]
+                    active ? `${labels.nav[item.key]}, ${labels.myProfile}` : labels.nav[item.key]
                   }
                   style={[
                     styles.navItem,
@@ -158,9 +163,7 @@ export function AppShell({
                   <View style={styles.navIcon}>
                     <Icon name={item.icon} size={20} color={c.ink} />
                   </View>
-                  <Text style={[styles.navText, { color: c.ink }]}>
-                    {labels.nav[item.key as Exclude<AppShellRoute, "profile">]}
-                  </Text>
+                  <Text style={[styles.navText, { color: c.ink }]}>{labels.nav[item.key]}</Text>
                 </TouchableOpacity>
               );
             })}

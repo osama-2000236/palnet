@@ -2,6 +2,7 @@ export type IconName =
   | "bell"
   | "bookmark"
   | "briefcase"
+  | "building"
   | "calendar"
   | "check"
   | "check-double"

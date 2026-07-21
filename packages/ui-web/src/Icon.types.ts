@@ -1,6 +1,6 @@
 // IconName/IconProps for the web Icon — split out to mirror
 // packages/ui-native/src/Icon.types.ts. Both unions stay in lockstep
-// (web additionally has "building" and "employer").
+// (native additionally has "user").
 
 import type { SVGProps } from "react";
 
@@ -30,8 +30,7 @@ export type IconName =
   | "thumb"
   | "users"
   | "video"
-  | "x"
-  | "employer";
+  | "x";
 
 export interface IconProps extends Omit<SVGProps<SVGSVGElement>, "name" | "ref"> {
   name: IconName;

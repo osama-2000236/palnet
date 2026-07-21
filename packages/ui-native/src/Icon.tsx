@@ -17,6 +17,20 @@ import { useThemeTokens } from "./ThemeProvider";
 
 export type { IconName, IconProps } from "./Icon.types";
 
+// Wheat grains of the logo mark: [cx, cy, rx, ry, rotation]. Mirrored pairs,
+// bottom-heavy. Data, not markup — eight hand-written <Ellipse> blocks is how
+// this file crept up on the 300-LOC qa:design ceiling.
+const WHEAT_GRAINS: ReadonlyArray<[number, number, number, number, number]> = [
+  [27, 19, 2.6, 4.6, -28],
+  [37, 19, 2.6, 4.6, 28],
+  [26, 27, 2.8, 4.8, -28],
+  [38, 27, 2.8, 4.8, 28],
+  [25, 35, 2.8, 4.8, -28],
+  [39, 35, 2.8, 4.8, 28],
+  [24, 43, 2.8, 4.8, -28],
+  [40, 43, 2.8, 4.8, 28],
+];
+
 export function Icon({ name, size = 20, color, strokeWidth = 1.8 }: IconProps): JSX.Element | null {
   const tk = useThemeTokens();
   const iconColor = color ?? tk.color.ink;
@@ -63,6 +77,15 @@ export function Icon({ name, size = 20, color, strokeWidth = 1.8 }: IconProps): 
           <Rect x={3} y={7} width={18} height={13} rx={2} />
           <Path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
           <Path d="M3 13h18" />
+        </Svg>
+      );
+    case "building":
+      // Employer / company glyph — used by the employer nav tab on both shells.
+      return (
+        <Svg {...common}>
+          <Rect x={4} y={8} width={16} height={12} rx={2} />
+          <Rect x={8} y={12} width={4} height={4} />
+          <Rect x={12} y={12} width={4} height={4} />
         </Svg>
       );
     case "message":
@@ -220,70 +243,17 @@ export function Icon({ name, size = 20, color, strokeWidth = 1.8 }: IconProps): 
         >
           <Circle cx={32} cy={32} r={30} fill={tk.color.brand600} />
           <Rect x={31} y={14} width={2} height={37} rx={1} fill={tk.color.brand50} />
-          <Ellipse
-            cx={27}
-            cy={19}
-            rx={2.6}
-            ry={4.6}
-            transform="rotate(-28 27 19)"
-            fill={tk.color.brand50}
-          />
-          <Ellipse
-            cx={37}
-            cy={19}
-            rx={2.6}
-            ry={4.6}
-            transform="rotate(28 37 19)"
-            fill={tk.color.brand50}
-          />
-          <Ellipse
-            cx={26}
-            cy={27}
-            rx={2.8}
-            ry={4.8}
-            transform="rotate(-28 26 27)"
-            fill={tk.color.brand50}
-          />
-          <Ellipse
-            cx={38}
-            cy={27}
-            rx={2.8}
-            ry={4.8}
-            transform="rotate(28 38 27)"
-            fill={tk.color.brand50}
-          />
-          <Ellipse
-            cx={25}
-            cy={35}
-            rx={2.8}
-            ry={4.8}
-            transform="rotate(-28 25 35)"
-            fill={tk.color.brand50}
-          />
-          <Ellipse
-            cx={39}
-            cy={35}
-            rx={2.8}
-            ry={4.8}
-            transform="rotate(28 39 35)"
-            fill={tk.color.brand50}
-          />
-          <Ellipse
-            cx={24}
-            cy={43}
-            rx={2.8}
-            ry={4.8}
-            transform="rotate(-28 24 43)"
-            fill={tk.color.brand50}
-          />
-          <Ellipse
-            cx={40}
-            cy={43}
-            rx={2.8}
-            ry={4.8}
-            transform="rotate(28 40 43)"
-            fill={tk.color.brand50}
-          />
+          {WHEAT_GRAINS.map(([cx, cy, rx, ry, rot]) => (
+            <Ellipse
+              key={`${cx}-${cy}`}
+              cx={cx}
+              cy={cy}
+              rx={rx}
+              ry={ry}
+              transform={`rotate(${rot} ${cx} ${cy})`}
+              fill={tk.color.brand50}
+            />
+          ))}
         </Svg>
       );
     default:
