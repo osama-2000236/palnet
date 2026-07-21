@@ -114,45 +114,52 @@ export default function FeedScreen(): JSX.Element {
   return (
     <SafeAreaView style={feedStyles.screen}>
       <View style={feedStyles.content}>
+        {/* Only the top bar is pinned. Everything else rides in
+            ListHeaderComponent so it scrolls away and posts get the whole
+            screen — as siblings they permanently ate ~half the viewport and
+            the feed was stuck in a stub window. */}
         <FeedTopBar unread={unread} />
-
-        <ComposerEntry
-          user={
-            profile
-              ? {
-                  id: profile.userId,
-                  handle: profile.handle,
-                  firstName: profile.firstName,
-                  lastName: profile.lastName,
-                  avatarUrl: profile.avatarUrl,
-                }
-              : null
-          }
-          placeholder={t("composer.placeholder")}
-          actionLabel={t("composer.title")}
-          onPress={() => router.push("/(app)/composer")}
-          testID="feed-composer-entry"
-          style={feedStyles.composerWrap}
-        />
-
-        {profile ? <ProfileSummary profile={profile} /> : null}
-
-        <JobsEntry />
-
-        {feedError ? (
-          <StateMessage
-            message={feedError}
-            actionLabel={t("common.retry")}
-            busy={loading}
-            onAction={() => void load(null)}
-            tone="error"
-            style={feedStyles.errorBox}
-          />
-        ) : null}
 
         <FlatList
           data={posts}
           keyExtractor={(p) => p.id}
+          ListHeaderComponent={
+            <>
+              <ComposerEntry
+                user={
+                  profile
+                    ? {
+                        id: profile.userId,
+                        handle: profile.handle,
+                        firstName: profile.firstName,
+                        lastName: profile.lastName,
+                        avatarUrl: profile.avatarUrl,
+                      }
+                    : null
+                }
+                placeholder={t("composer.placeholder")}
+                actionLabel={t("composer.title")}
+                onPress={() => router.push("/(app)/composer")}
+                testID="feed-composer-entry"
+                style={feedStyles.composerWrap}
+              />
+
+              {profile ? <ProfileSummary profile={profile} /> : null}
+
+              <JobsEntry />
+
+              {feedError ? (
+                <StateMessage
+                  message={feedError}
+                  actionLabel={t("common.retry")}
+                  busy={loading}
+                  onAction={() => void load(null)}
+                  tone="error"
+                  style={feedStyles.errorBox}
+                />
+              ) : null}
+            </>
+          }
           renderItem={({ item }) => (
             <PostRow
               post={item}
@@ -162,6 +169,8 @@ export default function FeedScreen(): JSX.Element {
             />
           )}
           ItemSeparatorComponent={() => <View style={feedStyles.separator} />}
+          contentContainerStyle={feedStyles.listContent}
+          showsVerticalScrollIndicator={false}
           onEndReachedThreshold={0.4}
           onEndReached={() => {
             if (!loading && hasMore && cursor) void load(cursor);
