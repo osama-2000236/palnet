@@ -3,7 +3,7 @@ import type { Profile } from "@baydar/shared";
 import type { ReactNode } from "react";
 import { Text, View, type ViewStyle, type TextStyle } from "react-native";
 
-import { styles } from "./styles";
+import { useStyles } from "./styles";
 
 export interface ProfileCardProps {
   profile: Profile;
@@ -12,6 +12,7 @@ export interface ProfileCardProps {
 }
 
 export function Card({ title, children }: { title: string; children: ReactNode }): JSX.Element {
+  const styles = useStyles();
   return (
     <Surface variant="card" padding="4">
       <Text style={styles.cardTitle}>{title}</Text>
@@ -43,6 +44,7 @@ export function Input({
   style?: ViewStyle;
   inputStyle?: TextStyle;
 }): JSX.Element {
+  const styles = useStyles();
   return (
     <NativeInput
       fullWidth={fullWidth}

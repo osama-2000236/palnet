@@ -2,7 +2,7 @@ import {
   ConnectionListItem as ConnectionListItemSchema,
   type ConnectionListItem,
 } from "@baydar/shared";
-import { AppHeader, RecordCardSkeleton, SegmentedControl, nativeTokens } from "@baydar/ui-native";
+import { AppHeader, RecordCardSkeleton, SegmentedControl, useThemeTokens } from "@baydar/ui-native";
 import { router } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -17,12 +17,14 @@ import { successHaptic, tapHaptic } from "@/lib/haptics";
 import { getAccessToken, readSession } from "@/lib/session";
 
 import { ConnectionRow, type NetworkFilter } from "./_network/ConnectionRow";
-import { styles } from "./_network/styles";
+import { useStyles } from "./_network/styles";
 
 const ListEnvelope = z.array(ConnectionListItemSchema);
 const Raw = z.object({}).passthrough();
 
 export default function NetworkScreen(): JSX.Element {
+  const c = useThemeTokens().color;
+  const styles = useStyles();
   const { t } = useTranslation();
   const [filter, setFilter] = useState<NetworkFilter>("ACCEPTED");
   const [items, setItems] = useState<ConnectionListItem[]>([]);
@@ -191,8 +193,8 @@ export default function NetworkScreen(): JSX.Element {
             <RefreshControl
               refreshing={refreshing}
               onRefresh={() => void refresh()}
-              tintColor={nativeTokens.color.brand600}
-              colors={[nativeTokens.color.brand600]}
+              tintColor={c.brand600}
+              colors={[c.brand600]}
             />
           }
           ListEmptyComponent={

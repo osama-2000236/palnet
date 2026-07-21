@@ -9,9 +9,11 @@ import {
   RecordCardSkeleton,
   SegmentedControl,
   nativeTokens,
+  useThemeTokens,
+  type NativeTheme,
 } from "@baydar/ui-native";
 import { router, useFocusEffect } from "expo-router";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { FlatList, RefreshControl, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -27,6 +29,8 @@ import { getAccessToken, readSession } from "@/lib/session";
 const RoomsEnvelope = z.object({ data: z.array(ChatRoomSchema) });
 
 export default function MessagesListScreen(): JSX.Element {
+  const c = useThemeTokens().color;
+  const styles = useStyles();
   const { t } = useTranslation();
   const [rooms, setRooms] = useState<ChatRoom[]>([]);
   const [viewerId, setViewerId] = useState<string | null>(null);
@@ -126,7 +130,7 @@ export default function MessagesListScreen(): JSX.Element {
           trailing={
             <Button
               size="sm"
-              leading={<Icon name="message" size={16} color={nativeTokens.color.inkInverse} />}
+              leading={<Icon name="message" size={16} color={c.inkInverse} />}
               onPress={() => router.push("/(app)/messages/new")}
               accessibilityLabel={t("messaging.newGroup.title")}
             >
@@ -171,8 +175,8 @@ export default function MessagesListScreen(): JSX.Element {
             <RefreshControl
               refreshing={refreshing}
               onRefresh={() => void refresh()}
-              tintColor={nativeTokens.color.brand600}
-              colors={[nativeTokens.color.brand600]}
+              tintColor={c.brand600}
+              colors={[c.brand600]}
             />
           }
           ListEmptyComponent={
@@ -207,23 +211,30 @@ export default function MessagesListScreen(): JSX.Element {
   );
 }
 
-const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: nativeTokens.color.surfaceMuted,
-  },
-  content: {
-    flex: 1,
-    paddingHorizontal: nativeTokens.space[4],
-    paddingTop: nativeTokens.space[3],
-  },
-  listContent: {
-    paddingBottom: nativeTokens.space[6],
-  },
-  separator: {
-    height: nativeTokens.space[2],
-  },
-  skeletonStack: {
-    gap: nativeTokens.space[2],
-  },
-});
+function makeStyles(c: NativeTheme["color"]) {
+  return StyleSheet.create({
+    screen: {
+      flex: 1,
+      backgroundColor: c.surfaceMuted,
+    },
+    content: {
+      flex: 1,
+      paddingHorizontal: nativeTokens.space[4],
+      paddingTop: nativeTokens.space[3],
+    },
+    listContent: {
+      paddingBottom: nativeTokens.space[6],
+    },
+    separator: {
+      height: nativeTokens.space[2],
+    },
+    skeletonStack: {
+      gap: nativeTokens.space[2],
+    },
+  });
+}
+
+function useStyles() {
+  const c = useThemeTokens().color;
+  return useMemo(() => makeStyles(c), [c]);
+}

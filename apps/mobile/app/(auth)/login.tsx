@@ -1,4 +1,4 @@
-import { Button, Surface, nativeTokens } from "@baydar/ui-native";
+import { Button, Surface, nativeTokens, useThemeTokens } from "@baydar/ui-native";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { router, type Href } from "expo-router";
 import { useState } from "react";
@@ -28,6 +28,7 @@ const loginSchema = z.object({
 });
 
 export default function LoginScreen(): JSX.Element {
+  const c = useThemeTokens().color;
   const { t } = useTranslation();
   const [error, setError] = useState<string | null>(null);
   const [errorCode, setErrorCode] = useState<string | null>(null);
@@ -192,7 +193,7 @@ export default function LoginScreen(): JSX.Element {
           <Text
             selectable
             style={{
-              color: nativeTokens.color.ink,
+              color: c.ink,
               fontFamily: nativeTokens.type.family.sans,
               fontSize: nativeTokens.type.scale.small.size,
               fontWeight: "600",
@@ -205,7 +206,7 @@ export default function LoginScreen(): JSX.Element {
           <Text
             selectable
             style={{
-              color: nativeTokens.color.inkMuted,
+              color: c.inkMuted,
               fontFamily: nativeTokens.type.family.body,
               fontSize: nativeTokens.type.scale.small.size,
               lineHeight: nativeTokens.type.scale.small.line,

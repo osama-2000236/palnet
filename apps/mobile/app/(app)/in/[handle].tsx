@@ -22,11 +22,12 @@ import {
   type ProfileTab,
 } from "../_profile-detail/ProfileTabContent";
 import { blockButtonLabels, reportSheetLabels } from "../_profile-detail/safetyLabels";
-import { profileStyles } from "../_profile-detail/styles";
+import { useProfileStyles } from "../_profile-detail/styles";
 
 const Raw = z.object({}).passthrough();
 
 export default function ProfileScreen(): JSX.Element {
+  const profileStyles = useProfileStyles();
   const { handle } = useLocalSearchParams<{ handle: string }>();
   const { t } = useTranslation();
   const { showToast } = useToast();

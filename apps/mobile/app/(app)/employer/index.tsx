@@ -5,9 +5,11 @@ import {
   RecordCard,
   RecordCardSkeleton,
   nativeTokens,
+  useThemeTokens,
+  type NativeTheme,
 } from "@baydar/ui-native";
 import { Link, Stack } from "expo-router";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { FlatList, Pressable, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -20,6 +22,7 @@ import { apiErrorMessage } from "@/lib/api-errors";
 const CompanyList = z.array(CompanySummary);
 
 export default function EmployerHomeScreen(): JSX.Element {
+  const styles = useStyles();
   const { t } = useTranslation();
   const [items, setItems] = useState<CompanySummary[] | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -85,21 +88,28 @@ export default function EmployerHomeScreen(): JSX.Element {
   );
 }
 
-const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: nativeTokens.color.surfaceMuted,
-  },
-  content: {
-    flex: 1,
-    paddingHorizontal: nativeTokens.space[4],
-    paddingTop: nativeTokens.space[3],
-  },
-  listContent: {
-    gap: nativeTokens.space[3],
-    paddingBottom: nativeTokens.space[6],
-  },
-  skeletonStack: {
-    gap: nativeTokens.space[3],
-  },
-});
+function makeStyles(c: NativeTheme["color"]) {
+  return StyleSheet.create({
+    screen: {
+      flex: 1,
+      backgroundColor: c.surfaceMuted,
+    },
+    content: {
+      flex: 1,
+      paddingHorizontal: nativeTokens.space[4],
+      paddingTop: nativeTokens.space[3],
+    },
+    listContent: {
+      gap: nativeTokens.space[3],
+      paddingBottom: nativeTokens.space[6],
+    },
+    skeletonStack: {
+      gap: nativeTokens.space[3],
+    },
+  });
+}
+
+function useStyles() {
+  const c = useThemeTokens().color;
+  return useMemo(() => makeStyles(c), [c]);
+}

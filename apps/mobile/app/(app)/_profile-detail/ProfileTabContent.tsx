@@ -8,7 +8,7 @@ import { Text, View } from "react-native";
 import { apiFetch } from "@/lib/api";
 import { apiErrorMessage } from "@/lib/api-errors";
 
-import { profileStyles } from "./styles";
+import { useProfileStyles } from "./styles";
 
 export type ProfileTab = "about" | "exp" | "edu" | "skills";
 
@@ -26,6 +26,7 @@ export function ProfileTabContent({
   activeTab: ProfileTab;
   profile: Profile;
 }): JSX.Element {
+  const profileStyles = useProfileStyles();
   const { t } = useTranslation();
   const [endorsementCounts, setEndorsementCounts] = useState<Record<string, number>>({});
   const [endorsedSkillIds, setEndorsedSkillIds] = useState<Set<string>>(() => new Set());
@@ -166,6 +167,7 @@ export function ProfileTabContent({
 }
 
 function Section({ children, title }: { children: ReactNode; title: string }): JSX.Element {
+  const profileStyles = useProfileStyles();
   return (
     <Surface variant="card" padding="4">
       <Text style={profileStyles.sectionTitle}>{title}</Text>

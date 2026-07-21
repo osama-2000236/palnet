@@ -4,7 +4,7 @@ import { router } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { View } from "react-native";
 
-import { styles } from "./styles";
+import { useStyles } from "./styles";
 
 export type NetworkFilter = "ACCEPTED" | "INCOMING" | "OUTGOING";
 
@@ -23,6 +23,7 @@ export function ConnectionRow({
   onWithdraw: (id: string) => Promise<void>;
   pending: boolean;
 }): JSX.Element {
+  const styles = useStyles();
   const { t } = useTranslation();
   const name = `${item.user.firstName} ${item.user.lastName}`.trim();
 

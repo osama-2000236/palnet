@@ -5,9 +5,9 @@ import {
   type BankTransferDestination as BankTransferDestinationDto,
   type Invoice as InvoiceDto,
 } from "@baydar/shared";
-import { Button, Surface, nativeTokens } from "@baydar/ui-native";
+import { Button, Surface, nativeTokens, useThemeTokens, type NativeTheme } from "@baydar/ui-native";
 import * as ImagePicker from "expo-image-picker";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { StyleSheet, Text, View } from "react-native";
 
@@ -35,19 +35,24 @@ const METHOD_KEYS: Record<PaymentMethod, string> = {
   REFLECT: "reflect",
 };
 
-const STATUS_COLOR: Record<InvoiceStatus, string> = {
-  DRAFT: nativeTokens.color.inkMuted,
-  OPEN: nativeTokens.color.warning,
-  PAID: nativeTokens.color.success,
-  VOID: nativeTokens.color.inkMuted,
-  UNCOLLECTIBLE: nativeTokens.color.danger,
-};
+function statusColor(c: NativeTheme["color"]): Record<InvoiceStatus, string> {
+  return {
+    DRAFT: c.inkMuted,
+    OPEN: c.warning,
+    PAID: c.success,
+    VOID: c.inkMuted,
+    UNCOLLECTIBLE: c.danger,
+  };
+}
 
 export function InvoiceList({
   invoices,
   bankTransfer = null,
   onChanged,
 }: InvoiceListProps): JSX.Element {
+  const c = useThemeTokens().color;
+  const styles = useStyles();
+  const STATUS_COLOR = statusColor(c);
   const { t } = useTranslation();
   const [busyInvoice, setBusyInvoice] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -161,71 +166,78 @@ export function InvoiceList({
   );
 }
 
-const styles = StyleSheet.create({
-  card: {
-    gap: nativeTokens.space[3],
-  },
-  title: {
-    color: nativeTokens.color.ink,
-    fontFamily: nativeTokens.type.family.sans,
-    fontSize: nativeTokens.type.scale.h3.size,
-    lineHeight: nativeTokens.type.scale.h3.line,
-    fontWeight: "700",
-  },
-  bodyText: {
-    color: nativeTokens.color.inkMuted,
-    fontFamily: nativeTokens.type.family.body,
-    fontSize: nativeTokens.type.scale.small.size,
-    lineHeight: nativeTokens.type.scale.small.line,
-  },
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: nativeTokens.space[3],
-    paddingVertical: nativeTokens.space[2],
-  },
-  rowBorder: {
-    borderTopWidth: 1,
-    borderTopColor: nativeTokens.color.lineSoft,
-  },
-  rowMain: {
-    flex: 1,
-    gap: nativeTokens.space[1],
-  },
-  amount: {
-    color: nativeTokens.color.ink,
-    fontFamily: nativeTokens.type.family.sans,
-    fontSize: nativeTokens.type.scale.body.size,
-    lineHeight: nativeTokens.type.scale.body.line,
-    fontWeight: "700",
-  },
-  method: {
-    color: nativeTokens.color.inkMuted,
-    fontWeight: "400",
-    fontSize: nativeTokens.type.scale.small.size,
-  },
-  meta: {
-    color: nativeTokens.color.inkMuted,
-    fontFamily: nativeTokens.type.family.sans,
-    fontSize: nativeTokens.type.scale.small.size,
-    lineHeight: nativeTokens.type.scale.small.line,
-  },
-  status: {
-    fontFamily: nativeTokens.type.family.sans,
-    fontSize: nativeTokens.type.scale.small.size,
-    lineHeight: nativeTokens.type.scale.small.line,
-    fontWeight: "700",
-  },
-  bankDetails: {
-    gap: nativeTokens.space[1],
-    paddingTop: nativeTokens.space[1],
-  },
-  bankValue: {
-    color: nativeTokens.color.ink,
-    fontWeight: "700",
-  },
-  ltrValue: {
-    writingDirection: "ltr",
-  },
-});
+function makeStyles(c: NativeTheme["color"]) {
+  return StyleSheet.create({
+    card: {
+      gap: nativeTokens.space[3],
+    },
+    title: {
+      color: c.ink,
+      fontFamily: nativeTokens.type.family.sans,
+      fontSize: nativeTokens.type.scale.h3.size,
+      lineHeight: nativeTokens.type.scale.h3.line,
+      fontWeight: "700",
+    },
+    bodyText: {
+      color: c.inkMuted,
+      fontFamily: nativeTokens.type.family.body,
+      fontSize: nativeTokens.type.scale.small.size,
+      lineHeight: nativeTokens.type.scale.small.line,
+    },
+    row: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      gap: nativeTokens.space[3],
+      paddingVertical: nativeTokens.space[2],
+    },
+    rowBorder: {
+      borderTopWidth: 1,
+      borderTopColor: c.lineSoft,
+    },
+    rowMain: {
+      flex: 1,
+      gap: nativeTokens.space[1],
+    },
+    amount: {
+      color: c.ink,
+      fontFamily: nativeTokens.type.family.sans,
+      fontSize: nativeTokens.type.scale.body.size,
+      lineHeight: nativeTokens.type.scale.body.line,
+      fontWeight: "700",
+    },
+    method: {
+      color: c.inkMuted,
+      fontWeight: "400",
+      fontSize: nativeTokens.type.scale.small.size,
+    },
+    meta: {
+      color: c.inkMuted,
+      fontFamily: nativeTokens.type.family.sans,
+      fontSize: nativeTokens.type.scale.small.size,
+      lineHeight: nativeTokens.type.scale.small.line,
+    },
+    status: {
+      fontFamily: nativeTokens.type.family.sans,
+      fontSize: nativeTokens.type.scale.small.size,
+      lineHeight: nativeTokens.type.scale.small.line,
+      fontWeight: "700",
+    },
+    bankDetails: {
+      gap: nativeTokens.space[1],
+      paddingTop: nativeTokens.space[1],
+    },
+    bankValue: {
+      color: c.ink,
+      fontWeight: "700",
+    },
+    ltrValue: {
+      writingDirection: "ltr",
+    },
+  });
+}
+
+function useStyles() {
+  const c = useThemeTokens().color;
+  return useMemo(() => makeStyles(c), [c]);
+}

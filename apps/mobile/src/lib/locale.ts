@@ -36,8 +36,21 @@ function readWebPreference(): SupportedLocale | null {
   }
 }
 
+function readNativePreference(): SupportedLocale | null {
+  if (Platform.OS === "web") return null;
+  try {
+    const raw = SecureStore.getItem(KEY);
+    return raw ? normalizeLocale(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+// Must stay synchronous: i18n and I18nManager.forceRTL both run at module
+// import, before the first render. An async read lands too late and the app
+// boots in the device language with the wrong layout direction.
 export function getInitialLocale(): SupportedLocale {
-  return readWebPreference() ?? deviceLocale();
+  return readWebPreference() ?? readNativePreference() ?? deviceLocale();
 }
 
 export async function readLocalePreference(): Promise<SupportedLocale | null> {
@@ -52,6 +65,16 @@ export async function writeLocalePreference(locale: SupportedLocale): Promise<vo
     return;
   }
   await SecureStore.setItemAsync(KEY, locale);
+}
+
+// The locale this launch actually rendered with. I18nManager.isRTL is not a
+// usable comparison here: forceRTL only lands on the next launch, so the JS
+// flag and the native layout disagree for a whole session.
+const bootLocale = getInitialLocale();
+
+/** True when `locale` needs a restart to take effect (ar-PS and en differ in direction). */
+export function needsRestartForDirection(locale: SupportedLocale): boolean {
+  return locale !== bootLocale;
 }
 
 export function applyLocaleDirection(locale: SupportedLocale): void {

@@ -1,24 +1,26 @@
 import { AuthSession } from "@baydar/shared";
-import { Button, Input, Surface, nativeTokens, useToast } from "@baydar/ui-native";
+import { Button, Input, Surface, useToast } from "@baydar/ui-native";
 import * as FileSystem from "expo-file-system/legacy";
 import { router } from "expo-router";
 // eslint-disable-next-line import/no-unresolved -- dependency is pinned for Expo install; absent only in this offline sandbox.
 import * as Sharing from "expo-sharing";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Modal, StyleSheet, Text, View } from "react-native";
+import { Modal, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { API_BASE, apiCall, apiFetch } from "@/lib/api";
 import { apiErrorMessage } from "@/lib/api-errors";
 import { sendVerifyEmailAction } from "@/lib/auth-actions";
 import { clearSession, getAccessToken } from "@/lib/session";
+import { useStyles } from "@/styles/settings-account";
 
 const MeUser = AuthSession.shape.user;
 
 const CONFIRMATION = "DELETE_MY_ACCOUNT";
 
 export default function AccountSettingsScreen(): JSX.Element {
+  const styles = useStyles();
   const { t } = useTranslation();
   const { showToast } = useToast();
   const [confirming, setConfirming] = useState(false);
@@ -208,91 +210,3 @@ export default function AccountSettingsScreen(): JSX.Element {
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: nativeTokens.color.surfaceMuted,
-  },
-  body: {
-    padding: nativeTokens.space[4],
-    gap: nativeTokens.space[4],
-  },
-  title: {
-    color: nativeTokens.color.ink,
-    fontFamily: nativeTokens.type.family.sans,
-    fontSize: nativeTokens.type.scale.h1.size,
-    lineHeight: nativeTokens.type.scale.h1.line,
-    fontWeight: "700",
-  },
-  section: {
-    gap: nativeTokens.space[3],
-  },
-  sectionTitle: {
-    color: nativeTokens.color.ink,
-    fontFamily: nativeTokens.type.family.sans,
-    fontSize: nativeTokens.type.scale.h3.size,
-    lineHeight: nativeTokens.type.scale.h3.line,
-    fontWeight: "700",
-  },
-  dangerTitle: {
-    color: nativeTokens.color.danger,
-  },
-  copy: {
-    color: nativeTokens.color.inkMuted,
-    fontFamily: nativeTokens.type.family.sans,
-    fontSize: nativeTokens.type.scale.small.size,
-    lineHeight: nativeTokens.type.scale.small.line,
-  },
-  emailRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    alignItems: "center",
-    gap: nativeTokens.space[2],
-  },
-  emailText: {
-    color: nativeTokens.color.ink,
-    fontFamily: nativeTokens.type.family.sans,
-    fontSize: nativeTokens.type.scale.body.size,
-    lineHeight: nativeTokens.type.scale.body.line,
-    writingDirection: "ltr",
-  },
-  badge: {
-    borderRadius: nativeTokens.radius.full,
-    paddingHorizontal: nativeTokens.space[2],
-    paddingVertical: 2,
-    fontFamily: nativeTokens.type.family.sans,
-    fontSize: nativeTokens.type.scale.caption.size,
-    fontWeight: "600",
-  },
-  verifiedBadge: {
-    color: nativeTokens.color.brand700,
-    backgroundColor: nativeTokens.color.brand50,
-  },
-  unverifiedBadge: {
-    color: nativeTokens.color.inkMuted,
-    backgroundColor: nativeTokens.color.surfaceSubtle,
-  },
-  modalBackdrop: {
-    flex: 1,
-    justifyContent: "center",
-    backgroundColor: nativeTokens.color.scrim,
-    padding: nativeTokens.space[4],
-  },
-  modal: {
-    gap: nativeTokens.space[3],
-    borderRadius: nativeTokens.radius.lg,
-    backgroundColor: nativeTokens.color.surface,
-    padding: nativeTokens.space[4],
-  },
-  input: {
-    color: nativeTokens.color.ink,
-    fontFamily: nativeTokens.type.family.mono,
-    writingDirection: "ltr",
-  },
-  actions: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: nativeTokens.space[2],
-  },
-});

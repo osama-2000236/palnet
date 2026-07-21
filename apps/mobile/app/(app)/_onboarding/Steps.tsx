@@ -1,4 +1,4 @@
-import { Surface, nativeTokens } from "@baydar/ui-native";
+import { Surface, nativeTokens, useThemeTokens } from "@baydar/ui-native";
 import { Controller, type Control, type FieldErrors } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { I18nManager, Pressable, Switch, Text, View } from "react-native";
@@ -16,6 +16,7 @@ export function IdentityStep({
   control: Control<OnboardingFormValues>;
   errors: FieldErrors<OnboardingFormValues>;
 }): JSX.Element {
+  const c = useThemeTokens().color;
   const { t } = useTranslation();
 
   return (
@@ -62,7 +63,7 @@ export function IdentityStep({
                   selectable
                   style={{
                     flex: 1,
-                    color: nativeTokens.color.ink,
+                    color: c.ink,
                     fontFamily: nativeTokens.type.family.body,
                     fontSize: nativeTokens.type.scale.small.size,
                     lineHeight: nativeTokens.type.scale.small.line,
@@ -72,10 +73,10 @@ export function IdentityStep({
                   {t("onboarding.identity.confirm")}
                 </Text>
                 <Switch
-                  thumbColor={value ? nativeTokens.color.brand600 : nativeTokens.color.surface}
+                  thumbColor={value ? c.brand600 : c.surface}
                   trackColor={{
-                    false: nativeTokens.color.surfaceSunken,
-                    true: nativeTokens.color.brand200,
+                    false: c.surfaceSunken,
+                    true: c.brand200,
                   }}
                   value={value}
                   onValueChange={onChange}
@@ -142,6 +143,7 @@ export function LocationStep({
   control: Control<OnboardingFormValues>;
   errors: FieldErrors<OnboardingFormValues>;
 }): JSX.Element {
+  const c = useThemeTokens().color;
   const { t } = useTranslation();
 
   return (
@@ -154,7 +156,7 @@ export function LocationStep({
             <Text
               selectable
               style={{
-                color: nativeTokens.color.ink,
+                color: c.ink,
                 fontFamily: nativeTokens.type.family.sans,
                 fontSize: nativeTokens.type.scale.small.size,
                 fontWeight: "700",

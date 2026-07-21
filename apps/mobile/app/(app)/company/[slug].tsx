@@ -5,10 +5,10 @@ import {
   type Company as CompanyDto,
   type Job,
 } from "@baydar/shared";
-import { Button, Surface, nativeTokens } from "@baydar/ui-native";
+import { Button, Surface, nativeTokens, useThemeTokens, type NativeTheme } from "@baydar/ui-native";
 import { Image } from "expo-image";
 import { router, useLocalSearchParams } from "expo-router";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Linking, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -21,6 +21,7 @@ import { apiErrorMessage } from "@/lib/api-errors";
 const JobsPage = cursorPage(JobSchema);
 
 export default function CompanyScreen(): JSX.Element {
+  const styles = useStyles();
   const { t } = useTranslation();
   const { slug } = useLocalSearchParams<{ slug: string }>();
 
@@ -154,93 +155,100 @@ export default function CompanyScreen(): JSX.Element {
   );
 }
 
-const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: nativeTokens.color.surfaceMuted,
-  },
-  centerScreen: {
-    flex: 1,
-    justifyContent: "center",
-    backgroundColor: nativeTokens.color.surfaceMuted,
-    padding: nativeTokens.space[4],
-  },
-  scrollBody: {
-    padding: nativeTokens.space[4],
-    gap: nativeTokens.space[4],
-  },
-  hero: {
-    gap: nativeTokens.space[3],
-  },
-  heroRow: {
-    flexDirection: "row",
-    gap: nativeTokens.space[3],
-  },
-  logoBox: {
-    width: nativeTokens.space[12],
-    height: nativeTokens.space[12],
-    borderRadius: nativeTokens.radius.lg,
-    backgroundColor: nativeTokens.color.surfaceSunken,
-    alignItems: "center",
-    justifyContent: "center",
-    overflow: "hidden",
-  },
-  logoFallback: {
-    color: nativeTokens.color.ink,
-    fontWeight: "800",
-    fontSize: nativeTokens.type.scale.h2.size,
-    fontFamily: nativeTokens.type.family.sans,
-  },
-  heroText: {
-    flex: 1,
-    gap: nativeTokens.space[1],
-  },
-  name: {
-    color: nativeTokens.color.ink,
-    fontFamily: nativeTokens.type.family.sans,
-    fontSize: nativeTokens.type.scale.h2.size,
-    lineHeight: nativeTokens.type.scale.h2.line,
-    fontWeight: "800",
-  },
-  verified: {
-    color: nativeTokens.color.brand700,
-    fontSize: nativeTokens.type.scale.small.size,
-    fontWeight: "700",
-  },
-  tagline: {
-    color: nativeTokens.color.inkMuted,
-    fontFamily: nativeTokens.type.family.body,
-    fontSize: nativeTokens.type.scale.small.size,
-    lineHeight: nativeTokens.type.scale.small.line,
-  },
-  meta: {
-    color: nativeTokens.color.inkMuted,
-    fontFamily: nativeTokens.type.family.sans,
-    fontSize: nativeTokens.type.scale.caption.size,
-    lineHeight: nativeTokens.type.scale.caption.line,
-  },
-  section: {
-    gap: nativeTokens.space[2],
-  },
-  sectionHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  sectionTitle: {
-    color: nativeTokens.color.ink,
-    fontFamily: nativeTokens.type.family.sans,
-    fontSize: nativeTokens.type.scale.h3.size,
-    lineHeight: nativeTokens.type.scale.h3.line,
-    fontWeight: "700",
-  },
-  bodyText: {
-    color: nativeTokens.color.inkMuted,
-    fontFamily: nativeTokens.type.family.body,
-    fontSize: nativeTokens.type.scale.small.size,
-    lineHeight: nativeTokens.type.scale.small.line,
-  },
-  jobList: {
-    gap: nativeTokens.space[3],
-  },
-});
+function makeStyles(c: NativeTheme["color"]) {
+  return StyleSheet.create({
+    screen: {
+      flex: 1,
+      backgroundColor: c.surfaceMuted,
+    },
+    centerScreen: {
+      flex: 1,
+      justifyContent: "center",
+      backgroundColor: c.surfaceMuted,
+      padding: nativeTokens.space[4],
+    },
+    scrollBody: {
+      padding: nativeTokens.space[4],
+      gap: nativeTokens.space[4],
+    },
+    hero: {
+      gap: nativeTokens.space[3],
+    },
+    heroRow: {
+      flexDirection: "row",
+      gap: nativeTokens.space[3],
+    },
+    logoBox: {
+      width: nativeTokens.space[12],
+      height: nativeTokens.space[12],
+      borderRadius: nativeTokens.radius.lg,
+      backgroundColor: c.surfaceSunken,
+      alignItems: "center",
+      justifyContent: "center",
+      overflow: "hidden",
+    },
+    logoFallback: {
+      color: c.ink,
+      fontWeight: "800",
+      fontSize: nativeTokens.type.scale.h2.size,
+      fontFamily: nativeTokens.type.family.sans,
+    },
+    heroText: {
+      flex: 1,
+      gap: nativeTokens.space[1],
+    },
+    name: {
+      color: c.ink,
+      fontFamily: nativeTokens.type.family.sans,
+      fontSize: nativeTokens.type.scale.h2.size,
+      lineHeight: nativeTokens.type.scale.h2.line,
+      fontWeight: "800",
+    },
+    verified: {
+      color: c.brand700,
+      fontSize: nativeTokens.type.scale.small.size,
+      fontWeight: "700",
+    },
+    tagline: {
+      color: c.inkMuted,
+      fontFamily: nativeTokens.type.family.body,
+      fontSize: nativeTokens.type.scale.small.size,
+      lineHeight: nativeTokens.type.scale.small.line,
+    },
+    meta: {
+      color: c.inkMuted,
+      fontFamily: nativeTokens.type.family.sans,
+      fontSize: nativeTokens.type.scale.caption.size,
+      lineHeight: nativeTokens.type.scale.caption.line,
+    },
+    section: {
+      gap: nativeTokens.space[2],
+    },
+    sectionHeader: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+    },
+    sectionTitle: {
+      color: c.ink,
+      fontFamily: nativeTokens.type.family.sans,
+      fontSize: nativeTokens.type.scale.h3.size,
+      lineHeight: nativeTokens.type.scale.h3.line,
+      fontWeight: "700",
+    },
+    bodyText: {
+      color: c.inkMuted,
+      fontFamily: nativeTokens.type.family.body,
+      fontSize: nativeTokens.type.scale.small.size,
+      lineHeight: nativeTokens.type.scale.small.line,
+    },
+    jobList: {
+      gap: nativeTokens.space[3],
+    },
+  });
+}
+
+function useStyles() {
+  const c = useThemeTokens().color;
+  return useMemo(() => makeStyles(c), [c]);
+}

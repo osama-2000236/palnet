@@ -1,8 +1,14 @@
 import { type Job } from "@baydar/shared";
-import { Icon, RecordCard, nativeTokens } from "@baydar/ui-native";
+import {
+  Icon,
+  RecordCard,
+  nativeTokens,
+  useThemeTokens,
+  type NativeTheme,
+} from "@baydar/ui-native";
 import { Image } from "expo-image";
 import { router } from "expo-router";
-import { memo } from "react";
+import { memo, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
@@ -15,6 +21,8 @@ export const JobRow = memo(function JobRow({
   saving?: boolean;
   onToggleSave?: () => void;
 }): JSX.Element {
+  const c = useThemeTokens().color;
+  const styles = useStyles();
   const { t } = useTranslation();
   const metaParts = [
     job.city,
@@ -62,11 +70,7 @@ export const JobRow = memo(function JobRow({
                 saving ? styles.disabled : null,
               ]}
             >
-              <Icon
-                name="bookmark"
-                size={18}
-                color={saved ? nativeTokens.color.brand700 : nativeTokens.color.inkMuted}
-              />
+              <Icon name="bookmark" size={18} color={saved ? c.brand700 : c.inkMuted} />
             </Pressable>
           ) : null}
           {job.viewer.hasApplied ? (
@@ -93,53 +97,60 @@ function areEqual(
   );
 }
 
-const styles = StyleSheet.create({
-  logoBox: {
-    width: nativeTokens.space[12],
-    height: nativeTokens.space[12],
-    borderRadius: nativeTokens.radius.md,
-    backgroundColor: nativeTokens.color.surfaceSunken,
-    alignItems: "center",
-    justifyContent: "center",
-    overflow: "hidden",
-  },
-  logoFallback: {
-    color: nativeTokens.color.inkMuted,
-    fontWeight: "600",
-    fontFamily: nativeTokens.type.family.sans,
-  },
-  trailing: {
-    alignItems: "flex-end",
-    gap: nativeTokens.space[2],
-  },
-  saveButton: {
-    width: nativeTokens.space[9],
-    height: nativeTokens.space[9],
-    borderRadius: nativeTokens.radius.md,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: nativeTokens.color.surfaceSubtle,
-  },
-  saveButtonActive: {
-    backgroundColor: nativeTokens.color.brand50,
-  },
-  appliedBadge: {
-    alignSelf: "flex-start",
-    paddingHorizontal: nativeTokens.space[2],
-    paddingVertical: nativeTokens.space[1],
-    borderRadius: nativeTokens.radius.full,
-    backgroundColor: nativeTokens.color.successSoft,
-  },
-  appliedText: {
-    color: nativeTokens.color.success,
-    fontSize: nativeTokens.type.scale.caption.size,
-    fontWeight: "700",
-    fontFamily: nativeTokens.type.family.sans,
-  },
-  pressed: {
-    opacity: 0.84,
-  },
-  disabled: {
-    opacity: 0.5,
-  },
-});
+function makeStyles(c: NativeTheme["color"]) {
+  return StyleSheet.create({
+    logoBox: {
+      width: nativeTokens.space[12],
+      height: nativeTokens.space[12],
+      borderRadius: nativeTokens.radius.md,
+      backgroundColor: c.surfaceSunken,
+      alignItems: "center",
+      justifyContent: "center",
+      overflow: "hidden",
+    },
+    logoFallback: {
+      color: c.inkMuted,
+      fontWeight: "600",
+      fontFamily: nativeTokens.type.family.sans,
+    },
+    trailing: {
+      alignItems: "flex-end",
+      gap: nativeTokens.space[2],
+    },
+    saveButton: {
+      width: nativeTokens.space[9],
+      height: nativeTokens.space[9],
+      borderRadius: nativeTokens.radius.md,
+      alignItems: "center",
+      justifyContent: "center",
+      backgroundColor: c.surfaceSubtle,
+    },
+    saveButtonActive: {
+      backgroundColor: c.brand50,
+    },
+    appliedBadge: {
+      alignSelf: "flex-start",
+      paddingHorizontal: nativeTokens.space[2],
+      paddingVertical: nativeTokens.space[1],
+      borderRadius: nativeTokens.radius.full,
+      backgroundColor: c.successSoft,
+    },
+    appliedText: {
+      color: c.success,
+      fontSize: nativeTokens.type.scale.caption.size,
+      fontWeight: "700",
+      fontFamily: nativeTokens.type.family.sans,
+    },
+    pressed: {
+      opacity: 0.84,
+    },
+    disabled: {
+      opacity: 0.5,
+    },
+  });
+}
+
+function useStyles() {
+  const c = useThemeTokens().color;
+  return useMemo(() => makeStyles(c), [c]);
+}

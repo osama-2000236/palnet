@@ -148,11 +148,6 @@ export const PostRow = memo(function PostRow({ post, onChange }: PostRowProps): 
       onPress: () => setShowComments((s) => !s),
     },
     {
-      key: "repost",
-      label: t("post.reposts"),
-      icon: "repost",
-    },
-    {
       key: "save",
       label: saved ? t("post.saved") : t("post.save"),
       icon: "bookmark",
@@ -160,11 +155,6 @@ export const PostRow = memo(function PostRow({ post, onChange }: PostRowProps): 
       disabled: saveBusy,
       testID: `post-save-${post.id}`,
       onPress: () => void toggleSave(),
-    },
-    {
-      key: "send",
-      label: t("post.send"),
-      icon: "send",
     },
     {
       key: "report",

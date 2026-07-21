@@ -10,7 +10,7 @@ import {
   type Invoice as InvoiceDto,
   type PlanOffer as PlanOfferDto,
 } from "@baydar/shared";
-import { Button, Icon, Surface, nativeTokens } from "@baydar/ui-native";
+import { Button, Icon, Surface, useThemeTokens } from "@baydar/ui-native";
 import { useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -24,7 +24,7 @@ import { StateMessage } from "@/components/StateMessage";
 import { apiFetch } from "@/lib/api";
 import { apiErrorMessage } from "@/lib/api-errors";
 import { formatDate, formatMoney } from "@/lib/money";
-import { companyBillingStyles as styles } from "@/styles/company-billing";
+import { useCompanyBillingStyles } from "@/styles/company-billing";
 
 const InvoicesResponse = z.array(Invoice);
 
@@ -45,6 +45,7 @@ const FEATURE_LABEL_KEYS = [
 ] as const;
 
 export default function CompanyBillingScreen(): JSX.Element {
+  const styles = useCompanyBillingStyles();
   const { t } = useTranslation();
   const { slug } = useLocalSearchParams<{ slug: string }>();
 
@@ -223,6 +224,8 @@ export default function CompanyBillingScreen(): JSX.Element {
 }
 
 function FeatureList({ features }: { features: Record<string, unknown> }): JSX.Element {
+  const c = useThemeTokens().color;
+  const styles = useCompanyBillingStyles();
   const { t } = useTranslation();
   const items = FEATURE_LABEL_KEYS.flatMap((key) => {
     const value = features[key];
@@ -233,7 +236,7 @@ function FeatureList({ features }: { features: Record<string, unknown> }): JSX.E
     <View style={styles.featureList}>
       {items.map((item) => (
         <View key={item} style={styles.featureRow}>
-          <Icon name="check" size={16} color={nativeTokens.color.brand600} />
+          <Icon name="check" size={16} color={c.brand600} />
           <Text style={styles.featureItem}>{item}</Text>
         </View>
       ))}

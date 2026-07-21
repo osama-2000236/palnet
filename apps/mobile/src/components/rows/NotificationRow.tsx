@@ -1,7 +1,14 @@
 import { formatRelativeTime, NotificationType, type Notification } from "@baydar/shared";
-import { Avatar, Icon, Surface, nativeTokens } from "@baydar/ui-native";
+import {
+  Avatar,
+  Icon,
+  Surface,
+  nativeTokens,
+  useThemeTokens,
+  type NativeTheme,
+} from "@baydar/ui-native";
 import { router } from "expo-router";
-import { memo } from "react";
+import { memo, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
@@ -10,6 +17,8 @@ export const NotificationRow = memo(function NotificationRow({
 }: {
   item: Notification;
 }): JSX.Element {
+  const c = useThemeTokens().color;
+  const styles = useStyles();
   const { t, i18n } = useTranslation();
   const actor = item.actor;
   const actorName = actor ? `${actor.firstName} ${actor.lastName}`.trim() || actor.handle : "";
@@ -36,7 +45,7 @@ export const NotificationRow = memo(function NotificationRow({
         />
       ) : (
         <View style={styles.systemIcon}>
-          <Icon name="bell" size={nativeTokens.space[5]} color={nativeTokens.color.brand700} />
+          <Icon name="bell" size={nativeTokens.space[5]} color={c.brand700} />
         </View>
       )}
       <View style={styles.bodyWrap}>
@@ -94,47 +103,54 @@ function hrefFor(n: Notification): string | null {
   return null;
 }
 
-const styles = StyleSheet.create({
-  row: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    gap: nativeTokens.space[3],
-  },
-  unreadRow: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    gap: nativeTokens.space[3],
-    backgroundColor: nativeTokens.color.brand50,
-  },
-  bodyWrap: {
-    flex: 1,
-    gap: nativeTokens.space[1],
-  },
-  bodyText: {
-    color: nativeTokens.color.ink,
-    fontSize: nativeTokens.type.scale.small.size,
-    lineHeight: nativeTokens.type.scale.small.line,
-    fontFamily: nativeTokens.type.family.sans,
-  },
-  timeText: {
-    color: nativeTokens.color.inkMuted,
-    fontSize: nativeTokens.type.scale.caption.size,
-    lineHeight: nativeTokens.type.scale.caption.line,
-    fontFamily: nativeTokens.type.family.sans,
-  },
-  unreadDot: {
-    width: nativeTokens.space[2],
-    height: nativeTokens.space[2],
-    borderRadius: nativeTokens.radius.full,
-    backgroundColor: nativeTokens.color.accent600,
-    marginTop: nativeTokens.space[1],
-  },
-  systemIcon: {
-    width: nativeTokens.space[10],
-    height: nativeTokens.space[10],
-    borderRadius: nativeTokens.radius.full,
-    backgroundColor: nativeTokens.color.brand100,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-});
+function makeStyles(c: NativeTheme["color"]) {
+  return StyleSheet.create({
+    row: {
+      flexDirection: "row",
+      alignItems: "flex-start",
+      gap: nativeTokens.space[3],
+    },
+    unreadRow: {
+      flexDirection: "row",
+      alignItems: "flex-start",
+      gap: nativeTokens.space[3],
+      backgroundColor: c.brand50,
+    },
+    bodyWrap: {
+      flex: 1,
+      gap: nativeTokens.space[1],
+    },
+    bodyText: {
+      color: c.ink,
+      fontSize: nativeTokens.type.scale.small.size,
+      lineHeight: nativeTokens.type.scale.small.line,
+      fontFamily: nativeTokens.type.family.sans,
+    },
+    timeText: {
+      color: c.inkMuted,
+      fontSize: nativeTokens.type.scale.caption.size,
+      lineHeight: nativeTokens.type.scale.caption.line,
+      fontFamily: nativeTokens.type.family.sans,
+    },
+    unreadDot: {
+      width: nativeTokens.space[2],
+      height: nativeTokens.space[2],
+      borderRadius: nativeTokens.radius.full,
+      backgroundColor: c.accent600,
+      marginTop: nativeTokens.space[1],
+    },
+    systemIcon: {
+      width: nativeTokens.space[10],
+      height: nativeTokens.space[10],
+      borderRadius: nativeTokens.radius.full,
+      backgroundColor: c.brand100,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+  });
+}
+
+function useStyles() {
+  const c = useThemeTokens().color;
+  return useMemo(() => makeStyles(c), [c]);
+}

@@ -1,4 +1,4 @@
-import { Button, Icon, nativeTokens } from "@baydar/ui-native";
+import { Button, Icon, nativeTokens, useThemeTokens } from "@baydar/ui-native";
 import { Image } from "expo-image";
 import { useTranslation } from "react-i18next";
 import { Text, View } from "react-native";
@@ -18,6 +18,7 @@ export function PhotoStep({
   onRemove: () => void;
   photoError: string | null;
 }): JSX.Element {
+  const c = useThemeTokens().color;
   const { t } = useTranslation();
   return (
     <View style={{ alignItems: "center", gap: nativeTokens.space[4] }}>
@@ -28,8 +29,8 @@ export function PhotoStep({
           borderRadius: nativeTokens.radius.full,
           overflow: "hidden",
           borderWidth: 1,
-          borderColor: nativeTokens.color.lineHard,
-          backgroundColor: nativeTokens.color.surfaceSubtle,
+          borderColor: c.lineHard,
+          backgroundColor: c.surfaceSubtle,
           alignItems: "center",
           justifyContent: "center",
         }}
@@ -41,7 +42,7 @@ export function PhotoStep({
             style={{ width: "100%", height: "100%" }}
           />
         ) : (
-          <Icon name="logo" size={nativeTokens.space[12]} color={nativeTokens.color.brand600} />
+          <Icon name="logo" size={nativeTokens.space[12]} color={c.brand600} />
         )}
       </View>
       <View style={{ alignSelf: "stretch", gap: nativeTokens.space[2] }}>
@@ -69,7 +70,7 @@ export function PhotoStep({
       <Text
         selectable
         style={{
-          color: nativeTokens.color.inkMuted,
+          color: c.inkMuted,
           fontFamily: nativeTokens.type.family.body,
           fontSize: nativeTokens.type.scale.small.size,
           lineHeight: nativeTokens.type.scale.small.line,

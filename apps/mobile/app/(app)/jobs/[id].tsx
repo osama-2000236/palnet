@@ -2,7 +2,7 @@
 // Applied badge flips optimistically on press, rolls back on failure.
 
 import { ApplyToJobBody, Bookmark, BookmarkType, Job as JobSchema, type Job } from "@baydar/shared";
-import { AppHeader, Button, Icon, Surface, nativeTokens } from "@baydar/ui-native";
+import { AppHeader, Button, Icon, Surface, nativeTokens, useThemeTokens } from "@baydar/ui-native";
 import { Image } from "expo-image";
 import { router, useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
@@ -19,9 +19,11 @@ import { WEB_ORIGIN } from "@/lib/linking";
 import { getAccessToken } from "@/lib/session";
 
 import { ApplyCard } from "../_jobs/ApplyCard";
-import { styles } from "../_jobs/detailStyles";
+import { useStyles } from "../_jobs/detailStyles";
 
 export default function JobDetailScreen(): JSX.Element {
+  const c = useThemeTokens().color;
+  const styles = useStyles();
   const { t, i18n } = useTranslation();
   const params = useLocalSearchParams<{ id: string }>();
   const jobId = typeof params.id === "string" ? params.id : "";
@@ -213,7 +215,7 @@ export default function JobDetailScreen(): JSX.Element {
               onPress={() => void toggleSave()}
               loading={saveBusy}
               accessibilityLabel={job.viewer.bookmarkId ? t("jobs.saved") : t("jobs.save")}
-              leading={<Icon name="bookmark" size={16} color={nativeTokens.color.ink} />}
+              leading={<Icon name="bookmark" size={16} color={c.ink} />}
             >
               {job.viewer.bookmarkId ? t("jobs.saved") : t("jobs.save")}
             </Button>
@@ -221,7 +223,7 @@ export default function JobDetailScreen(): JSX.Element {
               variant="secondary"
               onPress={() => void shareJob()}
               accessibilityLabel={t("jobs.share.share")}
-              leading={<Icon name="share" size={16} color={nativeTokens.color.ink} />}
+              leading={<Icon name="share" size={16} color={c.ink} />}
             >
               {t("jobs.share.share")}
             </Button>

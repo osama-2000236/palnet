@@ -1,13 +1,15 @@
 import type { Profile } from "@baydar/shared";
-import { AppHeader, Avatar, Button, Icon, Surface, nativeTokens } from "@baydar/ui-native";
+import { AppHeader, Avatar, Button, Icon, Surface, useThemeTokens } from "@baydar/ui-native";
 import { router } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { Pressable, Text, View } from "react-native";
 
-import { feedStyles } from "./styles";
+import { useFeedStyles } from "./styles";
 
 export function FeedTopBar({ unread }: { unread: number }): JSX.Element {
   const { t } = useTranslation();
+  const feedStyles = useFeedStyles();
+  const c = useThemeTokens().color;
 
   return (
     <AppHeader
@@ -28,11 +30,7 @@ export function FeedTopBar({ unread }: { unread: number }): JSX.Element {
             pressed ? feedStyles.pressed : null,
           ]}
         >
-          <Icon
-            name="bell"
-            size={20}
-            color={unread > 0 ? nativeTokens.color.inkInverse : nativeTokens.color.ink}
-          />
+          <Icon name="bell" size={20} color={unread > 0 ? c.inkInverse : c.ink} />
           {unread > 0 ? (
             <View style={feedStyles.unreadDot}>
               <Text style={feedStyles.unreadText}>{unread > 99 ? "99+" : String(unread)}</Text>
@@ -48,7 +46,7 @@ export function FeedTopBar({ unread }: { unread: number }): JSX.Element {
           testID="feed-search-button"
           style={({ pressed }) => [feedStyles.searchEntry, pressed ? feedStyles.pressed : null]}
         >
-          <Icon name="search" size={18} color={nativeTokens.color.inkMuted} />
+          <Icon name="search" size={18} color={c.inkMuted} />
           <Text numberOfLines={1} style={feedStyles.searchText}>
             {t("search.placeholder")}
           </Text>
@@ -60,6 +58,8 @@ export function FeedTopBar({ unread }: { unread: number }): JSX.Element {
 
 export function JobsEntry(): JSX.Element {
   const { t } = useTranslation();
+  const feedStyles = useFeedStyles();
+  const c = useThemeTokens().color;
   return (
     <Pressable
       onPress={() => router.push("/(app)/jobs")}
@@ -70,7 +70,7 @@ export function JobsEntry(): JSX.Element {
     >
       <Surface variant="tinted" padding="4" style={feedStyles.jobsEntry}>
         <View style={feedStyles.jobsIcon}>
-          <Icon name="briefcase" size={20} color={nativeTokens.color.brand700} />
+          <Icon name="briefcase" size={20} color={c.brand700} />
         </View>
         <View style={feedStyles.jobsText}>
           <Text selectable style={feedStyles.jobsTitle}>
@@ -80,9 +80,6 @@ export function JobsEntry(): JSX.Element {
             {t("feed.jobsEntrySubtitle")}
           </Text>
         </View>
-        <Button variant="secondary" size="sm" onPress={() => router.push("/(app)/jobs")}>
-          {t("feed.jobsEntryAction")}
-        </Button>
       </Surface>
     </Pressable>
   );
@@ -90,6 +87,7 @@ export function JobsEntry(): JSX.Element {
 
 export function ProfileSummary({ profile }: { profile: Profile }): JSX.Element {
   const { t } = useTranslation();
+  const feedStyles = useFeedStyles();
   const name = `${profile.firstName} ${profile.lastName}`.trim();
   const completed = [
     Boolean(profile.avatarUrl),

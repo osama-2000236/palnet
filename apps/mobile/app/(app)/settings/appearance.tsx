@@ -3,14 +3,17 @@ import { useTranslation } from "react-i18next";
 import { Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { setAppLocale } from "@/i18n";
+import { needsRestartForDirection, normalizeLocale, type SupportedLocale } from "@/lib/locale";
 import { type ThemeChoice } from "@/lib/theme";
 import { useThemeStore } from "@/store/theme";
 
 export default function AppearanceSettingsScreen(): JSX.Element {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const tk = useThemeTokens();
   const choice = useThemeStore((state) => state.choice);
   const setChoice = useThemeStore((state) => state.setChoice);
+  const locale = normalizeLocale(i18n.language);
 
   const options: { key: ThemeChoice; label: string; desc: string }[] = [
     {
@@ -87,6 +90,60 @@ export default function AppearanceSettingsScreen(): JSX.Element {
             >
               {t("settings.appearance.hint")}
             </Text>
+          </View>
+        </Surface>
+
+        <View style={{ gap: tk.space[1] }}>
+          <Text
+            accessibilityRole="header"
+            style={{
+              color: tk.color.ink,
+              fontFamily: tk.type.family.sans,
+              fontSize: tk.type.scale.h2.size,
+              lineHeight: tk.type.scale.h2.line,
+              fontWeight: "700",
+              textAlign: "auto",
+            }}
+          >
+            {t("settings.language.title")}
+          </Text>
+          <Text
+            style={{
+              color: tk.color.inkMuted,
+              fontFamily: tk.type.family.body,
+              fontSize: tk.type.scale.small.size,
+              lineHeight: tk.type.scale.small.line,
+              textAlign: "auto",
+            }}
+          >
+            {t("settings.language.subtitle")}
+          </Text>
+        </View>
+
+        <Surface variant="card" padding="4">
+          <View style={{ gap: tk.space[3] }}>
+            <SegmentedControl
+              items={[
+                { key: "ar-PS", label: t("settings.language.arabic") },
+                { key: "en", label: t("settings.language.english") },
+              ]}
+              selectedKey={locale}
+              onChange={(key) => void setAppLocale(key as SupportedLocale)}
+              testID="language-segmented"
+            />
+            {needsRestartForDirection(locale) ? (
+              <Text
+                style={{
+                  color: tk.color.inkSubtle,
+                  fontFamily: tk.type.family.body,
+                  fontSize: tk.type.scale.caption.size,
+                  lineHeight: tk.type.scale.caption.line,
+                  textAlign: "auto",
+                }}
+              >
+                {t("settings.language.restartHint")}
+              </Text>
+            ) : null}
           </View>
         </Surface>
       </View>

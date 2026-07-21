@@ -25,11 +25,12 @@ import { apiErrorMessage } from "@/lib/api-errors";
 import { makeIdempotencyKey } from "@/lib/idempotency";
 
 import { KARAMA_REWARDS } from "../../_karama/data";
-import { karamaStyles as styles } from "../../_karama/styles";
+import { useKaramaStyles } from "../../_karama/styles";
 
 type Notice = { kind: "success" | "error"; text: string };
 
 export default function KaramaScreen(): JSX.Element {
+  const styles = useKaramaStyles();
   const { t } = useTranslation();
   const router = useRouter();
   const [balance, setBalance] = useState<KaramaBalanceDto | null>(null);

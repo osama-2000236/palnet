@@ -4,7 +4,7 @@
 // city" free-text fallback. Writes the canonical Arabic city name.
 
 import { PS_GOVERNORATES, normalizeCity } from "@baydar/shared";
-import { Chip, Input, Sheet, nativeTokens } from "@baydar/ui-native";
+import { Chip, Input, Sheet, nativeTokens, useThemeTokens } from "@baydar/ui-native";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, Text, View } from "react-native";
@@ -25,6 +25,7 @@ export function CityField({
   disabled = false,
   testID,
 }: CityFieldProps): JSX.Element {
+  const c = useThemeTokens().color;
   const { i18n, t } = useTranslation();
   const isArabic = i18n.language.startsWith("ar");
   const [open, setOpen] = useState(false);
@@ -45,13 +46,13 @@ export function CityField({
           paddingHorizontal: nativeTokens.space[3],
           borderRadius: nativeTokens.radius.md,
           borderWidth: 1,
-          borderColor: nativeTokens.color.lineHard,
-          backgroundColor: disabled ? nativeTokens.color.surfaceSunken : nativeTokens.color.surface,
+          borderColor: c.lineHard,
+          backgroundColor: disabled ? c.surfaceSunken : c.surface,
         }}
       >
         <Text
           style={{
-            color: value ? nativeTokens.color.ink : nativeTokens.color.inkSubtle,
+            color: value ? c.ink : c.inkSubtle,
             fontFamily: nativeTokens.type.family.body,
             fontSize: nativeTokens.type.scale.body.size,
             textAlign: "right",
@@ -80,7 +81,7 @@ export function CityField({
             <View key={gov.key} style={{ gap: nativeTokens.space[1] }}>
               <Text
                 style={{
-                  color: nativeTokens.color.inkMuted,
+                  color: c.inkMuted,
                   fontFamily: nativeTokens.type.family.sans,
                   fontSize: nativeTokens.type.scale.small.size,
                   fontWeight: "600",

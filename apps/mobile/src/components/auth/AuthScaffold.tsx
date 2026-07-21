@@ -1,4 +1,5 @@
-import { Button, Icon, Surface, nativeTokens } from "@baydar/ui-native";
+import { useMemo } from "react";
+import { Button, Icon, Surface, nativeTokens, useThemeTokens } from "@baydar/ui-native";
 import type { ReactNode } from "react";
 import {
   KeyboardAvoidingView,
@@ -30,23 +31,30 @@ interface AuthTextFieldProps extends TextInputProps {
   testID: string;
 }
 
-const headingStyle: TextStyle = {
-  color: nativeTokens.color.ink,
-  fontFamily: nativeTokens.type.family.sans,
-  fontSize: nativeTokens.type.scale.h1.size,
-  fontWeight: nativeTokens.type.scale.h1.weight,
-  lineHeight: nativeTokens.type.scale.h1.line,
-  textAlign: "center",
-};
-
-const bodyStyle: TextStyle = {
-  color: nativeTokens.color.inkMuted,
-  fontFamily: nativeTokens.type.family.body,
-  fontSize: nativeTokens.type.scale.body.size,
-  fontWeight: nativeTokens.type.scale.body.weight,
-  lineHeight: nativeTokens.type.scale.body.line,
-  textAlign: "center",
-};
+function useAuthTextStyles(): { heading: TextStyle; body: TextStyle } {
+  const c = useThemeTokens().color;
+  return useMemo(
+    () => ({
+      heading: {
+        color: c.ink,
+        fontFamily: nativeTokens.type.family.sans,
+        fontSize: nativeTokens.type.scale.h1.size,
+        fontWeight: nativeTokens.type.scale.h1.weight,
+        lineHeight: nativeTokens.type.scale.h1.line,
+        textAlign: "center",
+      },
+      body: {
+        color: c.inkMuted,
+        fontFamily: nativeTokens.type.family.body,
+        fontSize: nativeTokens.type.scale.body.size,
+        fontWeight: nativeTokens.type.scale.body.weight,
+        lineHeight: nativeTokens.type.scale.body.line,
+        textAlign: "center",
+      },
+    }),
+    [c],
+  );
+}
 
 export function AuthScaffold({
   appName,
@@ -57,11 +65,10 @@ export function AuthScaffold({
   footer,
   testID,
 }: AuthScaffoldProps): JSX.Element {
+  const text = useAuthTextStyles();
+  const c = useThemeTokens().color;
   return (
-    <SafeAreaView
-      testID={testID}
-      style={{ flex: 1, backgroundColor: nativeTokens.color.surfaceMuted }}
-    >
+    <SafeAreaView testID={testID} style={{ flex: 1, backgroundColor: c.surfaceMuted }}>
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : undefined}
         style={{ flex: 1 }}
@@ -84,21 +91,21 @@ export function AuthScaffold({
                 height: nativeTokens.space[16],
                 borderRadius: nativeTokens.radius.xl,
                 borderWidth: 1,
-                borderColor: nativeTokens.color.lineSoft,
-                backgroundColor: nativeTokens.color.surface,
+                borderColor: c.lineSoft,
+                backgroundColor: c.surface,
                 alignItems: "center",
                 justifyContent: "center",
                 ...nativeTokens.shadow.card,
               }}
             >
-              <Icon name="logo" size={nativeTokens.space[8]} color={nativeTokens.color.brand600} />
+              <Icon name="logo" size={nativeTokens.space[8]} color={c.brand600} />
             </View>
 
             <View style={{ alignItems: "center", gap: nativeTokens.space[1] }}>
               <Text
                 selectable
                 style={{
-                  color: nativeTokens.color.brand600,
+                  color: c.brand600,
                   fontFamily: nativeTokens.type.family.sans,
                   fontSize: nativeTokens.type.scale.caption.size,
                   fontWeight: nativeTokens.type.scale.caption.weight,
@@ -108,10 +115,10 @@ export function AuthScaffold({
               >
                 {kicker ?? appName}
               </Text>
-              <Text selectable style={headingStyle}>
+              <Text selectable style={text.heading}>
                 {title}
               </Text>
-              <Text selectable style={bodyStyle}>
+              <Text selectable style={text.body}>
                 {subtitle}
               </Text>
             </View>
@@ -145,6 +152,7 @@ export function AuthTextField({
   accessibilityLabel,
   ...rest
 }: AuthTextFieldProps): JSX.Element {
+  const c = useThemeTokens().color;
   const isEmail = keyboardType === "email-address";
 
   return (
@@ -152,7 +160,7 @@ export function AuthTextField({
       <Text
         selectable
         style={{
-          color: nativeTokens.color.ink,
+          color: c.ink,
           fontFamily: nativeTokens.type.family.sans,
           fontSize: nativeTokens.type.scale.small.size,
           fontWeight: "600",
@@ -165,17 +173,17 @@ export function AuthTextField({
       <TextInput
         testID={testID}
         accessibilityLabel={accessibilityLabel ?? label}
-        placeholderTextColor={nativeTokens.color.inkSubtle}
+        placeholderTextColor={c.inkSubtle}
         keyboardType={keyboardType}
         textAlign={isEmail ? "left" : "right"}
         style={[
           {
             minHeight: nativeTokens.chrome.minHit,
             borderWidth: 1,
-            borderColor: error ? nativeTokens.color.danger : nativeTokens.color.lineHard,
+            borderColor: error ? c.danger : c.lineHard,
             borderRadius: nativeTokens.radius.md,
-            backgroundColor: nativeTokens.color.surface,
-            color: nativeTokens.color.ink,
+            backgroundColor: c.surface,
+            color: c.ink,
             opacity: rest.editable === false ? 0.65 : 1,
             paddingHorizontal: nativeTokens.space[3],
             paddingVertical: nativeTokens.space[2],
@@ -190,7 +198,7 @@ export function AuthTextField({
         <Text
           selectable
           style={{
-            color: error ? nativeTokens.color.danger : nativeTokens.color.inkSubtle,
+            color: error ? c.danger : c.inkSubtle,
             fontFamily: nativeTokens.type.family.sans,
             fontSize: nativeTokens.type.scale.caption.size,
             lineHeight: nativeTokens.type.scale.caption.line,
@@ -205,7 +213,7 @@ export function AuthTextField({
           selectable
           accessibilityRole="alert"
           style={{
-            color: nativeTokens.color.danger,
+            color: c.danger,
             fontFamily: nativeTokens.type.family.sans,
             fontSize: nativeTokens.type.scale.caption.size,
             lineHeight: nativeTokens.type.scale.caption.line,
@@ -220,12 +228,13 @@ export function AuthTextField({
 }
 
 export function AuthError({ message }: { message: string }): JSX.Element {
+  const c = useThemeTokens().color;
   return (
     <Surface variant="tinted" padding="3" accessibilityRole="alert" testID="auth-error">
       <Text
         selectable
         style={{
-          color: nativeTokens.color.danger,
+          color: c.danger,
           fontFamily: nativeTokens.type.family.sans,
           fontSize: nativeTokens.type.scale.small.size,
           lineHeight: nativeTokens.type.scale.small.line,
@@ -249,12 +258,13 @@ export function AuthFooterLink({
   onPress: () => void;
   testID: string;
 }): JSX.Element {
+  const c = useThemeTokens().color;
   return (
     <View style={{ alignItems: "center", gap: nativeTokens.space[2] }}>
       <Text
         selectable
         style={{
-          color: nativeTokens.color.inkMuted,
+          color: c.inkMuted,
           fontFamily: nativeTokens.type.family.body,
           fontSize: nativeTokens.type.scale.small.size,
           lineHeight: nativeTokens.type.scale.small.line,

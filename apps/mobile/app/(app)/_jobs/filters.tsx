@@ -1,5 +1,5 @@
 import { JobLocationMode, JobType, PS_INDUSTRIES } from "@baydar/shared";
-import { Button, Chip, Sheet, nativeTokens } from "@baydar/ui-native";
+import { Button, Chip, Sheet, nativeTokens, useThemeTokens } from "@baydar/ui-native";
 import { useTranslation } from "react-i18next";
 import { Text, View } from "react-native";
 
@@ -146,11 +146,12 @@ export function FilterSheet({
 }
 
 function Field({ label, children }: { label: string; children: React.ReactNode }): JSX.Element {
+  const c = useThemeTokens().color;
   return (
     <View style={{ gap: nativeTokens.space[1] }}>
       <Text
         style={{
-          color: nativeTokens.color.inkMuted,
+          color: c.inkMuted,
           fontFamily: nativeTokens.type.family.sans,
           fontSize: nativeTokens.type.scale.small.size,
           fontWeight: "600",

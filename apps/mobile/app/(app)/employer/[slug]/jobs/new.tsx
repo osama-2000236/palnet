@@ -3,9 +3,18 @@
 // the jobs.typeLabels / jobs.locationLabels strings the jobs filters use.
 
 import { Company, EmployerJob, JobLocationMode, JobType } from "@baydar/shared";
-import { AppHeader, Button, Input, RadioGroup, Surface, nativeTokens } from "@baydar/ui-native";
+import {
+  AppHeader,
+  Button,
+  Input,
+  RadioGroup,
+  Surface,
+  nativeTokens,
+  useThemeTokens,
+  type NativeTheme,
+} from "@baydar/ui-native";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -38,6 +47,7 @@ const EMPTY: FormState = {
 };
 
 export default function NewJobScreen(): JSX.Element {
+  const styles = useStyles();
   const { t } = useTranslation();
   const router = useRouter();
   const { slug } = useLocalSearchParams<{ slug: string }>();
@@ -193,31 +203,38 @@ export default function NewJobScreen(): JSX.Element {
   );
 }
 
-const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: nativeTokens.color.surfaceMuted,
-  },
-  flex: {
-    flex: 1,
-  },
-  scrollContent: {
-    paddingHorizontal: nativeTokens.space[4],
-    paddingTop: nativeTokens.space[3],
-    paddingBottom: nativeTokens.space[6],
-  },
-  formCard: {
-    gap: nativeTokens.space[4],
-  },
-  multiline: {
-    minHeight: nativeTokens.space[24],
-    textAlignVertical: "top",
-  },
-  salaryRow: {
-    flexDirection: "row",
-    gap: nativeTokens.space[3],
-  },
-  salaryField: {
-    flex: 1,
-  },
-});
+function makeStyles(c: NativeTheme["color"]) {
+  return StyleSheet.create({
+    screen: {
+      flex: 1,
+      backgroundColor: c.surfaceMuted,
+    },
+    flex: {
+      flex: 1,
+    },
+    scrollContent: {
+      paddingHorizontal: nativeTokens.space[4],
+      paddingTop: nativeTokens.space[3],
+      paddingBottom: nativeTokens.space[6],
+    },
+    formCard: {
+      gap: nativeTokens.space[4],
+    },
+    multiline: {
+      minHeight: nativeTokens.space[24],
+      textAlignVertical: "top",
+    },
+    salaryRow: {
+      flexDirection: "row",
+      gap: nativeTokens.space[3],
+    },
+    salaryField: {
+      flex: 1,
+    },
+  });
+}
+
+function useStyles() {
+  const c = useThemeTokens().color;
+  return useMemo(() => makeStyles(c), [c]);
+}

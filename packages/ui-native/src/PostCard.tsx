@@ -110,12 +110,18 @@ export function PostCard({
           </Text>
         </View>
         <View style={styles.statEnd}>
-          <Text selectable style={styles.statText}>
-            {commentCount}
-          </Text>
-          <Text selectable style={styles.statText}>
-            {repostCount}
-          </Text>
+          <View style={styles.statItem}>
+            <Icon name="comment" size={12} color={c.inkMuted} />
+            <Text selectable style={styles.statText}>
+              {commentCount}
+            </Text>
+          </View>
+          <View style={styles.statItem}>
+            <Icon name="repost" size={12} color={c.inkMuted} />
+            <Text selectable style={styles.statText}>
+              {repostCount}
+            </Text>
+          </View>
         </View>
       </View>
 
@@ -234,6 +240,11 @@ const makeStyles = (c: typeof nativeTokens.color) =>
       flexDirection: "row",
       alignItems: "center",
       gap: nativeTokens.space[3],
+    },
+    statItem: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: nativeTokens.space[1],
     },
     statText: {
       color: c.inkMuted,

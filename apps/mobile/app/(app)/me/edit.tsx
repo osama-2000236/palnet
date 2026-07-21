@@ -14,9 +14,10 @@ import { BasicsCard } from "../_edit-profile/BasicsCard";
 import { EducationsCard } from "../_edit-profile/EducationsCard";
 import { ExperiencesCard } from "../_edit-profile/ExperiencesCard";
 import { SkillsCard } from "../_edit-profile/SkillsCard";
-import { styles } from "../_edit-profile/styles";
+import { useStyles } from "../_edit-profile/styles";
 
 export default function EditProfileScreen(): JSX.Element {
+  const styles = useStyles();
   const { t } = useTranslation();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);

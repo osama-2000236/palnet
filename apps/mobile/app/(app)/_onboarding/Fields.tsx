@@ -4,6 +4,7 @@ import {
   Surface,
   nativeTokens,
   type InputProps,
+  useThemeTokens,
 } from "@baydar/ui-native";
 import { Controller, type Control, type FieldPath } from "react-hook-form";
 import { useTranslation } from "react-i18next";
@@ -33,6 +34,7 @@ export function ControlledField({
   InputProps,
   "error" | "errorMessage" | "helperText" | "onChangeText" | "value"
 >): JSX.Element {
+  const c = useThemeTokens().color;
   return (
     <Controller
       control={control}
@@ -42,7 +44,7 @@ export function ControlledField({
           <Text
             selectable
             style={{
-              color: nativeTokens.color.ink,
+              color: c.ink,
               fontFamily: nativeTokens.type.family.sans,
               fontSize: nativeTokens.type.scale.small.size,
               fontWeight: "700",
@@ -68,7 +70,7 @@ export function ControlledField({
                   },
               {
                 minHeight: multiline ? nativeTokens.space[20] : nativeTokens.chrome.minHit,
-                color: nativeTokens.color.ink,
+                color: c.ink,
                 fontFamily: nativeTokens.type.family.sans,
                 fontSize: nativeTokens.type.scale.body.size,
                 textAlignVertical: multiline ? "top" : "center",
@@ -87,6 +89,7 @@ export function ControlledField({
 }
 
 export function FieldError({ message }: { message: string }): JSX.Element {
+  const c = useThemeTokens().color;
   const { t } = useTranslation();
 
   return (
@@ -94,7 +97,7 @@ export function FieldError({ message }: { message: string }): JSX.Element {
       accessibilityRole="alert"
       selectable
       style={{
-        color: nativeTokens.color.danger,
+        color: c.danger,
         fontFamily: nativeTokens.type.family.sans,
         fontSize: nativeTokens.type.scale.caption.size,
         lineHeight: nativeTokens.type.scale.caption.line,
@@ -129,12 +132,13 @@ export function ChoiceButton({
 }
 
 export function EmptyState({ message }: { message: string }): JSX.Element {
+  const c = useThemeTokens().color;
   return (
     <Surface padding="4" variant="tinted">
       <Text
         selectable
         style={{
-          color: nativeTokens.color.inkMuted,
+          color: c.inkMuted,
           fontFamily: nativeTokens.type.family.body,
           fontSize: nativeTokens.type.scale.body.size,
           lineHeight: nativeTokens.type.scale.body.line,

@@ -1,4 +1,4 @@
-import { Banner, Button, Chip, Surface, nativeTokens } from "@baydar/ui-native";
+import { Banner, Button, Chip, Surface, nativeTokens, useThemeTokens } from "@baydar/ui-native";
 import { useTranslation } from "react-i18next";
 import { ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -6,10 +6,11 @@ import { SafeAreaView } from "react-native-safe-area-context";
 const ROWS = ["profile", "messages", "search"] as const;
 
 export default function PrivacySettingsScreen(): JSX.Element {
+  const c = useThemeTokens().color;
   const { t } = useTranslation();
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: nativeTokens.color.surfaceMuted }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: c.surfaceMuted }}>
       <ScrollView
         contentInsetAdjustmentBehavior="automatic"
         contentContainerStyle={{
@@ -22,7 +23,7 @@ export default function PrivacySettingsScreen(): JSX.Element {
           <Text
             accessibilityRole="header"
             style={{
-              color: nativeTokens.color.ink,
+              color: c.ink,
               fontFamily: nativeTokens.type.family.sans,
               fontSize: nativeTokens.type.scale.h1.size,
               lineHeight: nativeTokens.type.scale.h1.line,
@@ -34,7 +35,7 @@ export default function PrivacySettingsScreen(): JSX.Element {
           </Text>
           <Text
             style={{
-              color: nativeTokens.color.inkMuted,
+              color: c.inkMuted,
               fontFamily: nativeTokens.type.family.body,
               fontSize: nativeTokens.type.scale.small.size,
               lineHeight: nativeTokens.type.scale.small.line,
@@ -55,13 +56,13 @@ export default function PrivacySettingsScreen(): JSX.Element {
                 padding: nativeTokens.space[4],
                 gap: nativeTokens.space[3],
                 borderTopWidth: index > 0 ? 1 : 0,
-                borderTopColor: nativeTokens.color.lineSoft,
+                borderTopColor: c.lineSoft,
               }}
             >
               <View style={{ gap: nativeTokens.space[1] }}>
                 <Text
                   style={{
-                    color: nativeTokens.color.ink,
+                    color: c.ink,
                     fontFamily: nativeTokens.type.family.sans,
                     fontSize: nativeTokens.type.scale.body.size,
                     lineHeight: nativeTokens.type.scale.body.line,
@@ -73,7 +74,7 @@ export default function PrivacySettingsScreen(): JSX.Element {
                 </Text>
                 <Text
                   style={{
-                    color: nativeTokens.color.inkMuted,
+                    color: c.inkMuted,
                     fontFamily: nativeTokens.type.family.body,
                     fontSize: nativeTokens.type.scale.small.size,
                     lineHeight: nativeTokens.type.scale.small.line,
@@ -90,7 +91,7 @@ export default function PrivacySettingsScreen(): JSX.Element {
 
         <Text
           style={{
-            color: nativeTokens.color.inkSubtle,
+            color: c.inkSubtle,
             fontFamily: nativeTokens.type.family.sans,
             fontSize: nativeTokens.type.scale.caption.size,
             lineHeight: nativeTokens.type.scale.caption.line,

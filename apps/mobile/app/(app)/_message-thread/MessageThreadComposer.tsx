@@ -1,4 +1,4 @@
-import { Button, Icon, Input, nativeTokens } from "@baydar/ui-native";
+import { Button, Icon, Input, nativeTokens, useThemeTokens } from "@baydar/ui-native";
 import { View } from "react-native";
 
 export function MessageThreadComposer({
@@ -16,6 +16,7 @@ export function MessageThreadComposer({
   onDraftChange(value: string): void;
   onSubmit(): void;
 }): JSX.Element {
+  const c = useThemeTokens().color;
   return (
     <View
       style={{
@@ -23,8 +24,8 @@ export function MessageThreadComposer({
         alignItems: "flex-end",
         gap: nativeTokens.space[2],
         borderTopWidth: 1,
-        borderTopColor: nativeTokens.color.lineSoft,
-        backgroundColor: nativeTokens.color.surface,
+        borderTopColor: c.lineSoft,
+        backgroundColor: c.surface,
         padding: nativeTokens.space[2],
       }}
     >
@@ -39,7 +40,7 @@ export function MessageThreadComposer({
         style={{ flex: 1 }}
         inputStyle={{
           flex: 1,
-          color: nativeTokens.color.ink,
+          color: c.ink,
           fontFamily: nativeTokens.type.family.sans,
           fontSize: nativeTokens.type.scale.body.size,
           maxHeight: nativeTokens.space[24] + nativeTokens.space[6],
@@ -52,7 +53,7 @@ export function MessageThreadComposer({
         accessibilityLabel={sendLabel}
         testID="messages-send-button"
         size="lg"
-        leading={<Icon name="send" size={18} color={nativeTokens.color.inkInverse} />}
+        leading={<Icon name="send" size={18} color={c.inkInverse} />}
       >
         {sendLabel}
       </Button>

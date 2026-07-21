@@ -1,4 +1,4 @@
-import { Button, Surface, nativeTokens } from "@baydar/ui-native";
+import { Button, Surface, nativeTokens, useThemeTokens } from "@baydar/ui-native";
 import { useTranslation } from "react-i18next";
 import { Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -10,10 +10,11 @@ export function AppGateError({
   isConnected: boolean;
   onRetry(): void;
 }): JSX.Element {
+  const c = useThemeTokens().color;
   const { t } = useTranslation();
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: nativeTokens.color.surfaceMuted }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: c.surfaceMuted }}>
       <View
         style={{
           flex: 1,
@@ -25,7 +26,7 @@ export function AppGateError({
           <Text
             selectable
             style={{
-              color: nativeTokens.color.ink,
+              color: c.ink,
               fontFamily: nativeTokens.type.family.sans,
               fontSize: nativeTokens.type.scale.h1.size,
               fontWeight: "700",
@@ -38,7 +39,7 @@ export function AppGateError({
           <Text
             selectable
             style={{
-              color: nativeTokens.color.inkMuted,
+              color: c.inkMuted,
               fontFamily: nativeTokens.type.family.body,
               fontSize: nativeTokens.type.scale.body.size,
               lineHeight: nativeTokens.type.scale.body.line,

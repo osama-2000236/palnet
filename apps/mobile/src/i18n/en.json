@@ -676,7 +676,7 @@
       "security": "Security",
       "securityDesc": "Review password, sessions, and two-factor status.",
       "appearance": "Appearance",
-      "appearanceDesc": "Choose light, dark, or match your device."
+      "appearanceDesc": "Choose your theme and reading language."
     },
     "notifications": {
       "title": "Notifications",
@@ -794,6 +794,13 @@
       "system": "System",
       "systemDesc": "Follow your device setting automatically.",
       "hint": "We remember your choice on this device."
+    },
+    "language": {
+      "title": "Language",
+      "subtitle": "Baydar is an Arabic-first network. Pick the language you read in.",
+      "arabic": "العربية",
+      "english": "English",
+      "restartHint": "Text changes now. Restart Baydar to flip the layout direction."
     }
   },
   "account": {

@@ -8,9 +8,10 @@ import { apiFetch } from "@/lib/api";
 import { apiErrorMessage } from "@/lib/api-errors";
 import { getAccessToken } from "@/lib/session";
 import { Card, Input, type ProfileCardProps } from "./shared";
-import { styles } from "./styles";
+import { useStyles } from "./styles";
 
 export function SkillsCard({ profile, onChanged, onError }: ProfileCardProps): JSX.Element {
+  const styles = useStyles();
   const { t } = useTranslation();
   const [name, setName] = useState("");
   const [busy, setBusy] = useState(false);

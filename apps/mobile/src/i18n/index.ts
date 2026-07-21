@@ -9,7 +9,6 @@ import { initReactI18next } from "react-i18next";
 import {
   applyLocaleDirection,
   getInitialLocale,
-  readLocalePreference,
   writeLocalePreference,
   type SupportedLocale,
 } from "@/lib/locale";
@@ -31,17 +30,12 @@ void i18n.use(initReactI18next).init({
   returnNull: false,
 });
 
+// Strings swap immediately; layout direction only takes effect on the next
+// launch because I18nManager.forceRTL is applied natively at startup.
 export async function setAppLocale(locale: SupportedLocale): Promise<void> {
   await writeLocalePreference(locale);
   applyLocaleDirection(locale);
   await i18n.changeLanguage(locale);
-}
-
-export async function loadStoredAppLocale(): Promise<void> {
-  const stored = await readLocalePreference();
-  if (stored && stored !== i18n.language) {
-    await setAppLocale(stored);
-  }
 }
 
 export default i18n;

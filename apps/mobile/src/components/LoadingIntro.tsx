@@ -1,4 +1,4 @@
-import { Icon, nativeTokens } from "@baydar/ui-native";
+import { Icon, nativeTokens, useThemeTokens } from "@baydar/ui-native";
 import { useEffect, useMemo, useRef } from "react";
 import { Animated, Text, View, type ViewStyle } from "react-native";
 
@@ -19,6 +19,7 @@ export function LoadingIntro({
   testID,
   style,
 }: LoadingIntroProps): JSX.Element {
+  const c = useThemeTokens().color;
   const pulse = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -76,7 +77,7 @@ export function LoadingIntro({
           alignItems: "center",
           justifyContent: "center",
           gap: nativeTokens.space[4],
-          backgroundColor: nativeTokens.color.surfaceMuted,
+          backgroundColor: c.surfaceMuted,
           padding: nativeTokens.space[6],
         },
         style,
@@ -89,8 +90,8 @@ export function LoadingIntro({
             height: markSize,
             borderRadius: nativeTokens.radius.xl,
             borderWidth: 1,
-            borderColor: nativeTokens.color.lineSoft,
-            backgroundColor: nativeTokens.color.surface,
+            borderColor: c.lineSoft,
+            backgroundColor: c.surface,
             alignItems: "center",
             justifyContent: "center",
             ...nativeTokens.shadow.card,
@@ -98,7 +99,7 @@ export function LoadingIntro({
           markMotion,
         ]}
       >
-        <Icon name="logo" size={iconSize} color={nativeTokens.color.brand600} />
+        <Icon name="logo" size={iconSize} color={c.brand600} />
       </Animated.View>
 
       <View style={{ flexDirection: "row", gap: nativeTokens.space[2], alignItems: "center" }}>
@@ -110,8 +111,7 @@ export function LoadingIntro({
                 width: nativeTokens.space[2],
                 height: nativeTokens.space[2],
                 borderRadius: nativeTokens.radius.full,
-                backgroundColor:
-                  item === 1 ? nativeTokens.color.accent600 : nativeTokens.color.brand600,
+                backgroundColor: item === 1 ? c.accent600 : c.brand600,
               },
               dotMotion,
             ]}
@@ -125,7 +125,7 @@ export function LoadingIntro({
             <Text
               selectable
               style={{
-                color: nativeTokens.color.ink,
+                color: c.ink,
                 fontFamily: nativeTokens.type.family.sans,
                 fontWeight: nativeTokens.type.scale.h1.weight,
                 fontSize: nativeTokens.type.scale.h1.size,
@@ -140,7 +140,7 @@ export function LoadingIntro({
             <Text
               selectable
               style={{
-                color: nativeTokens.color.inkMuted,
+                color: c.inkMuted,
                 fontFamily: nativeTokens.type.family.body,
                 fontSize: nativeTokens.type.scale.body.size,
                 lineHeight: nativeTokens.type.scale.body.line,
