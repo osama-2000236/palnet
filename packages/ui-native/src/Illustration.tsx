@@ -124,13 +124,7 @@ function OutlineSet({ motif }: { motif: IllustrationMotif }): JSX.Element | null
       );
     case "notifications":
       return (
-        <G
-          fill="none"
-          stroke={stroke}
-          strokeWidth={1.8}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
+        <G {...common}>
           <Path d="M58 30 a12 12 0 0 1 24 0 v18 q0 8 6 12 h-36 q6 -4 6 -12 z" />
           <Path d="M64 72 q3 6 6 6 q3 0 6 -6" />
           <Circle cx="86" cy="32" r="5" fill={accent} stroke="none" />
@@ -138,13 +132,7 @@ function OutlineSet({ motif }: { motif: IllustrationMotif }): JSX.Element | null
       );
     case "search":
       return (
-        <G
-          fill="none"
-          stroke={stroke}
-          strokeWidth={1.8}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
+        <G {...common}>
           <Circle cx="62" cy="48" r="18" />
           <Line x1="76" y1="62" x2="92" y2="78" />
           <Line x1="54" y1="48" x2="70" y2="48" stroke={accent} strokeWidth={2} />
@@ -152,13 +140,7 @@ function OutlineSet({ motif }: { motif: IllustrationMotif }): JSX.Element | null
       );
     case "jobs":
       return (
-        <G
-          fill="none"
-          stroke={stroke}
-          strokeWidth={1.8}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
+        <G {...common}>
           <Rect x="36" y="38" width="68" height="42" rx="4" />
           <Path d="M58 38 v-6 q0 -4 4 -4 h16 q4 0 4 4 v6" />
           <Line x1="36" y1="56" x2="104" y2="56" />
@@ -167,13 +149,7 @@ function OutlineSet({ motif }: { motif: IllustrationMotif }): JSX.Element | null
       );
     case "onboarding":
       return (
-        <G
-          fill="none"
-          stroke={stroke}
-          strokeWidth={1.8}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
+        <G {...common}>
           <Circle cx="70" cy="44" r="11" />
           <Path d="M52 80 q0 -16 18 -16 q18 0 18 16" />
           <Path d="M88 30 l8 4 l-8 4" stroke={accent} strokeWidth={2} />
@@ -181,13 +157,7 @@ function OutlineSet({ motif }: { motif: IllustrationMotif }): JSX.Element | null
       );
     case "settings":
       return (
-        <G
-          fill="none"
-          stroke={stroke}
-          strokeWidth={1.8}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
+        <G {...common}>
           <Path d="M70 26 l22 8 v18 q0 16 -22 26 q-22 -10 -22 -26 v-18 z" />
           <Path d="M60 52 l8 8 l16 -16" stroke={accent} strokeWidth={2} />
         </G>
