@@ -210,23 +210,32 @@ export default function JobDetailScreen(): JSX.Element {
             </View>
           </View>
           <View style={{ marginTop: nativeTokens.space[3], gap: nativeTokens.space[2] }}>
-            <Button
-              variant="secondary"
-              onPress={() => void toggleSave()}
-              loading={saveBusy}
-              accessibilityLabel={job.viewer.bookmarkId ? t("jobs.saved") : t("jobs.save")}
-              leading={<Icon name="bookmark" size={16} color={c.ink} />}
-            >
-              {job.viewer.bookmarkId ? t("jobs.saved") : t("jobs.save")}
-            </Button>
-            <Button
-              variant="secondary"
-              onPress={() => void shareJob()}
-              accessibilityLabel={t("jobs.share.share")}
-              leading={<Icon name="share" size={16} color={c.ink} />}
-            >
-              {t("jobs.share.share")}
-            </Button>
+            {/* Secondary actions side-by-side; primary apply keeps full width. */}
+            <View style={{ flexDirection: "row", gap: nativeTokens.space[2] }}>
+              <View style={{ flex: 1 }}>
+                <Button
+                  fullWidth
+                  variant="secondary"
+                  onPress={() => void toggleSave()}
+                  loading={saveBusy}
+                  accessibilityLabel={job.viewer.bookmarkId ? t("jobs.saved") : t("jobs.save")}
+                  leading={<Icon name="bookmark" size={16} color={c.ink} />}
+                >
+                  {job.viewer.bookmarkId ? t("jobs.saved") : t("jobs.save")}
+                </Button>
+              </View>
+              <View style={{ flex: 1 }}>
+                <Button
+                  fullWidth
+                  variant="secondary"
+                  onPress={() => void shareJob()}
+                  accessibilityLabel={t("jobs.share.share")}
+                  leading={<Icon name="share" size={16} color={c.ink} />}
+                >
+                  {t("jobs.share.share")}
+                </Button>
+              </View>
+            </View>
             {job.viewer.hasApplied ? (
               <View style={styles.appliedBadge}>
                 <Text style={styles.appliedBadgeText}>✓ {t("jobs.appliedBadge")}</Text>

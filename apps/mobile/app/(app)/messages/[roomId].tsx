@@ -1,5 +1,6 @@
 import {
   AppHeader,
+  Avatar,
   Button,
   nativeTokens,
   type MessageBubbleLabels,
@@ -23,6 +24,10 @@ export default function MessageThreadScreen(): JSX.Element {
   const params = useLocalSearchParams<{ roomId: string }>();
   const thread = useMessageThread(params.roomId);
   const bubbleLabels = useBubbleLabels();
+  const other =
+    thread.viewerId && thread.room && !thread.room.isGroup
+      ? (thread.room.members.find((m) => m.userId !== thread.viewerId) ?? null)
+      : null;
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: c.surfaceMuted }}>
@@ -39,6 +44,20 @@ export default function MessageThreadScreen(): JSX.Element {
           <AppHeader
             title={thread.title || t("messaging.title")}
             compact
+            leading={
+              other ? (
+                <Avatar
+                  size="sm"
+                  user={{
+                    id: other.userId,
+                    handle: other.handle,
+                    firstName: other.firstName,
+                    lastName: other.lastName,
+                    avatarUrl: other.avatarUrl ?? null,
+                  }}
+                />
+              ) : undefined
+            }
             trailing={
               <Button variant="ghost" size="sm" onPress={() => router.back()}>
                 {t("common.back")}

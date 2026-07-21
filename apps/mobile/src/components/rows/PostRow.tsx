@@ -197,9 +197,17 @@ export const PostRow = memo(function PostRow({ post, onChange }: PostRowProps): 
         timestamp={formatRelativeTime(post.createdAt, i18n.language)}
         body={post.body}
         media={media}
-        reactionCount={formatNumber(post.counts.reactions, i18n.language)}
-        commentCount={formatNumber(post.counts.comments, i18n.language)}
-        repostCount={formatNumber(post.counts.reposts, i18n.language)}
+        reactionCount={
+          post.counts.reactions > 0
+            ? formatNumber(post.counts.reactions, i18n.language)
+            : undefined
+        }
+        commentCount={
+          post.counts.comments > 0 ? formatNumber(post.counts.comments, i18n.language) : undefined
+        }
+        repostCount={
+          post.counts.reposts > 0 ? formatNumber(post.counts.reposts, i18n.language) : undefined
+        }
         actions={actions}
         onAuthorPress={() => router.push(`/(app)/in/${post.author.handle}`)}
         authorAccessibilityLabel={authorName}

@@ -1,7 +1,8 @@
-import { type ChatRoom } from "@baydar/shared";
+import { formatNumber, formatRelativeTime, type ChatRoom } from "@baydar/shared";
 import { Avatar, Surface, nativeTokens, useThemeTokens, type NativeTheme } from "@baydar/ui-native";
 import { router } from "expo-router";
 import { memo, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { I18nManager, Pressable, StyleSheet, Text, View } from "react-native";
 import { Swipeable } from "react-native-gesture-handler";
 
@@ -21,6 +22,9 @@ export const RoomRow = memo(function RoomRow({
   testID,
 }: RoomRowProps): JSX.Element {
   const styles = useStyles();
+  const { i18n } = useTranslation();
+  const lastActivity = room.lastMessage?.createdAt ?? room.updatedAt;
+  const timeLabel = lastActivity ? formatRelativeTime(lastActivity, i18n.language) : null;
   const other = viewerId ? room.members.find((m) => m.userId !== viewerId) : null;
   const label = room.isGroup
     ? (room.title ?? room.id)
@@ -71,9 +75,12 @@ export const RoomRow = memo(function RoomRow({
             <Avatar user={avatarUser} size="md" />
 
             <View style={styles.textWrap}>
-              <Text numberOfLines={1} style={styles.title}>
-                {label}
-              </Text>
+              <View style={styles.titleRow}>
+                <Text numberOfLines={1} style={styles.title}>
+                  {label}
+                </Text>
+                {timeLabel ? <Text style={styles.time}>{timeLabel}</Text> : null}
+              </View>
               {room.lastMessage ? (
                 <Text numberOfLines={1} style={styles.preview}>
                   {room.lastMessage.body}
@@ -83,7 +90,7 @@ export const RoomRow = memo(function RoomRow({
 
             {room.unreadCount > 0 ? (
               <View style={styles.badge}>
-                <Text style={styles.badgeText}>{room.unreadCount}</Text>
+                <Text style={styles.badgeText}>{formatNumber(room.unreadCount, i18n.language)}</Text>
               </View>
             ) : null}
           </View>
@@ -115,12 +122,24 @@ function makeStyles(c: NativeTheme["color"]) {
       flex: 1,
       minWidth: 0,
     },
+    titleRow: {
+      flexDirection: "row",
+      alignItems: "baseline",
+      gap: nativeTokens.space[2],
+    },
     title: {
+      flex: 1,
+      minWidth: 0,
       color: c.ink,
       fontFamily: nativeTokens.type.family.sans,
       fontSize: nativeTokens.type.scale.h3.size,
       lineHeight: nativeTokens.type.scale.h3.line,
       fontWeight: "600",
+    },
+    time: {
+      color: c.inkSubtle,
+      fontFamily: nativeTokens.type.family.sans,
+      fontSize: nativeTokens.type.scale.caption.size,
     },
     preview: {
       color: c.inkMuted,

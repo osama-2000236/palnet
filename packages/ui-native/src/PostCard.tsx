@@ -44,9 +44,9 @@ export function PostCard({
   timestamp,
   body,
   media,
-  reactionCount = 0,
-  commentCount = 0,
-  repostCount = 0,
+  reactionCount,
+  commentCount,
+  repostCount,
   actions,
   comments,
   onAuthorPress,
@@ -103,28 +103,38 @@ export function PostCard({
 
       {media ? <View style={styles.media}>{media}</View> : null}
 
-      <View style={styles.stats}>
-        <View style={styles.reactionPill}>
-          <Icon name="thumb" size={12} color={c.brand700} />
-          <Text selectable style={styles.statText}>
-            {reactionCount}
-          </Text>
-        </View>
-        <View style={styles.statEnd}>
-          <View style={styles.statItem}>
-            <Icon name="comment" size={12} color={c.inkMuted} />
-            <Text selectable style={styles.statText}>
-              {commentCount}
-            </Text>
+      {/* Callers pass undefined for zero counts so an untouched post shows no
+          "0 ⇄ 0" noise; the row hides entirely when every stat is empty. */}
+      {reactionCount !== undefined || commentCount !== undefined || repostCount !== undefined ? (
+        <View style={styles.stats}>
+          {reactionCount !== undefined ? (
+            <View style={styles.reactionPill}>
+              <Icon name="thumb" size={12} color={c.brand700} />
+              <Text selectable style={styles.statText}>
+                {reactionCount}
+              </Text>
+            </View>
+          ) : null}
+          <View style={styles.statEnd}>
+            {commentCount !== undefined ? (
+              <View style={styles.statItem}>
+                <Icon name="comment" size={12} color={c.inkMuted} />
+                <Text selectable style={styles.statText}>
+                  {commentCount}
+                </Text>
+              </View>
+            ) : null}
+            {repostCount !== undefined ? (
+              <View style={styles.statItem}>
+                <Icon name="repost" size={12} color={c.inkMuted} />
+                <Text selectable style={styles.statText}>
+                  {repostCount}
+                </Text>
+              </View>
+            ) : null}
           </View>
-          <View style={styles.statItem}>
-            <Icon name="repost" size={12} color={c.inkMuted} />
-            <Text selectable style={styles.statText}>
-              {repostCount}
-            </Text>
-          </View>
         </View>
-      </View>
+      ) : null}
 
       <View style={styles.actionBar}>
         {actions.map((action) => (

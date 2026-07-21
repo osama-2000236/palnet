@@ -199,7 +199,9 @@ export function PostCard({
         </ul>
       ) : null}
 
-      {/* Stats row */}
+      {/* Stats row — hidden entirely for untouched posts (no "0 · 0" noise),
+          matching the native twin's behavior. */}
+      {counts.reactions + counts.comments + counts.reposts > 0 ? (
       <div className="flex items-center gap-2 px-4 py-2.5">
         <span
           aria-hidden="true"
@@ -217,6 +219,7 @@ export function PostCard({
           {labels.repostsCount(counts.reposts)}
         </span>
       </div>
+      ) : null}
 
       <div className="border-line-soft border-t" />
 
