@@ -406,7 +406,17 @@
     },
     "endorseCountLabel": "{{count}} تزكيات",
     "endorseThanks": "تمت تزكية المهارة.",
-    "endorseError": "تعذّرت تزكية هذه المهارة."
+    "endorseError": "تعذّرت تزكية هذه المهارة.",
+    "completion": {
+      "next": {
+        "avatar": "أضف صورة شخصية",
+        "headline": "أضف مسمّاك المهني",
+        "location": "أضف موقعك",
+        "experience": "أضف خبرة أو مؤهلاً تعليمياً",
+        "skills": "أضف مهاراتك"
+      },
+      "complete": "ملفك المهني مكتمل"
+    }
   },
   "karama": {
     "kicker": "نقاط الكرامة",
