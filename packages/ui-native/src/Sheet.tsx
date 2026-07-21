@@ -84,7 +84,10 @@ export function Sheet({
         pointerEvents="box-none"
         accessible
         accessibilityViewIsModal
-        accessibilityRole={"dialog" as never}
+        // ponytail: no accessibilityRole here — RN has no "dialog" role and
+        // Android's ReactViewManager throws on it at mount. The native Modal
+        // already announces as a dialog; accessibilityViewIsModal traps focus
+        // on iOS. Label alone carries the name.
         accessibilityLabel={accessibilityLabel ?? title}
       >
         <View style={styles.handleWrap}>

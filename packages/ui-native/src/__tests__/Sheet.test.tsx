@@ -25,7 +25,7 @@ describe("Sheet", () => {
     expect(screen.getByText("خيارات البحث")).toBeTruthy();
     expect(screen.getByText("فرز حسب الأحدث")).toBeTruthy();
     // Only the header close button is in the a11y tree; the backdrop Pressable
-    // is hidden because the dialog wrapper sets accessibilityViewIsModal.
+    // is hidden because the modal wrapper sets accessibilityViewIsModal.
     expect(screen.getAllByRole("button", { name: "إغلاق اللوحة" })).toHaveLength(1);
   });
 
@@ -58,13 +58,17 @@ describe("Sheet", () => {
     expect(onApply).toHaveBeenCalledTimes(1);
   });
 
-  it("exposes dialog accessibility on the sheet wrapper", () => {
+  it("names the modal wrapper without an invalid accessibilityRole", () => {
     const screen = render(
       <Sheet open onClose={jest.fn()} title="خيارات البحث" closeLabel="إغلاق اللوحة">
         <Text>فرز حسب الأحدث</Text>
       </Sheet>,
     );
 
-    expect(screen.getByRole("dialog", { name: "خيارات البحث" })).toBeTruthy();
+    // RN has no "dialog" role — Android throws "Invalid accessibility role
+    // value: dialog" at mount. The wrapper carries the name via its label.
+    const wrapper = screen.getByLabelText("خيارات البحث");
+    expect(wrapper.props.accessibilityViewIsModal).toBe(true);
+    expect(wrapper.props.accessibilityRole).toBeUndefined();
   });
 });
