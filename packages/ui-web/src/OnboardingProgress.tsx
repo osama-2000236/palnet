@@ -72,7 +72,10 @@ export function OnboardingProgress({
             />
           );
         })}
-        <span className="text-ink-subtle ms-auto font-mono text-[11px] tabular-nums tracking-[.04em]">
+        <span
+          dir="ltr"
+          className="text-ink-subtle ms-auto font-mono text-[11px] tabular-nums tracking-[.04em]"
+        >
           {counter}
         </span>
       </div>
@@ -131,7 +134,10 @@ export function OnboardingProgress({
     >
       <div className="flex items-baseline justify-between gap-3">
         {label ? <span className="text-ink text-[13px] font-semibold">{label}</span> : <span />}
-        <span className="text-ink-subtle font-mono text-[11px] tabular-nums tracking-[.04em]">
+        <span
+          dir="ltr"
+          className="text-ink-subtle font-mono text-[11px] tabular-nums tracking-[.04em]"
+        >
           {counter}
         </span>
       </div>

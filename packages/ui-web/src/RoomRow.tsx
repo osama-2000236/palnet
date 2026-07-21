@@ -53,7 +53,9 @@ export function RoomRow({
           <span className="text-ink truncate text-sm font-semibold">
             {`${user.firstName ?? ""} ${user.lastName ?? ""}`.trim() || user.handle || ""}
           </span>
-          <span className="text-ink-muted shrink-0 text-[11px] tabular-nums">{timestamp}</span>
+          <span dir="ltr" className="text-ink-muted shrink-0 text-[11px] tabular-nums">
+            {timestamp}
+          </span>
         </div>
         <div className="flex items-center justify-between gap-2">
           <span

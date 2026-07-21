@@ -169,5 +169,8 @@ const styles = StyleSheet.create({
     fontFamily: nativeTokens.type.family.mono,
     fontSize: 11,
     letterSpacing: 0.4,
+    // "٢ / ٤" is a numeric run with a separator — under RTL the bidi algorithm
+    // swaps the two numbers. Pin it LTR, same as the web twin. See RTL.md.
+    writingDirection: "ltr",
   },
 });

@@ -244,7 +244,7 @@ export function Composer({
         ) : null}
         <div className="flex-1" />
         {uploading ? <span className="text-ink-muted text-xs">{labels.uploading}</span> : null}
-        <span className="text-ink-muted text-xs tabular-nums">
+        <span dir="ltr" className="text-ink-muted text-xs tabular-nums">
           {body.length} / {maxLength}
         </span>
         <button
