@@ -65,6 +65,15 @@ export function Icon({ name, size = 20, color, strokeWidth = 1.8 }: IconProps): 
           <Path d="M3 13h18" />
         </Svg>
       );
+    case "building":
+      // Employer / company glyph — used by the employer nav tab on both shells.
+      return (
+        <Svg {...common}>
+          <Rect x={4} y={8} width={16} height={12} rx={2} />
+          <Rect x={8} y={12} width={4} height={4} />
+          <Rect x={12} y={12} width={4} height={4} />
+        </Svg>
+      );
     case "message":
       return (
         <Svg {...common}>

@@ -69,6 +69,16 @@ export function Icon({
           <path d="M3 13h18" />
         </svg>
       );
+    case "building":
+      // Employer / company glyph — used by the employer nav tab on both shells.
+      return (
+        <svg {...common}>
+          {title ? <title>{title}</title> : null}
+          <rect x="4" y="8" width="16" height="12" rx="2" />
+          <rect x="8" y="12" width="4" height="4" />
+          <rect x="12" y="12" width="4" height="4" />
+        </svg>
+      );
     case "message":
       return (
         <svg {...common}>
@@ -230,16 +240,6 @@ export function Icon({
         <svg {...common}>
           {title ? <title>{title}</title> : null}
           <path d="M6 4h12v17l-6-4-6 4z" />
-        </svg>
-      );
-    case "employer":
-      // Simple building icon for employer
-      return (
-        <svg {...common}>
-          {title ? <title>{title}</title> : null}
-          <rect x="4" y="8" width="16" height="12" rx="2" />
-          <rect x="8" y="12" width="4" height="4" />
-          <rect x="12" y="12" width="4" height="4" />
         </svg>
       );
     case "logo":
