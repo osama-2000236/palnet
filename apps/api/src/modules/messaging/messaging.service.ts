@@ -328,8 +328,9 @@ export class MessagingService {
       },
     })) as unknown as MessageRow | null;
     if (existing) {
-      // Resurface for everyone if the room was archived while the client retried.
-      await this.clearRoomArchives(roomId);
+      // Pure replay: no new content, so nothing to resurface. Un-archiving here
+      // would let a client replay one clientMessageId to undo the recipient's
+      // archive as often as it likes.
       return toMessageDto(existing);
     }
 
@@ -354,10 +355,8 @@ export class MessagingService {
             clientMessageId: body.clientMessageId,
           },
         })) as unknown as MessageRow | null;
-        if (raced) {
-          await this.clearRoomArchives(roomId);
-          return toMessageDto(raced);
-        }
+        // The winner of the race already cleared archives for this message.
+        if (raced) return toMessageDto(raced);
       }
       throw error;
     }

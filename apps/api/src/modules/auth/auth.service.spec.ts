@@ -324,20 +324,53 @@ describe("AuthService", () => {
       expect(header.alg).toBe("HS256");
     });
 
-    it("burns all user sessions when refresh token is already claimed (reuse)", async () => {
+    it("burns all user sessions when an already-rotated token is replayed (reuse)", async () => {
+      // The realistic stolen-token shape: the row exists and is already revoked.
+      // The lookup must not filter revokedAt, or this never reaches the burn.
       prisma.refreshToken.findFirst.mockResolvedValue({
         id: "rt_1",
         userId: user.id,
         expiresAt: new Date(Date.now() + 60_000),
+        revokedAt: new Date(Date.now() - 1_000),
         user,
       });
-      // First claim lost the race / token already rotated.
+      prisma.refreshToken.updateMany.mockResolvedValueOnce({ count: 2 });
+
+      await expect(
+        service.refresh({ refreshToken: "stolen", deviceId: "device-1" }),
+      ).rejects.toMatchObject({
+        response: {
+          error: { code: ErrorCode.AUTH_UNAUTHORIZED },
+        },
+      });
+
+      expect(prisma.refreshToken.findFirst).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.not.objectContaining({ revokedAt: null }),
+        }),
+      );
+      expect(prisma.refreshToken.updateMany).toHaveBeenCalledWith({
+        where: { userId: "user_1", revokedAt: null },
+        data: { revokedAt: expect.any(Date) },
+      });
+      expect(prisma.refreshToken.create).not.toHaveBeenCalled();
+    });
+
+    it("burns all user sessions when the rotation claim loses a race", async () => {
+      prisma.refreshToken.findFirst.mockResolvedValue({
+        id: "rt_1",
+        userId: user.id,
+        expiresAt: new Date(Date.now() + 60_000),
+        revokedAt: null,
+        user,
+      });
+      // Claim returns 0: a concurrent refresh revoked the row first.
       prisma.refreshToken.updateMany
         .mockResolvedValueOnce({ count: 0 })
         .mockResolvedValueOnce({ count: 2 });
 
       await expect(
-        service.refresh({ refreshToken: "stolen-or-raced", deviceId: "device-1" }),
+        service.refresh({ refreshToken: "raced", deviceId: "device-1" }),
       ).rejects.toMatchObject({
         response: {
           error: { code: ErrorCode.AUTH_UNAUTHORIZED },

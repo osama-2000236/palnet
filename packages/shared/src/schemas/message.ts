@@ -15,10 +15,16 @@ export type CreateGroupRoomBody = z.infer<typeof CreateGroupRoomBody>;
 export const CreateRoomBody = z.union([CreateOrGetDmBody, CreateGroupRoomBody]);
 export type CreateRoomBody = z.infer<typeof CreateRoomBody>;
 
-// ponytail: https only — host allowlist if R2 phishing shows up
-const HttpsUrl = z.string().url().refine((v) => v.toLowerCase().startsWith("https://"), {
-  message: "mediaUrl must be an https URL",
-});
+// ponytail: https only on the write path — host allowlist if R2 phishing shows up.
+// Deliberately NOT applied to the Message response schema: clients parse whole
+// pages, so one stored http:// row would fail the parse and blank an entire
+// thread rather than one bubble. Tighten reads after a backfill, not before.
+const HttpsUrl = z
+  .string()
+  .url()
+  .refine((v) => v.toLowerCase().startsWith("https://"), {
+    message: "mediaUrl must be an https URL",
+  });
 
 export const SendMessageBody = z.object({
   body: z.string().min(1).max(5000),
@@ -37,7 +43,7 @@ export const Message = z.object({
   roomId: z.string().cuid(),
   authorId: z.string().cuid(),
   body: z.string(),
-  mediaUrl: HttpsUrl.nullable(),
+  mediaUrl: z.string().url().nullable(),
   createdAt: z.string().datetime(),
   editedAt: z.string().datetime().nullable(),
   deletedAt: z.string().datetime().nullable(),

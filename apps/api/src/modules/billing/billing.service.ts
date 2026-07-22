@@ -651,7 +651,13 @@ function assertSafeReturnUrl(returnUrl: string, config: ConfigService<Env, true>
   } catch {
     throw new DomainException(ErrorCode.VALIDATION_FAILED, "Invalid returnUrl.", 400);
   }
-  if ((u.protocol !== "https:" && u.protocol !== "http:") || u.username || u.password) {
+  // http is a local-dev affordance only — a payment return URL must not
+  // downgrade in production even if CORS_ORIGINS carries an http entry.
+  const allowHttp = process.env.NODE_ENV !== "production";
+  if (u.protocol !== "https:" && !(allowHttp && u.protocol === "http:")) {
+    throw new DomainException(ErrorCode.VALIDATION_FAILED, "Invalid returnUrl.", 400);
+  }
+  if (u.username || u.password) {
     throw new DomainException(ErrorCode.VALIDATION_FAILED, "Invalid returnUrl.", 400);
   }
   const allowed = new Set<string>();

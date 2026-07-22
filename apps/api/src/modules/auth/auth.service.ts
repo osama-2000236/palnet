@@ -104,24 +104,29 @@ export class AuthService {
 
   async refresh(body: RefreshBody, meta: SessionMeta = {}): Promise<AuthSession> {
     const hash = hashToken(body.refreshToken);
+    // Revoked rows stay in the lookup on purpose: a presented token that was
+    // already rotated is the reuse signal, and filtering it out here would make
+    // the burn below unreachable — the replay would just 401 like a typo.
     const record = await this.prisma.refreshToken.findFirst({
-      where: { tokenHash: hash, deviceId: body.deviceId, revokedAt: null },
+      where: { tokenHash: hash, deviceId: body.deviceId },
       include: { user: true },
     });
     if (!record || record.expiresAt < new Date()) {
       throw this.refreshUnauthorized();
     }
 
-    // ponytail: updateMany claim; count=0 = race/reuse → burn all user sessions
+    if (record.revokedAt) {
+      await this.burnUserSessions(record.userId);
+      throw this.refreshUnauthorized();
+    }
+
+    // ponytail: updateMany claim; count=0 = lost the race → burn all user sessions
     const claimed = await this.prisma.refreshToken.updateMany({
       where: { id: record.id, revokedAt: null },
       data: { revokedAt: new Date() },
     });
     if (claimed.count !== 1) {
-      await this.prisma.refreshToken.updateMany({
-        where: { userId: record.userId, revokedAt: null },
-        data: { revokedAt: new Date() },
-      });
+      await this.burnUserSessions(record.userId);
       throw this.refreshUnauthorized();
     }
 
@@ -218,6 +223,14 @@ export class AuthService {
         code: ErrorCode.AUTH_UNAUTHORIZED,
         message: "Invalid email or password.",
       },
+    });
+  }
+
+  /** Reuse or a lost rotation race means the token may be stolen: drop every live session. */
+  private async burnUserSessions(userId: string): Promise<void> {
+    await this.prisma.refreshToken.updateMany({
+      where: { userId, revokedAt: null },
+      data: { revokedAt: new Date() },
     });
   }
 

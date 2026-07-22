@@ -232,8 +232,9 @@ describe("MessagingService", () => {
       });
       expect(out.id).toBe("msg_1");
       expect(prisma.message.create).not.toHaveBeenCalled();
-      // Idempotent retry still resurfaces archived rooms.
-      expect(prisma.chatRoomMember.updateMany).toHaveBeenCalledWith(
+      // A replay adds no content, so it must NOT un-archive: otherwise one
+      // clientMessageId can be resent forever to undo the recipient's archive.
+      expect(prisma.chatRoomMember.updateMany).not.toHaveBeenCalledWith(
         expect.objectContaining({
           where: { roomId: "room_1", archivedAt: { not: null } },
           data: { archivedAt: null },
@@ -314,19 +315,17 @@ describe("MessagingService", () => {
     });
 
     it("returns the raced winner when create hits P2002 on clientMessageId", async () => {
-      prisma.message.findFirst
-        .mockResolvedValueOnce(null)
-        .mockResolvedValueOnce({
-          id: "msg_race",
-          roomId: "room_1",
-          authorId: "u_me",
-          body: "hi",
-          mediaUrl: null,
-          clientMessageId: "c_race",
-          createdAt: new Date("2026-04-18T10:00:00Z"),
-          editedAt: null,
-          deletedAt: null,
-        });
+      prisma.message.findFirst.mockResolvedValueOnce(null).mockResolvedValueOnce({
+        id: "msg_race",
+        roomId: "room_1",
+        authorId: "u_me",
+        body: "hi",
+        mediaUrl: null,
+        clientMessageId: "c_race",
+        createdAt: new Date("2026-04-18T10:00:00Z"),
+        editedAt: null,
+        deletedAt: null,
+      });
       prisma.message.create.mockRejectedValue(Object.assign(new Error("dup"), { code: "P2002" }));
 
       const out = await service.sendMessage("u_me", "room_1", {
