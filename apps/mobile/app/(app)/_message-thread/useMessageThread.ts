@@ -97,7 +97,7 @@ export function useMessageThread(roomId: string | undefined) {
           setTyping,
         }),
     });
-  }, [token, roomId, refresh, isConnected, viewerId]);
+  }, [token, roomId, refresh, isConnected, viewerId, setTyping]);
 
   const refreshThread = useCallback(async (): Promise<void> => {
     setRefreshing(true);

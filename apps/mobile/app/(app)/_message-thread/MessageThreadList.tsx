@@ -83,10 +83,13 @@ export function MessageThreadList({
           <Text
             accessibilityLiveRegion="polite"
             style={{
-              color: nativeTokens.color.inkMuted,
+              // Theme colour must come from the hook, not static tokens, or this
+              // stays light-ink in dark mode. No italic: Arabic has no italic form
+              // and the faux slant reads as broken text in the primary language.
+              color: c.inkMuted,
               fontFamily: nativeTokens.type.family.sans,
               fontSize: nativeTokens.type.scale.caption.size,
-              fontStyle: "italic",
+              lineHeight: nativeTokens.type.scale.caption.line,
               paddingVertical: nativeTokens.space[2],
             }}
           >
