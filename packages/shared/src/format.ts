@@ -66,6 +66,31 @@ export function formatCurrency(
   ).format(value);
 }
 
+/**
+ * Format a cent amount for billing surfaces. Whole amounts drop the fraction
+ * (₪18, $5); cent fractions keep two digits. Web and mobile both render money
+ * through this — they used to keep separate copies, and the mobile one printed
+ * Latin digits into Arabic pages.
+ */
+export function formatMoney(cents: number, currency: string, locale: string): string {
+  const fraction = cents % 100 === 0 ? 0 : 2;
+  return formatCurrency(cents / 100, currency, locale, {
+    minimumFractionDigits: fraction,
+    maximumFractionDigits: fraction,
+  });
+}
+
+/**
+ * d/m/y — deliberately not `dateStyle`, which would render en as month-first.
+ * The fixed order is unambiguous in both locales; only the digits localise.
+ */
+export function formatDate(iso: string | Date, locale: string): string {
+  const date = typeof iso === "string" ? new Date(iso) : iso;
+  if (Number.isNaN(date.getTime())) return "";
+  const part = (value: number): string => formatNumber(value, locale, { useGrouping: false });
+  return `${part(date.getDate())}/${part(date.getMonth() + 1)}/${part(date.getFullYear())}`;
+}
+
 type RelativeLabelUnit =
   | "year"
   | "quarter"

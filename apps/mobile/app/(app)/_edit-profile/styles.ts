@@ -52,6 +52,7 @@ export function makeStyles(c: NativeTheme["color"]) {
       minWidth: nativeTokens.space[20],
     },
     inputLtr: {
+      // eslint-disable-next-line no-restricted-syntax -- paired with writingDirection ltr: this variant is for content that really is LTR.
       textAlign: "left",
       writingDirection: "ltr",
     },

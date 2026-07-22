@@ -60,7 +60,7 @@ async function main() {
     location: "رام الله",
   });
 
-  await ensureExperience(prisma, demoUser.profile.id, {
+  await ensureExperience(prisma, demoUser.id, {
     title: "مهندس برمجيات",
     companyName: "بيدر",
     location: "رام الله",
@@ -77,8 +77,8 @@ async function main() {
     location: "رام الله",
   });
 
-  await ensureExperience(prisma, a11yUser.profile.id, {
-    title: "Accessibility smoke profile",
+  await ensureExperience(prisma, a11yUser.id, {
+    title: "QA Engineer",
     companyName: "Baydar",
     location: "رام الله",
   });
@@ -95,7 +95,7 @@ async function main() {
     location: "رام الله",
   });
 
-  await ensureExperience(prisma, ownerUser.profile.id, {
+  await ensureExperience(prisma, ownerUser.id, {
     title: "Hiring manager",
     companyName: "Baydar",
     location: "رام الله",
@@ -223,49 +223,47 @@ async function upsertSeedUser(input: {
     include: { profile: true },
   });
 
-  const existingByHandle = existingByEmail
-    ? null
-    : await prisma.profile.findUnique({ where: { handle: input.handle } });
+  if (existingByEmail) {
+    return prisma.user.update({
+      where: { id: existingByEmail.id },
+      data: {
+        passwordHash: input.passwordHash,
+        role: input.role ?? existingByEmail.role,
+        locale: input.locale,
+        emailVerified: existingByEmail.emailVerified ?? new Date(),
+        profile: existingByEmail.profile ? { update: profileData } : { create: profileData },
+      },
+    });
+  }
 
-  const user = existingByEmail
-    ? await prisma.user.update({
-        where: { id: existingByEmail.id },
-        data: {
-          passwordHash: input.passwordHash,
-          role: input.role ?? existingByEmail.role,
-          locale: input.locale,
-          emailVerified: existingByEmail.emailVerified ?? new Date(),
-          profile: existingByEmail.profile ? { update: profileData } : { create: profileData },
-        },
-        include: { profile: true },
-      })
-    : existingByHandle
-      ? await prisma.user.update({
-          where: { id: existingByHandle.userId },
-          data: {
-            email: input.email,
-            passwordHash: input.passwordHash,
-            role: input.role ?? "USER",
-            locale: input.locale,
-            emailVerified: new Date(),
-            profile: { update: profileData },
-          },
-          include: { profile: true },
-        })
-      : await prisma.user.create({
-          data: {
-            email: input.email,
-            passwordHash: input.passwordHash,
-            role: input.role ?? "USER",
-            locale: input.locale,
-            emailVerified: new Date(),
-            profile: { create: profileData },
-          },
-          include: { profile: true },
-        });
+  const existingByHandle = await prisma.profile.findUnique({
+    where: { handle: input.handle },
+  });
 
-  if (!user.profile) throw new Error(`Seed user ${input.email} has no profile.`);
-  return { ...user, profile: user.profile };
+  if (existingByHandle) {
+    return prisma.user.update({
+      where: { id: existingByHandle.userId },
+      data: {
+        email: input.email,
+        passwordHash: input.passwordHash,
+        role: input.role ?? "USER",
+        locale: input.locale,
+        emailVerified: new Date(),
+        profile: { update: profileData },
+      },
+    });
+  }
+
+  return prisma.user.create({
+    data: {
+      email: input.email,
+      passwordHash: input.passwordHash,
+      role: input.role ?? "USER",
+      locale: input.locale,
+      emailVerified: new Date(),
+      profile: { create: profileData },
+    },
+  });
 }
 
 async function upsertJob(input: {

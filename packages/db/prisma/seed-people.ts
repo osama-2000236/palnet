@@ -152,18 +152,22 @@ const PEOPLE: Person[] = [
 // Without one experience row isProfileComplete() is false, so logging in as a
 // seeded account lands on onboarding instead of the feed — and the profile
 // screen renders an empty background section. Idempotent: only adds if none.
+// Takes a userId rather than a profileId so callers that only hold the user
+// (seed.ts) don't have to thread the profile back out of every upsert branch.
 export async function ensureExperience(
   prisma: PrismaClient,
-  profileId: string,
+  userId: string,
   entry: { title: string; companyName: string; location: string },
 ): Promise<void> {
+  const profile = await prisma.profile.findFirst({ where: { userId }, select: { id: true } });
+  if (!profile) return;
   const existing = await prisma.experience.findFirst({
-    where: { profileId },
+    where: { profileId: profile.id },
     select: { id: true },
   });
   if (existing) return;
   await prisma.experience.create({
-    data: { profileId, ...entry, startDate: new Date("2022-01-01") },
+    data: { profileId: profile.id, ...entry, startDate: new Date("2022-01-01") },
   });
 }
 
@@ -172,7 +176,7 @@ export async function seedPeople(prisma: PrismaClient, demoUserId: string, passw
     const user = await upsertPerson(prisma, person, passwordHash);
     await linkSkills(prisma, user.profileId, person.skills);
     await linkConnection(prisma, demoUserId, user.userId, person.link);
-    await ensureExperience(prisma, user.profileId, {
+    await ensureExperience(prisma, user.userId, {
       // Headlines read "role — specialisation"; the role alone is the job title.
       title: person.headline.split("—")[0]!.trim(),
       companyName: person.company,

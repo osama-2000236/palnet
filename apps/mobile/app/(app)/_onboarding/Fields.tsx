@@ -63,7 +63,8 @@ export function ControlledField({
             helperText={!error ? hint : undefined}
             inputStyle={[
               props.keyboardType === "email-address"
-                ? { textAlign: "left", writingDirection: "ltr" }
+                ? // eslint-disable-next-line no-restricted-syntax -- email is always LTR.
+                  { textAlign: "left", writingDirection: "ltr" }
                 : {
                     textAlign: "auto",
                     writingDirection: I18nManager.isRTL ? "rtl" : "ltr",

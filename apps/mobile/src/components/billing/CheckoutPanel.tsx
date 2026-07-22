@@ -1,4 +1,5 @@
 import {
+  formatMoney,
   CheckoutSession,
   PaymentMethod,
   type BankTransferDestination as BankTransferDestinationDto,
@@ -22,7 +23,6 @@ import { Linking, StyleSheet, Text, View } from "react-native";
 import { StateMessage } from "@/components/StateMessage";
 import { apiFetch } from "@/lib/api";
 import { apiErrorMessage } from "@/lib/api-errors";
-import { formatMoney } from "@/lib/money";
 
 // Same returnUrl on web and mobile: the payment provider sends the shopper
 // back here; the universal-link handler reopens the app when installed.

@@ -1,4 +1,11 @@
-import { formatCurrency, formatNumber, formatRelativeTime, formatSalaryRange } from "./format";
+import {
+  formatCurrency,
+  formatDate,
+  formatMoney,
+  formatNumber,
+  formatRelativeTime,
+  formatSalaryRange,
+} from "./format";
 
 // Arabic-Indic reference digits for clarity in expectations.
 const AR_DIGITS = "٠١٢٣٤٥٦٧٨٩";
@@ -114,5 +121,29 @@ describe("formatSalaryRange", () => {
     expect(out).toContain("80,000");
     expect(out).toContain("120,000");
     expect(out).toContain("–");
+  });
+});
+
+describe("formatMoney", () => {
+  it("renders Arabic-Indic digits in ar-PS", () => {
+    const price = formatMoney(1800, "ILS", "ar-PS");
+    expect(price).toMatch(/[٠-٩]/);
+    expect(price).not.toMatch(/[0-9]/);
+  });
+
+  it("keeps Latin digits in en and shows cents only when there are any", () => {
+    expect(formatMoney(500, "USD", "en")).toBe("$5");
+    expect(formatMoney(1250, "USD", "en")).toBe("$12.50");
+  });
+});
+
+describe("formatDate", () => {
+  it("localises the digits but keeps d/m/y order in both locales", () => {
+    expect(formatDate("2026-07-22T00:00:00.000Z", "en")).toBe("22/7/2026");
+    const ar = formatDate("2026-07-22T00:00:00.000Z", "ar-PS");
+    expect(ar).toMatch(/[٠-٩]/);
+    expect(ar).not.toMatch(/[0-9]/);
+    // No thousands separator inside the year.
+    expect(ar).toBe("٢٢/٧/٢٠٢٦");
   });
 });

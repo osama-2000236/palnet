@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  formatMoney,
   Invoice as InvoiceSchema,
   InvoiceStatus,
   PaymentMethod,
@@ -13,7 +14,6 @@ import { useRef, useState } from "react";
 
 import { apiFetch, getValidAccessToken } from "@/lib/api";
 import { toErrorMessage } from "@/lib/error-message";
-import { formatMoney } from "@/lib/money";
 import { uploadFile } from "@/lib/uploads";
 
 interface InvoiceListProps {
