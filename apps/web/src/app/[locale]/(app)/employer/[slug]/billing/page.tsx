@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  formatMoney,
   BillingCatalog,
   Company,
   CompanyBillingSummary,
@@ -22,7 +23,6 @@ import { CheckoutPanel } from "@/components/billing/CheckoutPanel";
 import { InvoiceList } from "@/components/billing/InvoiceList";
 import { apiFetch, getValidAccessToken } from "@/lib/api";
 import { toErrorMessage } from "@/lib/error-message";
-import { formatMoney } from "@/lib/money";
 
 const InvoicesResponse = z.array(Invoice);
 

@@ -1,4 +1,6 @@
 import {
+  formatDate,
+  formatMoney,
   BillingCatalog,
   BillingMe,
   Invoice,
@@ -28,7 +30,6 @@ import { InvoiceList } from "@/components/billing/InvoiceList";
 import { StateMessage } from "@/components/StateMessage";
 import { apiFetch } from "@/lib/api";
 import { apiErrorMessage } from "@/lib/api-errors";
-import { formatDate, formatMoney } from "@/lib/money";
 
 const InvoicesResponse = z.array(Invoice);
 

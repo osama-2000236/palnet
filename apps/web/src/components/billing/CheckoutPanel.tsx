@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  formatMoney,
   CheckoutSession,
   PaymentMethod,
   type BankTransferDestination as BankTransferDestinationDto,
@@ -16,7 +17,6 @@ import { useState } from "react";
 
 import { apiFetch, getValidAccessToken } from "@/lib/api";
 import { toErrorMessage } from "@/lib/error-message";
-import { formatMoney } from "@/lib/money";
 
 interface CheckoutPanelProps {
   plan: PlanOfferDto;
