@@ -15,9 +15,17 @@ export type CreateGroupRoomBody = z.infer<typeof CreateGroupRoomBody>;
 export const CreateRoomBody = z.union([CreateOrGetDmBody, CreateGroupRoomBody]);
 export type CreateRoomBody = z.infer<typeof CreateRoomBody>;
 
+/** Message media must be HTTPS — blocks javascript:/data:/file: and cleartext phishing. */
+const HttpsUrl = z
+  .string()
+  .url()
+  .refine((value) => value.toLowerCase().startsWith("https://"), {
+    message: "mediaUrl must be an https URL",
+  });
+
 export const SendMessageBody = z.object({
   body: z.string().min(1).max(5000),
-  mediaUrl: z.string().url().optional(),
+  mediaUrl: HttpsUrl.optional(),
   clientMessageId: z.string().min(1).max(64), // for idempotency + optimistic UI
 });
 export type SendMessageBody = z.infer<typeof SendMessageBody>;
@@ -32,7 +40,7 @@ export const Message = z.object({
   roomId: z.string().cuid(),
   authorId: z.string().cuid(),
   body: z.string(),
-  mediaUrl: z.string().url().nullable(),
+  mediaUrl: HttpsUrl.nullable(),
   createdAt: z.string().datetime(),
   editedAt: z.string().datetime().nullable(),
   deletedAt: z.string().datetime().nullable(),

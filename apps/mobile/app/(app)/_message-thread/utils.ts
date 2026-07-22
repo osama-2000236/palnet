@@ -1,6 +1,9 @@
 import type { Message } from "@baydar/shared";
 import type { MessageStatus } from "@baydar/ui-native";
 
+export const TYPING_TTL_MS = 5_000;
+export const TYPING_POST_THROTTLE_MS = 3_000;
+
 export function computeStatus(
   message: Message,
   failedClientIds: Set<string>,

@@ -87,8 +87,18 @@ export default function MessageThreadScreen(): JSX.Element {
           memberById={thread.memberById}
           labels={bubbleLabels}
           emptyLabel={t("messaging.emptyThread")}
+          loadOlderLabel={t("messaging.loadOlder")}
+          typingLabel={
+            thread.typingActive
+              ? t("messaging.typing", { name: thread.otherName || t("messaging.title") })
+              : null
+          }
+          hasMore={thread.hasMore}
+          loadingOlder={thread.loadingOlder}
+          typingActive={Boolean(thread.typingActive)}
           refreshing={thread.refreshing}
           onRefresh={() => void thread.refreshThread()}
+          onLoadOlder={() => void thread.loadOlder()}
           onRetryFailed={thread.retryFailed}
           onOpenOwnActions={thread.openMessageActions}
           onReportOther={thread.setReportMessage}

@@ -109,19 +109,24 @@ export class AuthService {
       include: { user: true },
     });
     if (!record || record.expiresAt < new Date()) {
-      throw new UnauthorizedException({
-        error: {
-          code: ErrorCode.AUTH_UNAUTHORIZED,
-          message: "Refresh token invalid or expired.",
-        },
-      });
+      throw this.refreshUnauthorized();
     }
 
-    // Rotate: revoke old, issue new.
-    await this.prisma.refreshToken.update({
-      where: { id: record.id },
+    // Atomic claim: concurrent refresh of the same token must not issue two
+    // sessions. Only one updateMany wins; the loser is treated as reuse.
+    const claimed = await this.prisma.refreshToken.updateMany({
+      where: { id: record.id, revokedAt: null },
       data: { revokedAt: new Date() },
     });
+    if (claimed.count !== 1) {
+      // Stolen-token reuse or double-submit race after first claim: burn every
+      // remaining session for this user so the attacker cannot keep a fork.
+      await this.prisma.refreshToken.updateMany({
+        where: { userId: record.userId, revokedAt: null },
+        data: { revokedAt: new Date() },
+      });
+      throw this.refreshUnauthorized();
+    }
 
     return this.issueSession(record.user, body.deviceId, meta);
   }
@@ -219,6 +224,15 @@ export class AuthService {
     });
   }
 
+  private refreshUnauthorized(): UnauthorizedException {
+    return new UnauthorizedException({
+      error: {
+        code: ErrorCode.AUTH_UNAUTHORIZED,
+        message: "Refresh token invalid or expired.",
+      },
+    });
+  }
+
   async issueSession(
     user: { id: string; email: string; role: AuthUser["role"]; locale: string },
     deviceId: string,
@@ -268,6 +282,7 @@ export class AuthService {
 
     const accessToken = jwt.sign(payload, accessSecret, {
       expiresIn: accessTtl,
+      algorithm: "HS256",
     });
 
     // Refresh tokens are opaque random strings (we store their hash).

@@ -494,6 +494,7 @@
     "archive": "Archive",
     "sendFailed": "Could not send message.",
     "loadOlder": "Load older messages",
+    "typing": "{{name}} is typing…",
     "retry": "Retry",
     "you": "You",
     "ownPrefix": "You, at {{time}}:",

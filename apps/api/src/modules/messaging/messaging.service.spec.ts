@@ -35,10 +35,12 @@ type PrismaStub = {
   };
   blockedUser: { count: jest.Mock };
   $queryRaw: jest.Mock;
+  $executeRaw: jest.Mock;
+  $transaction: jest.Mock;
 };
 
 function buildPrisma(): PrismaStub {
-  return {
+  const prisma: PrismaStub = {
     user: { findUnique: jest.fn() },
     chatRoom: {
       findFirst: jest.fn(),
@@ -69,7 +71,14 @@ function buildPrisma(): PrismaStub {
     // Unread-counts batched query. Default to empty (zero unread) — specific
     // tests override per case.
     $queryRaw: jest.fn().mockResolvedValue([]),
+    $executeRaw: jest.fn().mockResolvedValue(undefined),
+    $transaction: jest.fn(),
   };
+  // Run interactive transactions against the same stub so find/create mocks work.
+  prisma.$transaction.mockImplementation(async (fn: (tx: PrismaStub) => Promise<unknown>) =>
+    fn(prisma),
+  );
+  return prisma;
 }
 
 function roomRow(overrides: Partial<Record<string, unknown>> = {}) {
@@ -141,19 +150,21 @@ describe("MessagingService", () => {
     it("returns the existing 1:1 room when both users already share one", async () => {
       prisma.user.findUnique.mockResolvedValue({ id: "u_them" });
       prisma.chatRoom.findFirst
-        .mockResolvedValueOnce({ id: "room_1" }) // existence probe
+        .mockResolvedValueOnce({ id: "room_1" }) // existence probe (inside tx)
         .mockResolvedValueOnce(roomRow()); // getRoomDto fetch
       prisma.message.count.mockResolvedValue(0);
 
       const result = await service.findOrCreateDm("u_me", "u_them");
       expect(result.id).toBe("room_1");
       expect(prisma.chatRoom.create).not.toHaveBeenCalled();
+      expect(prisma.$transaction).toHaveBeenCalled();
+      expect(prisma.$executeRaw).toHaveBeenCalled();
     });
 
     it("creates a new room when none exists, with both users as members", async () => {
       prisma.user.findUnique.mockResolvedValue({ id: "u_them" });
       prisma.chatRoom.findFirst
-        .mockResolvedValueOnce(null) // no existing room
+        .mockResolvedValueOnce(null) // no existing room (inside tx)
         .mockResolvedValueOnce(roomRow()); // post-create fetch
       prisma.chatRoom.create.mockResolvedValue({ id: "room_1" });
       prisma.message.count.mockResolvedValue(0);
@@ -183,6 +194,16 @@ describe("MessagingService", () => {
         code: ErrorCode.NOT_FOUND,
       });
     });
+
+    it("rejects open-DM when either side has blocked the other", async () => {
+      prisma.user.findUnique.mockResolvedValue({ id: "u_them" });
+      prisma.blockedUser.count.mockResolvedValue(1);
+
+      await expect(service.findOrCreateDm("u_me", "u_them")).rejects.toMatchObject({
+        code: ErrorCode.BLOCKED,
+      });
+      expect(prisma.chatRoom.create).not.toHaveBeenCalled();
+    });
   });
 
   describe("sendMessage", () => {
@@ -211,6 +232,13 @@ describe("MessagingService", () => {
       });
       expect(out.id).toBe("msg_1");
       expect(prisma.message.create).not.toHaveBeenCalled();
+      // Idempotent retry still resurfaces archived rooms.
+      expect(prisma.chatRoomMember.updateMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { roomId: "room_1", archivedAt: { not: null } },
+          data: { archivedAt: null },
+        }),
+      );
     });
 
     it("returns the winner's message when a concurrent duplicate loses the unique race", async () => {
@@ -267,6 +295,46 @@ describe("MessagingService", () => {
         "u_them",
         expect.objectContaining({ type: "message.new" }),
       );
+      expect(prisma.chatRoomMember.updateMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { roomId: "room_1", archivedAt: { not: null } },
+          data: { archivedAt: null },
+        }),
+      );
+    });
+
+    it("trims body and rejects whitespace-only messages", async () => {
+      await expect(
+        service.sendMessage("u_me", "room_1", {
+          body: "   ",
+          clientMessageId: "c_blank",
+        }),
+      ).rejects.toMatchObject({ code: ErrorCode.VALIDATION_FAILED });
+      expect(prisma.message.create).not.toHaveBeenCalled();
+    });
+
+    it("returns the raced winner when create hits P2002 on clientMessageId", async () => {
+      prisma.message.findFirst
+        .mockResolvedValueOnce(null)
+        .mockResolvedValueOnce({
+          id: "msg_race",
+          roomId: "room_1",
+          authorId: "u_me",
+          body: "hi",
+          mediaUrl: null,
+          clientMessageId: "c_race",
+          createdAt: new Date("2026-04-18T10:00:00Z"),
+          editedAt: null,
+          deletedAt: null,
+        });
+      prisma.message.create.mockRejectedValue(Object.assign(new Error("dup"), { code: "P2002" }));
+
+      const out = await service.sendMessage("u_me", "room_1", {
+        body: "hi",
+        clientMessageId: "c_race",
+      });
+      expect(out.id).toBe("msg_race");
+      expect(bus.publish).not.toHaveBeenCalled();
     });
 
     it("404s when the viewer is not a member", async () => {

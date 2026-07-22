@@ -288,6 +288,83 @@ describe("AuthService", () => {
     });
   });
 
+  describe("refresh", () => {
+    const user = {
+      id: "user_1",
+      email: "a@b.co",
+      role: "USER" as const,
+      locale: "ar-PS",
+    };
+
+    it("atomically revokes the presented token and issues a new session", async () => {
+      prisma.refreshToken.findFirst.mockResolvedValue({
+        id: "rt_1",
+        userId: user.id,
+        expiresAt: new Date(Date.now() + 60_000),
+        user,
+      });
+      prisma.refreshToken.updateMany.mockResolvedValueOnce({ count: 1 });
+      prisma.refreshToken.create.mockResolvedValue({});
+
+      const session = await service.refresh({
+        refreshToken: "plain-refresh-token",
+        deviceId: "device-1",
+      });
+
+      expect(session.user.id).toBe("user_1");
+      expect(session.tokens.accessToken).toBeTruthy();
+      expect(prisma.refreshToken.updateMany).toHaveBeenCalledWith({
+        where: { id: "rt_1", revokedAt: null },
+        data: { revokedAt: expect.any(Date) },
+      });
+      // Access tokens are HS256-signed (header.payload.sig).
+      const header = JSON.parse(
+        Buffer.from(session.tokens.accessToken.split(".")[0]!, "base64url").toString("utf8"),
+      ) as { alg: string };
+      expect(header.alg).toBe("HS256");
+    });
+
+    it("burns all user sessions when refresh token is already claimed (reuse)", async () => {
+      prisma.refreshToken.findFirst.mockResolvedValue({
+        id: "rt_1",
+        userId: user.id,
+        expiresAt: new Date(Date.now() + 60_000),
+        user,
+      });
+      // First claim lost the race / token already rotated.
+      prisma.refreshToken.updateMany
+        .mockResolvedValueOnce({ count: 0 })
+        .mockResolvedValueOnce({ count: 2 });
+
+      await expect(
+        service.refresh({ refreshToken: "stolen-or-raced", deviceId: "device-1" }),
+      ).rejects.toMatchObject({
+        response: {
+          error: { code: ErrorCode.AUTH_UNAUTHORIZED },
+        },
+      });
+
+      expect(prisma.refreshToken.updateMany).toHaveBeenNthCalledWith(2, {
+        where: { userId: "user_1", revokedAt: null },
+        data: { revokedAt: expect.any(Date) },
+      });
+      expect(prisma.refreshToken.create).not.toHaveBeenCalled();
+    });
+
+    it("rejects expired or unknown refresh tokens without touching sessions", async () => {
+      prisma.refreshToken.findFirst.mockResolvedValue(null);
+
+      await expect(
+        service.refresh({ refreshToken: "nope", deviceId: "device-1" }),
+      ).rejects.toMatchObject({
+        response: {
+          error: { code: ErrorCode.AUTH_UNAUTHORIZED },
+        },
+      });
+      expect(prisma.refreshToken.updateMany).not.toHaveBeenCalled();
+    });
+  });
+
   describe("changePassword", () => {
     it("updates the password and revokes other devices", async () => {
       const passwordHash = await bcrypt.hash("OldPassword1", 4);

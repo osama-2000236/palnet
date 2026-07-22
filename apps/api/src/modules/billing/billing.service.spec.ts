@@ -88,7 +88,12 @@ describe("BillingService", () => {
           useValue: {
             get: jest.fn(
               (key: string) =>
-                ({ BANK_TRANSFER_IBAN: "PS00TEST", BANK_TRANSFER_BENEFICIARY: "Baydar" })[key],
+                ({
+                  BANK_TRANSFER_IBAN: "PS00TEST",
+                  BANK_TRANSFER_BENEFICIARY: "Baydar",
+                  BAYDAR_WEB_URL: "https://baydar.ps",
+                  CORS_ORIGINS: "https://baydar.ps,http://localhost:3000",
+                })[key],
             ),
           },
         },
@@ -433,6 +438,46 @@ describe("BillingService", () => {
     ).rejects.toMatchObject({ code: "AUTH_UNAUTHORIZED" });
     expect(prisma.invoice.findUnique).not.toHaveBeenCalled();
     expect(prisma.$transaction).not.toHaveBeenCalled();
+  });
+
+  it("rejects checkout returnUrl pointing at a third-party origin", async () => {
+    prisma.plan.upsert.mockResolvedValue({
+      id: "plan-1",
+      code: "USER_PREMIUM",
+      priceCents: 500,
+      currency: "USD",
+      intervalDays: 30,
+    });
+    prisma.user.findUnique.mockResolvedValue({ email: "user@baydar.ps", locale: "ar-PS" });
+
+    await expect(
+      service.createCheckoutSession("user-1", {
+        planCode: "USER_PREMIUM",
+        returnUrl: "https://evil.example/phish",
+        method: "CARD",
+      }),
+    ).rejects.toMatchObject({ code: "VALIDATION_FAILED" });
+    expect(prisma.invoice.create).not.toHaveBeenCalled();
+    expect(hyperpay.createCheckout).not.toHaveBeenCalled();
+  });
+
+  it("rejects checkout returnUrl with embedded credentials", async () => {
+    prisma.plan.upsert.mockResolvedValue({
+      id: "plan-1",
+      code: "USER_PREMIUM",
+      priceCents: 500,
+      currency: "USD",
+      intervalDays: 30,
+    });
+
+    await expect(
+      service.createCheckoutSession("user-1", {
+        planCode: "USER_PREMIUM",
+        returnUrl: "https://attacker@baydar.ps/billing/return",
+        method: "CARD",
+      }),
+    ).rejects.toMatchObject({ code: "VALIDATION_FAILED" });
+    expect(hyperpay.createCheckout).not.toHaveBeenCalled();
   });
 
   it("prices the catalog in the viewer's display currency with points prices", async () => {

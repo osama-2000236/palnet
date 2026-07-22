@@ -1,5 +1,6 @@
 import { type ChatRoom, type Message } from "@baydar/shared";
 import {
+  Button,
   MessageBubble,
   Surface,
   nativeTokens,
@@ -22,8 +23,14 @@ export function MessageThreadList({
   memberById,
   labels,
   emptyLabel,
+  loadOlderLabel,
+  typingLabel,
+  hasMore,
+  loadingOlder,
+  typingActive,
   refreshing,
   onRefresh,
+  onLoadOlder,
   onRetryFailed,
   onOpenOwnActions,
   onReportOther,
@@ -39,8 +46,14 @@ export function MessageThreadList({
   memberById: Map<string, ChatRoom["members"][number]>;
   labels: MessageBubbleLabels;
   emptyLabel: string;
+  loadOlderLabel: string;
+  typingLabel: string | null;
+  hasMore: boolean;
+  loadingOlder: boolean;
+  typingActive: boolean;
   refreshing: boolean;
   onRefresh(): void;
+  onLoadOlder(): void;
   onRetryFailed(clientMessageId: string): void;
   onOpenOwnActions(message: Message): void;
   onReportOther(message: Message): void;
@@ -52,6 +65,35 @@ export function MessageThreadList({
       data={messages}
       keyExtractor={(message) => message.id}
       contentContainerStyle={{ padding: nativeTokens.space[3], gap: nativeTokens.space[2] }}
+      ListHeaderComponent={
+        hasMore ? (
+          <Button
+            variant="secondary"
+            size="sm"
+            loading={loadingOlder}
+            onPress={onLoadOlder}
+            style={{ alignSelf: "center", marginBottom: nativeTokens.space[2] }}
+          >
+            {loadOlderLabel}
+          </Button>
+        ) : null
+      }
+      ListFooterComponent={
+        typingActive && typingLabel ? (
+          <Text
+            accessibilityLiveRegion="polite"
+            style={{
+              color: nativeTokens.color.inkMuted,
+              fontFamily: nativeTokens.type.family.sans,
+              fontSize: nativeTokens.type.scale.caption.size,
+              fontStyle: "italic",
+              paddingVertical: nativeTokens.space[2],
+            }}
+          >
+            {typingLabel}
+          </Text>
+        ) : null
+      }
       renderItem={({ item, index }) => (
         <MessageRow
           item={item}
