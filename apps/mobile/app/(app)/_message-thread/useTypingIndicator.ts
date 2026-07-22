@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { apiCall } from "@/lib/api";
 import { TYPING_POST_THROTTLE_MS } from "./utils";
 
+/** Exported because useMessageThread's inferred return type references it. */
 export interface TypingState {
   userId: string;
   expiresAt: number;

@@ -18,7 +18,7 @@ interface AccessTokenPayload {
   locale: string;
 }
 
-export interface TokenSubject {
+interface TokenSubject {
   id: string;
   email: string;
   role: AuthUser["role"];
