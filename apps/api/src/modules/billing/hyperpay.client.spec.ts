@@ -6,7 +6,9 @@ import type { Env } from "../../config/env";
 
 import { HyperPayClient } from "./hyperpay.client";
 
-function configWith(values: Partial<Record<keyof Env, string | undefined>>): ConfigService<Env, true> {
+function configWith(
+  values: Partial<Record<keyof Env, string | undefined>>,
+): ConfigService<Env, true> {
   return {
     get: jest.fn((key: string) => values[key as keyof Env]),
   } as unknown as ConfigService<Env, true>;

@@ -35,11 +35,10 @@ function ctx(auth?: string) {
 describe("JwtAuthGuard HS256 pin", () => {
   it("accepts HS256 and rejects alg=none", async () => {
     const guard = makeGuard();
-    const token = jwt.sign(
-      { sub: "u1", email: "a@b.co", role: "USER", locale: "ar-PS" },
-      SECRET,
-      { algorithm: "HS256", expiresIn: 60 },
-    );
+    const token = jwt.sign({ sub: "u1", email: "a@b.co", role: "USER", locale: "ar-PS" }, SECRET, {
+      algorithm: "HS256",
+      expiresIn: 60,
+    });
     const ok = ctx(`Bearer ${token}`);
     await expect(guard.canActivate(ok as never)).resolves.toBe(true);
     expect(ok._req.user).toMatchObject({ id: "u1" });
