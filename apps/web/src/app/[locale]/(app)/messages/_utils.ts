@@ -1,4 +1,4 @@
-import type { Message } from "@baydar/shared";
+import { localeTag, type Message } from "@baydar/shared";
 import type { MessageStatus } from "@baydar/ui-web";
 
 export const ONLINE_WINDOW_MS = 2 * 60 * 1000;
@@ -59,8 +59,7 @@ export function shortDate(iso: string, locale: string): string {
 
 export function shortDayLabel(iso: string, locale: string): string {
   try {
-    const tag = locale.toLowerCase().startsWith("ar") ? `${locale}-u-nu-arab` : locale;
-    return new Date(iso).toLocaleDateString(tag, {
+    return new Date(iso).toLocaleDateString(localeTag(locale), {
       weekday: "long",
       month: "short",
       day: "numeric",

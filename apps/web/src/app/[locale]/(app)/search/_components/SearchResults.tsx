@@ -1,15 +1,16 @@
 "use client";
 
-import type {
-  SearchCompanyHit,
-  SearchJobHit,
-  SearchPersonHit,
-  SearchPostHit,
+import {
+  formatRelativeTime,
+  type SearchCompanyHit,
+  type SearchJobHit,
+  type SearchPersonHit,
+  type SearchPostHit,
 } from "@baydar/shared";
 import { Avatar, RetryChip, Skeleton, staggerDelay, Surface } from "@baydar/ui-web";
 import Image from "next/image";
 import Link from "next/link";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 export function PeopleRow({
   item,
@@ -56,6 +57,7 @@ export function PeopleRow({
 }
 
 export function PostRow({ item, index = 0 }: { item: SearchPostHit; index?: number }): JSX.Element {
+  const locale = useLocale();
   return (
     <Surface
       as="li"
@@ -82,7 +84,7 @@ export function PostRow({ item, index = 0 }: { item: SearchPostHit; index?: numb
           <span className="text-ink font-semibold">{item.authorDisplayName}</span>
           <span className="text-ink-muted text-sm">{item.bodyExcerpt}</span>
           <span className="text-ink-muted text-xs">
-            {new Date(item.createdAt).toLocaleDateString()}
+            {formatRelativeTime(item.createdAt, locale)}
           </span>
         </div>
       </Link>

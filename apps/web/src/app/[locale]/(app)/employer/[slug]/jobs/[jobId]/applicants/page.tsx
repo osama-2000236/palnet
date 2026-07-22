@@ -1,6 +1,12 @@
 "use client";
 
-import { ApplicationStatus, Company, cursorPage, EmployerApplicant } from "@baydar/shared";
+import {
+  localeTag,
+  ApplicationStatus,
+  Company,
+  cursorPage,
+  EmployerApplicant,
+} from "@baydar/shared";
 import { Surface } from "@baydar/ui-web";
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
@@ -148,7 +154,7 @@ export default function EmployerApplicantsPage(): JSX.Element {
                     <p className="text-ink-muted text-xs">{a.applicant.profile.headline}</p>
                   ) : null}
                   <p className="text-ink-muted mt-1 text-xs">
-                    {t("applied")} {new Date(a.createdAt).toLocaleDateString(locale)}
+                    {t("applied")} {new Date(a.createdAt).toLocaleDateString(localeTag(locale))}
                   </p>
                   {a.resumeUrl ? (
                     <a

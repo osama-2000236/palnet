@@ -1,6 +1,7 @@
 "use client";
 
 import { Avatar, Button, EmptyState, Surface, Tab, Tabs, useToast } from "@baydar/ui-web";
+import { localeTag } from "@baydar/shared";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
@@ -31,7 +32,7 @@ type ModerationAction = "DISMISS" | "WARN" | "SUSPEND" | "HARD_DELETE";
 const ACTIONS: ModerationAction[] = ["DISMISS", "WARN", "SUSPEND", "HARD_DELETE"];
 
 function formatDate(value: string, locale: string): string {
-  return new Intl.DateTimeFormat(locale, {
+  return new Intl.DateTimeFormat(localeTag(locale), {
     dateStyle: "medium",
     timeStyle: "short",
   }).format(new Date(value));
