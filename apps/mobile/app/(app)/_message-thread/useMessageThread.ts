@@ -2,7 +2,6 @@
 
 import {
   ChatRoom as ChatRoomSchema,
-  CursorPageMeta,
   Message as MessageSchema,
   WsChatEvent,
   type ChatRoom,
@@ -12,7 +11,6 @@ import { router } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { FlatList } from "react-native";
-import { z } from "zod";
 
 import { apiCall, apiFetch, apiFetchPage } from "@/lib/api";
 import { apiErrorMessage } from "@/lib/api-errors";
@@ -23,12 +21,8 @@ import { subscribeSse } from "@/lib/sse";
 import { useNetworkStore } from "@/store/network";
 import { applyThreadEvent, createOptimisticMessage } from "./messageThreadEvents";
 import { useThreadDerived } from "./useThreadDerived";
-import { TYPING_POST_THROTTLE_MS, upsertMessage } from "./utils";
-
-const MessagesPageEnvelope = z.object({
-  data: z.array(MessageSchema),
-  meta: CursorPageMeta,
-});
+import { useTypingIndicator } from "./useTypingIndicator";
+import { MessagesPageEnvelope, upsertMessage } from "./utils";
 
 export function useMessageThread(roomId: string | undefined) {
   const { t } = useTranslation();
@@ -47,11 +41,10 @@ export function useMessageThread(roomId: string | undefined) {
   const [actionMessage, setActionMessage] = useState<Message | null>(null);
   const [reportMessage, setReportMessage] = useState<Message | null>(null);
   const [editingBody, setEditingBody] = useState("");
-  const [typing, setTyping] = useState<{ userId: string; expiresAt: number } | null>(null);
   const listRef = useRef<FlatList<Message> | null>(null);
   const didInitialScrollRef = useRef(false);
-  const lastTypingPostRef = useRef(0);
   const isConnected = useNetworkStore((state) => state.isConnected);
+  const { setTyping, postTypingThrottled, typingActive } = useTypingIndicator(roomId, token);
 
   useEffect(() => {
     void (async () => {
@@ -106,17 +99,6 @@ export function useMessageThread(roomId: string | undefined) {
     });
   }, [token, roomId, refresh, isConnected, viewerId]);
 
-  useEffect(() => {
-    if (!typing) return undefined;
-    const remaining = typing.expiresAt - Date.now();
-    if (remaining <= 0) {
-      setTyping(null);
-      return undefined;
-    }
-    const id = setTimeout(() => setTyping(null), remaining);
-    return () => clearTimeout(id);
-  }, [typing]);
-
   const refreshThread = useCallback(async (): Promise<void> => {
     setRefreshing(true);
     try {
@@ -146,14 +128,6 @@ export function useMessageThread(roomId: string | undefined) {
       setLoadingOlder(false);
     }
   }, [token, roomId, nextCursor, loadingOlder, t]);
-
-  const postTypingThrottled = useCallback((): void => {
-    if (!token || !roomId) return;
-    const now = Date.now();
-    if (now - lastTypingPostRef.current < TYPING_POST_THROTTLE_MS) return;
-    lastTypingPostRef.current = now;
-    void apiCall(`/messaging/rooms/${roomId}/typing`, { method: "POST", token }).catch(() => {});
-  }, [token, roomId]);
 
   const sendBody = useCallback(
     async (text: string, clientMessageId: string): Promise<void> => {
@@ -283,8 +257,6 @@ export function useMessageThread(roomId: string | undefined) {
     setActionMessage(null);
     setEditingBody("");
   }
-
-  const typingActive = typing && typing.expiresAt > Date.now() ? typing : null;
 
   return {
     ...derived,

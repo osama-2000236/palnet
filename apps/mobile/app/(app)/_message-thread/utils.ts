@@ -1,8 +1,15 @@
-import type { Message } from "@baydar/shared";
+import { CursorPageMeta, Message as MessageSchema, type Message } from "@baydar/shared";
 import type { MessageStatus } from "@baydar/ui-native";
+import { z } from "zod";
 
 export const TYPING_TTL_MS = 5_000;
 export const TYPING_POST_THROTTLE_MS = 3_000;
+
+/** Cursor-paged message list as the API returns it. */
+export const MessagesPageEnvelope = z.object({
+  data: z.array(MessageSchema),
+  meta: CursorPageMeta,
+});
 
 export function computeStatus(
   message: Message,
