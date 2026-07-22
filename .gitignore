@@ -91,6 +91,14 @@ _tmp_*
 *.zip
 .claude/settings.local.json
 
+# Agent/tooling scratch dumped at the repo root. Untracked either way, but
+# prettier still walks them: `pnpm format:check` reported 366 unformatted files
+# from these alone, which buries real violations in the same run.
+.design-upgrades-extract/
+.ui-impl-guidelines/
+claude-council/
+tools/claude-code-router/
+
 # design-sync
 .ds-sync/
 ds-bundle/
