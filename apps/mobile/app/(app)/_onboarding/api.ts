@@ -19,6 +19,26 @@ export type { PersonSuggestionDto };
 
 const RawSchema = z.object({}).passthrough();
 
+// Onboarding is also the resume path for a half-filled profile (and for a seeded
+// account that never had a background entry), so start from what the profile
+// already holds rather than a blank form. Anything already typed wins.
+export async function resumeValues(
+  email: string,
+  token: string,
+  current: OnboardingFormValues,
+): Promise<OnboardingFormValues> {
+  const saved = await apiFetch("/profiles/me", ProfileSchema, { token }).catch(() => null);
+  return {
+    ...current,
+    firstName: current.firstName || saved?.firstName || "",
+    lastName: current.lastName || saved?.lastName || "",
+    handle: current.handle || saved?.handle || toHandle(email.split("@")[0] ?? ""),
+    headline: current.headline || saved?.headline || "",
+    about: current.about || saved?.about || "",
+    location: current.location || saved?.location || "",
+  };
+}
+
 export async function persistOnboarding({
   values,
   avatarAsset,
