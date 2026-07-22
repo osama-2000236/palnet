@@ -70,7 +70,7 @@ Wrap every screen in `SafeAreaView` from `react-native-safe-area-context`. AppSh
 
 ## Text input
 
-- `textAlign: "right"` for Arabic inputs (I18nManager handles it in most cases, but be explicit).
+- `textAlign: "auto"` — never `"left"` / `"right"`. RN swaps the two under `I18nManager.isRTL`, so a hardcoded `"right"` renders **left** in the Arabic app and stays right in English: wrong in both. `"auto"` follows the writing direction, the RN equivalent of `text-align: start` in `RTL.md`. Use the explicit `inputLtr` style only where the content really is LTR (email, URL, handle).
 - `keyboardType="email-address"` for email inputs also sets LTR entry.
 - Disable autocorrect on handle, code, URL inputs.
 

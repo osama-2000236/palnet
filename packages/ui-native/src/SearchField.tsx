@@ -91,6 +91,7 @@ const styles = StyleSheet.create({
     paddingVertical: nativeTokens.space[2],
   },
   inputLtr: {
+    // eslint-disable-next-line no-restricted-syntax -- paired with writingDirection ltr: this variant is for content that really is LTR.
     textAlign: "left",
     writingDirection: "ltr",
   },
