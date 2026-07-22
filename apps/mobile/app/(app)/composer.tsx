@@ -146,6 +146,10 @@ export default function ComposerScreen(): JSX.Element {
       });
       successHaptic();
       track("post.create", { mediaCount: media.length });
+      // Clear the draft — expo-router keeps this screen mounted, so without a
+      // reset the next compose reopens with the just-published text still in it.
+      setBody("");
+      setMedia([]);
       router.replace("/(app)/feed");
     } catch (caught) {
       setError(apiErrorMessage(t, caught));
