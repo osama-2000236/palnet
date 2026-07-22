@@ -22,12 +22,15 @@ const RawSchema = z.object({}).passthrough();
 // Onboarding is also the resume path for a half-filled profile (and for a seeded
 // account that never had a background entry), so start from what the profile
 // already holds rather than a blank form. Anything already typed wins.
+// `getCurrent` is a getter, not a value: the form is live during the fetch, so
+// reading it before the await would discard anything typed while it was in flight.
 export async function resumeValues(
   email: string,
   token: string,
-  current: OnboardingFormValues,
+  getCurrent: () => OnboardingFormValues,
 ): Promise<OnboardingFormValues> {
   const saved = await apiFetch("/profiles/me", ProfileSchema, { token }).catch(() => null);
+  const current = getCurrent();
   return {
     ...current,
     firstName: current.firstName || saved?.firstName || "",
@@ -36,6 +39,7 @@ export async function resumeValues(
     headline: current.headline || saved?.headline || "",
     about: current.about || saved?.about || "",
     location: current.location || saved?.location || "",
+    country: current.country || saved?.country || "PS",
   };
 }
 

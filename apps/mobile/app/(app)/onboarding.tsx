@@ -88,11 +88,7 @@ export default function OnboardingScreen(): JSX.Element {
         router.replace("/(auth)/login");
         return;
       }
-      const values = await resumeValues(
-        session.user.email,
-        session.tokens.accessToken,
-        getValues(),
-      );
+      const values = await resumeValues(session.user.email, session.tokens.accessToken, getValues);
       if (mounted) reset(values);
     })();
     return () => {
