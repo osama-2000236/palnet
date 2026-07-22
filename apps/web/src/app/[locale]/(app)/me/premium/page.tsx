@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  localeTag,
   formatMoney,
   BillingCatalog,
   BillingMe,
@@ -77,7 +78,7 @@ export default function PremiumPage(): JSX.Element {
   const subscription = billingMe?.subscription ?? null;
   const hasPremium = subscription !== null && subscription.plan?.code === PlanCode.USER_PREMIUM;
 
-  const dateFormatter = new Intl.DateTimeFormat(locale, { dateStyle: "long" });
+  const dateFormatter = new Intl.DateTimeFormat(localeTag(locale), { dateStyle: "long" });
 
   return (
     <main className="mx-auto flex w-full max-w-[880px] flex-col gap-5 px-6 py-8">

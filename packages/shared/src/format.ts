@@ -32,6 +32,20 @@ function withDigits(locale: string, options?: Intl.NumberFormatOptions): Intl.Nu
 }
 
 /**
+ * The BCP-47 tag to hand `Intl.DateTimeFormat` / `toLocaleDateString` so digits
+ * match the surrounding script. Node's ICU defaults "ar" to latn, and unlike
+ * NumberFormat these constructors don't expose `numberingSystem` in the TS
+ * types — the `-u-nu-arab` unicode extension is the way in, and it is accepted
+ * at runtime by every Intl constructor.
+ *
+ * Any date rendered with a bare `locale` shows Latin digits in Arabic pages.
+ */
+export function localeTag(locale: string | undefined | null): string {
+  const resolved = resolveLocale(locale);
+  return isArabicLocale(locale) ? `${resolved}-u-nu-arab` : resolved;
+}
+
+/**
  * Format an integer or decimal for display. Uses Arabic-Indic digits
  * for Arabic locales, Latin digits otherwise.
  */
@@ -161,7 +175,7 @@ function formatRelativeTimeFallback(
 }
 
 function formatAbsoluteDateFallback(value: Date, locale: string): string {
-  const tag = isArabicLocale(locale) ? `${resolveLocale(locale)}-u-nu-arab` : resolveLocale(locale);
+  const tag = localeTag(locale);
   try {
     return new Intl.DateTimeFormat(tag, { dateStyle: "medium" }).format(value);
   } catch {
@@ -188,10 +202,7 @@ export function formatRelativeTime(
   const diffSecs = Math.round((now.getTime() - then.getTime()) / 1000);
   const absSecs = Math.abs(diffSecs);
 
-  // BCP-47 unicode extension `-u-nu-arab` forces Arabic-Indic digits
-  // for Intl formatters that don't expose `numberingSystem` in TS types
-  // (RelativeTimeFormat, DateTimeFormat — both accept it at runtime).
-  const tag = isArabicLocale(locale) ? `${resolveLocale(locale)}-u-nu-arab` : resolveLocale(locale);
+  const tag = localeTag(locale);
 
   if (absSecs < 60) {
     // "now" / "الآن" — RelativeTimeFormat's "0 seconds" reads awkwardly.

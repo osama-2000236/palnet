@@ -1,6 +1,6 @@
 "use client";
 
-import { AdminInvoice, AdminInvoiceActionBody, Invoice } from "@baydar/shared";
+import { localeTag, AdminInvoice, AdminInvoiceActionBody, Invoice } from "@baydar/shared";
 import { Button, EmptyState, Surface, Tab, Tabs, useToast } from "@baydar/ui-web";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -44,7 +44,7 @@ function formatAmount(amountCents: number, currency: string, locale: string): st
 }
 
 function formatDate(value: string, locale: string): string {
-  return new Intl.DateTimeFormat(locale, {
+  return new Intl.DateTimeFormat(localeTag(locale), {
     dateStyle: "medium",
     timeStyle: "short",
   }).format(new Date(value));

@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  localeTag,
   formatMoney,
   BillingCatalog,
   Company,
@@ -92,7 +93,7 @@ export default function CompanyBillingPage(): JSX.Element {
     void load();
   }, [load]);
 
-  const dateFormatter = new Intl.DateTimeFormat(locale, { dateStyle: "long" });
+  const dateFormatter = new Intl.DateTimeFormat(localeTag(locale), { dateStyle: "long" });
   const currentPlanCode = summary?.subscription?.plan?.code ?? PlanCode.EMPLOYER_FREE;
   const upgradePlans = (catalog?.plans ?? []).filter((plan) =>
     UPGRADE_PLAN_CODES.includes(plan.code),

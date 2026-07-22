@@ -5,6 +5,7 @@ import {
   formatNumber,
   formatRelativeTime,
   formatSalaryRange,
+  localeTag,
 } from "./format";
 
 // Arabic-Indic reference digits for clarity in expectations.
@@ -145,5 +146,17 @@ describe("formatDate", () => {
     expect(ar).not.toMatch(/[0-9]/);
     // No thousands separator inside the year.
     expect(ar).toBe("٢٢/٧/٢٠٢٦");
+  });
+});
+
+describe("localeTag", () => {
+  it("forces Arabic-Indic digits for ar locales and leaves others alone", () => {
+    expect(localeTag("ar-PS")).toBe("ar-PS-u-nu-arab");
+    expect(localeTag("en")).toBe("en");
+    // The reason it exists: a bare locale gives Latin digits in Arabic pages.
+    const dated = new Intl.DateTimeFormat(localeTag("ar-PS"), { dateStyle: "medium" }).format(
+      new Date("2026-07-22T00:00:00.000Z"),
+    );
+    expect(dated).not.toMatch(/[0-9]/);
   });
 });

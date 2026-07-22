@@ -7,7 +7,7 @@
 // printing — the action bar below is the only non-CV element and it carries
 // print:hidden.
 
-import { Profile as ProfileSchema, type Profile } from "@baydar/shared";
+import { localeTag, Profile as ProfileSchema, type Profile } from "@baydar/shared";
 import { Button } from "@baydar/ui-web";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -50,7 +50,7 @@ export default function CvPage(): JSX.Element {
     );
   }
 
-  const monthYear = new Intl.DateTimeFormat(locale === "en" ? "en" : "ar-PS", {
+  const monthYear = new Intl.DateTimeFormat(localeTag(locale), {
     year: "numeric",
     month: "short",
   });

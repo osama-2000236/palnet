@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  localeTag,
   formatMoney,
   Invoice as InvoiceSchema,
   InvoiceStatus,
@@ -47,7 +48,7 @@ export function InvoiceList({
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const pendingInvoiceRef = useRef<string | null>(null);
 
-  const dateFormatter = new Intl.DateTimeFormat(locale, { dateStyle: "medium" });
+  const dateFormatter = new Intl.DateTimeFormat(localeTag(locale), { dateStyle: "medium" });
 
   function pickReceipt(invoiceId: string): void {
     pendingInvoiceRef.current = invoiceId;
