@@ -97,18 +97,19 @@ export default function FeedScreen(): JSX.Element {
   useEffect(() => {
     void (async () => {
       const session = await readSession();
-      if (!session) {
-        router.replace("/(auth)/login");
-        return;
-      }
-      await Promise.all([loadProfile(), load(null), loadUnread()]);
+      if (!session) router.replace("/(auth)/login");
     })();
-  }, [load, loadProfile, loadUnread]);
+  }, []);
 
+  // Reload on focus, not just mount — expo-router keeps this screen mounted, so
+  // returning from the composer or the profile editor must refresh the posts and
+  // the profile card, not only the unread badge. Same pattern as saved/me (#79).
   useFocusEffect(
     useCallback(() => {
+      void loadProfile();
+      void load(null);
       void loadUnread();
-    }, [loadUnread]),
+    }, [load, loadProfile, loadUnread]),
   );
 
   return (
