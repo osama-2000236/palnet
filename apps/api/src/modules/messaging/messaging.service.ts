@@ -89,33 +89,42 @@ export class MessagingService {
       throw new DomainException(ErrorCode.NOT_FOUND, "User not found.", 404);
     }
 
-    // Find an existing 1:1 room where both users are members.
-    const existing = await this.prisma.chatRoom.findFirst({
-      where: {
-        isGroup: false,
-        AND: [
-          { members: { some: { userId: viewerId } } },
-          { members: { some: { userId: otherUserId } } },
-        ],
-      },
-      select: { id: true },
-    });
+    // Reject blocked pairs before room creation so the client fails at open,
+    // not on first send.
+    await this.rejectBlockedRoomSend(viewerId, [viewerId, otherUserId]);
 
-    if (existing) {
-      return this.getRoomDto(existing.id, viewerId);
-    }
+    // Serialize concurrent open-DM for the same pair so we never create two
+    // 1:1 rooms. Advisory lock is transaction-scoped; unlocks on commit.
+    // ponytail: no pair unique table — lock is enough at MVP volume.
+    const roomId = await this.prisma.$transaction(async (tx) => {
+      const pairKey = [viewerId, otherUserId].sort().join(":");
+      await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${pairKey}))`;
 
-    // Create a new 1:1 room with both members atomically.
-    const created = await this.prisma.chatRoom.create({
-      data: {
-        isGroup: false,
-        members: {
-          create: [{ userId: viewerId }, { userId: otherUserId }],
+      const existing = await tx.chatRoom.findFirst({
+        where: {
+          isGroup: false,
+          AND: [
+            { members: { some: { userId: viewerId } } },
+            { members: { some: { userId: otherUserId } } },
+          ],
         },
-      },
-      select: { id: true },
+        select: { id: true },
+      });
+      if (existing) return existing.id;
+
+      const created = await tx.chatRoom.create({
+        data: {
+          isGroup: false,
+          members: {
+            create: [{ userId: viewerId }, { userId: otherUserId }],
+          },
+        },
+        select: { id: true },
+      });
+      return created.id;
     });
-    return this.getRoomDto(created.id, viewerId);
+
+    return this.getRoomDto(roomId, viewerId);
   }
 
   async createGroupRoom(viewerId: string, body: CreateGroupRoomBody): Promise<ChatRoomDto> {
@@ -305,6 +314,11 @@ export class MessagingService {
       members.map((m) => m.userId),
     );
 
+    const bodyText = body.body.trim();
+    if (bodyText.length === 0) {
+      throw new DomainException(ErrorCode.VALIDATION_FAILED, "Message body is required.", 400);
+    }
+
     // Idempotency via (roomId, authorId, clientMessageId) unique.
     const existing = (await this.prisma.message.findFirst({
       where: {
@@ -314,6 +328,9 @@ export class MessagingService {
       },
     })) as unknown as MessageRow | null;
     if (existing) {
+      // Pure replay: no new content, so nothing to resurface. Un-archiving here
+      // would let a client replay one clientMessageId to undo the recipient's
+      // archive as often as it likes.
       return toMessageDto(existing);
     }
 
@@ -323,30 +340,36 @@ export class MessagingService {
         data: {
           roomId,
           authorId: viewerId,
-          body: body.body,
+          body: bodyText,
           mediaUrl: body.mediaUrl ?? null,
           clientMessageId: body.clientMessageId,
         },
       })) as unknown as MessageRow;
-    } catch (err) {
-      // Concurrent duplicate send lost the race to the idempotency unique
-      // (P2002): return the winner's row instead of 500ing the retry.
-      if (isUniqueViolation(err)) {
-        const winner = (await this.prisma.message.findFirst({
-          where: { roomId, authorId: viewerId, clientMessageId: body.clientMessageId },
+    } catch (error) {
+      // Concurrent retry of the same clientMessageId: unique race → return winner.
+      if (isUniqueViolation(error)) {
+        const raced = (await this.prisma.message.findFirst({
+          where: {
+            roomId,
+            authorId: viewerId,
+            clientMessageId: body.clientMessageId,
+          },
         })) as unknown as MessageRow | null;
-        if (winner) return toMessageDto(winner);
+        // The winner of the race already cleared archives for this message.
+        if (raced) return toMessageDto(raced);
       }
-      throw err;
+      throw error;
     }
 
-    // Bump room.updatedAt so listings re-sort, and mark the sender as having
-    // "read" their own message so their unread count doesn't tick.
+    // Bump room.updatedAt, clear archives so a new message resurfaces for every
+    // member who had archived the room, and mark the sender as having read
+    // their own message so their unread count doesn't tick.
     await Promise.all([
       this.prisma.chatRoom.update({
         where: { id: roomId },
         data: { updatedAt: new Date() },
       }),
+      this.clearRoomArchives(roomId),
       this.prisma.chatRoomMember.updateMany({
         where: { roomId, userId: viewerId },
         data: {
@@ -358,8 +381,7 @@ export class MessagingService {
 
     const dto = toMessageDto(created);
 
-    // Fan out to every member except the author's other tabs also get it so
-    // optimistic UI can reconcile. Everyone in the room receives the event.
+    // Fan out to every member (including author tabs) so optimistic UI can reconcile.
     for (const m of members) {
       this.bus.publish(m.userId, { type: "message.new", payload: dto });
     }
@@ -627,6 +649,14 @@ export class MessagingService {
         403,
       );
     }
+  }
+
+  /** New activity unarchives for every member so archive is not a permanent black hole. */
+  private async clearRoomArchives(roomId: string): Promise<void> {
+    await this.prisma.chatRoomMember.updateMany({
+      where: { roomId, archivedAt: { not: null } },
+      data: { archivedAt: null },
+    });
   }
 }
 

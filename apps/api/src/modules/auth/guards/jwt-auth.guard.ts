@@ -70,7 +70,9 @@ export class JwtAuthGuard implements CanActivate {
   ): boolean {
     try {
       const secret = this.config.getOrThrow<string>("JWT_ACCESS_SECRET");
-      const payload = jwt.verify(token, secret) as unknown as AccessTokenPayload;
+      const payload = jwt.verify(token, secret, {
+        algorithms: ["HS256"],
+      }) as unknown as AccessTokenPayload;
 
       req.user = {
         id: payload.sub,

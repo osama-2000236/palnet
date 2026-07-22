@@ -14,19 +14,26 @@ test.describe("billing bank-transfer review lifecycle", () => {
     test.skip(testInfo.project.name !== "chromium-en", "Billing review runs once in English.");
   });
 
-  test("buyer submits receipt, admin marks paid, invoice activates", async ({ page, request }) => {
+  test("buyer submits receipt, admin marks paid, invoice activates", async ({
+    baseURL,
+    page,
+    request,
+  }) => {
     const runId = await readQaRunId();
     const buyer = await ensureA11yStorageState(request);
     const buyerSession = AuthSession.parse(JSON.parse(buyer.session));
     const buyerToken = buyerSession.tokens.accessToken;
 
     // Buyer: bank-transfer checkout + receipt upload via the public API.
+    // returnUrl must be a first-party origin — the API allowlists it against
+    // CORS_ORIGINS, which the Playwright webServer sets to this same baseURL.
+    // Hardcoding a port here silently drifts from the server under test.
     const checkout = await request.post(`${API_BASE}/billing/checkout-session`, {
       headers: { Authorization: `Bearer ${buyerToken}` },
       data: {
         planCode: "USER_PREMIUM",
         method: "BANK_TRANSFER",
-        returnUrl: "http://localhost:3000/en/me/premium",
+        returnUrl: `${baseURL}/en/me/premium`,
       },
     });
     expect(checkout.ok()).toBeTruthy();

@@ -3,6 +3,7 @@ import { Test } from "@nestjs/testing";
 import request from "supertest";
 
 import { HealthModule } from "../src/modules/health/health.module";
+import { PrismaService } from "../src/modules/prisma/prisma.service";
 
 describe("Health endpoint (e2e)", () => {
   let app: INestApplication;
@@ -10,7 +11,10 @@ describe("Health endpoint (e2e)", () => {
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
       imports: [HealthModule],
-    }).compile();
+    })
+      .overrideProvider(PrismaService)
+      .useValue({ $queryRaw: jest.fn() })
+      .compile();
 
     app = moduleRef.createNestApplication();
     app.setGlobalPrefix("api/v1");
@@ -18,7 +22,7 @@ describe("Health endpoint (e2e)", () => {
   });
 
   afterAll(async () => {
-    await app.close();
+    await app?.close();
   });
 
   it("serves liveness response without database dependency", async () => {

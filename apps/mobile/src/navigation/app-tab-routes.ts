@@ -27,6 +27,7 @@ export const HIDDEN_APP_TAB_ROUTES = [
   "_message-thread/MessageThreadSheets",
   "_message-thread/useMessageThread",
   "_message-thread/useThreadDerived",
+  "_message-thread/useTypingIndicator",
   "_message-thread/utils",
   "_network/ConnectionRow",
   "_network/styles",

@@ -1,9 +1,6 @@
-import * as crypto from "node:crypto";
-
 import {
   type ActiveSession,
   type AuthSession,
-  type AuthTokens,
   type ChangePasswordBody,
   ErrorCode,
   type LoginBody,
@@ -13,7 +10,6 @@ import {
 import { Injectable, UnauthorizedException } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import * as bcrypt from "bcrypt";
-import * as jwt from "jsonwebtoken";
 
 import { DomainException } from "../../common/domain-exception";
 import type { Env } from "../../config/env";
@@ -21,13 +17,7 @@ import { isWithinRestoreGrace } from "../account/account-retention";
 import { PrismaService } from "../prisma/prisma.service";
 
 import type { AuthUser } from "./decorators/current-user.decorator";
-
-interface AccessTokenPayload {
-  sub: string;
-  email: string;
-  role: AuthUser["role"];
-  locale: string;
-}
+import { hashToken, numberConfig, signTokens } from "./session-tokens";
 
 interface SessionMeta {
   userAgent?: string;
@@ -57,7 +47,7 @@ export class AuthService {
       );
     }
 
-    const passwordHash = await bcrypt.hash(body.password, this.getNumberConfig("BCRYPT_COST"));
+    const passwordHash = await bcrypt.hash(body.password, numberConfig(this.config, "BCRYPT_COST"));
 
     const user = await this.prisma.user.create({
       data: {
@@ -104,24 +94,31 @@ export class AuthService {
 
   async refresh(body: RefreshBody, meta: SessionMeta = {}): Promise<AuthSession> {
     const hash = hashToken(body.refreshToken);
+    // Revoked rows stay in the lookup on purpose: a presented token that was
+    // already rotated is the reuse signal, and filtering it out here would make
+    // the burn below unreachable — the replay would just 401 like a typo.
     const record = await this.prisma.refreshToken.findFirst({
-      where: { tokenHash: hash, deviceId: body.deviceId, revokedAt: null },
+      where: { tokenHash: hash, deviceId: body.deviceId },
       include: { user: true },
     });
     if (!record || record.expiresAt < new Date()) {
-      throw new UnauthorizedException({
-        error: {
-          code: ErrorCode.AUTH_UNAUTHORIZED,
-          message: "Refresh token invalid or expired.",
-        },
-      });
+      throw this.refreshUnauthorized();
     }
 
-    // Rotate: revoke old, issue new.
-    await this.prisma.refreshToken.update({
-      where: { id: record.id },
+    if (record.revokedAt) {
+      await this.burnUserSessions(record.userId);
+      throw this.refreshUnauthorized();
+    }
+
+    // ponytail: updateMany claim; count=0 = lost the race → burn all user sessions
+    const claimed = await this.prisma.refreshToken.updateMany({
+      where: { id: record.id, revokedAt: null },
       data: { revokedAt: new Date() },
     });
+    if (claimed.count !== 1) {
+      await this.burnUserSessions(record.userId);
+      throw this.refreshUnauthorized();
+    }
 
     return this.issueSession(record.user, body.deviceId, meta);
   }
@@ -176,7 +173,10 @@ export class AuthService {
     const ok = await bcrypt.compare(body.currentPassword, user.passwordHash);
     if (!ok) throw this.badCredentials();
 
-    const passwordHash = await bcrypt.hash(body.newPassword, this.getNumberConfig("BCRYPT_COST"));
+    const passwordHash = await bcrypt.hash(
+      body.newPassword,
+      numberConfig(this.config, "BCRYPT_COST"),
+    );
     const now = new Date();
     await this.prisma.user.update({
       where: { id: userId },
@@ -219,12 +219,29 @@ export class AuthService {
     });
   }
 
+  /** Reuse or a lost rotation race means the token may be stolen: drop every live session. */
+  private async burnUserSessions(userId: string): Promise<void> {
+    await this.prisma.refreshToken.updateMany({
+      where: { userId, revokedAt: null },
+      data: { revokedAt: new Date() },
+    });
+  }
+
+  private refreshUnauthorized(): UnauthorizedException {
+    return new UnauthorizedException({
+      error: {
+        code: ErrorCode.AUTH_UNAUTHORIZED,
+        message: "Refresh token invalid or expired.",
+      },
+    });
+  }
+
   async issueSession(
     user: { id: string; email: string; role: AuthUser["role"]; locale: string },
     deviceId: string,
     meta: SessionMeta = {},
   ): Promise<AuthSession> {
-    const tokens = this.signTokens(user);
+    const tokens = signTokens(this.config, user);
 
     // Persist refresh token hash.
     await this.prisma.refreshToken.create({
@@ -248,52 +265,4 @@ export class AuthService {
       tokens,
     };
   }
-
-  private signTokens(user: {
-    id: string;
-    email: string;
-    role: AuthUser["role"];
-    locale: string;
-  }): AuthTokens {
-    const accessTtl = this.getNumberConfig("JWT_ACCESS_TTL");
-    const refreshTtl = this.getNumberConfig("JWT_REFRESH_TTL");
-    const accessSecret = this.config.getOrThrow<string>("JWT_ACCESS_SECRET");
-
-    const payload: AccessTokenPayload = {
-      sub: user.id,
-      email: user.email,
-      role: user.role,
-      locale: user.locale,
-    };
-
-    const accessToken = jwt.sign(payload, accessSecret, {
-      expiresIn: accessTtl,
-    });
-
-    // Refresh tokens are opaque random strings (we store their hash).
-    const refreshToken = crypto.randomBytes(48).toString("base64url");
-
-    const now = Date.now();
-    return {
-      accessToken,
-      refreshToken,
-      accessExpiresAt: new Date(now + accessTtl * 1000).toISOString(),
-      refreshExpiresAt: new Date(now + refreshTtl * 1000).toISOString(),
-    };
-  }
-
-  private getNumberConfig(
-    key: keyof Pick<Env, "BCRYPT_COST" | "JWT_ACCESS_TTL" | "JWT_REFRESH_TTL">,
-  ): number {
-    const value = this.config.getOrThrow<number | string>(key);
-    const parsed = typeof value === "number" ? value : Number(value);
-    if (!Number.isFinite(parsed)) {
-      throw new Error(`Invalid numeric config value: ${key}`);
-    }
-    return parsed;
-  }
-}
-
-function hashToken(token: string): string {
-  return crypto.createHash("sha256").update(token).digest("hex");
 }

@@ -62,10 +62,10 @@ export class HyperPayClient {
     };
   }
 
+  // ponytail: fail closed — missing secret must not accept free-premium webhooks
   verifyWebhookSignature(payload: unknown, signature: string | undefined): boolean {
     const secret = this.config.get("HYPERPAY_WEBHOOK_SECRET", { infer: true });
-    if (!secret) return true;
-    if (!signature) return false;
+    if (!secret || !signature) return false;
 
     const expected = createHmac("sha256", secret).update(JSON.stringify(payload)).digest("hex");
     const a = Buffer.from(signature);

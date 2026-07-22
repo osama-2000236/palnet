@@ -1,5 +1,34 @@
-import type { Message } from "@baydar/shared";
+import {
+  CursorPageMeta,
+  Message as MessageSchema,
+  type ChatRoom,
+  type Message,
+} from "@baydar/shared";
 import type { MessageStatus } from "@baydar/ui-native";
+import { z } from "zod";
+
+export const TYPING_TTL_MS = 5_000;
+export const TYPING_POST_THROTTLE_MS = 3_000;
+
+/** Cursor-paged message list as the API returns it. */
+export const MessagesPageEnvelope = z.object({
+  data: z.array(MessageSchema),
+  meta: CursorPageMeta,
+});
+
+/**
+ * Display name for whoever a room event refers to. Returns null when the member
+ * isn't in the room snapshot, so callers can drop the label rather than render a
+ * placeholder — "Messages is typing…" is worse than no indicator.
+ */
+export function memberDisplayName(
+  memberById: Map<string, ChatRoom["members"][number]>,
+  userId: string,
+): string | null {
+  const member = memberById.get(userId);
+  if (!member) return null;
+  return `${member.firstName} ${member.lastName}`.trim() || member.handle || null;
+}
 
 export function computeStatus(
   message: Message,

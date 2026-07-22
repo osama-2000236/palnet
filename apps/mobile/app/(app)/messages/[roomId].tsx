@@ -17,6 +17,7 @@ import { MessageThreadList } from "../_message-thread/MessageThreadList";
 import { MessageThreadSheets } from "../_message-thread/MessageThreadSheets";
 import { ThreadErrorBanner, UnreadJumpBanner } from "../_message-thread/MessageThreadBanner";
 import { useMessageThread } from "../_message-thread/useMessageThread";
+import { memberDisplayName } from "../_message-thread/utils";
 
 export default function MessageThreadScreen(): JSX.Element {
   const c = useThemeTokens().color;
@@ -28,6 +29,12 @@ export default function MessageThreadScreen(): JSX.Element {
     thread.viewerId && thread.room && !thread.room.isGroup
       ? (thread.room.members.find((m) => m.userId !== thread.viewerId) ?? null)
       : null;
+  // Name whoever is actually typing. `otherName` is "first member who isn't me",
+  // which is the wrong person in any group room — the event carries the real
+  // userId. No name resolvable means no indicator, never a placeholder.
+  const typingName = thread.typingActive
+    ? memberDisplayName(thread.memberById, thread.typingActive.userId)
+    : null;
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: c.surfaceMuted }}>
@@ -87,8 +94,14 @@ export default function MessageThreadScreen(): JSX.Element {
           memberById={thread.memberById}
           labels={bubbleLabels}
           emptyLabel={t("messaging.emptyThread")}
+          loadOlderLabel={t("messaging.loadOlder")}
+          typingLabel={typingName ? t("messaging.typing", { name: typingName }) : null}
+          hasMore={thread.hasMore}
+          loadingOlder={thread.loadingOlder}
+          typingActive={Boolean(thread.typingActive)}
           refreshing={thread.refreshing}
           onRefresh={() => void thread.refreshThread()}
+          onLoadOlder={() => void thread.loadOlder()}
           onRetryFailed={thread.retryFailed}
           onOpenOwnActions={thread.openMessageActions}
           onReportOther={thread.setReportMessage}

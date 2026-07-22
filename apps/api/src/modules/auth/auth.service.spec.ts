@@ -288,6 +288,116 @@ describe("AuthService", () => {
     });
   });
 
+  describe("refresh", () => {
+    const user = {
+      id: "user_1",
+      email: "a@b.co",
+      role: "USER" as const,
+      locale: "ar-PS",
+    };
+
+    it("atomically revokes the presented token and issues a new session", async () => {
+      prisma.refreshToken.findFirst.mockResolvedValue({
+        id: "rt_1",
+        userId: user.id,
+        expiresAt: new Date(Date.now() + 60_000),
+        user,
+      });
+      prisma.refreshToken.updateMany.mockResolvedValueOnce({ count: 1 });
+      prisma.refreshToken.create.mockResolvedValue({});
+
+      const session = await service.refresh({
+        refreshToken: "plain-refresh-token",
+        deviceId: "device-1",
+      });
+
+      expect(session.user.id).toBe("user_1");
+      expect(session.tokens.accessToken).toBeTruthy();
+      expect(prisma.refreshToken.updateMany).toHaveBeenCalledWith({
+        where: { id: "rt_1", revokedAt: null },
+        data: { revokedAt: expect.any(Date) },
+      });
+      // Access tokens are HS256-signed (header.payload.sig).
+      const header = JSON.parse(
+        Buffer.from(session.tokens.accessToken.split(".")[0]!, "base64url").toString("utf8"),
+      ) as { alg: string };
+      expect(header.alg).toBe("HS256");
+    });
+
+    it("burns all user sessions when an already-rotated token is replayed (reuse)", async () => {
+      // The realistic stolen-token shape: the row exists and is already revoked.
+      // The lookup must not filter revokedAt, or this never reaches the burn.
+      prisma.refreshToken.findFirst.mockResolvedValue({
+        id: "rt_1",
+        userId: user.id,
+        expiresAt: new Date(Date.now() + 60_000),
+        revokedAt: new Date(Date.now() - 1_000),
+        user,
+      });
+      prisma.refreshToken.updateMany.mockResolvedValueOnce({ count: 2 });
+
+      await expect(
+        service.refresh({ refreshToken: "stolen", deviceId: "device-1" }),
+      ).rejects.toMatchObject({
+        response: {
+          error: { code: ErrorCode.AUTH_UNAUTHORIZED },
+        },
+      });
+
+      expect(prisma.refreshToken.findFirst).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.not.objectContaining({ revokedAt: null }),
+        }),
+      );
+      expect(prisma.refreshToken.updateMany).toHaveBeenCalledWith({
+        where: { userId: "user_1", revokedAt: null },
+        data: { revokedAt: expect.any(Date) },
+      });
+      expect(prisma.refreshToken.create).not.toHaveBeenCalled();
+    });
+
+    it("burns all user sessions when the rotation claim loses a race", async () => {
+      prisma.refreshToken.findFirst.mockResolvedValue({
+        id: "rt_1",
+        userId: user.id,
+        expiresAt: new Date(Date.now() + 60_000),
+        revokedAt: null,
+        user,
+      });
+      // Claim returns 0: a concurrent refresh revoked the row first.
+      prisma.refreshToken.updateMany
+        .mockResolvedValueOnce({ count: 0 })
+        .mockResolvedValueOnce({ count: 2 });
+
+      await expect(
+        service.refresh({ refreshToken: "raced", deviceId: "device-1" }),
+      ).rejects.toMatchObject({
+        response: {
+          error: { code: ErrorCode.AUTH_UNAUTHORIZED },
+        },
+      });
+
+      expect(prisma.refreshToken.updateMany).toHaveBeenNthCalledWith(2, {
+        where: { userId: "user_1", revokedAt: null },
+        data: { revokedAt: expect.any(Date) },
+      });
+      expect(prisma.refreshToken.create).not.toHaveBeenCalled();
+    });
+
+    it("rejects expired or unknown refresh tokens without touching sessions", async () => {
+      prisma.refreshToken.findFirst.mockResolvedValue(null);
+
+      await expect(
+        service.refresh({ refreshToken: "nope", deviceId: "device-1" }),
+      ).rejects.toMatchObject({
+        response: {
+          error: { code: ErrorCode.AUTH_UNAUTHORIZED },
+        },
+      });
+      expect(prisma.refreshToken.updateMany).not.toHaveBeenCalled();
+    });
+  });
+
   describe("changePassword", () => {
     it("updates the password and revokes other devices", async () => {
       const passwordHash = await bcrypt.hash("OldPassword1", 4);

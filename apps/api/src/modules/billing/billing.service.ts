@@ -54,6 +54,7 @@ export class BillingService {
   async createCheckoutSession(userId: string, body: CheckoutSessionBody): Promise<CheckoutSession> {
     const plan = await this.ensurePlan(body.planCode);
     await this.assertScope(userId, body.planCode, body.companyId ?? null);
+    assertSafeReturnUrl(body.returnUrl, this.config);
 
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
@@ -639,6 +640,43 @@ export class BillingService {
       if (member) return invoice;
     }
     throw new DomainException(ErrorCode.AUTH_FORBIDDEN, "Invoice is not accessible.", 403);
+  }
+}
+
+/** First-party origins only (BAYDAR_WEB_URL + CORS_ORIGINS). */
+function assertSafeReturnUrl(returnUrl: string, config: ConfigService<Env, true>): void {
+  let u: URL;
+  try {
+    u = new URL(returnUrl);
+  } catch {
+    throw new DomainException(ErrorCode.VALIDATION_FAILED, "Invalid returnUrl.", 400);
+  }
+  // http is a local-dev affordance only — a payment return URL must not
+  // downgrade in production even if CORS_ORIGINS carries an http entry.
+  const allowHttp = process.env.NODE_ENV !== "production";
+  if (u.protocol !== "https:" && !(allowHttp && u.protocol === "http:")) {
+    throw new DomainException(ErrorCode.VALIDATION_FAILED, "Invalid returnUrl.", 400);
+  }
+  if (u.username || u.password) {
+    throw new DomainException(ErrorCode.VALIDATION_FAILED, "Invalid returnUrl.", 400);
+  }
+  const allowed = new Set<string>();
+  const seeds = [
+    config.get("BAYDAR_WEB_URL", { infer: true }),
+    ...(config.get("CORS_ORIGINS", { infer: true })?.split(",") ?? []),
+  ];
+  for (const raw of seeds) {
+    const t = raw?.trim();
+    if (!t || t.includes("*")) continue;
+    try {
+      const o = new URL(t);
+      allowed.add(`${o.protocol}//${o.host}`);
+    } catch {
+      // skip bad env entry
+    }
+  }
+  if (!allowed.has(`${u.protocol}//${u.host}`)) {
+    throw new DomainException(ErrorCode.VALIDATION_FAILED, "returnUrl origin not allowed.", 400);
   }
 }
 

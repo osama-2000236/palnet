@@ -67,7 +67,12 @@ export function useRoomMessagesEvents({
         setRooms((prev) =>
           prev.map((room) =>
             room.id === message.roomId
-              ? { ...room, lastMessage: message, updatedAt: message.createdAt }
+              ? {
+                  ...room,
+                  lastMessage: message,
+                  // Keep sort order stable: edits don't bump room position.
+                  updatedAt: room.updatedAt,
+                }
               : room,
           ),
         );
