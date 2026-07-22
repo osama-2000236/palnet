@@ -60,6 +60,31 @@ async function main() {
     location: "رام الله",
   });
 
+  // A background entry so the primary QA account counts as "complete" — without
+  // one, isProfileComplete() is false and logging in as demo routes to
+  // onboarding instead of the feed. Idempotent: only added if none exists.
+  const demoProfile = await prisma.profile.findFirst({
+    where: { userId: demoUser.id },
+    select: { id: true },
+  });
+  if (demoProfile) {
+    const hasBackground = await prisma.experience.findFirst({
+      where: { profileId: demoProfile.id },
+      select: { id: true },
+    });
+    if (!hasBackground) {
+      await prisma.experience.create({
+        data: {
+          profileId: demoProfile.id,
+          title: "مهندس برمجيات",
+          companyName: "بيدر",
+          location: "رام الله",
+          startDate: new Date("2022-01-01"),
+        },
+      });
+    }
+  }
+
   await upsertSeedUser({
     email: "a11y@baydar.test",
     passwordHash,
