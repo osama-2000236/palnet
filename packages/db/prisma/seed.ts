@@ -4,7 +4,7 @@ import { dirname, resolve } from "node:path";
 import { PrismaClient } from "@prisma/client";
 import * as bcrypt from "bcrypt";
 
-import { seedPeople } from "./seed-people";
+import { ensureExperience, seedPeople } from "./seed-people";
 
 loadRootEnvLocal();
 
@@ -60,32 +60,13 @@ async function main() {
     location: "رام الله",
   });
 
-  // A background entry so the primary QA account counts as "complete" — without
-  // one, isProfileComplete() is false and logging in as demo routes to
-  // onboarding instead of the feed. Idempotent: only added if none exists.
-  const demoProfile = await prisma.profile.findFirst({
-    where: { userId: demoUser.id },
-    select: { id: true },
+  await ensureExperience(prisma, demoUser.profile.id, {
+    title: "مهندس برمجيات",
+    companyName: "بيدر",
+    location: "رام الله",
   });
-  if (demoProfile) {
-    const hasBackground = await prisma.experience.findFirst({
-      where: { profileId: demoProfile.id },
-      select: { id: true },
-    });
-    if (!hasBackground) {
-      await prisma.experience.create({
-        data: {
-          profileId: demoProfile.id,
-          title: "مهندس برمجيات",
-          companyName: "بيدر",
-          location: "رام الله",
-          startDate: new Date("2022-01-01"),
-        },
-      });
-    }
-  }
 
-  await upsertSeedUser({
+  const a11yUser = await upsertSeedUser({
     email: "a11y@baydar.test",
     passwordHash,
     locale: "ar-PS",
@@ -93,6 +74,12 @@ async function main() {
     firstName: "A11y",
     lastName: "Test",
     headline: "Accessibility smoke profile",
+    location: "رام الله",
+  });
+
+  await ensureExperience(prisma, a11yUser.profile.id, {
+    title: "Accessibility smoke profile",
+    companyName: "Baydar",
     location: "رام الله",
   });
 
@@ -105,6 +92,12 @@ async function main() {
     firstName: "Owner",
     lastName: "Baydar",
     headline: "Hiring manager",
+    location: "رام الله",
+  });
+
+  await ensureExperience(prisma, ownerUser.profile.id, {
+    title: "Hiring manager",
+    companyName: "Baydar",
     location: "رام الله",
   });
 
@@ -230,47 +223,49 @@ async function upsertSeedUser(input: {
     include: { profile: true },
   });
 
-  if (existingByEmail) {
-    return prisma.user.update({
-      where: { id: existingByEmail.id },
-      data: {
-        passwordHash: input.passwordHash,
-        role: input.role ?? existingByEmail.role,
-        locale: input.locale,
-        emailVerified: existingByEmail.emailVerified ?? new Date(),
-        profile: existingByEmail.profile ? { update: profileData } : { create: profileData },
-      },
-    });
-  }
+  const existingByHandle = existingByEmail
+    ? null
+    : await prisma.profile.findUnique({ where: { handle: input.handle } });
 
-  const existingByHandle = await prisma.profile.findUnique({
-    where: { handle: input.handle },
-  });
+  const user = existingByEmail
+    ? await prisma.user.update({
+        where: { id: existingByEmail.id },
+        data: {
+          passwordHash: input.passwordHash,
+          role: input.role ?? existingByEmail.role,
+          locale: input.locale,
+          emailVerified: existingByEmail.emailVerified ?? new Date(),
+          profile: existingByEmail.profile ? { update: profileData } : { create: profileData },
+        },
+        include: { profile: true },
+      })
+    : existingByHandle
+      ? await prisma.user.update({
+          where: { id: existingByHandle.userId },
+          data: {
+            email: input.email,
+            passwordHash: input.passwordHash,
+            role: input.role ?? "USER",
+            locale: input.locale,
+            emailVerified: new Date(),
+            profile: { update: profileData },
+          },
+          include: { profile: true },
+        })
+      : await prisma.user.create({
+          data: {
+            email: input.email,
+            passwordHash: input.passwordHash,
+            role: input.role ?? "USER",
+            locale: input.locale,
+            emailVerified: new Date(),
+            profile: { create: profileData },
+          },
+          include: { profile: true },
+        });
 
-  if (existingByHandle) {
-    return prisma.user.update({
-      where: { id: existingByHandle.userId },
-      data: {
-        email: input.email,
-        passwordHash: input.passwordHash,
-        role: input.role ?? "USER",
-        locale: input.locale,
-        emailVerified: new Date(),
-        profile: { update: profileData },
-      },
-    });
-  }
-
-  return prisma.user.create({
-    data: {
-      email: input.email,
-      passwordHash: input.passwordHash,
-      role: input.role ?? "USER",
-      locale: input.locale,
-      emailVerified: new Date(),
-      profile: { create: profileData },
-    },
-  });
+  if (!user.profile) throw new Error(`Seed user ${input.email} has no profile.`);
+  return { ...user, profile: user.profile };
 }
 
 async function upsertJob(input: {

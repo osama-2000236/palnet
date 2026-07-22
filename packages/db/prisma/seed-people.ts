@@ -10,6 +10,8 @@ interface Person {
   firstName: string;
   lastName: string;
   headline: string;
+  /** Current employer — seeds the one experience entry every profile needs. */
+  company: string;
   location: string;
   skills: string[];
   /** Connection state toward the demo user. */
@@ -25,6 +27,7 @@ const PEOPLE: Person[] = [
     firstName: "ليان",
     lastName: "الخطيب",
     headline: "مهندسة برمجيات أولى — React و TypeScript",
+    company: "شركة إكسلترا للتقنية",
     location: "رام الله",
     skills: ["React", "TypeScript", "Node.js"],
     link: "accepted",
@@ -35,6 +38,7 @@ const PEOPLE: Person[] = [
     firstName: "عمر",
     lastName: "النشاشيبي",
     headline: "مدير منتج في قطاع التقنية المالية",
+    company: "منصة دفع فلسطين",
     location: "رام الله",
     skills: ["Product Management", "Analytics"],
     link: "accepted",
@@ -45,6 +49,7 @@ const PEOPLE: Person[] = [
     firstName: "رانية",
     lastName: "عبد الهادي",
     headline: "مصمّمة تجربة مستخدم — منتجات عربية",
+    company: "استوديو ألف للتصميم",
     location: "نابلس",
     skills: ["UX Design", "Figma", "Design Systems"],
     link: "accepted",
@@ -55,6 +60,7 @@ const PEOPLE: Person[] = [
     firstName: "خالد",
     lastName: "المصري",
     headline: "مهندس بنية تحتية سحابية",
+    company: "حلول الخليل السحابية",
     location: "الخليل",
     skills: ["Kubernetes", "PostgreSQL", "Node.js"],
     link: "accepted",
@@ -64,6 +70,7 @@ const PEOPLE: Person[] = [
     firstName: "دانا",
     lastName: "سليمان",
     headline: "أخصائية موارد بشرية واستقطاب",
+    company: "مجموعة بيت لحم للاستشارات",
     location: "بيت لحم",
     skills: ["Recruiting", "People Operations"],
     link: "incoming",
@@ -73,6 +80,7 @@ const PEOPLE: Person[] = [
     firstName: "يوسف",
     lastName: "التميمي",
     headline: "محلل بيانات — قطاع الصحة",
+    company: "مركز المعلومات الصحية",
     location: "رام الله",
     skills: ["Python", "SQL", "Analytics"],
     link: "incoming",
@@ -82,6 +90,7 @@ const PEOPLE: Person[] = [
     firstName: "مها",
     lastName: "درويش",
     headline: "مديرة مشاريع تنموية",
+    company: "جمعية التنمية المجتمعية",
     location: "غزة",
     skills: ["Project Management", "Monitoring & Evaluation"],
     link: "suggested",
@@ -92,6 +101,7 @@ const PEOPLE: Person[] = [
     firstName: "طارق",
     lastName: "الشوا",
     headline: "مطوّر تطبيقات جوّال — React Native",
+    company: "استوديو غزة للتطبيقات",
     location: "غزة",
     skills: ["React Native", "TypeScript"],
     link: "suggested",
@@ -101,6 +111,7 @@ const PEOPLE: Person[] = [
     firstName: "نور",
     lastName: "الحلبي",
     headline: "كاتبة محتوى تقني بالعربية",
+    company: "دار نشر المحتوى العربي",
     location: "نابلس",
     skills: ["Content Strategy", "Arabic Copywriting"],
     link: "suggested",
@@ -110,6 +121,7 @@ const PEOPLE: Person[] = [
     firstName: "سامي",
     lastName: "جابر",
     headline: "مؤسس شركة ناشئة في اللوجستيات",
+    company: "شركة مسار للوجستيات",
     location: "رام الله",
     skills: ["Entrepreneurship", "Operations"],
     link: "suggested",
@@ -120,6 +132,7 @@ const PEOPLE: Person[] = [
     firstName: "أحلام",
     lastName: "قاسم",
     headline: "مهندسة ضمان جودة",
+    company: "مختبر جنين للبرمجيات",
     location: "جنين",
     skills: ["QA Automation", "Playwright"],
     link: "suggested",
@@ -129,17 +142,42 @@ const PEOPLE: Person[] = [
     firstName: "باسل",
     lastName: "عودة",
     headline: "مختص أمن معلومات",
+    company: "شركة درع لأمن المعلومات",
     location: "طولكرم",
     skills: ["Security", "Incident Response"],
     link: "suggested",
   },
 ];
 
+// Without one experience row isProfileComplete() is false, so logging in as a
+// seeded account lands on onboarding instead of the feed — and the profile
+// screen renders an empty background section. Idempotent: only adds if none.
+export async function ensureExperience(
+  prisma: PrismaClient,
+  profileId: string,
+  entry: { title: string; companyName: string; location: string },
+): Promise<void> {
+  const existing = await prisma.experience.findFirst({
+    where: { profileId },
+    select: { id: true },
+  });
+  if (existing) return;
+  await prisma.experience.create({
+    data: { profileId, ...entry, startDate: new Date("2022-01-01") },
+  });
+}
+
 export async function seedPeople(prisma: PrismaClient, demoUserId: string, passwordHash: string) {
   for (const person of PEOPLE) {
     const user = await upsertPerson(prisma, person, passwordHash);
     await linkSkills(prisma, user.profileId, person.skills);
     await linkConnection(prisma, demoUserId, user.userId, person.link);
+    await ensureExperience(prisma, user.profileId, {
+      // Headlines read "role — specialisation"; the role alone is the job title.
+      title: person.headline.split("—")[0]!.trim(),
+      companyName: person.company,
+      location: person.location,
+    });
 
     if (person.post) {
       // Idempotent by (author, body): re-running the seed must not pile up posts.

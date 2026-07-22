@@ -222,7 +222,7 @@ export default function RegisterScreen(): JSX.Element {
               fontFamily: nativeTokens.type.family.body,
               fontSize: nativeTokens.type.scale.small.size,
               lineHeight: nativeTokens.type.scale.small.line,
-              textAlign: "right",
+              textAlign: "auto",
             }}
           >
             {t("auth.acceptTerms")}
@@ -249,7 +249,7 @@ export default function RegisterScreen(): JSX.Element {
               fontFamily: nativeTokens.type.family.sans,
               fontSize: nativeTokens.type.scale.caption.size,
               lineHeight: nativeTokens.type.scale.caption.line,
-              textAlign: "right",
+              textAlign: "auto",
             }}
           >
             {t(errors.acceptTerms.message)}

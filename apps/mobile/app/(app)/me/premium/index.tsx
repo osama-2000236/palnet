@@ -37,7 +37,7 @@ const PREMIUM_FEATURE_KEYS = ["analytics", "whoViewed", "diasporaBadge"] as cons
 
 export default function PremiumScreen(): JSX.Element {
   const styles = useStyles();
-  const { t } = useTranslation();
+  const { i18n, t } = useTranslation();
 
   const [catalog, setCatalog] = useState<BillingCatalogDto | null>(null);
   const [billingMe, setBillingMe] = useState<BillingMeDto | null>(null);
@@ -121,7 +121,7 @@ export default function PremiumScreen(): JSX.Element {
                       subscription.cancelAtPeriodEnd
                         ? "premium.current.endsBody"
                         : "premium.current.renewsBody",
-                      { date: formatDate(subscription.currentPeriodEnd) },
+                      { date: formatDate(subscription.currentPeriodEnd, i18n.language) },
                     )
                   : t("premium.current.activeTitle")
             }
@@ -144,7 +144,7 @@ export default function PremiumScreen(): JSX.Element {
               <Text style={styles.planTagline}>{t("premium.plan.tagline")}</Text>
               <Text style={styles.planPrice}>
                 {t("premium.plan.perMonth", {
-                  price: formatMoney(plan.displayAmountCents, plan.displayCurrency),
+                  price: formatMoney(plan.displayAmountCents, plan.displayCurrency, i18n.language),
                 })}
               </Text>
               {plan.displayCurrency !== plan.currency ? (

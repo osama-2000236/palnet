@@ -390,6 +390,7 @@
     "endorsed": "تم التأييد",
     "endorsementsLabel": "تأييدات",
     "endorseSkill": "أيّد مهارة {{skill}}",
+    "savedToast": "تم حفظ التغييرات.",
     "endorseSuccess": "تمت إضافة التأييد ومنح نقاط كرامة.",
     "endorseAlready": "أيّدت هذه المهارة سابقًا.",
     "validation": {

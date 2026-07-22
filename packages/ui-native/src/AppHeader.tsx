@@ -85,7 +85,7 @@ const styles = StyleSheet.create({
     fontSize: nativeTokens.type.scale.h1.size,
     lineHeight: nativeTokens.type.scale.h1.line,
     fontWeight: "700",
-    textAlign: "right",
+    textAlign: "auto",
   },
   subtitle: {
     marginTop: nativeTokens.space[1],
@@ -93,7 +93,7 @@ const styles = StyleSheet.create({
     fontFamily: nativeTokens.type.family.sans,
     fontSize: nativeTokens.type.scale.small.size,
     lineHeight: nativeTokens.type.scale.small.line,
-    textAlign: "right",
+    textAlign: "auto",
   },
   search: {
     alignSelf: "stretch",

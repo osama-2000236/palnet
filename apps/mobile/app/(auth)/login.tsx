@@ -198,7 +198,7 @@ export default function LoginScreen(): JSX.Element {
               fontSize: nativeTokens.type.scale.small.size,
               fontWeight: "600",
               lineHeight: nativeTokens.type.scale.small.line,
-              textAlign: "right",
+              textAlign: "auto",
             }}
           >
             {t("auth.secureHintTitle")}
@@ -210,7 +210,7 @@ export default function LoginScreen(): JSX.Element {
               fontFamily: nativeTokens.type.family.body,
               fontSize: nativeTokens.type.scale.small.size,
               lineHeight: nativeTokens.type.scale.small.line,
-              textAlign: "right",
+              textAlign: "auto",
             }}
           >
             {t("auth.secureHint")}

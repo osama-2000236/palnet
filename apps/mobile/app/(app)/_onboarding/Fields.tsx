@@ -49,7 +49,7 @@ export function ControlledField({
               fontSize: nativeTokens.type.scale.small.size,
               fontWeight: "700",
               lineHeight: nativeTokens.type.scale.small.line,
-              textAlign: I18nManager.isRTL ? "right" : "left",
+              textAlign: "auto",
             }}
           >
             {label}
@@ -65,7 +65,7 @@ export function ControlledField({
               props.keyboardType === "email-address"
                 ? { textAlign: "left", writingDirection: "ltr" }
                 : {
-                    textAlign: I18nManager.isRTL ? "right" : "left",
+                    textAlign: "auto",
                     writingDirection: I18nManager.isRTL ? "rtl" : "ltr",
                   },
               {
@@ -101,7 +101,7 @@ export function FieldError({ message }: { message: string }): JSX.Element {
         fontFamily: nativeTokens.type.family.sans,
         fontSize: nativeTokens.type.scale.caption.size,
         lineHeight: nativeTokens.type.scale.caption.line,
-        textAlign: I18nManager.isRTL ? "right" : "left",
+        textAlign: "auto",
       }}
     >
       {t(message)}
@@ -142,7 +142,7 @@ export function EmptyState({ message }: { message: string }): JSX.Element {
           fontFamily: nativeTokens.type.family.body,
           fontSize: nativeTokens.type.scale.body.size,
           lineHeight: nativeTokens.type.scale.body.line,
-          textAlign: I18nManager.isRTL ? "right" : "left",
+          textAlign: "auto",
         }}
       >
         {message}

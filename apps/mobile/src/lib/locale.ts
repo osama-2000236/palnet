@@ -50,7 +50,15 @@ function readNativePreference(): SupportedLocale | null {
 // import, before the first render. An async read lands too late and the app
 // boots in the device language with the wrong layout direction.
 export function getInitialLocale(): SupportedLocale {
-  return readWebPreference() ?? readNativePreference() ?? deviceLocale();
+  // Baydar is Arabic-first: a build that ships EXPO_PUBLIC_DEFAULT_LOCALE (eas.json
+  // sets ar-PS) opens in that language regardless of device language. The device
+  // locale is only the dev fallback when the var is unset.
+  const configured = process.env.EXPO_PUBLIC_DEFAULT_LOCALE;
+  return (
+    readWebPreference() ??
+    readNativePreference() ??
+    (configured ? normalizeLocale(configured) : deviceLocale())
+  );
 }
 
 export async function readLocalePreference(): Promise<SupportedLocale | null> {

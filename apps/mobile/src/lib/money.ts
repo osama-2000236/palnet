@@ -1,24 +1,20 @@
-// Hermes ships without full Intl, so billing surfaces format money by hand.
-// Whole amounts drop the fraction (₪18, $5); cent fractions keep two digits.
-const CURRENCY_SYMBOLS: Record<string, string> = {
-  USD: "$",
-  ILS: "₪",
-  EUR: "€",
-  GBP: "£",
-  JOD: "JD",
-  AED: "AED",
-  SAR: "SAR",
-};
+import { formatCurrency, formatNumber } from "@baydar/shared";
 
-export function formatMoney(cents: number, currency: string): string {
-  const amount = cents % 100 === 0 ? String(cents / 100) : (cents / 100).toFixed(2);
-  const symbol = CURRENCY_SYMBOLS[currency.toUpperCase()];
-  if (!symbol) return `${amount} ${currency}`;
-  return symbol.length === 1 ? `${symbol}${amount}` : `${symbol} ${amount}`;
+// Billing used to format money by hand on the assumption Hermes lacks Intl. It
+// doesn't — every other surface already formats through @baydar/shared — and
+// the hand-rolled version printed Latin digits ("18₪") beside Arabic-Indic
+// body text. Whole amounts drop the fraction, cent fractions keep two digits.
+export function formatMoney(cents: number, currency: string, locale: string): string {
+  const fraction = cents % 100 === 0 ? 0 : 2;
+  return formatCurrency(cents / 100, currency, locale, {
+    minimumFractionDigits: fraction,
+    maximumFractionDigits: fraction,
+  });
 }
 
-// dd/mm/yyyy — unambiguous in both ar and en without relying on Intl.
-export function formatDate(iso: string): string {
+// dd/mm/yyyy — unambiguous in both ar and en; digits follow the locale.
+export function formatDate(iso: string, locale: string): string {
   const date = new Date(iso);
-  return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
+  const part = (value: number): string => formatNumber(value, locale, { useGrouping: false });
+  return `${part(date.getDate())}/${part(date.getMonth() + 1)}/${part(date.getFullYear())}`;
 }

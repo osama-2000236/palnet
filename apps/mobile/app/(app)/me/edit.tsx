@@ -1,5 +1,5 @@
 import { isProfileComplete, Profile as ProfileSchema, type Profile } from "@baydar/shared";
-import { AppHeader, Button } from "@baydar/ui-native";
+import { AppHeader, Button, useToast } from "@baydar/ui-native";
 import { router } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -19,6 +19,7 @@ import { useStyles } from "../_edit-profile/styles";
 export default function EditProfileScreen(): JSX.Element {
   const styles = useStyles();
   const { t } = useTranslation();
+  const { showToast } = useToast();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -42,15 +43,22 @@ export default function EditProfileScreen(): JSX.Element {
     void refresh().finally(() => setLoading(false));
   }, [refresh]);
 
-  const handleProfileChanged = useCallback(async (next: Profile): Promise<void> => {
-    setProfile(next);
-    if (isProfileComplete(next)) {
-      await writeProfileCache(next);
-      return;
-    }
-    await clearProfileCache();
-    router.replace("/(app)/onboarding");
-  }, []);
+  // Every card (basics, experience, education, skills) reports through here, so
+  // one toast covers them all — a PATCH that returns 200 with no visible change
+  // otherwise reads as a no-op.
+  const handleProfileChanged = useCallback(
+    async (next: Profile): Promise<void> => {
+      setProfile(next);
+      if (isProfileComplete(next)) {
+        await writeProfileCache(next);
+        showToast({ message: t("profile.savedToast"), kind: "success" });
+        return;
+      }
+      await clearProfileCache();
+      router.replace("/(app)/onboarding");
+    },
+    [showToast, t],
+  );
 
   if (loading || !profile) {
     return (

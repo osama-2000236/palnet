@@ -20,7 +20,7 @@ import { StepContent } from "./_onboarding/StepContent";
 import {
   SuggestionsSchema,
   persistOnboarding,
-  toHandle,
+  resumeValues,
   type PersonSuggestionDto,
 } from "./_onboarding/api";
 import { fieldsForStep } from "./_onboarding/flow";
@@ -66,6 +66,7 @@ export default function OnboardingScreen(): JSX.Element {
     control,
     getValues,
     handleSubmit,
+    reset,
     setValue,
     trigger,
     formState: { errors },
@@ -87,15 +88,17 @@ export default function OnboardingScreen(): JSX.Element {
         router.replace("/(auth)/login");
         return;
       }
-      if (!mounted || getValues("handle")) return;
-      setValue("handle", toHandle(session.user.email.split("@")[0] ?? ""), {
-        shouldValidate: true,
-      });
+      const values = await resumeValues(
+        session.user.email,
+        session.tokens.accessToken,
+        getValues(),
+      );
+      if (mounted) reset(values);
     })();
     return () => {
       mounted = false;
     };
-  }, [getValues, setValue]);
+  }, [getValues, reset]);
 
   const loadSuggestions = useCallback(
     async (force = false): Promise<void> => {

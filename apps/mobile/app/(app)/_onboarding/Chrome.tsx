@@ -1,6 +1,6 @@
 import { Button, Surface, nativeTokens, useThemeTokens } from "@baydar/ui-native";
 import { useTranslation } from "react-i18next";
-import { I18nManager, Text, View } from "react-native";
+import { Text, View } from "react-native";
 
 import type { StepKey } from "./types";
 
@@ -28,7 +28,7 @@ export function OnboardingHeader({
           fontSize: nativeTokens.type.scale.caption.size,
           fontWeight: "700",
           lineHeight: nativeTokens.type.scale.caption.line,
-          textAlign: I18nManager.isRTL ? "right" : "left",
+          textAlign: "auto",
         }}
       >
         {t("onboarding.progress", { current: active + 1, total: count })}
@@ -41,7 +41,7 @@ export function OnboardingHeader({
           fontSize: nativeTokens.type.scale.display.size,
           fontWeight: "700",
           lineHeight: nativeTokens.type.scale.display.line,
-          textAlign: I18nManager.isRTL ? "right" : "left",
+          textAlign: "auto",
         }}
       >
         {label}
@@ -53,7 +53,7 @@ export function OnboardingHeader({
           fontFamily: nativeTokens.type.family.body,
           fontSize: nativeTokens.type.scale.body.size,
           lineHeight: nativeTokens.type.scale.body.line,
-          textAlign: I18nManager.isRTL ? "right" : "left",
+          textAlign: "auto",
         }}
       >
         {t(`onboarding.stepCopy.${step}`)}
@@ -108,7 +108,7 @@ export function StateMessage({
           fontFamily: nativeTokens.type.family.sans,
           fontSize: nativeTokens.type.scale.small.size,
           lineHeight: nativeTokens.type.scale.small.line,
-          textAlign: "right",
+          textAlign: "auto",
         }}
       >
         {message}

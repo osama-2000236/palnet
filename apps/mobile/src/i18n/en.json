@@ -390,6 +390,7 @@
     "endorsed": "Endorsed",
     "endorsementsLabel": "endorsements",
     "endorseSkill": "Endorse {{skill}}",
+    "savedToast": "Changes saved.",
     "endorseSuccess": "Endorsement added. Karama awarded.",
     "endorseAlready": "You already endorsed this skill.",
     "validation": {

@@ -53,7 +53,7 @@ export function InvoiceList({
   const c = useThemeTokens().color;
   const styles = useStyles();
   const STATUS_COLOR = statusColor(c);
-  const { t } = useTranslation();
+  const { i18n, t } = useTranslation();
   const [busyInvoice, setBusyInvoice] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -107,16 +107,16 @@ export function InvoiceList({
             <View key={invoice.id} style={[styles.row, index > 0 && styles.rowBorder]}>
               <View style={styles.rowMain}>
                 <Text style={styles.amount}>
-                  {formatMoney(invoice.amountCents, invoice.currency)}
+                  {formatMoney(invoice.amountCents, invoice.currency, i18n.language)}
                   <Text style={styles.method}>
                     {"  "}
                     {t(`billing.checkout.methods.${METHOD_KEYS[invoice.method]}`)}
                   </Text>
                 </Text>
                 <Text style={styles.meta}>
-                  {formatDate(invoice.createdAt)}
+                  {formatDate(invoice.createdAt, i18n.language)}
                   {invoice.status === InvoiceStatus.OPEN && invoice.dueAt
-                    ? ` · ${t("billing.invoices.dueBy", { date: formatDate(invoice.dueAt) })}`
+                    ? ` · ${t("billing.invoices.dueBy", { date: formatDate(invoice.dueAt, i18n.language) })}`
                     : ""}
                 </Text>
                 <Text style={[styles.status, { color: STATUS_COLOR[invoice.status] }]}>

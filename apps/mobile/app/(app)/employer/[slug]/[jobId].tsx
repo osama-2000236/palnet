@@ -175,14 +175,14 @@ function makeStyles(c: NativeTheme["color"]) {
       fontSize: nativeTokens.type.scale.h3.size,
       lineHeight: nativeTokens.type.scale.h3.line,
       fontWeight: "700",
-      textAlign: "right",
+      textAlign: "auto",
     },
     applicantHeadline: {
       color: c.inkMuted,
       fontFamily: nativeTokens.type.family.sans,
       fontSize: nativeTokens.type.scale.caption.size,
       lineHeight: nativeTokens.type.scale.caption.line,
-      textAlign: "right",
+      textAlign: "auto",
     },
     statusRow: {
       flexDirection: "row",
