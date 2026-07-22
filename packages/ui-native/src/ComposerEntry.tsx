@@ -70,7 +70,7 @@ const styles = StyleSheet.create({
     fontFamily: nativeTokens.type.family.sans,
     fontSize: nativeTokens.type.scale.body.size,
     lineHeight: nativeTokens.type.scale.body.line,
-    textAlign: "right",
+    textAlign: "auto",
   },
   iconWrap: {
     width: nativeTokens.chrome.minHit,

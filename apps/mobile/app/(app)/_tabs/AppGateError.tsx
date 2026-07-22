@@ -31,7 +31,7 @@ export function AppGateError({
               fontSize: nativeTokens.type.scale.h1.size,
               fontWeight: "700",
               lineHeight: nativeTokens.type.scale.h1.line,
-              textAlign: "right",
+              textAlign: "auto",
             }}
           >
             {t("appGate.title")}
@@ -43,7 +43,7 @@ export function AppGateError({
               fontFamily: nativeTokens.type.family.body,
               fontSize: nativeTokens.type.scale.body.size,
               lineHeight: nativeTokens.type.scale.body.line,
-              textAlign: "right",
+              textAlign: "auto",
             }}
           >
             {isConnected ? t("appGate.body") : t("appGate.offlineBody")}

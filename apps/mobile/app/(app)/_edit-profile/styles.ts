@@ -65,10 +65,10 @@ export function makeStyles(c: NativeTheme["color"]) {
       fontWeight: "600",
       fontFamily: nativeTokens.type.family.sans,
       marginBottom: nativeTokens.space[1],
-      textAlign: "right",
+      textAlign: "auto",
     },
     inputRtl: {
-      textAlign: "right",
+      textAlign: "auto",
       writingDirection: "rtl",
     },
     inputAuto: {

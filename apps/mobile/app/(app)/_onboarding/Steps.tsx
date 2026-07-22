@@ -1,7 +1,7 @@
 import { Surface, nativeTokens, useThemeTokens } from "@baydar/ui-native";
 import { Controller, type Control, type FieldErrors } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import { I18nManager, Pressable, Switch, Text, View } from "react-native";
+import { Pressable, Switch, Text, View } from "react-native";
 
 import { CityField } from "@/components/CityField";
 
@@ -67,7 +67,7 @@ export function IdentityStep({
                     fontFamily: nativeTokens.type.family.body,
                     fontSize: nativeTokens.type.scale.small.size,
                     lineHeight: nativeTokens.type.scale.small.line,
-                    textAlign: I18nManager.isRTL ? "right" : "left",
+                    textAlign: "auto",
                   }}
                 >
                   {t("onboarding.identity.confirm")}
@@ -161,7 +161,7 @@ export function LocationStep({
                 fontSize: nativeTokens.type.scale.small.size,
                 fontWeight: "700",
                 lineHeight: nativeTokens.type.scale.small.line,
-                textAlign: I18nManager.isRTL ? "right" : "left",
+                textAlign: "auto",
               }}
             >
               {t("onboarding.location")}

@@ -56,7 +56,7 @@ export function CheckoutPanel({
   onActivated,
 }: CheckoutPanelProps): JSX.Element {
   const styles = useStyles();
-  const { t } = useTranslation();
+  const { i18n, t } = useTranslation();
   const [method, setMethod] = useState<PaymentMethod>(PaymentMethod.CARD);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -152,7 +152,7 @@ export function CheckoutPanel({
         <BankRow label={t("billing.checkout.bank.reference")} value={bank.reference} ltr />
         <BankRow
           label={t("billing.checkout.bank.amount")}
-          value={formatMoney(bank.amountCents, bank.currency)}
+          value={formatMoney(bank.amountCents, bank.currency, i18n.language)}
         />
         <Text style={styles.bodyText}>{t("billing.checkout.bank.due")}</Text>
       </Surface>

@@ -1,3 +1,4 @@
+import { Profile as ProfileSchema } from "@baydar/shared";
 import { nativeTokens, useThemeTokens } from "@baydar/ui-native";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as ImagePicker from "expo-image-picker";
@@ -66,6 +67,7 @@ export default function OnboardingScreen(): JSX.Element {
     control,
     getValues,
     handleSubmit,
+    reset,
     setValue,
     trigger,
     formState: { errors },
@@ -87,15 +89,28 @@ export default function OnboardingScreen(): JSX.Element {
         router.replace("/(auth)/login");
         return;
       }
-      if (!mounted || getValues("handle")) return;
-      setValue("handle", toHandle(session.user.email.split("@")[0] ?? ""), {
-        shouldValidate: true,
+      // Onboarding is also the resume path for a half-filled profile (and for a
+      // seeded account that never had a background entry). Start from whatever
+      // the profile already holds instead of a blank form.
+      const saved = await apiFetch("/profiles/me", ProfileSchema, {
+        token: session.tokens.accessToken,
+      }).catch(() => null);
+      if (!mounted) return;
+      const current = getValues();
+      reset({
+        ...current,
+        firstName: current.firstName || saved?.firstName || "",
+        lastName: current.lastName || saved?.lastName || "",
+        handle: current.handle || saved?.handle || toHandle(session.user.email.split("@")[0] ?? ""),
+        headline: current.headline || saved?.headline || "",
+        about: current.about || saved?.about || "",
+        location: current.location || saved?.location || "",
       });
     })();
     return () => {
       mounted = false;
     };
-  }, [getValues, setValue]);
+  }, [getValues, reset]);
 
   const loadSuggestions = useCallback(
     async (force = false): Promise<void> => {

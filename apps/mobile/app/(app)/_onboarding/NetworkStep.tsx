@@ -1,7 +1,7 @@
 import { Avatar, Button, Icon, Surface, nativeTokens, useThemeTokens } from "@baydar/ui-native";
 import { type Control, type FieldErrors } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import { ActivityIndicator, Pressable, Text, View, I18nManager } from "react-native";
+import { ActivityIndicator, Pressable, Text, View } from "react-native";
 
 import { StateMessage } from "./Chrome";
 import { ControlledField, EmptyState } from "./Fields";
@@ -127,7 +127,7 @@ function SuggestionRow({
               fontSize: nativeTokens.type.scale.h3.size,
               fontWeight: "700",
               lineHeight: nativeTokens.type.scale.h3.line,
-              textAlign: I18nManager.isRTL ? "right" : "left",
+              textAlign: "auto",
             }}
           >
             {name || suggestion.user.handle}
@@ -141,7 +141,7 @@ function SuggestionRow({
                 fontFamily: nativeTokens.type.family.sans,
                 fontSize: nativeTokens.type.scale.small.size,
                 lineHeight: nativeTokens.type.scale.small.line,
-                textAlign: I18nManager.isRTL ? "right" : "left",
+                textAlign: "auto",
               }}
             >
               {suggestion.user.headline}

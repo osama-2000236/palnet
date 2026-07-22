@@ -165,7 +165,7 @@ export function AuthTextField({
           fontSize: nativeTokens.type.scale.small.size,
           fontWeight: "600",
           lineHeight: nativeTokens.type.scale.small.line,
-          textAlign: "right",
+          textAlign: "auto",
         }}
       >
         {label}
@@ -202,7 +202,7 @@ export function AuthTextField({
             fontFamily: nativeTokens.type.family.sans,
             fontSize: nativeTokens.type.scale.caption.size,
             lineHeight: nativeTokens.type.scale.caption.line,
-            textAlign: "right",
+            textAlign: "auto",
           }}
         >
           {hint}
@@ -217,7 +217,7 @@ export function AuthTextField({
             fontFamily: nativeTokens.type.family.sans,
             fontSize: nativeTokens.type.scale.caption.size,
             lineHeight: nativeTokens.type.scale.caption.line,
-            textAlign: "right",
+            textAlign: "auto",
           }}
         >
           {errorMessage}
@@ -238,7 +238,7 @@ export function AuthError({ message }: { message: string }): JSX.Element {
           fontFamily: nativeTokens.type.family.sans,
           fontSize: nativeTokens.type.scale.small.size,
           lineHeight: nativeTokens.type.scale.small.line,
-          textAlign: "right",
+          textAlign: "auto",
         }}
       >
         {message}

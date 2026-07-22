@@ -55,7 +55,7 @@ export function CityField({
             color: value ? c.ink : c.inkSubtle,
             fontFamily: nativeTokens.type.family.body,
             fontSize: nativeTokens.type.scale.body.size,
-            textAlign: "right",
+            textAlign: "auto",
           }}
         >
           {value || t(allowEmpty ? "common.cityField.all" : "common.cityField.placeholder")}
@@ -85,7 +85,7 @@ export function CityField({
                   fontFamily: nativeTokens.type.family.sans,
                   fontSize: nativeTokens.type.scale.small.size,
                   fontWeight: "600",
-                  textAlign: "right",
+                  textAlign: "auto",
                 }}
               >
                 {isArabic ? gov.ar : gov.en}

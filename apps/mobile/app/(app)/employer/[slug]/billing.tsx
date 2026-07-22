@@ -46,7 +46,7 @@ const FEATURE_LABEL_KEYS = [
 
 export default function CompanyBillingScreen(): JSX.Element {
   const styles = useCompanyBillingStyles();
-  const { t } = useTranslation();
+  const { i18n, t } = useTranslation();
   const { slug } = useLocalSearchParams<{ slug: string }>();
 
   const [company, setCompany] = useState<CompanyDto | null>(null);
@@ -128,7 +128,7 @@ export default function CompanyBillingScreen(): JSX.Element {
                     summary.subscription.cancelAtPeriodEnd
                       ? "billing.employer.endsBody"
                       : "billing.employer.renewsBody",
-                    { date: formatDate(summary.subscription.currentPeriodEnd) },
+                    { date: formatDate(summary.subscription.currentPeriodEnd, i18n.language) },
                   )}
                 </Text>
               ) : null}
@@ -153,7 +153,7 @@ export default function CompanyBillingScreen(): JSX.Element {
                   <Text key={`${credit.kind}-${index}`} style={styles.bodyText}>
                     {credit.remaining}× {t(`billing.employer.creditKinds.${credit.kind}`)}
                     {credit.expiresAt
-                      ? ` · ${t("billing.employer.expires", { date: formatDate(credit.expiresAt) })}`
+                      ? ` · ${t("billing.employer.expires", { date: formatDate(credit.expiresAt, i18n.language) })}`
                       : ""}
                   </Text>
                 ))
@@ -177,7 +177,13 @@ export default function CompanyBillingScreen(): JSX.Element {
                       plan.intervalDays === null
                         ? "billing.employer.oneTime"
                         : "billing.employer.perMonth",
-                      { price: formatMoney(plan.displayAmountCents, plan.displayCurrency) },
+                      {
+                        price: formatMoney(
+                          plan.displayAmountCents,
+                          plan.displayCurrency,
+                          i18n.language,
+                        ),
+                      },
                     )}
                   </Text>
                   {plan.displayCurrency !== plan.currency ? (

@@ -145,6 +145,10 @@ describe("OnboardingScreen", () => {
     (ImagePicker.launchImageLibraryAsync as jest.Mock).mockResolvedValue({ canceled: true });
     mockApiFetch.mockImplementation(async (path: string) => {
       if (path === "/connections/suggestions?limit=8") return [];
+      // A first-run account: the profile row exists but has nothing to resume from.
+      if (path === "/profiles/me") {
+        return { ...baseProfile, handle: "", headline: null, location: null };
+      }
       if (path === "/profiles/me/experiences") {
         return {
           ...baseProfile,
@@ -220,6 +224,22 @@ describe("OnboardingScreen", () => {
       expect(mockWriteProfileCache).toHaveBeenCalled();
       expect(mockReplace).toHaveBeenCalledWith("/(app)/feed");
     });
+  });
+
+  it("resumes from what the profile already holds", async () => {
+    mockApiFetch.mockImplementation(async (path: string) =>
+      path === "/connections/suggestions?limit=8" ? [] : baseProfile,
+    );
+
+    const screen = render(<OnboardingScreen />);
+
+    fireEvent.press(screen.getByTestId("onboarding-identity-confirm"));
+    fireEvent.press(screen.getByTestId("onboarding-next"));
+
+    await waitFor(() =>
+      expect(screen.getByTestId("onboarding-handle").props.value).toBe("lina-khalil"),
+    );
+    expect(screen.getByTestId("onboarding-headline").props.value).toBe("مديرة منتج");
   });
 
   it("does not block setup when optional avatar upload is rate-limited", async () => {

@@ -86,7 +86,7 @@ const styles = StyleSheet.create({
     color: nativeTokens.color.ink,
     fontFamily: nativeTokens.type.family.sans,
     fontSize: nativeTokens.type.scale.body.size,
-    textAlign: "right",
+    textAlign: "auto",
     writingDirection: "rtl",
     paddingVertical: nativeTokens.space[2],
   },
