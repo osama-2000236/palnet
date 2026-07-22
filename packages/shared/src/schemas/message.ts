@@ -15,13 +15,10 @@ export type CreateGroupRoomBody = z.infer<typeof CreateGroupRoomBody>;
 export const CreateRoomBody = z.union([CreateOrGetDmBody, CreateGroupRoomBody]);
 export type CreateRoomBody = z.infer<typeof CreateRoomBody>;
 
-/** Message media must be HTTPS — blocks javascript:/data:/file: and cleartext phishing. */
-const HttpsUrl = z
-  .string()
-  .url()
-  .refine((value) => value.toLowerCase().startsWith("https://"), {
-    message: "mediaUrl must be an https URL",
-  });
+// ponytail: https only — host allowlist if R2 phishing shows up
+const HttpsUrl = z.string().url().refine((v) => v.toLowerCase().startsWith("https://"), {
+  message: "mediaUrl must be an https URL",
+});
 
 export const SendMessageBody = z.object({
   body: z.string().min(1).max(5000),

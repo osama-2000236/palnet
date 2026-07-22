@@ -80,17 +80,9 @@ Code paths exist; these are configuration/evidence tasks. `apps/api/src/config/e
 8. **Native-speaker Arabic copy review** and **legal/privacy counsel review** — human tasks, still open.
 9. **Staging perf baseline** — `pnpm load:api:baseline` vs `docs/perf-baseline-*.md` per pre-flight checklist in `docs/deployment.md`.
 
-## 4b. Messaging hardening (2026-07-14) — **API APPROVED 2026-07-22**
+## 4b. Security + messaging (2026-07) — shipped in PR branch
 
-Full audit trail: **`docs/audit/MESSAGING-FIXES-2026-07-14.md`** (second-AI API verdict: APPROVED).
-
-Summary of code changes:
-
-- Archive resurface on send; P2002 idempotent send race; DM open under advisory lock; block at open-DM; trim empty body
-- Mobile: load older + typing
-- Web: edit/delete no longer reorders inbox by message `createdAt`
-
-**Also:** security scan 2026-07-22 closed HyperPay fail-open, checkout returnUrl allowlist, refresh-token race reuse burn, JWT HS256 pin, HTTPS-only message `mediaUrl` — see **`docs/audit/SECURITY-SCAN-2026-07-22.md`**.
+Messaging: archive resurface, P2002 send race, advisory-locked open-DM, block-at-open, blank-body reject, mobile load-older/typing, web edit/delete inbox order. Security: HyperPay fail-closed, returnUrl allowlist, refresh reuse burn, JWT HS256 pin, HTTPS mediaUrl.
 
 ## 5. Enhancement backlog (post-blocker, prioritized)
 

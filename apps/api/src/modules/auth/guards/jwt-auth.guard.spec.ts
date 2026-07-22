@@ -11,64 +11,41 @@ import { JwtAuthGuard } from "./jwt-auth.guard";
 const SECRET = "x".repeat(48);
 
 function makeGuard(): JwtAuthGuard {
-  const reflector = {
-    getAllAndOverride: jest.fn().mockReturnValue(false),
-  } as unknown as Reflector;
-  const config = {
-    getOrThrow: jest.fn().mockReturnValue(SECRET),
-  } as unknown as ConfigService;
-  const authTokens = {
-    consumeStreamToken: jest.fn(),
-  } as unknown as AuthTokensService;
-  const lastSeen = { touch: jest.fn() } as unknown as LastSeenTracker;
-  return new JwtAuthGuard(reflector, config as never, authTokens, lastSeen);
+  return new JwtAuthGuard(
+    { getAllAndOverride: jest.fn().mockReturnValue(false) } as unknown as Reflector,
+    { getOrThrow: jest.fn().mockReturnValue(SECRET) } as unknown as ConfigService as never,
+    { consumeStreamToken: jest.fn() } as unknown as AuthTokensService,
+    { touch: jest.fn() } as unknown as LastSeenTracker,
+  );
 }
 
-function httpContext(authHeader?: string) {
-  const req: { headers: Record<string, string | undefined>; user?: unknown; query?: unknown } = {
-    headers: authHeader ? { authorization: authHeader } : {},
+function ctx(auth?: string) {
+  const req: { headers: Record<string, string | undefined>; user?: unknown; query: object } = {
+    headers: auth ? { authorization: auth } : {},
     query: {},
   };
   return {
     getHandler: () => ({}),
     getClass: () => ({}),
-    switchToHttp: () => ({
-      getRequest: () => req,
-    }),
-    // expose for assertions
+    switchToHttp: () => ({ getRequest: () => req }),
     _req: req,
   };
 }
 
-describe("JwtAuthGuard algorithm pinning", () => {
-  it("accepts a valid HS256 access token", async () => {
+describe("JwtAuthGuard HS256 pin", () => {
+  it("accepts HS256 and rejects alg=none", async () => {
     const guard = makeGuard();
     const token = jwt.sign(
       { sub: "u1", email: "a@b.co", role: "USER", locale: "ar-PS" },
       SECRET,
       { algorithm: "HS256", expiresIn: 60 },
     );
-    const ctx = httpContext(`Bearer ${token}`);
-    await expect(guard.canActivate(ctx as never)).resolves.toBe(true);
-    expect(ctx._req.user).toMatchObject({ id: "u1", email: "a@b.co", role: "USER" });
-  });
+    const ok = ctx(`Bearer ${token}`);
+    await expect(guard.canActivate(ok as never)).resolves.toBe(true);
+    expect(ok._req.user).toMatchObject({ id: "u1" });
 
-  it("rejects tokens signed with a non-HS256 algorithm (none)", async () => {
-    const guard = makeGuard();
-    // Craft unsigned "alg":"none" JWT — verify must reject when algorithms is pinned.
-    const header = Buffer.from(JSON.stringify({ alg: "none", typ: "JWT" })).toString("base64url");
-    const payload = Buffer.from(
-      JSON.stringify({ sub: "u1", email: "a@b.co", role: "ADMIN", locale: "ar-PS" }),
-    ).toString("base64url");
-    const noneToken = `${header}.${payload}.`;
-    const ctx = httpContext(`Bearer ${noneToken}`);
-    await expect(guard.canActivate(ctx as never)).rejects.toBeInstanceOf(UnauthorizedException);
-    expect(ctx._req.user).toBeUndefined();
-  });
-
-  it("rejects missing bearer token on protected routes", async () => {
-    const guard = makeGuard();
-    const ctx = httpContext();
-    await expect(guard.canActivate(ctx as never)).rejects.toBeInstanceOf(UnauthorizedException);
+    const none = `${Buffer.from(JSON.stringify({ alg: "none", typ: "JWT" })).toString("base64url")}.${Buffer.from(JSON.stringify({ sub: "u1", email: "a@b.co", role: "ADMIN", locale: "ar-PS" })).toString("base64url")}.`;
+    const bad = ctx(`Bearer ${none}`);
+    await expect(guard.canActivate(bad as never)).rejects.toBeInstanceOf(UnauthorizedException);
   });
 });

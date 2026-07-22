@@ -62,11 +62,7 @@ export class HyperPayClient {
     };
   }
 
-  /**
-   * Fail closed: a missing webhook secret or missing signature rejects the
-   * payload. Never accept unsigned payment events — free-premium is worse than
-   * a misconfigured staging webhook 401.
-   */
+  // ponytail: fail closed — missing secret must not accept free-premium webhooks
   verifyWebhookSignature(payload: unknown, signature: string | undefined): boolean {
     const secret = this.config.get("HYPERPAY_WEBHOOK_SECRET", { infer: true });
     if (!secret || !signature) return false;

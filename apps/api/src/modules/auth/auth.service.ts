@@ -112,15 +112,12 @@ export class AuthService {
       throw this.refreshUnauthorized();
     }
 
-    // Atomic claim: concurrent refresh of the same token must not issue two
-    // sessions. Only one updateMany wins; the loser is treated as reuse.
+    // ponytail: updateMany claim; count=0 = race/reuse → burn all user sessions
     const claimed = await this.prisma.refreshToken.updateMany({
       where: { id: record.id, revokedAt: null },
       data: { revokedAt: new Date() },
     });
     if (claimed.count !== 1) {
-      // Stolen-token reuse or double-submit race after first claim: burn every
-      // remaining session for this user so the attacker cannot keep a fork.
       await this.prisma.refreshToken.updateMany({
         where: { userId: record.userId, revokedAt: null },
         data: { revokedAt: new Date() },

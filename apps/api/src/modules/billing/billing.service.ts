@@ -54,8 +54,6 @@ export class BillingService {
   async createCheckoutSession(userId: string, body: CheckoutSessionBody): Promise<CheckoutSession> {
     const plan = await this.ensurePlan(body.planCode);
     await this.assertScope(userId, body.planCode, body.companyId ?? null);
-    // Payment providers redirect the shopper to returnUrl after pay — never
-    // accept an attacker-controlled host (open-redirect → phishing chain).
     assertSafeReturnUrl(body.returnUrl, this.config);
 
     const user = await this.prisma.user.findUnique({
@@ -645,82 +643,35 @@ export class BillingService {
   }
 }
 
-/**
- * Allow only first-party origins for post-payment redirects.
- * Origins come from BAYDAR_WEB_URL + CORS_ORIGINS (comma-separated).
- */
-export function assertSafeReturnUrl(
-  returnUrl: string,
-  config: ConfigService<Env, true>,
-): void {
-  let parsed: URL;
+/** First-party origins only (BAYDAR_WEB_URL + CORS_ORIGINS). */
+function assertSafeReturnUrl(returnUrl: string, config: ConfigService<Env, true>): void {
+  let u: URL;
   try {
-    parsed = new URL(returnUrl);
+    u = new URL(returnUrl);
   } catch {
-    throw new DomainException(ErrorCode.VALIDATION_FAILED, "returnUrl is not a valid URL.", 400);
+    throw new DomainException(ErrorCode.VALIDATION_FAILED, "Invalid returnUrl.", 400);
   }
-
-  if (parsed.protocol !== "https:" && parsed.protocol !== "http:") {
-    throw new DomainException(
-      ErrorCode.VALIDATION_FAILED,
-      "returnUrl must use http or https.",
-      400,
-    );
+  if ((u.protocol !== "https:" && u.protocol !== "http:") || u.username || u.password) {
+    throw new DomainException(ErrorCode.VALIDATION_FAILED, "Invalid returnUrl.", 400);
   }
-
-  // Block credentials-in-URL and userinfo tricks (https://evil@baydar.ps/...).
-  if (parsed.username || parsed.password) {
-    throw new DomainException(
-      ErrorCode.VALIDATION_FAILED,
-      "returnUrl must not include credentials.",
-      400,
-    );
-  }
-
-  const allowed = collectAllowedOrigins(config);
-  if (allowed.length === 0) {
-    throw new DomainException(
-      ErrorCode.VALIDATION_FAILED,
-      "returnUrl cannot be validated: no allowed web origins configured.",
-      400,
-    );
-  }
-
-  const origin = `${parsed.protocol}//${parsed.host}`;
-  if (!allowed.includes(origin)) {
-    throw new DomainException(
-      ErrorCode.VALIDATION_FAILED,
-      "returnUrl origin is not an allowed Baydar origin.",
-      400,
-    );
-  }
-}
-
-function collectAllowedOrigins(config: ConfigService<Env, true>): string[] {
-  const origins = new Set<string>();
-  const webUrl = config.get("BAYDAR_WEB_URL", { infer: true });
-  if (webUrl) {
+  const allowed = new Set<string>();
+  const seeds = [
+    config.get("BAYDAR_WEB_URL", { infer: true }),
+    ...(config.get("CORS_ORIGINS", { infer: true })?.split(",") ?? []),
+  ];
+  for (const raw of seeds) {
+    const t = raw?.trim();
+    if (!t || t.includes("*")) continue;
     try {
-      const u = new URL(webUrl);
-      origins.add(`${u.protocol}//${u.host}`);
+      const o = new URL(t);
+      allowed.add(`${o.protocol}//${o.host}`);
     } catch {
-      // ignore malformed env; assertSafeReturnUrl will fail closed if empty
+      // skip bad env entry
     }
   }
-  const cors = config.get("CORS_ORIGINS", { infer: true });
-  if (cors) {
-    for (const part of cors.split(",")) {
-      const trimmed = part.trim();
-      if (!trimmed || trimmed.includes("*")) continue;
-      try {
-        const u = new URL(trimmed);
-        origins.add(`${u.protocol}//${u.host}`);
-      } catch {
-        // skip invalid entries
-      }
-    }
+  if (!allowed.has(`${u.protocol}//${u.host}`)) {
+    throw new DomainException(ErrorCode.VALIDATION_FAILED, "returnUrl origin not allowed.", 400);
   }
-  return Array.from(origins);
 }
 
 function isHyperPaySuccess(code: string | undefined): boolean {
