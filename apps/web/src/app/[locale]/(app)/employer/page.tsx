@@ -1,7 +1,7 @@
 "use client";
 
 import { CompanySummary } from "@baydar/shared";
-import { Surface } from "@baydar/ui-web";
+import { EmptyState, Surface } from "@baydar/ui-web";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -52,7 +52,7 @@ export default function EmployerHomePage(): JSX.Element {
         </div>
         <Link
           href={`/${locale}/employer/new`}
-          className="bg-brand-500 hover:bg-brand-600 inline-flex items-center rounded-md px-4 py-2 text-sm font-semibold text-white"
+          className="bg-brand-600 text-ink-inverse hover:bg-brand-700 inline-flex items-center rounded-md px-4 py-2 text-sm font-semibold focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
         >
           {t("createCompany")}
         </Link>
@@ -69,8 +69,14 @@ export default function EmployerHomePage(): JSX.Element {
       ) : null}
 
       {companies && companies.length === 0 ? (
-        <Surface variant="card" padding="4">
-          <p className="text-ink text-sm">{t("empty")}</p>
+        <Surface variant="card" padding="0">
+          <EmptyState
+            motif="jobs"
+            title={t("empty")}
+            body={t("emptyDesc")}
+            cta={t("createCompany")}
+            onAction={() => router.push(`/${locale}/employer/new`)}
+          />
         </Surface>
       ) : null}
 
