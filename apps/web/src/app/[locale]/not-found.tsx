@@ -79,7 +79,8 @@ export default function LocaleNotFound(): JSX.Element {
           padding="8"
           className="flex flex-col items-center gap-4 text-center"
         >
-          <Illustration motif="error" size="lg" />
+          {/* `block` is the failure register — see DESIGN.md §7.5. */}
+          <Illustration motif="error" direction="block" size="lg" />
           <h1 className="text-ink text-xl font-semibold">{tNotFound("title")}</h1>
           <p className="text-ink-muted text-sm">{tNotFound("body")}</p>
           <div className="flex gap-3">

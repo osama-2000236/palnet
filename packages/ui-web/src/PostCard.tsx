@@ -44,7 +44,8 @@ export interface PostCardLabels {
   liked: string;
   comment: string;
   repost: string;
-  send: string;
+  /** e.g. "أعدت النشر" — active state of the repost button. */
+  reposted?: string;
   save?: string;
   saved?: string;
   /** "{n} تعليق" — interpolated count label. */
@@ -73,6 +74,10 @@ export interface PostCardProps {
   liked: boolean;
   /** Disable the like button while a request is in flight. */
   busy?: boolean;
+  /** Whether the viewer has reposted this post. */
+  reposted?: boolean;
+  /** Disable the repost button while a request is in flight. */
+  repostBusy?: boolean;
   /** Whether the viewer has saved/bookmarked this post. */
   saved?: boolean;
   /** Disable the save button while a request is in flight. */
@@ -83,10 +88,10 @@ export interface PostCardProps {
   onOpenProfile?(authorId: string): void;
   /** Toggle reaction — host performs the API call + optimistic update. */
   onToggleReaction?(): void;
-  /** Repost action. Host can open a composer or navigate. */
-  onRepost?(): void;
-  /** Share action. */
-  onShare?(): void;
+  /** Toggle repost — host performs the API call + optimistic update.
+   *  Omit it and the button is not rendered, same rule as save: a post has no
+   *  public permalink, so an external "share" action has nowhere to point. */
+  onToggleRepost?(): void;
   /** Toggle save/bookmark. */
   onToggleSave?(): void;
   onReport?(): void;
@@ -109,13 +114,14 @@ export function PostCard({
   counts,
   liked,
   busy = false,
+  reposted = false,
+  repostBusy = false,
   saved = false,
   saveBusy = false,
   labels,
   onOpenProfile,
   onToggleReaction,
-  onRepost,
-  onShare,
+  onToggleRepost,
   onToggleSave,
   onReport,
   commentsSlot,
@@ -241,7 +247,15 @@ export function PostCard({
           onClick={toggleComments}
           active={open}
         />
-        <PostCardAction icon="repost" label={labels.repost} onClick={onRepost} />
+        {onToggleRepost ? (
+          <PostCardAction
+            icon="repost"
+            label={reposted ? (labels.reposted ?? labels.repost) : labels.repost}
+            onClick={onToggleRepost}
+            active={reposted}
+            disabled={repostBusy}
+          />
+        ) : null}
         {onToggleSave && labels.save ? (
           <PostCardAction
             icon="bookmark"
@@ -251,7 +265,6 @@ export function PostCard({
             disabled={saveBusy}
           />
         ) : null}
-        <PostCardAction icon="send-paper" label={labels.send} onClick={onShare} />
       </div>
 
       {open && commentsSlot ? (

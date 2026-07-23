@@ -38,6 +38,7 @@ export default function AppSegmentError({
       <Surface variant="card" padding="0">
         <EmptyState
           motif="error"
+          direction="block"
           title={t("boundary.title")}
           body={t("boundary.body")}
           cta={tCommon("retry")}

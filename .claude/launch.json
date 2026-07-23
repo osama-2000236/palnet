@@ -15,6 +15,12 @@
       "autoPort": true
     },
     {
+      "name": "web-qa",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--filter", "@baydar/web", "exec", "next", "dev", "-p", "3100"],
+      "port": 3100
+    },
+    {
       "name": "web-prod",
       "runtimeExecutable": "pnpm",
       "runtimeArgs": ["--filter", "@baydar/web", "exec", "next", "start", "-p", "3001"],

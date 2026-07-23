@@ -45,6 +45,7 @@ export function PostCard({
   const [reportOpen, setReportOpen] = useState(false);
   const report = useReport();
   const [saveBusy, setSaveBusy] = useState(false);
+  const [repostBusy, setRepostBusy] = useState(false);
 
   async function toggleReaction(): Promise<void> {
     const token = getAccessToken();
@@ -77,6 +78,33 @@ export function PostCard({
       onChange?.(post);
     } finally {
       setBusy(false);
+    }
+  }
+
+  async function toggleRepost(): Promise<void> {
+    const token = getAccessToken();
+    if (!token || repostBusy) return;
+    const wasReposted = post.viewer.reposted;
+    onChange?.({
+      ...post,
+      viewer: { ...post.viewer, reposted: !wasReposted },
+      counts: {
+        ...post.counts,
+        reposts: Math.max(0, post.counts.reposts + (wasReposted ? -1 : 1)),
+      },
+    });
+    setRepostBusy(true);
+    try {
+      await apiCall(`/posts/${post.id}/reposts`, {
+        method: wasReposted ? "DELETE" : "POST",
+        // The endpoint takes an optional quote comment; a plain repost sends none.
+        body: wasReposted ? undefined : {},
+        token,
+      });
+    } catch {
+      onChange?.(post);
+    } finally {
+      setRepostBusy(false);
     }
   }
 
@@ -147,6 +175,8 @@ export function PostCard({
         counts={post.counts}
         liked={post.viewer.reaction !== null}
         busy={busy}
+        reposted={post.viewer.reposted}
+        repostBusy={repostBusy}
         saved={post.viewer.bookmarkId !== null}
         saveBusy={saveBusy}
         labels={{
@@ -154,7 +184,7 @@ export function PostCard({
           liked: t("liked"),
           comment: t("comment"),
           repost: t("repost"),
-          send: t("send"),
+          reposted: t("reposted"),
           save: t("save"),
           saved: t("saved"),
           commentsCount: (count) => t("commentsCount", { count }),
@@ -167,6 +197,7 @@ export function PostCard({
         commentsOpen={commentsOpen}
         onToggleComments={setCommentsOpen}
         onToggleReaction={() => void toggleReaction()}
+        onToggleRepost={() => void toggleRepost()}
         onToggleSave={() => void toggleSave()}
         onReport={() => setReportOpen(true)}
         onOpenProfile={() => router.push(`/in/${post.author.handle}`)}

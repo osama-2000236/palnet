@@ -204,6 +204,22 @@ Truth: what exists in `packages/ui-web/src/` and `packages/ui-native/src/` today
 
 Per-screen recipes (surfaces, components, copy stance, states) live in [docs/design/SCREENS.md](docs/design/SCREENS.md).
 
+### 7.5 Illustration direction kits
+
+`Illustration` (and `EmptyState`, which wraps it) ships three drawing kits over
+the same 10 motifs. They are three **registers**, not three styles to pick by
+taste. One register per kit — if a kit has no register, it gets deleted, not
+kept "for later".
+
+| `direction` | Register         | Where                                                                     |
+| ----------- | ---------------- | ------------------------------------------------------------------------- |
+| `harvest`   | Member-facing    | Default. Every in-app empty state: feed, jobs, saved, search, messages…   |
+| `outline`   | Admin / operator | `/moderation`, `/billing` — internal surfaces, quieter than member-facing |
+| `block`     | Failure          | `error.tsx`, `not-found.tsx`, the `(app)` error boundary                  |
+
+Mobile has no admin surfaces, so `outline` is web-only there; `harvest` and
+`block` stay in lockstep across both kits.
+
 ## 8. Cross-platform parity
 
 Web and mobile must stay in lockstep on prop names, variant names, and visual identity. Drift is how a design system rots.

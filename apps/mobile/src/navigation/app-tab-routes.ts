@@ -41,6 +41,7 @@ export const HIDDEN_APP_TAB_ROUTES = [
   "_onboarding/StepContent",
   "_onboarding/Steps",
   "_onboarding/types",
+  "_premium/parts",
   "_profile-detail/ProfileActions",
   "_profile-detail/ProfileHero",
   "_profile-detail/ProfileTabContent",

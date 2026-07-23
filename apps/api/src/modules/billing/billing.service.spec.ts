@@ -14,7 +14,7 @@ type PrismaStub = {
   plan: { upsert: jest.Mock };
   user: { findUnique: jest.Mock };
   companyMember: { findFirst: jest.Mock; findMany: jest.Mock };
-  subscription: { create: jest.Mock; findFirst: jest.Mock };
+  subscription: { create: jest.Mock; findFirst: jest.Mock; update: jest.Mock };
   job: { count: jest.Mock };
   employerCredit: { findMany: jest.Mock };
   invoice: {
@@ -34,7 +34,7 @@ function buildPrisma(): PrismaStub {
     plan: { upsert: jest.fn() },
     user: { findUnique: jest.fn() },
     companyMember: { findFirst: jest.fn(), findMany: jest.fn() },
-    subscription: { create: jest.fn(), findFirst: jest.fn() },
+    subscription: { create: jest.fn(), findFirst: jest.fn(), update: jest.fn() },
     job: { count: jest.fn() },
     employerCredit: { findMany: jest.fn() },
     invoice: {
@@ -551,6 +551,38 @@ describe("BillingService", () => {
 
     prisma.subscription.findFirst.mockResolvedValue(null);
     expect((await service.getBillingMe("user-1")).subscription).toBeNull();
+  });
+
+  it("cancel flags the period end, is idempotent, and 404s without a subscription", async () => {
+    const active = {
+      id: "sub-1",
+      userId: "user-1",
+      companyId: null,
+      planId: "plan-USER_PREMIUM",
+      status: "ACTIVE",
+      currentPeriodStart: new Date("2026-06-01T00:00:00Z"),
+      currentPeriodEnd: new Date("2026-07-01T00:00:00Z"),
+      providerSubscriptionId: null,
+      cancelAtPeriodEnd: false,
+    };
+    prisma.subscription.findFirst.mockResolvedValue(active);
+    prisma.subscription.update.mockResolvedValue({ ...active, cancelAtPeriodEnd: true });
+
+    await service.cancelAtPeriodEnd("user-1");
+
+    expect(prisma.subscription.update).toHaveBeenCalledWith({
+      where: { id: "sub-1" },
+      data: { cancelAtPeriodEnd: true },
+    });
+
+    // Already flagged — no second write.
+    prisma.subscription.update.mockClear();
+    prisma.subscription.findFirst.mockResolvedValue({ ...active, cancelAtPeriodEnd: true });
+    await service.cancelAtPeriodEnd("user-1");
+    expect(prisma.subscription.update).not.toHaveBeenCalled();
+
+    prisma.subscription.findFirst.mockResolvedValue(null);
+    await expect(service.cancelAtPeriodEnd("user-1")).rejects.toMatchObject({ status: 404 });
   });
 
   it("summarizes company billing: plan, job quota, and live credits", async () => {

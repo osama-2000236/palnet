@@ -1,28 +1,20 @@
 import {
   Bookmark,
   BookmarkType,
-  ReportReason,
   formatNumber,
   formatRelativeTime,
   type Post,
 } from "@baydar/shared";
-import {
-  PostCard,
-  ReportSheet,
-  nativeTokens,
-  useToast,
-  type PostCardAction,
-  type ReportSheetLabels,
-} from "@baydar/ui-native";
-import { Image } from "expo-image";
+import { PostCard, ReportSheet, useToast, type PostCardAction } from "@baydar/ui-native";
 import { router } from "expo-router";
 import { memo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { StyleSheet, View } from "react-native";
 
 import { CommentsList } from "@/components/CommentsList";
+import { PostMedia } from "@/components/rows/PostMedia";
 import { apiCall, apiFetch } from "@/lib/api";
 import { useReport } from "@/api/safety";
+import { useReportLabels } from "@/lib/report-labels";
 import { successHaptic, tapHaptic } from "@/lib/haptics";
 import { getAccessToken } from "@/lib/session";
 
@@ -38,7 +30,9 @@ export const PostRow = memo(function PostRow({ post, onChange }: PostRowProps): 
   const [reportOpen, setReportOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [saveBusy, setSaveBusy] = useState(false);
+  const [repostBusy, setRepostBusy] = useState(false);
   const report = useReport();
+  const reportLabels = useReportLabels();
 
   async function toggleReaction(): Promise<void> {
     if (busy) return;
@@ -77,6 +71,36 @@ export const PostRow = memo(function PostRow({ post, onChange }: PostRowProps): 
     }
   }
 
+  async function toggleRepost(): Promise<void> {
+    if (repostBusy) return;
+    const token = await getAccessToken();
+    if (!token) return;
+    const wasReposted = post.viewer.reposted;
+    onChange?.({
+      ...post,
+      viewer: { ...post.viewer, reposted: !wasReposted },
+      counts: {
+        ...post.counts,
+        reposts: Math.max(0, post.counts.reposts + (wasReposted ? -1 : 1)),
+      },
+    });
+    setRepostBusy(true);
+    try {
+      tapHaptic();
+      await apiCall(`/posts/${post.id}/reposts`, {
+        method: wasReposted ? "DELETE" : "POST",
+        // The endpoint takes an optional quote comment; a plain repost sends none.
+        body: wasReposted ? undefined : {},
+        token,
+      });
+      successHaptic();
+    } catch {
+      onChange?.(post);
+    } finally {
+      setRepostBusy(false);
+    }
+  }
+
   async function toggleSave(): Promise<void> {
     if (saveBusy) return;
     const token = await getAccessToken();
@@ -111,26 +135,8 @@ export const PostRow = memo(function PostRow({ post, onChange }: PostRowProps): 
 
   const liked = post.viewer.reaction !== null;
   const saved = post.viewer.bookmarkId !== null;
-  const singleMedia = post.media.length === 1;
+  const reposted = post.viewer.reposted;
   const authorName = `${post.author.firstName} ${post.author.lastName}`.trim();
-  const media =
-    post.media.length > 0 ? (
-      <View style={styles.mediaRow}>
-        {post.media.map((m) =>
-          m.kind === "IMAGE" ? (
-            <Image
-              key={m.id ?? m.url}
-              source={{ uri: m.url }}
-              style={[styles.mediaImage, singleMedia ? styles.mediaSingle : styles.mediaPair]}
-              contentFit="cover"
-              cachePolicy="memory-disk"
-              placeholder={m.blurhash ? { blurhash: m.blurhash } : undefined}
-            />
-          ) : null,
-        )}
-      </View>
-    ) : null;
-
   const actions: PostCardAction[] = [
     {
       key: "like",
@@ -149,6 +155,15 @@ export const PostRow = memo(function PostRow({ post, onChange }: PostRowProps): 
       onPress: () => setShowComments((s) => !s),
     },
     {
+      key: "repost",
+      label: reposted ? t("post.reposted") : t("post.repost"),
+      icon: "repost",
+      selected: reposted,
+      disabled: repostBusy,
+      testID: `post-repost-${post.id}`,
+      onPress: () => void toggleRepost(),
+    },
+    {
       key: "save",
       label: saved ? t("post.saved") : t("post.save"),
       icon: "bookmark",
@@ -158,25 +173,11 @@ export const PostRow = memo(function PostRow({ post, onChange }: PostRowProps): 
       onPress: () => void toggleSave(),
     },
     // Report lives on the header overflow button, not the action bar — it is
-    // not a peer of like/comment/save, and 4 buttons truncate their labels.
+    // not a peer of like/comment/repost/save. Four actions put the card into
+    // PostCard's icon-only mode; the labels survive as accessibilityLabel.
+    // No share/send action on either platform: posts have no public permalink,
+    // so the button would have nowhere to point.
   ];
-
-  const reportLabels: ReportSheetLabels = {
-    title: t("safety.report.title"),
-    detailsLabel: t("safety.report.details_label"),
-    cancel: t("common.cancel"),
-    submit: t("safety.report.submit"),
-    close: t("safety.report.close"),
-    reasons: {
-      [ReportReason.SPAM]: t("safety.report.reason.spam"),
-      [ReportReason.HARASSMENT]: t("safety.report.reason.harassment"),
-      [ReportReason.HATE]: t("safety.report.reason.hate"),
-      [ReportReason.MISINFORMATION]: t("safety.report.reason.misinformation"),
-      [ReportReason.NUDITY]: t("safety.report.reason.nudity"),
-      [ReportReason.VIOLENCE]: t("safety.report.reason.violence"),
-      [ReportReason.OTHER]: t("safety.report.reason.other"),
-    },
-  };
 
   return (
     <>
@@ -192,7 +193,7 @@ export const PostRow = memo(function PostRow({ post, onChange }: PostRowProps): 
         authorHeadline={post.author.headline}
         timestamp={formatRelativeTime(post.createdAt, i18n.language)}
         body={post.body}
-        media={media}
+        media={<PostMedia media={post.media} />}
         reactionCount={
           post.counts.reactions > 0 ? formatNumber(post.counts.reactions, i18n.language) : undefined
         }
@@ -252,20 +253,9 @@ function areEqual(prev: PostRowProps, next: PostRowProps): boolean {
     prev.post.updatedAt === next.post.updatedAt &&
     prev.post.viewer.reaction === next.post.viewer.reaction &&
     prev.post.viewer.bookmarkId === next.post.viewer.bookmarkId &&
+    prev.post.viewer.reposted === next.post.viewer.reposted &&
     prev.post.counts.reactions === next.post.counts.reactions &&
-    prev.post.counts.comments === next.post.counts.comments
+    prev.post.counts.comments === next.post.counts.comments &&
+    prev.post.counts.reposts === next.post.counts.reposts
   );
 }
-
-const styles = StyleSheet.create({
-  mediaRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: nativeTokens.space[1],
-  },
-  mediaImage: {
-    height: nativeTokens.space[20] * 2 + nativeTokens.space[5],
-  },
-  mediaSingle: { width: "100%" },
-  mediaPair: { width: "49%" },
-});

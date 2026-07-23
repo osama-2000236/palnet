@@ -31,6 +31,10 @@ export function PostCard({
 }: PostCardProps): JSX.Element {
   const c = useThemeTokens().color;
   const styles = useMemo(() => makeStyles(c), [c]);
+  // Web hides the labels below `sm`; the phone is always below `sm`, so the
+  // equivalent trigger here is action count — past three, labels truncate at
+  // 390. accessibilityLabel still carries the text (MOBILE.md §a11y).
+  const iconOnly = actions.length > 3;
   const stat = (icon: IconName, value: number | string | undefined, wrap: StyleProp<ViewStyle>) =>
     value === undefined ? null : (
       <View style={wrap}>
@@ -128,13 +132,19 @@ export function PostCard({
               action.disabled ? styles.disabled : null,
             ]}
           >
-            <Icon name={action.icon} size={16} color={action.selected ? c.brand700 : c.inkMuted} />
-            <Text
-              numberOfLines={1}
-              style={[styles.actionLabel, action.selected ? styles.actionLabelSelected : null]}
-            >
-              {action.label}
-            </Text>
+            <Icon
+              name={action.icon}
+              size={iconOnly ? 20 : 16}
+              color={action.selected ? c.brand700 : c.inkMuted}
+            />
+            {iconOnly ? null : (
+              <Text
+                numberOfLines={1}
+                style={[styles.actionLabel, action.selected ? styles.actionLabelSelected : null]}
+              >
+                {action.label}
+              </Text>
+            )}
           </Pressable>
         ))}
       </View>

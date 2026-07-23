@@ -13,7 +13,7 @@ import {
   type Invoice as InvoiceDto,
   type KaramaBalance as KaramaBalanceDto,
 } from "@baydar/shared";
-import { Alert, Button, Skeleton, Surface } from "@baydar/ui-web";
+import { Alert, Button, Icon, Skeleton, Surface, useToast, type IconName } from "@baydar/ui-web";
 import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { z } from "zod";
@@ -30,6 +30,17 @@ const InvoicesResponse = z.array(Invoice);
 const PREMIUM_FEATURE_KEYS = ["analytics", "whoViewed", "diasporaBadge"] as const;
 const FREE_FEATURE_KEYS = ["profile", "connect", "jobs"] as const;
 
+// Trust cues, not social proof. Every line here is something the product
+// actually does — local rails, karama-as-payment, a real cancel endpoint, a
+// 30-day interval. Member counts and testimonials stay out until we have real
+// ones; a fabricated number is the one thing that destroys the surface it
+// decorates.
+const TRUST_KEYS: ReadonlyArray<{ key: string; icon: IconName }> = [
+  { key: "cancel", icon: "clock" },
+  { key: "rails", icon: "check" },
+  { key: "karama", icon: "users" },
+];
+
 export default function PremiumPage(): JSX.Element {
   const t = useTranslations("premium");
   const tErrors = useTranslations("errors");
@@ -43,6 +54,8 @@ export default function PremiumPage(): JSX.Element {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const [cancelBusy, setCancelBusy] = useState(false);
+  const { showToast } = useToast();
 
   async function load(): Promise<void> {
     // The (app) layout owns the login redirect; here we only wait for a
@@ -73,6 +86,22 @@ export default function PremiumPage(): JSX.Element {
     void load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Stops the renewal; the member keeps the period they paid for. That is
+  // exactly what the page's own subtitle promises, so it needs a real control.
+  async function cancel(): Promise<void> {
+    const token = await getValidAccessToken();
+    if (!token || !window.confirm(t("cancel.confirm"))) return;
+    setCancelBusy(true);
+    try {
+      setBillingMe(await apiFetch("/billing/me/cancel", BillingMe, { method: "POST", token }));
+      showToast({ kind: "success", message: t("cancel.done") });
+    } catch (caught) {
+      showToast({ kind: "error", message: toErrorMessage(caught, tErrors) });
+    } finally {
+      setCancelBusy(false);
+    }
+  }
 
   const plan = catalog?.plans.find((entry) => entry.code === PlanCode.USER_PREMIUM) ?? null;
   const subscription = billingMe?.subscription ?? null;
@@ -120,13 +149,22 @@ export default function PremiumPage(): JSX.Element {
               : t("current.activeTitle")
           }
         >
-          {subscription.status === "PAST_DUE"
-            ? t("current.pastDueBody")
-            : subscription.currentPeriodEnd
-              ? t(subscription.cancelAtPeriodEnd ? "current.endsBody" : "current.renewsBody", {
-                  date: dateFormatter.format(new Date(subscription.currentPeriodEnd)),
-                })
-              : t("current.activeTitle")}
+          <div className="flex flex-wrap items-center gap-3">
+            <span>
+              {subscription.status === "PAST_DUE"
+                ? t("current.pastDueBody")
+                : subscription.currentPeriodEnd
+                  ? t(subscription.cancelAtPeriodEnd ? "current.endsBody" : "current.renewsBody", {
+                      date: dateFormatter.format(new Date(subscription.currentPeriodEnd)),
+                    })
+                  : t("current.activeTitle")}
+            </span>
+            {subscription.cancelAtPeriodEnd ? null : (
+              <Button variant="ghost" size="sm" loading={cancelBusy} onClick={() => void cancel()}>
+                {t("cancel.action")}
+              </Button>
+            )}
+          </div>
         </Alert>
       ) : null}
 
@@ -147,9 +185,16 @@ export default function PremiumPage(): JSX.Element {
             padding="6"
             className="border-brand-600 flex flex-col gap-3"
           >
-            <div>
-              <h2 className="text-ink text-lg font-semibold">{t("plan.name")}</h2>
-              <p className="text-ink-muted text-sm">{t("plan.tagline")}</p>
+            <div className="flex items-start justify-between gap-2">
+              <div>
+                <h2 className="text-ink text-lg font-semibold">{t("plan.name")}</h2>
+                <p className="text-ink-muted text-sm">{t("plan.tagline")}</p>
+              </div>
+              {/* The only badge on the page — comparison emphasis comes from
+               * one plan being marked, not from both shouting. */}
+              <span className="bg-brand-50 text-brand-700 shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold">
+                {t("plan.recommended")}
+              </span>
             </div>
             <div>
               <p className="text-ink text-3xl font-bold">
@@ -165,12 +210,33 @@ export default function PremiumPage(): JSX.Element {
             </div>
             <FeatureList items={PREMIUM_FEATURE_KEYS.map((key) => t(`plan.features.${key}`))} />
             {!hasPremium && !checkoutOpen ? (
-              <Button variant="accent" size="lg" onClick={() => setCheckoutOpen(true)}>
-                {t("cta")}
-              </Button>
+              <div className="flex flex-col gap-2">
+                <Button variant="accent" size="lg" onClick={() => setCheckoutOpen(true)}>
+                  {t("cta")}
+                </Button>
+                <p className="text-ink-muted text-center text-xs">{t("guarantee")}</p>
+              </div>
             ) : null}
           </Surface>
         </section>
+      ) : null}
+
+      {!loading && !error && plan ? (
+        <Surface variant="tinted" padding="4">
+          <ul className="grid gap-3 sm:grid-cols-3">
+            {TRUST_KEYS.map(({ key, icon }) => (
+              <li key={key} className="flex items-start gap-2">
+                <span className="text-brand-600 mt-0.5 shrink-0">
+                  <Icon name={icon} size={16} />
+                </span>
+                <div>
+                  <p className="text-ink text-sm font-semibold">{t(`trust.${key}.title`)}</p>
+                  <p className="text-ink-muted text-xs">{t(`trust.${key}.body`)}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </Surface>
       ) : null}
 
       {!loading && !error && plan && karama && checkoutOpen && !hasPremium ? (

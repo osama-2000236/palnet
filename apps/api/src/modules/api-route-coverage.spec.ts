@@ -93,6 +93,7 @@ const EXPECTED_ROUTES = [
   "POST /billing/checkout-session",
   "GET /billing/catalog",
   "GET /billing/me",
+  "POST /billing/me/cancel",
   "GET /billing/invoices",
   "GET /billing/companies/:companyId/summary",
   "POST /billing/invoices/:id/pay-by-transfer",
