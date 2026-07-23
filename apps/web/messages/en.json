@@ -1117,7 +1117,8 @@
       "expiresAt": "Expires on",
       "submit": "Publish",
       "submitting": "Publishing…"
-    }
+    },
+    "emptyDesc": "Create a company page to post jobs and manage applicants."
   },
   "premium": {
     "kicker": "Baydar Premium",
