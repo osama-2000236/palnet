@@ -69,6 +69,17 @@ export class BillingController {
     return BillingMe.parse(await this.billing.getBillingMe(user.id));
   }
 
+  @Post("me/cancel")
+  @ApiBearerAuth()
+  @RequireCompleteProfile()
+  // Idempotent state change that reads the state back — 200, not Nest's POST
+  // default of 201; nothing is created.
+  @HttpCode(HttpStatus.OK)
+  @Header("Cache-Control", "private, no-store")
+  async cancel(@CurrentUser() user: AuthUser): Promise<BillingMeDto> {
+    return BillingMe.parse(await this.billing.cancelAtPeriodEnd(user.id));
+  }
+
   @Get("invoices")
   @ApiBearerAuth()
   @RequireCompleteProfile()

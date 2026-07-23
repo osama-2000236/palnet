@@ -3,23 +3,26 @@ import { fireEvent, render } from "@testing-library/react-native";
 import { PostCard } from "../PostCard";
 
 describe("PostCard", () => {
-  it("renders the four action anatomy required by the design docs", () => {
+  const base = {
+    author: { id: "u1", firstName: "ليان", lastName: "خليل", handle: "layan" },
+    authorName: "ليان خليل",
+    authorHeadline: "Full Stack Engineer",
+    timestamp: "الآن",
+    body: "تحديث مهني قصير",
+    reactionCount: 3,
+    commentCount: 2,
+    repostCount: 1,
+  };
+
+  it("keeps visible labels at three actions", () => {
     const onLike = jest.fn();
     const screen = render(
       <PostCard
-        author={{ id: "u1", firstName: "ليان", lastName: "خليل", handle: "layan" }}
-        authorName="ليان خليل"
-        authorHeadline="Full Stack Engineer"
-        timestamp="الآن"
-        body="تحديث مهني قصير"
-        reactionCount={3}
-        commentCount={2}
-        repostCount={1}
+        {...base}
         actions={[
           { key: "like", label: "أعجبني", icon: "thumb", onPress: onLike },
           { key: "comment", label: "تعليقات", icon: "comment" },
-          { key: "repost", label: "إعادة نشر", icon: "repost" },
-          { key: "send", label: "إرسال", icon: "send" },
+          { key: "save", label: "حفظ", icon: "bookmark" },
         ]}
       />,
     );
@@ -28,8 +31,30 @@ describe("PostCard", () => {
 
     expect(onLike).toHaveBeenCalledTimes(1);
     expect(screen.getByText("تعليقات")).toBeTruthy();
-    expect(screen.getByText("إعادة نشر")).toBeTruthy();
-    expect(screen.getByText("إرسال")).toBeTruthy();
+    expect(screen.getByText("حفظ")).toBeTruthy();
+  });
+
+  it("drops to icon-only past three actions, keeping the label accessible", () => {
+    const onLike = jest.fn();
+    const screen = render(
+      <PostCard
+        {...base}
+        actions={[
+          { key: "like", label: "أعجبني", icon: "thumb", onPress: onLike },
+          { key: "comment", label: "تعليقات", icon: "comment" },
+          { key: "repost", label: "إعادة نشر", icon: "repost" },
+          { key: "save", label: "حفظ", icon: "bookmark" },
+        ]}
+      />,
+    );
+
+    // Four labels at 390 truncate, so the text is dropped — but every action
+    // still has to be reachable by name.
+    expect(screen.queryByText("إعادة نشر")).toBeNull();
+    fireEvent.press(screen.getByLabelText("أعجبني"));
+    expect(onLike).toHaveBeenCalledTimes(1);
+    expect(screen.getByLabelText("إعادة نشر")).toBeTruthy();
+    expect(screen.getByLabelText("حفظ")).toBeTruthy();
   });
 
   it("renders the header overflow button only when the host wires it", () => {

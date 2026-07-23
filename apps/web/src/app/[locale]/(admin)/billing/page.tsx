@@ -163,103 +163,112 @@ export default function AdminBillingPage(): JSX.Element {
         ))}
       </Tabs>
       {error ? <p className="text-danger text-sm">{error}</p> : null}
-      <section className="flex flex-col gap-3">
-        {(invoices ?? []).map((invoice) => (
-          <Surface
-            key={invoice.id}
-            as="article"
-            variant="card"
-            padding="4"
-            data-testid={`billing-invoice-${invoice.id}`}
-          >
-            <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-              <div className="min-w-0">
-                <p className="text-ink text-sm font-semibold">
-                  <span dir="ltr">
-                    {formatAmount(invoice.amountCents, invoice.currency, locale)}
-                  </span>
-                  {" · "}
-                  {t(`methods.${invoice.method}`)}
-                </p>
-                <p className="text-ink-muted text-xs">
-                  <span dir="ltr">{formatDate(invoice.createdAt, locale)}</span>
-                  {" · "}
-                  {t("invoice")} <span dir="ltr">{invoice.id}</span>
-                </p>
-                {/* One attribution line per scope — a personal invoice never
-                 * prints a "company: n/a" placeholder and vice versa. */}
-                <p className="text-ink-muted mt-2 text-sm">
-                  {invoice.companyId || invoice.companyName ? (
-                    <>
-                      {t("company")}{" "}
-                      {invoice.companyName ?? <span dir="ltr">{invoice.companyId}</span>}
-                    </>
-                  ) : invoice.userId || invoice.userName || invoice.userEmail ? (
-                    <>
-                      {t("user")}{" "}
-                      {(invoice.userName ?? invoice.userEmail) ? (
+      {/* ponytail: no bulk bar here, unlike /moderation. Both actions move
+       * money — MARK_PAID activates a purchase, VOID kills an invoice — so
+       * each one keeps its own confirm. Density and scan order are the win. */}
+      <Surface variant="flat" padding="0" hidden={!invoices?.length}>
+        <ul>
+          {(invoices ?? []).map((invoice) => (
+            <li key={invoice.id} className="border-line-soft border-b last:border-b-0">
+              <Surface
+                as="article"
+                variant="row"
+                padding="4"
+                className="hover:bg-surface-subtle transition-colors"
+                data-testid={`billing-invoice-${invoice.id}`}
+              >
+                <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                  <div className="min-w-0">
+                    <p className="text-ink text-sm font-semibold">
+                      <span dir="ltr">
+                        {formatAmount(invoice.amountCents, invoice.currency, locale)}
+                      </span>
+                      {" · "}
+                      {t(`methods.${invoice.method}`)}
+                    </p>
+                    <p className="text-ink-muted text-xs">
+                      <span dir="ltr">{formatDate(invoice.createdAt, locale)}</span>
+                      {" · "}
+                      {t("invoice")} <span dir="ltr">{invoice.id}</span>
+                    </p>
+                    {/* One attribution line per scope — a personal invoice never
+                     * prints a "company: n/a" placeholder and vice versa. */}
+                    <p className="text-ink-muted mt-2 text-sm">
+                      {invoice.companyId || invoice.companyName ? (
                         <>
-                          {invoice.userName}
-                          {invoice.userEmail ? <span dir="ltr"> ({invoice.userEmail})</span> : null}
+                          {t("company")}{" "}
+                          {invoice.companyName ?? <span dir="ltr">{invoice.companyId}</span>}
+                        </>
+                      ) : invoice.userId || invoice.userName || invoice.userEmail ? (
+                        <>
+                          {t("user")}{" "}
+                          {(invoice.userName ?? invoice.userEmail) ? (
+                            <>
+                              {invoice.userName}
+                              {invoice.userEmail ? (
+                                <span dir="ltr"> ({invoice.userEmail})</span>
+                              ) : null}
+                            </>
+                          ) : (
+                            <span dir="ltr">{invoice.userId}</span>
+                          )}
                         </>
                       ) : (
-                        <span dir="ltr">{invoice.userId}</span>
+                        <>
+                          {t("user")} {t("missing")}
+                        </>
                       )}
-                    </>
-                  ) : (
-                    <>
-                      {t("user")} {t("missing")}
-                    </>
-                  )}
-                </p>
-                <p className="text-ink-muted mt-1 text-sm">
-                  {t("status")} {t(`statuses.${invoice.status}`)}
-                </p>
-                {invoice.reviewNote ? (
-                  <p className="text-ink-muted mt-1 text-sm">
-                    {t("reviewNote")}: {invoice.reviewNote}
-                  </p>
-                ) : null}
-                {invoice.bankReceiptUrl ? (
-                  <a
-                    href={invoice.bankReceiptUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-brand-700 mt-2 inline-flex flex-col gap-2 rounded-sm text-sm font-semibold hover:underline focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
-                  >
-                    {t("receipt")}
-                    {canPreviewReceipt(invoice.bankReceiptUrl) ? (
-                      <Image
-                        src={invoice.bankReceiptUrl}
-                        alt={t("receipt")}
-                        width={192}
-                        height={128}
-                        className="border-line-soft rounded-md border object-cover"
-                      />
+                    </p>
+                    <p className="text-ink-muted mt-1 text-sm">
+                      {t("status")} {t(`statuses.${invoice.status}`)}
+                    </p>
+                    {invoice.reviewNote ? (
+                      <p className="text-ink-muted mt-1 text-sm">
+                        {t("reviewNote")}: {invoice.reviewNote}
+                      </p>
                     ) : null}
-                  </a>
-                ) : null}
-              </div>
-              {isActionable(invoice) ? (
-                <div className="flex flex-wrap gap-2">
-                  {ACTIONS.map((action) => (
-                    <Button
-                      key={action}
-                      size="sm"
-                      variant={action === "VOID" ? "danger-ghost" : "secondary"}
-                      loading={pendingAction === `${invoice.id}:${action}`}
-                      disabled={pendingAction !== null}
-                      onClick={() => void act(invoice.id, action)}
-                    >
-                      {t(`actions.${action}`)}
-                    </Button>
-                  ))}
+                    {invoice.bankReceiptUrl ? (
+                      <a
+                        href={invoice.bankReceiptUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-brand-700 mt-2 inline-flex flex-col gap-2 rounded-sm text-sm font-semibold hover:underline focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+                      >
+                        {t("receipt")}
+                        {canPreviewReceipt(invoice.bankReceiptUrl) ? (
+                          <Image
+                            src={invoice.bankReceiptUrl}
+                            alt={t("receipt")}
+                            width={192}
+                            height={128}
+                            className="border-line-soft rounded-md border object-cover"
+                          />
+                        ) : null}
+                      </a>
+                    ) : null}
+                  </div>
+                  {isActionable(invoice) ? (
+                    <div className="flex flex-wrap gap-2">
+                      {ACTIONS.map((action) => (
+                        <Button
+                          key={action}
+                          size="sm"
+                          variant={action === "VOID" ? "danger-ghost" : "secondary"}
+                          loading={pendingAction === `${invoice.id}:${action}`}
+                          disabled={pendingAction !== null}
+                          onClick={() => void act(invoice.id, action)}
+                        >
+                          {t(`actions.${action}`)}
+                        </Button>
+                      ))}
+                    </div>
+                  ) : null}
                 </div>
-              ) : null}
-            </div>
-          </Surface>
-        ))}
-      </section>
+              </Surface>
+            </li>
+          ))}
+        </ul>
+      </Surface>
       {invoices === null && !error ? (
         <Surface variant="flat" padding="4">
           <p className="text-ink-muted text-sm">{t("loading")}</p>

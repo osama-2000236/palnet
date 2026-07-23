@@ -1,52 +1,25 @@
 "use client";
 
-import { Avatar, Button, EmptyState, Surface, Tab, Tabs, useToast } from "@baydar/ui-web";
-import { localeTag } from "@baydar/shared";
+import { Button, Checkbox, EmptyState, Surface, Tab, Tabs, useToast } from "@baydar/ui-web";
 import { useRouter } from "next/navigation";
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { z } from "zod";
 
 import { apiFetch, ApiRequestError, getValidAccessToken } from "@/lib/api";
 
-const Report = z.object({
-  id: z.string(),
-  reporterId: z.string(),
-  reason: z.string(),
-  details: z.string().nullable(),
-  targetUserId: z.string().nullable(),
-  targetPostId: z.string().nullable(),
-  targetCommentId: z.string().nullable(),
-  targetMessageId: z.string().nullable(),
-  resolvedAt: z.string().datetime().nullable(),
-  resolvedNote: z.string().nullable(),
-  createdAt: z.string().datetime(),
-  reporterHandle: z.string().nullable().optional(),
-  reporterName: z.string().nullable().optional(),
-  targetPostExcerpt: z.string().nullable().optional(),
-  targetPostDeleted: z.boolean().nullable().optional(),
-});
-type Report = z.infer<typeof Report>;
-type ModerationAction = "DISMISS" | "WARN" | "SUSPEND" | "HARD_DELETE";
-
-const ACTIONS: ModerationAction[] = ["DISMISS", "WARN", "SUSPEND", "HARD_DELETE"];
-
-function formatDate(value: string, locale: string): string {
-  return new Intl.DateTimeFormat(localeTag(locale), {
-    dateStyle: "medium",
-    timeStyle: "short",
-  }).format(new Date(value));
-}
+import { Report, ReportRow, type ModerationAction } from "./_components/ReportRow";
 
 export default function ModerationPage(): JSX.Element {
   const router = useRouter();
-  const locale = useLocale();
   const t = useTranslations("admin.moderation");
   const { showToast } = useToast();
   const [reports, setReports] = useState<Report[] | null>(null);
   const [tab, setTab] = useState<"open" | "resolved">("open");
   const [error, setError] = useState<string | null>(null);
   const [pendingAction, setPendingAction] = useState<string | null>(null);
+  const [selected, setSelected] = useState<string[]>([]);
+  const [bulkBusy, setBulkBusy] = useState(false);
 
   async function load(status: "open" | "resolved" = tab): Promise<void> {
     const token = await getValidAccessToken();
@@ -66,9 +39,56 @@ export default function ModerationPage(): JSX.Element {
 
   useEffect(() => {
     setReports(null);
+    setSelected([]);
     void load(tab);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tab]);
+
+  const openIds = (reports ?? []).filter((r) => r.resolvedAt === null).map((r) => r.id);
+  const allSelected = openIds.length > 0 && selected.length === openIds.length;
+
+  // Escape clears the selection — the standard way out of a multi-select
+  // without reaching for the mouse.
+  useEffect(() => {
+    if (selected.length === 0) return undefined;
+    const onKey = (event: KeyboardEvent): void => {
+      if (event.key === "Escape") setSelected([]);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [selected.length]);
+
+  // ponytail: sequential, not Promise.all — the queue is tens of rows, and one
+  // request at a time keeps the 409 "another moderator got here first" path
+  // meaningful instead of racing our own writes. Batch endpoint if it ever
+  // gets slow enough to notice.
+  async function bulkDismiss(): Promise<void> {
+    const token = await getValidAccessToken();
+    if (!token || selected.length === 0) return;
+    setBulkBusy(true);
+    setError(null);
+    let done = 0;
+    for (const reportId of selected) {
+      try {
+        await apiFetch(`/admin/moderation/reports/${reportId}/actions`, Report, {
+          method: "POST",
+          token,
+          body: { action: "DISMISS" satisfies ModerationAction },
+        });
+        done += 1;
+      } catch {
+        // Keep going: one stale row must not strand the rest of the batch.
+      }
+    }
+    const failed = selected.length - done;
+    showToast({
+      kind: failed > 0 ? "error" : "success",
+      message: failed > 0 ? t("bulk.partial", { done, failed }) : t("bulk.done", { done }),
+    });
+    setSelected([]);
+    setBulkBusy(false);
+    await load();
+  }
 
   async function act(reportId: string, action: ModerationAction): Promise<void> {
     const token = await getValidAccessToken();
@@ -114,122 +134,57 @@ export default function ModerationPage(): JSX.Element {
         <Tab value="resolved">{t("tabs.resolved")}</Tab>
       </Tabs>
       {error ? <p className="text-danger text-sm">{error}</p> : null}
-      <section className="flex flex-col gap-3">
-        {(reports ?? []).map((report) => (
-          <Surface
-            key={report.id}
-            as="article"
-            variant="card"
-            padding="4"
-            data-testid={`moderation-report-${report.id}`}
-          >
-            {(() => {
-              // Operator scan order: what kind of thing, then who reported it.
-              // Raw ids stay reachable via title tooltips for forensics.
-              const targetKind = report.targetUserId
-                ? "user"
-                : report.targetPostId
-                  ? "post"
-                  : report.targetCommentId
-                    ? "comment"
-                    : report.targetMessageId
-                      ? "message"
-                      : null;
-              const targetId =
-                report.targetUserId ??
-                report.targetPostId ??
-                report.targetCommentId ??
-                report.targetMessageId ??
-                null;
-              return (
-                <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-                  <div className="min-w-0">
-                    <p className="text-ink text-sm font-semibold">
-                      {t(`reasons.${report.reason}`)}
-                    </p>
-                    <div className="text-ink-muted flex items-center gap-1.5 text-xs">
-                      <span dir="ltr">{formatDate(report.createdAt, locale)}</span>
-                      {" · "}
-                      <span>{t("reporter")}</span>
-                      <Avatar
-                        user={{
-                          id: report.reporterId,
-                          handle: report.reporterHandle,
-                          firstName: report.reporterName,
-                        }}
-                        size="xs"
-                      />
-                      {report.reporterName ? (
-                        <span>
-                          {report.reporterName}
-                          {report.reporterHandle ? (
-                            <span dir="ltr"> (@{report.reporterHandle})</span>
-                          ) : null}
-                        </span>
-                      ) : (
-                        <span title={report.reporterId}>{t("unknown")}</span>
-                      )}
-                    </div>
-                    <p className="text-ink-muted mt-2 text-sm">
-                      {t("target")}{" "}
-                      {targetKind ? (
-                        <span title={targetId ?? undefined}>{t(`targets.${targetKind}`)}</span>
-                      ) : (
-                        t("unknown")
-                      )}
-                      {report.targetPostDeleted ? <> · {t("targetDeleted")}</> : null}
-                    </p>
-                    {report.targetPostExcerpt ? (
-                      <blockquote className="border-line-soft bg-surface-muted text-ink mt-2 border-s-2 p-2 text-sm">
-                        {report.targetPostExcerpt}
-                      </blockquote>
-                    ) : null}
-                    {report.details ? (
-                      <p className="text-ink mt-2 text-sm">{report.details}</p>
-                    ) : null}
-                    {report.resolvedAt ? (
-                      <p className="text-ink-muted mt-2 text-sm">
-                        {t("resolvedNote")}{" "}
-                        <span dir="ltr">{formatDate(report.resolvedAt, locale)}</span>
-                        {report.resolvedNote ? (
-                          <>
-                            {" · "}
-                            {(ACTIONS as string[]).includes(report.resolvedNote)
-                              ? t(`actions.${report.resolvedNote}`)
-                              : report.resolvedNote}
-                          </>
-                        ) : null}
-                      </p>
-                    ) : null}
-                  </div>
-                  {report.resolvedAt === null ? (
-                    <div className="flex flex-wrap gap-2">
-                      {ACTIONS.map((action) => (
-                        <Button
-                          key={action}
-                          size="sm"
-                          variant={
-                            action === "DISMISS"
-                              ? "secondary"
-                              : action === "WARN"
-                                ? "outline"
-                                : "danger-ghost"
-                          }
-                          loading={pendingAction === `${report.id}:${action}`}
-                          disabled={pendingAction !== null}
-                          onClick={() => void act(report.id, action)}
-                        >
-                          {t(`actions.${action}`)}
-                        </Button>
-                      ))}
-                    </div>
-                  ) : null}
-                </div>
-              );
-            })()}
-          </Surface>
-        ))}
-      </section>
+
+      {/* Bulk bar. DISMISS only: it is the high-volume, reversible-by-refiling
+       * action a spam flood generates. WARN/SUSPEND/HARD_DELETE stay per-row —
+       * a bulk account deletion is how a queue becomes an incident. */}
+      {openIds.length > 0 ? (
+        <div className="border-line-soft bg-surface-subtle flex flex-wrap items-center gap-3 rounded-md border px-4 py-2.5">
+          <Checkbox
+            checked={allSelected}
+            indeterminate={selected.length > 0 && !allSelected}
+            onCheckedChange={(checked) => setSelected(checked ? openIds : [])}
+            label={t("bulk.selectAll")}
+          />
+          {selected.length > 0 ? (
+            <>
+              <span className="text-ink-muted text-sm">
+                {t("bulk.selected", { count: selected.length })}
+              </span>
+              <div className="flex-1" />
+              <Button
+                size="sm"
+                variant="secondary"
+                loading={bulkBusy}
+                onClick={() => void bulkDismiss()}
+              >
+                {t("bulk.dismiss")}
+              </Button>
+            </>
+          ) : null}
+        </div>
+      ) : null}
+
+      <Surface variant="flat" padding="0" hidden={!reports?.length}>
+        <ul>
+          {(reports ?? []).map((report) => (
+            <li key={report.id} className="border-line-soft border-b last:border-b-0">
+              <ReportRow
+                report={report}
+                selected={selected.includes(report.id)}
+                onSelectedChange={(checked) =>
+                  setSelected((prev) =>
+                    checked ? [...prev, report.id] : prev.filter((id) => id !== report.id),
+                  )
+                }
+                pendingAction={pendingAction}
+                actionsDisabled={pendingAction !== null || bulkBusy}
+                onAct={(action) => void act(report.id, action)}
+              />
+            </li>
+          ))}
+        </ul>
+      </Surface>
       {reports === null && !error ? (
         <Surface variant="flat" padding="4">
           <p className="text-ink-muted text-sm">{t("loading")}</p>

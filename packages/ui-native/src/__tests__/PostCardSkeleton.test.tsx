@@ -50,7 +50,7 @@ function renderPostCardRoot(): TestNode {
           { key: "like", label: "أعجبني", icon: "thumb" },
           { key: "comment", label: "تعليقات", icon: "comment" },
           { key: "repost", label: "إعادة نشر", icon: "repost" },
-          { key: "send", label: "إرسال", icon: "send" },
+          { key: "save", label: "حفظ", icon: "bookmark" },
         ]}
       />,
     ).toJSON(),

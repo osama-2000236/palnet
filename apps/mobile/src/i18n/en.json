@@ -275,8 +275,8 @@
     "like": "Like",
     "liked": "Liked ✓",
     "comments": "Comments",
-    "reposts": "Reposts",
-    "send": "Send",
+    "repost": "Repost",
+    "reposted": "Reposted",
     "save": "Save",
     "saved": "Saved",
     "commentPlaceholder": "Add a comment…",
@@ -932,13 +932,33 @@
       "tagline": "Insight and visibility, 30 days at a time",
       "perMonth": "{{price}} / month",
       "originalUsd": "Billed as {{price}} USD",
+      "recommended": "Recommended",
       "features": {
         "analytics": "Profile analytics",
         "whoViewed": "See who viewed your profile",
         "diasporaBadge": "Diaspora badge on your profile"
       }
     },
-    "cta": "Upgrade to Premium"
+    "cta": "Upgrade to Premium",
+    "guarantee": "30 days at a time. Stop the renewal whenever you like — Premium stays active to the end of the period you paid for.",
+    "trust": {
+      "cancel": {
+        "title": "Stop whenever you like",
+        "body": "One tap ends the renewal. We don't ask why."
+      },
+      "rails": {
+        "title": "Pay the way you already pay",
+        "body": "Bank transfer or a local wallet — in your currency, with the USD price shown."
+      },
+      "karama": {
+        "title": "Or pay with Karama",
+        "body": "The points you earned helping others cover the subscription."
+      }
+    },
+    "cancel": {
+      "action": "Stop renewal",
+      "confirm": "Stop the renewal? Premium stays active to the end of the period you paid for."
+    }
   },
   "billing": {
     "plans": {

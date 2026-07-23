@@ -320,6 +320,26 @@ export class BillingService {
     return { subscription: row ? toSubscriptionDto(row) : null };
   }
 
+  // Stop the renewal at the end of the paid period. Not an immediate refund
+  // and not a status change: the member keeps what they paid for until
+  // `currentPeriodEnd`, which is what `/me/premium` already promises.
+  async cancelAtPeriodEnd(userId: string): Promise<BillingMe> {
+    const row = await this.prisma.subscription.findFirst({
+      where: { userId, status: { in: ["TRIALING", "ACTIVE", "PAST_DUE"] } },
+      orderBy: { createdAt: "desc" },
+    });
+    if (!row) {
+      throw new DomainException(ErrorCode.NOT_FOUND, "No active subscription.", 404);
+    }
+    if (!row.cancelAtPeriodEnd) {
+      await this.prisma.subscription.update({
+        where: { id: row.id },
+        data: { cancelAtPeriodEnd: true },
+      });
+    }
+    return this.getBillingMe(userId);
+  }
+
   // Billing state for one company. Access (owner/admin membership) is
   // enforced by CompanyRoleGuard on the controller route.
   async getCompanyBillingSummary(companyId: string): Promise<CompanyBillingSummary> {

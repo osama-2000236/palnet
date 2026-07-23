@@ -1,23 +1,18 @@
 import {
   Comment as CommentSchema,
   CreateCommentBody,
-  ReportReason,
   cursorPage,
   type Comment,
 } from "@baydar/shared";
 import { router } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import {
-  ReportSheet,
-  nativeTokens,
-  useThemeTokens,
-  type ReportSheetLabels,
-} from "@baydar/ui-native";
+import { ReportSheet, nativeTokens, useThemeTokens } from "@baydar/ui-native";
 import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import { useReport } from "@/api/safety";
 import { apiFetch, apiFetchPage } from "@/lib/api";
+import { useReportLabels } from "@/lib/report-labels";
 import { getAccessToken } from "@/lib/session";
 
 const CommentsPage = cursorPage(CommentSchema);
@@ -30,6 +25,7 @@ export function CommentsList({
   onCountChange?: (delta: number) => void;
 }): JSX.Element {
   const { t } = useTranslation();
+  const reportLabels = useReportLabels();
   const tk = useThemeTokens();
   const [items, setItems] = useState<Comment[]>([]);
   const [cursor, setCursor] = useState<string | null>(null);
@@ -85,23 +81,6 @@ export function CommentsList({
       setBusy(false);
     }
   }
-
-  const reportLabels: ReportSheetLabels = {
-    title: t("safety.report.title"),
-    detailsLabel: t("safety.report.details_label"),
-    cancel: t("common.cancel"),
-    submit: t("safety.report.submit"),
-    close: t("safety.report.close"),
-    reasons: {
-      [ReportReason.SPAM]: t("safety.report.reason.spam"),
-      [ReportReason.HARASSMENT]: t("safety.report.reason.harassment"),
-      [ReportReason.HATE]: t("safety.report.reason.hate"),
-      [ReportReason.MISINFORMATION]: t("safety.report.reason.misinformation"),
-      [ReportReason.NUDITY]: t("safety.report.reason.nudity"),
-      [ReportReason.VIOLENCE]: t("safety.report.reason.violence"),
-      [ReportReason.OTHER]: t("safety.report.reason.other"),
-    },
-  };
 
   return (
     <View style={[styles.wrap, { borderTopColor: tk.color.lineSoft }]}>

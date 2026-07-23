@@ -11,23 +11,18 @@ import {
   type Invoice as InvoiceDto,
   type KaramaBalance as KaramaBalanceDto,
 } from "@baydar/shared";
-import {
-  Button,
-  Icon,
-  Surface,
-  nativeTokens,
-  useThemeTokens,
-  type NativeTheme,
-} from "@baydar/ui-native";
-import { useCallback, useEffect, useState, useMemo } from "react";
+import { Button, Surface } from "@baydar/ui-native";
+import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { Alert, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { z } from "zod";
 
 import { CheckoutPanel } from "@/components/billing/CheckoutPanel";
 import { InvoiceList } from "@/components/billing/InvoiceList";
 import { StateMessage } from "@/components/StateMessage";
+
+import { FeatureList, TRUST_KEYS, TrustRow, useStyles } from "../../_premium/parts";
 import { apiFetch } from "@/lib/api";
 import { apiErrorMessage } from "@/lib/api-errors";
 
@@ -47,6 +42,7 @@ export default function PremiumScreen(): JSX.Element {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const [cancelBusy, setCancelBusy] = useState(false);
 
   const load = useCallback(async (): Promise<void> => {
     setError(null);
@@ -72,6 +68,26 @@ export default function PremiumScreen(): JSX.Element {
   useEffect(() => {
     void load();
   }, [load]);
+
+  // Stopping a renewal is reversible (resubscribe) and not destructive, so the
+  // OS two-button confirm is enough — the account-delete Modal idiom is for
+  // things you cannot undo.
+  const cancel = useCallback((): void => {
+    Alert.alert(t("premium.cancel.action"), t("premium.cancel.confirm"), [
+      { text: t("common.cancel"), style: "cancel" },
+      {
+        text: t("premium.cancel.action"),
+        style: "destructive",
+        onPress: () => {
+          setCancelBusy(true);
+          void apiFetch("/billing/me/cancel", BillingMe, { method: "POST" })
+            .then(setBillingMe)
+            .catch((caught: unknown) => setError(apiErrorMessage(t, caught)))
+            .finally(() => setCancelBusy(false));
+        },
+      },
+    ]);
+  }, [t]);
 
   const plan = catalog?.plans.find((entry) => entry.code === PlanCode.USER_PREMIUM) ?? null;
   const subscription = billingMe?.subscription ?? null;
@@ -129,6 +145,18 @@ export default function PremiumScreen(): JSX.Element {
           />
         ) : null}
 
+        {!error && hasPremium && subscription && !subscription.cancelAtPeriodEnd ? (
+          <Button
+            variant="ghost"
+            size="sm"
+            loading={cancelBusy}
+            onPress={cancel}
+            accessibilityLabel={t("premium.cancel.action")}
+          >
+            {t("premium.cancel.action")}
+          </Button>
+        ) : null}
+
         {!error && plan ? (
           <>
             <Surface variant="flat" padding="5" style={styles.planCard}>
@@ -141,7 +169,12 @@ export default function PremiumScreen(): JSX.Element {
             </Surface>
 
             <Surface variant="hero" padding="5" style={[styles.planCard, styles.premiumCard]}>
-              <Text style={styles.planName}>{t("premium.plan.name")}</Text>
+              <View style={styles.planHeader}>
+                <Text style={styles.planName}>{t("premium.plan.name")}</Text>
+                {/* The only badge on the screen — comparison emphasis comes
+                 * from one plan being marked, not from both shouting. */}
+                <Text style={styles.recommended}>{t("premium.plan.recommended")}</Text>
+              </View>
               <Text style={styles.planTagline}>{t("premium.plan.tagline")}</Text>
               <Text style={styles.planPrice}>
                 {t("premium.plan.perMonth", {
@@ -157,15 +190,29 @@ export default function PremiumScreen(): JSX.Element {
                 items={PREMIUM_FEATURE_KEYS.map((key) => t(`premium.plan.features.${key}`))}
               />
               {!hasPremium && !checkoutOpen ? (
-                <Button
-                  variant="accent"
-                  size="lg"
-                  onPress={() => setCheckoutOpen(true)}
-                  accessibilityLabel={t("premium.cta")}
-                >
-                  {t("premium.cta")}
-                </Button>
+                <>
+                  <Button
+                    variant="accent"
+                    size="lg"
+                    onPress={() => setCheckoutOpen(true)}
+                    accessibilityLabel={t("premium.cta")}
+                  >
+                    {t("premium.cta")}
+                  </Button>
+                  <Text style={styles.guarantee}>{t("premium.guarantee")}</Text>
+                </>
               ) : null}
+            </Surface>
+
+            <Surface variant="tinted" padding="4" style={styles.trustCard}>
+              {TRUST_KEYS.map(({ key, icon }) => (
+                <TrustRow
+                  key={key}
+                  icon={icon}
+                  title={t(`premium.trust.${key}.title`)}
+                  body={t(`premium.trust.${key}.body`)}
+                />
+              ))}
             </Surface>
           </>
         ) : null}
@@ -190,110 +237,4 @@ export default function PremiumScreen(): JSX.Element {
       </ScrollView>
     </SafeAreaView>
   );
-}
-
-function FeatureList({ items }: { items: string[] }): JSX.Element {
-  const c = useThemeTokens().color;
-  const styles = useStyles();
-  return (
-    <View style={styles.featureList}>
-      {items.map((item) => (
-        <View key={item} style={styles.featureRow}>
-          <Icon name="check" size={16} color={c.brand600} />
-          <Text style={styles.featureItem}>{item}</Text>
-        </View>
-      ))}
-    </View>
-  );
-}
-
-function makeStyles(c: NativeTheme["color"]) {
-  return StyleSheet.create({
-    screen: {
-      flex: 1,
-      backgroundColor: c.surfaceMuted,
-    },
-    centerScreen: {
-      flex: 1,
-      justifyContent: "center",
-      backgroundColor: c.surfaceMuted,
-      padding: nativeTokens.space[4],
-    },
-    scrollBody: {
-      padding: nativeTokens.space[4],
-      gap: nativeTokens.space[4],
-    },
-    kicker: {
-      color: c.brand700,
-      fontFamily: nativeTokens.type.family.sans,
-      fontSize: nativeTokens.type.scale.small.size,
-      lineHeight: nativeTokens.type.scale.small.line,
-      fontWeight: "700",
-    },
-    title: {
-      color: c.ink,
-      fontFamily: nativeTokens.type.family.sans,
-      fontSize: nativeTokens.type.scale.h1.size,
-      lineHeight: nativeTokens.type.scale.h1.line,
-      fontWeight: "700",
-    },
-    subtitle: {
-      color: c.inkMuted,
-      fontFamily: nativeTokens.type.family.body,
-      fontSize: nativeTokens.type.scale.small.size,
-      lineHeight: nativeTokens.type.scale.small.line,
-    },
-    planCard: {
-      gap: nativeTokens.space[2],
-    },
-    premiumCard: {
-      borderColor: c.brand600,
-    },
-    planName: {
-      color: c.ink,
-      fontFamily: nativeTokens.type.family.sans,
-      fontSize: nativeTokens.type.scale.h3.size,
-      lineHeight: nativeTokens.type.scale.h3.line,
-      fontWeight: "700",
-    },
-    planTagline: {
-      color: c.inkMuted,
-      fontFamily: nativeTokens.type.family.body,
-      fontSize: nativeTokens.type.scale.small.size,
-      lineHeight: nativeTokens.type.scale.small.line,
-    },
-    planPrice: {
-      color: c.ink,
-      fontFamily: nativeTokens.type.family.sans,
-      fontSize: nativeTokens.type.scale.h2.size,
-      lineHeight: nativeTokens.type.scale.h2.line,
-      fontWeight: "800",
-    },
-    planOriginal: {
-      color: c.inkMuted,
-      fontFamily: nativeTokens.type.family.body,
-      fontSize: nativeTokens.type.scale.small.size,
-      lineHeight: nativeTokens.type.scale.small.line,
-    },
-    featureList: {
-      gap: nativeTokens.space[2],
-    },
-    featureRow: {
-      flexDirection: "row",
-      alignItems: "flex-start",
-      gap: nativeTokens.space[2],
-    },
-    featureItem: {
-      flexShrink: 1,
-      color: c.ink,
-      fontFamily: nativeTokens.type.family.body,
-      fontSize: nativeTokens.type.scale.small.size,
-      lineHeight: nativeTokens.type.scale.small.line,
-    },
-  });
-}
-
-function useStyles() {
-  const c = useThemeTokens().color;
-  return useMemo(() => makeStyles(c), [c]);
 }
