@@ -151,13 +151,12 @@ export function PostCard({
           <button
             type="button"
             onClick={() => author.id && onOpenProfile?.(author.id)}
-            dir="auto"
-            className="text-ink truncate text-start text-sm font-semibold hover:underline focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+            className="bidi-plaintext text-ink truncate text-start text-sm font-semibold hover:underline focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
           >
             {name}
           </button>
           {author.headline ? (
-            <span dir="auto" className="text-ink-muted truncate text-xs">
+            <span className="bidi-plaintext text-ink-muted truncate text-xs">
               {author.headline}
             </span>
           ) : null}
@@ -181,10 +180,7 @@ export function PostCard({
 
       {/* Body */}
       {body ? (
-        <div
-          dir="auto"
-          className="text-ink whitespace-pre-wrap px-4 pb-3 text-[15px] leading-[1.7]"
-        >
+        <div className="bidi-plaintext text-ink whitespace-pre-wrap px-4 pb-3 text-[15px] leading-[1.7]">
           {body}
         </div>
       ) : null}

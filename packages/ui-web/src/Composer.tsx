@@ -24,6 +24,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import { Avatar, type AvatarUser } from "./Avatar";
 import { FileChip, QuietChip } from "./ComposerChips";
+import { Button } from "./Button";
 import { Icon } from "./Icon";
 import { Surface } from "./Surface";
 
@@ -257,15 +258,16 @@ export function Composer({
         >
           {labels.cancel}
         </button>
-        <button
-          type="button"
+        <Button
+          variant="accent"
+          size="sm"
           onClick={() => void doSubmit()}
           disabled={busy || uploading || (body.trim().length === 0 && media.length === 0)}
-          className="bg-brand-600 text-ink-inverse shadow-card hover:bg-brand-700 inline-flex items-center gap-1.5 rounded-md px-4 py-1.5 text-sm font-semibold focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
+          leading={<Icon name="send-paper" size={14} />}
+          className="shadow-card"
         >
-          <Icon name="send-paper" size={14} />
           {labels.submit}
-        </button>
+        </Button>
       </div>
     </Surface>
   );

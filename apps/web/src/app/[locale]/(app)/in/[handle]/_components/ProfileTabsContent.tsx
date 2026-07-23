@@ -57,9 +57,7 @@ function AboutPanel({ profile }: { profile: Profile }): JSX.Element {
   return profile.about ? (
     <Surface as="section" variant="flat" padding="6">
       <h2 className="text-ink mb-2 text-xl font-semibold">{t("about")}</h2>
-      <p dir="auto" className="text-ink whitespace-pre-wrap">
-        {profile.about}
-      </p>
+      <p className="bidi-plaintext text-ink whitespace-pre-wrap">{profile.about}</p>
     </Surface>
   ) : (
     <Surface variant="tinted" padding="6">

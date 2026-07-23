@@ -96,11 +96,13 @@ export default function NetworkRoute(): JSX.Element {
       </nav>
 
       {loading ? (
-        <ul aria-busy="true" aria-label={t("title")} className="flex flex-col gap-3">
-          <ConnectionRowSkeleton />
-          <ConnectionRowSkeleton />
-          <ConnectionRowSkeleton />
-        </ul>
+        <Surface variant="flat" padding="0" aria-busy="true">
+          <ul aria-label={t("title")}>
+            <ConnectionRowSkeleton />
+            <ConnectionRowSkeleton />
+            <ConnectionRowSkeleton />
+          </ul>
+        </Surface>
       ) : items.length === 0 ? (
         <Surface variant="card" padding="0">
           <EmptyState
@@ -110,73 +112,75 @@ export default function NetworkRoute(): JSX.Element {
           />
         </Surface>
       ) : (
-        <ul className="flex flex-col gap-3">
-          {items.map((c, i) => (
-            <Surface
-              as="li"
-              key={c.connectionId}
-              variant="flat"
-              padding="4"
-              className="animate-enter-up flex flex-wrap items-center justify-between gap-3"
-              style={{ animationDelay: `${staggerDelay(i)}ms` }}
-            >
-              <Link
-                href={`/in/${c.user.handle}`}
-                className="flex min-w-0 items-center gap-3 rounded-md focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+        <Surface variant="flat" padding="0">
+          <ul>
+            {items.map((c, i) => (
+              <Surface
+                as="li"
+                key={c.connectionId}
+                variant="row"
+                padding="4"
+                className="animate-enter-up hover:bg-surface-subtle flex flex-wrap items-center justify-between gap-3 transition-colors last:border-b-0"
+                style={{ animationDelay: `${staggerDelay(i)}ms` }}
               >
-                <Avatar
-                  user={{
-                    id: c.user.userId,
-                    handle: c.user.handle,
-                    firstName: c.user.firstName,
-                    lastName: c.user.lastName,
-                    avatarUrl: c.user.avatarUrl ?? null,
-                  }}
-                  size="md"
-                />
-                <div className="flex min-w-0 flex-col">
-                  <span className="text-ink font-semibold">
-                    {c.user.firstName} {c.user.lastName}
-                  </span>
-                  {c.user.headline ? (
-                    <span className="text-ink-muted text-sm">{c.user.headline}</span>
-                  ) : null}
-                </div>
-              </Link>
-
-              {filter === "INCOMING" ? (
-                <div className="flex gap-2">
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => void respond(c.connectionId, "ACCEPT")}
-                  >
-                    {t("accept")}
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => void respond(c.connectionId, "DECLINE")}
-                  >
-                    {t("decline")}
-                  </Button>
-                </div>
-              ) : filter === "OUTGOING" ? (
-                <Button variant="ghost" size="sm" onClick={() => void withdraw(c.connectionId)}>
-                  {t("withdraw")}
-                </Button>
-              ) : (
-                <Button
-                  variant="danger-ghost"
-                  size="sm"
-                  onClick={() => void remove(c.connectionId)}
+                <Link
+                  href={`/in/${c.user.handle}`}
+                  className="flex min-w-0 items-center gap-3 rounded-md focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
                 >
-                  {t("removeConnection")}
-                </Button>
-              )}
-            </Surface>
-          ))}
-        </ul>
+                  <Avatar
+                    user={{
+                      id: c.user.userId,
+                      handle: c.user.handle,
+                      firstName: c.user.firstName,
+                      lastName: c.user.lastName,
+                      avatarUrl: c.user.avatarUrl ?? null,
+                    }}
+                    size="md"
+                  />
+                  <div className="flex min-w-0 flex-col">
+                    <span className="text-ink font-semibold">
+                      {c.user.firstName} {c.user.lastName}
+                    </span>
+                    {c.user.headline ? (
+                      <span className="text-ink-muted text-sm">{c.user.headline}</span>
+                    ) : null}
+                  </div>
+                </Link>
+
+                {filter === "INCOMING" ? (
+                  <div className="flex gap-2">
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => void respond(c.connectionId, "ACCEPT")}
+                    >
+                      {t("accept")}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => void respond(c.connectionId, "DECLINE")}
+                    >
+                      {t("decline")}
+                    </Button>
+                  </div>
+                ) : filter === "OUTGOING" ? (
+                  <Button variant="ghost" size="sm" onClick={() => void withdraw(c.connectionId)}>
+                    {t("withdraw")}
+                  </Button>
+                ) : (
+                  <Button
+                    variant="danger-ghost"
+                    size="sm"
+                    onClick={() => void remove(c.connectionId)}
+                  >
+                    {t("removeConnection")}
+                  </Button>
+                )}
+              </Surface>
+            ))}
+          </ul>
+        </Surface>
       )}
     </main>
   );
@@ -225,7 +229,7 @@ function ConnectionRowSkeleton(): JSX.Element {
   return (
     <li
       aria-hidden="true"
-      className="border-line-soft bg-surface flex items-center justify-between gap-3 rounded-md border p-4"
+      className="border-line-soft flex items-center justify-between gap-3 border-b p-4 last:border-b-0"
     >
       <div className="flex min-w-0 items-center gap-3">
         <Skeleton kind="circle" className="h-10 w-10" />

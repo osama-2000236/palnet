@@ -425,7 +425,9 @@
     "redeeming": "Redeeming…",
     "premiumActive": "Premium is active — manage it on the Premium page.",
     "premiumLink": "Baydar Premium",
-    "redeemed": "Redeemed: {reward}."
+    "redeemed": "Redeemed: {reward}.",
+    "earnTitle": "How to earn points",
+    "earnBody": "Complete your profile, publish your first post, and collect skill endorsements — each one adds to your balance."
   },
   "network": {
     "title": "My network",

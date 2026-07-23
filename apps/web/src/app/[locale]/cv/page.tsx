@@ -86,7 +86,7 @@ export default function CvPage(): JSX.Element {
         {profile.headline ? (
           <p className="text-ink-muted mt-1 text-base">{profile.headline}</p>
         ) : null}
-        <p className="text-ink-muted mt-2 text-sm" dir="auto">
+        <p className="bidi-plaintext text-ink-muted mt-2 text-sm">
           {[profile.location, `baydar.ps/in/${profile.handle}`, profile.website]
             .filter(Boolean)
             .join(" · ")}

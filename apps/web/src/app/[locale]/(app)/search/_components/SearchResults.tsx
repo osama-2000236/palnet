@@ -49,16 +49,14 @@ export function PeopleRow({
             size="lg"
           />
           <div className="flex min-w-0 flex-col">
-            <span dir="auto" className="text-ink font-semibold">
+            <span className="bidi-plaintext text-ink font-semibold">
               {item.firstName} {item.lastName}
             </span>
             <span dir="ltr" className="text-ink-muted text-xs">
               @{item.handle}
             </span>
             {item.headline ? (
-              <span dir="auto" className="text-ink-muted mt-1 text-sm">
-                {item.headline}
-              </span>
+              <span className="bidi-plaintext text-ink-muted mt-1 text-sm">{item.headline}</span>
             ) : null}
             {item.location ? <span className="text-ink-muted text-xs">{item.location}</span> : null}
           </div>
@@ -96,12 +94,8 @@ export function PostRow({ item, index = 0 }: { item: SearchPostHit; index?: numb
           size="md"
         />
         <div className="flex min-w-0 flex-col gap-1">
-          <span dir="auto" className="text-ink font-semibold">
-            {item.authorDisplayName}
-          </span>
-          <span dir="auto" className="text-ink-muted text-sm">
-            {item.bodyExcerpt}
-          </span>
+          <span className="bidi-plaintext text-ink font-semibold">{item.authorDisplayName}</span>
+          <span className="bidi-plaintext text-ink-muted text-sm">{item.bodyExcerpt}</span>
           <span className="text-ink-muted text-xs">
             {formatRelativeTime(item.createdAt, locale)}
           </span>
@@ -129,12 +123,8 @@ export function JobRow({ item, index = 0 }: { item: SearchJobHit; index?: number
           {item.companyName.slice(0, 1)}
         </div>
         <div className="flex min-w-0 flex-col gap-1">
-          <span dir="auto" className="text-ink font-semibold">
-            {item.title}
-          </span>
-          <span dir="auto" className="text-ink-muted text-sm">
-            {item.companyName}
-          </span>
+          <span className="bidi-plaintext text-ink font-semibold">{item.title}</span>
+          <span className="bidi-plaintext text-ink-muted text-sm">{item.companyName}</span>
           <span className="text-ink-muted text-xs">
             {[location, item.locationMode, item.type].filter(Boolean).join(" · ")}
           </span>

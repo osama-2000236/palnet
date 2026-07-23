@@ -1,6 +1,7 @@
 "use client";
 
 import type { Profile } from "@baydar/shared";
+import { Button } from "@baydar/ui-web";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 
@@ -109,18 +110,13 @@ export function ConnectButton({
     }
   }
 
-  const buttonClasses =
-    "rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-ink-inverse shadow-card disabled:opacity-60";
-  const secondary =
-    "rounded-md border border-ink-muted/30 px-4 py-2 text-sm text-ink hover:bg-ink-muted/5 disabled:opacity-60";
-
   // Not connected, no prior row (or prior is withdrawn/declined).
   if (!conn || conn.status === "WITHDRAWN" || conn.status === "DECLINED") {
     return (
       <div className="flex flex-col gap-1">
-        <button type="button" onClick={send} disabled={busy} className={buttonClasses}>
+        <Button variant="accent" size="sm" onClick={send} disabled={busy}>
           {t("connect")}
-        </button>
+        </Button>
         {error ? <span className="text-danger text-xs">{error}</span> : null}
       </div>
     );
@@ -128,50 +124,50 @@ export function ConnectButton({
 
   if (conn.status === "PENDING" && conn.direction === "OUTGOING") {
     return (
-      <button
-        type="button"
+      <Button
+        variant="secondary"
+        size="sm"
         onClick={() => void withdraw(conn.connectionId)}
         disabled={busy}
-        className={secondary}
       >
         {t("withdraw")}
-      </button>
+      </Button>
     );
   }
 
   if (conn.status === "PENDING" && conn.direction === "INCOMING") {
     return (
       <div className="flex gap-2">
-        <button
-          type="button"
+        <Button
+          variant="accent"
+          size="sm"
           onClick={() => void respond(conn.connectionId, "ACCEPT")}
           disabled={busy}
-          className={buttonClasses}
         >
           {t("accept")}
-        </button>
-        <button
-          type="button"
+        </Button>
+        <Button
+          variant="secondary"
+          size="sm"
           onClick={() => void respond(conn.connectionId, "DECLINE")}
           disabled={busy}
-          className={secondary}
         >
           {t("decline")}
-        </button>
+        </Button>
       </div>
     );
   }
 
   if (conn.status === "ACCEPTED") {
     return (
-      <button
-        type="button"
+      <Button
+        variant="secondary"
+        size="sm"
         onClick={() => void remove(conn.connectionId)}
         disabled={busy}
-        className={secondary}
       >
         {t("removeConnection")}
-      </button>
+      </Button>
     );
   }
 
