@@ -44,8 +44,14 @@ export function ProfileHeader({
         <div className="flex min-w-0 flex-col">
           {/* xl Avatar is 96px and carries its own 3px surface border */}
           <Avatar user={user} size="xl" className="-mt-12" />
-          <h1 className="text-h1 text-ink mt-2">{fullName}</h1>
-          {headline ? <p className="text-small text-ink-muted font-body">{headline}</p> : null}
+          <h1 dir="auto" className="text-h1 text-ink mt-2">
+            {fullName}
+          </h1>
+          {headline ? (
+            <p dir="auto" className="text-small text-ink-muted font-body">
+              {headline}
+            </p>
+          ) : null}
           {meta ? <p className="text-caption text-ink-muted">{meta}</p> : null}
         </div>
         {actions ? <div className="flex flex-wrap items-center gap-2 pb-1">{actions}</div> : null}

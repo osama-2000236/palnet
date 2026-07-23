@@ -39,7 +39,7 @@ export function ProfileHero({
         </Text>
         {profile.headline ? <Text style={profileStyles.headline}>{profile.headline}</Text> : null}
         {profile.location ? <Text style={profileStyles.location}>{profile.location}</Text> : null}
-        <Text style={profileStyles.handle}>/in/{profile.handle}</Text>
+        <Text style={profileStyles.handle}>@{profile.handle}</Text>
       </View>
 
       {onEdit ? (

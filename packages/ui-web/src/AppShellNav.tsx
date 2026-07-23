@@ -16,6 +16,7 @@ interface AppShellNavProps {
   messagesUnread?: number;
   notificationsUnread?: number;
   notificationsConnectionDropped: boolean;
+  formatCount(value: number): string;
   me: AvatarUser | null;
   meHeadline?: string | null;
   menuOpen: boolean;
@@ -33,6 +34,7 @@ export function AppShellNav({
   messagesUnread,
   notificationsUnread,
   notificationsConnectionDropped,
+  formatCount,
   me,
   meHeadline,
   menuOpen,
@@ -69,7 +71,9 @@ export function AppShellNav({
       ref={navRef}
       onKeyDown={onNavKeyDown}
       aria-label={labels.mainNavLabel}
-      className="flex min-w-0 shrink items-stretch gap-1 overflow-x-auto overscroll-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      // Edge fade tells narrow viewports the nav scrolls — the bar clips
+      // ~4 items at 390px with the scrollbar hidden.
+      className="flex min-w-0 shrink items-stretch gap-1 overflow-x-auto overscroll-contain [mask-image:linear-gradient(to_right,transparent_0,black_16px,black_calc(100%-16px),transparent_100%)] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
     >
       {NAV_ITEMS.map((item) => (
         <NavButton
@@ -80,6 +84,7 @@ export function AppShellNav({
           messagesUnread={messagesUnread}
           notificationsUnread={notificationsUnread}
           notificationsConnectionDropped={notificationsConnectionDropped}
+          formatCount={formatCount}
           onNavigate={onNavigate}
         />
       ))}
@@ -108,6 +113,7 @@ function NavButton({
   messagesUnread,
   notificationsUnread,
   notificationsConnectionDropped,
+  formatCount,
   onNavigate,
 }: {
   route: Exclude<AppShellRoute, "profile">;
@@ -116,6 +122,7 @@ function NavButton({
   messagesUnread?: number;
   notificationsUnread?: number;
   notificationsConnectionDropped: boolean;
+  formatCount(value: number): string;
   onNavigate(route: AppShellRoute): void;
 }): JSX.Element {
   const item = NAV_ITEMS.find((navItem) => navItem.key === route)!;
@@ -126,9 +133,11 @@ function NavButton({
       : route === "notifications"
         ? notificationsUnread
         : undefined;
-  const badgeText = typeof count === "number" ? formatBadge(count) : "";
+  const badgeText = typeof count === "number" ? formatBadge(count, formatCount) : "";
   const srUnread =
-    typeof count === "number" && count > 0 ? unreadLabelFor(labels, route, count) : undefined;
+    typeof count === "number" && count > 0
+      ? unreadLabelFor(labels, route, count, formatCount)
+      : undefined;
   const disconnected = route === "notifications" && notificationsConnectionDropped;
 
   return (
@@ -168,7 +177,8 @@ function unreadLabelFor(
   labels: AppShellLabels,
   route: Exclude<AppShellRoute, "profile">,
   count: number,
+  formatCount: (value: number) => string,
 ): string | undefined {
   if (route !== "messages" && route !== "notifications") return undefined;
-  return labels.unreadTemplate[route]?.replace("{count}", String(count));
+  return labels.unreadTemplate[route]?.replace("{count}", formatCount(count));
 }

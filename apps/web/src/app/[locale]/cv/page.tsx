@@ -68,7 +68,10 @@ export default function CvPage(): JSX.Element {
           href={`/${locale}/me`}
           className="text-ink-muted hover:text-ink text-sm focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
         >
-          ← {t("back")}
+          <span aria-hidden="true" className="inline-block rtl:rotate-180">
+            ←
+          </span>{" "}
+          {t("back")}
         </Link>
         <Button variant="primary" size="sm" onClick={() => window.print()}>
           {t("print")}

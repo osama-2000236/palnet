@@ -4,6 +4,8 @@ import {
   type Bookmark as BookmarkDto,
   type CreateBookmarkBody,
   type CursorPageMeta,
+  type JobLocationMode,
+  type JobType,
 } from "@baydar/shared";
 import { Injectable } from "@nestjs/common";
 
@@ -34,8 +36,8 @@ interface BookmarkRow {
     id: string;
     title: string;
     city: string | null;
-    locationMode: string;
-    type: string;
+    locationMode: JobLocationMode;
+    type: JobType;
     company: {
       name: string;
       logoUrl: string | null;
@@ -216,21 +218,27 @@ function toBookmarkDto(row: BookmarkRow): BookmarkDto {
       href: `/feed?postId=${row.post.id}`,
       imageUrl: profile?.avatarUrl ?? null,
       savedAt: row.createdAt.toISOString(),
+      jobMeta: null,
     };
   }
 
   if (row.type === BookmarkType.JOB && row.job) {
-    const meta = [row.job.city, row.job.locationMode, row.job.type].filter(Boolean).join(" . ");
     return {
       id: row.id,
       type: row.type,
       targetId: row.job.id,
       title: row.job.title,
       subtitle: row.job.company.name,
-      description: meta || null,
+      // Enums stay enums here — the client owns their Arabic labels.
+      description: null,
       href: `/jobs/${row.job.id}`,
       imageUrl: row.job.company.logoUrl,
       savedAt: row.createdAt.toISOString(),
+      jobMeta: {
+        city: row.job.city,
+        locationMode: row.job.locationMode,
+        type: row.job.type,
+      },
     };
   }
 

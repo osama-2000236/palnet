@@ -18,6 +18,7 @@ export function AppShell({
   messagesUnread,
   notificationsUnread,
   notificationsConnectionDropped = false,
+  formatCount = String,
   searchValue,
   onSearchChange,
   onSearchSubmit,
@@ -81,6 +82,7 @@ export function AppShell({
             messagesUnread={messagesUnread}
             notificationsUnread={notificationsUnread}
             notificationsConnectionDropped={notificationsConnectionDropped}
+            formatCount={formatCount}
             me={me}
             meHeadline={meHeadline}
             menuOpen={menuOpen}

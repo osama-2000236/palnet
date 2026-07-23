@@ -36,6 +36,8 @@ export interface AppShellProps {
   messagesUnread?: number;
   notificationsUnread?: number;
   notificationsConnectionDropped?: boolean;
+  /** Locale-aware number formatter for unread badges. Defaults to Latin digits. */
+  formatCount?(value: number): string;
   searchValue?: string;
   onSearchChange?(next: string): void;
   onSearchSubmit?(value: string): void;

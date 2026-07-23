@@ -5,7 +5,9 @@ import { View } from "react-native";
 
 import { useProfileStyles } from "./styles";
 
-export type ConnectionAction = "CONNECT" | "WITHDRAW" | "ACCEPT" | "DECLINE" | "REMOVE";
+import type { ConnectionAction } from "@/lib/connections";
+
+export type { ConnectionAction };
 
 export function ProfileActions({
   blockLabels,

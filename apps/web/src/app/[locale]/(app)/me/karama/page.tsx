@@ -13,6 +13,7 @@ import {
   type BillingMe as BillingMeDto,
   type KaramaBalance as KaramaBalanceDto,
   type KaramaReward as KaramaRewardDto,
+  formatNumber,
 } from "@baydar/shared";
 import { Button, Surface } from "@baydar/ui-web";
 import Link from "next/link";
@@ -121,12 +122,12 @@ export default function KaramaPage(): JSX.Element {
         <div className="flex items-end justify-between gap-4">
           <div>
             <p className="text-ink-muted text-sm">{t("balance")}</p>
-            <p className="text-ink text-5xl font-bold" dir="ltr">
-              {balance?.balance ?? t("loadingValue")}
+            <p className="text-ink text-5xl font-bold">
+              {balance ? formatNumber(balance.balance, locale) : t("loadingValue")}
             </p>
           </div>
           <p className="text-ink-muted text-sm">
-            {t("cap")} <span dir="ltr">{balance?.cap ?? 5000}</span>
+            {t("cap")} <span>{formatNumber(balance?.cap ?? 5000, locale)}</span>
           </p>
         </div>
       </Surface>
@@ -161,7 +162,7 @@ export default function KaramaPage(): JSX.Element {
                   </div>
                   <p className="text-ink-muted mt-1 text-sm">{t(`rewards.${item.key}.body`)}</p>
                   <p className="text-brand-700 mt-3 text-sm font-semibold">
-                    <span dir="ltr">{item.cost}</span> {t("points")}
+                    <span>{formatNumber(item.cost, locale)}</span> {t("points")}
                   </p>
                 </div>
                 {isPremium && hasPremium ? (
@@ -202,7 +203,7 @@ export default function KaramaPage(): JSX.Element {
               <span className="text-ink">{t(`reasons.${entry.reason}`)}</span>
               <span dir="ltr" className={entry.delta >= 0 ? "text-brand-700" : "text-danger"}>
                 {entry.delta > 0 ? "+" : ""}
-                {entry.delta}
+                {formatNumber(entry.delta, locale)}
               </span>
             </li>
           ))}

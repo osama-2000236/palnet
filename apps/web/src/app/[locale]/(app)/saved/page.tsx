@@ -27,6 +27,7 @@ function buildQs(after: string | null): string {
 
 export default function SavedPageRoute(): JSX.Element {
   const t = useTranslations("saved");
+  const tJobs = useTranslations("jobs");
   const tCommon = useTranslations("common");
   const tErr = useTranslations("errors");
   const locale = useLocale();
@@ -136,6 +137,7 @@ export default function SavedPageRoute(): JSX.Element {
               <li key={item.id}>
                 <SavedRow
                   item={item}
+                  metaLabel={jobMetaLabel(item, tJobs)}
                   typeLabel={t(`types.${item.type}`)}
                   savedLabel={formatRelativeTime(item.savedAt, locale)}
                   removeLabel={t("remove")}
@@ -163,8 +165,21 @@ export default function SavedPageRoute(): JSX.Element {
   );
 }
 
+/** Job bookmarks carry raw enums; the labels live in this app's catalog. */
+function jobMetaLabel(item: BookmarkDto, tJobs: (key: string) => string): string | null {
+  if (!item.jobMeta) return null;
+  return [
+    item.jobMeta.city,
+    tJobs(`locationLabels.${item.jobMeta.locationMode}`),
+    tJobs(`typeLabels.${item.jobMeta.type}`),
+  ]
+    .filter(Boolean)
+    .join(" · ");
+}
+
 function SavedRow({
   item,
+  metaLabel,
   typeLabel,
   savedLabel,
   removeLabel,
@@ -172,6 +187,7 @@ function SavedRow({
   onRemove,
 }: {
   item: BookmarkDto;
+  metaLabel: string | null;
   typeLabel: string;
   savedLabel: string;
   removeLabel: string;
@@ -196,12 +212,19 @@ function SavedRow({
             )}
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-ink truncate text-sm font-semibold">{item.title}</p>
+            <p dir="auto" className="text-ink truncate text-sm font-semibold">
+              {item.title}
+            </p>
             {item.subtitle ? (
-              <p className="text-ink-muted truncate text-sm">{item.subtitle}</p>
+              <p dir="auto" className="text-ink-muted truncate text-sm">
+                {item.subtitle}
+              </p>
             ) : null}
+            {metaLabel ? <p className="text-ink-muted mt-1 text-sm">{metaLabel}</p> : null}
             {item.description ? (
-              <p className="text-ink-muted mt-1 line-clamp-2 text-sm">{item.description}</p>
+              <p dir="auto" className="text-ink-muted mt-1 line-clamp-2 text-sm">
+                {item.description}
+              </p>
             ) : null}
             <p className="text-ink-subtle mt-2 text-xs">
               {typeLabel} · <span dir="ltr">{savedLabel}</span>

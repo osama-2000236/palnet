@@ -109,7 +109,9 @@ export function MessageBubble({
         )}
       >
         <span className="sr-only">{srPrefix}</span>
-        {deleted ? (labels.deletedBody ?? "") : children}
+        <span dir="auto" className="block">
+          {deleted ? (labels.deletedBody ?? "") : children}
+        </span>
       </div>
 
       {timestamp || edited || (mine && status) ? (

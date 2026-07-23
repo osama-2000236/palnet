@@ -2,6 +2,8 @@ import { z } from "zod";
 
 import { JobLocationMode, JobType } from "../enums";
 
+import { ViewerProfileState } from "./profile";
+
 // GET /search/people?q=<term>&limit=20&after=<cursor>
 export const PeopleSearchQuery = z.object({
   q: z.string().trim().min(1).max(80),
@@ -42,6 +44,9 @@ export const SearchPersonHit = z.object({
   headline: z.string().nullable(),
   location: z.string().nullable(),
   avatarUrl: z.string().url().nullable(),
+  // Viewer-scoped: lets a search result offer connect/message instead of
+  // dead-ending on a profile link. Same shape the profile route returns.
+  viewer: ViewerProfileState,
 });
 export type SearchPersonHit = z.infer<typeof SearchPersonHit>;
 

@@ -11,6 +11,9 @@ import { Avatar, RetryChip, Skeleton, staggerDelay, Surface } from "@baydar/ui-w
 import Image from "next/image";
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
+import { useState } from "react";
+
+import { ConnectButton } from "@/components/ConnectButton";
 
 export function PeopleRow({
   item,
@@ -19,6 +22,9 @@ export function PeopleRow({
   item: SearchPersonHit;
   index?: number;
 }): JSX.Element {
+  // A people result that only links to a profile is a dead end; carry the
+  // connection action here so search can act like the network page.
+  const [viewer, setViewer] = useState<SearchPersonHit["viewer"] | undefined>(item.viewer);
   return (
     <Surface
       as="li"
@@ -27,31 +33,40 @@ export function PeopleRow({
       className="animate-enter-up"
       style={{ animationDelay: `${staggerDelay(index)}ms` }}
     >
-      <Link
-        href={`/in/${item.handle}`}
-        className="flex items-start gap-3 focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
-      >
-        <Avatar
-          user={{
-            id: item.userId,
-            handle: item.handle,
-            firstName: item.firstName,
-            lastName: item.lastName,
-            avatarUrl: item.avatarUrl,
-          }}
-          size="lg"
-        />
-        <div className="flex min-w-0 flex-col">
-          <span className="text-ink font-semibold">
-            {item.firstName} {item.lastName}
-          </span>
-          <span className="text-ink-muted text-xs">/in/{item.handle}</span>
-          {item.headline ? (
-            <span className="text-ink-muted mt-1 text-sm">{item.headline}</span>
-          ) : null}
-          {item.location ? <span className="text-ink-muted text-xs">{item.location}</span> : null}
+      <div className="flex items-start gap-3">
+        <Link
+          href={`/in/${item.handle}`}
+          className="flex min-w-0 flex-1 items-start gap-3 focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+        >
+          <Avatar
+            user={{
+              id: item.userId,
+              handle: item.handle,
+              firstName: item.firstName,
+              lastName: item.lastName,
+              avatarUrl: item.avatarUrl,
+            }}
+            size="lg"
+          />
+          <div className="flex min-w-0 flex-col">
+            <span dir="auto" className="text-ink font-semibold">
+              {item.firstName} {item.lastName}
+            </span>
+            <span dir="ltr" className="text-ink-muted text-xs">
+              @{item.handle}
+            </span>
+            {item.headline ? (
+              <span dir="auto" className="text-ink-muted mt-1 text-sm">
+                {item.headline}
+              </span>
+            ) : null}
+            {item.location ? <span className="text-ink-muted text-xs">{item.location}</span> : null}
+          </div>
+        </Link>
+        <div className="shrink-0">
+          <ConnectButton targetUserId={item.userId} viewer={viewer} onChange={setViewer} />
         </div>
-      </Link>
+      </div>
     </Surface>
   );
 }
@@ -81,8 +96,12 @@ export function PostRow({ item, index = 0 }: { item: SearchPostHit; index?: numb
           size="md"
         />
         <div className="flex min-w-0 flex-col gap-1">
-          <span className="text-ink font-semibold">{item.authorDisplayName}</span>
-          <span className="text-ink-muted text-sm">{item.bodyExcerpt}</span>
+          <span dir="auto" className="text-ink font-semibold">
+            {item.authorDisplayName}
+          </span>
+          <span dir="auto" className="text-ink-muted text-sm">
+            {item.bodyExcerpt}
+          </span>
           <span className="text-ink-muted text-xs">
             {formatRelativeTime(item.createdAt, locale)}
           </span>
@@ -110,8 +129,12 @@ export function JobRow({ item, index = 0 }: { item: SearchJobHit; index?: number
           {item.companyName.slice(0, 1)}
         </div>
         <div className="flex min-w-0 flex-col gap-1">
-          <span className="text-ink font-semibold">{item.title}</span>
-          <span className="text-ink-muted text-sm">{item.companyName}</span>
+          <span dir="auto" className="text-ink font-semibold">
+            {item.title}
+          </span>
+          <span dir="auto" className="text-ink-muted text-sm">
+            {item.companyName}
+          </span>
           <span className="text-ink-muted text-xs">
             {[location, item.locationMode, item.type].filter(Boolean).join(" · ")}
           </span>

@@ -124,7 +124,7 @@
     "logout": "تسجيل الخروج",
     "email": "البريد الإلكتروني",
     "password": "كلمة المرور",
-    "passwordHint": "استخدم 8 أحرف على الأقل مع حرف ورقم.",
+    "passwordHint": "استخدم ٨ أحرف على الأقل مع حرف ورقم.",
     "firstName": "الاسم الأول",
     "lastName": "الاسم الأخير",
     "acceptTerms": "أوافق على الشروط وسياسة الخصوصية",
@@ -160,12 +160,12 @@
       "sent": "إن كان هناك حساب بهذا البريد، فقد أُرسل رابط الاستعادة.",
       "backToLogin": "العودة إلى تسجيل الدخول"
     },
-    "deletedGraceBanner": "تمت جدولة حذف حسابك. يمكنك استعادته خلال 30 يومًا عبر استعادة الحساب.",
+    "deletedGraceBanner": "تمت جدولة حذف حسابك. يمكنك استعادته خلال ٣٠ يومًا عبر استعادة الحساب.",
     "restoreCta": "استعادة الحساب والدخول",
     "reset": {
       "kicker": "استعادة كلمة المرور",
       "title": "اختر كلمة مرور جديدة",
-      "body": "استخدم 10 أحرف على الأقل مع حرف كبير وحرف صغير ورقم.",
+      "body": "استخدم ١٠ أحرف على الأقل مع حرف كبير وحرف صغير ورقم.",
       "newPassword": "كلمة المرور الجديدة",
       "confirmPassword": "تأكيد كلمة المرور",
       "submit": "تغيير كلمة المرور",
@@ -173,7 +173,7 @@
       "passwordMismatch": "كلمتا المرور غير متطابقتين.",
       "backToLogin": "العودة إلى تسجيل الدخول",
       "validation": {
-        "passwordMin": "كلمة المرور يجب أن تكون 10 أحرف على الأقل.",
+        "passwordMin": "كلمة المرور يجب أن تكون ١٠ أحرف على الأقل.",
         "passwordLower": "أضف حرفًا صغيرًا واحدًا على الأقل.",
         "passwordUpper": "أضف حرفًا كبيرًا واحدًا على الأقل.",
         "passwordDigit": "أضف رقمًا واحدًا على الأقل."
@@ -193,7 +193,7 @@
   },
   "feed": {
     "title": "الخلاصة",
-    "profileCompletion": "اكتمال الملف {completed} من {total}",
+    "profileCompletion": "اكتمال الملف {completed, number} من {total, number}",
     "editProfile": "تعديل الملف",
     "noResults": "لا يوجد شيء في خلاصتك بعد",
     "empty": {
@@ -223,8 +223,7 @@
       "jobsComingSoon": "قريبًا — سنقترح وظائف تناسب خبرتك.",
       "jobsEmpty": "تصفّح الوظائف المفتوحة ←",
       "jobsFailed": "تعذّر تحميل الوظائف.",
-      "connect": "تواصل",
-      "footer": "بيدر · 2026"
+      "connect": "تواصل"
     }
   },
   "composer": {
@@ -249,8 +248,8 @@
     "saved": "محفوظ",
     "comments": "تعليقات",
     "reposts": "إعادة نشر",
-    "commentsCount": "{count} تعليق",
-    "repostsCount": "{count} إعادة نشر",
+    "commentsCount": "{count, number} تعليق",
+    "repostsCount": "{count, number} إعادة نشر",
     "publicAudience": "منشور عام",
     "moreOptions": "خيارات",
     "authorLabel": "عرض الملف الشخصي",
@@ -329,7 +328,7 @@
     "loadMore": "تحميل المزيد",
     "loadingMore": "جارٍ التحميل…",
     "verified": "موثّقة",
-    "activeJobsCount": "{count} وظائف شاغرة"
+    "activeJobsCount": "{count, number} وظائف شاغرة"
   },
   "profile": {
     "title": "الملف الشخصي",
@@ -373,7 +372,7 @@
     "endorseSignIn": "سجّل الدخول لتأييد المهارات.",
     "posts": "النشاط",
     "postsEmpty": "لا توجد منشورات.",
-    "endorseCountLabel": "{count} تزكيات",
+    "endorseCountLabel": "{count, number} تزكيات",
     "endorseThanks": "تمت تزكية المهارة.",
     "endorseError": "تعذّرت تزكية هذه المهارة.",
     "cvLink": "السيرة الذاتية"
@@ -397,15 +396,15 @@
     "rewards": {
       "boost": {
         "title": "تعزيز طلب",
-        "body": "يظهر طلبك أعلى صندوق صاحب العمل لمدة 48 ساعة."
+        "body": "يظهر طلبك أعلى صندوق صاحب العمل لمدة ٤٨ ساعة."
       },
       "premium": {
         "title": "شهر بريميوم",
-        "body": "فعّل ظهور الملف المميز لمدة 30 يومًا."
+        "body": "فعّل ظهور الملف المميز لمدة ٣٠ يومًا."
       },
       "featured": {
         "title": "ملف مميز",
-        "body": "ثبّت ملفك في بحث المهارات لمدة 7 أيام."
+        "body": "ثبّت ملفك في بحث المهارات لمدة ٧ أيام."
       }
     },
     "reasons": {
@@ -481,7 +480,7 @@
     "editedSuffix": "تم التعديل",
     "deletedBody": "تم حذف الرسالة",
     "unreadJump": {
-      "banner": "{count} رسائل غير مقروءة",
+      "banner": "{count, number} رسائل غير مقروءة",
       "accessibility": "انتقل إلى {count} رسائل غير مقروءة"
     },
     "newGroup": {
@@ -494,7 +493,7 @@
       "select": "اختيار",
       "selected": "مختار",
       "submit": "إنشاء المجموعة",
-      "memberCount": "{count} أعضاء",
+      "memberCount": "{count, number} أعضاء",
       "loading": "جارٍ تحميل الاتصالات…",
       "empty": "لا توجد اتصالات مطابقة.",
       "validation": "اختر عضوين على الأقل واكتب اسم المجموعة.",
@@ -565,12 +564,12 @@
         "cta": "تعديل الملف"
       },
       "network": {
-        "title": "{count} طلب اتصال",
+        "title": "{count, number} طلب اتصال",
         "body": "راجع الأشخاص الذين يريدون الاتصال بك.",
         "cta": "مراجعة"
       },
       "notifications": {
-        "title": "{count} إشعار غير مقروء",
+        "title": "{count, number} إشعار غير مقروء",
         "body": "تابع الردود والإشارات وتحديثات الملف.",
         "cta": "فتح"
       },
@@ -646,7 +645,7 @@
     "applySubtitle": "أرسل كلمة قصيرة إلى {company}. يمكنك تركها فارغة والتقديم مباشرة.",
     "coverLetterLabel": "رسالة تعريفية (اختياري)",
     "coverLetterPlaceholder": "اكتب لماذا أنت مناسب لهذا الدور…",
-    "coverLetterHint": "حتى 8,000 حرف.",
+    "coverLetterHint": "حتى ٨٬٠٠٠ حرف.",
     "submitApplication": "أرسل الطلب",
     "description": "وصف الوظيفة",
     "skills": "المهارات المطلوبة",
@@ -843,8 +842,8 @@
         "current": "كلمة المرور الحالية",
         "new": "كلمة المرور الجديدة",
         "confirm": "تأكيد كلمة المرور الجديدة",
-        "requirements": "استخدم 8 أحرف على الأقل.",
-        "tooShort": "استخدم 8 أحرف على الأقل.",
+        "requirements": "استخدم ٨ أحرف على الأقل.",
+        "tooShort": "استخدم ٨ أحرف على الأقل.",
         "mismatch": "كلمتا المرور الجديدتان مش متطابقتين.",
         "sameAsOld": "اختار كلمة مرور مختلفة عن الحالية.",
         "savedToast": "تم تحديث كلمة المرور.",
@@ -921,7 +920,7 @@
     },
     "delete": {
       "title": "حذف حسابي",
-      "body": "يخفي الحذف بيانات ملفك فورًا، ويلغي الجلسات النشطة، مع مهلة استعادة لمدة 30 يومًا.",
+      "body": "يخفي الحذف بيانات ملفك فورًا، ويلغي الجلسات النشطة، مع مهلة استعادة لمدة ٣٠ يومًا.",
       "button": "حذف حسابي",
       "confirmTitle": "تأكيد حذف الحساب",
       "confirmBody": "اكتب DELETE_MY_ACCOUNT للمتابعة.",
@@ -933,7 +932,7 @@
     },
     "restore": {
       "title": "استعادة الحساب",
-      "body": "استخدم بريدك الأصلي وكلمة المرور خلال مهلة 30 يومًا.",
+      "body": "استخدم بريدك الأصلي وكلمة المرور خلال مهلة ٣٠ يومًا.",
       "button": "استعادة الحساب",
       "success": "تمت استعادة حسابك.",
       "error": "تعذّرت استعادة هذا الحساب."
@@ -1144,7 +1143,7 @@
       "name": "بيدر المميّز",
       "tagline": "رؤى وحضور أقوى، ثلاثون يومًا في كل مرة",
       "perMonth": "{price} / شهريًا",
-      "originalUsd": "تُحتسب {price} دولارًا أمريكيًا",
+      "originalUsd": "تُحتسب {price, number} دولارًا أمريكيًا",
       "features": {
         "analytics": "إحصاءات الملف الشخصي",
         "whoViewed": "اعرف من شاهد ملفك",
@@ -1162,7 +1161,7 @@
       "USER_PREMIUM": "بيدر المميّز"
     },
     "features": {
-      "activeJobs": "{count} وظائف فعّالة",
+      "activeJobs": "{count, number} وظائف فعّالة",
       "applicantInbox": "صندوق المتقدمين",
       "basicAnalytics": "تحليلات أساسية",
       "advancedAnalytics": "تحليلات متقدمة",
@@ -1171,7 +1170,7 @@
       "profileAnalytics": "إحصاءات الملف الشخصي",
       "whoViewedMe": "اعرف من شاهد ملفك",
       "diasporaBadge": "شارة المغترب على ملفك",
-      "durationDays": "تمييز لمدة {count} أيام"
+      "durationDays": "تمييز لمدة {count, number} أيام"
     },
     "checkout": {
       "title": "اختر طريقة الدفع",
@@ -1233,7 +1232,7 @@
       "endsBody": "تنتهي في {date}.",
       "pastDueBody": "الدفعة الأخيرة قيد التأكيد.",
       "jobSlots": "الوظائف الفعّالة",
-      "jobSlotsValue": "{used} من {limit}",
+      "jobSlotsValue": "{used, number} من {limit, number}",
       "credits": "الأرصدة",
       "noCredits": "لا أرصدة غير مستخدمة.",
       "expires": "ينتهي في {date}",
@@ -1245,7 +1244,7 @@
       "choosePlan": "رقِّ باقتك",
       "perMonth": "{price} / شهريًا",
       "oneTime": "{price} لمرة واحدة",
-      "originalUsd": "تُحتسب {price} دولارًا أمريكيًا",
+      "originalUsd": "تُحتسب {price, number} دولارًا أمريكيًا",
       "select": "اختيار",
       "selected": "مختارة",
       "billingLink": "الفوترة"

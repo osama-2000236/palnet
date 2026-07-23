@@ -18,7 +18,7 @@ import {
   Bookmark,
   BookmarkType,
   cursorPage,
-  formatCurrency,
+  formatSalaryRange,
   Job as JobSchema,
   type Job,
 } from "@baydar/shared";
@@ -59,15 +59,12 @@ function buildQs(filters: JobFiltersState, after: string | null): string {
 
 function formatSalary(job: Job, t: (k: string) => string, locale: string): string | null {
   const { salaryMin, salaryMax, salaryCurrency } = job;
-  if (!salaryMin && !salaryMax) return null;
-  const cur = salaryCurrency ?? "USD";
-  if (salaryMin && salaryMax) {
-    return `${formatCurrency(salaryMin, cur, locale)}–${formatCurrency(salaryMax, cur, locale)}`;
-  }
-  if (salaryMin) {
-    return `${t("from")} ${formatCurrency(salaryMin, cur, locale)}`;
-  }
-  return `${t("upTo")} ${formatCurrency(salaryMax!, cur, locale)}`;
+  // One money formatter for the whole product — @baydar/shared owns separator
+  // and digit script; this only adds the open-ended prefixes.
+  const range = formatSalaryRange(salaryMin, salaryMax, salaryCurrency ?? "USD", locale);
+  if (!range) return null;
+  if (salaryMin && salaryMax) return range;
+  return `${salaryMin ? t("from") : t("upTo")} ${range}`;
 }
 
 export default function JobsPageRoute(): JSX.Element {

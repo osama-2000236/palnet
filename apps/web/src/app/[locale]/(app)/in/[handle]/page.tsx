@@ -152,7 +152,8 @@ export default function ProfileRoute(): JSX.Element {
         headline={profile.headline}
         meta={
           <>
-            {profile.location ? `${profile.location} · ` : ""}/in/{profile.handle}
+            {profile.location ? `${profile.location} · ` : ""}
+            <span dir="ltr">@{profile.handle}</span>
           </>
         }
         actions={

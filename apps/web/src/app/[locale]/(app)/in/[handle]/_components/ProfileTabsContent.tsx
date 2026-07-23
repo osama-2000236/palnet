@@ -1,8 +1,9 @@
 "use client";
 
-import { EndorseSkillResult, type Profile } from "@baydar/shared";
+import { EndorseSkillResult, formatNumber, type Profile } from "@baydar/shared";
 import { Button, Surface, Tab, Tabs } from "@baydar/ui-web";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import { apiFetch, getValidAccessToken } from "@/lib/api";
@@ -56,11 +57,24 @@ function AboutPanel({ profile }: { profile: Profile }): JSX.Element {
   return profile.about ? (
     <Surface as="section" variant="flat" padding="6">
       <h2 className="text-ink mb-2 text-xl font-semibold">{t("about")}</h2>
-      <p className="text-ink whitespace-pre-wrap">{profile.about}</p>
+      <p dir="auto" className="text-ink whitespace-pre-wrap">
+        {profile.about}
+      </p>
     </Surface>
   ) : (
     <Surface variant="tinted" padding="6">
-      <p className="text-ink-muted text-center text-sm">{t("aboutEmpty")}</p>
+      <div className="flex flex-col items-center gap-3">
+        <p className="text-ink-muted text-center text-sm">{t("aboutEmpty")}</p>
+        {/* The owner lands here more than anyone — give them the fix, not just the fact. */}
+        {profile.viewer?.isSelf ? (
+          <Link
+            href="/me/edit"
+            className="text-brand-700 text-sm font-semibold hover:underline focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+          >
+            {t("edit")}
+          </Link>
+        ) : null}
+      </div>
     </Surface>
   );
 }
@@ -122,6 +136,7 @@ function EducationPanel({ profile }: { profile: Profile }): JSX.Element {
 
 function SkillsPanel({ profile }: { profile: Profile }): JSX.Element {
   const t = useTranslations("profile");
+  const locale = useLocale();
   const [endorsementCounts, setEndorsementCounts] = useState<Record<string, number>>({});
   const [endorsedSkillIds, setEndorsedSkillIds] = useState<Set<string>>(() => new Set());
   const [busySkillId, setBusySkillId] = useState<string | null>(null);
@@ -182,7 +197,7 @@ function SkillsPanel({ profile }: { profile: Profile }): JSX.Element {
               <span className="flex min-w-0 flex-col">
                 <span className="text-ink font-semibold">{s.name}</span>
                 <span className="text-ink-muted text-xs">
-                  <span dir="ltr">{endorsementCounts[s.id] ?? s.endorsements}</span>{" "}
+                  <span>{formatNumber(endorsementCounts[s.id] ?? s.endorsements, locale)}</span>{" "}
                   {t("endorsementsLabel")}
                 </span>
               </span>

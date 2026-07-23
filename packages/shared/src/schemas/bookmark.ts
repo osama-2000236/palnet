@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { BookmarkType } from "../enums";
+import { BookmarkType, JobLocationMode, JobType } from "../enums";
 import { CursorPageQuery } from "../pagination";
 
 export const Bookmark = z.object({
@@ -13,6 +13,14 @@ export const Bookmark = z.object({
   href: z.string(),
   imageUrl: z.string().url().nullable(),
   savedAt: z.string().datetime(),
+  /** Job-only: enums the client localizes. Null for post bookmarks. */
+  jobMeta: z
+    .object({
+      city: z.string().nullable(),
+      locationMode: z.nativeEnum(JobLocationMode),
+      type: z.nativeEnum(JobType),
+    })
+    .nullable(),
 });
 export type Bookmark = z.infer<typeof Bookmark>;
 
