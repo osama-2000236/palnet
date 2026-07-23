@@ -18,11 +18,23 @@ All notable Baydar changes are documented here.
 
 ### Fixed
 
+- Refresh-token reuse detection was unreachable: the lookup filtered `revokedAt: null`, so replaying an already-rotated token 401'd before the burn-all-sessions branch could run, and only a concurrent race could trigger it. Its spec passed by mocking a state the real query cannot return.
+- HyperPay webhook verification failed **open** — `if (!secret) return true` accepted any unsigned webhook whenever `HYPERPAY_WEBHOOK_SECRET` was unset, i.e. free premium for anyone who found the endpoint.
+- JWT verification accepted any algorithm; now pinned to HS256 on both verify and sign.
+- `POST /billing/checkout-session` accepted any `returnUrl`; now allowlisted against `BAYDAR_WEB_URL` + `CORS_ORIGINS`, and rejects http outside development.
+- Concurrent "open DM" could create two 1:1 rooms for the same pair; serialized with a transaction-scoped advisory lock.
+- Resending one `clientMessageId` un-archived a room for every member with no new message, letting a client undo a recipient's archive indefinitely.
+- 38 hardcoded `textAlign: "right"` across mobile and ui-native rendered as **left** in Arabic (RN swaps left/right under `I18nManager.isRTL`) and stayed right in English — wrong in both. All now `"auto"`, with an eslint rule in the shared preset so the class can't return; `docs/design/MOBILE.md` no longer prescribes the bug.
+- Money and dates rendered Latin digits on Arabic pages. `formatMoney`/`formatDate` hoisted into `@baydar/shared`, both app copies deleted, and nine web `Intl.DateTimeFormat` call sites routed through a shared `localeTag()` that forces Arabic-Indic digits.
+- Onboarding always started blank on resume, and its prefill discarded anything typed while the profile fetch was in flight.
+- Typing indicator used static tokens (no dark-mode flip), named the wrong member in group rooms, and italicised Arabic, which has no italic form.
+- Seed left owner, a11y, and the twelve cohort accounts `isProfileComplete() === false`, so logging in as any of them landed on onboarding.
 - Settings → Security sessions list now formats "last active" with the page locale via shared `formatRelativeTime` (was browser-default `toLocaleString()`, rendering English dates on Arabic pages).
 - Profile edit basics form rendered raw `onboarding.firstName`/`onboarding.lastName` i18n keys (`as never` casts had silenced the missing-key type error); keys added to both web locales.
 
 ### Changed
 
+- `.gitignore` now covers the agent scratch directories at the repo root. They were untracked but prettier still walked them: `pnpm format:check` reported 366 unformatted files from those alone, which hid real violations and failed the command on every local run.
 - Updated repo docs to reflect the real current `main` state after Sprint 11.5.
 - Recorded the April 28, 2026 cleanup plan and branch/artifact pruning record.
 - Replaced stale legacy product-name, old realtime, old UI-kit, old mobile SDK, legacy package-scope, and greenfield sprint references in active docs.
