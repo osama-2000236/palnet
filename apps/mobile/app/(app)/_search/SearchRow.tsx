@@ -58,6 +58,7 @@ function PersonRow({ item }: { item: SearchPersonHit }): JSX.Element {
 
   return (
     <RecordCard
+      variant="row"
       onPress={() => router.push(`/(app)/in/${item.handle}`)}
       accessibilityLabel={name}
       leading={
@@ -95,6 +96,7 @@ function PersonRow({ item }: { item: SearchPersonHit }): JSX.Element {
 function PostRow({ item }: { item: SearchPostHit }): JSX.Element {
   return (
     <RecordCard
+      variant="row"
       onPress={() => router.push(`/(app)/in/${item.authorHandle}`)}
       accessibilityLabel={item.authorDisplayName}
       leading={
@@ -121,6 +123,7 @@ function JobRow({ item }: { item: SearchJobHit }): JSX.Element {
   const location = [item.city, item.country].filter(Boolean).join(", ");
   return (
     <RecordCard
+      variant="row"
       onPress={() => router.push(`/(app)/jobs/${item.id}`)}
       accessibilityLabel={item.title}
       title={item.title}
@@ -137,6 +140,7 @@ function CompanyRow({ item }: { item: SearchCompanyHit }): JSX.Element {
     item.activeJobs > 0 ? t("search.activeJobsCount", { count: item.activeJobs }) : null;
   return (
     <RecordCard
+      variant="row"
       onPress={() =>
         router.push({
           pathname: "/(app)/company/[slug]",

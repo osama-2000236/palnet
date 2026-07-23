@@ -124,9 +124,9 @@ export default function SavedScreen(): JSX.Element {
 
         {firstLoad ? (
           <View style={styles.stack}>
-            <RecordCardSkeleton />
-            <RecordCardSkeleton />
-            <RecordCardSkeleton />
+            <RecordCardSkeleton variant="row" />
+            <RecordCardSkeleton variant="row" />
+            <RecordCardSkeleton variant="row" />
           </View>
         ) : (
           <FlatList
@@ -172,7 +172,7 @@ export default function SavedScreen(): JSX.Element {
             ListFooterComponent={
               loading && items.length > 0 ? (
                 <View style={styles.footer}>
-                  <RecordCardSkeleton />
+                  <RecordCardSkeleton variant="row" />
                 </View>
               ) : null
             }

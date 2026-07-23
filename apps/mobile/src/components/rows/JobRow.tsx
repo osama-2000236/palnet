@@ -33,6 +33,7 @@ export const JobRow = memo(function JobRow({
 
   return (
     <RecordCard
+      variant="row"
       title={job.title}
       subtitle={job.company.name}
       meta={metaParts.join(" . ")}

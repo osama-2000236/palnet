@@ -29,6 +29,7 @@ export function ConnectionRow({
 
   return (
     <RecordCard
+      variant="row"
       leading={
         <Avatar
           user={{

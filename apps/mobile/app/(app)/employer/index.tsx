@@ -61,8 +61,8 @@ export default function EmployerHomeScreen(): JSX.Element {
               />
             ) : items === null ? (
               <View style={styles.skeletonStack}>
-                <RecordCardSkeleton />
-                <RecordCardSkeleton />
+                <RecordCardSkeleton variant="row" />
+                <RecordCardSkeleton variant="row" />
               </View>
             ) : (
               <EmptyState motif="jobs" title={t("employer.empty")} />
@@ -75,6 +75,7 @@ export default function EmployerHomeScreen(): JSX.Element {
             >
               <Pressable>
                 <RecordCard
+                  variant="row"
                   title={item.name}
                   subtitle={t(`employer.viewerRole.${item.viewerRole ?? "EDITOR"}`)}
                   meta={item.verified ? t("employer.verified") : null}

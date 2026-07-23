@@ -203,9 +203,9 @@ export default function JobsScreen(): JSX.Element {
 
         {firstLoad ? (
           <View style={{ gap: nativeTokens.space[3] }}>
-            <RecordCardSkeleton />
-            <RecordCardSkeleton />
-            <RecordCardSkeleton />
+            <RecordCardSkeleton variant="row" />
+            <RecordCardSkeleton variant="row" />
+            <RecordCardSkeleton variant="row" />
           </View>
         ) : (
           <>
@@ -256,7 +256,7 @@ export default function JobsScreen(): JSX.Element {
               ListFooterComponent={
                 loading && !firstLoad ? (
                   <View style={{ paddingVertical: nativeTokens.space[3] }}>
-                    <RecordCardSkeleton />
+                    <RecordCardSkeleton variant="row" />
                   </View>
                 ) : null
               }

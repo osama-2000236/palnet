@@ -108,8 +108,8 @@ export default function ApplicantsInboxScreen(): JSX.Element {
               />
             ) : loading || !companyId ? (
               <View style={styles.skeletonStack}>
-                <RecordCardSkeleton />
-                <RecordCardSkeleton />
+                <RecordCardSkeleton variant="row" />
+                <RecordCardSkeleton variant="row" />
               </View>
             ) : (
               <EmptyState motif="jobs" title={t("employer.applicantsEmpty")} />

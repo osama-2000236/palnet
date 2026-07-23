@@ -112,8 +112,8 @@ export default function CompanyJobsScreen(): JSX.Element {
               />
             ) : loading || !companyId ? (
               <View style={styles.skeletonStack}>
-                <RecordCardSkeleton />
-                <RecordCardSkeleton />
+                <RecordCardSkeleton variant="row" />
+                <RecordCardSkeleton variant="row" />
               </View>
             ) : (
               <EmptyState motif="jobs" title={t("employer.jobsEmpty")} />
@@ -129,6 +129,7 @@ export default function CompanyJobsScreen(): JSX.Element {
             >
               <Pressable>
                 <RecordCard
+                  variant="row"
                   title={item.title}
                   subtitle={`${item.type} · ${item.locationMode}`}
                   meta={t("employer.applicantCount", { count: item.applicantCount })}
