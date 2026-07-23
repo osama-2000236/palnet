@@ -3,6 +3,7 @@
 import {
   Company,
   cursorPage,
+  formatSalaryRange,
   Job as JobSchema,
   type Company as CompanyDto,
   type Job,
@@ -153,10 +154,18 @@ export default function CompanyPage(): JSX.Element {
             {jobs.length === 0 ? (
               <p className="text-ink-muted text-sm">{t("noJobs")}</p>
             ) : (
-              <ul className="flex flex-col gap-3">
+              <ul>
                 {jobs.map((job) => (
-                  <li key={job.id}>
-                    <JobListRow job={job} salary={null} />
+                  <li key={job.id} className="border-line-soft border-b last:border-b-0">
+                    <JobListRow
+                      job={job}
+                      salary={formatSalaryRange(
+                        job.salaryMin,
+                        job.salaryMax,
+                        job.salaryCurrency ?? "USD",
+                        locale,
+                      )}
+                    />
                   </li>
                 ))}
               </ul>

@@ -50,8 +50,10 @@ async function main() {
   const jobId = first(jobs)?.id ?? null;
   const me = await api(session, "/profiles/me");
   const handle = me?.handle ?? "demo";
-  const companies = await api(session, "/search?q=%D8%A8&type=companies&limit=5");
-  const companySlug = first(companies?.companies ?? companies)?.slug ?? null;
+  // /search is tab-scoped, so ask the companies route directly; the demo seed
+  // always has this one, and a null slug silently drops /company from the run.
+  const companies = await api(session, "/search/companies?q=%D8%B4&limit=5");
+  const companySlug = first(companies)?.slug ?? "qa-tech-co";
 
   const routes = [
     ["feed", "/feed"],
