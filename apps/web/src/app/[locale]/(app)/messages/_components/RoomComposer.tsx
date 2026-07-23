@@ -69,6 +69,7 @@ export function RoomComposer({
         />
         <Button
           type="submit"
+          variant="accent"
           disabled={sending || draft.trim().length === 0}
           leading={<Icon name="send-paper" size={14} />}
           className="shadow-card rounded-full"

@@ -125,13 +125,11 @@ export function Comments({
                   href={`/in/${c.author.handle}`}
                   className="text-ink font-semibold hover:underline"
                 >
-                  <span dir="auto">
+                  <span className="bidi-plaintext">
                     {c.author.firstName} {c.author.lastName}
                   </span>
                 </Link>
-                <p dir="auto" className="text-ink whitespace-pre-wrap">
-                  {c.body}
-                </p>
+                <p className="bidi-plaintext text-ink whitespace-pre-wrap">{c.body}</p>
               </div>
               <button
                 type="button"

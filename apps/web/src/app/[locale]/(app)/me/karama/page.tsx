@@ -209,7 +209,13 @@ export default function KaramaPage(): JSX.Element {
           ))}
         </ul>
         {balance?.recent.length === 0 ? (
-          <p className="text-ink-muted text-sm">{t("recentEmpty")}</p>
+          // At zero balance every reward is disabled; without this the page is
+          // a shop the visitor has no way into.
+          <div className="flex flex-col gap-1">
+            <p className="text-ink-muted text-sm">{t("recentEmpty")}</p>
+            <p className="text-ink text-sm font-semibold">{t("earnTitle")}</p>
+            <p className="text-ink-muted text-sm">{t("earnBody")}</p>
+          </div>
         ) : null}
       </Surface>
     </main>

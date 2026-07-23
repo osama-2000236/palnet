@@ -160,9 +160,9 @@ export default function NotificationsScreen(): JSX.Element {
           ListEmptyComponent={
             loading ? (
               <View style={styles.skeletonStack}>
-                <RecordCardSkeleton />
-                <RecordCardSkeleton />
-                <RecordCardSkeleton />
+                <RecordCardSkeleton variant="row" />
+                <RecordCardSkeleton variant="row" />
+                <RecordCardSkeleton variant="row" />
               </View>
             ) : error ? (
               <StateMessage

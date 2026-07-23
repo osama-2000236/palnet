@@ -19,12 +19,12 @@ export function ActivitySkeleton(): JSX.Element {
       <View style={{ flexDirection: "row", gap: nativeTokens.space[2] }}>
         {[0, 1, 2].map((item) => (
           <Surface key={item} variant="card" padding="4" style={{ flex: 1 }}>
-            <RecordCardSkeleton />
+            <RecordCardSkeleton variant="row" />
           </Surface>
         ))}
       </View>
-      <RecordCardSkeleton />
-      <RecordCardSkeleton />
+      <RecordCardSkeleton variant="row" />
+      <RecordCardSkeleton variant="row" />
     </View>
   );
 }

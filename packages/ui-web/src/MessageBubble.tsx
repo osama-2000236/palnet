@@ -109,7 +109,7 @@ export function MessageBubble({
         )}
       >
         <span className="sr-only">{srPrefix}</span>
-        <span dir="auto" className="block">
+        <span className="bidi-plaintext block">
           {deleted ? (labels.deletedBody ?? "") : children}
         </span>
       </div>

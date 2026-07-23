@@ -65,3 +65,26 @@ samp {
     animation: none !important;
   }
 }
+
+/* User-generated text (post bodies, names, headlines, job titles, message
+ * bodies). `plaintext` derives the run's base direction from its first strong
+ * character — so an English sentence inside the RTL app keeps its word order
+ * and trailing punctuation — while alignment still follows the element's own
+ * direction, which keeps Latin-only strings flush with the RTL column.
+ * `dir="auto"` gets the first half right and the second half wrong.
+ * Named `bidi-*`, not `text-*`: tailwind-merge reads a `text-…` class as a
+ * text colour and drops it when a real colour class follows in the same cx(). */
+.bidi-plaintext {
+  unicode-bidi: plaintext;
+}
+
+/* `plaintext` also makes `text-align: start` resolve against the *derived*
+ * paragraph direction, which shoves a Latin-only name to the left of an RTL
+ * column. Alignment should follow the layout, so pin it to the document. */
+[dir="rtl"] .bidi-plaintext {
+  text-align: right;
+}
+
+[dir="ltr"] .bidi-plaintext {
+  text-align: left;
+}

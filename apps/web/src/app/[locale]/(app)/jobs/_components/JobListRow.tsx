@@ -26,7 +26,7 @@ export function JobListRow({
   const saved = job.viewer.bookmarkId !== null;
 
   return (
-    <Surface variant="card" padding="4" className="hover:border-brand-400 transition-colors">
+    <Surface variant="row" padding="4" className="hover:bg-surface-subtle transition-colors">
       <div className="flex items-start gap-3">
         <Link
           href={`/jobs/${job.id}`}
@@ -35,12 +35,10 @@ export function JobListRow({
           <CompanyLogo job={job} />
           <div className="min-w-0 flex-1">
             <div className="min-w-0">
-              <h2 dir="auto" className="text-ink truncate text-base font-semibold">
+              <h2 className="bidi-plaintext text-ink truncate text-base font-semibold">
                 {job.title}
               </h2>
-              <p dir="auto" className="text-ink-muted truncate text-sm">
-                {job.company.name}
-              </p>
+              <p className="bidi-plaintext text-ink-muted truncate text-sm">{job.company.name}</p>
             </div>
             <p className="text-ink-muted mt-1 text-xs">{metaParts.join(" · ")}</p>
             {salary ? <p className="text-ink mt-1 text-xs font-semibold">{salary}</p> : null}
@@ -104,7 +102,7 @@ function CompanyLogo({ job }: { job: Job }): JSX.Element {
 
 export function JobRowSkeleton(): JSX.Element {
   return (
-    <Surface variant="card" padding="4" aria-hidden="true">
+    <Surface variant="row" padding="4" aria-hidden="true">
       <div className="flex items-start gap-3">
         <Skeleton radius="var(--radius-md)" className="h-12 w-12 shrink-0" />
         <div className="flex-1 space-y-2">

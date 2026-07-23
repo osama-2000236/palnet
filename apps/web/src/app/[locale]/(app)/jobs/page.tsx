@@ -228,13 +228,15 @@ function JobsPageInner(): JSX.Element {
         </div>
 
         {firstLoad ? (
-          <ul className="space-y-3">
-            {[0, 1, 2].map((i) => (
-              <li key={i}>
-                <JobRowSkeleton />
-              </li>
-            ))}
-          </ul>
+          <Surface variant="flat" padding="0">
+            <ul>
+              {[0, 1, 2].map((i) => (
+                <li key={i} className="border-line-soft border-b last:border-b-0">
+                  <JobRowSkeleton />
+                </li>
+              ))}
+            </ul>
+          </Surface>
         ) : error ? (
           // ── BEFORE: <Surface variant="tinted" padding="6"><p>{error}</p></Surface>
           // ── AFTER:  Alert with severity, icon, and a retry action.
@@ -255,18 +257,20 @@ function JobsPageInner(): JSX.Element {
           </Surface>
         ) : (
           <>
-            <ul className="space-y-3">
-              {items.map((job) => (
-                <li key={job.id}>
-                  <JobListRow
-                    job={job}
-                    salary={formatSalary(job, t, locale)}
-                    saving={savingId === job.id}
-                    onToggleSave={() => void toggleSave(job)}
-                  />
-                </li>
-              ))}
-            </ul>
+            <Surface variant="flat" padding="0">
+              <ul>
+                {items.map((job) => (
+                  <li key={job.id} className="border-line-soft border-b last:border-b-0">
+                    <JobListRow
+                      job={job}
+                      salary={formatSalary(job, t, locale)}
+                      saving={savingId === job.id}
+                      onToggleSave={() => void toggleSave(job)}
+                    />
+                  </li>
+                ))}
+              </ul>
+            </Surface>
             {hasMore ? (
               <div className="mt-4 flex justify-center">
                 <Button

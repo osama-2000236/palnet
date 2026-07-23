@@ -107,13 +107,15 @@ export default function SavedPageRoute(): JSX.Element {
       </div>
 
       {firstLoad ? (
-        <ul className="space-y-3" aria-hidden="true">
-          {[0, 1, 2].map((item) => (
-            <li key={item}>
-              <SavedSkeleton />
-            </li>
-          ))}
-        </ul>
+        <Surface variant="flat" padding="0" aria-hidden="true">
+          <ul>
+            {[0, 1, 2].map((item) => (
+              <li key={item} className="border-line-soft border-b last:border-b-0">
+                <SavedSkeleton />
+              </li>
+            ))}
+          </ul>
+        </Surface>
       ) : error ? (
         <Alert
           kind="danger"
@@ -132,21 +134,23 @@ export default function SavedPageRoute(): JSX.Element {
         </Surface>
       ) : (
         <>
-          <ul className="space-y-3">
-            {items.map((item) => (
-              <li key={item.id}>
-                <SavedRow
-                  item={item}
-                  metaLabel={jobMetaLabel(item, tJobs)}
-                  typeLabel={t(`types.${item.type}`)}
-                  savedLabel={formatRelativeTime(item.savedAt, locale)}
-                  removeLabel={t("remove")}
-                  removing={removingId === item.id}
-                  onRemove={() => void remove(item)}
-                />
-              </li>
-            ))}
-          </ul>
+          <Surface variant="flat" padding="0">
+            <ul>
+              {items.map((item) => (
+                <li key={item.id} className="border-line-soft border-b last:border-b-0">
+                  <SavedRow
+                    item={item}
+                    metaLabel={jobMetaLabel(item, tJobs)}
+                    typeLabel={t(`types.${item.type}`)}
+                    savedLabel={formatRelativeTime(item.savedAt, locale)}
+                    removeLabel={t("remove")}
+                    removing={removingId === item.id}
+                    onRemove={() => void remove(item)}
+                  />
+                </li>
+              ))}
+            </ul>
+          </Surface>
           {hasMore ? (
             <div className="mt-4 flex justify-center">
               <Button
@@ -195,7 +199,7 @@ function SavedRow({
   onRemove: () => void;
 }): JSX.Element {
   return (
-    <Surface variant="card" padding="4">
+    <Surface variant="row" padding="4" className="hover:bg-surface-subtle transition-colors">
       <div className="flex items-start gap-3">
         <Link
           href={item.href}
@@ -212,17 +216,13 @@ function SavedRow({
             )}
           </div>
           <div className="min-w-0 flex-1">
-            <p dir="auto" className="text-ink truncate text-sm font-semibold">
-              {item.title}
-            </p>
+            <p className="bidi-plaintext text-ink truncate text-sm font-semibold">{item.title}</p>
             {item.subtitle ? (
-              <p dir="auto" className="text-ink-muted truncate text-sm">
-                {item.subtitle}
-              </p>
+              <p className="bidi-plaintext text-ink-muted truncate text-sm">{item.subtitle}</p>
             ) : null}
             {metaLabel ? <p className="text-ink-muted mt-1 text-sm">{metaLabel}</p> : null}
             {item.description ? (
-              <p dir="auto" className="text-ink-muted mt-1 line-clamp-2 text-sm">
+              <p className="bidi-plaintext text-ink-muted mt-1 line-clamp-2 text-sm">
                 {item.description}
               </p>
             ) : null}
@@ -247,7 +247,7 @@ function SavedRow({
 
 function SavedSkeleton(): JSX.Element {
   return (
-    <Surface variant="card" padding="4">
+    <Surface variant="row" padding="4">
       <div className="flex items-start gap-3">
         <Skeleton radius="var(--radius-md)" className="h-12 w-12 shrink-0" />
         <div className="flex-1 space-y-2">
