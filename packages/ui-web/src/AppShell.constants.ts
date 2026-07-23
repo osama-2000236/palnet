@@ -15,8 +15,13 @@ export const NAV_ITEMS: ReadonlyArray<{
   { key: "employer", icon: "building" },
 ];
 
-export function formatBadge(count: number): string {
+/**
+ * Badge text for an unread count. `formatCount` comes from the app (which owns
+ * the locale and the digit-script policy in @baydar/shared); without it the
+ * kit falls back to Latin digits.
+ */
+export function formatBadge(count: number, formatCount: (value: number) => string): string {
   if (count <= 0) return "";
-  if (count > 99) return "99+";
-  return String(count);
+  if (count > 99) return `${formatCount(99)}+`;
+  return formatCount(count);
 }

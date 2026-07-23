@@ -122,7 +122,10 @@ export default function JobDetailPage(): JSX.Element {
             href="/jobs"
             className="text-brand-700 mt-3 inline-block text-sm hover:underline focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
           >
-            ← {t("title")}
+            <span aria-hidden="true" className="inline-block rtl:rotate-180">
+              ←
+            </span>{" "}
+            {t("title")}
           </Link>
         </Surface>
       </div>
@@ -149,7 +152,10 @@ export default function JobDetailPage(): JSX.Element {
           href="/jobs"
           className="text-ink-muted hover:text-ink text-sm focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
         >
-          ← {t("title")}
+          <span aria-hidden="true" className="inline-block rtl:rotate-180">
+            ←
+          </span>{" "}
+          {t("title")}
         </Link>
       </nav>
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { Company, cursorPage, EmployerJob } from "@baydar/shared";
+import { Company, cursorPage, EmployerJob, formatNumber } from "@baydar/shared";
 import { Surface } from "@baydar/ui-web";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
@@ -119,9 +119,9 @@ export default function CompanyDashboardPage(): JSX.Element {
       </header>
 
       <section className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
-        <Kpi label={t("activeJobs")} value={activeJobs} />
-        <Kpi label={t("totalApplicants")} value={totalApplicants} />
-        <Kpi label={t("openShortlist")} value={totalShortlist} />
+        <Kpi label={t("activeJobs")} value={formatNumber(activeJobs, locale)} />
+        <Kpi label={t("totalApplicants")} value={formatNumber(totalApplicants, locale)} />
+        <Kpi label={t("openShortlist")} value={formatNumber(totalShortlist, locale)} />
       </section>
 
       <div className="mb-3 flex gap-2">
@@ -191,7 +191,7 @@ export default function CompanyDashboardPage(): JSX.Element {
   );
 }
 
-function Kpi({ label, value }: { label: string; value: number }): JSX.Element {
+function Kpi({ label, value }: { label: string; value: string }): JSX.Element {
   return (
     <Surface variant="card" padding="4">
       <p className="text-ink-muted text-xs">{label}</p>

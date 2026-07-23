@@ -4,9 +4,14 @@ import type {
   SearchPersonHit,
   SearchPostHit,
 } from "@baydar/shared";
-import { Avatar, RecordCard } from "@baydar/ui-native";
+import { Avatar, Button, RecordCard } from "@baydar/ui-native";
 import { router } from "expo-router";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
+
+import { runConnectionAction } from "@/lib/connections";
+import { successHaptic, tapHaptic } from "@/lib/haptics";
+import { getAccessToken } from "@/lib/session";
 
 type SearchType = "people" | "posts" | "jobs" | "companies";
 type SearchHit = SearchPersonHit | SearchPostHit | SearchJobHit | SearchCompanyHit;
@@ -19,7 +24,38 @@ export function SearchRow({ type, item }: { type: SearchType; item: SearchHit })
 }
 
 function PersonRow({ item }: { item: SearchPersonHit }): JSX.Element {
+  const { t } = useTranslation();
   const name = `${item.firstName} ${item.lastName}`.trim();
+  // Web parity: a people result acts, it does not just link to a profile.
+  const [viewer, setViewer] = useState(item.viewer);
+  const [busy, setBusy] = useState(false);
+
+  const outgoingPending =
+    viewer.connection?.status === "PENDING" && viewer.connection.direction === "OUTGOING";
+  const connectable = !viewer.isSelf && !viewer.connection;
+
+  async function act(): Promise<void> {
+    const token = await getAccessToken();
+    if (!token || busy) return;
+    setBusy(true);
+    try {
+      tapHaptic();
+      setViewer(
+        await runConnectionAction(
+          outgoingPending ? "WITHDRAW" : "CONNECT",
+          viewer,
+          item.userId,
+          token,
+        ),
+      );
+      successHaptic();
+    } catch {
+      // The profile screen owns the retry + error surface.
+    } finally {
+      setBusy(false);
+    }
+  }
+
   return (
     <RecordCard
       onPress={() => router.push(`/(app)/in/${item.handle}`)}
@@ -38,8 +74,20 @@ function PersonRow({ item }: { item: SearchPersonHit }): JSX.Element {
       }
       title={name}
       subtitle={item.headline}
-      meta={`/in/${item.handle}`}
+      meta={`@${item.handle}`}
       metaDirection="ltr"
+      trailing={
+        connectable || outgoingPending ? (
+          <Button
+            variant={outgoingPending ? "ghost" : "secondary"}
+            size="sm"
+            loading={busy}
+            onPress={() => void act()}
+          >
+            {t(outgoingPending ? "network.withdraw" : "network.connect")}
+          </Button>
+        ) : null
+      }
     />
   );
 }

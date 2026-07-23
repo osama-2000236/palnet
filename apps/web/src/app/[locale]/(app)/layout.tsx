@@ -15,12 +15,13 @@ import { clearSession, readSession } from "@/lib/session";
 import { openStream } from "@/lib/sse";
 import { ConnectivityBanner } from "./components/ConnectivityBanner";
 import { isBareAppRoute, RoomsEnvelope, routeOf, sumUnread, UnreadCount } from "./layoutState";
-import { useAppShellLabels } from "./useAppShellLabels";
+import { useAppShellLabels, useCountFormatter } from "./useAppShellLabels";
 
 export default function AppLayout({ children }: { children: ReactNode }): JSX.Element {
   const router = useRouter();
   const pathname = usePathname();
   const labels = useAppShellLabels();
+  const formatCount = useCountFormatter();
 
   const [token, setToken] = useState<string | null>(null);
   const [me, setMe] = useState<Profile | null>(null);
@@ -213,44 +214,17 @@ export default function AppLayout({ children }: { children: ReactNode }): JSX.El
     [router],
   );
 
+  const profilePath = me?.handle ? `/in/${me.handle}` : "/me";
   const onNavigate = useCallback(
     (route: AppShellRoute) => {
-      switch (route) {
-        case "feed":
-          router.push("/feed");
-          return;
-        case "network":
-          router.push("/network");
-          return;
-        case "jobs":
-          router.push("/jobs");
-          return;
-        case "messages":
-          router.push("/messages");
-          return;
-        case "notifications":
-          router.push("/notifications");
-          return;
-        case "activity":
-          router.push("/activity");
-          return;
-        case "saved":
-          router.push("/saved");
-          return;
-        case "employer":
-          router.push("/employer");
-          return;
-        case "profile":
-          router.push(me?.handle ? `/in/${me.handle}` : "/me");
-          return;
-      }
+      router.push(route === "profile" ? profilePath : `/${route}`);
     },
-    [router, me?.handle],
+    [router, profilePath],
   );
 
   const onViewProfile = useCallback(() => {
-    router.push(me?.handle ? `/in/${me.handle}` : "/me");
-  }, [router, me?.handle]);
+    router.push(profilePath);
+  }, [router, profilePath]);
 
   const onOpenSettings = useCallback(() => {
     router.push("/settings");
@@ -281,6 +255,7 @@ export default function AppLayout({ children }: { children: ReactNode }): JSX.El
       messagesUnread={messagesUnread}
       notificationsUnread={notificationsUnread}
       notificationsConnectionDropped={notificationsConnectionDropped}
+      formatCount={formatCount}
       searchValue={searchValue}
       onSearchChange={onSearchChange}
       onSearchSubmit={onSearchSubmit}

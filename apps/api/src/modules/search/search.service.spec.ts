@@ -10,6 +10,7 @@ type PrismaStub = {
   post: { findUnique: jest.Mock };
   job: { findUnique: jest.Mock };
   company: { findUnique: jest.Mock };
+  connection: { findMany: jest.Mock };
   $queryRaw: jest.Mock;
 };
 
@@ -19,6 +20,7 @@ function buildPrisma(): PrismaStub {
     post: { findUnique: jest.fn() },
     job: { findUnique: jest.fn() },
     company: { findUnique: jest.fn() },
+    connection: { findMany: jest.fn().mockResolvedValue([]) },
     $queryRaw: jest.fn().mockResolvedValue([]),
   };
 }
@@ -111,6 +113,34 @@ describe("SearchService", () => {
     expect(page.data[0]?.handle).toBe("osama");
     expect(page.meta.hasMore).toBe(false);
     expect(page.meta.nextCursor).toBeNull();
+  });
+
+  it("maps viewer connection state per hit and marks the viewer's own row", async () => {
+    prisma.$queryRaw.mockResolvedValue([
+      personRow({ id: "1", handle: "self" }),
+      personRow({ id: "2", handle: "friend" }),
+      personRow({ id: "3", handle: "stranger" }),
+    ]);
+    prisma.connection.findMany.mockResolvedValue([
+      {
+        id: "conn_1",
+        requesterId: "u_2",
+        receiverId: "u_1",
+        status: "ACCEPTED",
+        updatedAt: new Date("2026-07-01T00:00:00.000Z"),
+      },
+    ]);
+
+    const page = await service.people("u_1", { q: "x", limit: 20 });
+
+    expect(page.data[0]?.viewer).toEqual({ isSelf: true, connection: null });
+    expect(page.data[1]?.viewer).toEqual({
+      isSelf: false,
+      connection: { status: "ACCEPTED", direction: "INCOMING", connectionId: "conn_1" },
+    });
+    expect(page.data[2]?.viewer).toEqual({ isSelf: false, connection: null });
+    // One query for the page, not one per row.
+    expect(prisma.connection.findMany).toHaveBeenCalledTimes(1);
   });
 
   it("detects hasMore by overfetching limit + 1 and trims", async () => {

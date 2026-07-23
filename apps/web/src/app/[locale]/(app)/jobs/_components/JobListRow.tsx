@@ -35,8 +35,12 @@ export function JobListRow({
           <CompanyLogo job={job} />
           <div className="min-w-0 flex-1">
             <div className="min-w-0">
-              <h2 className="text-ink truncate text-base font-semibold">{job.title}</h2>
-              <p className="text-ink-muted truncate text-sm">{job.company.name}</p>
+              <h2 dir="auto" className="text-ink truncate text-base font-semibold">
+                {job.title}
+              </h2>
+              <p dir="auto" className="text-ink-muted truncate text-sm">
+                {job.company.name}
+              </p>
             </div>
             <p className="text-ink-muted mt-1 text-xs">{metaParts.join(" · ")}</p>
             {salary ? <p className="text-ink mt-1 text-xs font-semibold">{salary}</p> : null}

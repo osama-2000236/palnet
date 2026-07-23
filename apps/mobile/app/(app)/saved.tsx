@@ -134,6 +134,7 @@ export default function SavedScreen(): JSX.Element {
             keyExtractor={(item) => item.id}
             renderItem={({ item }) => (
               <SavedRow
+                metaLabel={jobMetaLabel(item, t)}
                 item={item}
                 savedLabel={formatRelativeTime(item.savedAt, i18n.language)}
                 typeLabel={t(`saved.types.${item.type}`)}
@@ -182,8 +183,21 @@ export default function SavedScreen(): JSX.Element {
   );
 }
 
+/** Job bookmarks carry raw enums; their Arabic labels live in this catalog. */
+function jobMetaLabel(item: BookmarkDto, t: (key: string) => string): string | null {
+  if (!item.jobMeta) return null;
+  return [
+    item.jobMeta.city,
+    t(`jobs.locationLabels.${item.jobMeta.locationMode}`),
+    t(`jobs.typeLabels.${item.jobMeta.type}`),
+  ]
+    .filter(Boolean)
+    .join(" · ");
+}
+
 function SavedRow({
   item,
+  metaLabel,
   typeLabel,
   savedLabel,
   removeLabel,
@@ -192,6 +206,7 @@ function SavedRow({
   onRemove,
 }: {
   item: BookmarkDto;
+  metaLabel: string | null;
   typeLabel: string;
   savedLabel: string;
   removeLabel: string;
@@ -233,13 +248,18 @@ function SavedRow({
               {item.subtitle}
             </Text>
           ) : null}
+          {metaLabel ? (
+            <Text selectable numberOfLines={1} style={styles.description}>
+              {metaLabel}
+            </Text>
+          ) : null}
           {item.description ? (
             <Text selectable numberOfLines={2} style={styles.description}>
               {item.description}
             </Text>
           ) : null}
           <Text selectable numberOfLines={1} style={styles.meta}>
-            {typeLabel} . {savedLabel}
+            {typeLabel} · {savedLabel}
           </Text>
         </View>
         <Pressable

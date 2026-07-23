@@ -50,7 +50,7 @@ export function RoomRow({
       <Avatar user={user} size="md" online={online} />
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
         <div className="flex items-center justify-between gap-2">
-          <span className="text-ink truncate text-sm font-semibold">
+          <span dir="auto" className="text-ink truncate text-sm font-semibold">
             {`${user.firstName ?? ""} ${user.lastName ?? ""}`.trim() || user.handle || ""}
           </span>
           <span dir="ltr" className="text-ink-muted shrink-0 text-[11px] tabular-nums">
@@ -59,6 +59,7 @@ export function RoomRow({
         </div>
         <div className="flex items-center justify-between gap-2">
           <span
+            dir="auto"
             className={cx(
               "truncate text-xs",
               unreadCount > 0 ? "text-ink font-semibold" : "text-ink-muted",

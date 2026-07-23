@@ -3,6 +3,7 @@
 import {
   ConnectionListItem as ConnectionListItemSchema,
   cursorPage,
+  formatNumber,
   isProfileComplete,
   Job as JobSchema,
   Profile as ProfileSchema,
@@ -13,7 +14,7 @@ import {
 import { EmptyState, Surface } from "@baydar/ui-web";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { z } from "zod";
 
@@ -41,6 +42,7 @@ interface ActivityState {
 }
 
 export default function ActivityRoute(): JSX.Element {
+  const locale = useLocale();
   const t = useTranslations("activity");
   const common = useTranslations("common");
   const router = useRouter();
@@ -88,13 +90,17 @@ export default function ActivityRoute(): JSX.Element {
     return [
       {
         label: t("metrics.notifications"),
-        value: state.unreadNotifications,
+        value: formatNumber(state.unreadNotifications, locale),
         href: "/notifications",
       },
-      { label: t("metrics.requests"), value: state.incoming.length, href: "/network" },
-      { label: t("metrics.jobs"), value: state.jobs.length, href: "/jobs" },
+      {
+        label: t("metrics.requests"),
+        value: formatNumber(state.incoming.length, locale),
+        href: "/network",
+      },
+      { label: t("metrics.jobs"), value: formatNumber(state.jobs.length, locale), href: "/jobs" },
     ];
-  }, [state, t]);
+  }, [locale, state, t]);
 
   const tasks = useMemo<ActivityTask[]>(() => {
     if (!state) return [];

@@ -127,6 +127,10 @@ export class SearchService {
     `);
 
     const { rows: page, meta } = takePage(rows, limit);
+    const connections = await this.connectionStateFor(
+      viewerId,
+      page.map((p) => p.userId),
+    );
     return {
       data: page.map<SearchPersonHit>((p) => ({
         userId: p.userId,
@@ -136,9 +140,44 @@ export class SearchService {
         headline: p.headline,
         location: p.location,
         avatarUrl: p.avatarUrl,
+        viewer:
+          p.userId === viewerId
+            ? { isSelf: true, connection: null }
+            : { isSelf: false, connection: connections.get(p.userId) ?? null },
       })),
       meta,
     };
+  }
+
+  /** One query for the whole page — per-row lookups would be N+1. */
+  private async connectionStateFor(
+    viewerId: string,
+    targetUserIds: string[],
+  ): Promise<Map<string, NonNullable<SearchPersonHit["viewer"]["connection"]>>> {
+    const others = targetUserIds.filter((id) => id !== viewerId);
+    if (others.length === 0) return new Map();
+    const rows = await this.prisma.connection.findMany({
+      where: {
+        OR: [
+          { requesterId: viewerId, receiverId: { in: others } },
+          { receiverId: viewerId, requesterId: { in: others } },
+        ],
+      },
+      orderBy: { updatedAt: "desc" },
+    });
+    const byUser = new Map<string, NonNullable<SearchPersonHit["viewer"]["connection"]>>();
+    for (const row of rows) {
+      const outgoing = row.requesterId === viewerId;
+      const otherId = outgoing ? row.receiverId : row.requesterId;
+      // `orderBy` puts the freshest row first; keep it and skip older ones.
+      if (byUser.has(otherId)) continue;
+      byUser.set(otherId, {
+        status: row.status,
+        direction: outgoing ? "OUTGOING" : "INCOMING",
+        connectionId: row.id,
+      });
+    }
+    return byUser;
   }
 
   async searchPosts(

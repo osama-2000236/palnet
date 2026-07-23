@@ -1,8 +1,9 @@
 "use client";
 
+import { formatNumber } from "@baydar/shared";
 import type { AppShellLabels } from "@baydar/ui-web";
-import { useTranslations } from "next-intl";
-import { useMemo } from "react";
+import { useLocale, useTranslations } from "next-intl";
+import { useCallback, useMemo } from "react";
 
 export function useAppShellLabels(): AppShellLabels {
   const tCommon = useTranslations("common");
@@ -64,4 +65,13 @@ export function useAppShellLabels(): AppShellLabels {
       tSaved,
     ],
   );
+}
+
+/**
+ * Unread badges are numbers the kit renders; the app owns the digit script
+ * (packages/shared/src/format.ts), so it hands the formatter down.
+ */
+export function useCountFormatter(): (value: number) => string {
+  const locale = useLocale();
+  return useCallback((value: number) => formatNumber(value, locale), [locale]);
 }

@@ -5,12 +5,12 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { z } from "zod";
 
 import { StateMessage } from "@/components/StateMessage";
 import { useBlock, useReport, useUnblock } from "@/api/safety";
 import { apiFetch } from "@/lib/api";
 import { apiErrorMessage } from "@/lib/api-errors";
+import { runConnectionAction } from "@/lib/connections";
 import { successHaptic, tapHaptic } from "@/lib/haptics";
 import { getAccessToken } from "@/lib/session";
 
@@ -23,8 +23,6 @@ import {
 } from "../_profile-detail/ProfileTabContent";
 import { blockButtonLabels, reportSheetLabels } from "../_profile-detail/safetyLabels";
 import { useProfileStyles } from "../_profile-detail/styles";
-
-const Raw = z.object({}).passthrough();
 
 export default function ProfileScreen(): JSX.Element {
   const profileStyles = useProfileStyles();
@@ -69,61 +67,9 @@ export default function ProfileScreen(): JSX.Element {
     setActionError(null);
     try {
       tapHaptic();
-      const conn = profile.viewer.connection;
-      if (action === "CONNECT") {
-        const row = (await apiFetch("/connections", Raw, {
-          method: "POST",
-          token,
-          body: { receiverId: profile.userId },
-        })) as { id: string };
-        setProfile({
-          ...profile,
-          viewer: {
-            isSelf: false,
-            connection: {
-              status: "PENDING",
-              direction: "OUTGOING",
-              connectionId: row.id,
-            },
-          },
-        });
-        successHaptic();
-        return;
-      }
-      if (!conn) return;
-      if (action === "WITHDRAW") {
-        await apiFetch(`/connections/${conn.connectionId}/withdraw`, Raw, {
-          method: "POST",
-          token,
-        });
-        setProfile({ ...profile, viewer: { isSelf: false, connection: null } });
-        successHaptic();
-      } else if (action === "ACCEPT" || action === "DECLINE") {
-        await apiFetch(`/connections/${conn.connectionId}/respond`, Raw, {
-          method: "POST",
-          token,
-          body: { action },
-        });
-        setProfile({
-          ...profile,
-          viewer: {
-            isSelf: false,
-            connection: {
-              status: action === "ACCEPT" ? "ACCEPTED" : "DECLINED",
-              direction: "INCOMING",
-              connectionId: conn.connectionId,
-            },
-          },
-        });
-        successHaptic();
-      } else if (action === "REMOVE") {
-        await apiFetch(`/connections/${conn.connectionId}`, Raw, {
-          method: "DELETE",
-          token,
-        });
-        setProfile({ ...profile, viewer: { isSelf: false, connection: null } });
-        successHaptic();
-      }
+      const viewer = await runConnectionAction(action, profile.viewer, profile.userId, token);
+      setProfile({ ...profile, viewer });
+      successHaptic();
     } catch (caught) {
       setActionError(apiErrorMessage(t, caught));
     } finally {

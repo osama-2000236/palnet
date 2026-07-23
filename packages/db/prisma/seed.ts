@@ -146,29 +146,31 @@ async function main() {
   const reviewJob = await upsertJob({
     companyId: company.id,
     postedById: ownerUser.id,
-    title: "Senior Backend Engineer",
+    title: "مهندس خلفيات أول — NestJS",
     description:
-      "Own API modules, shape Prisma-backed product surfaces, and ship production-grade NestJS services for Baydar's hiring and social graph features.",
+      "امتلك وحدات الـAPI، وابنِ أسطح المنتج فوق Prisma، وأطلق خدمات NestJS جاهزة للإنتاج لميزات التوظيف والرسم الاجتماعي في بيدر.",
     type: "FULL_TIME",
     locationMode: "REMOTE",
     city: "رام الله",
     salaryMin: 3000,
     salaryMax: 5000,
     skillsRequired: ["NestJS", "Prisma", "PostgreSQL"],
+    previousTitles: ["Senior Backend Engineer"],
   });
 
   await upsertJob({
     companyId: company.id,
     postedById: ownerUser.id,
-    title: "Platform Engineer",
+    title: "مهندس منصّة",
     description:
-      "Build platform primitives for Baydar, improve deployment pipelines, and help teams ship reliable product changes across web and mobile surfaces.",
+      "ابنِ أساسيات المنصّة في بيدر، وحسّن خطوط النشر، وساعد الفرق على إطلاق تغييرات موثوقة عبر الويب والموبايل.",
     type: "FULL_TIME",
     locationMode: "HYBRID",
     city: "رام الله",
     salaryMin: 2500,
     salaryMax: 4500,
     skillsRequired: ["TypeScript", "Platform", "CI/CD"],
+    previousTitles: ["Platform Engineer"],
   });
 
   await prisma.application.upsert({
@@ -277,6 +279,8 @@ async function upsertJob(input: {
   salaryMin: number;
   salaryMax: number;
   skillsRequired: string[];
+  /** Older titles this row shipped under — renaming must update, not duplicate. */
+  previousTitles?: string[];
 }) {
   const data = {
     companyId: input.companyId,
@@ -296,7 +300,10 @@ async function upsertJob(input: {
   };
 
   const existing = await prisma.job.findFirst({
-    where: { companyId: input.companyId, title: input.title },
+    where: {
+      companyId: input.companyId,
+      title: { in: [input.title, ...(input.previousTitles ?? [])] },
+    },
     select: { id: true },
   });
 

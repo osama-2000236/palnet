@@ -17,7 +17,8 @@ import { useState, type ReactNode } from "react";
 
 import { Avatar, type AvatarUser } from "./Avatar";
 import { cx } from "./cx";
-import { Icon, type IconName } from "./Icon";
+import { Icon } from "./Icon";
+import { PostCardAction } from "./PostCardAction";
 import { Surface } from "./Surface";
 
 export interface PostCardAuthor extends AvatarUser {
@@ -150,12 +151,15 @@ export function PostCard({
           <button
             type="button"
             onClick={() => author.id && onOpenProfile?.(author.id)}
+            dir="auto"
             className="text-ink truncate text-start text-sm font-semibold hover:underline focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
           >
             {name}
           </button>
           {author.headline ? (
-            <span className="text-ink-muted truncate text-xs">{author.headline}</span>
+            <span dir="auto" className="text-ink-muted truncate text-xs">
+              {author.headline}
+            </span>
           ) : null}
           <span className="text-ink-muted text-xs">
             <span dir="ltr" className="tabular-nums">
@@ -177,7 +181,10 @@ export function PostCard({
 
       {/* Body */}
       {body ? (
-        <div className="text-ink whitespace-pre-wrap px-4 pb-3 text-[15px] leading-[1.7]">
+        <div
+          dir="auto"
+          className="text-ink whitespace-pre-wrap px-4 pb-3 text-[15px] leading-[1.7]"
+        >
           {body}
         </div>
       ) : null}
@@ -225,22 +232,22 @@ export function PostCard({
 
       {/* Action bar */}
       <div className="flex items-stretch p-1">
-        <ActionButton
+        <PostCardAction
           icon="thumb"
           label={liked ? labels.liked : labels.like}
           onClick={onToggleReaction}
           active={liked}
           disabled={busy}
         />
-        <ActionButton
+        <PostCardAction
           icon="comment"
           label={labels.comment}
           onClick={toggleComments}
           active={open}
         />
-        <ActionButton icon="repost" label={labels.repost} onClick={onRepost} />
+        <PostCardAction icon="repost" label={labels.repost} onClick={onRepost} />
         {onToggleSave && labels.save ? (
-          <ActionButton
+          <PostCardAction
             icon="bookmark"
             label={saved ? (labels.saved ?? labels.save) : labels.save}
             onClick={onToggleSave}
@@ -248,7 +255,7 @@ export function PostCard({
             disabled={saveBusy}
           />
         ) : null}
-        <ActionButton icon="send-paper" label={labels.send} onClick={onShare} />
+        <PostCardAction icon="send-paper" label={labels.send} onClick={onShare} />
       </div>
 
       {open && commentsSlot ? (
@@ -261,37 +268,5 @@ export function PostCard({
         </div>
       ) : null}
     </Surface>
-  );
-}
-
-function ActionButton({
-  icon,
-  label,
-  onClick,
-  active,
-  disabled,
-}: {
-  icon: IconName;
-  label: string;
-  onClick?: () => void;
-  active?: boolean;
-  disabled?: boolean;
-}): JSX.Element {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={disabled}
-      aria-pressed={active}
-      className={cx(
-        "inline-flex flex-1 items-center justify-center gap-2 rounded-md px-2 py-2.5 text-sm font-medium transition-colors",
-        "hover:bg-surface-subtle focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]",
-        "disabled:cursor-not-allowed disabled:opacity-60",
-        active ? "text-brand-700 font-semibold" : "text-ink-muted hover:text-ink",
-      )}
-    >
-      <Icon name={icon} size={18} />
-      {label}
-    </button>
   );
 }
