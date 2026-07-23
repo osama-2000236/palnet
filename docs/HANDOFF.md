@@ -100,6 +100,30 @@ Expected state on the cleaned repo: all commands pass. `pnpm lint` may print imp
 
 The April 28, 2026 cleanup intentionally removes generated local run artifacts, old agent worktrees, the unrelated root Layer2 report document, and all non-main branches after the docs commit is pushed. See `docs/repo-cleanup-2026-04-28.md`.
 
+### 2026-07-23 — branch purge and review sweep
+
+Six PRs merged (#81–#86); see the Changelog entry for what shipped. Afterwards the
+branch list was reduced to `main` on the remote and `main` + `claude/design-ce0850`
+locally. Branches were classified against GitHub's merged-PR list rather than by
+patch-id: squash merges rewrite patch-ids, so `git cherry` and three-dot diffs both
+report merged branches as unmerged.
+
+Two things were deliberately preserved rather than deleted:
+
+- `codex/claude-design-handoff-v2` held 3 unmerged commits (employer
+  create-company/publish-job mobile parity, P0–P2 web parity repairs from the
+  2026-06-20 audit). Archived as the tag `archive/codex-claude-design-handoff-v2`,
+  pushed to origin. Restore with
+  `git checkout -b <name> archive/codex-claude-design-handoff-v2`.
+- Three branches were checked out in live worktrees, two with uncommitted edits
+  (`C:\b`, the Android dev-client tree, and `.claude/worktrees/exciting-einstein-*`).
+  Their HEADs were detached to free the branch names; the worktrees and their
+  uncommitted changes are untouched.
+
+`claude/design-ce0850` is active user work and is excluded from all cleanup. Note
+its worktree directory (`zealous-bassi-ff4cee`) does not match the branch name, and
+it has no merged PR and no remote — every staleness heuristic misclassifies it.
+
 ## Guardrails
 
 - Do not redesign Baydar without updating `DESIGN.md` and the prototype decision record.
