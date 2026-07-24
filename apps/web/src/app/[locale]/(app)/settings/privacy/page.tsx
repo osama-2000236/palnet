@@ -1,7 +1,7 @@
 "use client";
 
 // Settings → Privacy. Closes the gap noted in
-// design-handoff-2026-05/PRODUCT-HEALTH.md §2.
+// docs/design/PRODUCT-HEALTH-2026-05-16.md §2.
 //
 // Server endpoints:
 //   GET    /me/privacy   → PrivacySettings

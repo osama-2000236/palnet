@@ -12,7 +12,8 @@ external requests, fonts, scripts, or backend dependency.
 - Native atoms: `packages/ui-native/src/index.ts`
 - Web routes: `apps/web/src/app/[locale]`
 - Mobile routes: `apps/mobile/app`
-- Prior visual source: `design-handoff-2026-05/`
+- Prior visual source: `docs/_archive/prototype-2025/Baydar Prototype.html`
+  (the `design-handoff-2026-05/05-prototype/` copy of it was deleted as a duplicate)
 
 Do not copy the HTML artifact into production. It explains the system; the repo
 tokens and shared atoms implement it.

@@ -12,23 +12,23 @@
 
 ## Locked Stack
 
-| Layer            | Choice                                                                            |
-| ---------------- | --------------------------------------------------------------------------------- |
-| Node             | >=20                                                                              |
-| Package manager  | pnpm 9                                                                            |
-| Monorepo         | Turborepo                                                                         |
-| Web              | Next.js 15 App Router, React 19, Tailwind CSS, `next-intl`                        |
-| Mobile           | Expo SDK 54, React Native 0.81, React 19, Expo Router, NativeWind in host screens |
-| API              | NestJS 10 modular monolith                                                        |
-| API protocol     | REST + Swagger; live events via SSE                                               |
-| Database         | PostgreSQL 16, Prisma 5                                                           |
-| Shared contracts | Zod schemas in `@baydar/shared`                                                   |
-| Auth             | Self-managed JWT access/refresh tokens, bcrypt passwords                          |
-| Media            | Cloudflare R2 signed upload URLs, blurhash placeholders                           |
-| Push             | Expo push device tokens and best-effort Expo fanout                               |
-| State/data       | TanStack Query, Zustand where local client state is needed                        |
-| UI               | `@baydar/ui-web`, `@baydar/ui-native`, `@baydar/ui-tokens`                        |
-| Testing          | Jest, React Testing Library, Playwright, token lint, mobile recovery checks       |
+| Layer            | Choice                                                                      |
+| ---------------- | --------------------------------------------------------------------------- |
+| Node             | >=20                                                                        |
+| Package manager  | pnpm 9                                                                      |
+| Monorepo         | Turborepo                                                                   |
+| Web              | Next.js 15 App Router, React 19, Tailwind CSS, `next-intl`                  |
+| Mobile           | Expo SDK 54, React Native 0.81, React 19, Expo Router, RN StyleSheet        |
+| API              | NestJS 10 modular monolith                                                  |
+| API protocol     | REST + Swagger; live events via SSE                                         |
+| Database         | PostgreSQL 16, Prisma 5                                                     |
+| Shared contracts | Zod schemas in `@baydar/shared`                                             |
+| Auth             | Self-managed JWT access/refresh tokens, bcrypt passwords                    |
+| Media            | Cloudflare R2 signed upload URLs, blurhash placeholders                     |
+| Push             | Expo push device tokens and best-effort Expo fanout                         |
+| State/data       | TanStack Query, Zustand where local client state is needed                  |
+| UI               | `@baydar/ui-web`, `@baydar/ui-native`, `@baydar/ui-tokens`                  |
+| Testing          | Jest, React Testing Library, Playwright, token lint, mobile recovery checks |
 
 Do not reintroduce GraphQL, Kafka, Neptune, EKS, OpenSearch, microservices, dark mode, Tailwind blue, or a themed UI kit without explicit approval.
 

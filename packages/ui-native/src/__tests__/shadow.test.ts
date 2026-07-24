@@ -1,4 +1,5 @@
-import { nativeTokens, shadowStyle, type ShadowKind } from "../index";
+import { nativeTokens, type ShadowKind } from "../index";
+import { shadowStyle } from "../shadow";
 
 describe("shadowStyle", () => {
   it("returns token shadows for native platforms", () => {

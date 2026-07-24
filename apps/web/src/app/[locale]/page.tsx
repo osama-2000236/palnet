@@ -1,7 +1,7 @@
 // Marketing landing — replaces the H1+CTA stub that was at
 // apps/web/src/app/[locale]/page.tsx prior to this PR.
 //
-// What changed (per design-handoff-2026-05/PRODUCT-HEALTH.md §2 #14):
+// What changed (per docs/design/PRODUCT-HEALTH-2026-05-16.md §2 #14):
 //   • Hero with the brand mark + headline + body + dual CTAs (Register +
 //     Sign in — the latter was missing, blocking returning-user flow).
 //   • Three value props framed for the Baydar audience: trust, careers,

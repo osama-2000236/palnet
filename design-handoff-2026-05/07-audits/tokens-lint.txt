@@ -1,5 +1,0 @@
-
-> baydar@0.0.1 lint:tokens C:\LinkedIn\.claude\worktrees\eloquent-yonath-6c4db3
-> node scripts/lint-tokens.mjs
-
-lint:tokens — clean.

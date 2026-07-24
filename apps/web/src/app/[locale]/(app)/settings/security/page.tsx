@@ -1,7 +1,7 @@
 "use client";
 
 // Settings → Security. Closes the third settings-tree gap noted in
-// design-handoff-2026-05/PRODUCT-HEALTH.md §2.
+// docs/design/PRODUCT-HEALTH-2026-05-16.md §2.
 //
 // Today /settings/account covers email + handle + export + delete account.
 // This route adds the security-only surface: change password, sign out all

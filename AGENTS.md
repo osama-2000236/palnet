@@ -26,8 +26,10 @@ Turborepo · pnpm · Next.js 15 App Router · Expo SDK 51
 
 ## Design handoff location
 
-The May 2026 design-review source tree merged into the repo on 2026-06-04
-(`design-handoff-2026-05/code/` is deleted — the repo tree is the source).
+The May 2026 design-review source tree merged into the repo on 2026-06-04.
+`design-handoff-2026-05/` now holds only the open Pass 2 gate docs (`10-ask.md`,
+`08-pain.md`, `08-problems.md`) plus frozen status — every snapshot of a repo
+file was deleted; read the live source instead (see that dir's `00-README.md`).
 Current parity ledger and design docs: `design-handoff-2026-06/README.md`.
 
 ## Atom architecture

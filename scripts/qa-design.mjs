@@ -10,7 +10,6 @@ const sourceFiles = tracked.filter((file) => /\.(?:ts|tsx|js|jsx|css|svg|xml)$/.
 
 const allowedColorPaths = [
   /^packages\/ui-tokens\//,
-  /^packages\/config\/tailwind-preset\.js$/,
   /^apps\/mobile\/app\.config\.js$/,
   /^apps\/mobile\/assets\/source\//,
   /^apps\/mobile\/android\//,
@@ -41,7 +40,6 @@ const oversizeViolations = [];
 const oversizeWarnings = [];
 
 for (const file of sourceFiles) {
-  if (file.startsWith("design-handoff-2026-05/")) continue;
   if (file.startsWith("docs/_archive/")) continue;
   if (!existsSync(file)) continue;
   const text = readFileSync(file, "utf8");

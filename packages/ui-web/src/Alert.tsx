@@ -1,5 +1,4 @@
-// Alert — persistent, in-flow message. Spec:
-// design-handoff-2026-05/MISSING-ELEMENTS.md §12.
+// Alert — persistent, in-flow message.
 //
 // Distinct from Toast (transient). Use Alert when the message must stay
 // visible until the user resolves it: form-level errors, "verify your email"
