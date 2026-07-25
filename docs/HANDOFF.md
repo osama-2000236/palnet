@@ -1,8 +1,7 @@
 # HANDOFF — live status
 
 The one status document. Rewritten in place, not appended to — if you want history, use
-`git log`, `gh pr list --state all`, and `CHANGELOG.md`. Last verified against `main` @ `c72e9d6`
-on 2026-07-25.
+`git log`, `gh pr list --state all`, and `CHANGELOG.md`. Last verified against `review/opus5-round-2` on 2026-07-25.
 
 Read order: `CLAUDE.md` → `project-spec.md` → `DESIGN.md` → `BRAND.md` → this file.
 
@@ -16,8 +15,15 @@ Run `pnpm --filter @baydar/db db:generate` immediately after `pnpm install`, **b
 
 Feature-complete against `project-spec.md`, including monetization UI, admin moderation and
 billing surfaces, Redis-backed rate limiting and SSE fanout, live FX overlay, and the Resend mail
-transport. CI is green on `main` and there are no open PRs. What stands between this and real
-users is not code — it is the provisioning below, plus evidence nobody has gathered yet.
+transport. What stands between this and real users is not code — it is the provisioning below,
+plus evidence nobody has gathered yet.
+
+The round-2 review (`review/opus5-round-2`, 2026-07-25) closed three P1s that no gate could have
+caught: Karama points could be minted by toggling an application's hire status, the points
+checkout could be charged twice, and web SSE never reconnected after any dropped connection.
+Findings and corrections: [`docs/audit/OPUS5-ROUND2-2026-07-25.md`](audit/OPUS5-ROUND2-2026-07-25.md).
+Screen scores: [`docs/audit/OPUS5-RUBRIC-2026-07-25.md`](audit/OPUS5-RUBRIC-2026-07-25.md).
+Arabic copy review list: [`docs/audit/ARABIC-REGISTER-2026-07-25.md`](audit/ARABIC-REGISTER-2026-07-25.md).
 
 ## Launch blockers
 
@@ -45,7 +51,7 @@ Not env-gated at boot, but still owner-supplied:
 | Confirm both Render crons exist live with `INTERNAL_CRON_TOKEN` set                                                        | owner (Render dashboard)            | defined at `render.yaml:53,69` — account retention daily 03:00, karama decay monthly 1st 04:00                                                                        |
 | Real staging API hostname                                                                                                  | owner                               | lives only inside the `RENDER_STAGING_DEPLOY_HOOK` secret; record it in `docs/deployment.md` so pre-flight steps 6–7 can run                                          |
 | Real-device smoke evidence — refresh, deep links, push, haptics, offline/SSE resume, swipe archive, cross-device messaging | owner (physical devices)            | owed since Sprint 11.5                                                                                                                                                |
-| Native-speaker Arabic copy review                                                                                          | human reviewer                      | —                                                                                                                                                                     |
+| Native-speaker Arabic copy review                                                                                          | human reviewer                      | 47 colloquial strings collected in `docs/audit/ARABIC-REGISTER-2026-07-25.md`; 30 are on product-facing member surfaces, not the landing page as previously recorded  |
 | Legal / privacy counsel review                                                                                             | counsel                             | `apps/web/src/app/[locale]/(public)/legal/legal-copy.tsx` is v0.1 placeholder copy                                                                                    |
 | Staging perf baseline                                                                                                      | owner (needs the staging URL above) | `pnpm load:api:baseline` vs `docs/perf-baseline-*.md`                                                                                                                 |
 
