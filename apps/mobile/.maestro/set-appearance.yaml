@@ -1,0 +1,49 @@
+appId: ps.baydar.app
+name: "set appearance (theme + locale)"
+tags:
+  - qa
+env:
+  THEME: light
+  LOCALE: ar-PS
+---
+# Drives Settings → Appearance so the screenshot harness can shoot each
+# theme/locale cell. Deliberately does NOT clearState: the harness relies on the
+# session persisting across the whole run.
+#
+# Taps by testID, not by label — the labels are translated, so tapping by text
+# cannot drive the locale switch itself (you would need to know the current
+# locale to find the control that changes it).
+# openLink launches the app itself. Do NOT launchApp first: the boot path
+# redirects to the feed, and that redirect lands after the deep link, leaving
+# you on the wrong screen.
+- openLink: baydar://settings/appearance
+
+- extendedWaitUntil:
+    visible:
+      id: "appearance-segmented"
+    timeout: 30000
+- tapOn:
+    id: "appearance-${THEME}"
+
+- extendedWaitUntil:
+    visible:
+      id: "language-segmented"
+    timeout: 10000
+- tapOn:
+    id: "language-${LOCALE}"
+
+# Locale changes that flip writing direction need a reload to take effect
+# (I18nManager.forceRTL is applied at startup), so hand the harness a settled app.
+- launchApp
+- extendedWaitUntil:
+    visible:
+      id: "feed-composer-entry"
+    timeout: 30000
+
+# Dev-only LogBox toast sits over the bottom nav and would appear in every
+# screenshot of the run. Dismiss it once per cell; absent in release builds.
+- runFlow:
+    when:
+      visible: "Open debugger to view warnings."
+    commands:
+      - tapOn: "Open debugger to view warnings."
