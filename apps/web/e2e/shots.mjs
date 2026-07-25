@@ -143,7 +143,17 @@ async function main() {
     .filter(Boolean)
     .map(([name, route, as = "user"]) => [name, route, as]);
 
-  const sessions = { user: session, owner, admin, anon: null };
+  // Access tokens live 15 minutes; a full matrix takes about an hour. Logging in
+  // once meant every authenticated route in the last viewport rendered the sign-in
+  // page instead — 15 shots, silently, because a login screen is a valid render.
+  // The refresh token is an HttpOnly cookie the harness never sees, so it cannot
+  // ride the app's own refresh. Mint fresh tokens per context instead.
+  const freshSessions = async () => ({
+    user: await login("demo@baydar.ps", "Password123"),
+    owner: await login("owner@baydar.ps", "Password123"),
+    admin: admin ? await login("qa-admin@baydar.test", "Password123").catch(() => null) : null,
+    anon: null,
+  });
 
   const only = arg("only", null)?.split(",");
   const picked = only ? routes.filter(([name]) => only.includes(name)) : routes;
@@ -160,6 +170,7 @@ async function main() {
   for (const viewport of viewports) {
     for (const locale of locales) {
       for (const theme of themes) {
+        const sessions = await freshSessions();
         for (const as of authTags) {
           const forThisTag = picked.filter(([, , tag]) => tag === as);
           const context = await browser.newContext({
