@@ -48,3 +48,6 @@ export function useTypingIndicator(roomId: string | undefined, token: string | n
     typingActive: typing && typing.expiresAt > Date.now() ? typing : null,
   };
 }
+
+// expo-router colocation: not a screen.
+export default (): null => null;

@@ -10,3 +10,7 @@ coverage/
 .codex-logs/
 pnpm-lock.yaml
 packages/db/prisma/migrations/
+# Expo rewrites this on every `expo start`, without a trailing newline;
+# prettier adds one back. They fight, and format:check goes red depending on
+# who ran last. Expo owns the file — it says so in its own comment.
+apps/mobile/expo-env.d.ts
