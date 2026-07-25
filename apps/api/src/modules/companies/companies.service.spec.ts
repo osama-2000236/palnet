@@ -119,14 +119,17 @@ describe("CompaniesService", () => {
   let service: CompaniesService;
   let prisma: PrismaStub;
   let notifications: { notify: jest.Mock };
-  let karama: { award: jest.Mock };
+  let karama: { award: jest.Mock; awardOnce: jest.Mock };
   let entitlements: { assertCanCreateJob: jest.Mock };
   let jobAlerts: { notifyMatches: jest.Mock };
 
   beforeEach(async () => {
     prisma = buildPrisma();
     notifications = { notify: jest.fn().mockResolvedValue(undefined) };
-    karama = { award: jest.fn().mockResolvedValue(undefined) };
+    karama = {
+      award: jest.fn().mockResolvedValue(undefined),
+      awardOnce: jest.fn().mockResolvedValue(true),
+    };
     entitlements = { assertCanCreateJob: jest.fn().mockResolvedValue(undefined) };
     jobAlerts = { notifyMatches: jest.fn().mockResolvedValue(undefined) };
 
@@ -280,15 +283,22 @@ describe("CompaniesService", () => {
       );
     });
 
-    it("awards Karama on first HIRED transition", async () => {
+    // Must be the idempotent variant keyed on the application id. `award` has
+    // no dedupe, and the HIRED → REJECTED → HIRED cycle re-enters this branch
+    // every time, so the non-idempotent call minted 200 points per toggle.
+    it("awards Karama once per application on HIRED transition", async () => {
       prisma.application.findFirst.mockResolvedValue(applicantRow({ status: "SHORTLISTED" }));
       prisma.application.update.mockResolvedValue(applicantRow({ status: "HIRED" }));
 
       await service.updateApplicantStatus("co_1", "j_1", "app_1", "u_actor", { status: "HIRED" });
 
-      expect(karama.award).toHaveBeenCalledWith(
-        expect.objectContaining({ userId: "u_app", reason: "VERIFIED_HIRE" }),
-      );
+      expect(karama.awardOnce).toHaveBeenCalledWith({
+        userId: "u_app",
+        reason: "VERIFIED_HIRE",
+        refType: "application",
+        refId: "app_1",
+      });
+      expect(karama.award).not.toHaveBeenCalled();
     });
 
     it("is a no-op short-circuit when status is unchanged", async () => {
@@ -300,7 +310,7 @@ describe("CompaniesService", () => {
 
       expect(prisma.application.update).not.toHaveBeenCalled();
       expect(notifications.notify).not.toHaveBeenCalled();
-      expect(karama.award).not.toHaveBeenCalled();
+      expect(karama.awardOnce).not.toHaveBeenCalled();
     });
   });
 });
