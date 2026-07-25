@@ -13,40 +13,23 @@ export interface UseMessagesStreamInput {
 
 export function useMessagesStream({ token, onEvent, onError }: UseMessagesStreamInput): void {
   useEffect(() => {
-    let cancelled = false;
-    let es: EventSource | null = null;
-
     if (!token) return undefined;
 
-    void openStream("messaging", token)
-      .then((source) => {
-        if (cancelled) {
-          source.close();
-          return;
+    // `openStream` owns the retry loop. This hook used to close the source in
+    // `onerror` and never reopen, so one dropped connection ended realtime
+    // messaging for the life of the mount.
+    return openStream("messaging", token, {
+      onEvent: (data) => {
+        try {
+          const parsed = WsChatEvent.safeParse(JSON.parse(data));
+          if (!parsed.success) return;
+          onEvent(parsed.data);
+        } catch {
+          // ignore malformed events
         }
-        es = source;
-        source.onmessage = (evt): void => {
-          try {
-            const parsed = WsChatEvent.safeParse(JSON.parse(evt.data));
-            if (!parsed.success) return;
-            onEvent(parsed.data);
-          } catch {
-            // ignore malformed events
-          }
-        };
-        source.onerror = () => {
-          if (cancelled) return;
-          onError("connectionLost");
-          es?.close();
-        };
-      })
-      .catch(() => {
-        if (!cancelled) onError("connectionFailed");
-      });
-
-    return (): void => {
-      cancelled = true;
-      es?.close();
-    };
+      },
+      onDrop: () => onError("connectionLost"),
+      onFailed: () => onError("connectionFailed"),
+    });
   }, [token, onEvent, onError]);
 }

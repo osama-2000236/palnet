@@ -73,43 +73,30 @@ export default function AppLayout({ children }: { children: ReactNode }): JSX.El
     void apiFetch("/notifications/unread-count", UnreadCount, { token })
       .then((out) => setNotificationsUnread(out.count))
       .catch(() => {});
-    let es: EventSource | null = null;
-    let cancelled = false;
     setNotificationsConnectionDropped(false);
-    void openStream("notifications", token)
-      .then((source) => {
-        if (cancelled) {
-          source.close();
-          return;
-        }
-        es = source;
-        source.onopen = (): void => {
-          setNotificationsConnectionDropped(false);
-        };
-        source.onerror = (): void => {
-          setNotificationsConnectionDropped(true);
-        };
-        source.onmessage = (evt): void => {
-          setNotificationsConnectionDropped(false);
-          try {
-            const parsed = WsNotificationEvent.safeParse(JSON.parse(evt.data));
-            if (!parsed.success) return;
-            const ev = parsed.data;
-            if (ev.type === "notification.unread-count") {
-              setNotificationsUnread(ev.payload.count);
-            } else if (ev.type === "notification.new") {
-              setNotificationsUnread((c) => c + 1);
-            }
-          } catch {
-            // ignore
+    // The banner now tracks a connection that genuinely comes back:
+    // `openStream` re-mints a stream token per attempt, so a drop clears the
+    // moment it reconnects instead of staying red until the next navigation.
+    return openStream("notifications", token, {
+      onOpen: () => setNotificationsConnectionDropped(false),
+      onDrop: () => setNotificationsConnectionDropped(true),
+      onFailed: () => setNotificationsConnectionDropped(true),
+      onEvent: (data) => {
+        setNotificationsConnectionDropped(false);
+        try {
+          const parsed = WsNotificationEvent.safeParse(JSON.parse(data));
+          if (!parsed.success) return;
+          const ev = parsed.data;
+          if (ev.type === "notification.unread-count") {
+            setNotificationsUnread(ev.payload.count);
+          } else if (ev.type === "notification.new") {
+            setNotificationsUnread((c) => c + 1);
           }
-        };
-      })
-      .catch(() => setNotificationsConnectionDropped(true));
-    return (): void => {
-      cancelled = true;
-      es?.close();
-    };
+        } catch {
+          // ignore
+        }
+      },
+    });
   }, [token]);
 
   // Messages unread — sum of per-room counts. Refetch on any chat event to
@@ -129,34 +116,27 @@ export default function AppLayout({ children }: { children: ReactNode }): JSX.El
   useEffect(() => {
     if (!token) return;
     void refetchRooms(token);
-    let es: EventSource | null = null;
-    let cancelled = false;
-    void openStream("messaging", token)
-      .then((source) => {
-        if (cancelled) {
-          source.close();
-          return;
-        }
-        es = source;
-        source.onmessage = (evt): void => {
-          try {
-            const parsed = WsChatEvent.safeParse(JSON.parse(evt.data));
-            if (!parsed.success) return;
-            const ev = parsed.data;
-            if (ev.type === "message.new" || ev.type === "message.read") {
-              // Coalesce bursts (e.g. mass-read) into one refetch.
-              if (refetchTimer.current) clearTimeout(refetchTimer.current);
-              refetchTimer.current = setTimeout(() => void refetchRooms(token), 150);
-            }
-          } catch {
-            // ignore
+    const unsubscribe = openStream("messaging", token, {
+      // Refetch on reconnect too: events that fired while the stream was down
+      // are gone, so the badge is only trustworthy after a fresh read.
+      onOpen: () => void refetchRooms(token),
+      onEvent: (data) => {
+        try {
+          const parsed = WsChatEvent.safeParse(JSON.parse(data));
+          if (!parsed.success) return;
+          const ev = parsed.data;
+          if (ev.type === "message.new" || ev.type === "message.read") {
+            // Coalesce bursts (e.g. mass-read) into one refetch.
+            if (refetchTimer.current) clearTimeout(refetchTimer.current);
+            refetchTimer.current = setTimeout(() => void refetchRooms(token), 150);
           }
-        };
-      })
-      .catch(() => {});
+        } catch {
+          // ignore
+        }
+      },
+    });
     return (): void => {
-      cancelled = true;
-      es?.close();
+      unsubscribe();
       if (refetchTimer.current) clearTimeout(refetchTimer.current);
     };
   }, [token, refetchRooms]);
