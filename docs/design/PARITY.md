@@ -57,6 +57,50 @@ Re-audited 2026-07-19 against both barrel files (`packages/ui-web/src/index.ts`,
 | `RoomRow` / `TypingIndicator`                                                    | `@baydar/ui-web` | n/a                 | Web-only      | Native builds these inside `_message-thread/`; same 3-screen promotion rule.                                                                                                                                                        |
 | `AppHeader` / `SearchField` / `SegmentedControl` / `StateMessage` / `RecordCard` | n/a              | `@baydar/ui-native` | Native-only   | Platform idioms (header bar, search field, list record); no web demand yet.                                                                                                                                                         |
 
+## Native twins that exist but never render
+
+Re-verified 2026-07-25 by call-site grep across `apps/mobile` and inside
+`packages/ui-native` itself. These three have a web twin, ship in the native
+barrel, and are mounted by nothing — not a screen, not another primitive:
+
+| Primitive            | Native LOC | Web usage |
+| -------------------- | ---------- | --------- |
+| `Checkbox`           | 120        | 2 screens |
+| `Dialog`             | 79         | 1 screen  |
+| `OnboardingProgress` | 176        | 1 screen  |
+
+Lockstep is the rule, so they are not automatically bloat — but 375 lines that
+have never rendered on a device are untested, not proven. `OnboardingProgress`
+is the interesting one: mobile _has_ an onboarding flow
+(`app/(app)/_onboarding/`) and does not use it, so web shows step progress and
+mobile does not. That is a screen-parity gap, not just an idle export.
+
+Same shape on `Illustration`: the web app passes all three `direction` kits
+(`outline` on admin, `block` on error screens, `harvest` elsewhere), while no
+mobile screen passes `direction` at all — so `OutlineSet` and `BlockSet`
+(~210 lines of `react-native-svg`) are unreachable on native.
+
+## Route parity
+
+45 web `page.tsx` routes against 38 mobile screens, counted 2026-07-25.
+
+Web-only, all deliberate:
+
+- `(public)/legal/*` ×4 — mobile links out to the web copies rather than
+  shipping legal text it would have to keep in sync.
+- `(public)/j/[id]` — the shareable public job permalink; the point of it is
+  that it opens without an app.
+- `cv` — print/export surface.
+- `(admin)/moderation`, `(admin)/billing` — operator tools, desktop-only by
+  intent.
+- `(app)/employer/new` — mobile can view and bill an employer workspace but
+  creates one on web.
+
+Mobile-only:
+
+- `composer.tsx` — a full-screen composer route, because a modal composer is the
+  platform idiom. Web composes inline in the feed. Intentional.
+
 ## Screen Parity Rules
 
 - Web can use multi-column app layouts at desktop breakpoints.
@@ -72,3 +116,5 @@ Re-audited 2026-07-19 against both barrel files (`packages/ui-web/src/index.ts`,
 - Native has no date-picker primitive (`expiresAt` omitted from native post-a-job; server default applies).
 - Illustration `direction` placement decided 2026-07-20: admin/internal surfaces use the `outline` kit (differentiates operator tools from the warm product surface); `block` stays unconsumed until a design pass claims it.
 - Route-split pass done: web messages, mobile room thread, and web me/edit are thin shells over `_components`/`_hooks`; mobile onboarding sits at ~280 LOC, under the qa-design ceiling — split only if it grows.
+- Mobile onboarding does not use `OnboardingProgress` though the primitive ships — web shows step progress, mobile does not. See "Native twins that exist but never render".
+- Handler parity is clean as of 2026-07-25: every optional `onClick`/`onPress` prop in both kits is guarded before its control renders, so no host can produce a dead glyph by omitting one. This was the `PostCard` `onRepost`/`onShare` failure; it does not recur anywhere in either kit.
