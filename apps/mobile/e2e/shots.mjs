@@ -71,6 +71,32 @@ const first = (v) => (Array.isArray(v) ? v[0] : (v?.items?.[0] ?? v?.data?.[0] ?
  * twice and comparing bytes is the on-device equivalent of the web harness
  * waiting for `.animate-pulse` to clear.
  */
+/**
+ * Wait until the app is actually painting something before shooting a cell.
+ *
+ * A blank screen compresses to roughly 25KB at this resolution; any real screen
+ * clears 60KB by a wide margin. Crude, but it is the one signal available over
+ * `adb exec-out` without asking the app to instrument itself.
+ */
+async function warmUp(timeoutMs = 90_000) {
+  const started = Date.now();
+  while (Date.now() - started < timeoutMs) {
+    adb([
+      "shell",
+      "am",
+      "start",
+      "-a",
+      "android.intent.action.VIEW",
+      "-d",
+      "baydar://feed",
+      APP_ID,
+    ]);
+    await new Promise((r) => setTimeout(r, 4000));
+    if (adb(["exec-out", "screencap", "-p"]).length > 60_000) return true;
+  }
+  return false;
+}
+
 async function captureStable(minMs, maxMs) {
   const started = Date.now();
   await new Promise((r) => setTimeout(r, minMs));
@@ -184,6 +210,17 @@ async function main() {
       } catch {
         failures.push({ cell: `${locale}/${theme}`, error: "set-appearance flow failed" });
         process.stdout.write(`ERR could not set ${locale}/${theme} — cell skipped\n`);
+        continue;
+      }
+
+      // Changing theme or locale restarts the app (RTL is applied at startup),
+      // and captureStable cannot see that: a blank white screen is perfectly
+      // stable, so the first screens of a cell were shot mid-restart and came
+      // back empty. Warm up until something real is on screen, and fail the
+      // cell loudly rather than filling it with blanks.
+      if (!(await warmUp())) {
+        failures.push({ cell: `${locale}/${theme}`, error: "app never rendered after restart" });
+        process.stdout.write(`ERR ${locale}/${theme} never rendered — cell skipped\n`);
         continue;
       }
 
