@@ -53,7 +53,11 @@ async function api(session, pathname) {
   const res = await fetch(`${API}${pathname}`, {
     headers: { Authorization: `Bearer ${session.tokens.accessToken}` },
   });
-  return res.ok ? (await res.json()).data : null;
+  if (!res.ok) return null;
+  const json = await res.json();
+  // GET /companies/me answers with a bare array; every other endpoint wraps in
+  // { data }. Tolerate both rather than silently resolving undefined.
+  return json?.data ?? json;
 }
 
 const first = (v) => (Array.isArray(v) ? v[0] : (v?.items?.[0] ?? v?.data?.[0] ?? null));
@@ -74,11 +78,13 @@ async function main() {
   const roomId = first(await api(session, "/messaging/rooms?limit=5"))?.id;
 
   const owner = await login("owner@baydar.ps", "Password123").catch(() => null);
-  const employerSlug = owner ? (first(await api(owner, "/companies/me"))?.slug ?? "baydar") : null;
-  const employerJobId =
-    owner && employerSlug
-      ? first(await api(owner, `/companies/${employerSlug}/jobs?limit=5`))?.id
-      : null;
+  const ownerCompany = owner ? first(await api(owner, "/companies/me")) : null;
+  const employerSlug = ownerCompany?.slug ?? (owner ? "baydar" : null);
+  // The jobs route keys on company id, not slug — passing the slug 403s with
+  // "Not a member of this company", which reads like a permissions problem.
+  const employerJobId = ownerCompany?.id
+    ? first(await api(owner, `/companies/${ownerCompany.id}/jobs?limit=5`))?.id
+    : null;
 
   // Expo Router drops `(group)` segments from the URL, so these mirror the file
   // tree under apps/mobile/app with the groups stripped.

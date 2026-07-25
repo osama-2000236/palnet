@@ -36,7 +36,10 @@ async function api(session, pathname) {
     headers: { Authorization: `Bearer ${session.tokens.accessToken}` },
   });
   if (!res.ok) return null;
-  return (await res.json()).data;
+  const json = await res.json();
+  // GET /companies/me answers with a bare array; every other endpoint wraps in
+  // { data }. Tolerate both rather than silently resolving undefined.
+  return json?.data ?? json;
 }
 
 const first = (v) => (Array.isArray(v) ? v[0] : (v?.items?.[0] ?? v?.data?.[0] ?? null));
@@ -59,12 +62,13 @@ async function main() {
   // signed out — so a route names the session it needs, and we build one browser
   // context per (session × locale × theme × viewport).
   const owner = await login("owner@baydar.ps", "Password123");
-  const ownerSlug =
-    first(await api(owner, "/companies/me"))?.slug ??
-    (await api(owner, "/companies/me"))?.[0]?.slug;
-  const employerSlug = ownerSlug ?? "baydar";
-  const employerJobs = await api(owner, `/companies/${employerSlug}/jobs?limit=5`);
-  const employerJobId = first(employerJobs)?.id ?? null;
+  const ownerCompany = first(await api(owner, "/companies/me"));
+  const employerSlug = ownerCompany?.slug ?? "baydar";
+  // The jobs route keys on company id, not slug — passing the slug 403s with
+  // "Not a member of this company", which reads like a permissions problem.
+  const employerJobId = ownerCompany?.id
+    ? (first(await api(owner, `/companies/${ownerCompany.id}/jobs?limit=5`))?.id ?? null)
+    : null;
 
   // Admin is optional: a checkout without the QA admin user still shoots the
   // other 44 routes instead of dying on login.
