@@ -39,13 +39,41 @@ None found.
 
 ## P1 — closed
 
-| id   | Finding                                                                                                                                                                                                                                                                                    | Evidence                                                                         | Fix       |
-| ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------- | --------- |
-| P1-1 | Hydration mismatch on **every page**, all 32 cells, every locale/theme/auth context. Server sends `nonce="h4Dk+…"`, client reads `nonce=""` — browsers strip the attribute once CSP is applied. React declares the tree unpatchable.                                                       | React diff naming both inline boot scripts                                       | `829215b` |
-| P1-2 | Every relative timestamp in the mobile app is ungrammatical Arabic. Hermes has no `Intl.RelativeTimeFormat`, so a hand-rolled `${count} ${noun}` branch ran: "قبل ٣ يوم" — plural count, singular noun. Arabic has six plural categories; 1/2 days are أمس / أول أمس, not counted phrases. | device screenshot + output matches the fallback template character for character | `f0e0db0` |
-| P1-3 | `messaging.connectionLost` / `connectionFailed` missing from **both** catalogs. `useRoomMessages` binds `messaging` and passes `translate: (m) => t(m)`, so an SSE drop rendered the raw key path in Arabic _and_ English.                                                                 | `IntlError` in the live console capture, then traced through the hook chain      | `4355338` |
-| P1-4 | 404 page's two recovery buttons rendered key paths — `common.home` and `common.search` existed in neither catalog.                                                                                                                                                                         | catalog diff                                                                     | `4355338` |
-| P1-5 | `/me/edit` rendered 526px of content in a 390px viewport. `flex-1` on an `<input>`: flex items default to `min-width:auto` and an input will not shrink below ~200px. Two instances (skills adder, comment composer).                                                                      | measured `scrollWidth`/`clientWidth` + named element                             | `02c7c05` |
+| id   | Finding                                                                                                                                                                                                                              | Evidence                                                                            | Fix                  |
+| ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------- | -------------------- |
+| P1-1 | Hydration mismatch on **every page**, all 32 cells, every locale/theme/auth context. Server sends `nonce="h4Dk+…"`, client reads `nonce=""` — browsers strip the attribute once CSP is applied. React declares the tree unpatchable. | React diff naming both inline boot scripts                                          | `829215b`            |
+| P1-2 | Every relative timestamp in the mobile app was ungrammatical Arabic. Hermes has no `Intl.RelativeTimeFormat`, so a hand-rolled `${count} ${noun}` branch ran: "قبل ٣ يوم" — plural count, singular noun. **Fixed twice, see below.** | device screenshot; output matched the old fallback template character for character | `f0e0db0`, `c885fec` |
+| P1-3 | `messaging.connectionLost` / `connectionFailed` missing from **both** catalogs. `useRoomMessages` binds `messaging` and passes `translate: (m) => t(m)`, so an SSE drop rendered the raw key path in Arabic _and_ English.           | `IntlError` in the live console capture, then traced through the hook chain         | `4355338`            |
+| P1-4 | 404 page's two recovery buttons rendered key paths — `common.home` and `common.search` existed in neither catalog.                                                                                                                   | catalog diff                                                                        | `4355338`            |
+| P1-5 | `/me/edit` rendered 526px of content in a 390px viewport. `flex-1` on an `<input>`: flex items default to `min-width:auto` and an input will not shrink below ~200px. Two instances (skills adder, comment composer).                | measured `scrollWidth`/`clientWidth` + named element                                | `02c7c05`            |
+
+### P1-2 took two attempts, and the first one was worse
+
+Recorded because the failure mode is instructive: the first fix reasoned from
+an assumption instead of checking it.
+
+`f0e0db0` degraded to an absolute date whenever `Intl.RelativeTimeFormat` was
+missing, on the argument that correct Arabic would need 42 hand-written strings
+and a native-speaker review. That fixed the grammar and broke something bigger —
+it applied to _every_ timestamp, so a five-minute-old post rendered `٢٥/٠٧/٢٠٢٦`
+on mobile while web said `قبل ٥ دقائق`. A feed stamped with today's date
+everywhere is worse than slightly wrong grammar, and it opened a web/mobile
+divergence in a repo whose hard rule is lockstep.
+
+The assumption was also false. Hermes has `Intl.PluralRules` — `apps/mobile`
+already imports `intl-pluralrules` at `src/i18n/index.ts:4` — and that is the
+hard part of Arabic. A two-line check would have shown it.
+
+`c885fec` formats relative time properly on the fallback path using CLDR's own
+forms, transcribed from `Intl.RelativeTimeFormat(numeric:"auto")` output,
+including the idiomatic أمس / أول أمس that drop the numeral. Mobile and web now
+produce byte-identical strings on every bucket.
+
+The table is not trusted on assertion: the spec runs the same instants through
+the real formatter and the fallback and requires identical output across 14 age
+buckets covering every Arabic plural boundary, in both locales. Breaking one
+entry (`day:few` أيام → يوم) fails it — verified, so the test is sensitive
+rather than vacuous.
 
 ## P2 — closed
 
@@ -81,12 +109,12 @@ Recorded because "we looked and found nothing" is a finding.
 
 ## Regression coverage added
 
-| Test                                                                                                         | Catches                                                                           |
-| ------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------- |
-| `apps/web/src/lib/__tests__/messages-parity.test.ts` — "every key the code asks for exists"                  | keys missing from **both** catalogs, which key-set parity structurally cannot see |
-| `apps/mobile/src/__tests__/i18n-parity.test.ts` — same check                                                 | ditto, 513 keys                                                                   |
-| `packages/shared/src/format.spec.ts` — "degrades to an absolute date when RelativeTimeFormat is unavailable" | P1-2. Replaced a test that asserted the broken output                             |
-| `apps/web/e2e/shots.mjs` — `_overflow.json`                                                                  | P1-5 and any future 390px overflow, on every route, every run                     |
+| Test                                                                                        | Catches                                                                                            |
+| ------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| `apps/web/src/lib/__tests__/messages-parity.test.ts` — "every key the code asks for exists" | keys missing from **both** catalogs, which key-set parity structurally cannot see                  |
+| `apps/mobile/src/__tests__/i18n-parity.test.ts` — same check                                | ditto, 513 keys                                                                                    |
+| `packages/shared/src/format.spec.ts` — "matches Intl.RelativeTimeFormat exactly"            | P1-2, and any drift in the transcribed CLDR table. Replaced a test that asserted the broken output |
+| `apps/web/e2e/shots.mjs` — `_overflow.json`                                                 | P1-5 and any future 390px overflow, on every route, every run                                      |
 
 Honest limit: the static key check cannot see dynamic keys — `t(message)` with a
 runtime value, which is P1-3 itself. The harness console-error sweep is the net
