@@ -22,7 +22,7 @@ import type { JSX } from "react";
 
 import type { Locale } from "@/i18n";
 
-import { ReturningVisitorCta } from "./_components/ReturningVisitorCta";
+import { HeroCtas } from "./_components/HeroCtas";
 
 export default async function LandingPage({
   params,
@@ -78,20 +78,7 @@ export default async function LandingPage({
           </h1>
           <p className="text-ink-muted max-w-[52ch] text-lg leading-relaxed">{t("hero.body")}</p>
           <div className="mt-2 flex flex-wrap items-center gap-3">
-            <ReturningVisitorCta locale={locale}>
-              <Link
-                href={`/${locale}/register`}
-                className="bg-brand-600 text-ink-inverse hover:bg-brand-700 shadow-card inline-flex items-center rounded-md px-6 py-3 text-base font-semibold focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
-              >
-                {t("hero.ctaPrimary")}
-              </Link>
-              <Link
-                href={`/${locale}/login`}
-                className="border-line-hard text-ink hover:bg-surface-subtle inline-flex items-center rounded-md border bg-transparent px-6 py-3 text-base font-semibold focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
-              >
-                {t("hero.ctaSecondary")}
-              </Link>
-            </ReturningVisitorCta>
+            <HeroCtas locale={locale} />
           </div>
           <p className="text-ink-muted text-xs">{t("hero.smallPrint")}</p>
         </div>
