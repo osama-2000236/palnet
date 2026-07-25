@@ -58,6 +58,59 @@ test got `ERR_CONNECTION_REFUSED` — it is for when EPERM actually bites, not
 insurance. And `pnpm --filter … e2e -- --workers=1` forwards `--` to Playwright
 as a literal test filter ("No tests found"); use `pnpm exec playwright test`.
 
+## Phase 5 evidence
+
+**Lighthouse, desktop** — 4 URLs × 3 runs, every assertion cleared with margin.
+
+|                | `/ar-PS` | `/en` | `/ar-PS/login` | `/ar-PS/register` | threshold         |
+| -------------- | -------- | ----- | -------------- | ----------------- | ----------------- |
+| performance    | 99       | 99    | 99             | 99                | ≥85 warn          |
+| accessibility  | 100      | 100   | 100            | 100               | ≥95 **error**     |
+| best-practices | 96       | 96    | 100            | 100               | ≥90 warn          |
+| SEO            | 100      | 100   | 100            | 100               | —                 |
+| LCP            | 1.0s     | 1.0s  | 1.0s           | 1.0s              | ≤2500ms **error** |
+| TBT            | 0ms      | 0ms   | 0ms            | 20ms              | ≤200ms **error**  |
+| CLS            | 0        | 0.002 | 0              | 0                 | ≤0.1 **error**    |
+
+`lighthouserc.mobile.json` defined a phone budget and **was invoked by nothing** —
+on an Arabic-first product where most traffic is a phone. Now wired into CI.
+
+**Maestro** — all seven flows, run for the first time. Initially 3/7.
+
+| flow          | result                         |
+| ------------- | ------------------------------ |
+| login-to-feed | pass (was a cold-bundle flake) |
+| compose-post  | pass                           |
+| send-message  | pass                           |
+| register      | pass (was unrunnable)          |
+| search        | pass (was unrunnable)          |
+| apply-to-job  | pass                           |
+| profile-edit  | pass (was a stale assertion)   |
+
+None of the four failures was a product defect. `register` and `search` typed
+Arabic, which Maestro cannot do at all (`Unicode character input is not
+supported`, mobile-dev-inc/maestro#146) — they could never have passed on any
+machine. `profile-edit` asserted `"حفظ"` against a button reading
+`"حفظ التغييرات"`; probing showed Maestro matches Arabic exactly but not as a
+substring. All now 7/7.
+
+**Security sweep**
+
+- `assert-security-headers.mjs` passes — and was referenced by no package script
+  and no workflow, so it had never run in CI. Now `pnpm check:security-headers`,
+  wired into the lint job.
+- Production CORS is fail-closed on both layers: `env.ts:76-90` refuses to boot
+  without `CORS_ORIGINS`, and `buildCorsOrigin("")` returns `false`, which
+  disables CORS outright. Wildcards rejected unless project-scoped Vercel
+  previews.
+- Auth rate limits, refresh-token reuse/rotation, and media presign MIME/size
+  are covered by existing API specs (320 passing).
+- No viewer-scoped payload behind a public cache — verified at the type level.
+
+**Data safety** — all 20 migrations apply cleanly forward into an empty schema,
+producing 38 tables with 20 recorded finished. Verified against a scratch schema
+on the QA database, then dropped.
+
 ## Findings
 
 | Bucket | Found | Closed | Open |
@@ -148,11 +201,20 @@ not a pull request; it is opening the HyperPay and Resend accounts.
 
 ## What I did not do
 
-The charter asks for philosophy / hierarchy / detail / functionality / restraint
-scored 1–10 across all 85 screens. Not done. Scoring that is a judgement pass
-over 520 images, and this run spent its budget on defects that could be
-demonstrated instead. No numbers are recorded that were not derived — the
-alternative was inventing 425 of them.
+Two charter items are genuinely outstanding. Neither is a defect; both are
+work, and pretending otherwise would make this document useless.
 
-Both harnesses are committed and documented, so that pass now costs a session
-rather than a week. That was the point of building them.
+**The 85-screen rubric.** Philosophy / hierarchy / detail / functionality /
+restraint, scored 1–10 across 47 web routes and 38 mobile screens. Not done. It
+is a judgement pass over 520 images and this run spent its budget on defects
+that could be demonstrated. No numbers are recorded that were not derived — the
+alternative was inventing 425 of them. Both harnesses are committed and
+documented, so the pass now costs a session rather than a week.
+
+**Full post-fix visual review.** Both matrices were captured and machine-checked
+after the fixes — 0 duplicate-hash groups above 2, 0 blank frames, 0 horizontal
+overflow across 46 routes × 2 locales. But I looked at roughly 20 of the 520
+images with my own eyes. The automated checks catch blank, duplicated, clipped
+and overflowing; they do not catch "this screen is ugly" or "this hierarchy is
+wrong", which is exactly what the rubric is for. Treat the visual state as
+machine-verified, not design-reviewed.
