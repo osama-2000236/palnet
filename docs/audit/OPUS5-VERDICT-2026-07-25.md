@@ -117,17 +117,21 @@ on the QA database, then dropped.
 | ------ | ----- | ------ | ---- |
 | P0     | 0     | —      | 0    |
 | P1     | 5     | 5      | 0    |
-| P2     | 7     | 6      | 1    |
-| P3     | 3     | 0      | 3    |
+| P2     | 8     | 8      | 0    |
+| P3     | 3     | 1      | 2    |
 
 Detail in [OPUS5-REVIEW-2026-07-25.md](./OPUS5-REVIEW-2026-07-25.md). Phase 0
 ledger in [OPUS5-CLEANUP-2026-07-25.md](./OPUS5-CLEANUP-2026-07-25.md).
 
-Left open deliberately: the Expo Router route warnings (dev-only noise, needs a
-routing-convention change wider than this review), the landing page's mixed
-Arabic register (editorial — belongs with the native-speaker review), local QA
-fixture leakage (never ships), and `expo-env.d.ts` being gitignored-but-tracked
-(the obvious fix breaks CI, verified).
+Phase 5 added a category the earlier passes missed: **three guards that existed
+and ran nowhere** — the security-headers assertion, the mobile Lighthouse
+budget, and two Maestro flows that could not execute at all. A check nobody
+runs is worse than no check, because it reads as coverage. All three are wired
+now.
+
+Two P3s stay open, both by choice: the landing page's mixed Arabic register
+(editorial — belongs with the native-speaker review already in `BLOCKED`) and
+local QA fixture leakage (dev-only data that never ships; `qa:cleanup` exists).
 
 ## BLOCKED — needs a human
 
