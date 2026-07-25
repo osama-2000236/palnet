@@ -329,12 +329,25 @@ async function main() {
                 await page.waitForTimeout(1_500);
               } else {
                 await page.waitForLoadState("networkidle", { timeout: 20_000 }).catch(() => {});
-                // Skeletons outlive networkidle (React Query resolves after hydration),
-                // so wait for the pulse placeholders to clear before shooting.
+                // Skeletons outlive networkidle (React Query resolves after
+                // hydration), so wait for the placeholders to clear.
+                //
+                // `aria-busy` as well as `.animate-pulse`: not every loading
+                // state is a skeleton. `/me` is a redirect stub that renders a
+                // plain "جارِ التحميل…" line while it resolves the handle, so
+                // the pulse condition was satisfied instantly and the matrix
+                // photographed the interstitial as if it were the profile
+                // screen — silently, because a loading line is a valid render.
+                // That is the fifth time this harness has lied in exactly this
+                // shape. The app already marks these regions `aria-busy`, so
+                // the signal cost nothing to add.
                 await page
-                  .waitForFunction(() => document.querySelectorAll(".animate-pulse").length === 0, {
-                    timeout: 15_000,
-                  })
+                  .waitForFunction(
+                    () =>
+                      document.querySelectorAll(".animate-pulse").length === 0 &&
+                      document.querySelectorAll('[aria-busy="true"]').length === 0,
+                    { timeout: 15_000 },
+                  )
                   .catch(() => {});
                 await page.waitForTimeout(800);
               }

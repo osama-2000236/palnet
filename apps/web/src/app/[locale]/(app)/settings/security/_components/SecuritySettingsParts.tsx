@@ -1,6 +1,6 @@
 "use client";
 
-import { formatRelativeTime, type ActiveSession } from "@baydar/shared";
+import { formatRelativeTime, formatUserAgent, type ActiveSession } from "@baydar/shared";
 import { Button, Input, Skeleton } from "@baydar/ui-web";
 import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
@@ -74,8 +74,14 @@ export function SessionsList({
         >
           <div className="min-w-0">
             <div className="flex items-center gap-2">
-              <span className="text-ink text-sm font-medium">
-                {session.device || t("sessions.unknownDevice")}
+              {/* `session.device` is the raw user-agent. Printed verbatim it
+                  turned the one screen where a member has to spot a device
+                  that is not theirs into a wall of
+                  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/…".
+                  Nobody audits that. The full string stays in `title` for
+                  anyone who does want it. */}
+              <span className="text-ink text-sm font-medium" title={session.device ?? undefined}>
+                {formatUserAgent(session.device) ?? t("sessions.unknownDevice")}
               </span>
               {session.id === thisDeviceId ? (
                 <span className="bg-brand-50 text-brand-700 rounded-full px-2 py-0.5 text-[11px] font-semibold">

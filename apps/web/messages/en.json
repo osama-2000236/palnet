@@ -86,7 +86,8 @@
       "ctaPrimary": "Create your profile",
       "ctaSecondary": "I already have an account",
       "eyebrow": "Trusted by professionals across the region",
-      "smallPrint": "Free for individuals. No credit card required."
+      "smallPrint": "Free for individuals. No credit card required.",
+      "ctaReturning": "Go to your feed"
     },
     "values": {
       "heading": "Built around trust, careers, and control",
