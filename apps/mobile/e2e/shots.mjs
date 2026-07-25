@@ -62,6 +62,28 @@ async function api(session, pathname) {
 
 const first = (v) => (Array.isArray(v) ? v[0] : (v?.items?.[0] ?? v?.data?.[0] ?? null));
 
+/**
+ * Capture once the screen stops changing.
+ *
+ * The device has no `networkidle`, and a fixed delay is a guess that gets it
+ * wrong in both directions — 2.6s caught the employer job form mid-spinner and
+ * shot a "جارِ التحميل…" pill, while most screens settle far sooner. Shooting
+ * twice and comparing bytes is the on-device equivalent of the web harness
+ * waiting for `.animate-pulse` to clear.
+ */
+async function captureStable(minMs, maxMs) {
+  const started = Date.now();
+  await new Promise((r) => setTimeout(r, minMs));
+  let previous = adb(["exec-out", "screencap", "-p"]);
+  while (Date.now() - started < maxMs) {
+    await new Promise((r) => setTimeout(r, 700));
+    const next = adb(["exec-out", "screencap", "-p"]);
+    if (next.equals(previous)) return next;
+    previous = next;
+  }
+  return previous;
+}
+
 async function main() {
   await mkdir(OUT_DIR, { recursive: true });
 
@@ -135,7 +157,8 @@ async function main() {
   const picked = only ? screens.filter(([name]) => only.includes(name)) : screens;
   const locales = arg("locale", "ar-PS,en").split(",");
   const themes = arg("theme", "light,dark").split(",");
-  const settle = Number(arg("settle", "2600"));
+  const settle = Number(arg("settle", "1200"));
+  const maxSettle = Number(arg("max-settle", "20000"));
 
   let shot = 0;
   const failures = [];
@@ -177,10 +200,7 @@ async function main() {
             `baydar://${route}`,
             APP_ID,
           ]);
-          // No networkidle equivalent on device: React Query resolves after the
-          // navigation settles, so wait a fixed beat before shooting.
-          await new Promise((r) => setTimeout(r, settle));
-          await writeFile(file, adb(["exec-out", "screencap", "-p"]));
+          await writeFile(file, await captureStable(settle, maxSettle));
           shot += 1;
           process.stdout.write(`ok  ${path.basename(file)}\n`);
         } catch (error) {
