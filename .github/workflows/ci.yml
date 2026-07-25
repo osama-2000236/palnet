@@ -64,6 +64,7 @@ jobs:
       - run: pnpm lint:tokens
       - run: pnpm qa:design
       - run: pnpm check:release-placeholders
+      - run: pnpm check:security-headers
 
   type-check:
     needs: install
