@@ -223,10 +223,23 @@ async function main() {
                 // RTL overflows to the LEFT (negative x), LTR to the right. A
                 // detector that only checks `right > clientWidth` finds nothing
                 // on an Arabic page and calls every RTL screen clean.
+                //
+                // Elements scrolled out of a horizontal scroller (the nav is
+                // `overflow-x-auto` by design) also sit outside the viewport but
+                // do not widen the document, so skip anything a scrolling
+                // ancestor already clips — otherwise every screen reports the
+                // nav as guilty.
+                const clipped = (el) => {
+                  for (let p = el.parentElement; p && p !== doc; p = p.parentElement) {
+                    if (/auto|scroll|hidden/.test(getComputedStyle(p).overflowX)) return true;
+                  }
+                  return false;
+                };
                 const guilty = [...document.querySelectorAll("body *")]
                   .filter((el) => {
                     const r = el.getBoundingClientRect();
-                    return r.left < -1 || r.right > doc.clientWidth + 1;
+                    if (r.left >= -1 && r.right <= doc.clientWidth + 1) return false;
+                    return !clipped(el);
                   })
                   .slice(0, 5)
                   .map((el) =>
