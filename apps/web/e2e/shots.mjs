@@ -163,6 +163,7 @@ async function main() {
 
   const browser = await chromium.launch();
   const failures = [];
+  const overflows = [];
   let shot = 0;
 
   const authTags = [...new Set(picked.map(([, , as]) => as))];
@@ -213,6 +214,31 @@ async function main() {
               await page.waitForTimeout(800);
               await page.addStyleTag({ content: "nextjs-portal{display:none !important}" });
               await page.screenshot({ path: file, fullPage: true, animations: "disabled" });
+
+              // Free while we are already standing on the page: horizontal
+              // overflow is a defect at any width and unreadable from a
+              // full-page screenshot, which just grows to fit the overflow.
+              const overflow = await page.evaluate(() => {
+                const doc = document.documentElement;
+                if (doc.scrollWidth <= doc.clientWidth) return null;
+                // RTL overflows to the LEFT (negative x), LTR to the right. A
+                // detector that only checks `right > clientWidth` finds nothing
+                // on an Arabic page and calls every RTL screen clean.
+                const guilty = [...document.querySelectorAll("body *")]
+                  .filter((el) => {
+                    const r = el.getBoundingClientRect();
+                    return r.left < -1 || r.right > doc.clientWidth + 1;
+                  })
+                  .slice(0, 5)
+                  .map((el) =>
+                    `${el.tagName.toLowerCase()}.${el.getAttribute("class") || "(no class)"}`.slice(
+                      0,
+                      120,
+                    ),
+                  );
+                return { scrollWidth: doc.scrollWidth, clientWidth: doc.clientWidth, guilty };
+              });
+              if (overflow) overflows.push({ name, locale, theme, viewport, ...overflow });
               shot += 1;
               process.stdout.write(`ok  ${path.basename(file)}\n`);
             } catch (error) {
@@ -231,7 +257,9 @@ async function main() {
   }
 
   await browser.close();
+  await writeFile(path.join(OUT_DIR, "_overflow.json"), JSON.stringify(overflows, null, 2));
   console.log(`\n${shot} shots -> ${OUT_DIR}`);
+  console.log(`${overflows.length} horizontal-overflow hits -> _overflow.json`);
   if (failures.length) console.log(`failures:\n${JSON.stringify(failures, null, 2)}`);
 }
 
