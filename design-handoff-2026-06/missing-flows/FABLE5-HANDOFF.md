@@ -13,7 +13,7 @@
 3. Attach `Baydar Missing Flows (standalone).html` and paste the prompt in **§ Prompt** below.
 4. Fable 5 works one flow = one PR/commit, runs the validation gate (§ Gate) after each slice, and returns the parity matrix + QA evidence.
 
-Read order for Fable 5 before touching code: `CLAUDE.md` → `project-spec.md` → `DESIGN.md` → `BRAND.md` → `docs/HANDOFF-FABLE5.md` → this file.
+Read order for Fable 5 before touching code: `CLAUDE.md` → `project-spec.md` → `DESIGN.md` → `BRAND.md` → `docs/HANDOFF.md` → this file.
 
 ---
 
@@ -57,7 +57,7 @@ close its state gaps, and prove web↔mobile parity.
 <source_order>
 1. Current implementation + tests in apps/web, apps/mobile, packages/ui-web,
    packages/ui-native, packages/ui-tokens, packages/shared.
-2. CLAUDE.md, AGENTS.md, DESIGN.md, BRAND.md, docs/HANDOFF-FABLE5.md, docs/design/*.
+2. CLAUDE.md, AGENTS.md, DESIGN.md, BRAND.md, docs/HANDOFF.md, docs/design/*.
 3. The attached Baydar Missing Flows design (visual ground truth for these flows).
 When the design and a current source-of-truth doc conflict, report it and follow the
 repo doc; never silently assume the mock overrides a shipped product decision.

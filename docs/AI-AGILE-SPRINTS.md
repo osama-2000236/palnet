@@ -33,7 +33,7 @@ Every AI model working on Baydar must follow this contract.
 
 - Start each sprint from a fresh branch off the current branch of record unless the lead says otherwise.
 - First command before changing code: `git status --short`.
-- Read `AGENTS.md`, `docs/HANDOFF.md`, `docs/HANDOFF-FABLE5.md`, this file, and the sprint-specific files listed below.
+- Read `AGENTS.md`, `docs/HANDOFF.md`, this file, and the sprint-specific files listed below.
 - One sprint branch owns one vertical slice. Do not mix unrelated fixes.
 - No agent may add a fake route, fake success state, or local-only placeholder for a production feature.
 - Visual design decisions go to the Claude Design platform. Engineering agents implement tokenized, accessible, RTL-safe designs.
