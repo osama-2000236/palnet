@@ -13,7 +13,7 @@ tags:
     timeout: 15000
 - tapOn:
     id: "search-input"
-- inputText: "مهندس"
+- inputText: "Engineer"
 - hideKeyboard
 
 # Result tabs rendering with a query in place = search pipeline alive.

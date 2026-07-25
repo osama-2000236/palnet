@@ -1,0 +1,295 @@
+// Mobile vision-QA screenshot harvester — the native twin of
+// apps/web/e2e/shots.mjs. Walks every Expo Router screen via `baydar://` deep
+// links and captures each one with `adb exec-out screencap`.
+//
+//   node apps/mobile/e2e/shots.mjs [--only=feed,saved] [--locale=ar-PS,en] [--theme=light,dark]
+//
+// Prerequisites (see .maestro/README.md):
+//   1. an Android emulator running with the dev client installed
+//   2. Metro:  pnpm --filter @baydar/mobile start
+//   3. the API on :4000 and `adb reverse` for both ports — this script sets the
+//      reverses itself, since without them the device cannot reach either.
+//
+// Why adb and not Maestro for the capture: navigating is one intent and
+// capturing is one shell command. Maestro is worth it for the appearance
+// switch (tap by testID) and nothing else here.
+import { execFileSync } from "node:child_process";
+import { mkdir, writeFile } from "node:fs/promises";
+import path from "node:path";
+
+const API = "http://localhost:4000/api/v1";
+const APP_ID = "ps.baydar.app";
+const OUT_DIR = process.env.QA_SHOTS_OUT ?? path.resolve(import.meta.dirname, "../.qa-shots");
+const ADB =
+  process.env.ADB ??
+  path.join(
+    process.env.LOCALAPPDATA ?? path.join(process.env.HOME ?? "", "AppData", "Local"),
+    "Android",
+    "Sdk",
+    "platform-tools",
+    "adb.exe",
+  );
+
+const arg = (name, fallback) => {
+  const hit = process.argv.find((a) => a.startsWith(`--${name}=`));
+  return hit ? hit.split("=").slice(1).join("=") : fallback;
+};
+
+const adb = (args, opts = {}) =>
+  execFileSync(ADB, args, { encoding: "buffer", maxBuffer: 64 * 1024 * 1024, ...opts });
+
+async function login(email, password) {
+  const res = await fetch(`${API}/auth/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, password, deviceId: "qa-mobile-shots" }),
+  });
+  if (!res.ok) throw new Error(`login ${email}: ${res.status}`);
+  return (await res.json()).data;
+}
+
+async function api(session, pathname) {
+  const res = await fetch(`${API}${pathname}`, {
+    headers: { Authorization: `Bearer ${session.tokens.accessToken}` },
+  });
+  if (!res.ok) return null;
+  const json = await res.json();
+  // GET /companies/me answers with a bare array; every other endpoint wraps in
+  // { data }. Tolerate both rather than silently resolving undefined.
+  return json?.data ?? json;
+}
+
+const first = (v) => (Array.isArray(v) ? v[0] : (v?.items?.[0] ?? v?.data?.[0] ?? null));
+
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+/**
+ * Raw framebuffer: a 16-byte header (width, height, format, colorspace as
+ * uint32 LE) then width*height*4 bytes of RGBA.
+ *
+ * Raw rather than `screencap -p`, because a PNG is opaque — you cannot crop it
+ * or count colours in it without a decoder, and both checks below need to.
+ */
+function grabFrame() {
+  const buf = adb(["exec-out", "screencap"]);
+  return { width: buf.readUInt32LE(0), height: buf.readUInt32LE(4), pixels: buf.subarray(16) };
+}
+
+/**
+ * The rows between the status bar and the gesture pill.
+ *
+ * Comparing whole frames does not work: the clock and status icons tick on
+ * their own, so a screen that has completely settled still reads as moving.
+ * Measured on a blank splash — whole-frame said "changed", this slice said
+ * "stable". Fractions rather than pixel counts, so it holds on any device.
+ */
+function contentSlice({ width, height, pixels }) {
+  const top = Math.round(height * 0.06);
+  const bottom = Math.round(height * 0.96);
+  return pixels.subarray(top * width * 4, bottom * width * 4);
+}
+
+/**
+ * Distinct colours in a sparse stride across the content area.
+ *
+ * Replaces a "PNG larger than 60KB" heuristic that was really a function of
+ * screen resolution: on a smaller AVD a perfectly good render falls under the
+ * threshold and the cell gets skipped. Colour count is resolution independent,
+ * and the margin is not subtle — a blank splash scores 1, the launcher 902.
+ */
+function paintedness(frame) {
+  const slice = contentSlice(frame);
+  const seen = new Set();
+  // Prime stride, so samples never align with a repeating pixel pattern.
+  for (let i = 0; i + 3 < slice.length; i += 4 * 997) seen.add(slice.readUInt32LE(i));
+  return seen.size;
+}
+
+const PAINTED_MIN = 8;
+
+/**
+ * Wait until the app is actually painting before shooting a cell. Changing
+ * theme or locale restarts it (RTL applies at startup), and captureStable
+ * cannot detect that on its own — a blank screen is perfectly stable.
+ */
+async function warmUp(timeoutMs = 90_000) {
+  const started = Date.now();
+  // Launch once, then poll. The previous version re-issued `am start` every 4s,
+  // up to 22 times, restarting the very app it was waiting for.
+  adb(["shell", "am", "start", "-a", "android.intent.action.VIEW", "-d", "baydar://feed", APP_ID]);
+  while (Date.now() - started < timeoutMs) {
+    await sleep(1000);
+    if (paintedness(grabFrame()) > PAINTED_MIN) return true;
+  }
+  return false;
+}
+
+/**
+ * Capture once the screen stops changing.
+ *
+ * The device has no `networkidle`, and a fixed delay guesses wrong in both
+ * directions — 2.6s caught the employer job form mid-spinner and shot a
+ * "جارِ التحميل…" pill, while most screens settle far sooner. This is the
+ * on-device equivalent of the web harness waiting for `.animate-pulse`.
+ *
+ * Settles on the raw content slice, then returns a real PNG encode.
+ */
+async function captureStable(minMs, maxMs) {
+  const started = Date.now();
+  await sleep(minMs);
+  let previous = contentSlice(grabFrame());
+  while (Date.now() - started < maxMs) {
+    await sleep(700);
+    const next = contentSlice(grabFrame());
+    if (next.equals(previous)) break;
+    previous = next;
+  }
+  return adb(["exec-out", "screencap", "-p"]);
+}
+
+async function main() {
+  await mkdir(OUT_DIR, { recursive: true });
+
+  // The device reaches Metro and the API through these; without them every
+  // screen renders an offline state and the whole run is worthless.
+  adb(["reverse", "tcp:8081", "tcp:8081"]);
+  adb(["reverse", "tcp:4000", "tcp:4000"]);
+
+  const session = await login("demo@baydar.ps", "Password123");
+  const jobId = first(await api(session, "/jobs?limit=5"))?.id;
+  const handle = (await api(session, "/profiles/me"))?.handle ?? "demo";
+  const companySlug =
+    first(await api(session, "/search/companies?q=%D8%B4&limit=5"))?.slug ?? "baydar";
+  const roomId = first(await api(session, "/messaging/rooms?limit=5"))?.id;
+
+  const owner = await login("owner@baydar.ps", "Password123").catch(() => null);
+  const ownerCompany = owner ? first(await api(owner, "/companies/me")) : null;
+  const employerSlug = ownerCompany?.slug ?? (owner ? "baydar" : null);
+  // The jobs route keys on company id, not slug — passing the slug 403s with
+  // "Not a member of this company", which reads like a permissions problem.
+  const employerJobId = ownerCompany?.id
+    ? first(await api(owner, `/companies/${ownerCompany.id}/jobs?limit=5`))?.id
+    : null;
+
+  // Expo Router drops `(group)` segments from the URL, so these mirror the file
+  // tree under apps/mobile/app with the groups stripped.
+  const screens = [
+    ["root", ""],
+    ["feed", "feed"],
+    ["search", "search"],
+    ["network", "network"],
+    ["notifications", "notifications"],
+    ["activity", "activity"],
+    ["saved", "saved"],
+    ["composer", "composer"],
+    ["onboarding", "onboarding"],
+    ["jobs", "jobs"],
+    jobId && ["job-detail", `jobs/${jobId}`],
+    ["messages", "messages"],
+    ["messages-new", "messages/new"],
+    roomId && ["message-thread", `messages/${roomId}`],
+    ["me", "me"],
+    ["me-edit", "me/edit"],
+    ["me-connections", "me/connections"],
+    ["me-karama", "me/karama"],
+    ["me-premium", "me/premium"],
+    ["profile-public", `in/${handle}`],
+    ["company", `company/${companySlug}`],
+    ["employer", "employer"],
+    employerSlug && ["employer-detail", `employer/${employerSlug}`],
+    employerSlug && ["employer-billing", `employer/${employerSlug}/billing`],
+    employerSlug && ["employer-job-new", `employer/${employerSlug}/jobs/new`],
+    employerSlug && employerJobId && ["employer-job", `employer/${employerSlug}/${employerJobId}`],
+    ["settings", "settings"],
+    ["settings-account", "settings/account"],
+    ["settings-appearance", "settings/appearance"],
+    ["settings-blocked", "settings/blocked"],
+    ["settings-notifications", "settings/notifications"],
+    ["settings-privacy", "settings/privacy"],
+    ["settings-security", "settings/security"],
+    // Auth screens render over the signed-in session; they are still the real
+    // components, which is what a vision pass needs to look at.
+    ["login", "login"],
+    ["register", "register"],
+    ["forgot-password", "forgot-password"],
+    ["reset-password", "reset-password/invalid-token-for-qa"],
+    ["verify-email", "verify-email/invalid-token-for-qa"],
+  ].filter(Boolean);
+
+  const only = arg("only", null)?.split(",");
+  const picked = only ? screens.filter(([name]) => only.includes(name)) : screens;
+  const locales = arg("locale", "ar-PS,en").split(",");
+  const themes = arg("theme", "light,dark").split(",");
+  const settle = Number(arg("settle", "1200"));
+  const maxSettle = Number(arg("max-settle", "20000"));
+
+  let shot = 0;
+  const failures = [];
+
+  for (const locale of locales) {
+    for (const theme of themes) {
+      process.stdout.write(`\n── ${locale} / ${theme} ──\n`);
+      try {
+        execFileSync(
+          "maestro",
+          [
+            "test",
+            path.resolve(import.meta.dirname, "../.maestro/set-appearance.yaml"),
+            "-e",
+            `THEME=${theme}`,
+            "-e",
+            `LOCALE=${locale}`,
+          ],
+          // shell:true because maestro ships as a .cmd shim on Windows, which
+          // execFileSync cannot spawn directly.
+          { stdio: "inherit", shell: true },
+        );
+      } catch {
+        failures.push({ cell: `${locale}/${theme}`, error: "set-appearance flow failed" });
+        process.stdout.write(`ERR could not set ${locale}/${theme} — cell skipped\n`);
+        continue;
+      }
+
+      // Changing theme or locale restarts the app (RTL is applied at startup),
+      // and captureStable cannot see that: a blank white screen is perfectly
+      // stable, so the first screens of a cell were shot mid-restart and came
+      // back empty. Warm up until something real is on screen, and fail the
+      // cell loudly rather than filling it with blanks.
+      if (!(await warmUp())) {
+        failures.push({ cell: `${locale}/${theme}`, error: "app never rendered after restart" });
+        process.stdout.write(`ERR ${locale}/${theme} never rendered — cell skipped\n`);
+        continue;
+      }
+
+      for (const [name, route] of picked) {
+        const file = path.join(OUT_DIR, `${name}__${locale}__${theme}.png`);
+        try {
+          adb([
+            "shell",
+            "am",
+            "start",
+            "-a",
+            "android.intent.action.VIEW",
+            "-d",
+            `baydar://${route}`,
+            APP_ID,
+          ]);
+          await writeFile(file, await captureStable(settle, maxSettle));
+          shot += 1;
+          process.stdout.write(`ok  ${path.basename(file)}\n`);
+        } catch (error) {
+          failures.push({ name, route, error: String(error).slice(0, 160) });
+          process.stdout.write(`ERR ${name} ${locale} ${theme}\n`);
+        }
+      }
+    }
+  }
+
+  process.stdout.write(`\n${shot} shots -> ${OUT_DIR}\n`);
+  if (failures.length) process.stdout.write(`failures:\n${JSON.stringify(failures, null, 2)}\n`);
+}
+
+main().catch((error) => {
+  console.error(error);
+  process.exit(1);
+});

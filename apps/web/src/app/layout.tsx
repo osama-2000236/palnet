@@ -60,12 +60,24 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
         {/* Apply the stored theme to <html> before first paint (no light flash).
             Light is the default. See @/lib/theme. */}
         {/* eslint-disable-next-line react/no-danger */}
-        <script nonce={nonce} dangerouslySetInnerHTML={{ __html: themeBootScript }} />
+        <script
+          nonce={nonce}
+          // Browsers strip `nonce` from the DOM once CSP has been applied, so
+          // the client reads back "" against the server's real value and React
+          // reports a hydration mismatch on every page. The nonce itself is
+          // load-bearing in production — suppress the comparison, not the nonce.
+          suppressHydrationWarning
+          dangerouslySetInnerHTML={{ __html: themeBootScript }}
+        />
         {/* Keep streamed-Suspense reveal + hydration alive in hidden tabs.
             Must run before the first streamed completion script. See
             @/lib/hidden-tab-raf. */}
         {/* eslint-disable-next-line react/no-danger */}
-        <script nonce={nonce} dangerouslySetInnerHTML={{ __html: hiddenTabRafBootScript }} />
+        <script
+          nonce={nonce}
+          suppressHydrationWarning
+          dangerouslySetInnerHTML={{ __html: hiddenTabRafBootScript }}
+        />
         {children}
       </body>
     </html>

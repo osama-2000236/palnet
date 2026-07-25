@@ -185,3 +185,6 @@ export function useStyles() {
   const c = useThemeTokens().color;
   return useMemo(() => makeStyles(c), [c]);
 }
+
+// expo-router colocation: not a screen.
+export default (): null => null;

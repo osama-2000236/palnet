@@ -161,7 +161,7 @@ export function Comments({
           onChange={(e) => setDraft(e.target.value)}
           placeholder={t("commentPlaceholder")}
           maxLength={2000}
-          className="border-ink-muted/30 bg-surface text-ink flex-1 rounded-md border px-3 py-1.5 text-sm focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+          className="border-ink-muted/30 bg-surface text-ink min-w-0 flex-1 rounded-md border px-3 py-1.5 text-sm focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
         />
         <button
           type="submit"

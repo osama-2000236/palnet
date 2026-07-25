@@ -30,7 +30,17 @@ export default defineConfig({
   // 30s default flakes locally: parallel workers vs `next dev` cold route
   // compiles push page.goto past 30s. CI uses `next start` and is unaffected.
   timeout: 60_000,
-  fullyParallel: true,
+  // One worker, not parallel. The specs share a single QA database, so the
+  // fixtures they mint (`qa-<id>` users, companies, invoices) collide when
+  // workers interleave — and the failures read as a mass regression rather
+  // than contention: 33 failed / 14 passed in parallel against 50 passed / 1
+  // failed serially, same commit, and that 1 is an unprovisioned bank IBAN.
+  //
+  // Costs real time — roughly 3.5min to 7min locally. Paid deliberately: a
+  // suite that cries wolf gets ignored, and this one looks exactly like the
+  // app is broken. Give each worker its own schema to take the speed back.
+  fullyParallel: false,
+  workers: 1,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
   reporter: process.env.CI ? "github" : "list",

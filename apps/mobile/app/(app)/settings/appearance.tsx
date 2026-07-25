@@ -63,7 +63,13 @@ export default function AppearanceSettingsScreen(): JSX.Element {
         <Surface variant="card" padding="4">
           <View style={{ gap: tk.space[3] }}>
             <SegmentedControl
-              items={options.map((option) => ({ key: option.key, label: option.label }))}
+              items={options.map((option) => ({
+                key: option.key,
+                label: option.label,
+                // Locale-independent handle for E2E — the labels are translated,
+                // so tapping by text can't drive the locale switch itself.
+                testID: `appearance-${option.key}`,
+              }))}
               selectedKey={choice}
               onChange={(key) => setChoice(key)}
               testID="appearance-segmented"
@@ -124,8 +130,8 @@ export default function AppearanceSettingsScreen(): JSX.Element {
           <View style={{ gap: tk.space[3] }}>
             <SegmentedControl
               items={[
-                { key: "ar-PS", label: t("settings.language.arabic") },
-                { key: "en", label: t("settings.language.english") },
+                { key: "ar-PS", label: t("settings.language.arabic"), testID: "language-ar-PS" },
+                { key: "en", label: t("settings.language.english"), testID: "language-en" },
               ]}
               selectedKey={locale}
               onChange={(key) => void setAppLocale(key as SupportedLocale)}

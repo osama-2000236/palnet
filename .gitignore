@@ -98,6 +98,11 @@ _tmp_*
 .ui-impl-guidelines/
 claude-council/
 tools/claude-code-router/
+# Setup notes for the gitignored router above — per-machine, not project docs.
+tools/CLAUDE-OPENROUTER-SETUP.md
+
+# Vision-QA screenshot output (apps/web/e2e/shots.mjs)
+.qa-shots/
 
 # design-sync
 .ds-sync/

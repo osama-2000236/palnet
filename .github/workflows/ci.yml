@@ -64,6 +64,7 @@ jobs:
       - run: pnpm lint:tokens
       - run: pnpm qa:design
       - run: pnpm check:release-placeholders
+      - run: pnpm check:security-headers
 
   type-check:
     needs: install
@@ -205,8 +206,17 @@ jobs:
           NEXT_PUBLIC_API_URL: http://localhost:4000/api/v1
           NEXT_PUBLIC_WS_URL: http://localhost:4000
           NEXT_PUBLIC_DEFAULT_LOCALE: ar-PS
-      - name: Lighthouse CI
+      - name: Lighthouse CI (desktop)
         run: npx --yes @lhci/cli@0.14.x autorun --config=./apps/web/lighthouserc.json
+        env:
+          NEXT_PUBLIC_API_URL: http://localhost:4000/api/v1
+          NEXT_PUBLIC_WS_URL: http://localhost:4000
+          NEXT_PUBLIC_DEFAULT_LOCALE: ar-PS
+      # lighthouserc.mobile.json was maintained but invoked by nothing, so the
+      # mobile budget it defines had never been enforced — on an Arabic-first
+      # product where most traffic is a phone.
+      - name: Lighthouse CI (mobile)
+        run: npx --yes @lhci/cli@0.14.x autorun --config=./apps/web/lighthouserc.mobile.json
         env:
           NEXT_PUBLIC_API_URL: http://localhost:4000/api/v1
           NEXT_PUBLIC_WS_URL: http://localhost:4000

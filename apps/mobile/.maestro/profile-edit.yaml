@@ -16,5 +16,5 @@ tags:
 
 # Edit screen success criterion: the basics card save action renders.
 - extendedWaitUntil:
-    visible: "حفظ"
+    visible: "حفظ التغييرات"
     timeout: 15000

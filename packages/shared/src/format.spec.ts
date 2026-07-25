@@ -73,26 +73,66 @@ describe("formatRelativeTime", () => {
     expect(out).toMatch(/[\u0600-\u06ff]/);
   });
 
-  it("falls back when RelativeTimeFormat is unavailable", () => {
-    const original = Intl.RelativeTimeFormat;
-    Object.defineProperty(Intl, "RelativeTimeFormat", {
-      configurable: true,
-      value: undefined,
-    });
+  // Hermes (React Native) ships without Intl.RelativeTimeFormat, so every
+  // timestamp in the mobile app takes the fallback path. It DOES have
+  // Intl.PluralRules (apps/mobile pulls in `intl-pluralrules`), which is what
+  // makes correct Arabic reachable: ٣ أيام but ١١ يومًا, and one/two drop the
+  // numeral entirely (أمس, أول أمس).
+  //
+  // This is the only honest way to test a transcribed CLDR table: run the same
+  // instants through the real formatter and the fallback, and require identical
+  // output. If the table drifts, or a plural category is missed, this fails.
+  describe("without Intl.RelativeTimeFormat (Hermes)", () => {
+    const withoutRtf = <T>(fn: () => T): T => {
+      const original = Intl.RelativeTimeFormat;
+      Object.defineProperty(Intl, "RelativeTimeFormat", { configurable: true, value: undefined });
+      try {
+        return fn();
+      } finally {
+        Object.defineProperty(Intl, "RelativeTimeFormat", {
+          configurable: true,
+          value: original,
+        });
+      }
+    };
 
-    try {
-      const then = new Date(now.getTime() - 3 * 60 * 60 * 1000);
-      expect(formatRelativeTime(then, "en", now)).toBe("3 hours ago");
+    // Every reachable bucket: seconds through the 30-day cutoff, including the
+    // Arabic category boundaries (1 one, 2 two, 3-10 few, 11+ many).
+    const AGES_MS = [
+      10_000,
+      90_000,
+      5 * 60_000,
+      11 * 60_000,
+      60 * 60_000,
+      3 * 3600_000,
+      11 * 3600_000,
+      24 * 3600_000,
+      2 * 24 * 3600_000,
+      3 * 24 * 3600_000,
+      6 * 24 * 3600_000,
+      7 * 24 * 3600_000,
+      14 * 24 * 3600_000,
+      21 * 24 * 3600_000,
+    ];
 
-      const ar = formatRelativeTime(then, "ar", now);
-      expect(ar).toContain("قبل");
-      expect(ar).not.toMatch(/[0-9]/);
-    } finally {
-      Object.defineProperty(Intl, "RelativeTimeFormat", {
-        configurable: true,
-        value: original,
+    for (const locale of ["ar-PS", "en"]) {
+      it(`matches Intl.RelativeTimeFormat exactly (${locale})`, () => {
+        for (const age of AGES_MS) {
+          const then = new Date(now.getTime() - age);
+          const real = formatRelativeTime(then, locale, now);
+          const fallback = withoutRtf(() => formatRelativeTime(then, locale, now));
+          expect({ age, out: fallback }).toEqual({ age, out: real });
+        }
       });
     }
+
+    it("keeps Arabic-Indic digits and never emits a bare singular for a plural count", () => {
+      const then = new Date(now.getTime() - 3 * 24 * 3600_000);
+      const out = withoutRtf(() => formatRelativeTime(then, "ar-PS", now));
+      // The bug this replaced rendered "قبل ٣ يوم" — plural count, singular noun.
+      expect(out).toBe("قبل ٣ أيام");
+      expect(out).not.toMatch(/[0-9]/);
+    });
   });
 
   it("falls back to date string for >30 days", () => {

@@ -105,17 +105,9 @@ export function formatDate(iso: string | Date, locale: string): string {
   return `${part(date.getDate())}/${part(date.getMonth() + 1)}/${part(date.getFullYear())}`;
 }
 
-type RelativeLabelUnit =
-  | "year"
-  | "quarter"
-  | "month"
-  | "week"
-  | "day"
-  | "hour"
-  | "minute"
-  | "second";
+type RelativeUnit = "year" | "month" | "week" | "day" | "hour" | "minute" | "second";
 
-const RELATIVE_UNITS: Array<{ unit: RelativeLabelUnit; secs: number }> = [
+const RELATIVE_UNITS: Array<{ unit: RelativeUnit; secs: number }> = [
   { unit: "year", secs: 60 * 60 * 24 * 365 },
   { unit: "month", secs: 60 * 60 * 24 * 30 },
   { unit: "week", secs: 60 * 60 * 24 * 7 },
@@ -125,53 +117,94 @@ const RELATIVE_UNITS: Array<{ unit: RelativeLabelUnit; secs: number }> = [
   { unit: "second", secs: 1 },
 ];
 
-const EN_RELATIVE_LABELS: Record<RelativeLabelUnit, string> = {
-  year: "year",
-  quarter: "quarter",
-  month: "month",
-  week: "week",
-  day: "day",
-  hour: "hour",
-  minute: "minute",
-  second: "second",
+// ── Relative-time fallback for engines without Intl.RelativeTimeFormat ──────
+//
+// Hermes is that engine, so every timestamp in the React Native app comes
+// through here. It *does* have Intl.PluralRules (apps/mobile pulls in
+// `intl-pluralrules`), which is the hard part of Arabic: six categories, and
+// the noun changes in each — ٣ أيام but ١١ يومًا, and one/two drop the numeral
+// entirely.
+//
+// The tables below are CLDR's own, transcribed from
+// Intl.RelativeTimeFormat(numeric:"auto") output. format.spec.ts asserts they
+// still match it across the whole reachable range, so they cannot drift.
+
+type PluralForms = Partial<Record<Intl.LDMLPluralRule, string>> & { other: string };
+
+const AR_UNITS: Record<RelativeUnit, PluralForms> = {
+  second: { one: "ثانية واحدة", two: "ثانيتين", few: "{n} ثوانِ", other: "{n} ثانية" },
+  minute: { one: "دقيقة واحدة", two: "دقيقتين", few: "{n} دقائق", other: "{n} دقيقة" },
+  hour: { one: "ساعة واحدة", two: "ساعتين", few: "{n} ساعات", other: "{n} ساعة" },
+  day: { one: "يوم واحد", two: "يومين", few: "{n} أيام", many: "{n} يومًا", other: "{n} يوم" },
+  week: {
+    one: "أسبوع واحد",
+    two: "أسبوعين",
+    few: "{n} أسابيع",
+    many: "{n} أسبوعًا",
+    other: "{n} أسبوع",
+  },
+  month: { one: "شهر واحد", two: "شهرين", few: "{n} أشهر", many: "{n} شهرًا", other: "{n} شهر" },
+  year: { one: "سنة واحدة", two: "سنتين", few: "{n} سنوات", other: "{n} سنة" },
 };
 
-const AR_RELATIVE_LABELS: Record<RelativeLabelUnit, string> = {
-  year: "سنة",
-  quarter: "ربع",
-  month: "شهر",
-  week: "أسبوع",
-  day: "يوم",
-  hour: "ساعة",
-  minute: "دقيقة",
-  second: "ثانية",
+const EN_UNITS: Record<RelativeUnit, { one: string; other: string }> = {
+  second: { one: "{n} second", other: "{n} seconds" },
+  minute: { one: "{n} minute", other: "{n} minutes" },
+  hour: { one: "{n} hour", other: "{n} hours" },
+  day: { one: "{n} day", other: "{n} days" },
+  week: { one: "{n} week", other: "{n} weeks" },
+  month: { one: "{n} month", other: "{n} months" },
+  year: { one: "{n} year", other: "{n} years" },
 };
 
-function formatFallbackNumber(value: number, locale: string): string {
-  try {
-    return formatNumber(value, locale);
-  } catch {
-    return String(value);
-  }
+/** Idiomatic names CLDR prefers over a counted phrase, past direction only. */
+const AR_NAMED_PAST: Partial<Record<string, string>> = {
+  "day:1": "أمس",
+  "day:2": "أول أمس",
+  "week:1": "الأسبوع الماضي",
+  "month:1": "الشهر الماضي",
+  "year:1": "السنة الماضية",
+};
+const EN_NAMED_PAST: Partial<Record<string, string>> = {
+  "day:1": "yesterday",
+  "week:1": "last week",
+  "month:1": "last month",
+  "year:1": "last year",
+};
+
+function pluralCategory(amount: number, locale: string): Intl.LDMLPluralRule {
+  if (typeof Intl.PluralRules !== "function") return amount === 1 ? "one" : "other";
+  return new Intl.PluralRules(resolveLocale(locale)).select(amount);
 }
 
-function formatRelativeTimeFallback(
-  value: number,
-  unit: RelativeLabelUnit,
-  locale: string,
-): string {
-  if (value === 0) return isArabicLocale(locale) ? "الآن" : "now";
-
+/**
+ * `value` is negative for the past, matching Intl.RelativeTimeFormat.
+ * Only the past direction is reachable from formatRelativeTime today; future
+ * timestamps fall through to the counted phrase, which is still correct.
+ */
+function formatRelativeFallback(value: number, unit: RelativeUnit, locale: string): string {
   const amount = Math.abs(value);
-  const formatted = formatFallbackNumber(amount, locale);
-  if (isArabicLocale(locale)) {
-    const direction = value < 0 ? "قبل" : "خلال";
-    return `${direction} ${formatted} ${AR_RELATIVE_LABELS[unit]}`;
+  const past = value < 0;
+  const arabic = isArabicLocale(locale);
+
+  // CLDR names the zero point rather than counting it.
+  if (amount === 0 && unit === "second") return arabic ? "الآن" : "now";
+
+  if (past) {
+    const named = (arabic ? AR_NAMED_PAST : EN_NAMED_PAST)[`${unit}:${amount}`];
+    if (named) return named;
   }
 
-  const label = EN_RELATIVE_LABELS[unit];
-  const suffix = amount === 1 ? label : `${label}s`;
-  return value < 0 ? `${formatted} ${suffix} ago` : `in ${formatted} ${suffix}`;
+  const count = formatNumber(amount, locale);
+  if (arabic) {
+    const forms = AR_UNITS[unit];
+    const body = (forms[pluralCategory(amount, locale)] ?? forms.other).replace("{n}", count);
+    return `${past ? "قبل" : "خلال"} ${body}`;
+  }
+
+  const forms = EN_UNITS[unit];
+  const body = (amount === 1 ? forms.one : forms.other).replace("{n}", count);
+  return past ? `${body} ago` : `in ${body}`;
 }
 
 function formatAbsoluteDateFallback(value: Date, locale: string): string {
@@ -204,12 +237,13 @@ export function formatRelativeTime(
 
   const tag = localeTag(locale);
 
+  const hasRtf = typeof Intl.RelativeTimeFormat === "function";
+
   if (absSecs < 60) {
     // "now" / "الآن" — RelativeTimeFormat's "0 seconds" reads awkwardly.
-    if (typeof Intl.RelativeTimeFormat === "function") {
-      return new Intl.RelativeTimeFormat(tag, { numeric: "auto" }).format(0, "second");
-    }
-    return formatRelativeTimeFallback(0, "second", locale);
+    return hasRtf
+      ? new Intl.RelativeTimeFormat(tag, { numeric: "auto" }).format(0, "second")
+      : formatRelativeFallback(0, "second", locale);
   }
 
   // Fall back to absolute date for anything older than 30 days.
@@ -218,15 +252,12 @@ export function formatRelativeTime(
     return formatAbsoluteDateFallback(then, locale);
   }
 
-  const rtf =
-    typeof Intl.RelativeTimeFormat === "function"
-      ? new Intl.RelativeTimeFormat(tag, { numeric: "auto" })
-      : null;
+  const rtf = hasRtf ? new Intl.RelativeTimeFormat(tag, { numeric: "auto" }) : null;
   for (const { unit, secs } of RELATIVE_UNITS) {
     if (absSecs >= secs) {
-      const value = Math.round(diffSecs / secs);
       // RelativeTimeFormat expects past = negative.
-      return rtf ? rtf.format(-value, unit) : formatRelativeTimeFallback(-value, unit, locale);
+      const value = -Math.round(diffSecs / secs);
+      return rtf ? rtf.format(value, unit) : formatRelativeFallback(value, unit, locale);
     }
   }
   return "";

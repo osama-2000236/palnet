@@ -1,9 +1,6 @@
 import createNextIntlPlugin from "next-intl/plugin";
 
-import {
-  buildContentSecurityPolicy,
-  buildSecurityHeaders,
-} from "./src/lib/security-headers.mjs";
+import { buildContentSecurityPolicy, buildSecurityHeaders } from "./src/lib/security-headers.mjs";
 
 const withNextIntl = createNextIntlPlugin("./src/i18n.ts");
 
@@ -24,7 +21,7 @@ const nextConfig = {
     return [
       {
         source: "/:locale(ar-PS|ar|en)/terms",
-        destination: "/:locale/legal/terms",
+        destination: "/:locale/legal/tos",
         permanent: true,
       },
       {
