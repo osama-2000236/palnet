@@ -13,11 +13,17 @@ env:
 # Taps by testID, not by label — the labels are translated, so tapping by text
 # cannot drive the locale switch itself (you would need to know the current
 # locale to find the control that changes it).
-# openLink launches the app itself. Do NOT launchApp first: the boot path
-# redirects to the feed, and that redirect lands after the deep link, leaving
-# you on the wrong screen.
-- openLink: baydar://settings/appearance
+# Let the boot redirect finish BEFORE deep-linking. The app always lands on the
+# feed after startup; if the deep link goes first that redirect arrives after it
+# and silently steals the screen. Waiting for the composer entry is how we know
+# boot is done and a deep link will stick.
+- launchApp
+- extendedWaitUntil:
+    visible:
+      id: "feed-composer-entry"
+    timeout: 60000
 
+- openLink: baydar://settings/appearance
 - extendedWaitUntil:
     visible:
       id: "appearance-segmented"
@@ -35,10 +41,11 @@ env:
 # Locale changes that flip writing direction need a reload to take effect
 # (I18nManager.forceRTL is applied at startup), so hand the harness a settled app.
 - launchApp
-- extendedWaitUntil:
-    visible:
-      id: "feed-composer-entry"
-    timeout: 30000
+
+# No assertion on what the relaunch lands on. The harness deep-links away
+# immediately and waits for the frame to stop changing, so pinning this to the
+# feed composer only couples the flow to a screen it does not care about — and
+# an RTL flip makes the relaunch slow enough to fail that assertion.
 
 # Dev-only LogBox toast sits over the bottom nav and would appear in every
 # screenshot of the run. Dismiss it once per cell; absent in release builds.
