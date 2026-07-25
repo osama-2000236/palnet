@@ -37,7 +37,6 @@ const arg = (name, fallback) => {
 
 const adb = (args, opts = {}) =>
   execFileSync(ADB, args, { encoding: "buffer", maxBuffer: 64 * 1024 * 1024, ...opts });
-const adbText = (args) => adb(args, { encoding: "utf8" }).toString().trim();
 
 async function login(email, password) {
   const res = await fetch(`${API}/auth/login`, {
@@ -62,52 +61,90 @@ async function api(session, pathname) {
 
 const first = (v) => (Array.isArray(v) ? v[0] : (v?.items?.[0] ?? v?.data?.[0] ?? null));
 
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
 /**
- * Capture once the screen stops changing.
+ * Raw framebuffer: a 16-byte header (width, height, format, colorspace as
+ * uint32 LE) then width*height*4 bytes of RGBA.
  *
- * The device has no `networkidle`, and a fixed delay is a guess that gets it
- * wrong in both directions — 2.6s caught the employer job form mid-spinner and
- * shot a "جارِ التحميل…" pill, while most screens settle far sooner. Shooting
- * twice and comparing bytes is the on-device equivalent of the web harness
- * waiting for `.animate-pulse` to clear.
+ * Raw rather than `screencap -p`, because a PNG is opaque — you cannot crop it
+ * or count colours in it without a decoder, and both checks below need to.
  */
+function grabFrame() {
+  const buf = adb(["exec-out", "screencap"]);
+  return { width: buf.readUInt32LE(0), height: buf.readUInt32LE(4), pixels: buf.subarray(16) };
+}
+
 /**
- * Wait until the app is actually painting something before shooting a cell.
+ * The rows between the status bar and the gesture pill.
  *
- * A blank screen compresses to roughly 25KB at this resolution; any real screen
- * clears 60KB by a wide margin. Crude, but it is the one signal available over
- * `adb exec-out` without asking the app to instrument itself.
+ * Comparing whole frames does not work: the clock and status icons tick on
+ * their own, so a screen that has completely settled still reads as moving.
+ * Measured on a blank splash — whole-frame said "changed", this slice said
+ * "stable". Fractions rather than pixel counts, so it holds on any device.
+ */
+function contentSlice({ width, height, pixels }) {
+  const top = Math.round(height * 0.06);
+  const bottom = Math.round(height * 0.96);
+  return pixels.subarray(top * width * 4, bottom * width * 4);
+}
+
+/**
+ * Distinct colours in a sparse stride across the content area.
+ *
+ * Replaces a "PNG larger than 60KB" heuristic that was really a function of
+ * screen resolution: on a smaller AVD a perfectly good render falls under the
+ * threshold and the cell gets skipped. Colour count is resolution independent,
+ * and the margin is not subtle — a blank splash scores 1, the launcher 902.
+ */
+function paintedness(frame) {
+  const slice = contentSlice(frame);
+  const seen = new Set();
+  // Prime stride, so samples never align with a repeating pixel pattern.
+  for (let i = 0; i + 3 < slice.length; i += 4 * 997) seen.add(slice.readUInt32LE(i));
+  return seen.size;
+}
+
+const PAINTED_MIN = 8;
+
+/**
+ * Wait until the app is actually painting before shooting a cell. Changing
+ * theme or locale restarts it (RTL applies at startup), and captureStable
+ * cannot detect that on its own — a blank screen is perfectly stable.
  */
 async function warmUp(timeoutMs = 90_000) {
   const started = Date.now();
+  // Launch once, then poll. The previous version re-issued `am start` every 4s,
+  // up to 22 times, restarting the very app it was waiting for.
+  adb(["shell", "am", "start", "-a", "android.intent.action.VIEW", "-d", "baydar://feed", APP_ID]);
   while (Date.now() - started < timeoutMs) {
-    adb([
-      "shell",
-      "am",
-      "start",
-      "-a",
-      "android.intent.action.VIEW",
-      "-d",
-      "baydar://feed",
-      APP_ID,
-    ]);
-    await new Promise((r) => setTimeout(r, 4000));
-    if (adb(["exec-out", "screencap", "-p"]).length > 60_000) return true;
+    await sleep(1000);
+    if (paintedness(grabFrame()) > PAINTED_MIN) return true;
   }
   return false;
 }
 
+/**
+ * Capture once the screen stops changing.
+ *
+ * The device has no `networkidle`, and a fixed delay guesses wrong in both
+ * directions — 2.6s caught the employer job form mid-spinner and shot a
+ * "جارِ التحميل…" pill, while most screens settle far sooner. This is the
+ * on-device equivalent of the web harness waiting for `.animate-pulse`.
+ *
+ * Settles on the raw content slice, then returns a real PNG encode.
+ */
 async function captureStable(minMs, maxMs) {
   const started = Date.now();
-  await new Promise((r) => setTimeout(r, minMs));
-  let previous = adb(["exec-out", "screencap", "-p"]);
+  await sleep(minMs);
+  let previous = contentSlice(grabFrame());
   while (Date.now() - started < maxMs) {
-    await new Promise((r) => setTimeout(r, 700));
-    const next = adb(["exec-out", "screencap", "-p"]);
-    if (next.equals(previous)) return next;
+    await sleep(700);
+    const next = contentSlice(grabFrame());
+    if (next.equals(previous)) break;
     previous = next;
   }
-  return previous;
+  return adb(["exec-out", "screencap", "-p"]);
 }
 
 async function main() {
