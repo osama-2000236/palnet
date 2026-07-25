@@ -26,35 +26,35 @@ function sourceFiles(dir: string): string[] {
 }
 
 /**
- * Every key a file could be asking for, as a list of candidate `namespace.key`
- * strings per call site. A call is satisfied if ANY candidate exists.
+ * Every `namespace.key` a file asks for.
  *
  * Binds each `const t = useTranslations("ns")` / `await getTranslations("ns")`
- * to its variable, then collects that variable's `t("key")` calls. Dynamic keys
- * (`t(\`a.${b}\`)`) are skipped — they cannot be checked statically.
+ * to its variable, then resolves each `t("key")` against the nearest *preceding*
+ * binding of that variable. Files routinely declare `const t` more than once,
+ * in sibling components with different namespaces; source order picks the right
+ * one without needing real scope analysis.
  *
- * A file often declares `const t` more than once, in sibling components with
- * different namespaces. Resolving that properly needs real scope analysis; the
- * union keeps the check honest about what it can prove instead of inventing 14
- * failures on a page that renders perfectly well.
+ * Dynamic keys (`t(\`a.${b}\`)`) are skipped — nothing static to resolve.
  */
-function consumedKeys(file: string): string[][] {
+function consumedKeys(file: string): string[] {
   const src = readFileSync(file, "utf8");
-  const namespaces = new Map<string, string[]>();
-  for (const m of src.matchAll(
-    /(?:const|let)\s+(\w+)\s*=\s*(?:await\s+)?(?:useTranslations|getTranslations)\(\s*"([^"]+)"\s*\)/g,
-  )) {
-    namespaces.set(m[1], [...(namespaces.get(m[1]) ?? []), m[2]]);
-  }
+  const bindings = [
+    ...src.matchAll(
+      /(?:const|let)\s+(\w+)\s*=\s*(?:await\s+)?(?:useTranslations|getTranslations)\(\s*"([^"]+)"\s*\)/g,
+    ),
+  ].map((m) => ({ variable: m[1], namespace: m[2], at: m.index ?? 0 }));
 
-  const calls: string[][] = [];
-  for (const [variable, scopes] of namespaces) {
+  const keys: string[] = [];
+  for (const variable of new Set(bindings.map((b) => b.variable))) {
     // t("key") and t.rich("key"); the optional .rich is why this is not a
     // plain call match.
     const call = new RegExp(`\\b${variable}(?:\\.rich)?\\(\\s*"([^"]+)"`, "g");
-    for (const m of src.matchAll(call)) calls.push(scopes.map((ns) => `${ns}.${m[1]}`));
+    for (const m of src.matchAll(call)) {
+      const scope = bindings.filter((b) => b.variable === variable && b.at < (m.index ?? 0)).pop();
+      if (scope) keys.push(`${scope.namespace}.${m[1]}`);
+    }
   }
-  return calls;
+  return keys;
 }
 
 describe("web message catalogs", () => {
@@ -73,14 +73,9 @@ describe("web message catalogs", () => {
   // while this suite stayed green.
   it("every key the code asks for exists in the catalog", () => {
     const defined = new Set(flattenKeys(arPS));
-    const missing = [
-      ...new Set(
-        sourceFiles(SRC)
-          .flatMap((file) => consumedKeys(file))
-          .filter((candidates) => !candidates.some((key) => defined.has(key)))
-          .map((candidates) => candidates.join(" | ")),
-      ),
-    ].sort();
+    const missing = [...new Set(sourceFiles(SRC).flatMap((file) => consumedKeys(file)))]
+      .filter((key) => !defined.has(key))
+      .sort();
     expect(missing).toEqual([]);
   });
 });
