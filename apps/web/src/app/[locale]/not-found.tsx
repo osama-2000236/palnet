@@ -94,7 +94,7 @@ export default function LocaleNotFound(): JSX.Element {
               href={`/${locale}`}
               className="bg-brand-600 text-ink-inverse hover:bg-brand-700 flex-1 rounded-md px-4 py-2 text-center text-sm font-medium"
             >
-              {tCommon("home")}
+              {tCommon("goHome")}
             </Link>
           </div>
         </Surface>
