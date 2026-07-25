@@ -1100,7 +1100,9 @@
       "filterArchived": "Archived",
       "viewApplicants": "View applicants",
       "archive": "Archive",
-      "archived": "Archived"
+      "archived": "Archived",
+      "applicantCount": "{count, plural, =0 {No applicants} one {# applicant} other {# applicants}}",
+      "shortlistCount": "{count, plural, =0 {none shortlisted} one {# shortlisted} other {# shortlisted}}"
     },
     "applicants": {
       "title": "Applicants",
@@ -1114,7 +1116,8 @@
         "REJECTED": "Rejected",
         "HIRED": "Hired",
         "WITHDRAWN": "Withdrew"
-      }
+      },
+      "allFilter": "All"
     },
     "newJob": {
       "title": "New job",

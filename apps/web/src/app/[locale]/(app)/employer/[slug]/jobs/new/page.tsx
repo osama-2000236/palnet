@@ -39,6 +39,7 @@ export default function NewJobPage(): JSX.Element {
   const t = useTranslations("employer.newJob");
   const tCommon = useTranslations("common");
   const tErr = useTranslations("errors");
+  const tJobs = useTranslations("jobs");
   const router = useRouter();
   const locale = useLocale();
   const params = useParams<{ slug: string }>();
@@ -132,9 +133,12 @@ export default function NewJobPage(): JSX.Element {
                 onChange={(e) => setForm((f) => ({ ...f, type: e.target.value as JobType }))}
                 className="border-line-hard bg-surface text-ink w-full rounded-md border px-3 py-1.5 text-sm"
               >
+                {/* Rendered the raw enum ("FULL_TIME") in a dropdown an
+                    Arabic-speaking employer has to choose from.
+                    `jobs.typeLabels` already existed. */}
                 {Object.values(JobType).map((v) => (
                   <option key={v} value={v}>
-                    {v}
+                    {tJobs(`typeLabels.${v}`)}
                   </option>
                 ))}
               </select>
@@ -152,7 +156,7 @@ export default function NewJobPage(): JSX.Element {
               >
                 {Object.values(JobLocationMode).map((v) => (
                   <option key={v} value={v}>
-                    {v}
+                    {tJobs(`locationLabels.${v}`)}
                   </option>
                 ))}
               </select>
