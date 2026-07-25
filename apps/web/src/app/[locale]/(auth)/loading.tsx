@@ -3,12 +3,14 @@
 // single skeleton avoids layout shift when login/register/reset transition
 // between each other.
 import { Skeleton } from "@baydar/ui-web";
+import { getTranslations } from "next-intl/server";
 
-export default function AuthSegmentLoading(): JSX.Element {
+export default async function AuthSegmentLoading(): Promise<JSX.Element> {
+  const t = await getTranslations("common");
   return (
     <main
       aria-busy="true"
-      aria-label="Loading"
+      aria-label={t("loading")}
       className="bg-surface-muted flex min-h-[100dvh] items-center justify-center px-4 py-8"
     >
       <div className="w-full max-w-md">

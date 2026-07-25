@@ -212,11 +212,15 @@ async function main() {
                 .catch(() => {});
               await page.waitForTimeout(800);
               await page.addStyleTag({ content: "nextjs-portal{display:none !important}" });
-              await page.screenshot({ path: file, fullPage: true, animations: "disabled" });
 
-              // Free while we are already standing on the page: horizontal
-              // overflow is a defect at any width and unreadable from a
-              // full-page screenshot, which just grows to fit the overflow.
+              // Measure BEFORE screenshotting. `fullPage: true` resizes the
+              // viewport internally to capture the whole page, and measuring
+              // afterwards reads that resized layout — which reported /me/edit
+              // as 526px in a 390px viewport when a standalone check at the
+              // same URL, at four settle times, saw a clean 390.
+              //
+              // Horizontal overflow is invisible in the screenshot anyway: the
+              // image just grows to fit it.
               const overflow = await page.evaluate(() => {
                 const doc = document.documentElement;
                 if (doc.scrollWidth <= doc.clientWidth) return null;
@@ -251,6 +255,8 @@ async function main() {
                 return { scrollWidth: doc.scrollWidth, clientWidth: doc.clientWidth, guilty };
               });
               if (overflow) overflows.push({ name, locale, theme, viewport, ...overflow });
+
+              await page.screenshot({ path: file, fullPage: true, animations: "disabled" });
               shot += 1;
               process.stdout.write(`ok  ${path.basename(file)}\n`);
             } catch (error) {

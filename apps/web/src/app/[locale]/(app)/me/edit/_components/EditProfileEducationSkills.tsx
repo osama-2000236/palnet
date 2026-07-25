@@ -243,7 +243,7 @@ export function SkillsSection({
           }}
           placeholder={t("addSkillPlaceholder")}
           maxLength={60}
-          className="border-ink-muted/30 flex-1 rounded-md border px-3 py-2 focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+          className="border-ink-muted/30 min-w-0 flex-1 rounded-md border px-3 py-2 focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
         />
         <button
           type="button"

@@ -1,12 +1,14 @@
 import type { JSX } from "react";
 
 import { Skeleton } from "@baydar/ui-web";
+import { getTranslations } from "next-intl/server";
 
-export default function AppLoading(): JSX.Element {
+export default async function AppLoading(): Promise<JSX.Element> {
+  const t = await getTranslations("common");
   return (
     <main
       aria-busy="true"
-      aria-label="Loading"
+      aria-label={t("loading")}
       className="bg-surface-muted mx-auto grid min-h-screen w-full max-w-[1128px] grid-cols-1 items-start gap-6 px-4 py-6 lg:grid-cols-[225px_minmax(0,1fr)] lg:gap-6 lg:px-6 xl:grid-cols-[225px_minmax(0,1fr)_300px]"
     >
       <aside className="hidden flex-col gap-3 lg:flex">
