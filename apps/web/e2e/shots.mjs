@@ -135,7 +135,6 @@ async function main() {
     ["verify-email", "/verify-email/invalid-token-for-qa", "anon"],
     jobId ? ["job-public", `/j/${jobId}`, "anon"] : null,
     ["legal-tos", "/legal/tos", "anon"],
-    ["legal-terms", "/legal/terms", "anon"],
     ["legal-privacy", "/legal/privacy", "anon"],
     ["legal-community", "/legal/community", "anon"],
     ["legal-employer", "/legal/employer", "anon"],
