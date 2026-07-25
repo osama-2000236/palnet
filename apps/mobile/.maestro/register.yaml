@@ -26,10 +26,10 @@ tags:
 - evalScript: ${output.email = "qa+maestro-" + Date.now() + "@baydar.test"}
 - tapOn:
     id: "register-first-name-input"
-- inputText: "ميسترو"
+- inputText: "Maestro"
 - tapOn:
     id: "register-last-name-input"
-- inputText: "تجربة"
+- inputText: "Test"
 - tapOn:
     id: "register-email-input"
 - inputText: ${output.email}
