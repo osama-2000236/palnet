@@ -2,7 +2,7 @@
 
 // Settings — Notifications.
 // Email + push preference matrix per event type. Closes the gap noted in
-// design-handoff-2026-05/PRODUCT-HEALTH.md §2: transactional email cannot
+// docs/design/PRODUCT-HEALTH-2026-05-16.md §2: transactional email cannot
 // ship until users have a way to opt in/out.
 //
 // Server endpoints:

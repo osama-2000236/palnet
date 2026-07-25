@@ -13,18 +13,18 @@ Baydar is an Arabic-first, RTL-native professional network for Palestine first. 
 
 ## Current Stack
 
-| Layer            | Current choice                                                                                     |
-| ---------------- | -------------------------------------------------------------------------------------------------- |
-| Monorepo         | Turborepo + pnpm 9 workspaces                                                                      |
-| Web              | Next.js 15 App Router, React 19, Tailwind, `next-intl`, `@baydar/ui-web`                           |
-| Mobile           | Expo SDK 54, React Native 0.81, React 19, Expo Router, NativeWind host styles, `@baydar/ui-native` |
-| API              | NestJS 10 modular monolith, REST, Swagger, SSE for live events                                     |
-| Database         | PostgreSQL 16 via Prisma 5 in `@baydar/db`                                                         |
-| Shared contracts | Zod schemas and formatters in `@baydar/shared`                                                     |
-| Auth             | Self-managed JWT access/refresh tokens with bcrypt                                                 |
-| Media            | Cloudflare R2 signed uploads, blurhash placeholder support                                         |
-| Notifications    | In-app notifications, SSE streams, Expo push device registration                                   |
-| Observability    | Pino API logs, Sentry/PostHog hooks where configured                                               |
+| Layer            | Current choice                                                                            |
+| ---------------- | ----------------------------------------------------------------------------------------- |
+| Monorepo         | Turborepo + pnpm 9 workspaces                                                             |
+| Web              | Next.js 15 App Router, React 19, Tailwind, `next-intl`, `@baydar/ui-web`                  |
+| Mobile           | Expo SDK 54, React Native 0.81, React 19, Expo Router, RN StyleSheet, `@baydar/ui-native` |
+| API              | NestJS 10 modular monolith, REST, Swagger, SSE for live events                            |
+| Database         | PostgreSQL 16 via Prisma 5 in `@baydar/db`                                                |
+| Shared contracts | Zod schemas and formatters in `@baydar/shared`                                            |
+| Auth             | Self-managed JWT access/refresh tokens with bcrypt                                        |
+| Media            | Cloudflare R2 signed uploads, blurhash placeholder support                                |
+| Notifications    | In-app notifications, SSE streams, Expo push device registration                          |
+| Observability    | Pino API logs, Sentry/PostHog hooks where configured                                      |
 
 ## Monorepo Layout
 

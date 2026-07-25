@@ -4,7 +4,8 @@ export { ThemeProvider, useTheme, useThemeTokens } from "./ThemeProvider";
 export type { ThemeProviderProps } from "./ThemeProvider";
 export { Surface } from "./Surface";
 export type { SurfaceProps, SurfaceVariant, SurfacePadding } from "./Surface";
-export { shadowStyle } from "./shadow";
+// shadowStyle is package-internal (Surface/Dialog/Sheet/Toast). Only the type
+// is public — consumers describe shadows, they don't build them.
 export type { ShadowKind } from "./shadow";
 export { Illustration, ILLUSTRATION_MOTIFS, ILLUSTRATION_DIRECTIONS } from "./Illustration";
 export type {

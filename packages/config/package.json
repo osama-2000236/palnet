@@ -8,7 +8,6 @@
     "tsconfig.nest.json",
     "tsconfig.next.json",
     "tsconfig.expo.json",
-    "eslint-preset.js",
-    "tailwind-preset.js"
+    "eslint-preset.js"
   ]
 }

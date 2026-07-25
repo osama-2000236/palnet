@@ -1,5 +1,4 @@
-// Input — the single text-input primitive for Baydar. Spec:
-// design-handoff-2026-05/MISSING-ELEMENTS.md §02.
+// Input — the single text-input primitive for Baydar.
 //
 // Replaces the 4 raw <input> styles drifting across:
 //   • jobs/page.tsx (filters bar)

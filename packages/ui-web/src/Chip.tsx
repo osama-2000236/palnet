@@ -1,5 +1,4 @@
-// Chip — the filter / facet / tag primitive. Spec:
-// design-handoff-2026-05/MISSING-ELEMENTS.md §08.
+// Chip — the filter / facet / tag primitive.
 //
 // Replaces the inline `FilterChip` in jobs/page.tsx and the ad-hoc
 // `bg-surface-subtle rounded-full ...` skill pills in JobListRow,
