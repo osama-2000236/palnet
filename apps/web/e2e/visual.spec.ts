@@ -83,9 +83,15 @@ test.describe("visual route coverage", () => {
       if (!process.env.CI) {
         await page.addStyleTag({ content: "nextjs-portal { display: none !important; }" });
       }
-      await expect(page).toHaveScreenshot(`feed-${state}-ar-mobile.png`, {
+      // `main`, not the full page, and the header masked. The QA fixture user
+      // is minted per run (`qa+<runId>.a11y@…`), so their name and avatar
+      // initials differ every time — a full-page snapshot of the app shell
+      // diffs on the username and reports a design regression that is really
+      // a fixture id. These three exist to catch a state losing its
+      // illustration or its copy, which lives in `main`.
+      await expect(page.locator("main").first()).toHaveScreenshot(`feed-${state}-ar-mobile.png`, {
         animations: "disabled",
-        fullPage: true,
+        mask: [page.locator("header")],
         maxDiffPixelRatio: 0.02,
       });
       // The empty-state handler proxies through `route.fetch()`, and the feed
