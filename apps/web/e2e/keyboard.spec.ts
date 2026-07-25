@@ -81,13 +81,29 @@ async function focusables(page: Page): Promise<Focusable[]> {
  * Budget is `count + 8`: enough slack for the browser chrome stop and a couple
  * of composite widgets, not enough to hide a loop.
  */
+type Stop =
+  | { skip: true }
+  | {
+      skip?: false;
+      id: string;
+      outline: boolean;
+      shadow: boolean;
+      offscreen: boolean;
+      label: string;
+    };
+
 async function walk(page: Page, budget: number): Promise<string[]> {
   const seen: string[] = [];
   for (let i = 0; i < budget; i += 1) {
     await page.keyboard.press("Tab");
-    const here = await page.evaluate(() => {
+    const here: Stop | null = await page.evaluate((): Stop | null => {
       const el = document.activeElement as HTMLElement | null;
       if (!el || el === document.body) return null;
+      // The Next.js dev overlay is a focusable custom element with no focus
+      // ring and no relation to the app. `a11y.spec.ts` excludes it from axe
+      // and `shots.mjs` hides it before screenshotting; this is the same
+      // exclusion for the same reason.
+      if (el.tagName === "NEXTJS-PORTAL" || el.closest("nextjs-portal")) return { skip: true };
       el.setAttribute("data-kbd-seen", "1");
       const style = getComputedStyle(el);
       const rect = el.getBoundingClientRect();
@@ -104,6 +120,7 @@ async function walk(page: Page, budget: number): Promise<string[]> {
       };
     });
     if (!here) break;
+    if (here.skip) continue;
     expect(
       here.outline || here.shadow,
       `focus landed on ${here.id} ("${here.label}") with no visible focus indicator`,

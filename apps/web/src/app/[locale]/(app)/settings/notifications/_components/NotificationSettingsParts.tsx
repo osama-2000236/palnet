@@ -27,9 +27,17 @@ export function PrefsSkeleton(): JSX.Element {
                   (item > 0 ? " border-line-soft border-t" : "")
                 }
               >
-                <div className="flex flex-col gap-1.5">
-                  <Skeleton className="h-3.5 w-36" />
-                  <Skeleton className="h-3 w-52" />
+                {/* `min-w-0` + capped widths, not fixed ones. The grid is
+                    `[1fr 72px 72px]` with `gap-4` and `px-4`, which leaves
+                    182px for the label column at 390px — and a fixed `w-52`
+                    (208px) child forces the `1fr` track wider, taking the
+                    whole page to 407px. The loaded state never showed it
+                    because real text wraps; only the skeleton overflowed, so
+                    it was invisible to any check that waits for skeletons to
+                    clear before measuring. */}
+                <div className="flex min-w-0 flex-col gap-1.5">
+                  <Skeleton className="h-3.5 w-full max-w-[9rem]" />
+                  <Skeleton className="h-3 w-full max-w-[13rem]" />
                 </div>
                 <Skeleton kind="pill" className="h-5 w-9 justify-self-center" />
                 <Skeleton kind="pill" className="h-5 w-9 justify-self-center" />

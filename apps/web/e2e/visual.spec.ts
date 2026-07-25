@@ -51,6 +51,11 @@ test.describe("visual route coverage", () => {
   for (const locale of LOCALES) {
     for (const viewport of VIEWPORTS) {
       test(`${locale} ${viewport.name} app surfaces render`, async ({ page }) => {
+        // 23 routes in one test, each with a navigation and a settle, does not
+        // fit the 60s default. Kept as one test rather than 92 separate ones:
+        // the per-route assertions all name their route, and 92 tests would
+        // each pay browser-context setup for one page load.
+        test.setTimeout(240_000);
         await page.setViewportSize(viewport.size);
         for (const route of ROUTES) {
           await assertVisualRoute(page, `/${locale}/${route}`, viewport.name === "mobile");
@@ -83,6 +88,11 @@ test.describe("visual route coverage", () => {
         fullPage: true,
         maxDiffPixelRatio: 0.02,
       });
+      // The empty-state handler proxies through `route.fetch()`, and the feed
+      // keeps polling — a request still in flight when the page closes throws
+      // "Target page has been closed" out of the route callback and fails a
+      // test whose assertion already passed.
+      await page.unrouteAll({ behavior: "ignoreErrors" });
     });
   }
 
