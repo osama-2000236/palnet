@@ -7,9 +7,9 @@ import path from "node:path";
 
 const API = "http://localhost:4000/api/v1";
 const WEB = "http://localhost:3000";
-const OUT_DIR =
-  process.env.QA_SHOTS_OUT ??
-  "C:/Users/osama/AppData/Local/Temp/claude/C--LinkedIn--claude-worktrees-zealous-bassi-ff4cee/61705859-b6d7-464d-96fc-66efc585d2d3/scratchpad/shots";
+// Repo-relative and gitignored, so the harness works from any checkout.
+// Override with QA_SHOTS_OUT to dump elsewhere.
+const OUT_DIR = process.env.QA_SHOTS_OUT ?? path.resolve(import.meta.dirname, "../.qa-shots");
 
 const arg = (name, fallback) => {
   const hit = process.argv.find((a) => a.startsWith(`--${name}=`));
