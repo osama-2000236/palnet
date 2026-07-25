@@ -13,9 +13,9 @@ import { apiErrorMessage } from "@/lib/api-errors";
 import { profileCompletion } from "@/lib/profile-completion";
 import { clearSession, getAccessToken } from "@/lib/session";
 
-import { Section } from "../_me/Section";
-import { ProfileQuickLinks } from "../_me/ProfileQuickLinks";
-import { useStyles } from "../_me/styles";
+import { Section } from "@/screens/me/Section";
+import { ProfileQuickLinks } from "@/screens/me/ProfileQuickLinks";
+import { useStyles } from "@/screens/me/styles";
 
 type ProfileTab = "about" | "exp" | "edu" | "skills";
 

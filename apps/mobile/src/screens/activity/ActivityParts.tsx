@@ -160,5 +160,3 @@ export function useActivityTextStyles() {
     };
   }, [c]);
 }
-
-export default () => null;

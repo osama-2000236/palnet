@@ -182,5 +182,3 @@ export function OnboardingFooter({
     </View>
   );
 }
-
-export default () => null;

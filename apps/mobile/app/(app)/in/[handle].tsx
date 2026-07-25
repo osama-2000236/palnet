@@ -14,15 +14,15 @@ import { runConnectionAction } from "@/lib/connections";
 import { successHaptic, tapHaptic } from "@/lib/haptics";
 import { getAccessToken } from "@/lib/session";
 
-import { ProfileActions, type ConnectionAction } from "../_profile-detail/ProfileActions";
-import { ProfileHero } from "../_profile-detail/ProfileHero";
+import { ProfileActions, type ConnectionAction } from "@/screens/profile-detail/ProfileActions";
+import { ProfileHero } from "@/screens/profile-detail/ProfileHero";
 import {
   PROFILE_TABS,
   ProfileTabContent,
   type ProfileTab,
-} from "../_profile-detail/ProfileTabContent";
-import { blockButtonLabels, reportSheetLabels } from "../_profile-detail/safetyLabels";
-import { useProfileStyles } from "../_profile-detail/styles";
+} from "@/screens/profile-detail/ProfileTabContent";
+import { blockButtonLabels, reportSheetLabels } from "@/screens/profile-detail/safetyLabels";
+import { useProfileStyles } from "@/screens/profile-detail/styles";
 
 export default function ProfileScreen(): JSX.Element {
   const profileStyles = useProfileStyles();

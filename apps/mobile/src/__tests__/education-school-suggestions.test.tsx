@@ -1,6 +1,6 @@
 import { fireEvent, render } from "@testing-library/react-native";
 
-import { EducationsCard } from "../../app/(app)/_edit-profile/EducationsCard";
+import { EducationsCard } from "@/screens/edit-profile/EducationsCard";
 
 jest.mock("@/lib/api", () => ({ apiFetch: jest.fn() }));
 jest.mock("@/lib/session", () => ({ getAccessToken: jest.fn().mockResolvedValue("tok") }));

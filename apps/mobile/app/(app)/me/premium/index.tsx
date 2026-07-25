@@ -22,7 +22,7 @@ import { CheckoutPanel } from "@/components/billing/CheckoutPanel";
 import { InvoiceList } from "@/components/billing/InvoiceList";
 import { StateMessage } from "@/components/StateMessage";
 
-import { FeatureList, TRUST_KEYS, TrustRow, useStyles } from "../../_premium/parts";
+import { FeatureList, TRUST_KEYS, TrustRow, useStyles } from "@/screens/premium/parts";
 import { apiFetch } from "@/lib/api";
 import { apiErrorMessage } from "@/lib/api-errors";
 

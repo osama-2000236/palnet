@@ -54,4 +54,3 @@ export const onboardingSchema = z
     if (v.backgroundKind === "education" && !v.school.trim())
       ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["school"], message: required });
   });
-export default () => null;

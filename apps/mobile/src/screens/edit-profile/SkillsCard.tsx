@@ -96,5 +96,3 @@ export function SkillsCard({ profile, onChanged, onError }: ProfileCardProps): J
     </Card>
   );
 }
-
-export default () => null;

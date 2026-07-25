@@ -87,5 +87,3 @@ export function parseDateInput(value: string): string | null {
   if (Number.isNaN(timestamp)) return null;
   return new Date(timestamp).toISOString();
 }
-
-export default () => null;

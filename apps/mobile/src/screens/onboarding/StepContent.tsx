@@ -81,5 +81,3 @@ export function StepContent({
     </Surface>
   );
 }
-
-export default () => null;

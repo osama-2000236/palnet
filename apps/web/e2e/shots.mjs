@@ -53,17 +53,18 @@ async function main() {
   const jobId = first(jobs)?.id ?? null;
   const me = await api(session, "/profiles/me");
   const handle = me?.handle ?? "demo";
-  // /search is tab-scoped, so ask the companies route directly; the demo seed
-  // always has this one, and a null slug silently drops /company from the run.
-  const companies = await api(session, "/search/companies?q=%D8%B4&limit=5");
-  const companySlug = first(companies)?.slug ?? "qa-tech-co";
-
   // Employer + admin surfaces are role-gated, and the auth screens only render
   // signed out — so a route names the session it needs, and we build one browser
   // context per (session × locale × theme × viewport).
   const owner = await login("owner@baydar.ps", "Password123");
   const ownerCompany = first(await api(owner, "/companies/me"));
   const employerSlug = ownerCompany?.slug ?? "baydar";
+  // The public company page shoots the owner's company. This used to run a
+  // full-text search for "ش" and fall back to a hardcoded `qa-tech-co` — a
+  // slug that only ever existed as leftover fixture debris, and once that was
+  // swept the route silently shot a 404 page instead of a company. Seeded
+  // membership is the one thing guaranteed to resolve.
+  const companySlug = employerSlug;
   // The jobs route keys on company id, not slug — passing the slug 403s with
   // "Not a member of this company", which reads like a permissions problem.
   const employerJobId = ownerCompany?.id

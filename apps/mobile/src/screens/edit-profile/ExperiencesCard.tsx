@@ -164,5 +164,3 @@ export function ExperiencesCard({ profile, onChanged, onError }: ProfileCardProp
     </Card>
   );
 }
-
-export default () => null;

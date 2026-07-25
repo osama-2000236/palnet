@@ -181,5 +181,3 @@ function SuggestionRow({
     </Pressable>
   );
 }
-
-export default () => null;

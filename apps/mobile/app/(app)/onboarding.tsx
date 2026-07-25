@@ -15,21 +15,26 @@ import { getAccessToken, readSession, writeProfileCache } from "@/lib/session";
 import type { PickedAsset } from "@/lib/uploads";
 import { useNetworkStore } from "@/store/network";
 
-import { OnboardingFooter, OnboardingHeader, StateMessage, StepDots } from "./_onboarding/Chrome";
-import { StepContent } from "./_onboarding/StepContent";
+import {
+  OnboardingFooter,
+  OnboardingHeader,
+  StateMessage,
+  StepDots,
+} from "@/screens/onboarding/Chrome";
+import { StepContent } from "@/screens/onboarding/StepContent";
 import {
   SuggestionsSchema,
   persistOnboarding,
   resumeValues,
   type PersonSuggestionDto,
-} from "./_onboarding/api";
-import { fieldsForStep } from "./_onboarding/flow";
-import { onboardingSchema } from "./_onboarding/schema";
+} from "@/screens/onboarding/api";
+import { fieldsForStep } from "@/screens/onboarding/flow";
+import { onboardingSchema } from "@/screens/onboarding/schema";
 import {
   defaultOnboardingValues,
   type OnboardingFormValues,
   type StepKey,
-} from "./_onboarding/types";
+} from "@/screens/onboarding/types";
 
 export default function OnboardingScreen(): JSX.Element {
   const c = useThemeTokens().color;

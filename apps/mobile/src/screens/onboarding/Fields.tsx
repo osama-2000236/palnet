@@ -151,5 +151,3 @@ export function EmptyState({ message }: { message: string }): JSX.Element {
     </Surface>
   );
 }
-
-export default () => null;
