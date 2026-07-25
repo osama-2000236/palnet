@@ -73,7 +73,16 @@ describe("formatRelativeTime", () => {
     expect(out).toMatch(/[\u0600-\u06ff]/);
   });
 
-  it("falls back when RelativeTimeFormat is unavailable", () => {
+  // Hermes (React Native) ships without Intl.RelativeTimeFormat, so every
+  // timestamp in the mobile app takes this path.
+  //
+  // This test previously asserted the hand-rolled fallback: "3 hours ago" and
+  // an Arabic string containing "قبل". That output was verified wrong on a real
+  // device — three days rendered "قبل ٣ يوم", a plural count against a singular
+  // noun. Arabic pluralises across six categories (٣ أيام, ١١ يومًا) and 1/2
+  // days are أمس / أول أمس rather than counted phrases at all, so no
+  // `${count} ${noun}` template can be right.
+  it("degrades to an absolute date when RelativeTimeFormat is unavailable", () => {
     const original = Intl.RelativeTimeFormat;
     Object.defineProperty(Intl, "RelativeTimeFormat", {
       configurable: true,
@@ -81,12 +90,16 @@ describe("formatRelativeTime", () => {
     });
 
     try {
-      const then = new Date(now.getTime() - 3 * 60 * 60 * 1000);
-      expect(formatRelativeTime(then, "en", now)).toBe("3 hours ago");
+      const then = new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000);
 
       const ar = formatRelativeTime(then, "ar", now);
-      expect(ar).toContain("قبل");
+      expect(ar).not.toContain("قبل");
+      expect(ar).not.toContain("٣ يوم");
+      // An absolute date is always grammatical, and still digit-correct.
+      expect(ar).toMatch(/[٠-٩]/);
       expect(ar).not.toMatch(/[0-9]/);
+
+      expect(formatRelativeTime(then, "en", now)).not.toContain("ago");
     } finally {
       Object.defineProperty(Intl, "RelativeTimeFormat", {
         configurable: true,

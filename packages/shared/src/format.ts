@@ -105,17 +105,9 @@ export function formatDate(iso: string | Date, locale: string): string {
   return `${part(date.getDate())}/${part(date.getMonth() + 1)}/${part(date.getFullYear())}`;
 }
 
-type RelativeLabelUnit =
-  | "year"
-  | "quarter"
-  | "month"
-  | "week"
-  | "day"
-  | "hour"
-  | "minute"
-  | "second";
+type RelativeUnit = "year" | "month" | "week" | "day" | "hour" | "minute" | "second";
 
-const RELATIVE_UNITS: Array<{ unit: RelativeLabelUnit; secs: number }> = [
+const RELATIVE_UNITS: Array<{ unit: RelativeUnit; secs: number }> = [
   { unit: "year", secs: 60 * 60 * 24 * 365 },
   { unit: "month", secs: 60 * 60 * 24 * 30 },
   { unit: "week", secs: 60 * 60 * 24 * 7 },
@@ -124,55 +116,6 @@ const RELATIVE_UNITS: Array<{ unit: RelativeLabelUnit; secs: number }> = [
   { unit: "minute", secs: 60 },
   { unit: "second", secs: 1 },
 ];
-
-const EN_RELATIVE_LABELS: Record<RelativeLabelUnit, string> = {
-  year: "year",
-  quarter: "quarter",
-  month: "month",
-  week: "week",
-  day: "day",
-  hour: "hour",
-  minute: "minute",
-  second: "second",
-};
-
-const AR_RELATIVE_LABELS: Record<RelativeLabelUnit, string> = {
-  year: "سنة",
-  quarter: "ربع",
-  month: "شهر",
-  week: "أسبوع",
-  day: "يوم",
-  hour: "ساعة",
-  minute: "دقيقة",
-  second: "ثانية",
-};
-
-function formatFallbackNumber(value: number, locale: string): string {
-  try {
-    return formatNumber(value, locale);
-  } catch {
-    return String(value);
-  }
-}
-
-function formatRelativeTimeFallback(
-  value: number,
-  unit: RelativeLabelUnit,
-  locale: string,
-): string {
-  if (value === 0) return isArabicLocale(locale) ? "الآن" : "now";
-
-  const amount = Math.abs(value);
-  const formatted = formatFallbackNumber(amount, locale);
-  if (isArabicLocale(locale)) {
-    const direction = value < 0 ? "قبل" : "خلال";
-    return `${direction} ${formatted} ${AR_RELATIVE_LABELS[unit]}`;
-  }
-
-  const label = EN_RELATIVE_LABELS[unit];
-  const suffix = amount === 1 ? label : `${label}s`;
-  return value < 0 ? `${formatted} ${suffix} ago` : `in ${formatted} ${suffix}`;
-}
 
 function formatAbsoluteDateFallback(value: Date, locale: string): string {
   const tag = localeTag(locale);
@@ -204,12 +147,19 @@ export function formatRelativeTime(
 
   const tag = localeTag(locale);
 
+  // Hermes ships without Intl.RelativeTimeFormat, so React Native lands here.
+  // Do NOT hand-roll the relative phrasing: Arabic pluralises across six
+  // categories (٣ أيام but ١١ يومًا, and 1/2 days are أمس/أول أمس, not "قبل ١
+  // يوم"), and a naive `${count} ${noun}` template gets every one of them wrong.
+  // Intl.DateTimeFormat *is* present, and an absolute date is always
+  // grammatical, so degrade to that rather than to broken Arabic.
+  if (typeof Intl.RelativeTimeFormat !== "function") {
+    return formatAbsoluteDateFallback(then, locale);
+  }
+
   if (absSecs < 60) {
     // "now" / "الآن" — RelativeTimeFormat's "0 seconds" reads awkwardly.
-    if (typeof Intl.RelativeTimeFormat === "function") {
-      return new Intl.RelativeTimeFormat(tag, { numeric: "auto" }).format(0, "second");
-    }
-    return formatRelativeTimeFallback(0, "second", locale);
+    return new Intl.RelativeTimeFormat(tag, { numeric: "auto" }).format(0, "second");
   }
 
   // Fall back to absolute date for anything older than 30 days.
@@ -218,15 +168,11 @@ export function formatRelativeTime(
     return formatAbsoluteDateFallback(then, locale);
   }
 
-  const rtf =
-    typeof Intl.RelativeTimeFormat === "function"
-      ? new Intl.RelativeTimeFormat(tag, { numeric: "auto" })
-      : null;
+  const rtf = new Intl.RelativeTimeFormat(tag, { numeric: "auto" });
   for (const { unit, secs } of RELATIVE_UNITS) {
     if (absSecs >= secs) {
-      const value = Math.round(diffSecs / secs);
       // RelativeTimeFormat expects past = negative.
-      return rtf ? rtf.format(-value, unit) : formatRelativeTimeFallback(-value, unit, locale);
+      return rtf.format(-Math.round(diffSecs / secs), unit);
     }
   }
   return "";
