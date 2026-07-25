@@ -105,7 +105,14 @@ function paintedness(frame) {
   return seen.size;
 }
 
-const PAINTED_MIN = 8;
+// Tuned on one AVD (Pixel_7_Pro, swiftshader). The margin is not subtle — a
+// blank splash scores 1 and the launcher 902 — so anything in 3..100 separates
+// them, and the constant is only load-bearing on a device nobody has tried.
+// Overridable, and `warmUp` reports the number it actually saw when it gives
+// up, so a device where 8 is wrong says so instead of skipping a cell in
+// silence. That is the property that matters: the previous constant here (a
+// 60KB PNG size threshold) was wrong on smaller AVDs and failed invisibly.
+const PAINTED_MIN = Number(process.env.QA_PAINTED_MIN ?? 8);
 
 /**
  * Wait until the app is actually painting before shooting a cell. Changing
@@ -117,11 +124,49 @@ async function warmUp(timeoutMs = 90_000) {
   // Launch once, then poll. The previous version re-issued `am start` every 4s,
   // up to 22 times, restarting the very app it was waiting for.
   adb(["shell", "am", "start", "-a", "android.intent.action.VIEW", "-d", "baydar://feed", APP_ID]);
+  let best = 0;
   while (Date.now() - started < timeoutMs) {
     await sleep(1000);
-    if (paintedness(grabFrame()) > PAINTED_MIN) return true;
+    const painted = paintedness(grabFrame());
+    best = Math.max(best, painted);
+    if (painted > PAINTED_MIN) return true;
   }
+  process.stdout.write(
+    `    warmUp gave up: best paintedness ${best} vs PAINTED_MIN ${PAINTED_MIN}` +
+      ` — if the screen looked fine, raise or lower QA_PAINTED_MIN\n`,
+  );
   return false;
+}
+
+// ── Device console capture ─────────────────────────────────────────────────
+// The web harness writes `_console__*.json` per cell, and that capture is how
+// the two missing `messaging.*` keys were found — a raw key path renders
+// silently, but `IntlError` lands in the console. Mobile had no equivalent at
+// all, so the same class of bug was invisible on the platform where Arabic is
+// the default. React Native's console.warn/error surface in logcat under the
+// `ReactNativeJS` tag; `AndroidRuntime:E` catches a native crash on top.
+function logcatClear() {
+  try {
+    adb(["logcat", "-c"]);
+  } catch {
+    // A busy device occasionally refuses the clear; a stale line is noise, not
+    // a reason to abandon the run.
+  }
+}
+
+function logcatDump() {
+  try {
+    const raw = adb(["logcat", "-d", "-s", "ReactNativeJS:W", "AndroidRuntime:E", "*:S"]).toString(
+      "utf8",
+    );
+    return raw
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter((line) => line && !line.startsWith("---------"))
+      .map((line) => line.slice(0, 300));
+  } catch {
+    return [];
+  }
 }
 
 /**
@@ -158,13 +203,16 @@ async function main() {
   const session = await login("demo@baydar.ps", "Password123");
   const jobId = first(await api(session, "/jobs?limit=5"))?.id;
   const handle = (await api(session, "/profiles/me"))?.handle ?? "demo";
-  const companySlug =
-    first(await api(session, "/search/companies?q=%D8%B4&limit=5"))?.slug ?? "baydar";
   const roomId = first(await api(session, "/messaging/rooms?limit=5"))?.id;
 
   const owner = await login("owner@baydar.ps", "Password123").catch(() => null);
   const ownerCompany = owner ? first(await api(owner, "/companies/me")) : null;
   const employerSlug = ownerCompany?.slug ?? (owner ? "baydar" : null);
+  // Same company the employer screens use. This was a full-text search for "ش"
+  // with a hardcoded fallback — the search matches nothing once fixture debris
+  // is swept, so it silently shot the fallback every time. Seeded membership is
+  // the one thing guaranteed to resolve. Mirrors apps/web/e2e/shots.mjs.
+  const companySlug = employerSlug ?? "baydar";
   // The jobs route keys on company id, not slug — passing the slug 403s with
   // "Not a member of this company", which reads like a permissions problem.
   const employerJobId = ownerCompany?.id
@@ -261,9 +309,13 @@ async function main() {
         continue;
       }
 
+      const consoleByScreen = {};
       for (const [name, route] of picked) {
         const file = path.join(OUT_DIR, `${name}__${locale}__${theme}.png`);
         try {
+          // Clear immediately before the navigation so whatever lands in the
+          // buffer belongs to this screen and not the previous one.
+          logcatClear();
           adb([
             "shell",
             "am",
@@ -275,12 +327,25 @@ async function main() {
             APP_ID,
           ]);
           await writeFile(file, await captureStable(settle, maxSettle));
+          const lines = logcatDump();
+          if (lines.length) consoleByScreen[name] = lines;
           shot += 1;
-          process.stdout.write(`ok  ${path.basename(file)}\n`);
+          process.stdout.write(`ok  ${path.basename(file)}${lines.length ? ` (${lines.length} log)` : ""}\n`);
         } catch (error) {
           failures.push({ name, route, error: String(error).slice(0, 160) });
           process.stdout.write(`ERR ${name} ${locale} ${theme}\n`);
         }
+      }
+      await writeFile(
+        path.join(OUT_DIR, `_console__${locale}__${theme}.json`),
+        JSON.stringify(consoleByScreen, null, 2),
+      );
+      const missingKeys = Object.entries(consoleByScreen).flatMap(([screen, lines]) =>
+        lines.filter((l) => /MISSING_MESSAGE|IntlError|i18next::/.test(l)).map((l) => `${screen}: ${l}`),
+      );
+      if (missingKeys.length) {
+        process.stdout.write(`\n!! ${missingKeys.length} i18n errors in ${locale}/${theme}:\n`);
+        for (const line of missingKeys.slice(0, 10)) process.stdout.write(`   ${line}\n`);
       }
     }
   }
