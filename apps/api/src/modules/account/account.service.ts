@@ -108,9 +108,12 @@ export class AccountService {
       this.prisma.notification.findMany({
         where: { OR: [{ recipientId: userId }, { actorId: userId }] },
       }),
-      this.prisma.blockedUser.findMany({
-        where: { OR: [{ blockerId: userId }, { blockedId: userId }] },
-      }),
+      // Outbound blocks only. Including rows where this user is the *blocked*
+      // party would hand them the identity of everyone who blocked them, which
+      // is the one thing blocking has to keep private -- every other surface
+      // (feed, search, messaging, suggestions) hides the block silently and
+      // symmetrically. "Who blocked me" is the blocker's data, not theirs.
+      this.prisma.blockedUser.findMany({ where: { blockerId: userId } }),
       this.prisma.report.findMany({ where: { reporterId: userId } }),
     ]);
 

@@ -179,6 +179,48 @@ describe("AccountService", () => {
     );
   });
 
+  // docs/api-contract.md promises the envelope carries "profile, posts,
+  // comments, reactions, reposts, chat-room memberships, messages,
+  // notifications, blocks, and reports". Only the controller's envelope shape
+  // was ever asserted, never what the service actually reads -- which is how
+  // the export came to hand the user every block filed *against* them.
+  it("exports every documented section and only outbound blocks", async () => {
+    for (const model of [
+      "post",
+      "comment",
+      "reaction",
+      "repost",
+      "chatRoomMember",
+      "message",
+      "notification",
+      "blockedUser",
+      "report",
+    ] as const) {
+      prisma[model].findMany.mockResolvedValue([]);
+    }
+    prisma.profile.findUnique.mockResolvedValue({ handle: "me" });
+
+    const envelope = await service.export("u1");
+
+    expect(Object.keys(envelope).sort()).toEqual(
+      [
+        "blockedUsers",
+        "chatRoomMembers",
+        "comments",
+        "exportedAt",
+        "messages",
+        "notifications",
+        "posts",
+        "profile",
+        "reactions",
+        "reports",
+        "reposts",
+        "userId",
+      ].sort(),
+    );
+    expect(prisma.blockedUser.findMany).toHaveBeenCalledWith({ where: { blockerId: "u1" } });
+  });
+
   it("rejects restore after the grace window", async () => {
     const passwordHash = await bcrypt.hash("Password1", 4);
     prisma.user.findFirst.mockResolvedValue({
