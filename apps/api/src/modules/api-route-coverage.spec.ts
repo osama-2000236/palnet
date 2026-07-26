@@ -1,68 +1,38 @@
 import "reflect-metadata";
 
+import { readdirSync } from "node:fs";
+import path from "node:path";
+
 import { RequestMethod, type Type } from "@nestjs/common";
 import { METHOD_METADATA, PATH_METADATA, SSE_METADATA } from "@nestjs/common/constants";
 
-import { AccountController } from "./account/account.controller";
-import { AdminBillingController } from "./admin/admin-billing.controller";
-import { AdminInternalController } from "./admin/admin-internal.controller";
-import { AdminModerationController } from "./admin/admin-moderation.controller";
-import { AuthController } from "./auth/auth.controller";
 import { IS_PUBLIC_KEY } from "./auth/decorators/public.decorator";
-import { BillingController } from "./billing/billing.controller";
-import { BookmarksController } from "./bookmarks/bookmarks.controller";
-import { CommentsController } from "./comments/comments.controller";
-import { CompaniesController } from "./companies/companies.controller";
-import { CompanyJobsController } from "./companies/company-jobs.controller";
-import { CompanyMembersController } from "./companies/company-members.controller";
-import { ConnectionsController } from "./connections/connections.controller";
-import { FeedController } from "./feed/feed.controller";
-import { HealthController } from "./health/health.controller";
-import { JobsController } from "./jobs/jobs.controller";
-import { KaramaController } from "./karama/karama.controller";
-import { MediaController } from "./media/media.controller";
-import { MessagingController } from "./messaging/messaging.controller";
-import { DevicesController } from "./notifications/devices.controller";
-import { NotificationsController } from "./notifications/notifications.controller";
-import { NotificationPreferencesController } from "./notifications/preferences.controller";
-import { PostsController } from "./posts/posts.controller";
-import { ProfilesController } from "./profiles/profiles.controller";
-import { RatingsController } from "./ratings/ratings.controller";
-import { ReactionsController } from "./reactions/reactions.controller";
-import { RepostsController } from "./reposts/reposts.controller";
-import { SafetyController } from "./safety/safety.controller";
-import { SearchController } from "./search/search.controller";
 
-const CONTROLLERS: Array<Type<unknown>> = [
-  AccountController,
-  AdminBillingController,
-  AdminInternalController,
-  AdminModerationController,
-  AuthController,
-  BillingController,
-  BookmarksController,
-  CommentsController,
-  CompaniesController,
-  CompanyJobsController,
-  CompanyMembersController,
-  ConnectionsController,
-  FeedController,
-  HealthController,
-  JobsController,
-  KaramaController,
-  MediaController,
-  MessagingController,
-  DevicesController,
-  NotificationsController,
-  NotificationPreferencesController,
-  PostsController,
-  ProfilesController,
-  RatingsController,
-  ReactionsController,
-  RepostsController,
-  SafetyController,
-  SearchController,
-];
+/**
+ * Every controller on disk, not a list somebody remembered to update.
+ *
+ * The hand-maintained array this replaces could not detect what it was for.
+ * Dropping a new `@Public()` controller into `src/modules` — `GET
+ * /leaky/secrets`, no auth — left both pins below passing, because the routes
+ * it exposed belonged to a class the list had never heard of. A coverage check
+ * whose input is curated by hand only covers what you already knew about.
+ */
+function controllerFiles(dir: string): string[] {
+  return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) return controllerFiles(full);
+    return entry.name.endsWith(".controller.ts") ? [full] : [];
+  });
+}
+
+const CONTROLLERS: Type<unknown>[] = controllerFiles(__dirname).flatMap((file) =>
+  // Dynamic by necessity: a static import list is the defect this replaces.
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  Object.values(require(file) as Record<string, unknown>).filter(
+    (value): value is Type<unknown> =>
+      typeof value === "function" && Reflect.hasMetadata(PATH_METADATA, value),
+  ),
+);
 
 const EXPECTED_ROUTES = [
   "POST /account/delete",
