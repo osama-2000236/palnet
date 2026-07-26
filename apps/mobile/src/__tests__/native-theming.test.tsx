@@ -95,7 +95,7 @@ const renderBoth = (element: ReactElement): { light: string[]; dark: string[] } 
   return { light: lightColours, dark: darkColours };
 };
 
-const CASES: Array<[string, ReactElement]> = [
+const CASES: [string, ReactElement][] = [
   ["AppHeader", <AppHeader title="الإشعارات" subtitle="آخر التحديثات" />],
   ["ComposerEntry", <ComposerEntry placeholder="شارك فكرة…" onPress={() => {}} />],
   ["EmptyState", <EmptyState motif="search" title="لا توجد نتائج" body="جرّب كلمات أخرى." />],
