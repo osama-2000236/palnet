@@ -11,12 +11,11 @@
     "dev": "nest start --watch",
     "prestart": "pnpm --filter @baydar/ui-tokens build && pnpm --filter @baydar/shared build && pnpm --filter @baydar/db build",
     "start": "node dist/main.js",
-    "lint": "eslint \"{src,test}/**/*.ts\"",
+    "lint": "eslint \"src/**/*.ts\"",
     "type-check": "tsc --noEmit",
     "pretest": "pnpm --filter @baydar/ui-tokens build && pnpm --filter @baydar/shared build && pnpm --filter @baydar/db build",
     "test": "jest",
-    "test:watch": "jest --watch",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test:watch": "jest --watch"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1032.0",
