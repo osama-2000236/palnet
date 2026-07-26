@@ -11,6 +11,7 @@ import { Injectable } from "@nestjs/common";
 import { DomainException } from "../../common/domain-exception";
 import { NotificationsService } from "../notifications/notifications.service";
 import { PrismaService } from "../prisma/prisma.service";
+import { SafetyService } from "../safety/safety.service";
 
 type Direction = "OUTGOING" | "INCOMING";
 type ConnStatus = "PENDING" | "ACCEPTED" | "DECLINED" | "WITHDRAWN" | "BLOCKED";
@@ -50,6 +51,7 @@ export class ConnectionsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly notifications: NotificationsService,
+    private readonly safety: SafetyService,
   ) {}
 
   // ────────────────────────────────────────────────────────────────────
@@ -283,6 +285,14 @@ export class ConnectionsService {
     for (const row of existing) {
       excluded.add(row.requesterId);
       excluded.add(row.receiverId);
+    }
+
+    // Blocking writes a BlockedUser row, never a Connection row, so the loop
+    // above does not see it: a stranger the viewer blocked came straight back
+    // as "people you may know". Same exclusion messaging, search and the
+    // notification list already apply.
+    for (const userId of await this.safety.getBlockedEitherIds(viewerId)) {
+      excluded.add(userId);
     }
 
     // 2. Pull candidate profiles — must have completed onboarding (exists on

@@ -113,10 +113,12 @@ describe("useRoomMessages", () => {
   let container: HTMLDivElement;
   let root: Root;
   let latest: UseRoomMessagesResult | null;
+  // `openStream` owns reconnection now and hands back an unsubscribe function
+  // instead of a raw EventSource, so the fake captures the handler bag.
   let stream: {
-    close: jest.Mock;
-    onmessage: ((event: MessageEvent) => void) | null;
-    onerror: (() => void) | null;
+    unsubscribe: jest.Mock;
+    onEvent: ((data: string) => void) | null;
+    onDrop: (() => void) | null;
   };
 
   beforeEach(() => {
@@ -124,12 +126,18 @@ describe("useRoomMessages", () => {
     container = document.createElement("div");
     document.body.appendChild(container);
     root = createRoot(container);
-    stream = { close: jest.fn(), onmessage: null, onerror: null };
+    stream = { unsubscribe: jest.fn(), onEvent: null, onDrop: null };
     mockApiCall.mockReset();
     mockApiFetch.mockReset();
     mockApiFetchPage.mockReset();
     mockOpenStream.mockReset();
-    mockOpenStream.mockResolvedValue(stream);
+    mockOpenStream.mockImplementation(
+      (_scope: string, handlers: { onEvent(d: string): void; onDrop?(): void }) => {
+        stream.onEvent = handlers.onEvent;
+        stream.onDrop = handlers.onDrop ?? null;
+        return stream.unsubscribe;
+      },
+    );
     mockApiCall.mockResolvedValue(undefined);
     mockApiFetchPage.mockImplementation((path: string) => {
       if (path === "/messaging/rooms") {
@@ -187,9 +195,7 @@ describe("useRoomMessages", () => {
 
     const incoming = makeMessage();
     React.act(() => {
-      stream.onmessage?.({
-        data: JSON.stringify({ type: "message.new", payload: incoming }),
-      } as MessageEvent);
+      stream.onEvent?.(JSON.stringify({ type: "message.new", payload: incoming }));
     });
 
     expect(latest?.messages).toEqual([incoming]);

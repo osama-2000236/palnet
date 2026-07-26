@@ -28,7 +28,7 @@ import { apiFetchPage } from "@/lib/api";
 import { apiErrorMessage } from "@/lib/api-errors";
 import { getAccessToken } from "@/lib/session";
 
-import { SearchRow } from "./_search/SearchRow";
+import { SearchRow } from "@/screens/search/SearchRow";
 
 const PeoplePage = cursorPage(SearchPersonHitSchema);
 const PostsPage = cursorPage(SearchPostHitSchema);

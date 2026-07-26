@@ -24,14 +24,14 @@ import {
 } from "@/navigation/app-tab-routes";
 import { useNetworkStore } from "@/store/network";
 
-import { AppGateError } from "./_tabs/AppGateError";
+import { AppGateError } from "@/screens/tabs/AppGateError";
 import {
   TabButton,
   TabIcon,
   TabLabel,
   hiddenFullScreenTabOptions,
   hiddenTabOptions,
-} from "./_tabs/TabParts";
+} from "@/screens/tabs/TabParts";
 
 const UnreadCountEnvelope = z.object({ count: z.number().int().nonnegative() });
 

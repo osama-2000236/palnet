@@ -18,8 +18,8 @@ import { successHaptic, tapHaptic } from "@/lib/haptics";
 import { WEB_ORIGIN } from "@/lib/linking";
 import { getAccessToken } from "@/lib/session";
 
-import { ApplyCard } from "../_jobs/ApplyCard";
-import { useStyles } from "../_jobs/detailStyles";
+import { ApplyCard } from "@/screens/jobs/ApplyCard";
+import { useStyles } from "@/screens/jobs/detailStyles";
 
 export default function JobDetailScreen(): JSX.Element {
   const c = useThemeTokens().color;

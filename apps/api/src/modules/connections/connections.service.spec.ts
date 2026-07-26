@@ -4,6 +4,7 @@ import { Test } from "@nestjs/testing";
 import { DomainException } from "../../common/domain-exception";
 import { NotificationsService } from "../notifications/notifications.service";
 import { PrismaService } from "../prisma/prisma.service";
+import { SafetyService } from "../safety/safety.service";
 
 import { ConnectionsService } from "./connections.service";
 
@@ -40,9 +41,11 @@ function buildPrisma(): PrismaStub {
 describe("ConnectionsService", () => {
   let service: ConnectionsService;
   let prisma: PrismaStub;
+  let safety: { getBlockedEitherIds: jest.Mock };
 
   beforeEach(async () => {
     prisma = buildPrisma();
+    safety = { getBlockedEitherIds: jest.fn().mockResolvedValue([]) };
     const moduleRef = await Test.createTestingModule({
       providers: [
         ConnectionsService,
@@ -51,6 +54,7 @@ describe("ConnectionsService", () => {
           provide: NotificationsService,
           useValue: { notify: jest.fn().mockResolvedValue(undefined) },
         },
+        { provide: SafetyService, useValue: safety },
       ],
     }).compile();
     service = moduleRef.get(ConnectionsService);
@@ -176,6 +180,25 @@ describe("ConnectionsService", () => {
           reasonCount: null,
         },
       ]);
+    });
+
+    // Blocking writes BlockedUser, not Connection, so the connection sweep
+    // above cannot see it — a blocked stranger came back as a suggestion.
+    it("excludes users blocked in either direction", async () => {
+      prisma.connection.findMany.mockResolvedValue([]);
+      prisma.profile.findMany.mockResolvedValue([]);
+      safety.getBlockedEitherIds.mockResolvedValue(["u_blocked", "u_blocked_me"]);
+
+      await service.suggestions("u_me", 8);
+
+      expect(safety.getBlockedEitherIds).toHaveBeenCalledWith("u_me");
+      expect(prisma.profile.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            userId: { notIn: ["u_me", "u_blocked", "u_blocked_me"] },
+          }),
+        }),
+      );
     });
   });
 });

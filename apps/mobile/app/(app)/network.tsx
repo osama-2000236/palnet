@@ -16,8 +16,8 @@ import { apiErrorMessage } from "@/lib/api-errors";
 import { successHaptic, tapHaptic } from "@/lib/haptics";
 import { getAccessToken, readSession } from "@/lib/session";
 
-import { ConnectionRow, type NetworkFilter } from "./_network/ConnectionRow";
-import { useStyles } from "./_network/styles";
+import { ConnectionRow, type NetworkFilter } from "@/screens/network/ConnectionRow";
+import { useStyles } from "@/screens/network/styles";
 
 const ListEnvelope = z.array(ConnectionListItemSchema);
 const Raw = z.object({}).passthrough();

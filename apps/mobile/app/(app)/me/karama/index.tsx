@@ -25,8 +25,8 @@ import { apiFetch } from "@/lib/api";
 import { apiErrorMessage } from "@/lib/api-errors";
 import { makeIdempotencyKey } from "@/lib/idempotency";
 
-import { KARAMA_REWARDS } from "../../_karama/data";
-import { useKaramaStyles } from "../../_karama/styles";
+import { KARAMA_REWARDS } from "@/screens/karama/data";
+import { useKaramaStyles } from "@/screens/karama/styles";
 
 type Notice = { kind: "success" | "error"; text: string };
 

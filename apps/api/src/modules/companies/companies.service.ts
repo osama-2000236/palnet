@@ -485,8 +485,14 @@ export class CompaniesService {
     // Reward the candidate for a verified hire. Plan calls for a 30-day
     // delay; for the beta we award immediately and rely on rescindable
     // adjustments if the hire is reversed.
+    //
+    // `awardOnce`, not `award`: the transition guard below only blocks
+    // HIRED → HIRED. An employer flipping HIRED → REJECTED → HIRED re-enters
+    // this branch every cycle, and `award` has no idempotency, so each cycle
+    // minted another 200 points. The (userId, reason, refType, refId) unique
+    // on KaramaLedger makes the application id the one-time key.
     if (body.status === "HIRED" && existing.status !== "HIRED") {
-      void this.karama.award({
+      void this.karama.awardOnce({
         userId: existing.applicantId,
         reason: "VERIFIED_HIRE",
         refType: "application",

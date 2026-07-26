@@ -73,7 +73,13 @@ export function AppShellNav({
       aria-label={labels.mainNavLabel}
       // Edge fade tells narrow viewports the nav scrolls — the bar clips
       // ~4 items at 390px with the scrollbar hidden.
-      className="flex min-w-0 shrink items-stretch gap-1 overflow-x-auto overscroll-contain [mask-image:linear-gradient(to_right,transparent_0,black_16px,black_calc(100%-16px),transparent_100%)] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      // `h-full min-h-0`: without it the buttons size to their own content
+      // (icon + label + padding) and overflow the 56px header — 89px tall at
+      // 390px — which pushes the `-mb-px border-b-2` active indicator 17px
+      // BELOW the header border instead of onto it. Invisible on most screens
+      // because it lands on same-coloured background; it strikes straight
+      // through the offline banner's tinted text.
+      className="flex h-full min-h-0 min-w-0 shrink items-stretch gap-1 overflow-x-auto overscroll-contain [mask-image:linear-gradient(to_right,transparent_0,black_16px,black_calc(100%-16px),transparent_100%)] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
     >
       {NAV_ITEMS.map((item) => (
         <NavButton
@@ -148,7 +154,7 @@ function NavButton({
       aria-current={active ? "page" : undefined}
       title={disconnected ? labels.bellDisconnected : undefined}
       className={cx(
-        "relative -mb-px inline-flex min-w-[64px] flex-col items-center gap-0.5 border-b-2 px-3 py-2 text-[11px] font-medium focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]",
+        "relative -mb-px inline-flex h-full min-h-0 min-w-[64px] flex-col items-center justify-center gap-0.5 border-b-2 px-3 text-[11px] font-medium focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]",
         active ? "border-brand-600 text-ink" : "text-ink-muted hover:text-ink border-transparent",
       )}
     >

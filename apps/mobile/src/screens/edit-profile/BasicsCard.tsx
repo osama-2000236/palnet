@@ -162,5 +162,3 @@ export function BasicsCard({ profile, onChanged, onError }: ProfileCardProps): J
     </Card>
   );
 }
-
-export default () => null;

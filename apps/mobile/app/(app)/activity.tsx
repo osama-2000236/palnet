@@ -14,9 +14,13 @@ import {
   ActivitySkeleton,
   ActivityTaskList,
   useActivityTextStyles,
-} from "./_activity/ActivityParts";
-import { buildActivityMetrics, buildActivityTasks, fetchActivityState } from "./_activity/api";
-import type { ActivityState } from "./_activity/types";
+} from "@/screens/activity/ActivityParts";
+import {
+  buildActivityMetrics,
+  buildActivityTasks,
+  fetchActivityState,
+} from "@/screens/activity/api";
+import type { ActivityState } from "@/screens/activity/types";
 
 export default function ActivityScreen(): JSX.Element {
   const textStyles = useActivityTextStyles();

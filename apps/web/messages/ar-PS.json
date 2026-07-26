@@ -86,7 +86,8 @@
       "ctaPrimary": "أنشئ ملفك المهني",
       "ctaSecondary": "عندي حساب",
       "eyebrow": "موثوق به من قبل المحترفين في المنطقة",
-      "smallPrint": "مجاني للأفراد. بدون بطاقة ائتمان."
+      "smallPrint": "مجاني للأفراد. بدون بطاقة ائتمان.",
+      "ctaReturning": "تابع إلى خلاصتك"
     },
     "values": {
       "heading": "مبني حول الثقة والعمل والتحكم",
@@ -1099,7 +1100,9 @@
       "filterArchived": "مؤرشفة",
       "viewApplicants": "عرض المتقدمين",
       "archive": "أرشفة",
-      "archived": "مؤرشفة"
+      "archived": "مؤرشفة",
+      "applicantCount": "{count, plural, zero {لا متقدمين} one {متقدم واحد} two {متقدمان} few {# متقدمين} many {# متقدمًا} other {# متقدم}}",
+      "shortlistCount": "{count, plural, zero {لا أحد في القائمة المختصرة} one {واحد في القائمة المختصرة} two {اثنان في القائمة المختصرة} few {# في القائمة المختصرة} many {# في القائمة المختصرة} other {# في القائمة المختصرة}}"
     },
     "applicants": {
       "title": "المتقدمون",
@@ -1113,7 +1116,8 @@
         "REJECTED": "مرفوض",
         "HIRED": "تمّ التوظيف",
         "WITHDRAWN": "منسحب"
-      }
+      },
+      "allFilter": "الكل"
     },
     "newJob": {
       "title": "وظيفة جديدة",

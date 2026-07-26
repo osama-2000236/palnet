@@ -54,6 +54,7 @@ describe("BillingService", () => {
   let service: BillingService;
   let prisma: PrismaStub;
   let hyperpay: { createCheckout: jest.Mock; verifyWebhookSignature: jest.Mock };
+  let karama: { redeem: jest.Mock; award: jest.Mock; awardOnce: jest.Mock };
   let tx: {
     invoice: { updateMany: jest.Mock; findUniqueOrThrow: jest.Mock };
     payment: { create: jest.Mock };
@@ -66,6 +67,15 @@ describe("BillingService", () => {
     hyperpay = {
       createCheckout: jest.fn(),
       verifyWebhookSignature: jest.fn().mockReturnValue(true),
+    };
+    karama = {
+      redeem: jest.fn().mockResolvedValue({
+        balance: 0,
+        reward: "PREMIUM_30D",
+        appliedAt: new Date("2026-07-25T00:00:00Z").toISOString(),
+      }),
+      award: jest.fn(),
+      awardOnce: jest.fn(),
     };
     tx = {
       invoice: {
@@ -97,16 +107,7 @@ describe("BillingService", () => {
             ),
           },
         },
-        {
-          provide: KaramaService,
-          useValue: {
-            redeem: jest.fn(),
-            award: jest.fn(),
-            awardOnce: jest.fn(),
-            getMonthlyEarnings: jest.fn(),
-            getBalance: jest.fn(),
-          },
-        },
+        { provide: KaramaService, useValue: karama },
         {
           provide: EmployerEntitlementsService,
           useValue: { activeJobLimit: jest.fn().mockResolvedValue(5) },
@@ -478,6 +479,146 @@ describe("BillingService", () => {
       }),
     ).rejects.toMatchObject({ code: "VALIDATION_FAILED" });
     expect(hyperpay.createCheckout).not.toHaveBeenCalled();
+  });
+
+  // The POINTS rail had no coverage at all, and it was the rail with the
+  // money bug: the redemption key was derived from an invoice the same call
+  // had just created, so it was unique on every attempt and deduplicated
+  // nothing.
+  describe("Karama points checkout", () => {
+    function arrangePremiumPlan(): void {
+      prisma.plan.upsert.mockResolvedValue({
+        id: "plan-premium",
+        code: "USER_PREMIUM",
+        priceCents: 500,
+        currency: "USD",
+        intervalDays: 30,
+      });
+      prisma.user.findUnique.mockResolvedValue({ email: "user@baydar.ps", locale: "ar-PS" });
+      prisma.subscription.create.mockResolvedValue({ id: "sub-points" });
+      prisma.invoice.create.mockResolvedValue({
+        id: "inv-points",
+        subscriptionId: "sub-points",
+        planId: "plan-premium",
+        userId: "user-1",
+        companyId: null,
+        amountCents: 0,
+        currency: "USD",
+        status: "OPEN",
+        method: "POINTS",
+        providerInvoiceId: null,
+        bankReceiptUrl: null,
+        dueAt: null,
+        paidAt: null,
+        pdfUrl: null,
+        reviewedAt: null,
+        reviewNote: null,
+        createdAt: new Date("2026-07-25T00:00:00Z"),
+        plan: { code: "USER_PREMIUM", intervalDays: 30 },
+        subscription: { id: "sub-points" },
+      });
+    }
+
+    it("redeems with a key that is stable across retries", async () => {
+      arrangePremiumPlan();
+      prisma.subscription.findFirst.mockResolvedValue(null);
+      prisma.invoice.findUnique.mockResolvedValue({
+        id: "inv-points",
+        status: "OPEN",
+        amountCents: 0,
+        currency: "USD",
+        subscriptionId: null,
+        plan: null,
+        subscription: null,
+      });
+      tx.invoice.findUniqueOrThrow.mockResolvedValue({
+        id: "inv-points",
+        subscriptionId: null,
+        planId: "plan-premium",
+        userId: "user-1",
+        companyId: null,
+        amountCents: 0,
+        currency: "USD",
+        status: "PAID",
+        method: "POINTS",
+        providerInvoiceId: null,
+        bankReceiptUrl: null,
+        dueAt: null,
+        paidAt: new Date("2026-07-25T00:00:00Z"),
+        pdfUrl: null,
+        reviewedAt: null,
+        reviewNote: null,
+        createdAt: new Date("2026-07-25T00:00:00Z"),
+      });
+
+      const body = {
+        planCode: "USER_PREMIUM" as const,
+        returnUrl: "https://baydar.ps/billing/return",
+        method: "POINTS" as const,
+      };
+      await service.createCheckoutSession("user-1", body);
+      await service.createCheckoutSession("user-1", body);
+
+      const keys = karama.redeem.mock.calls.map((call) => call[1].idempotencyKey);
+      expect(keys).toHaveLength(2);
+      // Same purchase intent, same key — that is what lets `karama.redeem`
+      // replay instead of debiting a second 500 points.
+      expect(keys[0]).toBe(keys[1]);
+      expect(keys[0]).toMatch(/^premium-30d:user-1:\d{4}-\d{2}-\d{2}$/);
+    });
+
+    it("debits before creating rows, so a rejected redemption leaves no invoice", async () => {
+      arrangePremiumPlan();
+      prisma.subscription.findFirst.mockResolvedValue(null);
+      karama.redeem.mockRejectedValueOnce(new Error("Insufficient Karama balance."));
+
+      await expect(
+        service.createCheckoutSession("user-1", {
+          planCode: "USER_PREMIUM",
+          returnUrl: "https://baydar.ps/billing/return",
+          method: "POINTS",
+        }),
+      ).rejects.toThrow("Insufficient Karama balance.");
+
+      expect(prisma.invoice.create).not.toHaveBeenCalled();
+      expect(prisma.subscription.create).not.toHaveBeenCalled();
+    });
+
+    it("409s rather than shortening a term the member already paid for", async () => {
+      arrangePremiumPlan();
+      prisma.subscription.findFirst.mockResolvedValue({ id: "sub-live" });
+
+      await expect(
+        service.createCheckoutSession("user-1", {
+          planCode: "USER_PREMIUM",
+          returnUrl: "https://baydar.ps/billing/return",
+          method: "POINTS",
+        }),
+      ).rejects.toMatchObject({ code: "CONFLICT" });
+      expect(karama.redeem).not.toHaveBeenCalled();
+    });
+
+    it("refuses points for a plan that is not redeemable", async () => {
+      prisma.plan.upsert.mockResolvedValue({
+        id: "plan-pro",
+        code: "EMPLOYER_PRO",
+        priceCents: 9900,
+        currency: "USD",
+        intervalDays: 30,
+      });
+      prisma.companyMember.findFirst.mockResolvedValue({ id: "member-1" });
+      prisma.user.findUnique.mockResolvedValue({ email: "owner@baydar.ps", locale: "ar-PS" });
+
+      await expect(
+        service.createCheckoutSession("user-1", {
+          planCode: "EMPLOYER_PRO",
+          companyId: "company-1",
+          returnUrl: "https://baydar.ps/billing/return",
+          method: "POINTS",
+        }),
+      ).rejects.toMatchObject({ code: "VALIDATION_FAILED" });
+      expect(karama.redeem).not.toHaveBeenCalled();
+    });
   });
 
   it("prices the catalog in the viewer's display currency with points prices", async () => {

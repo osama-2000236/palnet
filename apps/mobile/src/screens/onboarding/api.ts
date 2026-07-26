@@ -156,5 +156,3 @@ async function addEducation(values: OnboardingFormValues, token: string): Promis
     }),
   });
 }
-
-export default () => null;

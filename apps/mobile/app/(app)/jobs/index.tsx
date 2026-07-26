@@ -37,7 +37,7 @@ import {
   activeFilterCount,
   buildQs,
   type Filters,
-} from "../_jobs/filters";
+} from "@/screens/jobs/filters";
 
 const JobsPage = cursorPage(JobSchema);
 

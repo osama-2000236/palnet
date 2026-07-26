@@ -93,53 +93,44 @@ export default function NotificationsPageRoute(): JSX.Element {
   // SSE: prepend new notifications, reconcile read state.
   useEffect(() => {
     if (!token) return;
-    let es: EventSource | null = null;
-    let cancelled = false;
-    void openStream("notifications", token)
-      .then((source) => {
-        if (cancelled) {
-          source.close();
-          return;
-        }
-        es = source;
-        source.onopen = (): void => setSseLive(true);
-        source.onerror = (): void => setSseLive(false);
-        source.onmessage = (evt): void => {
-          try {
-            const parsed = WsNotificationEvent.safeParse(JSON.parse(evt.data));
-            if (!parsed.success) return;
-            const ev = parsed.data;
-            if (ev.type === "notification.new") {
-              const n = ev.payload;
-              setItems((prev) => {
-                if (prev.some((x) => x.id === n.id)) return prev;
-                return [n, ...prev];
-              });
-              // Live page — mark the fresh one as read immediately.
-              if (token) {
-                void apiCall("/notifications/read", {
-                  method: "POST",
-                  token,
-                  body: { ids: [n.id] },
-                }).catch(() => {});
-              }
-            } else if (ev.type === "notification.read") {
-              const { ids, at } = ev.payload;
-              setItems((prev) =>
-                prev.map((x) =>
-                  ids.length === 0 || ids.includes(x.id) ? { ...x, readAt: x.readAt ?? at } : x,
-                ),
-              );
+    const unsubscribe = openStream("notifications", {
+      onOpen: () => setSseLive(true),
+      onDrop: () => setSseLive(false),
+      onFailed: () => setSseLive(false),
+      onEvent: (data) => {
+        try {
+          const parsed = WsNotificationEvent.safeParse(JSON.parse(data));
+          if (!parsed.success) return;
+          const ev = parsed.data;
+          if (ev.type === "notification.new") {
+            const n = ev.payload;
+            setItems((prev) => {
+              if (prev.some((x) => x.id === n.id)) return prev;
+              return [n, ...prev];
+            });
+            // Live page — mark the fresh one as read immediately.
+            if (token) {
+              void apiCall("/notifications/read", {
+                method: "POST",
+                token,
+                body: { ids: [n.id] },
+              }).catch(() => {});
             }
-          } catch {
-            /* ignore */
+          } else if (ev.type === "notification.read") {
+            const { ids, at } = ev.payload;
+            setItems((prev) =>
+              prev.map((x) =>
+                ids.length === 0 || ids.includes(x.id) ? { ...x, readAt: x.readAt ?? at } : x,
+              ),
+            );
           }
-        };
-      })
-      .catch(() => setSseLive(false));
+        } catch {
+          /* ignore */
+        }
+      },
+    });
     return (): void => {
-      cancelled = true;
-      es?.close();
+      unsubscribe();
       setSseLive(false);
     };
   }, [token]);

@@ -186,5 +186,3 @@ function SchoolSuggestions({
     </View>
   );
 }
-
-export default () => null;

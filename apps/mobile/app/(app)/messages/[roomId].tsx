@@ -12,12 +12,12 @@ import { useTranslation } from "react-i18next";
 import { KeyboardAvoidingView, Platform, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { MessageThreadComposer } from "../_message-thread/MessageThreadComposer";
-import { MessageThreadList } from "../_message-thread/MessageThreadList";
-import { MessageThreadSheets } from "../_message-thread/MessageThreadSheets";
-import { ThreadErrorBanner, UnreadJumpBanner } from "../_message-thread/MessageThreadBanner";
-import { useMessageThread } from "../_message-thread/useMessageThread";
-import { memberDisplayName } from "../_message-thread/utils";
+import { MessageThreadComposer } from "@/screens/message-thread/MessageThreadComposer";
+import { MessageThreadList } from "@/screens/message-thread/MessageThreadList";
+import { MessageThreadSheets } from "@/screens/message-thread/MessageThreadSheets";
+import { ThreadErrorBanner, UnreadJumpBanner } from "@/screens/message-thread/MessageThreadBanner";
+import { useMessageThread } from "@/screens/message-thread/useMessageThread";
+import { memberDisplayName } from "@/screens/message-thread/utils";
 
 export default function MessageThreadScreen(): JSX.Element {
   const c = useThemeTokens().color;

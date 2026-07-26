@@ -7,14 +7,22 @@ import { KaramaService, KARAMA_BALANCE_CAP } from "./karama.service";
 
 type PrismaStub = {
   user: { findUnique: jest.Mock; findMany: jest.Mock; update: jest.Mock };
-  karamaLedger: { findFirst: jest.Mock; findMany: jest.Mock; create: jest.Mock };
+  karamaLedger: {
+    findFirst: jest.Mock;
+    findMany: jest.Mock;
+    create: jest.Mock;
+  };
   $transaction: jest.Mock;
 };
 
 function buildPrisma(): PrismaStub {
   return {
     user: { findUnique: jest.fn(), findMany: jest.fn(), update: jest.fn() },
-    karamaLedger: { findFirst: jest.fn(), findMany: jest.fn(), create: jest.fn() },
+    karamaLedger: {
+      findFirst: jest.fn(),
+      findMany: jest.fn(),
+      create: jest.fn(),
+    },
     $transaction: jest.fn(async (fn) => fn({} as never)),
   };
 }
@@ -155,6 +163,31 @@ describe("KaramaService", () => {
         refType: "REDEEM",
       }),
     });
+  });
+
+  // The lookup and the write are not one transaction, so two simultaneous
+  // callers with the same key both miss the lookup. The ledger unique picks a
+  // winner; the loser must report the winner's balance, not debit again.
+  it("returns the winner's outcome when a concurrent replay loses the unique", async () => {
+    tx.user.findUnique.mockResolvedValue({ karamaBalance: 300 });
+    tx.user.update.mockResolvedValue({ karamaBalance: 200 });
+    tx.karamaLedger.create.mockRejectedValue(Object.assign(new Error("unique"), { code: "P2002" }));
+    // Second call (after the P2002) resolves the winner's row.
+    prisma.karamaLedger.findFirst
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce({ balanceAfter: 200, createdAt: new Date("2026-05-15T00:00:00Z") });
+
+    const result = await service.redeem("user-1", {
+      reward: "BOOST_APPLICATION",
+      idempotencyKey: "race".padEnd(16, "0"),
+    });
+
+    expect(result.balance).toBe(200);
+    expect(prisma.karamaLedger.findFirst).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        where: { userId: "user-1", refType: "REDEEM", refId: "race".padEnd(16, "0") },
+      }),
+    );
   });
 
   it("returns the original outcome on idempotent replay of a redemption", async () => {

@@ -281,5 +281,3 @@ export function BackgroundStep({
     </View>
   );
 }
-
-export default () => null;

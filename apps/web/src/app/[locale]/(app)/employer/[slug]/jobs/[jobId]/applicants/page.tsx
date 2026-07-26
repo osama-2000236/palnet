@@ -104,7 +104,7 @@ export default function EmployerApplicantsPage(): JSX.Element {
       <h1 className="text-ink mb-4 text-2xl font-semibold">{t("title")}</h1>
 
       <div className="mb-3 flex flex-wrap gap-2">
-        <Chip active={filter === ""} onClick={() => setFilter("")} label="All" />
+        <Chip active={filter === ""} onClick={() => setFilter("")} label={t("allFilter")} />
         {(Object.values(ApplicationStatus) as ApplicationStatus[]).map((s) => (
           <Chip
             key={s}

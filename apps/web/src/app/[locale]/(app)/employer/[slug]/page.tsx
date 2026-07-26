@@ -19,6 +19,7 @@ export default function CompanyDashboardPage(): JSX.Element {
   const t = useTranslations("employer.dashboard");
   const tBillingEmployer = useTranslations("billing.employer");
   const tCommon = useTranslations("common");
+  const tJobs = useTranslations("jobs");
   const tErr = useTranslations("errors");
   const router = useRouter();
   const locale = useLocale();
@@ -156,12 +157,18 @@ export default function CompanyDashboardPage(): JSX.Element {
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0 flex-1">
                   <h2 className="text-ink truncate text-base font-semibold">{j.title}</h2>
+                  {/* These rendered the raw enums ("FULL_TIME · HYBRID") and
+                      hardcoded English ("3 applicants · 1 shortlist") on an
+                      Arabic-first product. `jobs.typeLabels` and
+                      `jobs.locationLabels` already existed and are what the
+                      public job pages use. */}
                   <p className="text-ink-muted text-xs">
-                    {j.type} · {j.locationMode}
+                    {tJobs(`typeLabels.${j.type}`)} · {tJobs(`locationLabels.${j.locationMode}`)}
                     {j.city ? ` · ${j.city}` : ""}
                   </p>
                   <p className="text-ink-muted mt-1 text-xs">
-                    {j.applicantCount} applicants · {j.shortlistCount} shortlist
+                    {t("applicantCount", { count: j.applicantCount })} ·{" "}
+                    {t("shortlistCount", { count: j.shortlistCount })}
                     {j.isActive ? "" : ` · ${t("archived")}`}
                   </p>
                 </div>

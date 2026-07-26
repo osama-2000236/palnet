@@ -166,11 +166,39 @@ export class KaramaService {
       };
     }
 
-    const result = await this.applyDelta(userId, -def.cost, def.reason, {
-      refType: "REDEEM",
-      refId: body.idempotencyKey,
-      requireBalance: def.cost,
-    });
+    let result: { balanceAfter: number; createdAt: Date };
+    try {
+      result = await this.applyDelta(userId, -def.cost, def.reason, {
+        refType: "REDEEM",
+        refId: body.idempotencyKey,
+        requireBalance: def.cost,
+      });
+    } catch (err) {
+      // Concurrent replay of the same key: the read above and this write are
+      // not one transaction, so two simultaneous callers both miss the lookup
+      // and the (userId, reason, refType, refId) unique decides the winner.
+      // The loser must return the winner's result, not debit a second time.
+      if (!isUniqueConstraintViolation(err)) throw err;
+      // `findFirst`, not `findFirstOrThrow`: P2002 proves the winner's INSERT
+      // happened, not that it committed, so this read can legitimately come
+      // back empty and `OrThrow` would turn a handled race into a 500 on the
+      // money path. Falling back to the live balance is correct either way —
+      // the debit is not repeated, which is the only thing that must hold.
+      const winner = await this.prisma.karamaLedger.findFirst({
+        where: { userId, refType: "REDEEM", refId: body.idempotencyKey },
+        select: { createdAt: true, balanceAfter: true },
+      });
+      const balance =
+        winner?.balanceAfter ??
+        (
+          await this.prisma.user.findUnique({
+            where: { id: userId },
+            select: { karamaBalance: true },
+          })
+        )?.karamaBalance ??
+        0;
+      result = { balanceAfter: balance, createdAt: winner?.createdAt ?? new Date() };
+    }
 
     return {
       balance: result.balanceAfter,

@@ -19,8 +19,8 @@ import { apiFetch, apiFetchPage } from "@/lib/api";
 import { track } from "@/lib/analytics";
 import { getAccessToken, readSession } from "@/lib/session";
 
-import { FeedTopBar, JobsEntry, ProfileSummary } from "./_feed/FeedParts";
-import { useFeedStyles } from "./_feed/styles";
+import { FeedTopBar, JobsEntry, ProfileSummary } from "@/screens/feed/FeedParts";
+import { useFeedStyles } from "@/screens/feed/styles";
 
 const FeedPage = cursorPage(PostSchema);
 const UnreadCountEnvelope = z.object({ count: z.number().int().nonnegative() });

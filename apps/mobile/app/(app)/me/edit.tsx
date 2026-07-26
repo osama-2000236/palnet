@@ -10,11 +10,11 @@ import { StateMessage } from "@/components/StateMessage";
 import { apiFetch } from "@/lib/api";
 import { apiErrorMessage } from "@/lib/api-errors";
 import { clearProfileCache, getAccessToken, writeProfileCache } from "@/lib/session";
-import { BasicsCard } from "../_edit-profile/BasicsCard";
-import { EducationsCard } from "../_edit-profile/EducationsCard";
-import { ExperiencesCard } from "../_edit-profile/ExperiencesCard";
-import { SkillsCard } from "../_edit-profile/SkillsCard";
-import { useStyles } from "../_edit-profile/styles";
+import { BasicsCard } from "@/screens/edit-profile/BasicsCard";
+import { EducationsCard } from "@/screens/edit-profile/EducationsCard";
+import { ExperiencesCard } from "@/screens/edit-profile/ExperiencesCard";
+import { SkillsCard } from "@/screens/edit-profile/SkillsCard";
+import { useStyles } from "@/screens/edit-profile/styles";
 
 export default function EditProfileScreen(): JSX.Element {
   const styles = useStyles();

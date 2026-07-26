@@ -26,7 +26,7 @@ import { apiCall, apiFetchPage } from "@/lib/api";
 import { apiErrorMessage } from "@/lib/api-errors";
 import { getAccessToken } from "@/lib/session";
 
-import { useStyles } from "./_saved/styles";
+import { useStyles } from "@/screens/saved/styles";
 
 const SavedPage = cursorPage(Bookmark);
 

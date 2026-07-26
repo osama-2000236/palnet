@@ -17,5 +17,3 @@ export function fieldsForStep(
   if (step === "network") return ["networkMessage"];
   return [];
 }
-
-export default () => null;

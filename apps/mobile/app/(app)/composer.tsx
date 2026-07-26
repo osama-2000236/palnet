@@ -32,7 +32,7 @@ import { successHaptic, tapHaptic } from "@/lib/haptics";
 import { getAccessToken, readSession } from "@/lib/session";
 import { uploadAsset } from "@/lib/uploads";
 
-import { useStyles } from "./_composer/styles";
+import { useStyles } from "@/screens/composer/styles";
 
 const MAX_BODY = 3000;
 const MAX_MEDIA = 8;

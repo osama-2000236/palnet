@@ -205,6 +205,13 @@ not a pull request; it is opening the HyperPay and Resend accounts.
 
 ## What I did not do
 
+> **Superseded in part by round 2 (2026-07-25).** See
+> [OPUS5-ROUND2-2026-07-25.md](./OPUS5-ROUND2-2026-07-25.md) and
+> [OPUS5-RUBRIC-2026-07-25.md](./OPUS5-RUBRIC-2026-07-25.md). Round 2 closed
+> the long-service-file read, the deliberate state captures, SSE reconnection,
+> and every shortcut this document left open, and scored 46 of the 85 screens.
+> Updated status at the end of this section.
+
 Two charter items are genuinely outstanding. Neither is a defect; both are
 work, and pretending otherwise would make this document useless.
 
@@ -222,3 +229,39 @@ images with my own eyes. The automated checks catch blank, duplicated, clipped
 and overflowing; they do not catch "this screen is ugly" or "this hierarchy is
 wrong", which is exactly what the rubric is for. Treat the visual state as
 machine-verified, not design-reviewed.
+
+### Status after round 2
+
+**The web matrix at `ar-PS` / light / desktop is design-reviewed, not merely
+machine-verified.** All 46 routes in that cell are scored on all five
+dimensions in [OPUS5-RUBRIC-2026-07-25.md](./OPUS5-RUBRIC-2026-07-25.md), with
+the screenshot filename as evidence, and every one was looked at — on contact
+sheets, with the ambiguous ones opened at full resolution. Four sub-7 cells
+across three screens: one fixed, three recorded with a written reason for
+leaving them to the design owner rather than an audit branch.
+
+**The other three web cells (dark, `en`, mobile viewport) stay
+machine-verified.** Captured and swept; nobody has scored them. Layout
+judgements carry across a theme or locale swap, detail judgements do not, so
+round 2 declined to copy numbers sideways to make a table look complete.
+
+**The 38 mobile screens were not re-captured and stay machine-verified from
+round 1.** Round 2 moved 52 mobile files out of the Expo Router tree, and
+bundling that against a Metro instance from a different worktree would have
+produced a matrix of the _previous_ code — a silent wrong answer, which is the
+one failure mode this harness keeps producing. `apps/mobile/e2e/shots.mjs` now
+captures `adb logcat` per screen, so the next mobile run finally gets the
+console evidence the web runs have always had.
+
+Round 2 found three defects by looking at screens rather than at code, which is
+the whole argument for the rubric existing: a landing page inviting signed-in
+members to create an account, a security page printing raw user-agent strings
+on the one surface where a member has to recognise their own devices, and a
+fifth way the harness was quietly lying.
+
+The top structural risk list below still stands, with one item to add: **the
+screenshot harness must not be run against a live dev server while anyone is
+editing application code.** Round 2 lost an hour-long matrix to exactly that —
+a hot reload mid-run turned every subsequent authenticated shot into an error
+boundary, and the contact sheet read as a mobile-only crash until the console
+capture named the real cause.

@@ -206,10 +206,26 @@ export class NotificationsService {
     };
   }
 
+  /**
+   * The unread predicate, in one place.
+   *
+   * The badge and the list disagreeing about blocked actors is the bug this
+   * method exists to prevent, and it happened because the predicate lived in
+   * two places and drifted. Four copies would have been a better bug farm, not
+   * a fix.
+   */
+  private async unreadWhere(viewerId: string): Promise<Record<string, unknown>> {
+    const excludedUserIds = await this.safety.getBlockedEitherIds(viewerId);
+    return {
+      recipientId: viewerId,
+      readAt: null,
+      dismissedAt: null,
+      ...(excludedUserIds.length ? { actorId: { notIn: excludedUserIds } } : {}),
+    };
+  }
+
   async countUnread(viewerId: string): Promise<number> {
-    return this.prisma.notification.count({
-      where: { recipientId: viewerId, readAt: null, dismissedAt: null } as never,
-    });
+    return this.prisma.notification.count({ where: (await this.unreadWhere(viewerId)) as never });
   }
 
   async markRead(viewerId: string, body: MarkNotificationsReadBody): Promise<{ count: number }> {
@@ -231,11 +247,10 @@ export class NotificationsService {
         };
     // One DB round trip: mutate + re-count in the same transaction so the
     // returned `unread` reflects post-update state.
+    const unreadWhere = (await this.unreadWhere(viewerId)) as never;
     const [result, unread] = await this.prisma.$transaction([
       this.prisma.notification.updateMany({ where, data: { readAt: at } }),
-      this.prisma.notification.count({
-        where: { recipientId: viewerId, readAt: null, dismissedAt: null } as never,
-      }),
+      this.prisma.notification.count({ where: unreadWhere }),
     ]);
 
     this.bus.publish(viewerId, {
@@ -251,14 +266,13 @@ export class NotificationsService {
 
   async dismiss(viewerId: string, notificationId: string): Promise<void> {
     const at = new Date();
+    const unreadWhere = (await this.unreadWhere(viewerId)) as never;
     const [result, unread] = await this.prisma.$transaction([
       this.prisma.notification.updateMany({
         where: { id: notificationId, recipientId: viewerId },
         data: { dismissedAt: at } as never,
       }),
-      this.prisma.notification.count({
-        where: { recipientId: viewerId, readAt: null, dismissedAt: null } as never,
-      }),
+      this.prisma.notification.count({ where: unreadWhere }),
     ]);
     if (result.count === 0) {
       throw new DomainException(

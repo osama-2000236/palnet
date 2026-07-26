@@ -54,7 +54,7 @@ Re-audited 2026-07-19 against both barrel files (`packages/ui-web/src/index.ts`,
 | `ReportDialog`                                                                   | `ReportDialog`   | `ReportSheet`       | Naming drift  | Dialog/sheet by platform convention, but the name should share a stem.                                                                                                                                                              |
 | `Composer`                                                                       | `Composer`       | `ComposerEntry`     | Partial       | Native ships the entry point only; full composer lives in the route.                                                                                                                                                                |
 | `ProfileHeader`                                                                  | `@baydar/ui-web` | n/a                 | Web-only      | Native composes profile header in-screen; promote a twin if a third screen needs it.                                                                                                                                                |
-| `RoomRow` / `TypingIndicator`                                                    | `@baydar/ui-web` | n/a                 | Web-only      | Native builds these inside `_message-thread/`; same 3-screen promotion rule.                                                                                                                                                        |
+| `RoomRow` / `TypingIndicator`                                                    | `@baydar/ui-web` | n/a                 | Web-only      | Native builds these inside `src/screens/message-thread/`; same 3-screen promotion rule.                                                                                                                                             |
 | `AppHeader` / `SearchField` / `SegmentedControl` / `StateMessage` / `RecordCard` | n/a              | `@baydar/ui-native` | Native-only   | Platform idioms (header bar, search field, list record); no web demand yet.                                                                                                                                                         |
 
 ## Native twins that exist but never render
@@ -72,7 +72,7 @@ barrel, and are mounted by nothing — not a screen, not another primitive:
 Lockstep is the rule, so they are not automatically bloat — but 375 lines that
 have never rendered on a device are untested, not proven. `OnboardingProgress`
 is the interesting one: mobile _has_ an onboarding flow
-(`app/(app)/_onboarding/`) and does not use it, so web shows step progress and
+(`src/screens/onboarding/`) and does not use it, so web shows step progress and
 mobile does not. That is a screen-parity gap, not just an idle export.
 
 Same shape on `Illustration`: the web app passes all three `direction` kits

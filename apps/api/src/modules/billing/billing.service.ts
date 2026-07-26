@@ -79,14 +79,7 @@ export class BillingService {
           400,
         );
       }
-      return this.processPointsCheckout(
-        userId,
-        body,
-        plan,
-        cost,
-        displayAmountCents,
-        displayCurrency,
-      );
+      return this.processPointsCheckout(userId, plan, displayAmountCents, displayCurrency);
     }
 
     // Guard before creating any subscription/invoice: an unconfigured rail
@@ -207,12 +200,45 @@ export class BillingService {
   // plans (currently USER_PREMIUM) are allowed; gated by POINTS_PRICE_BY_PLAN.
   private async processPointsCheckout(
     userId: string,
-    body: CheckoutSessionBody,
     plan: { id: string; intervalDays: number | null },
-    cost: number,
     displayAmountCents: number,
     displayCurrency: string,
   ): Promise<CheckoutSession> {
+    // One live term per plan. `activateInvoice` sets currentPeriodEnd to
+    // now + intervalDays, so a second purchase shortens the term it was meant
+    // to extend — the buyer pays twice and ends up with less time.
+    const live = await this.prisma.subscription.findFirst({
+      where: { userId, planId: plan.id, status: { in: ["TRIALING", "ACTIVE"] } },
+      select: { id: true },
+    });
+    if (live) {
+      throw new DomainException(ErrorCode.CONFLICT, "This plan is already active.", 409);
+    }
+
+    // Debit before creating anything. Two reasons:
+    //   1. A rejected redemption (insufficient balance) used to leave an OPEN
+    //      invoice and an INCOMPLETE subscription visible on /me/premium.
+    //   2. The key must be stable across retries. It used to be
+    //      `invoice-${invoice.id}` for an invoice this same call had just
+    //      created, so it was unique on every attempt and deduplicated
+    //      nothing — a double-submit or a retry after a client timeout
+    //      debited 500 points twice. Scoping to the UTC day dedupes those
+    //      while still allowing renewal once the 30-day term lapses.
+    // ponytail: day-scoped key + the guard above. Two things this leans on,
+    // both verified, both worth re-checking if they change:
+    //   - Nothing in this codebase transitions a subscription out of ACTIVE
+    //     (only `cancelAtPeriodEnd`, which leaves status alone). If something
+    //     ever does, a same-day cancel-and-rebuy would replay the ledger row
+    //     and hand out a second term without debiting. Narrow the bucket then.
+    //   - Two genuinely simultaneous requests still each get a subscription
+    //     row, though only one debit — the ledger unique sees to that.
+    // Upgrade path for both: a partial unique index on Subscription
+    // (userId, planId) WHERE status IN ('TRIALING','ACTIVE','INCOMPLETE').
+    await this.karama.redeem(userId, {
+      reward: "PREMIUM_30D",
+      idempotencyKey: `premium-30d:${userId}:${new Date().toISOString().slice(0, 10)}`,
+    });
+
     const subscription =
       plan.intervalDays === null
         ? null
@@ -238,18 +264,6 @@ export class BillingService {
       },
     });
 
-    // Synthesize a stable idempotency key from the invoice id so duplicate
-    // submissions deduplicate cleanly on the Karama side.
-    await this.karama.redeem(userId, {
-      reward: "PREMIUM_30D",
-      idempotencyKey: `invoice-${invoice.id}`,
-    });
-    // Force-cost check: karama.redeem also enforces the points cost, but we
-    // double-check the spec here so changes to POINTS_PRICE_BY_PLAN stay
-    // synchronized with REDEEM_COSTS in karama.service.
-    if (cost !== 500) {
-      // Allow legitimate change but log when they diverge.
-    }
     await this.activateInvoice(invoice.id, "karama-points");
 
     return {
