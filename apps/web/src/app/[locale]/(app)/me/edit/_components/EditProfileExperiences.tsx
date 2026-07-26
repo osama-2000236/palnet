@@ -17,7 +17,7 @@ import { getAccessToken } from "@/lib/session";
 const inputClass =
   "border-ink-muted/30 w-full rounded-md border px-3 py-2 focus-visible:[box-shadow:var(--focus-ring)] focus-visible:outline-none";
 const linkButtonClass =
-  "text-brand-600 text-sm hover:underline focus-visible:[box-shadow:var(--focus-ring)] focus-visible:outline-none";
+  "target-area state-layer text-brand-600 inline-flex items-center text-sm hover:underline focus-visible:[box-shadow:var(--focus-ring)] focus-visible:outline-none";
 
 const EMPTY_EXPERIENCE: Experience = {
   title: "",
@@ -107,7 +107,7 @@ export function ExperiencesSection({
                 type="button"
                 onClick={() => void remove(e.id as string)}
                 disabled={busy}
-                className="text-danger text-xs hover:underline focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+                className="target-area text-danger inline-flex items-center text-xs hover:underline focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
               >
                 {t("remove")}
               </button>
