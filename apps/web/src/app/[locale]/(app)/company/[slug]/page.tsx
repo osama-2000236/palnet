@@ -70,7 +70,12 @@ export default function CompanyPage(): JSX.Element {
   return (
     <main className="mx-auto flex w-full max-w-[880px] flex-col gap-5 px-6 py-8">
       {loading ? (
-        <div className="flex flex-col gap-4" aria-busy="true" aria-label={tCommon("loading")}>
+        <div
+          className="flex flex-col gap-4"
+          role="status"
+          aria-busy="true"
+          aria-label={tCommon("loading")}
+        >
           <Skeleton className="h-40 w-full" />
           <Skeleton className="h-48 w-full" />
         </div>

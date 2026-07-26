@@ -20,6 +20,26 @@ const PUBLIC_ROUTES: ReadonlyArray<{ path: string; label: string }> = [
   { path: "/en/register", label: "register (en)" },
 ];
 
+/**
+ * Wait for the page to stop loading before scanning it.
+ *
+ * `waitForTimeout(750)` was a guess and it lost: on a cold `next dev` compile
+ * `/me/premium` was still a skeleton at 750ms, so the sweep scanned the loading
+ * state roughly one run in six and the settled page the rest of the time. That
+ * is not a flaky test — it is two different pages under one name.
+ *
+ * Falls through on timeout rather than failing. A page that never clears its
+ * busy marker gets scanned as-is, which is the honest reading of that state,
+ * and the loading branch has its own test below.
+ */
+async function settle(page: Page): Promise<void> {
+  await page
+    .locator('[aria-busy="true"]')
+    .first()
+    .waitFor({ state: "detached", timeout: 15_000 })
+    .catch(() => undefined);
+}
+
 async function scan(page: Page): Promise<void> {
   const results = await new AxeBuilder({ page })
     .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "best-practice"])
@@ -90,7 +110,7 @@ test.describe("authenticated routes", () => {
       test(`a11y authed: ${route.label} (${locale})`, async ({ page }) => {
         await page.goto(route.path(locale));
         await page.waitForLoadState("domcontentloaded");
-        await page.waitForTimeout(750);
+        await settle(page);
         await scan(page);
       });
     }
@@ -104,8 +124,29 @@ test.describe("authenticated routes", () => {
       test.skip(!jobId, "No seeded job available for job detail a11y.");
       await page.goto(`/${locale}/jobs/${jobId}`);
       await page.waitForLoadState("domcontentloaded");
-      await page.waitForTimeout(750);
+      await settle(page);
       await scan(page);
     });
   }
+
+  // The loading branch is a page state like any other, and it was the one the
+  // sweep above kept missing: `/me/premium` failed roughly one run in six, on
+  // a cold `next dev` compile, because the fixed 750ms wait landed while the
+  // skeleton was still up. `aria-prohibited-attr` [serious] — `aria-label` on
+  // a role-less <div>, which maps to `generic`. A defect that only exists for
+  // 400ms is still a defect; scanning it by coin flip is not a check.
+  //
+  // Stalls the four calls the page awaits so the state holds still.
+  test("a11y authed: premium loading state (ar-PS)", async ({ page }) => {
+    for (const pattern of ["**/billing/**", "**/karama/**"]) {
+      await page.route(pattern, async (route) => {
+        await new Promise((resolve) => setTimeout(resolve, 20_000));
+        await route.abort();
+      });
+    }
+    await page.goto("/ar-PS/me/premium");
+    await page.waitForLoadState("domcontentloaded");
+    await expect(page.locator('[aria-busy="true"]').first()).toBeVisible();
+    await scan(page);
+  });
 });

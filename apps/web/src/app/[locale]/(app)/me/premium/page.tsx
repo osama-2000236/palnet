@@ -118,7 +118,12 @@ export default function PremiumPage(): JSX.Element {
       </header>
 
       {loading ? (
-        <div className="flex flex-col gap-4" aria-busy="true" aria-label={tCommon("loading")}>
+        <div
+          className="flex flex-col gap-4"
+          role="status"
+          aria-busy="true"
+          aria-label={tCommon("loading")}
+        >
           <Skeleton className="h-24 w-full" />
           <div className="grid gap-4 md:grid-cols-2">
             <Skeleton className="h-64 w-full" />
