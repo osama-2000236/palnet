@@ -108,7 +108,12 @@ export default function CompanyBillingPage(): JSX.Element {
       </header>
 
       {loading ? (
-        <div className="flex flex-col gap-4" aria-busy="true" aria-label={tCommon("loading")}>
+        <div
+          className="flex flex-col gap-4"
+          role="status"
+          aria-busy="true"
+          aria-label={tCommon("loading")}
+        >
           <Skeleton className="h-28 w-full" />
           <Skeleton className="h-56 w-full" />
         </div>
