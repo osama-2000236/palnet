@@ -4,6 +4,7 @@ import {
   ForbiddenException,
   Injectable,
   SetMetadata,
+  createParamDecorator,
 } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
 
@@ -54,3 +55,9 @@ export class CompanyRoleGuard implements CanActivate {
     return true;
   }
 }
+
+/** The actor's role in the company named by `:companyId`, resolved by `CompanyRoleGuard`. */
+export const ActorCompanyRole = createParamDecorator(
+  (_data: unknown, ctx: ExecutionContext): CompanyRole =>
+    ctx.switchToHttp().getRequest<{ companyRole: CompanyRole }>().companyRole,
+);

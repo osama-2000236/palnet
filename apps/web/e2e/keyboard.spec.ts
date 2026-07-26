@@ -171,6 +171,97 @@ test.describe("keyboard traversal", () => {
     });
   }
 
+  // A2.3: roving tabIndex shipped without a key handler, so Arrow/Home/End did
+  // nothing and every inactive tab was unreachable by keyboard — strictly worse
+  // than no roving tabindex, because Tab skips them too.
+  test("Tabs: Arrow/Home/End move selection, RTL-aware", async ({ page }) => {
+    await page.goto("/ar-PS/me", { waitUntil: "domcontentloaded" });
+    // `/me` resolves the handle and replaces to `/in/<handle>`, so wait for the
+    // tab strip itself rather than a fixed delay — a cold route compile made
+    // this test skip silently, which is worse than failing.
+    await page.waitForSelector('[role="tab"]', { timeout: 30_000 });
+    const tabs = page.getByRole("tab");
+    const count = await tabs.count();
+    test.skip(count < 3, "profile tabs not rendered");
+
+    const selected = (): Promise<string> =>
+      page.evaluate(
+        () =>
+          document.querySelector('[role="tab"][aria-selected="true"]')?.textContent?.trim() ?? "",
+      );
+
+    await tabs.first().focus();
+    const first = await selected();
+
+    // The page is RTL, so ArrowLeft is "forward" along the reading order.
+    await page.keyboard.press("ArrowLeft");
+    const afterForward = await selected();
+    expect(afterForward, "ArrowLeft did not advance the tab in RTL").not.toBe(first);
+
+    await page.keyboard.press("ArrowRight");
+    expect(await selected(), "ArrowRight did not go back in RTL").toBe(first);
+
+    await page.keyboard.press("End");
+    const atEnd = await selected();
+    expect(atEnd, "End did not jump to the last tab").not.toBe(first);
+
+    await page.keyboard.press("Home");
+    expect(await selected(), "Home did not jump to the first tab").toBe(first);
+
+    // Focus must follow selection, or the keyboard user cannot continue.
+    const focusIsTab = await page.evaluate(
+      () => document.activeElement?.getAttribute("role") === "tab",
+    );
+    expect(focusIsTab, "focus did not follow the selected tab").toBe(true);
+  });
+
+  // F1: the active underline is drawn on an inner element that spans the tab's
+  // full width, because `Tabs` is `flex-wrap` and Arabic labels wrap the strip
+  // at 390px. A `-mb-px` border on the button only lands on the container's
+  // bottom edge while the tab sits on the last row.
+  test("Tabs: active underline stays on the tab when the strip wraps (390px, ar)", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/ar-PS/me", { waitUntil: "domcontentloaded" });
+    // `/me` resolves the handle and replaces to `/in/<handle>`, so wait for the
+    // tab strip itself rather than a fixed delay — a cold route compile made
+    // this test skip silently, which is worse than failing.
+    await page.waitForSelector('[role="tab"]', { timeout: 30_000 });
+
+    const active = page.locator('[role="tab"][aria-selected="true"]');
+    test.skip((await active.count()) === 0, "profile tabs not rendered");
+
+    const offset = await active.evaluate((el) => {
+      const tab = el.getBoundingClientRect();
+      const indicator = el.lastElementChild?.getBoundingClientRect();
+      if (!indicator) return Number.NaN;
+      // The indicator must sit on the tab's own bottom edge, whichever row the
+      // tab wrapped onto.
+      return Math.abs(tab.bottom - indicator.bottom);
+    });
+    expect(Number.isNaN(offset), "active tab has no indicator element").toBe(false);
+    expect(offset, "active underline detached from its tab").toBeLessThanOrEqual(2);
+  });
+
+  // F2 / A2.14: counts rendered raw, so an Arabic-Indic UI showed a Latin "1".
+  test("Tabs: counts render in the locale's numerals", async ({ page }) => {
+    await page.goto("/ar-PS/me", { waitUntil: "domcontentloaded" });
+    // `/me` resolves the handle and replaces to `/in/<handle>`, so wait for the
+    // tab strip itself rather than a fixed delay — a cold route compile made
+    // this test skip silently, which is worse than failing.
+    await page.waitForSelector('[role="tab"]', { timeout: 30_000 });
+    const badges = page.locator('[role="tab"] span[aria-hidden="true"]');
+    const n = await badges.count();
+    test.skip(n === 0, "no tab carries a count on this profile");
+
+    for (let i = 0; i < n; i += 1) {
+      const text = (await badges.nth(i).textContent())?.trim() ?? "";
+      if (!text) continue;
+      expect(text, `tab count "${text}" uses Latin digits in ar-PS`).not.toMatch(/[0-9]/);
+    }
+  });
+
   test("Escape closes the composer without stranding focus", async ({ page }) => {
     await page.goto("/ar-PS/feed", { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(1_200);

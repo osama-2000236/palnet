@@ -44,10 +44,22 @@ function readWeb(): ThemeChoice | null {
   }
 }
 
-/** Synchronous initial choice. Web reads storage; native defaults to light
- *  until the async preference loads (see readThemeChoice). */
+function readNativeSync(): ThemeChoice | null {
+  if (Platform.OS === "web") return null;
+  try {
+    // Synchronous read, exactly as `locale.ts` does. Without it native always
+    // booted "light" and restoration depended entirely on the async `hydrate()`
+    // effect — which is why a chosen dark theme did not survive a restart.
+    const raw = SecureStore.getItem(KEY);
+    return isThemeChoice(raw) ? raw : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Synchronous initial choice, so the first paint is already the right theme. */
 export function getInitialThemeChoice(): ThemeChoice {
-  return readWeb() ?? "light";
+  return readWeb() ?? readNativeSync() ?? "light";
 }
 
 export async function readThemeChoice(): Promise<ThemeChoice | null> {

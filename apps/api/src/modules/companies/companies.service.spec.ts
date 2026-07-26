@@ -26,7 +26,13 @@ type PrismaStub = {
     count: jest.Mock;
   };
   job: { findFirst: jest.Mock; findMany: jest.Mock; create: jest.Mock; update: jest.Mock };
-  application: { findFirst: jest.Mock; findMany: jest.Mock; update: jest.Mock; count: jest.Mock };
+  application: {
+    findFirst: jest.Mock;
+    findMany: jest.Mock;
+    update: jest.Mock;
+    count: jest.Mock;
+    groupBy: jest.Mock;
+  };
   $transaction: jest.Mock;
   $executeRaw: jest.Mock;
 };
@@ -59,6 +65,7 @@ function buildPrisma(): PrismaStub {
       findMany: jest.fn(),
       update: jest.fn(),
       count: jest.fn().mockResolvedValue(0),
+      groupBy: jest.fn().mockResolvedValue([]),
     },
     $transaction: jest.fn(),
     $executeRaw: jest.fn().mockResolvedValue(0),
@@ -185,6 +192,72 @@ describe("CompaniesService", () => {
         where: { id: "co_1" },
         data: { name: "Renamed" },
       });
+    });
+  });
+
+  describe("addMember", () => {
+    // R2-9: the route admits OWNER *and* ADMIN, so without a body.role check an
+    // ADMIN could mint an OWNER and outrank whoever invited them.
+    it("refuses to let an ADMIN grant the OWNER role", async () => {
+      await expect(
+        service.addMember("co_1", "ADMIN", { userId: "u_new", role: "OWNER" }),
+      ).rejects.toMatchObject({ code: ErrorCode.AUTH_FORBIDDEN });
+      expect(prisma.companyMember.create).not.toHaveBeenCalled();
+    });
+
+    it("lets an ADMIN grant a non-owner role", async () => {
+      prisma.companyMember.findUnique.mockResolvedValue(null);
+      prisma.companyMember.create.mockResolvedValue({
+        companyId: "co_1",
+        userId: "u_new",
+        role: "EDITOR",
+        createdAt: new Date(),
+        user: { id: "u_new", email: "e@x.com", profile: null },
+      });
+      await service.addMember("co_1", "ADMIN", { userId: "u_new", role: "EDITOR" });
+      expect(prisma.companyMember.create).toHaveBeenCalled();
+    });
+
+    it("lets an OWNER grant the OWNER role", async () => {
+      prisma.companyMember.findUnique.mockResolvedValue(null);
+      prisma.companyMember.create.mockResolvedValue({
+        companyId: "co_1",
+        userId: "u_new",
+        role: "OWNER",
+        createdAt: new Date(),
+        user: { id: "u_new", email: "e@x.com", profile: null },
+      });
+      await service.addMember("co_1", "OWNER", { userId: "u_new", role: "OWNER" });
+      expect(prisma.companyMember.create).toHaveBeenCalled();
+    });
+  });
+
+  describe("listCompanyJobs", () => {
+    // R2-8: two `count()` per job over a 50-job page was 100 queries.
+    it("counts a whole page with one grouped query and no per-job count()", async () => {
+      prisma.job.findMany.mockResolvedValue([
+        jobRow({ id: "j_1" }),
+        jobRow({ id: "j_2" }),
+        jobRow({ id: "j_3" }),
+      ]);
+      prisma.application.groupBy.mockResolvedValue([
+        { jobId: "j_1", status: "SUBMITTED", _count: { _all: 4 } },
+        { jobId: "j_1", status: "SHORTLISTED", _count: { _all: 2 } },
+        { jobId: "j_2", status: "SHORTLISTED", _count: { _all: 1 } },
+      ]);
+
+      const out = await service.listCompanyJobs("co_1", null, 50, "all");
+
+      expect(prisma.application.groupBy).toHaveBeenCalledTimes(1);
+      expect(prisma.application.count).not.toHaveBeenCalled();
+      expect(prisma.application.groupBy).toHaveBeenCalledWith(
+        expect.objectContaining({ where: { jobId: { in: ["j_1", "j_2", "j_3"] } } }),
+      );
+      expect(out.data.map((j) => [j.applicantCount, j.shortlistCount])).toEqual([
+        [6, 2],
+        [1, 1],
+        [0, 0],
+      ]);
     });
   });
 

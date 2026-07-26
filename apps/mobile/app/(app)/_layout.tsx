@@ -14,6 +14,7 @@ import { z } from "zod";
 
 import { LoadingIntro } from "@/components/LoadingIntro";
 import { apiFetch, ApiRequestError } from "@/lib/api";
+import { nextNotificationBadge } from "@/lib/notification-badge";
 import { cachedProfileStatus, fetchProfileStatus } from "@/lib/profile-state";
 import { registerForPushAsync } from "@/lib/push";
 import { clearSession, getAccessToken, readSession } from "@/lib/session";
@@ -140,13 +141,7 @@ export default function AppTabsLayout(): JSX.Element {
         token,
         schema: WsNotificationEvent,
         onEvent: (event) => {
-          if (event.type === "notification.unread-count") {
-            setNotificationBadge(event.payload.count);
-          } else if (event.type === "notification.new") {
-            setNotificationBadge((count) => count + 1);
-          } else if (event.type === "notification.read") {
-            setNotificationBadge(0);
-          }
+          setNotificationBadge((count) => nextNotificationBadge(count, event));
         },
       });
     })();

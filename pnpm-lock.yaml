@@ -422,6 +422,9 @@ importers:
       '@baydar/config':
         specifier: workspace:*
         version: link:../config
+      '@baydar/shared':
+        specifier: workspace:*
+        version: link:../shared
       '@types/bcrypt':
         specifier: ^5.0.2
         version: 5.0.2

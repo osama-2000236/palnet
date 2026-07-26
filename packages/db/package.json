@@ -37,6 +37,7 @@
   },
   "devDependencies": {
     "@baydar/config": "workspace:*",
+    "@baydar/shared": "workspace:*",
     "@types/bcrypt": "^5.0.2",
     "@types/node": "^22.7.5",
     "bcrypt": "^5.1.1",
