@@ -70,10 +70,15 @@ test.describe("visual route coverage", () => {
   // these four exist to catch a state losing its illustration or its copy
   // wholesale — not to police layout. `shots.mjs --state=` sweeps all of them
   // across every route when a human is actually looking.
+  // No `offline` case here: `ux-sad-path.spec.ts` already covers it with
+  // `context().setOffline(true)`, which is the only thing that flips
+  // `navigator.onLine` and fires the event `useOnline` listens for. Aborting
+  // requests at the route layer does not, so an "offline" snapshot built that
+  // way is just the error case under a different name — which is exactly why
+  // the two images came out byte-identical.
   for (const [state, install] of [
     ["empty", emptyLists],
     ["error", failGet],
-    ["offline", goOffline],
   ] as const) {
     test(`feed ${state} state matches mobile snapshot`, async ({ page }) => {
       await install(page, "**/api/v1/**");
@@ -243,15 +248,4 @@ function emptied(value: unknown): unknown {
     );
   }
   return value;
-}
-
-/** The network is gone: the app must show its offline surface, not a spinner. */
-async function goOffline(page: Page, pattern: string): Promise<void> {
-  await page.route(pattern, async (route) => {
-    if (route.request().url().includes("/auth/")) {
-      await route.continue();
-      return;
-    }
-    await route.abort("internetdisconnected");
-  });
 }

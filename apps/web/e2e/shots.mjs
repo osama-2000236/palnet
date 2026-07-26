@@ -88,14 +88,19 @@ function lengthened(body) {
 }
 
 async function installState(page, state) {
-  if (state === "default") return;
+  // `offline` is not a route handler. Aborting requests does not touch
+  // `navigator.onLine` and does not fire the `offline` event, which is the
+  // only thing `useOnline` listens for — so an abort-based "offline" never
+  // renders `ConnectivityBanner` and is indistinguishable from `error`.
+  // Applied per route after navigation in the loop below, because a page that
+  // is offline before `goto` cannot load its own HTML.
+  if (state === "default" || state === "offline") return;
   await page.route("**/api/v1/**", async (route) => {
     const request = route.request();
     // Auth must keep working or every route photographs the sign-in page —
     // exactly the failure that made 15 shots worthless last time.
     if (request.url().includes("/auth/")) return route.continue();
 
-    if (state === "offline") return route.abort("internetdisconnected");
     if (state === "error") {
       if (request.method() !== "GET") return route.continue();
       return route.fulfill({
@@ -323,7 +328,14 @@ async function main() {
             );
             try {
               await page.goto(url, { waitUntil: "domcontentloaded", timeout: 60_000 });
-              if (state === "loading") {
+              if (state === "offline") {
+                // Go offline *after* the document loads: this is the state a
+                // user is actually in when connectivity drops mid-session, and
+                // it is the only way to see both the banner and the surface
+                // behind it. Reset before the next route so its HTML can load.
+                await context.setOffline(true);
+                await page.waitForTimeout(1_500);
+              } else if (state === "loading") {
                 // networkidle never arrives when the API never answers, and
                 // waiting for skeletons to clear is the opposite of the point.
                 await page.waitForTimeout(1_500);
@@ -402,6 +414,8 @@ async function main() {
             } catch (error) {
               failures.push({ name, url, error: String(error).slice(0, 200) });
               process.stdout.write(`ERR ${name} ${locale} ${theme} ${viewport}: ${error}\n`);
+            } finally {
+              if (state === "offline") await context.setOffline(false);
             }
           }
           await writeFile(

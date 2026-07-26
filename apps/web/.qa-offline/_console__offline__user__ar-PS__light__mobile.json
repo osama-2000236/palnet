@@ -1,0 +1,4 @@
+[
+  "Failed to load resource: net::ERR_INTERNET_DISCONNECTED",
+  "WebSocket connection to 'ws://localhost:3000/_next/webpack-hmr' failed: Error in connection establishment: net::ERR_INTERNET_DISCONNECTED"
+]
