@@ -38,7 +38,7 @@ export function RightRail({
           <span className="text-ink text-sm font-semibold">{t("pymk")}</span>
           <Link
             href="/network"
-            className="text-ink-muted hover:text-brand-700 rounded-sm text-xs focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+            className="text-ink-muted hover:text-brand-700 min-h-target inline-flex items-center rounded-sm text-xs focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
           >
             {t("pymkAll")}
           </Link>
@@ -65,7 +65,7 @@ export function RightRail({
                 <div className="flex min-w-0 flex-1 flex-col">
                   <Link
                     href={`/in/${s.user.handle}`}
-                    className="text-ink truncate rounded-sm text-sm font-semibold hover:underline focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+                    className="target-area text-ink truncate rounded-sm text-sm font-semibold hover:underline focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
                   >
                     {s.user.firstName} {s.user.lastName}
                   </Link>
@@ -76,7 +76,7 @@ export function RightRail({
                 </div>
                 <Link
                   href={`/in/${s.user.handle}`}
-                  className="border-brand-600 text-brand-700 hover:bg-brand-50 inline-flex shrink-0 items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-semibold focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+                  className="target-area border-brand-600 text-brand-700 hover:bg-brand-50 inline-flex shrink-0 items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-semibold focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
                 >
                   <Icon name="plus" size={12} />
                   {t("connect")}
@@ -101,7 +101,7 @@ export function RightRail({
           <span className="text-ink text-sm font-semibold">{t("jobs")}</span>
           <Link
             href={`/${locale}/jobs`}
-            className="text-ink-muted hover:text-brand-700 rounded-sm text-xs focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+            className="text-ink-muted hover:text-brand-700 min-h-target inline-flex items-center rounded-sm text-xs focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
           >
             {t("pymkAll")}
           </Link>

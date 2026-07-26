@@ -36,13 +36,13 @@ body {
 
 html {
   /* Canonical token first, legacy aliases as fallback during migration. */
-  font-family: var(--font-sans),
-    var(--font-naskh), var(--font-sans-arabic),
-    "IBM Plex Sans Arabic", "IBM Plex Sans", system-ui, sans-serif;
+  font-family:
+    var(--font-sans), var(--font-naskh), var(--font-sans-arabic), "IBM Plex Sans Arabic",
+    "IBM Plex Sans", system-ui, sans-serif;
 }
 
 body {
-  @apply bg-surface-muted text-ink antialiased font-body;
+  @apply bg-surface-muted text-ink font-body antialiased;
 }
 
 /* Keep code blocks LTR even in RTL pages. */
@@ -87,4 +87,29 @@ samp {
 
 [dir="ltr"] .bidi-plaintext {
   text-align: left;
+}
+
+/* A3 — expand a small control's pressable area to `--target-min` WITHOUT
+ * changing layout, so the visual density the design already earned survives.
+ * The web equivalent of native's `hitSlop`.
+ *
+ * `inset: 0` + `margin: auto` centres an absolutely-positioned box in its
+ * containing block, and overflows it symmetrically once the min-* sizes exceed
+ * it. Direction-agnostic on purpose: the `inset-inline-start: 50%` +
+ * `translateX(-50%)` idiom pushes the wrong way under RTL.
+ *
+ * Must be applied to the pressable element itself (a `<button>`, a `<label>`).
+ * On a wrapper the pseudo-element captures the click and never forwards it, and
+ * `<input>` is a replaced element that renders no pseudo-elements at all. */
+.target-area {
+  position: relative;
+}
+
+.target-area::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  min-width: var(--target-min);
+  min-height: var(--target-min);
 }

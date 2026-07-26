@@ -2,6 +2,8 @@
 // Generated from index.ts. Consumed by apps/mobile.
 // DO NOT EDIT BY HAND — regenerate with `pnpm tokens:build`.
 
+import { tokens } from "./index";
+
 export const nativeTokens = {
   color: {
     brand50: "#f4f6ef",
@@ -23,7 +25,7 @@ export const nativeTokens = {
 
     ink: "#1a1a17",
     inkMuted: "#5c5a52",
-    inkSubtle: "#8a8880",
+    inkSubtle: "#6e6d66",
     inkInverse: "#ffffff",
 
     surface: "#ffffff",
@@ -37,9 +39,9 @@ export const nativeTokens = {
     success: "#3b7a3b",
     successSoft: "rgba(59, 122, 59, 0.10)",
     successBorder: "rgba(59, 122, 59, 0.22)",
-    warning: "#b07a1a",
-    warningSoft: "rgba(176, 122, 26, 0.10)",
-    warningBorder: "rgba(176, 122, 26, 0.25)",
+    warning: "#926516",
+    warningSoft: "rgba(146, 101, 22, 0.10)",
+    warningBorder: "rgba(146, 101, 22, 0.25)",
     danger: "#a83232",
     dangerSoft: "rgba(168, 50, 50, 0.08)",
     dangerBorder: "rgba(168, 50, 50, 0.22)",
@@ -131,7 +133,20 @@ export const nativeTokens = {
       emphasized: "cubic-bezier(0.3, 0, 0, 1.15)",
       spring: "cubic-bezier(0.34, 1.4, 0.5, 1)",
     },
+    // A4.2: native previously carried no durations at all, which is why the
+    // mobile app had no transitions — there was nothing tokenized to reach for.
+    // These four are platform-neutral numbers, so they are referenced from the
+    // canonical source rather than copied: a duplicated constant that drifts is
+    // exactly the class of bug A1.6 and R2-10 were.
+    duration: tokens.motion.duration,
+    spring: tokens.motion.spring,
+    stagger: tokens.motion.stagger,
+    enter: tokens.motion.enter,
   },
+  state: tokens.state,
+  target: tokens.target,
+  z: tokens.z,
+  control: tokens.control,
   chrome: {
     navHeight: 56,
     tabHeight: 64,
@@ -186,7 +201,7 @@ export const nativeTokensDark = {
 
     ink: "#f1efe8",
     inkMuted: "#b3afa4",
-    inkSubtle: "#85827a",
+    inkSubtle: "#9b988f",
     inkInverse: "#1a1a17",
 
     surface: "#232220",
@@ -197,14 +212,22 @@ export const nativeTokensDark = {
     lineSoft: "rgba(255, 255, 255, 0.08)",
     lineHard: "rgba(255, 255, 255, 0.17)",
 
-    // success + danger re-lit; warning + info read fine on warm charcoal.
+    // A6: all four re-lit. The previous note claimed warning + info "read fine
+    // on warm charcoal"; measured, info was 2.61:1 against its own tint.
     success: "#6fae5f",
     successSoft: "rgba(111, 174, 95, 0.14)",
     successBorder: "rgba(111, 174, 95, 0.30)",
-    danger: "#d96b6b",
-    dangerSoft: "rgba(217, 107, 107, 0.14)",
-    dangerBorder: "rgba(217, 107, 107, 0.30)",
+    warning: "#c09649",
+    warningSoft: "rgba(192, 150, 73, 0.14)",
+    warningBorder: "rgba(192, 150, 73, 0.30)",
+    danger: "#df8282",
+    dangerSoft: "rgba(223, 130, 130, 0.14)",
+    dangerBorder: "rgba(223, 130, 130, 0.30)",
+    info: "#7ba2b6",
+    infoSoft: "rgba(123, 162, 182, 0.14)",
+    infoBorder: "rgba(123, 162, 182, 0.30)",
     scrim: "rgba(0, 0, 0, 0.50)",
+    switchThumb: "#f1efe8",
   },
   shadow: {
     // Pure black, higher opacity — warm-ink shadows are invisible on dark.

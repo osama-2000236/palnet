@@ -107,7 +107,7 @@ export function AppShellProfileMenu({
           id={menuId}
           role="menu"
           onKeyDown={onMenuKeyDown}
-          className="border-line-soft bg-surface shadow-card absolute end-0 top-full z-30 mt-1 min-w-[240px] rounded-md border py-1"
+          className="border-line-soft bg-surface shadow-card z-dropdown absolute end-0 top-full mt-1 min-w-[240px] rounded-md border py-1"
         >
           <ProfileHero
             me={me}

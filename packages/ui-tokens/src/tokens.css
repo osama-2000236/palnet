@@ -26,7 +26,7 @@
   /* Ink */
   --ink: #1a1a17;
   --ink-muted: #5c5a52;
-  --ink-subtle: #8a8880;
+  --ink-subtle: #6e6d66;
   --ink-inverse: #ffffff;
 
   /* Surface */
@@ -41,17 +41,17 @@
 
   /* Semantic */
   --success: #3b7a3b;
-  --warning: #b07a1a;
+  --warning: #926516;
   --danger: #a83232;
   --info: #2f6d8a;
 
   /* Semantic soft (tinted backgrounds for badges, banners, dead-end pills) */
   --success-soft: rgba(59, 122, 59, 0.1);
-  --warning-soft: rgba(176, 122, 26, 0.1);
+  --warning-soft: rgba(146, 101, 22, 0.1);
   --danger-soft: rgba(168, 50, 50, 0.08);
   --info-soft: rgba(47, 109, 138, 0.08);
   --success-border: rgba(59, 122, 59, 0.22);
-  --warning-border: rgba(176, 122, 26, 0.25);
+  --warning-border: rgba(146, 101, 22, 0.25);
   --danger-border: rgba(168, 50, 50, 0.22);
   --info-border: rgba(47, 109, 138, 0.2);
   --scrim: rgba(26, 26, 23, 0.4);
@@ -82,6 +82,28 @@
   --space-22: 88px;
   --space-23: 92px;
   --space-24: 96px;
+
+  /* Stacking order — every layer draws from this, nothing hardcodes a z-index. */
+  --z-base: 0;
+  --z-sticky: 10;
+  --z-nav: 20;
+  --z-dropdown: 30;
+  --z-sheet: 40;
+  --z-modal: 50;
+  --z-toast: 60;
+  --z-tooltip: 70;
+
+  /* Minimum pressable size (CLAUDE.md: 44pt mobile / 40px web) */
+  --target-min: 44px;
+  --target-compact: 40px;
+
+  /* State layer — one ink overlay for every interactive surface */
+  --state-hover: 0.04;
+  --state-pressed: 0.09;
+  --state-selected: 0.12;
+
+  /* Switch thumb */
+  --switch-thumb: #ffffff;
 
   /* Focus ring (single source) */
   --focus-ring-color: var(--brand-600);
@@ -125,14 +147,14 @@
   --accent-700-rgb: 139 58 34;
   --ink-rgb: 26 26 23;
   --ink-muted-rgb: 92 90 82;
-  --ink-subtle-rgb: 138 136 128;
+  --ink-subtle-rgb: 110 109 102;
   --ink-inverse-rgb: 255 255 255;
   --surface-rgb: 255 255 255;
   --surface-muted-rgb: 250 249 245;
   --surface-subtle-rgb: 241 239 231;
   --surface-sunken-rgb: 235 232 220;
   --success-rgb: 59 122 59;
-  --warning-rgb: 176 122 26;
+  --warning-rgb: 146 101 22;
   --danger-rgb: 168 50 50;
   --info-rgb: 47 109 138;
 
@@ -167,6 +189,7 @@
   --dur-fast: 80ms;
   --dur-base: 120ms;
   --dur-slow: 240ms;
+  --dur-slower: 400ms;
   --stagger-step: 40ms;
   --enter-rise: 8px;
 
@@ -216,7 +239,7 @@
   /* Ink */
   --ink: #f1efe8;
   --ink-muted: #b3afa4;
-  --ink-subtle: #85827a;
+  --ink-subtle: #9b988f;
   --ink-inverse: #1a1a17;
 
   /* Surface */
@@ -229,13 +252,22 @@
   --line-soft: rgba(255, 255, 255, 0.08);
   --line-hard: rgba(255, 255, 255, 0.17);
 
-  /* Semantic — success + danger re-lit; warning + info read fine as-is */
+  /* Semantic — all four re-lit for the dark surface. The previous note here
+   * said warning + info "read fine as-is"; measured, --info was 2.61:1 on its
+   * own tint and 3.05:1 under the Toast's ink. */
   --success: #6fae5f;
   --success-soft: rgba(111, 174, 95, 0.14);
   --success-border: rgba(111, 174, 95, 0.3);
-  --danger: #d96b6b;
-  --danger-soft: rgba(217, 107, 107, 0.14);
-  --danger-border: rgba(217, 107, 107, 0.3);
+  --warning: #c09649;
+  --warning-soft: rgba(192, 150, 73, 0.14);
+  --warning-border: rgba(192, 150, 73, 0.3);
+  --danger: #df8282;
+  --danger-soft: rgba(223, 130, 130, 0.14);
+  --danger-border: rgba(223, 130, 130, 0.3);
+  --info: #7ba2b6;
+  --info-soft: rgba(123, 162, 182, 0.14);
+  --info-border: rgba(123, 162, 182, 0.3);
+  --switch-thumb: #f1efe8;
   --scrim: rgba(0, 0, 0, 0.5);
 
   /* Shadow — warm-ink shadows vanish on dark; use pure black */
@@ -252,7 +284,7 @@
 
   /* Channel forms — mirror the hex overrides above so Tailwind utilities
    * (bg-surface, text-ink, bg-brand-600, …) re-theme in dark. Only the solids
-   * that change are listed; warning + info inherit their light channels. */
+   * that change are listed. */
   --brand-50-rgb: 38 42 27;
   --brand-100-rgb: 57 67 31;
   --brand-200-rgb: 82 97 46;
@@ -264,14 +296,16 @@
   --accent-700-rgb: 181 83 47;
   --ink-rgb: 241 239 232;
   --ink-muted-rgb: 179 175 164;
-  --ink-subtle-rgb: 133 130 122;
+  --ink-subtle-rgb: 155 152 143;
   --ink-inverse-rgb: 26 26 23;
   --surface-rgb: 35 34 32;
   --surface-muted-rgb: 26 25 22;
   --surface-subtle-rgb: 45 43 39;
   --surface-sunken-rgb: 55 52 47;
   --success-rgb: 111 174 95;
-  --danger-rgb: 217 107 107;
+  --warning-rgb: 192 150 73;
+  --danger-rgb: 223 130 130;
+  --info-rgb: 123 162 182;
 }
 
 /* RTL helper: flip icons that need directional mirroring.

@@ -54,13 +54,16 @@ export function AppShell({
 
   return (
     <ShellFrame>
-      <header role="banner" className="border-line-soft bg-surface sticky top-0 z-20 h-14 border-b">
+      <header
+        role="banner"
+        className="border-line-soft bg-surface z-nav sticky top-0 h-14 border-b"
+      >
         <div className="mx-auto flex h-full w-full min-w-0 max-w-[1128px] items-center gap-2 px-3 sm:gap-4 sm:px-5">
           <button
             type="button"
             onClick={() => onNavigate("feed")}
             aria-label={labels.logoAlt}
-            className="text-ink flex shrink-0 items-center gap-2 rounded-md py-1 hover:opacity-90 focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+            className="target-area text-ink flex shrink-0 items-center gap-2 rounded-md py-1 hover:opacity-90 focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
           >
             <Icon name="logo" size={32} />
             <span className="hidden text-lg font-semibold sm:inline">{labels.logoAlt}</span>

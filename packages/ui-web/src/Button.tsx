@@ -72,6 +72,11 @@ export function Button({
       className={cx(
         // layout / shape
         "inline-flex select-none items-center justify-center rounded-md font-semibold",
+        // A3: `sm` renders 28px and `md` 36px — both under CLAUDE.md's 40px web
+        // minimum, which the brief only noticed for `sm`. `target-area` lifts
+        // the pressable box to the token minimum for every size without moving
+        // a single pixel of layout; on `lg` (44px) it is already a no-op.
+        "target-area",
         "duration-base ease-standard transition-colors",
         // focus ring: keyboard-only
         "focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]",

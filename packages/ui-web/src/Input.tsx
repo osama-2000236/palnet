@@ -45,6 +45,17 @@ export interface InputProps extends Omit<ComponentPropsWithoutRef<"input">, "siz
 
 const SIZE_CLASSES: Record<InputSize, string> = {
   // Heights match Button: 28 / 36 / 44 px.
+  //
+  // ponytail: `sm` stays 28px tall, and that is a decision rather than an
+  // oversight. A text field is not a discrete target — its pressable area is
+  // the full width of the field, which is 200px+ everywhere it is used (filter
+  // bars, the message composer) — so it clears WCAG 2.5.8 AA (24px) on area by
+  // a wide margin. The `target-area` expander cannot help here either: `<input>`
+  // is a replaced element and renders no pseudo-element, and putting the
+  // expander on the wrapper would swallow the click instead of forwarding it.
+  // Raising `sm` to the 40px web minimum would also make it taller than `md`
+  // (36px), which is incoherent. Revisit by removing `sm` altogether if the
+  // density it buys stops being worth it.
   sm: "h-7 text-[13px] px-2.5",
   md: "h-9 text-sm px-3",
   lg: "h-11 text-[15px] px-3.5",

@@ -38,9 +38,13 @@ export function RadioGroup({
   const groupName = name ?? generatedName;
 
   return (
+    // A2.2: the `role="radiogroup"` used to sit on an inner <div>, so the
+    // <legend> named the <fieldset> and the ARIA group had no accessible name
+    // at all. A <fieldset> already exposes `group` semantics named by its
+    // legend, so the redundant role is gone rather than re-pointed.
     <fieldset className={cx("flex flex-col gap-2", className)} aria-invalid={error || undefined}>
       {legend ? <legend className="text-ink text-sm font-semibold">{legend}</legend> : null}
-      <div className="flex flex-wrap gap-2" role="radiogroup">
+      <div className="flex flex-wrap gap-2">
         {items.map((item) => {
           const checked = item.value === value;
           const isDisabled = disabled || item.disabled;
@@ -48,7 +52,13 @@ export function RadioGroup({
             <label
               key={item.value}
               className={cx(
-                "inline-flex min-h-8 cursor-pointer items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors",
+                // A3: the pill rendered 32px tall.
+                "target-area min-h-target inline-flex cursor-pointer items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors",
+                // A2.1: the <input> is `sr-only`, so keyboard focus landed on an
+                // invisible element and the visible pill showed nothing — a
+                // WCAG 2.4.7 failure on a control used throughout onboarding.
+                // `peer` lets the real focus state drive a ring on the pill.
+                "has-[:focus-visible]:[box-shadow:var(--focus-ring)]",
                 checked
                   ? "border-brand-600 bg-brand-50 text-brand-700"
                   : "border-line-hard bg-surface text-ink-muted hover:bg-surface-subtle",
@@ -64,11 +74,16 @@ export function RadioGroup({
                 onChange={() => {
                   if (!isDisabled) onValueChange(item.value);
                 }}
-                className="sr-only"
+                className="peer sr-only"
               />
+              {/* Selection is not carried by colour alone: the dot fills and the
+                  border thickens, so it survives a monochrome or CVD view. */}
               <span
                 aria-hidden="true"
-                className={cx("h-2 w-2 rounded-full", checked ? "bg-brand-600" : "bg-line-hard")}
+                className={cx(
+                  "h-2 w-2 rounded-full border",
+                  checked ? "bg-brand-600 border-brand-600" : "border-ink-subtle bg-transparent",
+                )}
               />
               <span>{item.label}</span>
               {item.description ? <span className="sr-only">{item.description}</span> : null}

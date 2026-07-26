@@ -24,6 +24,7 @@ import {
 } from "react";
 
 import { Button } from "./Button";
+import { Icon } from "./Icon";
 import { cx } from "./cx";
 
 export interface DialogProps {
@@ -140,7 +141,7 @@ export function Dialog({
     <div
       role="presentation"
       onClick={onBackdrop}
-      className="fixed inset-0 z-[1000] flex items-center justify-center bg-[var(--scrim)] px-4 py-6"
+      className="z-modal fixed inset-0 flex items-center justify-center bg-[var(--scrim)] px-4 py-6"
     >
       <div
         ref={dialogRef}
@@ -167,9 +168,9 @@ export function Dialog({
               size="sm"
               onClick={onClose}
               aria-label={closeLabel}
-              className="h-8 w-8 px-0"
+              className="target-area h-8 w-8 px-0"
             >
-              <span aria-hidden="true">x</span>
+              <Icon name="x" size={16} strokeWidth={2.2} />
             </Button>
           ) : null}
         </div>

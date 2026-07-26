@@ -75,7 +75,7 @@ export function ApplyDialog({ job, token, onClose, onApplied }: ApplyDialogProps
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
-      className="bg-ink/40 fixed inset-0 z-50 flex items-center justify-center p-4"
+      className="bg-ink/40 z-modal fixed inset-0 flex items-center justify-center p-4"
     >
       <div
         role="dialog"

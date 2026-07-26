@@ -97,11 +97,24 @@ const preset: TailwindPreset = {
           },
         ],
       },
-      spacing: Object.fromEntries(Object.entries(tokens.space).map(([k, v]) => [k, `${v}px`])),
+      spacing: {
+        ...Object.fromEntries(Object.entries(tokens.space).map(([k, v]) => [k, `${v}px`])),
+        // `min-h-target` / `min-w-target` — the pressable minimum, so no
+        // component has to remember whether that is 44 or 40.
+        target: `${tokens.target.min}px`,
+        "target-compact": `${tokens.target.compact}px`,
+      },
+      zIndex: Object.fromEntries(Object.entries(tokens.z).map(([k, v]) => [k, `${v}`])),
+      opacity: {
+        "state-hover": `${tokens.state.light.hover}`,
+        "state-pressed": `${tokens.state.light.pressed}`,
+        "state-selected": `${tokens.state.light.selected}`,
+      },
       transitionDuration: {
         fast: `${tokens.motion.duration.fast}ms`,
         base: `${tokens.motion.duration.base}ms`,
         slow: `${tokens.motion.duration.slow}ms`,
+        slower: `${tokens.motion.duration.slower}ms`,
       },
       transitionTimingFunction: {
         standard: tokens.motion.easing.standard,

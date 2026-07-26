@@ -15,7 +15,7 @@ html {
 }
 
 body {
-  @apply bg-surface-muted text-ink antialiased font-body;
+  @apply bg-surface-muted text-ink font-body antialiased;
 }
 
 pre,
@@ -24,4 +24,19 @@ kbd,
 samp {
   direction: ltr;
   unicode-bidi: embed;
+}
+
+/* A3 — mirrors apps/web/src/app/globals.css. Expands a small control's
+ * pressable area to --target-min without changing layout. */
+.target-area {
+  position: relative;
+}
+
+.target-area::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  min-width: var(--target-min);
+  min-height: var(--target-min);
 }

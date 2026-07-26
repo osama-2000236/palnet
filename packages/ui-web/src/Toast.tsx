@@ -68,7 +68,7 @@ export function Toast({
         type="button"
         aria-label={dismissLabel}
         onClick={onDismiss}
-        className="inline-flex h-7 w-7 flex-none items-center justify-center rounded-md text-current opacity-80 hover:opacity-100 focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+        className="target-area inline-flex h-7 w-7 flex-none items-center justify-center rounded-md text-current opacity-80 hover:opacity-100 focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
       >
         <Icon name="x" size={16} strokeWidth={2.2} />
       </button>
@@ -117,7 +117,7 @@ export function ToastProvider({
       {children}
       <div
         aria-live="polite"
-        className="pointer-events-none fixed bottom-6 z-[100] flex w-[min(24rem,calc(100vw-2rem))] flex-col gap-2 [inset-inline-end:1.5rem]"
+        className="z-toast pointer-events-none fixed bottom-6 flex w-[min(24rem,calc(100vw-2rem))] flex-col gap-2 [inset-inline-end:1.5rem]"
       >
         {items.map((item) => (
           <Toast

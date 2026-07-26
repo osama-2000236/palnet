@@ -142,7 +142,7 @@ export function Composer({
         <button
           type="button"
           onClick={() => setExpanded(true)}
-          className="border-line-soft bg-surface-subtle text-ink-muted hover:bg-surface-muted flex-1 cursor-pointer rounded-full border px-4 py-2.5 text-start text-sm focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+          className="target-area border-line-soft bg-surface-subtle text-ink-muted hover:bg-surface-muted flex-1 cursor-pointer rounded-full border px-4 py-2.5 text-start text-sm focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
         >
           {labels.startPrompt}
         </button>
@@ -208,7 +208,7 @@ export function Composer({
                   type="button"
                   onClick={() => onRemoveMedia(m.id)}
                   aria-label={labels.removeMedia}
-                  className="bg-surface text-ink-muted shadow-card hover:text-danger absolute -end-2 -top-2 inline-flex h-5 w-5 items-center justify-center rounded-full focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+                  className="target-area bg-surface text-ink-muted shadow-card hover:text-danger absolute -end-2 -top-2 inline-flex h-5 w-5 items-center justify-center rounded-full focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
                 >
                   <Icon name="x" size={12} />
                 </button>
@@ -254,7 +254,7 @@ export function Composer({
             setExpanded(false);
             setBody("");
           }}
-          className="border-line-soft text-ink hover:bg-surface-subtle rounded-md border px-3 py-1.5 text-sm focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+          className="target-area border-line-soft text-ink hover:bg-surface-subtle rounded-md border px-3 py-1.5 text-sm focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
         >
           {labels.cancel}
         </button>
