@@ -86,7 +86,7 @@ export function EducationsSection({
           <button
             type="button"
             onClick={() => setDraft({ ...EMPTY_EDUCATION })}
-            className="text-brand-600 text-sm hover:underline focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+            className="target-area text-brand-600 inline-flex items-center text-sm hover:underline focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
           >
             + {t("add")}
           </button>

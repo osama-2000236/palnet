@@ -149,7 +149,7 @@ export function ExperiencesSection({
             <button
               type="button"
               onClick={() => setDraft(null)}
-              className="text-ink-muted text-sm focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+              className="target-area text-ink-muted inline-flex items-center text-sm focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
             >
               {t("cancel")}
             </button>
@@ -157,7 +157,7 @@ export function ExperiencesSection({
               type="button"
               onClick={add}
               disabled={busy}
-              className="bg-brand-600 text-ink-inverse rounded-md px-4 py-2 text-sm font-semibold focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)] disabled:opacity-60"
+              className="target-area state-layer bg-brand-600 text-ink-inverse inline-flex items-center rounded-md px-4 py-2 text-sm font-semibold focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)] disabled:opacity-60"
             >
               {t("save")}
             </button>
