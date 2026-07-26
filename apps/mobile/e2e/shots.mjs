@@ -14,8 +14,11 @@
 // capturing is one shell command. Maestro is worth it for the appearance
 // switch (tap by testID) and nothing else here.
 import { execFileSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
+
+const sha1 = (buf) => createHash("sha1").update(buf).digest("hex").slice(0, 12);
 
 // The device always asks for :8081 and :4000 — those are baked into the dev
 // client and the app's API base. `adb reverse` is what decides which host
@@ -151,9 +154,16 @@ const THEME_LUMA_SPLIT = Number(process.env.QA_THEME_LUMA_SPLIT ?? 140);
 const PAINTED_MIN = Number(process.env.QA_PAINTED_MIN ?? 8);
 
 /**
- * Wait until the app is actually painting before shooting a cell. Changing
- * theme or locale restarts it (RTL applies at startup), and captureStable
- * cannot detect that on its own — a blank screen is perfectly stable.
+ * Wait until something is on screen before shooting a cell. Changing theme or
+ * locale restarts the app (RTL applies at startup), and captureStable cannot
+ * detect that on its own — a blank screen is perfectly stable.
+ *
+ * NOT a health check, and it must not be read as one. Measured against the
+ * dev-server redbox: the error screen scores **122** distinct colours and a
+ * real feed screen **115**, so a crash screen is *more* painted than the app
+ * working. All this proves is "not blank". The distinct-screen report at the
+ * end of each cell is what catches a run that photographed one error screen
+ * N times.
  */
 async function warmUp(timeoutMs = 90_000) {
   const started = Date.now();
@@ -236,7 +246,10 @@ async function captureStable(minMs, maxMs) {
     if (next.equals(previous)) break;
     previous = next;
   }
-  return adb(["exec-out", "screencap", "-p"]);
+  // The settled content slice doubles as the screen's fingerprint. Hashing the
+  // PNG instead would be useless: the status-bar clock ticks between captures,
+  // so every screen would look unique. `contentSlice` already drops the top 6%.
+  return { png: adb(["exec-out", "screencap", "-p"]), id: sha1(previous) };
 }
 
 async function main() {
@@ -379,6 +392,9 @@ async function main() {
       process.stdout.write(`    theme verified (luminance ${Math.round(luma)})\n`);
 
       const consoleByScreen = {};
+      let shotsThisCell = 0;
+      /** content-slice fingerprint -> screens that rendered it, this cell. */
+      const identical = new Map();
       for (const [name, route] of picked) {
         const file = path.join(OUT_DIR, `${name}__${locale}__${theme}.png`);
         try {
@@ -395,10 +411,13 @@ async function main() {
             `baydar://${route}`,
             APP_ID,
           ]);
-          await writeFile(file, await captureStable(settle, maxSettle));
+          const { png, id } = await captureStable(settle, maxSettle);
+          await writeFile(file, png);
+          identical.set(id, [...(identical.get(id) ?? []), name]);
           const lines = logcatDump();
           if (lines.length) consoleByScreen[name] = lines;
           shot += 1;
+          shotsThisCell += 1;
           process.stdout.write(
             `ok  ${path.basename(file)}${lines.length ? ` (${lines.length} log)` : ""}\n`,
           );
@@ -429,6 +448,30 @@ async function main() {
             `   JS logs go to the Metro terminal on this stack, not logcat — treat this\n` +
             `   file as "not looked", never as "no warnings". See the note on logcatDump.\n`,
         );
+      }
+
+      // A file per route is not a screen per route. Measured on the existing
+      // corpus: `onboarding` and `root` are byte-identical to `feed` in the
+      // content region, so two of the 38 "reviewed" screens were the feed
+      // photographed again — and the harness reported 38 ok lines.
+      //
+      // Reports the numbers and names the groups. Deliberately draws no
+      // conclusion: the first version guessed "almost certainly one error
+      // screen" whenever a group exceeded half the cell, and the very first run
+      // tripped it on `root`/`feed`/`onboarding` — three routes that legitimately
+      // land on the feed. A confident wrong verdict is worse than none, and it
+      // is the same defect as the checks this report exists to catch. A redirect
+      // and a redbox are indistinguishable from pixels alone; a reviewer reading
+      // "38 files, 1 distinct screen" needs no help from a heuristic.
+      if (identical.size < shotsThisCell) {
+        process.stdout.write(
+          `\n!! ${locale}/${theme}: ${shotsThisCell} files, ${identical.size} distinct screens —\n` +
+            `   a file per route is not a screen per route. Check each group below is a\n` +
+            `   redirect you expect and not a route that failed to navigate.\n`,
+        );
+        for (const [, names] of identical) {
+          if (names.length > 1) process.stdout.write(`   identical: ${names.join(", ")}\n`);
+        }
       }
     }
   }
