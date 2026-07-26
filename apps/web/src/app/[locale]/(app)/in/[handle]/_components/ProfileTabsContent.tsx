@@ -20,6 +20,7 @@ export function ProfileTabsContent({
   onTabChange: (tab: ProfileTab) => void;
 }): JSX.Element {
   const t = useTranslations("profile");
+  const locale = useLocale();
 
   return (
     <>
@@ -28,6 +29,7 @@ export function ProfileTabsContent({
           value={tab}
           onChange={(next) => onTabChange(next as ProfileTab)}
           label={t("sectionsLabel")}
+          formatCount={(n) => formatNumber(n, locale)}
         >
           <Tab value="about">{t("about")}</Tab>
           <Tab value="exp" count={profile.experiences.length}>

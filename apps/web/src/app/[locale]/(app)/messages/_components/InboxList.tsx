@@ -1,6 +1,6 @@
 "use client";
 
-import type { ChatRoom } from "@baydar/shared";
+import { type ChatRoom, formatNumber } from "@baydar/shared";
 import { EmptyState, Icon, Input, RoomRow, Tab, Tabs } from "@baydar/ui-web";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
@@ -66,6 +66,7 @@ export function InboxList({
           value={tab}
           onChange={(next) => setTab(next as "focused" | "requests")}
           label={t("tabsLabel")}
+          formatCount={(n) => formatNumber(n, locale)}
         >
           <Tab value="focused">{t("tabFocused")}</Tab>
           <Tab value="requests" count={requestCount > 0 ? requestCount : undefined}>
