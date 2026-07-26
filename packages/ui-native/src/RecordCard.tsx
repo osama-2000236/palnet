@@ -121,7 +121,6 @@ const styles = StyleSheet.create({
     minWidth: 0,
   },
   title: {
-    color: nativeTokens.color.ink,
     fontFamily: nativeTokens.type.family.sans,
     fontSize: nativeTokens.type.scale.h3.size,
     lineHeight: nativeTokens.type.scale.h3.line,
@@ -129,7 +128,6 @@ const styles = StyleSheet.create({
     textAlign: "auto",
   },
   subtitle: {
-    color: nativeTokens.color.inkMuted,
     fontFamily: nativeTokens.type.family.sans,
     fontSize: nativeTokens.type.scale.small.size,
     lineHeight: nativeTokens.type.scale.small.line,
@@ -137,7 +135,6 @@ const styles = StyleSheet.create({
   },
   meta: {
     marginTop: nativeTokens.space[1],
-    color: nativeTokens.color.inkSubtle,
     fontFamily: nativeTokens.type.family.sans,
     fontSize: nativeTokens.type.scale.caption.size,
     lineHeight: nativeTokens.type.scale.caption.line,

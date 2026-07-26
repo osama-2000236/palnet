@@ -7,6 +7,13 @@
 //      The brand is olive (`brand-*`); accent is terracotta (`accent-*`); status
 //      colors are `danger|success|warning|info`. Anything else is a bug.
 //   3. No physical directional utilities — RTL must use logical (ms/me/ps/pe/start/end).
+//   4. No colour inside a module-scope `StyleSheet.create` (A1.2). That block
+//      evaluates once at import, so any colour written into it is frozen to the
+//      light palette forever. This has to be a *static* check: most of the 31
+//      occurrences found in 2026-07 were masked by an inline `useThemeTokens()`
+//      override applied later in the style array, so they had no rendered
+//      effect and no render test could ever see them — they were simply waiting
+//      for someone to reorder a style array.
 //
 // Scope: apps/web/src, apps/mobile/src, packages/ui-web/src.
 // Exits non-zero on any hit. Prints a grep-friendly report.
@@ -27,17 +34,47 @@ const EXTS = new Set([".ts", ".tsx"]);
 // Tailwind default palettes that must never appear. Brand-scoped names
 // (brand-*, accent-*, ink-*, surface-*, line-*) are allowed.
 const FORBIDDEN_PALETTES = [
-  "slate", "gray", "zinc", "neutral", "stone",
-  "red", "orange", "amber", "yellow", "lime",
-  "green", "emerald", "teal", "cyan", "sky",
-  "blue", "indigo", "violet", "purple", "fuchsia",
-  "pink", "rose",
+  "slate",
+  "gray",
+  "zinc",
+  "neutral",
+  "stone",
+  "red",
+  "orange",
+  "amber",
+  "yellow",
+  "lime",
+  "green",
+  "emerald",
+  "teal",
+  "cyan",
+  "sky",
+  "blue",
+  "indigo",
+  "violet",
+  "purple",
+  "fuchsia",
+  "pink",
+  "rose",
 ];
 // Tailwind utilities that carry a color scale.
 const COLOR_UTILS = [
-  "bg", "text", "border", "ring", "fill", "stroke", "outline",
-  "from", "to", "via", "divide", "placeholder", "decoration", "caret",
-  "accent", "shadow",
+  "bg",
+  "text",
+  "border",
+  "ring",
+  "fill",
+  "stroke",
+  "outline",
+  "from",
+  "to",
+  "via",
+  "divide",
+  "placeholder",
+  "decoration",
+  "caret",
+  "accent",
+  "shadow",
 ];
 
 // e.g.   bg-blue-500   text-slate-50/20   ring-indigo-600
@@ -52,8 +89,7 @@ const hexRe = /#[0-9a-fA-F]{6}(?:[0-9a-fA-F]{2})?\b|#[0-9a-fA-F]{3}\b/g;
 
 // Physical directional classes. The web .eslintrc already catches these but we
 // re-check here so the mobile package is covered too.
-const physicalClassRe =
-  /\b(?:ml-|mr-|pl-|pr-|left-|right-)[\w-/[\]]+|\btext-(?:left|right)\b/g;
+const physicalClassRe = /\b(?:ml-|mr-|pl-|pr-|left-|right-)[\w-/[\]]+|\btext-(?:left|right)\b/g;
 
 // Files we shouldn't scan (generated or third-party-ish).
 const SKIP_FILE = (p) =>
@@ -127,6 +163,33 @@ for (const scanDir of SCAN_DIRS) {
           rel,
           line: i + 1,
           kind: "physical-direction",
+          match: m[0],
+          raw: line,
+        });
+      }
+    });
+  }
+}
+
+// -- 4. Frozen colours in module-scope StyleSheet.create ----------------------
+for (const dir of ["packages/ui-native/src", "apps/mobile/src", "apps/mobile/app"]) {
+  const abs = join(ROOT, dir);
+  for (const file of walk(abs)) {
+    const rel = relative(ROOT, file).split(sep).join("/");
+    const src = readFileSync(file, "utf8");
+    if (!src.includes("StyleSheet.create(")) continue;
+    let inBlock = false;
+    const nativeLines = src.split(/\r?\n/);
+    nativeLines.forEach((line, i) => {
+      if (line.includes("StyleSheet.create(")) inBlock = true;
+      else if (inBlock && line.startsWith("});")) inBlock = false;
+      if (!inBlock) return;
+      const m = line.match(/(nativeTokens|nativeTokensDark)\.color\.[A-Za-z0-9_]+/);
+      if (m) {
+        hits.push({
+          rel,
+          line: i + 1,
+          kind: "frozen-colour-in-stylesheet",
           match: m[0],
           raw: line,
         });

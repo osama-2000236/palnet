@@ -170,7 +170,6 @@ const styles = StyleSheet.create({
   message: {
     flex: 1,
     minWidth: 0,
-    color: nativeTokens.color.inkInverse,
     fontFamily: nativeTokens.type.family.sans,
     fontSize: nativeTokens.type.scale.small.size,
     lineHeight: nativeTokens.type.scale.small.line,

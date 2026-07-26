@@ -76,14 +76,11 @@ const styles = StyleSheet.create({
     gap: nativeTokens.space[2],
     borderRadius: nativeTokens.radius.full,
     borderWidth: 1,
-    borderColor: nativeTokens.color.lineSoft,
-    backgroundColor: nativeTokens.color.surfaceSubtle,
     paddingHorizontal: nativeTokens.space[3],
   },
   input: {
     flex: 1,
     minWidth: 0,
-    color: nativeTokens.color.ink,
     fontFamily: nativeTokens.type.family.sans,
     fontSize: nativeTokens.type.scale.body.size,
     textAlign: "auto",
@@ -105,7 +102,5 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  pressed: {
-    backgroundColor: nativeTokens.color.surfaceSubtle,
-  },
+  pressed: {},
 });

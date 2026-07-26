@@ -138,14 +138,12 @@ export function Sheet({
 const styles = StyleSheet.create({
   backdrop: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: nativeTokens.color.scrim,
   },
   card: {
     position: "absolute",
     start: 0,
     end: 0,
     bottom: 0,
-    backgroundColor: nativeTokens.color.surface,
     borderTopStartRadius: nativeTokens.radius.xl,
     borderTopEndRadius: nativeTokens.radius.xl,
     paddingBottom: nativeTokens.space[6],
@@ -159,7 +157,6 @@ const styles = StyleSheet.create({
     width: 36,
     height: 4,
     borderRadius: 2,
-    backgroundColor: nativeTokens.color.lineHard,
   },
   header: {
     alignItems: "center",
@@ -169,7 +166,6 @@ const styles = StyleSheet.create({
   },
   title: {
     flex: 1,
-    color: nativeTokens.color.ink,
     fontFamily: nativeTokens.type.family.sans,
     fontSize: nativeTokens.type.scale.h2.size,
     lineHeight: nativeTokens.type.scale.h2.line,
@@ -183,7 +179,6 @@ const styles = StyleSheet.create({
     borderRadius: nativeTokens.radius.full,
   },
   closeGlyph: {
-    color: nativeTokens.color.inkMuted,
     fontSize: 18,
     fontWeight: "600",
   },

@@ -200,47 +200,43 @@ export function AppShell({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: nativeTokens.color.surface,
   },
   bare: {
     flex: 1,
   },
   header: {
-    height: 56, // h-14 equivalent
+    height: nativeTokens.chrome.navHeight,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 12,
+    paddingHorizontal: nativeTokens.space[3],
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderColor: nativeTokens.color.lineSoft,
   },
   logoButton: {
     flexDirection: "row",
     alignItems: "center",
   },
   logoText: {
-    marginLeft: 8,
-    fontSize: 18,
+    marginStart: nativeTokens.space[2],
+    fontSize: nativeTokens.type.scale.h2.size,
     fontWeight: "600",
   },
   searchInputContainer: {
     flex: 1,
-    marginHorizontal: 12,
+    marginHorizontal: nativeTokens.space[3],
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: nativeTokens.color.surfaceSubtle,
-    borderRadius: 20,
-    paddingHorizontal: 12,
-    height: 36,
+    borderRadius: nativeTokens.radius.xl,
+    paddingHorizontal: nativeTokens.space[3],
+    height: nativeTokens.space[9],
   },
   searchIcon: {
-    marginRight: 8,
-    color: nativeTokens.color.inkMuted,
+    marginEnd: nativeTokens.space[2],
   },
   searchPlaceholder: {
     flex: 1,
-    marginStart: 8,
-    fontSize: 13,
+    marginStart: nativeTokens.space[2],
+    fontSize: nativeTokens.type.scale.small.size,
   },
   navContainer: {
     flexDirection: "row",
@@ -250,42 +246,39 @@ const styles = StyleSheet.create({
     flexDirection: "row",
   },
   navItem: {
-    paddingVertical: 8,
-    paddingHorizontal: 12,
+    paddingVertical: nativeTokens.space[2],
+    paddingHorizontal: nativeTokens.space[3],
   },
   navItemActive: {
     borderBottomWidth: 2,
-    borderColor: nativeTokens.color.brand600, // brand-600 token
   },
   navIcon: {
-    marginRight: 4,
+    marginEnd: nativeTokens.space[1],
   },
   navText: {
-    fontSize: 11,
+    fontSize: nativeTokens.type.scale.caption.size,
     fontWeight: "500",
   },
   divider: {
     width: StyleSheet.hairlineWidth,
-    backgroundColor: nativeTokens.color.lineSoft,
-    marginHorizontal: 12,
+    marginHorizontal: nativeTokens.space[3],
   },
   profileButton: {
     flexDirection: "row",
     alignItems: "center",
   },
   avatarPlaceholder: {
-    width: 32,
-    height: 32,
-    backgroundColor: nativeTokens.color.surfaceSunken,
-    borderRadius: 16,
+    width: nativeTokens.space[8],
+    height: nativeTokens.space[8],
+    borderRadius: nativeTokens.radius.full,
   },
   profileText: {
-    marginLeft: 8,
-    fontSize: 11,
+    marginStart: nativeTokens.space[2],
+    fontSize: nativeTokens.type.scale.caption.size,
     fontWeight: "500",
   },
   chevron: {
-    marginLeft: 4,
+    marginStart: nativeTokens.space[1],
   },
   content: {
     flex: 1,

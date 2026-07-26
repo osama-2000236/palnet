@@ -14,16 +14,21 @@ export interface OnboardingProgressProps {
   style?: OnboardingProgressStyle;
   labels?: string[];
   locale?: "ar" | "en";
+  /** A1.6 — see the web twin. Injected, because the kit may not import shared. */
+  formatCount?: (n: number) => string;
   containerStyle?: StyleProp<ViewStyle>;
 }
 
 const AR_DIGITS = "٠١٢٣٤٥٦٧٨٩";
-function toAr(n: number): string {
-  return String(n).replace(/[0-9]/g, (d) => AR_DIGITS[+d] ?? d);
+
+/** Fallback when no formatter is injected — preserves the previous output. */
+function defaultFormat(locale: "ar" | "en"): (n: number) => string {
+  if (locale !== "ar") return String;
+  return (n) => String(n).replace(/[0-9]/g, (d) => AR_DIGITS[+d] ?? d);
 }
-function fraction(current: number, total: number, locale: "ar" | "en"): string {
-  if (locale === "ar") return `${toAr(current)} / ${toAr(total)}`;
-  return `${current} / ${total}`;
+
+function fraction(current: number, total: number, format: (n: number) => string): string {
+  return `${format(current)} / ${format(total)}`;
 }
 
 export function OnboardingProgress({
@@ -32,13 +37,14 @@ export function OnboardingProgress({
   style = "bar",
   labels,
   locale = "ar",
+  formatCount,
   containerStyle,
 }: OnboardingProgressProps): JSX.Element {
   const c = useThemeTokens().color;
   const safe = Math.max(1, Math.min(total, current));
   const pct = (safe / total) * 100;
   const label = labels?.[safe - 1];
-  const counter = fraction(safe, total, locale);
+  const counter = fraction(safe, total, formatCount ?? defaultFormat(locale));
 
   const a11y = {
     accessible: true,

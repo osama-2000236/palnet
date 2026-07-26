@@ -2,7 +2,7 @@ import type { ErrorInfo, ReactNode } from "react";
 import { Component } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
-import { Button, Icon, Surface, nativeTokens } from "@baydar/ui-native";
+import { Button, Icon, Surface, nativeTokens, useThemeTokens } from "@baydar/ui-native";
 
 import i18n from "@/i18n";
 import { captureException } from "@/lib/observability";
@@ -13,6 +13,41 @@ interface Props {
 
 interface State {
   crashed: boolean;
+}
+
+/**
+ * The visible crash screen, split out as a function component purely so it can
+ * call `useThemeTokens()`.
+ *
+ * `ErrorBoundary` has to be a class — `getDerivedStateFromError` and
+ * `componentDidCatch` have no hook equivalent — and a class cannot read the
+ * theme, so its colours sat frozen in `StyleSheet.create` and the crash screen
+ * rendered light-on-light in dark mode. The one screen a user reaches when
+ * everything else has already failed.
+ */
+function CrashScreen({ onRetry }: { onRetry: () => void }): ReactNode {
+  const tk = useThemeTokens();
+  return (
+    <View style={[styles.screen, { backgroundColor: tk.color.surfaceMuted }]}>
+      <Surface variant="hero" padding="8" style={styles.card}>
+        <Icon name="logo" size={nativeTokens.space[16]} />
+        <Text style={[styles.title, { color: tk.color.ink }]}>
+          {i18n.t("system.errorBoundary.title")}
+        </Text>
+        <Text style={[styles.body, { color: tk.color.inkMuted }]}>
+          {i18n.t("system.errorBoundary.body")}
+        </Text>
+        <Button
+          variant="primary"
+          size="lg"
+          onPress={onRetry}
+          accessibilityLabel={i18n.t("system.errorBoundary.retry")}
+        >
+          {i18n.t("system.errorBoundary.retry")}
+        </Button>
+      </Surface>
+    </View>
+  );
 }
 
 export class ErrorBoundary extends Component<Props, State> {
@@ -32,24 +67,7 @@ export class ErrorBoundary extends Component<Props, State> {
 
   override render(): ReactNode {
     if (!this.state.crashed) return this.props.children;
-
-    return (
-      <View style={styles.screen}>
-        <Surface variant="hero" padding="8" style={styles.card}>
-          <Icon name="logo" size={nativeTokens.space[16]} />
-          <Text style={styles.title}>{i18n.t("system.errorBoundary.title")}</Text>
-          <Text style={styles.body}>{i18n.t("system.errorBoundary.body")}</Text>
-          <Button
-            variant="primary"
-            size="lg"
-            onPress={this.retry}
-            accessibilityLabel={i18n.t("system.errorBoundary.retry")}
-          >
-            {i18n.t("system.errorBoundary.retry")}
-          </Button>
-        </Surface>
-      </View>
-    );
+    return <CrashScreen onRetry={this.retry} />;
   }
 }
 
@@ -58,14 +76,12 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     padding: nativeTokens.space[4],
-    backgroundColor: nativeTokens.color.surfaceMuted,
   },
   card: {
     alignItems: "center",
     gap: nativeTokens.space[3],
   },
   title: {
-    color: nativeTokens.color.ink,
     fontFamily: nativeTokens.type.family.sans,
     fontSize: nativeTokens.type.scale.h1.size,
     fontWeight: "700",
@@ -73,7 +89,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   body: {
-    color: nativeTokens.color.inkMuted,
     fontFamily: nativeTokens.type.family.body,
     fontSize: nativeTokens.type.scale.body.size,
     lineHeight: nativeTokens.type.scale.body.line,
