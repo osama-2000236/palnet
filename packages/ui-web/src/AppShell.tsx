@@ -62,7 +62,10 @@ export function AppShell({
       {labels.skipToContent ? (
         <a
           href={`#${CONTENT_ID}`}
-          className="bg-surface text-ink z-tooltip shadow-pop sr-only rounded-md px-4 py-2 text-sm font-semibold focus:not-sr-only focus:fixed focus:top-2 focus:[box-shadow:var(--focus-ring)] focus:[inset-inline-start:0.5rem]"
+          // `min-h-target` even while `sr-only`: the link is reachable by Tab in
+          // both states, so the targets sweep measures it in both. Meeting the
+          // minimum is cheaper than arguing for an exemption.
+          className="bg-surface text-ink z-tooltip shadow-pop min-h-target min-w-target sr-only items-center justify-center rounded-md px-4 py-2 text-sm font-semibold focus:not-sr-only focus:fixed focus:top-2 focus:inline-flex focus:[box-shadow:var(--focus-ring)] focus:[inset-inline-start:0.5rem]"
         >
           {labels.skipToContent}
         </a>
