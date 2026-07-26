@@ -30,15 +30,15 @@ Leave it there.
 An earlier draft of this prompt said to turn ponytail off, reasoning that
 "laziest solution that works" conflicts with a session that must not do half
 work. That was wrong. Ponytail was active for all of round 2 and produced its
-best fixes, every one via rung 2, *"already in this codebase"*:
+best fixes, every one via rung 2, _"already in this codebase"_:
 
-| Round 2 outcome | Rule that produced it |
-| --- | --- |
+| Round 2 outcome                                         | Rule that produced it                                          |
+| ------------------------------------------------------- | -------------------------------------------------------------- |
 | Karama farming fixed by `award` → `awardOnce`, one word | Rung 2 — `awardOnce` existed, call site already passed the key |
-| Blocked users dropped from suggestions | Rung 2 — reused `safety.getBlockedEitherIds` |
-| Employer enums translated | Rung 2 — `jobs.typeLabels` existed all along |
-| Three unstable pixel snapshots deleted | "Deletion over addition" |
-| Per-worker e2e schemas *not* built | Rung 1, justified in writing — saved a day for a 2-minute gain |
+| Blocked users dropped from suggestions                  | Rung 2 — reused `safety.getBlockedEitherIds`                   |
+| Employer enums translated                               | Rung 2 — `jobs.typeLabels` existed all along                   |
+| Three unstable pixel snapshots deleted                  | "Deletion over addition"                                       |
+| Per-worker e2e schemas _not_ built                      | Rung 1, justified in writing — saved a day for a 2-minute gain |
 
 Ponytail's never-simplify list already covers **accessibility basics** and
 **anything explicitly requested** — the whole PART A ledger. It will not let you
@@ -50,14 +50,14 @@ requirement", and PART A is a file:line-cited ledger, not a proposal.
 
 ### Skills — load these
 
-| Skill | When | Why |
-| --- | --- | --- |
-| **`frontend-design`** | Before any visual decision. Not after. | The only thing addressing "first-tier without looking templated", and it names Baydar's exact failure mode — see the palette warning in Part 3. Run its plan → critique → build pass. |
-| **`/code-review`** | Self-audit, before shipping. | Round 2's self-review found five defects in its own work, one a P1. You read what you meant; the tool reads what you wrote. |
-| **`TaskCreate` / `TaskUpdate`** | First five minutes, then continuously. | One entry per Part 1 item and per Part 2 defect *class*. `completed` only when that item's check passes. A model that enumerated 14 items and finished 9 cannot honestly report done; one working from prose can. |
-| **`ponytail:ponytail-debt`** | Before shipping. | Harvests your `ponytail:` ceiling comments into a ledger so they do not rot. Output into `docs/audit/`. |
-| **`/run`** | After each layer of Part 2. | Drives the real app. This repo's screenshots have lied five times; a running app is harder to fool. |
-| **`fewer-permission-prompts`** | Early, once. | A long autonomous session dies by a thousand permission prompts. Genuine anti-stall measure. |
+| Skill                           | When                                   | Why                                                                                                                                                                                                               |
+| ------------------------------- | -------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **`frontend-design`**           | Before any visual decision. Not after. | The only thing addressing "first-tier without looking templated", and it names Baydar's exact failure mode — see the palette warning in Part 3. Run its plan → critique → build pass.                             |
+| **`/code-review`**              | Self-audit, before shipping.           | Round 2's self-review found five defects in its own work, one a P1. You read what you meant; the tool reads what you wrote.                                                                                       |
+| **`TaskCreate` / `TaskUpdate`** | First five minutes, then continuously. | One entry per Part 1 item and per Part 2 defect _class_. `completed` only when that item's check passes. A model that enumerated 14 items and finished 9 cannot honestly report done; one working from prose can. |
+| **`ponytail:ponytail-debt`**    | Before shipping.                       | Harvests your `ponytail:` ceiling comments into a ledger so they do not rot. Output into `docs/audit/`.                                                                                                           |
+| **`/run`**                      | After each layer of Part 2.            | Drives the real app. This repo's screenshots have lied five times; a running app is harder to fool.                                                                                                               |
+| **`fewer-permission-prompts`**  | Early, once.                           | A long autonomous session dies by a thousand permission prompts. Genuine anti-stall measure.                                                                                                                      |
 
 Skip `security-review` — this session is presentation, not the auth/billing/safety
 paths round 2 hardened. Run it only if you touch those.
@@ -93,16 +93,16 @@ workarounds hiding them.
 Worked example, from round 2 — use this shape:
 
 > **R2-1, Karama farmable via the hire toggle.**
-> *Found:* reading `companies.service.ts` (§3h asked for it; round 1 skipped it).
-> *Root cause:* `updateApplicantStatus` awarded +200 via `karama.award`, which
+> _Found:_ reading `companies.service.ts` (§3h asked for it; round 1 skipped it).
+> _Root cause:_ `updateApplicantStatus` awarded +200 via `karama.award`, which
 > has no idempotency, and the guard only blocked `HIRED → HIRED` — so
 > `HIRED → REJECTED → HIRED` minted 200 points per cycle.
-> *Fix:* `award` → `awardOnce`. One word. `awardOnce` already existed, the call
+> _Fix:_ `award` → `awardOnce`. One word. `awardOnce` already existed, the call
 > site already passed `refType`/`refId`, and `KaramaLedger` already had the
 > unique that makes it a one-time key.
-> *Check:* spec asserts `awardOnce` is called with the application id **and**
+> _Check:_ spec asserts `awardOnce` is called with the application id **and**
 > that `award` is not. Broke it on purpose to confirm it fails.
-> *Verified:* api 327 passing.
+> _Verified:_ api 327 passing.
 
 Found → root cause → fix → check that fails when broken → verified. An item
 without the last two lines is not done.
@@ -118,7 +118,7 @@ where it costs least:
 2. **Part 1 code items** (1.2 P3s, 1.3 a11y capture) — small, independent,
    nothing depends on them. Land them.
 3. **Start the mobile emulator and matrix (1.4) now**, before any design work,
-   because it captures the *pre-change* baseline you will compare against and
+   because it captures the _pre-change_ baseline you will compare against and
    because the tree is still clean. **Do not touch application code while it
    runs** — that is the mistake that cost round 2 an hour-long matrix.
 4. **While the matrix runs**: read the design brief in full, run
@@ -138,15 +138,15 @@ winning that fight.
 
 ## Read these first, in this order
 
-| File | Why |
-| --- | --- |
-| `CLAUDE.md` | Law. Tokens only, RTL-safe logical properties, Arabic-first, web↔native lockstep, framework-neutral `ui-*`. |
-| `docs/design/CLAUDE-DESIGN-UPGRADE-PROMPT-2026-07.md` | **The single most important file in this session.** A 334-line verified defect ledger for the design system, with file:line evidence for every claim. It is the spec. Do not re-derive it. |
-| `docs/audit/OPUS5-ROUND2-2026-07-25.md` | Round-2 findings, corrections, and the shortcut ledger. |
-| `docs/audit/OPUS5-RUBRIC-2026-07-25.md` | Screen scores, 46 of 85, and the three sub-7 screens left for a design owner — that is you. |
-| `.design-sync/NOTES.md` | Repo-specific design-sync gotchas. Read before touching the sync. Non-optional. |
-| `.design-sync/conventions.md` | What the Design agent is allowed to write. |
-| `DESIGN.md`, `BRAND.md`, `docs/design/RTL.md`, `docs/design/MOTION.md` | The design contract. |
+| File                                                                   | Why                                                                                                                                                                                        |
+| ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `CLAUDE.md`                                                            | Law. Tokens only, RTL-safe logical properties, Arabic-first, web↔native lockstep, framework-neutral `ui-*`.                                                                                |
+| `docs/design/CLAUDE-DESIGN-UPGRADE-PROMPT-2026-07.md`                  | **The single most important file in this session.** A 334-line verified defect ledger for the design system, with file:line evidence for every claim. It is the spec. Do not re-derive it. |
+| `docs/audit/OPUS5-ROUND2-2026-07-25.md`                                | Round-2 findings, corrections, and the shortcut ledger.                                                                                                                                    |
+| `docs/audit/OPUS5-RUBRIC-2026-07-25.md`                                | Screen scores, 46 of 85, and the three sub-7 screens left for a design owner — that is you.                                                                                                |
+| `.design-sync/NOTES.md`                                                | Repo-specific design-sync gotchas. Read before touching the sync. Non-optional.                                                                                                            |
+| `.design-sync/conventions.md`                                          | What the Design agent is allowed to write.                                                                                                                                                 |
+| `DESIGN.md`, `BRAND.md`, `docs/design/RTL.md`, `docs/design/MOTION.md` | The design contract.                                                                                                                                                                       |
 
 **`docs/design/CLAUDE-DESIGN-UPGRADE-PROMPT-2026-07.md` is currently untracked.**
 `git status` shows it as `??`. It survives only on this disk. **Commit it in your
@@ -161,14 +161,14 @@ The design brief was written against `a4fcaa5`. I re-checked seven of its
 citations against `6ed3c66` (current `main`) before writing this prompt. **All
 seven still hold at the exact line numbers cited:**
 
-| Claim | Verified on `6ed3c66` |
-| --- | --- |
-| A1.1 `Switch.tsx:54` thumb is `bg-white` | ✓ exact |
-| A3 `Switch.tsx:46` is `h-5 w-9` (20×36px) | ✓ exact |
-| A3 `Checkbox.tsx:85` is `h-4 w-4` (16×16px) | ✓ exact |
-| A2.3 `Tabs.tsx:49` roving `tabIndex={active ? 0 : -1}` | ✓ exact |
-| A2.14 `Tabs.tsx:66` renders `{count}` raw | ✓ exact |
-| A1.5 `Dialog.tsx:143` `z-[1000]`, `Toast.tsx:120` `z-[100]` | ✓ exact |
+| Claim                                                       | Verified on `6ed3c66` |
+| ----------------------------------------------------------- | --------------------- |
+| A1.1 `Switch.tsx:54` thumb is `bg-white`                    | ✓ exact               |
+| A3 `Switch.tsx:46` is `h-5 w-9` (20×36px)                   | ✓ exact               |
+| A3 `Checkbox.tsx:85` is `h-4 w-4` (16×16px)                 | ✓ exact               |
+| A2.3 `Tabs.tsx:49` roving `tabIndex={active ? 0 : -1}`      | ✓ exact               |
+| A2.14 `Tabs.tsx:66` renders `{count}` raw                   | ✓ exact               |
+| A1.5 `Dialog.tsx:143` `z-[1000]`, `Toast.tsx:120` `z-[100]` | ✓ exact               |
 
 Treat the rest of the ledger as accurate. If you find one that is not, **say so
 in the audit doc and fix the ledger** — that is a finding, not an inconvenience.
@@ -197,7 +197,7 @@ a defect fix. Make the decisions:
   led by a zero ("٠ تحديثات غير مقروءة"), then three different container
   treatments stacked down one page (bare stat cards → bordered list card → bare
   heading + loose cards). `CLAUDE.md` asks for the five surface variants to be
-  used *intentionally*. Decide what `/activity` is for, then compose it that way.
+  used _intentionally_. Decide what `/activity` is for, then compose it that way.
 - **`/employer/[slug]/jobs/[jobId]/applicants` — hierarchy 6.** The empty state
   is one line of text under a filter row. Every other empty state in the product
   — `employer`, `settings/blocked`, `/moderation`, `/billing`, `/saved` — uses
@@ -207,7 +207,7 @@ a defect fix. Make the decisions:
 - **The four `/legal/*` pages — functionality 6.** They render with no
   application chrome at all: no header, no nav, no back link. A member who
   follows the footer link can only leave with the browser back button. The copy
-  being v0.1 placeholder is `BLOCKED` on counsel and is *not* your problem; the
+  being v0.1 placeholder is `BLOCKED` on counsel and is _not_ your problem; the
   missing shell is. The landing page's own minimal header is the obvious
   precedent.
 
@@ -257,7 +257,7 @@ because an emulator plus Metro **from this worktree** is a known multi-hour
 setup here, and because round 2 moved 52 mobile files from
 `apps/mobile/app/(app)/_*/` to `apps/mobile/src/screens/*/` — bundling that
 against a Metro instance from a different worktree would have produced a matrix
-of the *previous* code.
+of the _previous_ code.
 
 That risk is now the main reason to do it: the move is verified by 101 passing
 tests including `app-shell-tabs.test.tsx`, which asserts the route table matches
@@ -330,14 +330,14 @@ Round 1 found three guards that existed and ran nowhere. Round 2 found a
 harness that lied five separate ways. For each defect class the brief lists,
 land the check that fails if it regresses:
 
-| Class | The check that must exist afterwards |
-| --- | --- |
-| A3 touch targets | An automated sweep asserting no interactive element in either kit renders below the token minimum, at every size variant. Do not eyeball this — measure `getBoundingClientRect()` in a Playwright pass, and use `hitSlop`-aware measurement on native. |
-| A2.3 tabs keyboard | A test that presses Arrow/Home/End on a `Tabs` and asserts focus moves — `apps/web/e2e/keyboard.spec.ts` already exists and already walks 13 surfaces; extend it. |
-| A1.2 native dark mode | A render test that mounts the native shell under a dark theme and asserts a colour actually changed. The bug is that it does not. |
-| A1.5 z-layering | A lint rule or `qa:design` check that fails on a hardcoded `z-[...]` or `zIndex:` numeric. |
-| A6 contrast | Compute ratios from the shipped token hex values in a test, not by eye. The brief already computed them — pin them. |
-| A2.11 toast timing | A test that a toast with an action never auto-dismisses, and that hover pauses it. |
+| Class                 | The check that must exist afterwards                                                                                                                                                                                                                   |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| A3 touch targets      | An automated sweep asserting no interactive element in either kit renders below the token minimum, at every size variant. Do not eyeball this — measure `getBoundingClientRect()` in a Playwright pass, and use `hitSlop`-aware measurement on native. |
+| A2.3 tabs keyboard    | A test that presses Arrow/Home/End on a `Tabs` and asserts focus moves — `apps/web/e2e/keyboard.spec.ts` already exists and already walks 13 surfaces; extend it.                                                                                      |
+| A1.2 native dark mode | A render test that mounts the native shell under a dark theme and asserts a colour actually changed. The bug is that it does not.                                                                                                                      |
+| A1.5 z-layering       | A lint rule or `qa:design` check that fails on a hardcoded `z-[...]` or `zIndex:` numeric.                                                                                                                                                             |
+| A6 contrast           | Compute ratios from the shipped token hex values in a test, not by eye. The brief already computed them — pin them.                                                                                                                                    |
+| A2.11 toast timing    | A test that a toast with an action never auto-dismisses, and that hover pauses it.                                                                                                                                                                     |
 
 `pnpm qa:design` already enforces a 300-LOC ceiling and will go red if you grow
 a component past it. That is a real gate — split honestly rather than
@@ -387,8 +387,8 @@ LinkedIn, pick the different one." Olive/terracotta, warm, Arabic-first stays.
 ### The palette warning — verified, and it applies to Baydar
 
 The `frontend-design` skill lists the three looks AI-generated design currently
-clusters around. The first is: *"a warm cream background (near `#F4F1EA`) with a
-high-contrast serif display and a terracotta accent."*
+clusters around. The first is: _"a warm cream background (near `#F4F1EA`) with a
+high-contrast serif display and a terracotta accent."_
 
 Baydar's shipped tokens are `--surface-muted: #faf9f5` and `--surface-subtle:
 #f1efe7`, with a terracotta accent on all four commit actions. `#f1efe7` against
@@ -400,7 +400,7 @@ where it pins a direction, and `BRAND.md` plus `CLAUDE.md` pin olive/terracotta
 hard. Changing it would also invalidate the computed contrast ratios in PART A6
 and every token consumer in two kits.
 
-It *is* a reason to know where your distinctiveness cannot come from. Adding
+It _is_ a reason to know where your distinctiveness cannot come from. Adding
 more cream and more terracotta is the templated move, and it is the one most
 likely to feel like an upgrade while being the opposite. Spend the boldness on
 the axes the brand does not pin:
@@ -424,14 +424,14 @@ from becoming a reskin.
 
 What "first-tier" actually decomposes into, all measurable:
 
-| Property | Target | How to verify |
-| --- | --- | --- |
-| Input responsiveness | INP < 200ms at p75 | Lighthouse is already wired (`lighthouserc.json` + `.mobile.json`, both in CI). Add INP if it is not asserted. |
-| Every press acknowledged | A state layer or scale response within one frame | The brief's A4. Native `Button` already derives `hitSlop` from `SIZE_HIT_TARGET` — the brief says copy that pattern. |
-| No layout shift | CLS ≤ 0.1 | Already asserted in CI, currently 0–0.002. Do not regress it. |
-| Skeletons, never spinners | Every async surface | `Skeleton` and `PostCardSkeleton` twins already ship. `/me` is a redirect stub that renders a text "جارِ التحميل…" line — that is the exception, and it is why `shots.mjs` now waits on `[aria-busy="true"]`. |
-| Optimistic writes roll back | Every mutation | Partially built: `useRoomMessages` marks failed optimistic sends and retries with the same `clientMessageId`, and there is a test. Audit the rest. |
-| Motion respects the user | `prefers-reduced-motion` honoured everywhere | `docs/design/MOTION.md` exists; the brief's B3 revises it. |
+| Property                    | Target                                           | How to verify                                                                                                                                                                                                 |
+| --------------------------- | ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Input responsiveness        | INP < 200ms at p75                               | Lighthouse is already wired (`lighthouserc.json` + `.mobile.json`, both in CI). Add INP if it is not asserted.                                                                                                |
+| Every press acknowledged    | A state layer or scale response within one frame | The brief's A4. Native `Button` already derives `hitSlop` from `SIZE_HIT_TARGET` — the brief says copy that pattern.                                                                                          |
+| No layout shift             | CLS ≤ 0.1                                        | Already asserted in CI, currently 0–0.002. Do not regress it.                                                                                                                                                 |
+| Skeletons, never spinners   | Every async surface                              | `Skeleton` and `PostCardSkeleton` twins already ship. `/me` is a redirect stub that renders a text "جارِ التحميل…" line — that is the exception, and it is why `shots.mjs` now waits on `[aria-busy="true"]`. |
+| Optimistic writes roll back | Every mutation                                   | Partially built: `useRoomMessages` marks failed optimistic sends and retries with the same `clientMessageId`, and there is a test. Audit the rest.                                                            |
+| Motion respects the user    | `prefers-reduced-motion` honoured everywhere     | `docs/design/MOTION.md` exists; the brief's B3 revises it.                                                                                                                                                    |
 
 **Usability rules to hold yourself to — verify these numbers, do not trust this
 prompt.** I could not run a web search in the session that produced this file,
@@ -681,7 +681,7 @@ shipped through green CI.
    caused it.
 
 6. **Fast-forward the primary worktree** at `C:\LinkedIn` (`git merge --ff-only
-   origin/main`) — check `git status` is clean first; the owner keeps untracked
+origin/main`) — check `git status` is clean first; the owner keeps untracked
    files there.
 
 **Hard stops — do not merge if any of these is true:** a check is failing or
