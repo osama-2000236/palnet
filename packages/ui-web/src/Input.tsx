@@ -18,7 +18,7 @@
 //   • The component forwards refs, so it works with react-hook-form and
 //     `useFocus()` patterns without ceremony.
 
-import { forwardRef, type ComponentPropsWithoutRef, type ReactNode } from "react";
+import { forwardRef, useId, type ComponentPropsWithoutRef, type ReactNode } from "react";
 
 import { cx } from "./cx";
 
@@ -95,9 +95,12 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
   },
   ref,
 ): JSX.Element {
-  // Auto-wire aria-describedby to the helper element when one is rendered.
-  // If the consumer already passed `aria-describedby`, append rather than replace.
-  const helperId = (errorMessage || helper) && id ? `${id}-helper` : undefined;
+  // A2.5: `helperId` used to be computed only `if (id)`, so a consumer that
+  // omitted an explicit id got an error message that `aria-describedby` never
+  // pointed at — a silent failure. `Checkbox` already did this correctly.
+  const generatedId = useId();
+  const inputId = id ?? generatedId;
+  const helperId = errorMessage || helper ? `${inputId}-helper` : undefined;
   const describedBy =
     helperId && ariaDescribedBy ? `${ariaDescribedBy} ${helperId}` : (helperId ?? ariaDescribedBy);
 
@@ -117,7 +120,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
         ) : null}
         <input
           ref={ref}
-          id={id}
+          id={inputId}
           disabled={disabled}
           aria-invalid={error || undefined}
           aria-describedby={describedBy}
@@ -126,8 +129,11 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
             "bg-surface text-ink w-full rounded-md border",
             "placeholder:text-ink-subtle",
             "duration-base ease-standard transition-colors",
-            // focus ring (keyboard-only — matches Button)
-            "focus-visible:border-brand-600 focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]",
+            // A2.7: `:focus`, not `:focus-visible`. Clicking into a text field
+            // produced no ring at all, so the active field was invisible in a
+            // long form. Buttons and non-text controls keep `:focus-visible`;
+            // a text field is where the caret is and always warrants the ring.
+            "focus:border-brand-600 focus:outline-none focus:[box-shadow:var(--focus-ring)]",
             // hover (only when not focused/disabled — outline strengthens)
             "hover:border-line-hard",
             // sizing
@@ -136,7 +142,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
             leading ? ICON_PADDING[size].leading : null,
             trailing ? ICON_PADDING[size].trailing : null,
             // state
-            error ? "border-danger focus-visible:border-danger" : "border-line-hard",
+            error ? "border-danger focus:border-danger" : "border-line-hard",
             disabled && "bg-surface-subtle text-ink-subtle cursor-not-allowed",
             className,
           )}
@@ -157,6 +163,11 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
       {errorMessage || helper ? (
         <span
           id={helperId}
+          // A2.6: validation messages were static text, so a submit-time error
+          // was never announced. `alert` on the error path only — a helper hint
+          // is not an interruption.
+          role={errorMessage ? "alert" : undefined}
+          aria-live={errorMessage ? "polite" : undefined}
           className={cx("text-[12px]", errorMessage ? "text-danger" : "text-ink-muted")}
         >
           {errorMessage ?? helper}

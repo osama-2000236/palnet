@@ -23,6 +23,7 @@ export function useAppShellLabels(): AppShellLabels {
   return useMemo(
     () => ({
       logoAlt: tCommon("appName"),
+      skipToContent: tCommon("skipToContent"),
       searchPlaceholder: tNav("searchPlaceholder"),
       searchLabel: tSearch("title"),
       mainNavLabel: tNav("main"),

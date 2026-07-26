@@ -49,6 +49,9 @@ function renderClient(element) {
 
   return {
     container,
+    // Dialog renders through a portal on <body> (A2.15), so anything asserting
+    // on dialog content has to look there rather than at the mount container.
+    portalScope: document.body,
     unmount() {
       React.act(() => {
         root.unmount();
@@ -58,25 +61,34 @@ function renderClient(element) {
   };
 }
 
-function getButton(container, name) {
-  const button = [...container.querySelectorAll("button")].find(
+// Query helpers search the whole document, not just the mount node: Dialog and
+// its descendants render through a portal on <body> (A2.15), so "what the
+// component rendered" is no longer confined to the container it was mounted in.
+// Each test unmounts and removes its container, so the document stays scoped.
+function rootOf(scope) {
+  return scope && scope.ownerDocument ? scope.ownerDocument.body : scope;
+}
+
+function getButton(scope, name) {
+  const button = [...rootOf(scope).querySelectorAll("button")].find(
     (item) => item.textContent.trim() === name || item.getAttribute("aria-label") === name,
   );
   if (!button) throw new Error(`Button not found: ${name}`);
   return button;
 }
 
-function getText(container, text) {
-  const node = [...container.querySelectorAll("*")].find(
+function getText(scope, text) {
+  const node = [...rootOf(scope).querySelectorAll("*")].find(
     (item) => item.textContent.trim() === text,
   );
   if (!node) throw new Error(`Text not found: ${text}`);
   return node;
 }
 
-function queryText(container, text) {
+function queryText(scope, text) {
   return (
-    [...container.querySelectorAll("*")].find((item) => item.textContent.trim() === text) ?? null
+    [...rootOf(scope).querySelectorAll("*")].find((item) => item.textContent.trim() === text) ??
+    null
   );
 }
 
@@ -101,7 +113,12 @@ async function flushTimers() {
 }
 
 describe("safety primitives", () => {
-  it("renders ReportDialog when open", () => {
+  // A2.15: Dialog renders through a portal now, so it deliberately produces
+  // nothing on the server — `createPortal` needs a DOM node and a `position:
+  // fixed` overlay is broken by any ancestor with `transform`/`overflow`
+  // anyway. A modal has no meaningful server-rendered form; it renders on
+  // mount. The client-side coverage below is what asserts its content.
+  it("does not server-render ReportDialog (portal, client-only)", () => {
     const html = renderToString(
       React.createElement(ReportDialog, {
         open: true,
@@ -112,8 +129,23 @@ describe("safety primitives", () => {
       }),
     );
 
-    expect(html).toContain("Report content");
-    expect(html).toContain("Spam");
+    expect(html).not.toContain("Report content");
+  });
+
+  it("renders ReportDialog content on the client when open", () => {
+    function Harness() {
+      return React.createElement(ReportDialog, {
+        open: true,
+        onOpenChange: jest.fn(),
+        target: { kind: "post", id: "post_1" },
+        onSubmit: jest.fn(),
+        labels: reportLabels,
+      });
+    }
+    const { unmount } = renderClient(React.createElement(Harness));
+    expect(document.body.textContent).toContain("Report content");
+    expect(document.body.textContent).toContain("Spam");
+    unmount();
   });
 
   it("renders BlockButton resting state", () => {
@@ -221,8 +253,8 @@ describe("safety primitives", () => {
       }),
     );
 
-    click(container.querySelector('input[value="HARASSMENT"]'));
-    inputText(container.querySelector("textarea"), "  abusive reply  ");
+    click(document.body.querySelector('input[value="HARASSMENT"]'));
+    inputText(document.body.querySelector("textarea"), "  abusive reply  ");
     click(getButton(container, "Submit"));
 
     expect(onSubmit).toHaveBeenCalledWith({
@@ -282,8 +314,8 @@ describe("safety primitives", () => {
     click(trigger);
 
     await flushTimers();
-    const form = container.querySelector("form");
-    const dialog = container.querySelector('[role="dialog"]');
+    const form = document.body.querySelector("form");
+    const dialog = document.body.querySelector('[role="dialog"]');
     expect(document.activeElement).toBe(form);
     expect(dialog.contains(document.activeElement)).toBe(true);
 

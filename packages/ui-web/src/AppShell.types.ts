@@ -15,6 +15,8 @@ export type AppShellRoute =
 
 export interface AppShellLabels {
   logoAlt: string;
+  /** A2.8 — "تخطي إلى المحتوى". Optional so existing hosts keep compiling. */
+  skipToContent?: string;
   searchPlaceholder: string;
   searchLabel: string;
   nav: Record<Exclude<AppShellRoute, "profile">, string>;

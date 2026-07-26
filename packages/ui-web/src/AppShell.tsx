@@ -9,6 +9,8 @@ import { Icon } from "./Icon";
 
 export type { AppShellLabels, AppShellProps, AppShellRoute } from "./AppShell.types";
 
+const CONTENT_ID = "main-content";
+
 export function AppShell({
   bare = false,
   currentRoute,
@@ -54,6 +56,17 @@ export function AppShell({
 
   return (
     <ShellFrame>
+      {/* AppShell puts 11 tab stops ahead of content on every page — logo,
+          search, 8 nav items, profile menu. Screen readers can jump by
+          landmark; sighted keyboard users had no way past them at all. */}
+      {labels.skipToContent ? (
+        <a
+          href={`#${CONTENT_ID}`}
+          className="bg-surface text-ink z-tooltip shadow-pop sr-only rounded-md px-4 py-2 text-sm font-semibold focus:not-sr-only focus:fixed focus:top-2 focus:[box-shadow:var(--focus-ring)] focus:[inset-inline-start:0.5rem]"
+        >
+          {labels.skipToContent}
+        </a>
+      ) : null}
       <header
         role="banner"
         className="border-line-soft bg-surface z-nav sticky top-0 h-14 border-b"
@@ -98,7 +111,14 @@ export function AppShell({
         </div>
       </header>
 
-      <div>{children}</div>
+      {/* A2.8: the target for the skip link. One id on the shell's content slot
+          rather than on 49 route-level <main> elements. `tabIndex={-1}` so
+          focus actually lands here — an anchor jump to a non-focusable element
+          scrolls without moving focus in several browsers, which strands the
+          keyboard user back at the top of the tab order. */}
+      <div id={CONTENT_ID} tabIndex={-1} className="focus:outline-none">
+        {children}
+      </div>
     </ShellFrame>
   );
 }

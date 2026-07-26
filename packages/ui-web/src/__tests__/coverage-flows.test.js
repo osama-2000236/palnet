@@ -76,6 +76,9 @@ function renderClient(element) {
 
   return {
     container,
+    // Dialog renders through a portal on <body> (A2.15), so anything asserting
+    // on dialog content has to look there rather than at the mount container.
+    portalScope: document.body,
     unmount() {
       React.act(() => {
         root.unmount();
@@ -184,19 +187,22 @@ describe("web feed and safety component coverage", () => {
     );
 
     click(
-      [...container.querySelectorAll("button")].find((button) => button.textContent === "Like"),
+      [...document.body.querySelectorAll("button")].find((button) => button.textContent === "Like"),
     );
     click(
-      [...container.querySelectorAll("button")].find((button) =>
+      [...document.body.querySelectorAll("button")].find((button) =>
         button.textContent.includes("Preview"),
       ),
     );
     click(
-      [...container.querySelectorAll("button")].find((button) => button.textContent === "Unblock"),
+      [...document.body.querySelectorAll("button")].find(
+        (button) => button.textContent === "Unblock",
+      ),
     );
 
     expect(container.textContent).toContain("Hello world");
-    expect(container.textContent).toContain("Report");
+    // ReportDialog portals to <body> (A2.15), so it is not inside `container`.
+    expect(document.body.textContent).toContain("Report");
     expect(onToggle).toHaveBeenCalled();
     expect(onUnblock).toHaveBeenCalledWith("u2");
     unmount();

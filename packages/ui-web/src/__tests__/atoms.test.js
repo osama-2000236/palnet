@@ -126,7 +126,9 @@ describe("new web atoms", () => {
     );
 
     const fieldset = container.querySelector("fieldset");
-    const group = container.querySelector('[role="radiogroup"]');
+    // A2.2: the inner role="radiogroup" was removed — it produced an ARIA
+    // group with no accessible name, because the <legend> names the <fieldset>.
+    const group = container.querySelector("fieldset > div");
     const disabledInput = [...container.querySelectorAll("input")].find(
       (input) => input.value === "private",
     );
@@ -157,12 +159,13 @@ describe("new web atoms", () => {
     );
 
     click(
-      [...container.querySelectorAll("button")].find(
+      [...document.body.querySelectorAll("button")].find(
         (button) => button.getAttribute("aria-label") === "Close dialog",
       ),
     );
 
-    expect(container.textContent).toContain("Confirm");
+    // Dialog portals to <body> (A2.15).
+    expect(document.body.textContent).toContain("Confirm");
     expect(onClose).toHaveBeenCalledTimes(1);
     unmount();
   });
