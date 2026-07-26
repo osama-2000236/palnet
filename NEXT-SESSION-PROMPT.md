@@ -75,7 +75,7 @@ Then long-content stress, also never done: a 60-character Arabic name, a
 
 ### 3. Interaction correctness
 
-Static analysis proved no handler is *undefined*. It proved nothing about what
+Static analysis proved no handler is _undefined_. It proved nothing about what
 handlers do. None of this has been exercised:
 
 - **Every form**: submit, validation, field-local error display, success
@@ -108,15 +108,15 @@ Refactor only where a fix requires it. Do not do a cosmetic split that churns
 
 Each is a deliberate simplification that session flagged. Close or justify:
 
-| Where | Shortcut |
-| --- | --- |
-| `apps/mobile/e2e/shots.mjs` | `PAINTED_MIN = 8` and the 6%/96% crop fractions are empirical, tuned on one AVD. Verify on a second device profile or derive them. |
-| `apps/mobile/e2e/shots.mjs` | **No console capture at all.** The web harness writes `_console__*.json` per cell and that is how the missing message keys were found. Mobile has no equivalent — wire `adb logcat` per cell. |
-| both parity tests | Cannot see dynamic keys — `t(variable)`. That is exactly the shape of the bug they were written for. The harness console sweep is the only net; on mobile that net does not exist yet (see above). |
-| `apps/web/e2e/visual.spec.ts` | **2 committed snapshots against a 46-route matrix.** The charter called this ratio out as part of why the review was needed. Widen it. |
-| `apps/web/playwright.config.ts` | `workers: 1` costs ~3.5min. The real fix is a schema per worker. |
-| `apps/mobile/app/` | 52 colocated components live under the routes directory, each carrying a fake `export default () => null` so Expo Router does not claim it. Move them to `src/`. ~52 files, mechanical, deletes a whole class of confusion. |
-| `_overflow.json` | Only written when shooting the matrix. Not a CI gate. |
+| Where                           | Shortcut                                                                                                                                                                                                                    |
+| ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `apps/mobile/e2e/shots.mjs`     | `PAINTED_MIN = 8` and the 6%/96% crop fractions are empirical, tuned on one AVD. Verify on a second device profile or derive them.                                                                                          |
+| `apps/mobile/e2e/shots.mjs`     | **No console capture at all.** The web harness writes `_console__*.json` per cell and that is how the missing message keys were found. Mobile has no equivalent — wire `adb logcat` per cell.                               |
+| both parity tests               | Cannot see dynamic keys — `t(variable)`. That is exactly the shape of the bug they were written for. The harness console sweep is the only net; on mobile that net does not exist yet (see above).                          |
+| `apps/web/e2e/visual.spec.ts`   | **2 committed snapshots against a 46-route matrix.** The charter called this ratio out as part of why the review was needed. Widen it.                                                                                      |
+| `apps/web/playwright.config.ts` | `workers: 1` costs ~3.5min. The real fix is a schema per worker.                                                                                                                                                            |
+| `apps/mobile/app/`              | 52 colocated components live under the routes directory, each carrying a fake `export default () => null` so Expo Router does not claim it. Move them to `src/`. ~52 files, mechanical, deletes a whole class of confusion. |
+| `_overflow.json`                | Only written when shooting the matrix. Not a CI gate.                                                                                                                                                                       |
 
 ### 6. Verify the claims, do not inherit them
 
