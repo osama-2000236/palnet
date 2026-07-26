@@ -3,7 +3,6 @@ import { Text, View } from "react-native";
 
 import { AppHeader } from "../AppHeader";
 import { Banner } from "../Banner";
-import { BlockButton, BlockedListItem, ReportSheet } from "../safety";
 import { ComposerEntry } from "../ComposerEntry";
 import { Dialog } from "../Dialog";
 import { EmptyState } from "../EmptyState";
@@ -11,6 +10,7 @@ import { OnboardingProgress } from "../OnboardingProgress";
 import { RecordCard } from "../RecordCard";
 import { RecordCardSkeleton } from "../RecordCardSkeleton";
 import { RetryChip } from "../RetryChip";
+import { BlockButton, BlockedListItem, ReportSheet } from "../safety";
 import { SearchField } from "../SearchField";
 import { SegmentedControl } from "../SegmentedControl";
 import { StateMessage } from "../StateMessage";

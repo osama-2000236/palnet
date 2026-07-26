@@ -61,8 +61,9 @@ const LIGHT_ONLY = (() => {
   const light = getNativeTokens("light").color as Record<string, unknown>;
   const dark = getNativeTokens("dark").color as Record<string, unknown>;
   // Any value the dark palette legitimately uses, under *any* key. Without
-  // this the check false-positives: light `ink` and dark `inkInverse` are both
-  // #1a1a17, so a correct dark render trips a naive value comparison.
+  // this the check false-positives: light `ink` and dark `inkInverse` are the
+  // same warm near-black, so a correct dark render trips a naive comparison
+  // that only keys on the value.
   const darkValues = new Set(
     Object.values(dark)
       .filter((value): value is string => typeof value === "string")

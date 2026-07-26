@@ -49,6 +49,10 @@ export const nativeTokens = {
     infoSoft: "rgba(47, 109, 138, 0.08)",
     infoBorder: "rgba(47, 109, 138, 0.20)",
     scrim: "rgba(26, 26, 23, 0.40)",
+    // A1.1 — one thumb colour for both platforms. The dark override sits in the
+    // dark block below; the switch draws a border so it stays visible against
+    // the light OFF track, which no fill can rescue (A6, 1.23:1).
+    switchThumb: "#ffffff",
   },
   radius: { xs: 4, sm: 6, md: 10, lg: 14, xl: 20, full: 9999 },
   shadow: {

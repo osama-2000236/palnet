@@ -76,7 +76,7 @@ export function Toast({
     <div
       role={kind === "error" ? "alert" : "status"}
       className={cx(
-        "shadow-pop pointer-events-auto flex min-h-11 w-full max-w-sm items-center gap-3 rounded-md px-4 py-3 text-sm font-semibold",
+        "toast-item shadow-pop pointer-events-auto flex min-h-11 w-full max-w-sm items-center gap-3 rounded-md px-4 py-3 text-sm font-semibold",
         kind === "success" && "bg-success text-ink-inverse",
         kind === "error" && "bg-danger text-ink-inverse",
         kind === "info" && "bg-info text-ink-inverse",

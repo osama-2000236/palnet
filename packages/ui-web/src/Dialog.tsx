@@ -154,7 +154,7 @@ export function Dialog({
     <div
       role="presentation"
       onClick={onBackdrop}
-      className="z-modal fixed inset-0 flex items-center justify-center bg-[var(--scrim)] px-4 py-6"
+      className="dialog-scrim z-modal fixed inset-0 flex items-center justify-center bg-[var(--scrim)] px-4 py-6"
     >
       {/* A2.13: `aria-labelledby`, not `aria-label={title}` — the latter
           duplicates the visible <h2> and silently wins over it. */}
@@ -167,7 +167,7 @@ export function Dialog({
         tabIndex={-1}
         onKeyDown={onKeyDown}
         className={cx(
-          "bg-surface text-ink shadow-pop w-full max-w-md rounded-lg focus:outline-none focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]",
+          "dialog-panel bg-surface text-ink shadow-pop w-full max-w-md rounded-lg focus:outline-none focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]",
           className,
         )}
       >
