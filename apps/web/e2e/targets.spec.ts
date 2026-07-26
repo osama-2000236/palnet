@@ -136,4 +136,78 @@ test.describe("touch targets", () => {
     expect(box.pressH).toBeGreaterThanOrEqual(MIN);
     expect(box.pressW).toBeGreaterThanOrEqual(MIN);
   });
+
+  // The sweep above reads `getComputedStyle(el, "::before").minWidth` — the
+  // CSS *declaration*, not its effect. That distinction is the whole reason
+  // this test exists: a declaration proves the rule was written, not that a
+  // finger landing 6px outside the visual box actually hits the control. An
+  // ancestor with `overflow: hidden`, or a sibling painted on top, would leave
+  // the sweep green and the button unhittable.
+  test(".target-area actually captures a click outside the visual box", async ({ page }) => {
+    await page.goto("/ar-PS/settings/notifications", { waitUntil: "domcontentloaded" });
+    const track = page.locator('[role="switch"]').first();
+    await track.waitFor({ timeout: 30_000 });
+
+    const before = await track.getAttribute("aria-checked");
+    const box = await track.boundingBox();
+    expect(box, "switch has no box").not.toBeNull();
+
+    // 6px above the visual top edge: inside the 44px expander, outside the
+    // 20px track. If the expander is decorative, this click misses entirely
+    // and `aria-checked` does not move.
+    await page.mouse.click(box!.x + box!.width / 2, box!.y - 6);
+    await page.waitForTimeout(300);
+
+    expect(
+      await track.getAttribute("aria-checked"),
+      "clicking inside the expander but outside the track did not toggle the switch — " +
+        ".target-area is declared but not capturing",
+    ).not.toBe(before);
+  });
+
+  // The hand-written utilities have no other check.
+  //
+  // `.target-area`, `.state-layer`, `.react-press` and the entrance classes are
+  // written by hand in globals.css — they are not derived from the token preset,
+  // so Tailwind's safelist cannot generate them and nothing fails if one is
+  // deleted or renamed. Components would simply stop having press feedback,
+  // silently, which is how `bidi-plaintext` was lost once already.
+  //
+  // Asserts the rules RESOLVE, not that they look right: a class that computes
+  // to the browser default is a class that is not in the sheet.
+  test("the hand-written utility classes resolve", async ({ page }) => {
+    await page.goto("/ar-PS/feed", { waitUntil: "domcontentloaded" });
+    await page.waitForSelector("button", { timeout: 30_000 });
+
+    const missing = await page.evaluate(() => {
+      const probe = document.createElement("div");
+      document.body.appendChild(probe);
+      const dead: string[] = [];
+
+      // Probe `position`, not `content`. A pseudo-element with no matching rule
+      // does not report content: "none" reliably across engines, which is how
+      // the first version of this check passed while .state-layer::after was
+      // deleted. Both rules declare `position: absolute`; the browser default
+      // is `static`, so this cannot silently agree.
+      const check = (cls: string, pseudo: string) => {
+        probe.className = cls;
+        if (getComputedStyle(probe, pseudo).position !== "absolute") dead.push(cls);
+      };
+
+      check("target-area", "::before");
+      check("state-layer", "::after");
+      probe.className = "react-press";
+      const press = getComputedStyle(probe).transitionProperty;
+      if (press === "all" || press === "none") dead.push("react-press");
+      for (const cls of ["dialog-scrim", "dialog-panel", "toast-item"]) {
+        probe.className = cls;
+        if (getComputedStyle(probe).animationName === "none") dead.push(cls);
+      }
+
+      probe.remove();
+      return dead;
+    });
+
+    expect(missing, "utility classes present in components but absent from the sheet").toEqual([]);
+  });
 });
