@@ -86,6 +86,7 @@ export type { TabsProps, TabProps, TabPanelProps } from "./Tabs";
 export { Toast, ToastHost, ToastProvider, useToast } from "./Toast";
 export type {
   ShowToastInput,
+  ToastAction,
   ToastContextValue,
   ToastKind,
   ToastProps,
