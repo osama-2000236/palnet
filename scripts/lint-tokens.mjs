@@ -127,6 +127,13 @@ function* walk(dir) {
   }
 }
 
+// A1.5 — stacking order comes from `tokens.z`. Before that scale existed each
+// layer picked its own number (`z-[1000]` on Dialog, `z-[100]` on Toast,
+// `z-20` on AppShell), so whether a toast rose above a modal was undefined.
+// Catches the Tailwind arbitrary form, the numeric utilities, and RN's
+// `zIndex:`. `z-nav`/`z-modal`/… are token names and pass.
+const rawZIndexRe = /\b(?:z-\[\d+\]|z-(?:0|10|20|30|40|50)\b|zIndex:\s*-?\d+)/g;
+
 const hits = [];
 
 for (const scanDir of SCAN_DIRS) {
@@ -163,6 +170,15 @@ for (const scanDir of SCAN_DIRS) {
           rel,
           line: i + 1,
           kind: "physical-direction",
+          match: m[0],
+          raw: line,
+        });
+      }
+      for (const m of line.matchAll(rawZIndexRe)) {
+        hits.push({
+          rel,
+          line: i + 1,
+          kind: "raw-z-index",
           match: m[0],
           raw: line,
         });

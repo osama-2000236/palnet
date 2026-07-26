@@ -25,6 +25,7 @@ const ROUTES = [
   "/ar-PS/me/edit",
   "/ar-PS/settings",
   "/ar-PS/settings/notifications",
+  "/ar-PS/settings/appearance",
 ] as const;
 
 const AUTHED = new Set(ROUTES.filter((r) => !/^\/ar-PS(\/(login|register))?$/.test(r)));
@@ -52,6 +53,19 @@ async function focusables(page: Page): Promise<Focusable[]> {
         if (node.hasAttribute("disabled") || node.getAttribute("aria-hidden") === "true")
           return false;
         if (node.getAttribute("tabindex") === "-1") return false;
+        // A radio group is ONE tab stop: Tab enters at the checked radio and
+        // arrow keys move within it. Counting every unchecked radio as an
+        // unreachable control reports correct native behaviour as a defect,
+        // which is exactly what happened the moment a RadioGroup route was
+        // added to ROUTES.
+        if (node instanceof HTMLInputElement && node.type === "radio" && !node.checked) {
+          const siblings = node.name
+            ? [...document.querySelectorAll<HTMLInputElement>('input[type="radio"]')].filter(
+                (r) => r.name === node.name,
+              )
+            : [];
+          if (siblings.some((r) => r.checked)) return false;
+        }
         if (node.closest("[inert], [aria-hidden='true']")) return false;
         const style = getComputedStyle(node);
         if (style.display === "none" || style.visibility === "hidden") return false;
@@ -317,5 +331,32 @@ test.describe("skip link and toast timing", () => {
     expect(landed, "activating the skip link did not move focus to the content").toBe(
       "main-content",
     );
+  });
+
+  // A2.1 — the RadioGroup focus ring.
+  //
+  // Asserted directly rather than left to the generic Tab walk above. The walk
+  // passed with the ring deliberately removed: the input is `sr-only`, so its
+  // own box carries nothing, and inferring "a ring is visible somewhere" from a
+  // traversal is exactly the kind of check that looks like coverage and is not.
+  test("RadioGroup shows a focus ring on the visible pill", async ({ page }) => {
+    await page.goto("/ar-PS/settings/appearance", { waitUntil: "domcontentloaded" });
+    const radio = page.locator('input[type="radio"]').first();
+    await radio.waitFor({ timeout: 30_000 });
+
+    const ring = await radio.evaluate((el) => {
+      (el as HTMLInputElement).focus();
+      const label = el.closest("label");
+      if (!label) return "no-label";
+      // The ring is painted on the pill via `has-[:focus-visible]`, because the
+      // focused element itself is visually hidden.
+      const shadow = getComputedStyle(label).boxShadow;
+      return shadow === "none" || shadow === "" ? "none" : "ring";
+    });
+
+    expect(
+      ring,
+      "the focused radio's visible pill shows no focus ring — keyboard users see nothing (WCAG 2.4.7)",
+    ).toBe("ring");
   });
 });

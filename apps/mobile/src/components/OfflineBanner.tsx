@@ -34,7 +34,8 @@ function makeStyles(c: NativeTheme["color"]) {
       position: "absolute",
       start: nativeTokens.space[4],
       end: nativeTokens.space[4],
-      zIndex: 50,
+      // Above nav, below sheets and modals.
+      zIndex: nativeTokens.z.dropdown,
       borderWidth: 1,
       borderColor: c.warning,
       backgroundColor: c.warningSoft,

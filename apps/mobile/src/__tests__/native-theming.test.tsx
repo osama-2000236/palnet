@@ -23,6 +23,7 @@ import {
   SegmentedControl,
   Sheet,
   StateMessage,
+  Switch,
   ThemeProvider,
 } from "@baydar/ui-native";
 import { render } from "@testing-library/react-native";
@@ -112,6 +113,10 @@ const CASES: Array<[string, ReactElement]> = [
     />,
   ],
   ["StateMessage", <StateMessage title="حدث خطأ" message="أعد المحاولة." />],
+  // A4.1 — the switch was not in this list at all, so the audit's claim that
+  // native-theming covered it was false. Covers the thumb/track colours; the
+  // spring itself is still unchecked.
+  ["Switch", <Switch checked onChange={() => {}} ariaLabel="إشعارات" />],
   [
     "Sheet",
     <Sheet open onClose={() => {}} title="خيارات">
