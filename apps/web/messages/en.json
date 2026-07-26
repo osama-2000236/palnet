@@ -1118,7 +1118,11 @@
         "HIRED": "Hired",
         "WITHDRAWN": "Withdrew"
       },
-      "allFilter": "All"
+      "allFilter": "All",
+      "emptyBody": "Applications appear here as soon as someone applies. Share the job link to reach more professionals.",
+      "emptyFiltered": "No applicants have this status.",
+      "emptyFilteredCta": "Show all applicants",
+      "shareJob": "Copy job link"
     },
     "newJob": {
       "title": "New job",

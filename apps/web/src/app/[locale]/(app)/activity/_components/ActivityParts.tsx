@@ -1,10 +1,14 @@
-import { Button, Skeleton, Surface } from "@baydar/ui-web";
+import { Button, Skeleton, Surface, cx } from "@baydar/ui-web";
 import Link from "next/link";
 import type { ReactNode } from "react";
 
 export interface ActivityMetric {
   label: string;
+  /** Already locale-formatted for display. */
   value: number | string;
+  /** Raw count — drives ordering and emphasis; the formatted value cannot,
+   *  because "٠" is a non-empty string. */
+  count: number;
   href: string;
 }
 
@@ -17,24 +21,56 @@ export interface ActivityTask {
   tone?: "default" | "warning";
 }
 
+/**
+ * Rubric hierarchy 6, and a composition decision rather than a defect fix.
+ *
+ * `/activity` is the "what needs me" screen, so it should open on what is
+ * actionable. It opened on a zero instead: three stat cards of identical
+ * visual weight, the first of them (rightmost, so first in RTL) reading
+ * "٠ تحديثات غير مقروءة".
+ *
+ * Two changes, both using surface variants to encode meaning rather than
+ * decorating with them — `CLAUDE.md` asks for exactly that, and the page was
+ * stacking three different treatments (bare stat cards → bordered list card →
+ * bare heading + loose cards) that read as three unrelated decisions:
+ *
+ *  1. Anything with a count sorts ahead of anything at zero. A zero is still
+ *     shown — hiding it would be worse, since "no requests" is information —
+ *     but it stops leading, and it renders quiet instead of shouting.
+ *  2. The row is ONE `tinted` band of three stats, not three `card` surfaces.
+ *     A summary is not three objects of the same rank as the task list below
+ *     it; demoting it to a band leaves `card` free to mean "this is the thing
+ *     to act on".
+ */
 export function ActivityMetrics({ metrics }: { metrics: ActivityMetric[] }): JSX.Element {
+  const ordered = [...metrics].sort((a, b) => Number(b.count > 0) - Number(a.count > 0));
+
   return (
-    <section className="grid gap-3 sm:grid-cols-3">
-      {metrics.map((metric) => (
-        <Link
-          key={metric.href}
-          href={metric.href}
-          className="rounded-md focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
-        >
-          <Surface variant="card" padding="4" className="h-full">
-            <p className="text-ink-muted text-sm">{metric.label}</p>
-            <p className="text-ink mt-2 text-3xl font-bold" dir="ltr">
-              {metric.value}
-            </p>
-          </Surface>
-        </Link>
-      ))}
-    </section>
+    <Surface as="section" variant="tinted" padding="0">
+      <ul className="divide-line-soft grid divide-y sm:grid-cols-3 sm:divide-x sm:divide-y-0 sm:rtl:divide-x-reverse">
+        {ordered.map((metric) => (
+          <li key={metric.href}>
+            <Link
+              href={metric.href}
+              className="target-area state-layer flex h-full flex-col justify-center gap-1 rounded-md px-4 py-3 focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+            >
+              <span className="text-ink-muted text-sm">{metric.label}</span>
+              <span
+                dir="ltr"
+                className={cx(
+                  "text-2xl font-bold tabular-nums",
+                  // A zero is not news. Keeping it at full weight is what made
+                  // the screen open on its least actionable number.
+                  metric.count > 0 ? "text-ink" : "text-ink-subtle",
+                )}
+              >
+                {metric.value}
+              </span>
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </Surface>
   );
 }
 
@@ -68,14 +104,18 @@ export function ActivityTaskList({
 export function ActivitySkeleton(): JSX.Element {
   return (
     <div className="flex flex-col gap-4" aria-hidden="true">
-      <section className="grid gap-3 sm:grid-cols-3">
-        {[0, 1, 2].map((item) => (
-          <Surface key={item} variant="card" padding="4">
-            <Skeleton className="h-3 w-24" />
-            <Skeleton className="mt-3 h-8 w-12" />
-          </Surface>
-        ))}
-      </section>
+      {/* Mirrors the shipped metrics band, so the page does not re-flow when
+          the real data lands. */}
+      <Surface variant="tinted" padding="0">
+        <div className="divide-line-soft grid divide-y sm:grid-cols-3 sm:divide-x sm:divide-y-0 sm:rtl:divide-x-reverse">
+          {[0, 1, 2].map((item) => (
+            <div key={item} className="px-4 py-3">
+              <Skeleton className="h-3 w-24" />
+              <Skeleton className="mt-2 h-7 w-12" />
+            </div>
+          ))}
+        </div>
+      </Surface>
       <Surface variant="card" padding="4">
         <Skeleton className="h-4 w-36" />
         <Skeleton className="mt-4 h-16 w-full" />
@@ -132,7 +172,7 @@ function ActivityTaskRow({ task }: { task: ActivityTask }): JSX.Element {
         </div>
         <Link
           href={task.href}
-          className="border-line-hard bg-surface text-ink hover:bg-surface-subtle inline-flex h-7 items-center justify-center rounded-md border px-2.5 text-[13px] font-semibold focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+          className="target-area state-layer border-line-hard bg-surface text-ink inline-flex h-7 items-center justify-center rounded-md border px-2.5 text-[13px] font-semibold focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
         >
           {task.cta}
         </Link>

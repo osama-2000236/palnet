@@ -91,14 +91,21 @@ export default function ActivityRoute(): JSX.Element {
       {
         label: t("metrics.notifications"),
         value: formatNumber(state.unreadNotifications, locale),
+        count: state.unreadNotifications,
         href: "/notifications",
       },
       {
         label: t("metrics.requests"),
         value: formatNumber(state.incoming.length, locale),
+        count: state.incoming.length,
         href: "/network",
       },
-      { label: t("metrics.jobs"), value: formatNumber(state.jobs.length, locale), href: "/jobs" },
+      {
+        label: t("metrics.jobs"),
+        value: formatNumber(state.jobs.length, locale),
+        count: state.jobs.length,
+        href: "/jobs",
+      },
     ];
   }, [locale, state, t]);
 
