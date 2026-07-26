@@ -132,7 +132,7 @@ describe("useRoomMessages", () => {
     mockApiFetchPage.mockReset();
     mockOpenStream.mockReset();
     mockOpenStream.mockImplementation(
-      (_scope: string, _token: string, handlers: { onEvent(d: string): void; onDrop?(): void }) => {
+      (_scope: string, handlers: { onEvent(d: string): void; onDrop?(): void }) => {
         stream.onEvent = handlers.onEvent;
         stream.onDrop = handlers.onDrop ?? null;
         return stream.unsubscribe;

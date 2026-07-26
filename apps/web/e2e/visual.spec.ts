@@ -55,7 +55,13 @@ test.describe("visual route coverage", () => {
         // fit the 60s default. Kept as one test rather than 92 separate ones:
         // the per-route assertions all name their route, and 92 tests would
         // each pay browser-context setup for one page load.
-        test.setTimeout(240_000);
+        //
+        // 480s, not 240s: this takes ~2min alone, but it is the fourth of four
+        // such tests in a serial suite and the last one runs against a `next
+        // dev` server that has been cold-compiling routes for five minutes.
+        // 240s left no margin and flaked exactly there. CI is prebuilt with
+        // `next start` and never came close, which is why it only bit locally.
+        test.setTimeout(480_000);
         await page.setViewportSize(viewport.size);
         for (const route of ROUTES) {
           await assertVisualRoute(page, `/${locale}/${route}`, viewport.name === "mobile");
@@ -64,48 +70,45 @@ test.describe("visual route coverage", () => {
     }
   }
 
-  // The four states the seeded happy path never reaches. Pixel snapshots are
-  // deliberately kept to one surface each rather than the whole matrix: a
-  // snapshot is a maintenance tax paid on every legitimate design change, and
-  // these four exist to catch a state losing its illustration or its copy
-  // wholesale — not to police layout. `shots.mjs --state=` sweeps all of them
-  // across every route when a human is actually looking.
-  // No `offline` case here: `ux-sad-path.spec.ts` already covers it with
-  // `context().setOffline(true)`, which is the only thing that flips
-  // `navigator.onLine` and fires the event `useOnline` listens for. Aborting
-  // requests at the route layer does not, so an "offline" snapshot built that
-  // way is just the error case under a different name — which is exactly why
-  // the two images came out byte-identical.
-  for (const [state, install] of [
-    ["empty", emptyLists],
-    ["error", failGet],
-  ] as const) {
-    test(`feed ${state} state matches mobile snapshot`, async ({ page }) => {
-      await install(page, "**/api/v1/**");
-      await page.setViewportSize({ width: 390, height: 844 });
-      await page.goto("/ar-PS/feed", { waitUntil: "domcontentloaded" });
-      await page.waitForTimeout(1_200);
-      if (!process.env.CI) {
-        await page.addStyleTag({ content: "nextjs-portal { display: none !important; }" });
-      }
-      // `main`, not the full page, and the header masked. The QA fixture user
-      // is minted per run (`qa+<runId>.a11y@…`), so their name and avatar
-      // initials differ every time — a full-page snapshot of the app shell
-      // diffs on the username and reports a design regression that is really
-      // a fixture id. These three exist to catch a state losing its
-      // illustration or its copy, which lives in `main`.
-      await expect(page.locator("main").first()).toHaveScreenshot(`feed-${state}-ar-mobile.png`, {
-        animations: "disabled",
-        mask: [page.locator("header")],
-        maxDiffPixelRatio: 0.02,
-      });
-      // The empty-state handler proxies through `route.fetch()`, and the feed
-      // keeps polling — a request still in flight when the page closes throws
-      // "Target page has been closed" out of the route callback and fails a
-      // test whose assertion already passed.
-      await page.unrouteAll({ behavior: "ignoreErrors" });
-    });
-  }
+  // Empty and error asserted by content, not by pixels.
+  //
+  // These were full-region snapshots and they failed three times for three
+  // different reasons, none of them a design regression: a per-run fixture
+  // username, then a missing Linux baseline, then the profile-completion
+  // meter moving because an earlier spec in the same run edited the fixture
+  // user. Each fix masked one more volatile region. That is the instrument
+  // being wrong — a pixel snapshot of a page rendering live data cannot be
+  // stable, and every false failure spends someone's afternoon.
+  //
+  // What these tests are actually for is "the state lost its illustration or
+  // its copy wholesale", which is a content assertion. It is stable, it needs
+  // no per-platform baselines, and it says what broke instead of showing a
+  // diff. `shots.mjs --state=` still sweeps every route for a human.
+  test("feed empty state keeps its title and recovery copy", async ({ page }) => {
+    await emptyLists(page, "**/api/v1/**");
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/ar-PS/feed", { waitUntil: "domcontentloaded" });
+    await page.waitForTimeout(1_200);
+
+    // Title and body, not the illustration: `main` is full of small
+    // `aria-hidden` icons, so "the first svg" is not a hook for the motif, and
+    // adding a test id to app code buys less than these two lines already do.
+    const main = page.locator("main").first();
+    await expect(main.getByText("لا يوجد شيء في خلاصتك بعد")).toBeVisible();
+    await expect(main.getByText(/ابدأ بنشر أول منشور لك/)).toBeVisible();
+    await page.unrouteAll({ behavior: "ignoreErrors" });
+  });
+
+  test("feed error state offers a retry, not a dead end", async ({ page }) => {
+    await failGet(page, "**/api/v1/**");
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/ar-PS/feed", { waitUntil: "domcontentloaded" });
+    await page.waitForTimeout(1_200);
+
+    const main = page.locator("main").first();
+    await expect(main.getByText("الخلاصة غير متاحة الآن")).toBeVisible();
+    await expect(main.getByRole("button", { name: /إعادة تحميل/ })).toBeVisible();
+  });
 
   test("activity error state matches mobile snapshot", async ({ page }) => {
     await failGet(page, "**/api/v1/profiles/me");

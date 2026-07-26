@@ -224,10 +224,16 @@ export class BillingService {
     //      nothing — a double-submit or a retry after a client timeout
     //      debited 500 points twice. Scoping to the UTC day dedupes those
     //      while still allowing renewal once the 30-day term lapses.
-    // ponytail: day-scoped key + the guard above. Two genuinely simultaneous
-    // requests still each get a subscription row (one debit, thanks to the
-    // ledger unique). Upgrade path if that matters: a partial unique index on
-    // Subscription (userId, planId) WHERE status IN ('TRIALING','ACTIVE','INCOMPLETE').
+    // ponytail: day-scoped key + the guard above. Two things this leans on,
+    // both verified, both worth re-checking if they change:
+    //   - Nothing in this codebase transitions a subscription out of ACTIVE
+    //     (only `cancelAtPeriodEnd`, which leaves status alone). If something
+    //     ever does, a same-day cancel-and-rebuy would replay the ledger row
+    //     and hand out a second term without debiting. Narrow the bucket then.
+    //   - Two genuinely simultaneous requests still each get a subscription
+    //     row, though only one debit — the ledger unique sees to that.
+    // Upgrade path for both: a partial unique index on Subscription
+    // (userId, planId) WHERE status IN ('TRIALING','ACTIVE','INCOMPLETE').
     await this.karama.redeem(userId, {
       reward: "PREMIUM_30D",
       idempotencyKey: `premium-30d:${userId}:${new Date().toISOString().slice(0, 10)}`,

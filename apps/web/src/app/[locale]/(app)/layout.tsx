@@ -77,7 +77,7 @@ export default function AppLayout({ children }: { children: ReactNode }): JSX.El
     // The banner now tracks a connection that genuinely comes back:
     // `openStream` re-mints a stream token per attempt, so a drop clears the
     // moment it reconnects instead of staying red until the next navigation.
-    return openStream("notifications", token, {
+    return openStream("notifications", {
       onOpen: () => setNotificationsConnectionDropped(false),
       onDrop: () => setNotificationsConnectionDropped(true),
       onFailed: () => setNotificationsConnectionDropped(true),
@@ -116,7 +116,7 @@ export default function AppLayout({ children }: { children: ReactNode }): JSX.El
   useEffect(() => {
     if (!token) return;
     void refetchRooms(token);
-    const unsubscribe = openStream("messaging", token, {
+    const unsubscribe = openStream("messaging", {
       // Refetch on reconnect too: events that fired while the stream was down
       // are gone, so the badge is only trustworthy after a fresh read.
       onOpen: () => void refetchRooms(token),

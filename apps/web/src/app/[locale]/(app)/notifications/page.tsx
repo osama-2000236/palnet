@@ -93,7 +93,7 @@ export default function NotificationsPageRoute(): JSX.Element {
   // SSE: prepend new notifications, reconcile read state.
   useEffect(() => {
     if (!token) return;
-    const unsubscribe = openStream("notifications", token, {
+    const unsubscribe = openStream("notifications", {
       onOpen: () => setSseLive(true),
       onDrop: () => setSseLive(false),
       onFailed: () => setSseLive(false),

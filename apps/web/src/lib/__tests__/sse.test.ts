@@ -10,8 +10,10 @@
 import { openStream } from "../sse";
 
 const apiFetch = jest.fn();
+const getValidAccessToken = jest.fn();
 jest.mock("../api", () => ({
   apiFetch: (...args: unknown[]) => apiFetch(...args),
+  getValidAccessToken: () => getValidAccessToken(),
 }));
 
 class FakeEventSource {
@@ -53,6 +55,10 @@ beforeEach(() => {
   jest.useFakeTimers();
   FakeEventSource.instances = [];
   apiFetch.mockReset();
+  getValidAccessToken.mockReset();
+  // Resolved per attempt, not captured — a stale 15-minute token is exactly
+  // how a reconnect after a closed laptop used to die.
+  getValidAccessToken.mockResolvedValue("access-1");
   let n = 0;
   apiFetch.mockImplementation(() => Promise.resolve({ token: `stream-token-${++n}` }));
   (globalThis as unknown as { EventSource: unknown }).EventSource = FakeEventSource;
@@ -66,7 +72,7 @@ afterEach(() => {
 });
 
 it("mints a fresh stream token for every connection attempt", async () => {
-  const close = openStream("notifications", "access-1", { onEvent: jest.fn() });
+  const close = openStream("notifications", { onEvent: jest.fn() });
   await flush();
   expect(FakeEventSource.instances).toHaveLength(1);
   expect(FakeEventSource.instances[0]!.url).toContain("stream-token-1");
@@ -84,7 +90,7 @@ it("mints a fresh stream token for every connection attempt", async () => {
 });
 
 it("closes the dead source before retrying, so the browser cannot race us", async () => {
-  const close = openStream("messaging", "access-1", { onEvent: jest.fn() });
+  const close = openStream("messaging", { onEvent: jest.fn() });
   await flush();
   const first = FakeEventSource.instances[0]!;
 
@@ -98,7 +104,7 @@ it("closes the dead source before retrying, so the browser cannot race us", asyn
 });
 
 it("backs off exponentially and resets the backoff once a connection opens", async () => {
-  const close = openStream("notifications", "access-1", { onEvent: jest.fn() });
+  const close = openStream("notifications", { onEvent: jest.fn() });
   await flush();
 
   // Caps double (1s, 2s, 4s); the jitter is `cap/2 + random*cap/2`, and with
@@ -125,7 +131,7 @@ it("backs off exponentially and resets the backoff once a connection opens", asy
 });
 
 it("stops retrying once unsubscribed", async () => {
-  const close = openStream("notifications", "access-1", { onEvent: jest.fn() });
+  const close = openStream("notifications", { onEvent: jest.fn() });
   await flush();
   const first = FakeEventSource.instances[0]!;
 
@@ -138,9 +144,9 @@ it("stops retrying once unsubscribed", async () => {
 });
 
 it("does not reconnect when the session itself is gone", async () => {
-  apiFetch.mockRejectedValue(new Error("401"));
+  getValidAccessToken.mockResolvedValue(null);
   const onFailed = jest.fn();
-  const close = openStream("notifications", "expired", { onEvent: jest.fn(), onFailed });
+  const close = openStream("notifications", { onEvent: jest.fn(), onFailed });
   await flush();
 
   expect(FakeEventSource.instances).toHaveLength(0);
@@ -148,8 +154,10 @@ it("does not reconnect when the session itself is gone", async () => {
 
   await jest.advanceTimersByTimeAsync(60_000);
   await flush();
-  // One failed mint, not an infinite retry loop against a dead session.
-  expect(apiFetch).toHaveBeenCalledTimes(1);
+  // One attempt, not an infinite retry loop against a dead session. The mint
+  // is never reached because there is no access token to mint with.
+  expect(getValidAccessToken).toHaveBeenCalledTimes(1);
+  expect(apiFetch).not.toHaveBeenCalled();
   close();
 });
 
@@ -157,7 +165,7 @@ it("reports drop then open across a reconnect, and delivers events from the new 
   const onEvent = jest.fn();
   const onOpen = jest.fn();
   const onDrop = jest.fn();
-  const close = openStream("messaging", "access-1", { onEvent, onOpen, onDrop });
+  const close = openStream("messaging", { onEvent, onOpen, onDrop });
   await flush();
 
   FakeEventSource.instances[0]!.emitOpen();

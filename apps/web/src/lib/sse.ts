@@ -1,6 +1,6 @@
 import { StreamTokenResponse, type StreamTokenScope } from "@baydar/shared";
 
-import { apiFetch } from "./api";
+import { apiFetch, getValidAccessToken } from "./api";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000/api/v1";
 
@@ -41,14 +41,17 @@ export interface StreamHandlers {
  * until the page was navigated. Minting a fresh token per attempt is the only
  * thing that actually reconnects.
  *
+ * The access token is resolved per attempt, never captured. Capturing it is
+ * the trap: access tokens live 15 minutes, the layout resolves one once on
+ * mount and never again, and the outages worth reconnecting from (a closed
+ * laptop, a long tunnel) outlast that. A captured token means the first
+ * reconnect after 15 minutes 401s on the mint and stops the loop for good —
+ * the same dead stream this function exists to prevent.
+ *
  * Returns an unsubscribe function; call it and no further retries are
  * scheduled.
  */
-export function openStream(
-  scope: StreamTokenScope,
-  accessToken: string,
-  handlers: StreamHandlers,
-): () => void {
+export function openStream(scope: StreamTokenScope, handlers: StreamHandlers): () => void {
   let closed = false;
   let source: EventSource | null = null;
   let retries = 0;
@@ -58,6 +61,8 @@ export function openStream(
     if (closed) return;
     let streamToken: string;
     try {
+      const accessToken = await getValidAccessToken();
+      if (!accessToken) throw new Error("no session");
       streamToken = (
         await apiFetch("/auth/stream-token", StreamTokenResponse, {
           method: "POST",

@@ -18,7 +18,7 @@ export function useMessagesStream({ token, onEvent, onError }: UseMessagesStream
     // `openStream` owns the retry loop. This hook used to close the source in
     // `onerror` and never reopen, so one dropped connection ended realtime
     // messaging for the life of the mount.
-    return openStream("messaging", token, {
+    return openStream("messaging", {
       onEvent: (data) => {
         try {
           const parsed = WsChatEvent.safeParse(JSON.parse(data));
