@@ -19,131 +19,120 @@ commit, conventional-commit subjects, English. Do not force-push.
 
 ---
 
-## Execution contract — read before anything, including the file list
+## Execution contract
 
-### First action: set `/ponytail full` — not off, and not ultra
+### Set `/ponytail full` — not off, not ultra
 
-`ponytail@ponytail` and `caveman@local-desktop-app-uploads` are enabled at user
-level in `~/.claude/settings.json` with a `SessionStart` hook, so this session
-**will** boot with `PONYTAIL MODE ACTIVE` whether or not anyone asked for it.
-The default the hook sets is `full`. Leave it there.
+`ponytail@ponytail` and `caveman` auto-activate from a `SessionStart` hook in
+`~/.claude/settings.json`, so you boot with `PONYTAIL MODE ACTIVE` at `full`.
+Leave it there.
 
-An earlier draft of this prompt told you to turn ponytail off, on the reasoning
-that "laziest solution that works" conflicts with a session that must not do
-half work. **That was wrong, and the evidence is round 2's own diff.** Ponytail
-was active for all of it, and it is what produced the best fixes:
+An earlier draft of this prompt said to turn ponytail off, reasoning that
+"laziest solution that works" conflicts with a session that must not do half
+work. That was wrong. Ponytail was active for all of round 2 and produced its
+best fixes, every one via rung 2, *"already in this codebase"*:
 
-| Round 2 outcome | Which ponytail rule produced it |
+| Round 2 outcome | Rule that produced it |
 | --- | --- |
-| Karama farming fixed by changing `award` → `awardOnce` — one word | Rung 2, "already in this codebase". `awardOnce` existed and the call site already passed the key. |
-| Blocked users removed from suggestions | Rung 2 — reused `safety.getBlockedEitherIds`, the same exclusion three other surfaces already applied. |
-| Employer enums translated | Rung 2 — `jobs.typeLabels` had existed all along. "Re-implementing what's a few files over is the most common slop." |
-| Three unstable pixel snapshots deleted | "Deletion over addition" + rung 1, "does this need to exist at all". |
-| Per-worker e2e schemas *not* built | Rung 1, with the justification written down. Saved a day for a 2-minute gain. |
-| The billing idempotency ceiling documented | The `ponytail:` comment convention — name the ceiling *and* the upgrade path. |
+| Karama farming fixed by `award` → `awardOnce`, one word | Rung 2 — `awardOnce` existed, call site already passed the key |
+| Blocked users dropped from suggestions | Rung 2 — reused `safety.getBlockedEitherIds` |
+| Employer enums translated | Rung 2 — `jobs.typeLabels` existed all along |
+| Three unstable pixel snapshots deleted | "Deletion over addition" |
+| Per-worker e2e schemas *not* built | Rung 1, justified in writing — saved a day for a 2-minute gain |
 
-Read ponytail's own text before assuming it means "do less". It says: *"Never
-lazy about understanding the problem… Laziness that skips comprehension to ship
-a small diff is the dangerous kind."* And its never-simplify list explicitly
-includes **accessibility basics** and **anything explicitly requested** — which
-is the entire PART A ledger. Ponytail will not let you skip this work; it will
-stop you re-implementing things the kit already has, which is the failure mode a
-35-item design sweep is most prone to.
+Ponytail's never-simplify list already covers **accessibility basics** and
+**anything explicitly requested** — the whole PART A ledger. It will not let you
+skip this work; it will stop you rebuilding what the kit already has, which is
+the failure mode a 35-item sweep is most prone to.
 
-**What is genuinely wrong for this session is `ultra`.** Ultra is a "YAGNI
-extremist" that "challenges the rest of the requirement in the same breath".
-The requirement here is a verified, file:line-cited defect ledger. It is not up
-for challenge. If the hook boots you into ultra, run `/ponytail full`.
+`ultra` is the one level that genuinely conflicts: it "challenges the rest of the
+requirement", and PART A is a file:line-cited ledger, not a proposal.
 
-Caveman may stay — it governs prose, not work.
+### Skills — load these
 
-### Skills — load these, they are not decoration
-
-| Skill | When | Why it is load-bearing here |
+| Skill | When | Why |
 | --- | --- | --- |
-| **`frontend-design`** | Before **any** visual decision in Part 2 or Part 3. Not after. | It is the only thing in the toolkit that addresses "make it feel first-tier without looking templated", and it names the failure mode by name — see the palette warning in Part 3, which applies to Baydar directly and was verified against the shipped tokens. Its two-pass process (plan colour/type/layout/signature → critique the plan against the brief → only then build) is the process this session should run. |
-| **`/code-review`** | The self-audit pass, before the Ship protocol. | Round 2's self-review found five defects in its own work including a P1. Use the tool rather than eyeballing your own diff — you wrote it, so you will read what you meant. |
-| **`TaskCreate` / `TaskUpdate`** | First five minutes, then continuously. | The enumerated-work mechanism described below. Not optional. |
-| **`ponytail:ponytail-debt`** | Before the Ship protocol. | Harvests every `ponytail:` comment in the tree into a debt ledger. You will be adding such comments for deliberate ceilings; this is what stops them rotting into "later means never". Put the output in `docs/audit/`. |
-| **`/run`** | After each layer of Part 2. | Drives the actual app so you see the change working rather than inferring it from a passing test. This repo's screenshots have lied five times; a running app is harder to fool. |
-| **`fewer-permission-prompts`** | Early, once. | Scans transcripts and allowlists common read-only calls. A long autonomous session dies by a thousand permission prompts; this is a genuine anti-stall measure, not housekeeping. |
-| `update-config` | Only if you want ponytail disabled beyond this session. | Edits `settings.json` properly instead of hand-hacking it. |
-| `caveman:caveman-commit` | Optional. | Commit messages, if you want them terser than the house style. |
+| **`frontend-design`** | Before any visual decision. Not after. | The only thing addressing "first-tier without looking templated", and it names Baydar's exact failure mode — see the palette warning in Part 3. Run its plan → critique → build pass. |
+| **`/code-review`** | Self-audit, before shipping. | Round 2's self-review found five defects in its own work, one a P1. You read what you meant; the tool reads what you wrote. |
+| **`TaskCreate` / `TaskUpdate`** | First five minutes, then continuously. | One entry per Part 1 item and per Part 2 defect *class*. `completed` only when that item's check passes. A model that enumerated 14 items and finished 9 cannot honestly report done; one working from prose can. |
+| **`ponytail:ponytail-debt`** | Before shipping. | Harvests your `ponytail:` ceiling comments into a ledger so they do not rot. Output into `docs/audit/`. |
+| **`/run`** | After each layer of Part 2. | Drives the real app. This repo's screenshots have lied five times; a running app is harder to fool. |
+| **`fewer-permission-prompts`** | Early, once. | A long autonomous session dies by a thousand permission prompts. Genuine anti-stall measure. |
 
-`security-review` is **not** needed — this session touches presentation, not the
-auth, billing or safety paths that round 2 hardened. Do not run it for
-completeness; run it if you touch those files.
+Skip `security-review` — this session is presentation, not the auth/billing/safety
+paths round 2 hardened. Run it only if you touch those.
 
-### You do not stop until the done gate passes
+### Finish, then ship
 
-There is one exit condition for this session: **the Ship protocol at the bottom
-of this file completes** — every gate green, PR opened, CI green, merged. Not
-"a good stopping point". Not "the remaining work is straightforward". Not "I've
-made significant progress".
+One exit condition: **the Ship protocol at the bottom completes** — gates green,
+PR open, CI green, merged. "A good stopping point" and "the rest is
+straightforward" are not exit conditions.
 
-If you run out of room, do not stop mid-item. Finish the item you are on, commit
-it, and write the exact next step into `docs/audit/` so the next session resumes
-without re-deriving anything. A half-finished component that type-checks is
-worse than an untouched one, because the next reader cannot tell which half is
-intentional.
+If you genuinely run out of room, finish the item you are on, commit it, and
+write the exact next step into `docs/audit/`. A half-finished component that
+type-checks is worse than an untouched one: the next reader cannot tell which
+half was intentional.
 
-### Enumerate the work before starting it
-
-Create a task list (`TaskCreate`) with one entry per item in Part 1 and one per
-defect *class* in Part 2 — not one per session-phase. Mark `in_progress` when you
-start and `completed` only when that item's check passes. An item with a
-passing type-check and no behavioural verification is not completed.
-
-The list is the anti-drift mechanism. A model that has enumerated 14 items and
-finished 9 cannot honestly report "done"; a model working from prose can.
-
-### Words that are forbidden in your diff
-
-Grep your own diff before every commit. If any of these appear in code you
-wrote, the work is not finished:
+Grep your diff before each commit. These mean the work is unfinished:
 
 ```
-TODO | FIXME | XXX | HACK | for now | temporary | placeholder
-stub | not implemented | left as an exercise | should be straightforward
-in a future PR | out of scope for this change | wire this up later
+TODO | FIXME | XXX | HACK | for now | temporary | placeholder | stub
+not implemented | left as an exercise | wire this up later | in a future PR
 ```
 
-A `ponytail:` comment naming a deliberate ceiling **and its upgrade path** is
-allowed and encouraged — that is a documented decision, not deferred work. The
-difference: "global lock, per-account locks if throughput matters" is a
-decision; "TODO: handle concurrency" is an unfinished job.
+A `ponytail:` comment naming a ceiling **and its upgrade path** is the exception
+— that is a recorded decision. "Global lock, per-account locks if throughput
+matters" is a decision; "TODO: handle concurrency" is a deferred job.
 
-Do not add a component, prop, variant or token that nothing consumes. Round 1
-found a dead 211-line `PremiumCheckout.tsx` bound to a namespace that did not
-exist. Round 2 found 52 non-route files and two workarounds hiding them. Dead
-code here has a track record.
+Ship nothing that nothing consumes. Round 1 found a dead 211-line `PremiumCheckout.tsx`
+bound to a namespace that did not exist; round 2 found 52 non-route files and two
+workarounds hiding them.
 
-### Self-audit before you claim anything
+### What a completed item looks like
 
-Before the Ship protocol, run one pass over your own complete diff — the same
-review you would give someone else's PR. Round 2 did this and found **five
-defects in its own work**, one of them a P1: the SSE fix captured an access
-token that expires in 15 minutes, so the reconnect it added died on the first
-real outage. That bug shipped through a green type-check, a green test suite,
-and a green CI.
+Worked example, from round 2 — use this shape:
 
-Look specifically for: a fix that moved a bug rather than removing it; a filter
-or constant now duplicated in more places than before; a `catch` that turns a
-handled case into a 500; an assumption that is load-bearing and undocumented;
-and any test whose assertion would pass if the feature were deleted.
+> **R2-1, Karama farmable via the hire toggle.**
+> *Found:* reading `companies.service.ts` (§3h asked for it; round 1 skipped it).
+> *Root cause:* `updateApplicantStatus` awarded +200 via `karama.award`, which
+> has no idempotency, and the guard only blocked `HIRED → HIRED` — so
+> `HIRED → REJECTED → HIRED` minted 200 points per cycle.
+> *Fix:* `award` → `awardOnce`. One word. `awardOnce` already existed, the call
+> site already passed `refType`/`refId`, and `KaramaLedger` already had the
+> unique that makes it a one-time key.
+> *Check:* spec asserts `awardOnce` is called with the application id **and**
+> that `award` is not. Broke it on purpose to confirm it fails.
+> *Verified:* api 327 passing.
 
-### What "done" is not
+Found → root cause → fix → check that fails when broken → verified. An item
+without the last two lines is not done.
 
-- Not "type-check passes" — round 2's stray `}` passed `tsc` and failed prettier.
-- Not "tests pass" — the tests you did not write cannot fail.
-- Not "CI is green" — CI was green on every one of the eight P1s these two
-  review rounds found.
-- Not "the screenshot looks right" — the harness has lied five separate ways,
-  and a screenshot showed a correct-looking nav for months while the active-tab
-  underline sat 17px below where it belonged.
+## Sequencing — this session is long, so order it to overlap
 
-Done is: the check exists, it fails when you break the thing on purpose, and it
-passes now.
+The mobile matrix takes about an hour of wall time and needs the tree frozen.
+The design work needs the tree hot. Those two cannot overlap, so put the matrix
+where it costs least:
+
+1. **Open** — `stop ponytail`, `fewer-permission-prompts`, `TaskCreate` the
+   whole list, commit the untracked design brief. Ten minutes.
+2. **Part 1 code items** (1.2 P3s, 1.3 a11y capture) — small, independent,
+   nothing depends on them. Land them.
+3. **Start the mobile emulator and matrix (1.4) now**, before any design work,
+   because it captures the *pre-change* baseline you will compare against and
+   because the tree is still clean. **Do not touch application code while it
+   runs** — that is the mistake that cost round 2 an hour-long matrix.
+4. **While the matrix runs**: read the design brief in full, run
+   `frontend-design`'s plan-and-critique pass, and write the token additions
+   (PART B1). Tokens are a different package; they do not disturb a mobile
+   bundle that is already built.
+5. **Review the matrix**, score the 38 screens, then do Part 1.1 (the three
+   sub-7 screens) with that context.
+6. **Part 2 proper** — web primitives, native twins, app wiring.
+7. **Re-capture** whatever the design changes touched, self-audit, ship.
+
+If the emulator fights you for more than 45 minutes, stop and say so — that is a
+genuine environment blocker, and the rest of the session is worth more than
+winning that fight.
 
 ---
 
@@ -524,35 +513,6 @@ Round 2 scored 46 screens without drowning. What made it tractable:
 - **Judge nothing from a thumbnail.** Round 2 read a contact sheet as "content
   pinned to one side" and was wrong — RTL text inside a centred container reads
   as right-hugging at 340px wide. Full resolution settled it.
-
----
-
-## Sequencing — this session is long, so order it to overlap
-
-The mobile matrix takes about an hour of wall time and needs the tree frozen.
-The design work needs the tree hot. Those two cannot overlap, so put the matrix
-where it costs least:
-
-1. **Open** — `stop ponytail`, `fewer-permission-prompts`, `TaskCreate` the
-   whole list, commit the untracked design brief. Ten minutes.
-2. **Part 1 code items** (1.2 P3s, 1.3 a11y capture) — small, independent,
-   nothing depends on them. Land them.
-3. **Start the mobile emulator and matrix (1.4) now**, before any design work,
-   because it captures the *pre-change* baseline you will compare against and
-   because the tree is still clean. **Do not touch application code while it
-   runs** — that is the mistake that cost round 2 an hour-long matrix.
-4. **While the matrix runs**: read the design brief in full, run
-   `frontend-design`'s plan-and-critique pass, and write the token additions
-   (PART B1). Tokens are a different package; they do not disturb a mobile
-   bundle that is already built.
-5. **Review the matrix**, score the 38 screens, then do Part 1.1 (the three
-   sub-7 screens) with that context.
-6. **Part 2 proper** — web primitives, native twins, app wiring.
-7. **Re-capture** whatever the design changes touched, self-audit, ship.
-
-If the emulator fights you for more than 45 minutes, stop and say so — that is a
-genuine environment blocker, and the rest of the session is worth more than
-winning that fight.
 
 ---
 
