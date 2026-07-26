@@ -49,6 +49,9 @@ function renderClient(element) {
 
   return {
     container,
+    // Dialog renders through a portal on <body> (A2.15), so anything asserting
+    // on dialog content has to look there rather than at the mount container.
+    portalScope: document.body,
     unmount() {
       React.act(() => {
         root.unmount();
@@ -189,13 +192,15 @@ describe("public web component coverage", () => {
       ),
     );
 
-    click(container.querySelector('[aria-label="إغلاق"]'));
-    click(container.querySelector('[aria-label="Close"]'));
+    click(document.body.querySelector('[aria-label="إغلاق"]'));
+    click(document.body.querySelector('[aria-label="Close"]'));
     click(container.querySelector('input[type="checkbox"]'));
     click(container.querySelector('[role="switch"][aria-checked="true"]'));
     click(container.querySelector('button[aria-label="Enabled"]'));
     click(
-      [...container.querySelectorAll("button")].find((button) => button.textContent === "Retry"),
+      [...document.body.querySelectorAll("button")].find(
+        (button) => button.textContent === "Retry",
+      ),
     );
     click([...container.querySelectorAll('[role="tab"]')].find((tab) => tab.textContent === "Two"));
 

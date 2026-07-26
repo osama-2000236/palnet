@@ -1,5 +1,5 @@
-import { processColor } from "react-native";
 import { render } from "@testing-library/react-native";
+import { processColor } from "react-native";
 
 import { Icon, type IconName } from "../Icon";
 import { nativeTokens } from "../tokens";

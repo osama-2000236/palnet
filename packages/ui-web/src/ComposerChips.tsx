@@ -17,7 +17,7 @@ export function QuietChip({
       type="button"
       onClick={onClick}
       className={cx(
-        "text-ink-muted hover:bg-surface-subtle hover:text-ink inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]",
+        "target-area text-ink-muted hover:bg-surface-subtle hover:text-ink inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]",
       )}
     >
       <Icon name={icon} size={14} />

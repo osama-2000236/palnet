@@ -275,3 +275,47 @@ test.describe("keyboard traversal", () => {
     expect(parked).not.toBe("NONE");
   });
 });
+
+test.describe("skip link and toast timing", () => {
+  test.describe.configure({ mode: "serial" });
+
+  test.beforeEach(async ({ page, request }, testInfo) => {
+    test.skip(testInfo.project.name !== "chromium-ar", "One locale is enough.");
+    const auth = await ensureA11yStorageState(request);
+    await page.addInitScript((state) => {
+      window.localStorage.setItem("baydar.session.v1", state.session);
+      window.localStorage.setItem("baydar.deviceId", state.deviceId);
+    }, auth);
+  });
+
+  // A2.8: AppShell puts 11 tab stops ahead of content on every authenticated
+  // page. Landmark navigation covered screen readers; sighted keyboard users
+  // had no way past them.
+  test("the first Tab reaches a skip link that moves focus to the content", async ({ page }) => {
+    await page.goto("/ar-PS/feed", { waitUntil: "domcontentloaded" });
+    await page.waitForSelector("header", { timeout: 30_000 });
+    await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
+
+    await page.keyboard.press("Tab");
+    const first = await page.evaluate(() => {
+      const el = document.activeElement as HTMLElement | null;
+      return { tag: el?.tagName, href: el?.getAttribute("href"), text: el?.textContent?.trim() };
+    });
+    expect(first.tag, "the first tab stop is not a link").toBe("A");
+    expect(first.href, "the first tab stop is not the skip link").toBe("#main-content");
+
+    // Visible once focused — a permanently `sr-only` skip link helps nobody.
+    const visible = await page.evaluate(() => {
+      const el = document.activeElement as HTMLElement;
+      const rect = el.getBoundingClientRect();
+      return rect.width > 1 && rect.height > 1;
+    });
+    expect(visible, "the skip link stays visually hidden while focused").toBe(true);
+
+    await page.keyboard.press("Enter");
+    const landed = await page.evaluate(() => document.activeElement?.id);
+    expect(landed, "activating the skip link did not move focus to the content").toBe(
+      "main-content",
+    );
+  });
+});

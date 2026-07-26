@@ -30,7 +30,11 @@ export const tokens = {
     ink: {
       DEFAULT: "#1a1a17",
       muted: "#5c5a52",
-      subtle: "#8a8880",
+      // A6: was #8a8880 — 3.55:1 on --surface and 3.08:1 on --surface-subtle,
+      // and it carries input placeholders, disabled text and field icons. Now
+      // 5.20 / 4.51. Re-lit against the *worse* of the two backgrounds, which
+      // is why it sits closer to `muted` than the old ramp did.
+      subtle: "#6e6d66",
       inverse: "#ffffff",
     },
     // Surface = backgrounds. Subtly warm.
@@ -48,9 +52,10 @@ export const tokens = {
       success: "#3b7a3b",
       successSoft: "rgba(59, 122, 59, 0.10)",
       successBorder: "rgba(59, 122, 59, 0.22)",
-      warning: "#b07a1a",
-      warningSoft: "rgba(176, 122, 26, 0.10)",
-      warningBorder: "rgba(176, 122, 26, 0.25)",
+      // A6: was #b07a1a — 3.33:1 against its own 10% tint. Now 4.50.
+      warning: "#926516",
+      warningSoft: "rgba(146, 101, 22, 0.10)",
+      warningBorder: "rgba(146, 101, 22, 0.25)",
       danger: "#a83232",
       dangerSoft: "rgba(168, 50, 50, 0.08)",
       dangerBorder: "rgba(168, 50, 50, 0.22)",
@@ -116,9 +121,42 @@ export const tokens = {
     23: 92,
     24: 96,
   } as const,
+  // Stacking order. Before this existed each layer picked its own z-index
+  // (`z-[1000]` on Dialog, `z-[100]` on Toast, `z-20` on AppShell), so whether
+  // a toast rose above a modal was undefined. Gaps of 10 leave room to insert.
+  z: {
+    base: 0,
+    sticky: 10,
+    nav: 20,
+    dropdown: 30,
+    sheet: 40,
+    modal: 50,
+    toast: 60,
+    tooltip: 70,
+  } as const,
+  // Minimum pressable size. `min` is CLAUDE.md's 44pt mobile rule (also WCAG
+  // 2.5.5 AAA); `compact` is its 40px web rule. Both are far above WCAG 2.5.8
+  // AA's 24px, which is deliberate — the repo holds the higher line.
+  target: { min: 44, compact: 40 } as const,
+  // State layer — one tokenized ink overlay every interactive surface applies,
+  // instead of each variant hand-writing its own hover. Dark needs more because
+  // an ink overlay reads weaker on a dark surface.
+  state: {
+    light: { hover: 0.04, pressed: 0.09, selected: 0.12 },
+    dark: { hover: 0.06, pressed: 0.12, selected: 0.16 },
+  } as const,
   // Motion
   motion: {
-    duration: { fast: 80, base: 120, slow: 240 },
+    // `slower` added for sheet and modal entrances: 240ms is right for a
+    // colour change and visibly clipped for a surface travelling from an edge.
+    duration: { fast: 80, base: 120, slow: 240, slower: 400 },
+    // Native spring configs (Reanimated `withSpring`). Web keeps the cubic
+    // beziers below — a spring in CSS is a bezier approximation anyway.
+    spring: {
+      toggle: { stiffness: 420, damping: 32, mass: 0.9 },
+      sheet: { stiffness: 260, damping: 30, mass: 1 },
+      press: { stiffness: 520, damping: 28, mass: 0.7 },
+    },
     easing: {
       standard: "cubic-bezier(0.2, 0, 0, 1)",
       emphasized: "cubic-bezier(0.3, 0, 0, 1.15)",
@@ -127,6 +165,13 @@ export const tokens = {
     stagger: { step: 40, max: 6 }, // ms between list items; cap at 6 (6×40 = 240ms = --dur-slow)
     enter: { rise: 8 }, // px translateY on entrance (= space[2])
   },
+  // Switch thumb. Was a hardcoded `bg-white` on web against `c.inkInverse` on
+  // native — the same component, opposite colours per platform, and invisible
+  // against the light OFF track either way (1.23:1). One semantic token, plus
+  // the border the Switch draws so the thumb and the OFF track both have a
+  // perceivable boundary (WCAG 1.4.11 needs 3:1 and no fill in this palette
+  // can reach it).
+  control: { switchThumb: "#ffffff" },
   focus: {
     ring: "0 0 0 var(--focus-ring-offset) var(--surface), 0 0 0 calc(var(--focus-ring-offset) + var(--focus-ring-width)) var(--focus-ring-color)",
     color: "var(--brand-600)",
@@ -190,20 +235,32 @@ export const tokens = {
       brand: { 50: "#262a1b", 100: "#39431f", 200: "#52612e", 600: "#7e9442", 700: "#9bb059" },
       // accent-500 keeps its light value.
       accent: { 50: "#3a241c", 100: "#4a2c20", 600: "#cf6743", 700: "#b5532f" },
-      ink: { DEFAULT: "#f1efe8", muted: "#b3afa4", subtle: "#85827a", inverse: "#1a1a17" },
+      // A6: subtle was #85827a — 4.14 / 3.68. Now 5.51 / 4.90.
+      ink: { DEFAULT: "#f1efe8", muted: "#b3afa4", subtle: "#9b988f", inverse: "#1a1a17" },
       surface: { DEFAULT: "#232220", muted: "#1a1916", subtle: "#2d2b27", sunken: "#37342f" },
       line: { soft: "rgba(255, 255, 255, 0.08)", hard: "rgba(255, 255, 255, 0.17)" },
       semantic: {
-        // success + danger re-lit for the dark surface; soft/border re-derived.
-        // warning + info keep their light values (legible on warm charcoal).
+        // A6: the previous comment here claimed "warning + info read fine as-is"
+        // and inherited both from light. Measured, `--info` was 2.61:1 against
+        // its own tint and 3.05:1 under the Toast's ink — the two worst pairs in
+        // the system. All four semantics now carry a dark value.
         success: "#6fae5f",
         successSoft: "rgba(111, 174, 95, 0.14)",
         successBorder: "rgba(111, 174, 95, 0.30)",
-        danger: "#d96b6b",
-        dangerSoft: "rgba(217, 107, 107, 0.14)",
-        dangerBorder: "rgba(217, 107, 107, 0.30)",
+        warning: "#c09649",
+        warningSoft: "rgba(192, 150, 73, 0.14)",
+        warningBorder: "rgba(192, 150, 73, 0.30)",
+        danger: "#df8282",
+        dangerSoft: "rgba(223, 130, 130, 0.14)",
+        dangerBorder: "rgba(223, 130, 130, 0.30)",
+        info: "#7ba2b6",
+        infoSoft: "rgba(123, 162, 182, 0.14)",
+        infoBorder: "rgba(123, 162, 182, 0.30)",
         scrim: "rgba(0, 0, 0, 0.50)",
       },
+      // The thumb stays a light pill in both themes so the control reads the
+      // same way; the OFF-track boundary is what carries the contrast.
+      control: { switchThumb: "#f1efe8" },
     },
     shadow: {
       // Pure-black shadows on a dark surface (the warm-ink shadows vanish).

@@ -36,13 +36,13 @@ body {
 
 html {
   /* Canonical token first, legacy aliases as fallback during migration. */
-  font-family: var(--font-sans),
-    var(--font-naskh), var(--font-sans-arabic),
-    "IBM Plex Sans Arabic", "IBM Plex Sans", system-ui, sans-serif;
+  font-family:
+    var(--font-sans), var(--font-naskh), var(--font-sans-arabic), "IBM Plex Sans Arabic",
+    "IBM Plex Sans", system-ui, sans-serif;
 }
 
 body {
-  @apply bg-surface-muted text-ink antialiased font-body;
+  @apply bg-surface-muted text-ink font-body antialiased;
 }
 
 /* Keep code blocks LTR even in RTL pages. */
@@ -59,10 +59,107 @@ samp {
 
 /* Tailwind's `animation` utility does not auto-respect reduced-motion.
  * Entrances render as their final state when the user opts out. */
+/* A4.6 — the reaction moment. Baydar's signature interaction.
+ *
+ * Deliberately NOT a burst. A like-burst is the single most copied interaction
+ * in this category and `CLAUDE.md` says to take the other option where a
+ * decision would converge on LinkedIn. The product's own currency is Karama —
+ * a real ledger — so a reaction should read as a contribution rather than a
+ * tap: press in, settle, fill. Restraint is the differentiator in a category
+ * that pops. PART E bans decorative motion; this is feedback, which B3 makes
+ * required. */
+.react-press {
+  transition:
+    transform var(--dur-fast) var(--ease-standard),
+    color var(--dur-base) var(--ease-standard);
+}
+
+.react-press:active {
+  /* In, not out. The scale never exceeds 1 — an overshoot is the pop. */
+  transform: scale(0.92);
+}
+
+.react-press[aria-pressed="true"] .react-glyph {
+  animation: react-settle var(--dur-slow) var(--ease-spring) both;
+}
+
+@keyframes react-settle {
+  from {
+    transform: scale(0.86);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+/* A4.7 — dialog and toast used to mount and unmount as hard cuts. */
+.dialog-scrim {
+  animation: scrim-in var(--dur-base) var(--ease-standard) both;
+}
+
+.dialog-panel {
+  animation: panel-rise var(--dur-slower) var(--ease-emphasized) both;
+}
+
+.toast-item {
+  /* From the block end, so it reads the same in RTL — the toast stack is
+     inset-inline-end anchored and a horizontal entrance would mirror. */
+  animation: toast-rise var(--dur-slow) var(--ease-emphasized) both;
+}
+
+@keyframes scrim-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes panel-rise {
+  from {
+    opacity: 0;
+    transform: translateY(var(--enter-rise)) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes toast-rise {
+  from {
+    opacity: 0;
+    transform: translateY(var(--enter-rise));
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-enter-up,
-  .enter-up-item {
+  .enter-up-item,
+  .dialog-scrim,
+  .dialog-panel,
+  .toast-item,
+  .react-press[aria-pressed="true"] .react-glyph {
     animation: none !important;
+  }
+
+  /* Transitions too, not just keyframes — a 0.92 press scale is exactly the
+     kind of movement the setting is asking us to stop. */
+  .react-press {
+    transition: none !important;
+  }
+
+  .react-press:active {
+    transform: none;
+  }
+
+  .state-layer::after {
+    transition: none !important;
   }
 }
 
@@ -87,4 +184,75 @@ samp {
 
 [dir="ltr"] .bidi-plaintext {
   text-align: left;
+}
+
+/* A3 — expand a small control's pressable area to `--target-min` WITHOUT
+ * changing layout, so the visual density the design already earned survives.
+ * The web equivalent of native's `hitSlop`.
+ *
+ * `inset: 0` + `margin: auto` centres an absolutely-positioned box in its
+ * containing block, and overflows it symmetrically once the min-* sizes exceed
+ * it. Direction-agnostic on purpose: the `inset-inline-start: 50%` +
+ * `translateX(-50%)` idiom pushes the wrong way under RTL.
+ *
+ * Must be applied to the pressable element itself (a `<button>`, a `<label>`).
+ * On a wrapper the pseudo-element captures the click and never forwards it, and
+ * `<input>` is a replaced element that renders no pseudo-elements at all. */
+.target-area {
+  position: relative;
+}
+
+.target-area::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  min-width: var(--target-min);
+  min-height: var(--target-min);
+}
+
+/* A4.5 — the state layer.
+ *
+ * Hover and press used to be hand-written per variant (`hover:bg-surface-subtle`
+ * on one, `hover:bg-danger/10` on another, `hover:text-ink` on a third), so the
+ * intensity drifted between Button, Chip, Tab, PostCardAction and list rows and
+ * nothing could be tuned in one place.
+ *
+ * One ink overlay at tokenized opacities, drawn on a pseudo-element so it sits
+ * over the element's own background whatever that background is — a `filter`
+ * or a background-colour swap cannot do that for six variants at once. Uses
+ * `--ink-rgb`, which the dark scope swaps, so the overlay re-themes for free. */
+.state-layer {
+  position: relative;
+}
+
+.state-layer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-color: rgb(var(--ink-rgb) / 0);
+  transition: background-color var(--dur-fast) var(--ease-standard);
+  pointer-events: none;
+}
+
+@media (hover: hover) {
+  .state-layer:hover::after {
+    background-color: rgb(var(--ink-rgb) / var(--state-hover));
+  }
+}
+
+.state-layer:active::after {
+  background-color: rgb(var(--ink-rgb) / var(--state-pressed));
+}
+
+.state-layer[aria-pressed="true"]::after,
+.state-layer[aria-selected="true"]::after,
+.state-layer[data-selected="true"]::after {
+  background-color: rgb(var(--ink-rgb) / var(--state-selected));
+}
+
+.state-layer:disabled::after,
+.state-layer[aria-disabled="true"]::after {
+  background-color: rgb(var(--ink-rgb) / 0);
 }

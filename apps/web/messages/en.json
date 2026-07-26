@@ -20,7 +20,8 @@
     "revert": "Revert",
     "continue": "Continue",
     "goHome": "Go home",
-    "genericError": "Something went wrong. Please try again."
+    "genericError": "Something went wrong. Please try again.",
+    "skipToContent": "Skip to content"
   },
   "errors": {
     "PROFILE_ONBOARDING_REQUIRED": "Complete your professional profile before continuing.",
@@ -1117,7 +1118,11 @@
         "HIRED": "Hired",
         "WITHDRAWN": "Withdrew"
       },
-      "allFilter": "All"
+      "allFilter": "All",
+      "emptyBody": "Applications appear here as soon as someone applies. Share the job link to reach more professionals.",
+      "emptyFiltered": "No applicants have this status.",
+      "emptyFilteredCta": "Show all applicants",
+      "shareJob": "Copy job link"
     },
     "newJob": {
       "title": "New job",

@@ -129,13 +129,11 @@ const styles = StyleSheet.create({
     alignSelf: "stretch",
   },
   title: {
-    color: nativeTokens.color.ink,
     fontFamily: nativeTokens.type.family.sans,
     fontWeight: "600",
     lineHeight: 24,
   },
   body: {
-    color: nativeTokens.color.inkMuted,
     fontFamily: nativeTokens.type.family.body,
     lineHeight: 22,
     maxWidth: 360,

@@ -140,7 +140,7 @@ function NotificationRow({
       )}
       <button
         type="button"
-        className="text-ink-muted hover:text-danger hover:bg-danger/10 flex h-9 w-9 flex-none items-center justify-center rounded-md focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-50"
+        className="text-ink-muted hover:text-danger hover:bg-danger/10 target-area state-layer flex h-9 w-9 flex-none items-center justify-center rounded-md focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-50"
         aria-label={t("dismiss.aria")}
         title={t("dismiss.action")}
         disabled={dismissing}

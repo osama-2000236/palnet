@@ -32,14 +32,20 @@ export interface ButtonProps extends Omit<ComponentPropsWithoutRef<"button">, "c
   children?: ReactNode;
 }
 
+// A4.5: hover/press are no longer written per variant — `.state-layer` draws
+// one tokenized ink overlay for every interactive surface in the system, so the
+// intensity can be tuned in one place instead of drifting between Button, Chip,
+// Tab, PostCardAction and list rows. What stays here is each variant's *resting*
+// appearance, plus the colour shifts that are identity rather than state
+// (primary and accent still deepen on hover; that is the brand, not feedback).
 const VARIANT_CLASSES: Record<ButtonVariant, string> = {
   primary:
     "bg-brand-600 text-ink-inverse border border-brand-600 hover:bg-brand-700 hover:border-brand-700",
-  secondary: "bg-surface text-ink border border-line-hard hover:bg-surface-subtle",
-  ghost: "bg-transparent text-ink border border-transparent hover:bg-surface-subtle",
+  secondary: "bg-surface text-ink border border-line-hard",
+  ghost: "bg-transparent text-ink border border-transparent",
   accent:
     "bg-accent-600 text-ink-inverse border border-accent-600 hover:bg-accent-700 hover:border-accent-700",
-  "danger-ghost": "bg-transparent text-danger border border-transparent hover:bg-danger/10",
+  "danger-ghost": "bg-transparent text-danger border border-transparent",
   outline: "border border-line-hard hover:border-brand-600 hover:text-brand-600",
 };
 
@@ -72,6 +78,11 @@ export function Button({
       className={cx(
         // layout / shape
         "inline-flex select-none items-center justify-center rounded-md font-semibold",
+        // A3: `sm` renders 28px and `md` 36px — both under CLAUDE.md's 40px web
+        // minimum, which the brief only noticed for `sm`. `target-area` lifts
+        // the pressable box to the token minimum for every size without moving
+        // a single pixel of layout; on `lg` (44px) it is already a no-op.
+        "target-area state-layer",
         "duration-base ease-standard transition-colors",
         // focus ring: keyboard-only
         "focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]",

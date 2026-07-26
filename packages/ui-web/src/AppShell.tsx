@@ -9,6 +9,8 @@ import { Icon } from "./Icon";
 
 export type { AppShellLabels, AppShellProps, AppShellRoute } from "./AppShell.types";
 
+const CONTENT_ID = "main-content";
+
 export function AppShell({
   bare = false,
   currentRoute,
@@ -54,13 +56,30 @@ export function AppShell({
 
   return (
     <ShellFrame>
-      <header role="banner" className="border-line-soft bg-surface sticky top-0 z-20 h-14 border-b">
+      {/* AppShell puts 11 tab stops ahead of content on every page — logo,
+          search, 8 nav items, profile menu. Screen readers can jump by
+          landmark; sighted keyboard users had no way past them at all. */}
+      {labels.skipToContent ? (
+        <a
+          href={`#${CONTENT_ID}`}
+          // `min-h-target` even while `sr-only`: the link is reachable by Tab in
+          // both states, so the targets sweep measures it in both. Meeting the
+          // minimum is cheaper than arguing for an exemption.
+          className="bg-surface text-ink z-tooltip shadow-pop min-h-target min-w-target sr-only items-center justify-center rounded-md px-4 py-2 text-sm font-semibold focus:not-sr-only focus:fixed focus:top-2 focus:inline-flex focus:[box-shadow:var(--focus-ring)] focus:[inset-inline-start:0.5rem]"
+        >
+          {labels.skipToContent}
+        </a>
+      ) : null}
+      <header
+        role="banner"
+        className="border-line-soft bg-surface z-nav sticky top-0 h-14 border-b"
+      >
         <div className="mx-auto flex h-full w-full min-w-0 max-w-[1128px] items-center gap-2 px-3 sm:gap-4 sm:px-5">
           <button
             type="button"
             onClick={() => onNavigate("feed")}
             aria-label={labels.logoAlt}
-            className="text-ink flex shrink-0 items-center gap-2 rounded-md py-1 hover:opacity-90 focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+            className="target-area text-ink flex shrink-0 items-center gap-2 rounded-md py-1 hover:opacity-90 focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
           >
             <Icon name="logo" size={32} />
             <span className="hidden text-lg font-semibold sm:inline">{labels.logoAlt}</span>
@@ -95,7 +114,14 @@ export function AppShell({
         </div>
       </header>
 
-      <div>{children}</div>
+      {/* A2.8: the target for the skip link. One id on the shell's content slot
+          rather than on 49 route-level <main> elements. `tabIndex={-1}` so
+          focus actually lands here — an anchor jump to a non-focusable element
+          scrolls without moving focus in several browsers, which strands the
+          keyboard user back at the top of the tab order. */}
+      <div id={CONTENT_ID} tabIndex={-1} className="focus:outline-none">
+        {children}
+      </div>
     </ShellFrame>
   );
 }

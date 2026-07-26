@@ -62,7 +62,12 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(function Che
       <label
         htmlFor={inputId}
         className={cx(
-          "inline-flex items-start gap-2 text-sm",
+          // A3: the box is 16×16px. The `<label>` is the real pressable target
+          // — clicking it toggles the input — so the expander goes here, not on
+          // the input, which is a replaced element and renders no pseudo-element.
+          // `min-h-target` covers the label-only case; `target-area` covers a
+          // bare checkbox with no label text.
+          "target-area min-h-target inline-flex items-center gap-2 text-sm",
           disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer",
           labelClassName,
         )}
@@ -82,7 +87,7 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(function Che
             onCheckedChange?.(event.currentTarget.checked);
           }}
           className={cx(
-            "rounded-xs border-line-hard text-brand-600 accent-brand-600 mt-0.5 h-4 w-4 shrink-0",
+            "rounded-xs border-line-hard text-brand-600 accent-brand-600 h-4 w-4 shrink-0",
             "focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]",
             error && "border-danger text-danger accent-danger",
             inputClassName,

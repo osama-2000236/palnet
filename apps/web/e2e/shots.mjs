@@ -429,7 +429,10 @@ async function main() {
   }
 
   await browser.close();
-  await writeFile(path.join(OUT_DIR, `_overflow${suffix}.json`), JSON.stringify(overflows, null, 2));
+  await writeFile(
+    path.join(OUT_DIR, `_overflow${suffix}.json`),
+    JSON.stringify(overflows, null, 2),
+  );
   console.log(`\n${shot} shots -> ${OUT_DIR}`);
   console.log(`${overflows.length} horizontal-overflow hits -> _overflow.json`);
   if (failures.length) console.log(`failures:\n${JSON.stringify(failures, null, 2)}`);

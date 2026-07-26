@@ -1,3 +1,6 @@
+import { Icon } from "@baydar/ui-web";
+import Link from "next/link";
+
 const UPDATED = "2026-05-15";
 
 const COPY = {
@@ -77,23 +80,71 @@ const COPY = {
 
 export type LegalKind = keyof typeof COPY;
 
+// Chrome strings. Inline rather than next-intl because the page copy above
+// already is — one mechanism per file beats two.
+const SHELL = {
+  ar: {
+    eyebrow: "الشؤون القانونية",
+    home: "بيدر",
+    back: "العودة إلى بيدر",
+    meta: (updated: string) => `الإصدار ٠٫١ · آخر تحديث ${updated}`,
+  },
+  en: {
+    eyebrow: "Baydar Legal",
+    home: "Baydar",
+    back: "Back to Baydar",
+    meta: (updated: string) => `Version 0.1 · Last updated ${updated}`,
+  },
+} as const;
+
 export function LegalPage({ kind, locale }: { kind: LegalKind; locale: string }): JSX.Element {
   const lang = locale === "en" ? "en" : "ar";
   const copy = COPY[kind][lang];
+  const shell = SHELL[lang];
+
   return (
-    <main className="mx-auto flex w-full max-w-[800px] flex-col gap-5 px-6 py-10">
-      <header className="border-line-soft border-b pb-4">
-        <p className="text-brand-700 text-sm font-semibold">Baydar Legal</p>
-        <h1 className="text-ink mt-2 text-3xl font-bold">{copy.title}</h1>
-        <p className="text-ink-muted mt-1 text-sm">Version 0.1 · Last updated {UPDATED}</p>
+    // Rubric functionality 6: these four pages rendered with no application
+    // chrome at all — no header, no nav, no back link — so a member who
+    // followed the footer link could only leave with the browser back button.
+    // The landing page's own minimal header is the precedent, reused here
+    // rather than pulling the full AppShell in: these are public pages and a
+    // signed-out reader has no shell to return to.
+    <div className="bg-surface-muted min-h-screen">
+      <header className="border-line-soft bg-surface border-b">
+        <div className="mx-auto flex h-14 w-full max-w-[800px] items-center justify-between px-6">
+          <Link
+            href={`/${locale}`}
+            className="target-area text-ink inline-flex items-center gap-2 rounded-md font-semibold focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+          >
+            <Icon name="logo" size={28} />
+            <span>{shell.home}</span>
+          </Link>
+          <Link
+            href={`/${locale}`}
+            className="target-area text-ink-muted hover:text-ink inline-flex items-center gap-1 rounded-md text-sm focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+          >
+            {/* The kit has no back arrow; `chevron-down` rotated is what the
+                rest of the app uses, and `rtl-mirror` flips it in Arabic. */}
+            <Icon name="chevron-down" size={16} className="rtl-mirror rotate-90" />
+            <span>{shell.back}</span>
+          </Link>
+        </div>
       </header>
-      <section className="flex flex-col gap-4">
-        {copy.body.map((paragraph) => (
-          <p key={paragraph} className="text-ink text-base leading-7">
-            {paragraph}
-          </p>
-        ))}
-      </section>
-    </main>
+
+      <main className="mx-auto flex w-full max-w-[800px] flex-col gap-5 px-6 py-10">
+        <header className="border-line-soft border-b pb-4">
+          <p className="text-brand-700 text-sm font-semibold">{shell.eyebrow}</p>
+          <h1 className="text-ink mt-2 text-3xl font-bold">{copy.title}</h1>
+          <p className="text-ink-muted mt-1 text-sm">{shell.meta(UPDATED)}</p>
+        </header>
+        <section className="flex flex-col gap-4">
+          {copy.body.map((paragraph) => (
+            <p key={paragraph} className="text-ink text-base leading-7">
+              {paragraph}
+            </p>
+          ))}
+        </section>
+      </main>
+    </div>
   );
 }

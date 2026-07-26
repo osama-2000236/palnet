@@ -27,3 +27,15 @@ export const LongMessage = () => (
     />
   </div>
 );
+
+// A2.11 — a toast carrying an action never auto-dismisses (WCAG 2.2.1): you
+// cannot offer a choice and then remove it on a timer.
+export const WithAction = () => (
+  <Toast
+    kind="error"
+    message="تعذّر إرسال الرسالة."
+    action={{ label: "إعادة المحاولة", onAction: () => undefined }}
+    onDismiss={() => undefined}
+    dismissLabel="إغلاق"
+  />
+);

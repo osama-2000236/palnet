@@ -49,7 +49,7 @@ export default function AdminLayout({ children }: { children: ReactNode }): JSX.
     <>
       <nav
         aria-label={t("label")}
-        className="border-line-soft bg-surface sticky top-0 z-20 border-b"
+        className="border-line-soft bg-surface z-nav sticky top-0 border-b"
       >
         <div className="mx-auto flex w-full max-w-[1040px] items-center gap-1 px-6 py-2">
           {links

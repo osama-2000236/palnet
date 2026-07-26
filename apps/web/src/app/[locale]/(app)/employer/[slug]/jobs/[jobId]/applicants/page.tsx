@@ -7,7 +7,7 @@ import {
   cursorPage,
   EmployerApplicant,
 } from "@baydar/shared";
-import { Surface } from "@baydar/ui-web";
+import { EmptyState, Surface } from "@baydar/ui-web";
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
@@ -121,10 +121,26 @@ export default function EmployerApplicantsPage(): JSX.Element {
         <p className="text-ink-muted text-sm">{tCommon("loading")}</p>
       ) : null}
 
+      {/* Rubric hierarchy 6: this was one bare line of text under the filter
+          row, on the screen an employer reaches first — right after posting
+          their first job and before anyone has applied — while every other
+          empty state in the product (employer, settings/blocked, moderation,
+          billing, saved) gets the shared illustrated one.
+          The filtered case is separated because the two mean different things:
+          "nobody has applied yet" needs direction, "nobody matches this filter"
+          needs a way back. */}
       {!loading && items.length === 0 ? (
-        <Surface variant="card" padding="4">
-          <p className="text-ink text-sm">{t("empty")}</p>
-        </Surface>
+        filter === "" ? (
+          <EmptyState motif="network" title={t("empty")} body={t("emptyBody")} />
+        ) : (
+          <EmptyState
+            variant="inline"
+            motif="search"
+            title={t("emptyFiltered")}
+            cta={t("emptyFilteredCta")}
+            onAction={() => setFilter("")}
+          />
+        )
       ) : null}
 
       <ul className="grid grid-cols-1 gap-3">

@@ -113,7 +113,6 @@ const styles = StyleSheet.create({
     gap: nativeTokens.space[1],
   },
   title: {
-    color: nativeTokens.color.ink,
     fontFamily: nativeTokens.type.family.sans,
     fontSize: nativeTokens.type.scale.h3.size,
     lineHeight: nativeTokens.type.scale.h3.line,
@@ -121,7 +120,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   message: {
-    color: nativeTokens.color.inkMuted,
     fontFamily: nativeTokens.type.family.sans,
     fontSize: nativeTokens.type.scale.body.size,
     lineHeight: nativeTokens.type.scale.body.line,

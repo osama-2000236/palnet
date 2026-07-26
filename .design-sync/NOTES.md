@@ -162,3 +162,37 @@ the design agent around art that already exists, and it trusts that file.
   (a second `:root` block around line 229) but every preview and the compiled
   sheet render light only. If dark-mode designs matter, that is the next gap to
   close.
+
+## design-system v2 (2026-07-26) — what changed for the sync
+
+Three new utility classes ship in `apps/web/src/app/globals.css` and are
+**mirrored into `ds-styles/input.css`**, because the compiled sheet is the
+entire styling surface handed to generated designs. Without the mirror they
+resolve to nothing and no error is raised — the same silent failure the
+safelist exists to prevent, and the reason that paragraph is load-bearing.
+
+| Class          | Does                                                                        |
+| -------------- | --------------------------------------------------------------------------- |
+| `.target-area` | Expands a control's pressable box to `--target-min` without changing layout |
+| `.state-layer` | The tokenized hover/pressed/selected ink overlay (A4.5)                     |
+| `.react-press` | Press physics for the reaction moment (A4.6), plus `.react-glyph`           |
+
+Also `.dialog-scrim`, `.dialog-panel`, `.toast-item` for entrances (A4.7).
+
+**These are hand-written classes, not preset-derived, so the safelist cannot
+generate them.** They live in both stylesheets and must stay in step. If a
+preview renders a control that looks inert on hover, check that first.
+
+New token families the preset now emits, all safelist-derived and therefore
+drift-proof: `z-*` (layering), `min-h-target` / `min-w-target`,
+`duration-slower`.
+
+`Dialog` now renders through a **portal on `document.body`**. Previews that
+wrap it in a `Stage` div with an explicit `minHeight` still work — the overlay
+is `position: fixed` either way — but it no longer server-renders at all, so a
+preview harness that only does SSR will show nothing for it.
+
+`Tabs` gained `TabPanel` and an injected `formatCount`. The preview passes a
+real `Intl.NumberFormat("ar-PS-u-nu-arab")` formatter on purpose: without it
+the badge renders Latin digits inside an Arabic UI, which is the exact defect
+A2.14 fixed, and a preview showing it uncorrected would teach the wrong thing.

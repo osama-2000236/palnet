@@ -35,6 +35,7 @@ export { Icon } from "./Icon";
 export type { IconName, IconProps } from "./Icon";
 export { Sheet } from "./Sheet";
 export type { SheetProps } from "./Sheet";
+export { useReducedMotion } from "./useReducedMotion";
 export { Switch } from "./Switch";
 export type { SwitchProps } from "./Switch";
 export { Dialog } from "./Dialog";
