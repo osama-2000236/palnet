@@ -2,9 +2,12 @@ appId: ps.baydar.app
 name: "set appearance (theme + locale)"
 tags:
   - qa
-env:
-  THEME: light
-  LOCALE: ar-PS
+# No `env:` defaults here on purpose. Maestro 2.5.0 gives an in-file `env` block
+# precedence over `-e` on the command line, so declaring `THEME: light` meant
+# every invocation tapped `appearance-light` no matter what the caller asked
+# for — and the assertion below passed, because light really was selected. The
+# dark cell of the screenshot matrix was never capturable; it produced 38 light
+# screenshots named `…__dark.png`. Callers must pass both values.
 ---
 # Drives Settings → Appearance so the screenshot harness can shoot each
 # theme/locale cell. Deliberately does NOT clearState: the harness relies on the
@@ -30,6 +33,16 @@ env:
     timeout: 30000
 - tapOn:
     id: "appearance-${THEME}"
+# Wait for the segment to actually report itself selected before moving on.
+# `tapOn` completing only means the tap was dispatched; the preference write is
+# async (SecureStore), and the `launchApp` further down force-stops the app. A
+# whole 38-screen cell was once captured in light and filed under `__dark`
+# because the write lost that race and every step still reported COMPLETED.
+- extendedWaitUntil:
+    visible:
+      id: "appearance-${THEME}"
+      selected: true
+    timeout: 10000
 
 - extendedWaitUntil:
     visible:

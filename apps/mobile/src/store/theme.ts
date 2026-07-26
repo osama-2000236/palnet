@@ -34,8 +34,13 @@ export const useThemeStore = create<ThemeState>((set, get) => {
     choice: initial,
     scheme: resolveScheme(initial),
     setChoice: (choice) => {
-      void writeThemeChoice(choice);
       set({ choice, scheme: resolveScheme(choice) });
+      // A bare `void` here swallowed persistence failures outright: the theme
+      // flipped on screen, never reached storage, and every restart went back to
+      // light with nothing logged anywhere.
+      void writeThemeChoice(choice).catch((error: unknown) => {
+        console.warn("[theme] could not persist appearance choice", error);
+      });
     },
     hydrate: async () => {
       const stored = await readThemeChoice();

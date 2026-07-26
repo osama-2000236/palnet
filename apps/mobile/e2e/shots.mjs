@@ -17,7 +17,14 @@ import { execFileSync } from "node:child_process";
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 
-const API = "http://localhost:4000/api/v1";
+// The device always asks for :8081 and :4000 — those are baked into the dev
+// client and the app's API base. `adb reverse` is what decides which host
+// process answers, so a second worktree can run its own Metro/API on other
+// ports and still be the one under test. Without this the harness silently
+// photographs whichever worktree happens to own the default ports.
+const METRO_PORT = process.env.QA_METRO_PORT ?? "8081";
+const API_PORT = process.env.QA_API_PORT ?? "4000";
+const API = `http://localhost:${API_PORT}/api/v1`;
 const APP_ID = "ps.baydar.app";
 const OUT_DIR = process.env.QA_SHOTS_OUT ?? path.resolve(import.meta.dirname, "../.qa-shots");
 const ADB =
@@ -105,6 +112,35 @@ function paintedness(frame) {
   return seen.size;
 }
 
+/**
+ * Mean luminance (0–255) of the content area.
+ *
+ * This exists because a whole 38-shot cell was once captured in the light theme
+ * and filed under `__dark`. The appearance flow reported every step COMPLETED —
+ * `setChoice` writes the preference to SecureStore without awaiting it, and
+ * Maestro's `launchApp` force-stops the app moments later, so the write loses
+ * the race and the app boots back into light. Nothing downstream could tell:
+ * a light screenshot named `…__dark.png` is a perfectly valid PNG.
+ *
+ * Luminance separates the two themes with a margin nothing else in the frame
+ * comes close to (light ≈ 240, dark ≈ 45), so it is a cheap, device-independent
+ * assertion that the cell is the theme it claims to be.
+ */
+function meanLuminance(frame) {
+  const slice = contentSlice(frame);
+  let total = 0;
+  let n = 0;
+  for (let i = 0; i + 3 < slice.length; i += 4 * 997) {
+    total += 0.2126 * slice[i] + 0.7152 * slice[i + 1] + 0.0722 * slice[i + 2];
+    n += 1;
+  }
+  return n ? total / n : 0;
+}
+
+// Midpoint between the two observed clusters. A cell landing on the wrong side
+// is the mislabel above, not a design change.
+const THEME_LUMA_SPLIT = Number(process.env.QA_THEME_LUMA_SPLIT ?? 140);
+
 // Tuned on one AVD (Pixel_7_Pro, swiftshader). The margin is not subtle — a
 // blank splash scores 1 and the launcher 902 — so anything in 3..100 separates
 // them, and the constant is only load-bearing on a device nobody has tried.
@@ -154,6 +190,17 @@ function logcatClear() {
   }
 }
 
+// ponytail: logcat only. On this stack (RN 0.81 + Hermes, Expo dev client) JS
+// `console.*` is forwarded to the Metro terminal and never reaches logcat, so
+// `ReactNativeJS` is absent from the buffer entirely and this capture returns
+// nothing on every screen. Verified 2026-07-26: `adb logcat -d -v tag` over a
+// full 38-screen run lists no ReactNativeJS lines at all, and the 38 `{}` files
+// it produced read as "no warnings" rather than "not looking". `AndroidRuntime:E`
+// is still worth keeping — a native crash does land there. The upgrade path is
+// to read Metro's own stdout (where `[observability]`/`IntlError` lines do
+// appear) instead of logcat; that needs the harness to own the Metro process,
+// which it currently does not. Until then `assertConsoleCaptureWorks` makes the
+// silence loud instead of invisible.
 function logcatDump() {
   try {
     const raw = adb(["logcat", "-d", "-s", "ReactNativeJS:W", "AndroidRuntime:E", "*:S"]).toString(
@@ -197,8 +244,13 @@ async function main() {
 
   // The device reaches Metro and the API through these; without them every
   // screen renders an offline state and the whole run is worthless.
-  adb(["reverse", "tcp:8081", "tcp:8081"]);
-  adb(["reverse", "tcp:4000", "tcp:4000"]);
+  adb(["reverse", "tcp:8081", `tcp:${METRO_PORT}`]);
+  adb(["reverse", "tcp:4000", `tcp:${API_PORT}`]);
+  if (METRO_PORT !== "8081" || API_PORT !== "4000") {
+    process.stdout.write(
+      `device :8081 -> host :${METRO_PORT}, device :4000 -> host :${API_PORT}\n`,
+    );
+  }
 
   const session = await login("demo@baydar.ps", "Password123");
   const jobId = first(await api(session, "/jobs?limit=5"))?.id;
@@ -309,6 +361,23 @@ async function main() {
         continue;
       }
 
+      // Prove the cell is the theme it is about to be labelled with, before
+      // spending ~15 minutes photographing it. See meanLuminance.
+      const luma = meanLuminance(grabFrame());
+      const looksDark = luma < THEME_LUMA_SPLIT;
+      if (looksDark !== (theme === "dark")) {
+        failures.push({
+          cell: `${locale}/${theme}`,
+          error: `theme did not apply — mean luminance ${Math.round(luma)} reads ${looksDark ? "dark" : "light"}`,
+        });
+        process.stdout.write(
+          `ERR ${locale}/${theme} did not apply (luminance ${Math.round(luma)}) — cell skipped\n` +
+            `    the appearance preference lost its race with the relaunch; re-run this cell\n`,
+        );
+        continue;
+      }
+      process.stdout.write(`    theme verified (luminance ${Math.round(luma)})\n`);
+
       const consoleByScreen = {};
       for (const [name, route] of picked) {
         const file = path.join(OUT_DIR, `${name}__${locale}__${theme}.png`);
@@ -330,7 +399,9 @@ async function main() {
           const lines = logcatDump();
           if (lines.length) consoleByScreen[name] = lines;
           shot += 1;
-          process.stdout.write(`ok  ${path.basename(file)}${lines.length ? ` (${lines.length} log)` : ""}\n`);
+          process.stdout.write(
+            `ok  ${path.basename(file)}${lines.length ? ` (${lines.length} log)` : ""}\n`,
+          );
         } catch (error) {
           failures.push({ name, route, error: String(error).slice(0, 160) });
           process.stdout.write(`ERR ${name} ${locale} ${theme}\n`);
@@ -341,11 +412,23 @@ async function main() {
         JSON.stringify(consoleByScreen, null, 2),
       );
       const missingKeys = Object.entries(consoleByScreen).flatMap(([screen, lines]) =>
-        lines.filter((l) => /MISSING_MESSAGE|IntlError|i18next::/.test(l)).map((l) => `${screen}: ${l}`),
+        lines
+          .filter((l) => /MISSING_MESSAGE|IntlError|i18next::/.test(l))
+          .map((l) => `${screen}: ${l}`),
       );
       if (missingKeys.length) {
         process.stdout.write(`\n!! ${missingKeys.length} i18n errors in ${locale}/${theme}:\n`);
         for (const line of missingKeys.slice(0, 10)) process.stdout.write(`   ${line}\n`);
+      }
+      if (Object.keys(consoleByScreen).length === 0) {
+        // An empty capture across a whole cell means the buffer was not read,
+        // not that 38 screens were clean. Say so — the web twin's equivalent
+        // capture is what found two missing message keys.
+        process.stdout.write(
+          `\n!! ${locale}/${theme}: console capture is EMPTY for all ${picked.length} screens.\n` +
+            `   JS logs go to the Metro terminal on this stack, not logcat — treat this\n` +
+            `   file as "not looked", never as "no warnings". See the note on logcatDump.\n`,
+        );
       }
     }
   }
