@@ -152,8 +152,8 @@ export function OnboardingFooter({
         start: 0,
         end: 0,
         bottom: 0,
-        zIndex: 20,
-        elevation: 20,
+        zIndex: nativeTokens.z.nav,
+        elevation: nativeTokens.z.nav,
       }}
     >
       {showBack ? (
