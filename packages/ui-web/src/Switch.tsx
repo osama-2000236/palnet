@@ -46,7 +46,11 @@ export function Switch({
         disabled={disabled}
         onClick={() => onChange(!checked)}
         className={cx(
-          "duration-base ease-standard relative inline-flex h-5 w-9 flex-none rounded-full border transition-colors",
+          // A3: `target-area` on the control ITSELF, not only on the wrapper.
+          // The wrapper centres it and reserves the space; the expander is what
+          // makes the *button* legal, which is what a measuring sweep — or a
+          // finger — actually resolves.
+          "target-area duration-base ease-standard relative inline-flex h-5 w-9 flex-none rounded-full border transition-colors",
           // A6: the OFF track is 1.23:1 against the surface — no fill in this
           // palette can reach the 3:1 WCAG 1.4.11 needs, so the boundary is a
           // border. `--ink-subtle` measures 5.20 (light) / 5.51 (dark).
