@@ -6,7 +6,16 @@
 // a different control with a different capability set (no counts). See
 // docs/design/PARITY.md.
 
-import { createContext, useCallback, useContext, useId, useRef, type ReactNode } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 
 import { cx } from "./cx";
 
@@ -16,6 +25,8 @@ interface TabsCtx {
   baseId: string;
   formatCount(n: number): string;
   register(value: string, el: HTMLButtonElement | null): void;
+  registerPanel(value: string, present: boolean): void;
+  panels: ReadonlySet<string>;
   move(from: string, direction: "next" | "prev" | "first" | "last"): void;
 }
 const Ctx = createContext<TabsCtx | null>(null);
@@ -44,6 +55,21 @@ export function Tabs({
   formatCount = String,
 }: TabsProps): JSX.Element {
   const baseId = useId();
+  // Only the *active* panel is mounted, so `aria-controls` may only be emitted
+  // for a value whose panel is actually in the DOM. Pointing it at an id that
+  // does not exist is an `aria-valid-attr-value` violation, and several
+  // surfaces (`/search`, `/moderation`, `/billing`) use `Tabs` with no
+  // `TabPanel` at all.
+  const [panels, setPanels] = useState<ReadonlySet<string>>(() => new Set());
+  const registerPanel = useCallback((panelValue: string, present: boolean): void => {
+    setPanels((prev) => {
+      if (prev.has(panelValue) === present) return prev;
+      const next = new Set(prev);
+      if (present) next.add(panelValue);
+      else next.delete(panelValue);
+      return next;
+    });
+  }, []);
   const order = useRef<string[]>([]);
   const nodes = useRef(new Map<string, HTMLButtonElement>());
 
@@ -81,7 +107,9 @@ export function Tabs({
   );
 
   return (
-    <Ctx.Provider value={{ value, onChange, baseId, formatCount, register, move }}>
+    <Ctx.Provider
+      value={{ value, onChange, baseId, formatCount, register, registerPanel, panels, move }}
+    >
       <div
         role="tablist"
         aria-label={label}
@@ -113,7 +141,7 @@ export function Tab({ value, children, count, countLabel }: TabProps): JSX.Eleme
       type="button"
       role="tab"
       id={`${ctx.baseId}-tab-${value}`}
-      aria-controls={`${ctx.baseId}-panel-${value}`}
+      aria-controls={ctx.panels.has(value) ? `${ctx.baseId}-panel-${value}` : undefined}
       aria-selected={active}
       tabIndex={active ? 0 : -1}
       ref={(el) => ctx.register(value, el)}
@@ -191,7 +219,16 @@ export interface TabPanelProps {
 export function TabPanel({ value, children, className }: TabPanelProps): JSX.Element | null {
   const ctx = useContext(Ctx);
   if (!ctx) throw new Error("<TabPanel> must be used inside <Tabs>");
-  if (ctx.value !== value) return null;
+  const { registerPanel } = ctx;
+  // Registered only while this panel actually renders — it returns null when
+  // it is not the active one, and a tab must not point `aria-controls` at a
+  // panel that is absent from the DOM.
+  const mounted = ctx.value === value;
+  useEffect(() => {
+    registerPanel(value, mounted);
+    return () => registerPanel(value, false);
+  }, [registerPanel, value, mounted]);
+  if (!mounted) return null;
   return (
     <div
       role="tabpanel"
