@@ -19,6 +19,8 @@ const ROUTES = [
   "/ar-PS/feed",
   "/ar-PS/jobs",
   "/ar-PS/search",
+  "/ar-PS/notifications",
+  "/ar-PS/saved",
   "/ar-PS/settings/notifications",
   "/ar-PS/settings/appearance",
   "/ar-PS/me/edit",

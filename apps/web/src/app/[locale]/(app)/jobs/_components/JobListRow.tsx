@@ -71,7 +71,7 @@ export function JobListRow({
               disabled={saving}
               onClick={onToggleSave}
               className={cx(
-                "hover:bg-surface-subtle inline-flex h-9 w-9 items-center justify-center rounded-md focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]",
+                "hover:bg-surface-subtle target-area state-layer inline-flex h-9 w-9 items-center justify-center rounded-md focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]",
                 "disabled:cursor-not-allowed disabled:opacity-60",
                 saved ? "text-brand-700" : "text-ink-muted hover:text-ink",
               )}

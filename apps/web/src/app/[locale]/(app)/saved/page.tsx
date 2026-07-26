@@ -233,7 +233,7 @@ function SavedRow({
         </Link>
         <button
           type="button"
-          className="text-ink-muted hover:bg-surface-subtle hover:text-danger inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
+          className="text-ink-muted hover:bg-surface-subtle hover:text-danger target-area state-layer inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
           aria-label={removeLabel}
           disabled={removing}
           onClick={onRemove}
