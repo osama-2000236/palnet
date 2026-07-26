@@ -22,7 +22,12 @@ import { ZodValidationPipe } from "../../common/zod-pipe";
 import { CurrentUser, type AuthUser } from "../auth/decorators/current-user.decorator";
 
 import { CompaniesService } from "./companies.service";
-import { CompanyRoleGuard, RequireCompanyRole } from "./guards/company-role.guard";
+import {
+  ActorCompanyRole,
+  type CompanyRole,
+  CompanyRoleGuard,
+  RequireCompanyRole,
+} from "./guards/company-role.guard";
 
 @ApiTags("companies")
 @ApiBearerAuth()
@@ -42,9 +47,10 @@ export class CompanyMembersController {
   @RequireCompanyRole("OWNER", "ADMIN")
   async add(
     @Param("companyId") companyId: string,
+    @ActorCompanyRole() actorRole: CompanyRole,
     @Body(new ZodValidationPipe(AddCompanyMemberBody)) body: AddCompanyMemberBody,
   ): Promise<CompanyMemberDto> {
-    return this.companies.addMember(companyId, body);
+    return this.companies.addMember(companyId, actorRole, body);
   }
 
   @Patch(":userId")

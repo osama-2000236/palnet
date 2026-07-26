@@ -24,6 +24,8 @@ import { KaramaService } from "../karama/karama.service";
 import { NotificationsService } from "../notifications/notifications.service";
 import { PrismaService } from "../prisma/prisma.service";
 
+import type { CompanyRole } from "./guards/company-role.guard";
+
 @Injectable()
 export class CompaniesService {
   constructor(
@@ -158,7 +160,20 @@ export class CompaniesService {
     return rows.map(toMemberDto);
   }
 
-  async addMember(companyId: string, body: AddCompanyMemberBody): Promise<CompanyMemberDto> {
+  async addMember(
+    companyId: string,
+    actorRole: CompanyRole,
+    body: AddCompanyMemberBody,
+  ): Promise<CompanyMemberDto> {
+    // The route admits ADMIN, so without this an ADMIN could mint an OWNER and
+    // outrank the person who invited them.
+    if (body.role === "OWNER" && actorRole !== "OWNER") {
+      throw new DomainException(
+        ErrorCode.AUTH_FORBIDDEN,
+        "Only an owner can grant the owner role.",
+        403,
+      );
+    }
     const exists = await this.prisma.companyMember.findUnique({
       where: { companyId_userId: { companyId, userId: body.userId } },
     });
@@ -351,7 +366,8 @@ export class CompaniesService {
     });
     const hasMore = rows.length > take;
     const trimmed = hasMore ? rows.slice(0, take) : rows;
-    const data = await Promise.all(trimmed.map((j) => this.attachJobCounts(j)));
+    const counts = await this.jobCounts(trimmed.map((j) => j.id));
+    const data = trimmed.map((j) => toEmployerJob(j, counts));
     return {
       data,
       meta: {
@@ -505,37 +521,66 @@ export class CompaniesService {
 
   // ───────────────────────── Helpers ─────────────────────────
 
-  private async attachJobCounts(job: {
-    id: string;
-    companyId: string;
-    title: string;
-    type: EmployerJob["type"];
-    locationMode: EmployerJob["locationMode"];
-    city: string | null;
-    isActive: boolean;
-    expiresAt: Date | null;
-    createdAt: Date;
-    updatedAt: Date;
-  }): Promise<EmployerJob> {
-    const [applicantCount, shortlistCount] = await Promise.all([
-      this.prisma.application.count({ where: { jobId: job.id } }),
-      this.prisma.application.count({ where: { jobId: job.id, status: "SHORTLISTED" } }),
-    ]);
-    return {
-      id: job.id,
-      companyId: job.companyId,
-      title: job.title,
-      type: job.type,
-      locationMode: job.locationMode,
-      city: job.city,
-      isActive: job.isActive,
-      expiresAt: job.expiresAt ? job.expiresAt.toISOString() : null,
-      createdAt: job.createdAt.toISOString(),
-      updatedAt: job.updatedAt.toISOString(),
-      applicantCount,
-      shortlistCount,
-    };
+  private async attachJobCounts(job: JobRow): Promise<EmployerJob> {
+    return toEmployerJob(job, await this.jobCounts([job.id]));
   }
+
+  /**
+   * One grouped query for a whole page. Two `count()` per job meant 100 queries
+   * at the 50-job page limit.
+   */
+  private async jobCounts(jobIds: string[]): Promise<Map<string, JobCounts>> {
+    const counts = new Map<string, JobCounts>();
+    if (jobIds.length === 0) return counts;
+    const rows = await this.prisma.application.groupBy({
+      by: ["jobId", "status"],
+      where: { jobId: { in: jobIds } },
+      _count: { _all: true },
+    });
+    for (const row of rows) {
+      const entry = counts.get(row.jobId) ?? { applicantCount: 0, shortlistCount: 0 };
+      entry.applicantCount += row._count._all;
+      if (row.status === ApplicationStatus.SHORTLISTED) entry.shortlistCount += row._count._all;
+      counts.set(row.jobId, entry);
+    }
+    return counts;
+  }
+}
+
+type JobCounts = { applicantCount: number; shortlistCount: number };
+
+type JobRow = {
+  id: string;
+  companyId: string;
+  title: string;
+  type: EmployerJob["type"];
+  locationMode: EmployerJob["locationMode"];
+  city: string | null;
+  isActive: boolean;
+  expiresAt: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+function toEmployerJob(job: JobRow, counts: Map<string, JobCounts>): EmployerJob {
+  const { applicantCount, shortlistCount } = counts.get(job.id) ?? {
+    applicantCount: 0,
+    shortlistCount: 0,
+  };
+  return {
+    id: job.id,
+    companyId: job.companyId,
+    title: job.title,
+    type: job.type,
+    locationMode: job.locationMode,
+    city: job.city,
+    isActive: job.isActive,
+    expiresAt: job.expiresAt ? job.expiresAt.toISOString() : null,
+    createdAt: job.createdAt.toISOString(),
+    updatedAt: job.updatedAt.toISOString(),
+    applicantCount,
+    shortlistCount,
+  };
 }
 
 function toCompanyDto(row: {

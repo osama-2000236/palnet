@@ -304,14 +304,16 @@ export class ProfilesService {
     // is identified by a composite primary key. Even when Karama is capped, the
     // zero-delta ledger row records that this actor has endorsed this skill.
     const refId = `${actorId}:${profileSkill.profileId}:${profileSkill.skillId}`;
-    const alreadyEndorsed = await this.karama.awardOnce({
+    // `awardOnce` returns true only when it wrote the ledger row — i.e. this is
+    // the first time this actor has endorsed this skill.
+    const endorsementRecorded = await this.karama.awardOnce({
       userId: targetProfile.userId,
       reason: "ENDORSEMENT",
       delta: karamaDelta,
       refType: "endorsement",
       refId,
     });
-    if (!alreadyEndorsed) {
+    if (!endorsementRecorded) {
       return { endorsements: profileSkill.endorsements, awardedKarama: false };
     }
 

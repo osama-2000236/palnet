@@ -12,6 +12,7 @@ import {
   type Subscription as SubscriptionDto,
   ErrorCode,
   type PaymentMethod,
+  PLAN_DEFS,
   type PlanCode,
   type WalletProvider,
 } from "@baydar/shared";
@@ -27,7 +28,7 @@ import { deriveDisplayCurrency } from "./currency";
 import { EmployerEntitlementsService } from "./employer-entitlements.service";
 import { FxService } from "./fx.service";
 import { HyperPayClient } from "./hyperpay.client";
-import { ALL_PLAN_CODES, PLAN_DEFS, POINTS_PRICE_BY_PLAN } from "./pricing";
+import { ALL_PLAN_CODES, POINTS_PRICE_BY_PLAN } from "./pricing";
 import { WalletRegistry } from "./wallets/wallet-registry";
 
 const WALLET_METHODS = new Set<PaymentMethod>(["JAWWALPAY", "PALPAY", "REFLECT"]);
