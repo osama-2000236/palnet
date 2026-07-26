@@ -175,8 +175,11 @@ test.describe("keyboard traversal", () => {
   // nothing and every inactive tab was unreachable by keyboard — strictly worse
   // than no roving tabindex, because Tab skips them too.
   test("Tabs: Arrow/Home/End move selection, RTL-aware", async ({ page }) => {
-    await page.goto("/ar-PS/in/demo", { waitUntil: "domcontentloaded" });
-    await page.waitForTimeout(1_500);
+    await page.goto("/ar-PS/me", { waitUntil: "domcontentloaded" });
+    // `/me` resolves the handle and replaces to `/in/<handle>`, so wait for the
+    // tab strip itself rather than a fixed delay — a cold route compile made
+    // this test skip silently, which is worse than failing.
+    await page.waitForSelector('[role="tab"]', { timeout: 30_000 });
     const tabs = page.getByRole("tab");
     const count = await tabs.count();
     test.skip(count < 3, "profile tabs not rendered");
@@ -220,8 +223,11 @@ test.describe("keyboard traversal", () => {
     page,
   }) => {
     await page.setViewportSize({ width: 390, height: 844 });
-    await page.goto("/ar-PS/in/demo", { waitUntil: "domcontentloaded" });
-    await page.waitForTimeout(1_500);
+    await page.goto("/ar-PS/me", { waitUntil: "domcontentloaded" });
+    // `/me` resolves the handle and replaces to `/in/<handle>`, so wait for the
+    // tab strip itself rather than a fixed delay — a cold route compile made
+    // this test skip silently, which is worse than failing.
+    await page.waitForSelector('[role="tab"]', { timeout: 30_000 });
 
     const active = page.locator('[role="tab"][aria-selected="true"]');
     test.skip((await active.count()) === 0, "profile tabs not rendered");
@@ -240,8 +246,11 @@ test.describe("keyboard traversal", () => {
 
   // F2 / A2.14: counts rendered raw, so an Arabic-Indic UI showed a Latin "1".
   test("Tabs: counts render in the locale's numerals", async ({ page }) => {
-    await page.goto("/ar-PS/in/demo", { waitUntil: "domcontentloaded" });
-    await page.waitForTimeout(1_500);
+    await page.goto("/ar-PS/me", { waitUntil: "domcontentloaded" });
+    // `/me` resolves the handle and replaces to `/in/<handle>`, so wait for the
+    // tab strip itself rather than a fixed delay — a cold route compile made
+    // this test skip silently, which is worse than failing.
+    await page.waitForSelector('[role="tab"]', { timeout: 30_000 });
     const badges = page.locator('[role="tab"] span[aria-hidden="true"]');
     const n = await badges.count();
     test.skip(n === 0, "no tab carries a count on this profile");
