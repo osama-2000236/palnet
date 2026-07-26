@@ -40,3 +40,109 @@ samp {
   min-width: var(--target-min);
   min-height: var(--target-min);
 }
+
+/* A4.5 — mirrors apps/web/src/app/globals.css. Without this, every generated
+ * design renders Button/Chip/Tab/PostCardAction with no hover or press
+ * feedback at all, and nothing says so — the exact silent-resolution failure
+ * the safelist exists to prevent. */
+.state-layer {
+  position: relative;
+}
+
+.state-layer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-color: rgb(var(--ink-rgb) / 0);
+  transition: background-color var(--dur-fast) var(--ease-standard);
+  pointer-events: none;
+}
+
+@media (hover: hover) {
+  .state-layer:hover::after {
+    background-color: rgb(var(--ink-rgb) / var(--state-hover));
+  }
+}
+
+.state-layer:active::after {
+  background-color: rgb(var(--ink-rgb) / var(--state-pressed));
+}
+
+.state-layer[aria-pressed="true"]::after,
+.state-layer[aria-selected="true"]::after,
+.state-layer[data-selected="true"]::after {
+  background-color: rgb(var(--ink-rgb) / var(--state-selected));
+}
+
+.state-layer:disabled::after,
+.state-layer[aria-disabled="true"]::after {
+  background-color: rgb(var(--ink-rgb) / 0);
+}
+
+/* A4.6 / A4.7 — the reaction moment and the dialog/toast entrances. */
+.react-press {
+  transition:
+    transform var(--dur-fast) var(--ease-standard),
+    color var(--dur-base) var(--ease-standard);
+}
+
+.react-press:active {
+  transform: scale(0.92);
+}
+
+.react-press[aria-pressed="true"] .react-glyph {
+  animation: react-settle var(--dur-slow) var(--ease-spring) both;
+}
+
+@keyframes react-settle {
+  from {
+    transform: scale(0.86);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+.dialog-scrim {
+  animation: scrim-in var(--dur-base) var(--ease-standard) both;
+}
+
+.dialog-panel {
+  animation: panel-rise var(--dur-slower) var(--ease-emphasized) both;
+}
+
+.toast-item {
+  animation: toast-rise var(--dur-slow) var(--ease-emphasized) both;
+}
+
+@keyframes scrim-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes panel-rise {
+  from {
+    opacity: 0;
+    transform: translateY(var(--enter-rise)) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes toast-rise {
+  from {
+    opacity: 0;
+    transform: translateY(var(--enter-rise));
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
