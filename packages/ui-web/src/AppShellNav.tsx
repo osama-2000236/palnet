@@ -154,7 +154,7 @@ function NavButton({
       aria-current={active ? "page" : undefined}
       title={disconnected ? labels.bellDisconnected : undefined}
       className={cx(
-        "text-micro relative -mb-px inline-flex h-full min-h-0 min-w-[64px] flex-col items-center justify-center gap-0.5 border-b-2 px-3 font-medium focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]",
+        "text-micro relative -mb-px inline-flex h-full min-h-0 min-w-[64px] shrink-0 flex-col items-center justify-center gap-0.5 whitespace-nowrap border-b-2 px-3 font-medium focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]",
         active ? "border-brand-600 text-ink" : "text-ink-muted hover:text-ink border-transparent",
       )}
     >

@@ -180,7 +180,11 @@ export function PostCard({
           type="button"
           onClick={() => author.id && onOpenProfile?.(author.id)}
           aria-label={labels.authorLabel}
-          className="shrink-0 rounded-full focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+          // `target-area`: the avatar is 40px and the name row is 20px tall, so
+          // both were under the 44px minimum — the sweep never caught them
+          // because no PostCard had ever been on the test user's feed until
+          // `reactions.spec.ts` started seeding one.
+          className="target-area shrink-0 rounded-full focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
         >
           <Avatar user={author} size="md" />
         </button>
@@ -188,7 +192,7 @@ export function PostCard({
           <button
             type="button"
             onClick={() => author.id && onOpenProfile?.(author.id)}
-            className="bidi-plaintext text-ink truncate text-start text-sm font-semibold hover:underline focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+            className="bidi-plaintext text-ink target-area truncate text-start text-sm font-semibold hover:underline focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
           >
             {name}
           </button>

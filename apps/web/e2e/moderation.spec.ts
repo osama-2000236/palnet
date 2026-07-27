@@ -26,7 +26,10 @@ test.describe("moderation report lifecycle", () => {
     await page.goto("/en/feed");
     const targetPost = page.locator("article").filter({ hasText: targetBody }).first();
     await expect(targetPost).toBeVisible();
+    // "Options" is a real menu now, not a button labelled like one that only
+    // ever reported the post. Reporting is one item inside it.
     await targetPost.getByRole("button", { name: "Options" }).click();
+    await page.getByRole("menuitem", { name: "Report" }).click();
 
     const dialog = page.getByRole("dialog", { name: "Report content" });
     await expect(dialog).toBeVisible();
