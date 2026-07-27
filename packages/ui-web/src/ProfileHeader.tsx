@@ -17,6 +17,14 @@ export interface ProfileHeaderProps {
   headline?: string | null;
   /** Secondary meta line — e.g. "Ramallah · 320 connections" or "/in/handle". */
   meta?: ReactNode;
+  /**
+   * Availability signals — "open to work", "hiring". Rendered under the
+   * headline because that is what a recruiter or a candidate scans for first;
+   * `Profile.openToWork` and `Profile.hiring` have been on the DTO and settable
+   * through `UpdateProfileBody` all along, and no surface on either platform
+   * ever read them.
+   */
+  badges?: ReactNode;
   /** App-owned CTA cluster. Exactly one accent CTA per DESIGN.md. */
   actions?: ReactNode;
   className?: string;
@@ -27,6 +35,7 @@ export function ProfileHeader({
   fullName,
   headline,
   meta,
+  badges,
   actions,
   className,
 }: ProfileHeaderProps): JSX.Element {
@@ -49,6 +58,7 @@ export function ProfileHeader({
             <p className="bidi-plaintext text-small text-ink-muted font-body">{headline}</p>
           ) : null}
           {meta ? <p className="text-caption text-ink-muted">{meta}</p> : null}
+          {badges ? <div className="mt-2 flex flex-wrap items-center gap-1.5">{badges}</div> : null}
         </div>
         {actions ? <div className="flex flex-wrap items-center gap-2 pb-1">{actions}</div> : null}
       </div>

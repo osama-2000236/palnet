@@ -1,12 +1,8 @@
 "use client";
 
+import { ChatRoom as ChatRoomSchema, Profile as ProfileSchema, type Profile } from "@baydar/shared";
 import {
-  ChatRoom as ChatRoomSchema,
-  Profile as ProfileSchema,
-  ReportReason,
-  type Profile,
-} from "@baydar/shared";
-import {
+  Badge,
   BlockButton,
   Button,
   ProfileHeader,
@@ -14,7 +10,6 @@ import {
   Surface,
   useToast,
   type BlockButtonLabels,
-  type ReportDialogLabels,
 } from "@baydar/ui-web";
 import Link from "next/link";
 import { notFound, useParams, useRouter } from "next/navigation";
@@ -27,6 +22,7 @@ import { useBlock, useReport, useUnblock } from "@/lib/api/safety";
 import { toErrorMessage } from "@/lib/error-message";
 import { getAccessToken } from "@/lib/session";
 import { ProfileTabsContent, type ProfileTab } from "./_components/ProfileTabsContent";
+import { useReportLabels } from "@/lib/report-labels";
 
 export default function ProfileRoute(): JSX.Element {
   const params = useParams<{ locale?: string; handle: string }>();
@@ -49,6 +45,7 @@ export default function ProfileRoute(): JSX.Element {
   const block = useBlock();
   const unblock = useUnblock();
   const report = useReport();
+  const reportLabels = useReportLabels();
 
   const loadProfile = useCallback((): void => {
     if (!handle) return;
@@ -121,22 +118,6 @@ export default function ProfileRoute(): JSX.Element {
         confirmCta: tSafety("block.confirm.cta"),
         cancel: tCommon("cancel"),
       };
-  const reportLabels: ReportDialogLabels = {
-    title: tSafety("report.title"),
-    detailsLabel: tSafety("report.details_label"),
-    cancel: tCommon("cancel"),
-    submit: tSafety("report.submit"),
-    close: tSafety("report.close"),
-    reasons: {
-      [ReportReason.SPAM]: tSafety("report.reason.spam"),
-      [ReportReason.HARASSMENT]: tSafety("report.reason.harassment"),
-      [ReportReason.HATE]: tSafety("report.reason.hate"),
-      [ReportReason.MISINFORMATION]: tSafety("report.reason.misinformation"),
-      [ReportReason.NUDITY]: tSafety("report.reason.nudity"),
-      [ReportReason.VIOLENCE]: tSafety("report.reason.violence"),
-      [ReportReason.OTHER]: tSafety("report.reason.other"),
-    },
-  };
 
   return (
     <main className="mx-auto flex w-full max-w-[840px] flex-col gap-6 px-6 py-8">
@@ -154,6 +135,20 @@ export default function ProfileRoute(): JSX.Element {
           <>
             {profile.location ? `${profile.location} · ` : ""}
             <span dir="ltr">@{profile.handle}</span>
+          </>
+        }
+        badges={
+          <>
+            {profile.openToWork ? (
+              <Badge tone="brand" dot srLabel={t("openToWork")}>
+                {t("openToWork")}
+              </Badge>
+            ) : null}
+            {profile.hiring ? (
+              <Badge tone="accent" dot srLabel={t("hiring")}>
+                {t("hiring")}
+              </Badge>
+            ) : null}
           </>
         }
         actions={

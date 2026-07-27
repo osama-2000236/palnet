@@ -3,11 +3,10 @@
 import {
   Comment as CommentSchema,
   CreateCommentBody,
-  ReportReason,
   cursorPage,
   type Comment,
 } from "@baydar/shared";
-import { Avatar, ReportDialog, type ReportDialogLabels } from "@baydar/ui-web";
+import { Avatar, ReportDialog } from "@baydar/ui-web";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
@@ -15,6 +14,7 @@ import { useCallback, useEffect, useState } from "react";
 import { apiFetch, apiFetchPage } from "@/lib/api";
 import { useReport } from "@/lib/api/safety";
 import { getAccessToken } from "@/lib/session";
+import { useReportLabels } from "@/lib/report-labels";
 
 const CommentsPage = cursorPage(CommentSchema);
 
@@ -26,7 +26,6 @@ export function Comments({
   onCountChange?: (delta: number) => void;
 }): JSX.Element {
   const t = useTranslations("post");
-  const tCommon = useTranslations("common");
   const tSafety = useTranslations("safety");
   const [items, setItems] = useState<Comment[]>([]);
   const [cursor, setCursor] = useState<string | null>(null);
@@ -87,23 +86,7 @@ export function Comments({
       setBusy(false);
     }
   }
-
-  const reportLabels: ReportDialogLabels = {
-    title: tSafety("report.title"),
-    detailsLabel: tSafety("report.details_label"),
-    cancel: tCommon("cancel"),
-    submit: tSafety("report.submit"),
-    close: tSafety("report.close"),
-    reasons: {
-      [ReportReason.SPAM]: tSafety("report.reason.spam"),
-      [ReportReason.HARASSMENT]: tSafety("report.reason.harassment"),
-      [ReportReason.HATE]: tSafety("report.reason.hate"),
-      [ReportReason.MISINFORMATION]: tSafety("report.reason.misinformation"),
-      [ReportReason.NUDITY]: tSafety("report.reason.nudity"),
-      [ReportReason.VIOLENCE]: tSafety("report.reason.violence"),
-      [ReportReason.OTHER]: tSafety("report.reason.other"),
-    },
-  };
+  const reportLabels = useReportLabels();
 
   return (
     <div className="border-ink-muted/10 mt-3 flex flex-col gap-3 border-t pt-3">

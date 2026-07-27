@@ -1,5 +1,5 @@
 import type { Profile } from "@baydar/shared";
-import { Avatar, Button, Surface } from "@baydar/ui-native";
+import { Avatar, Badge, Button, Surface } from "@baydar/ui-native";
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { Text, View } from "react-native";
@@ -40,6 +40,22 @@ export function ProfileHero({
         {profile.headline ? <Text style={profileStyles.headline}>{profile.headline}</Text> : null}
         {profile.location ? <Text style={profileStyles.location}>{profile.location}</Text> : null}
         <Text style={profileStyles.handle}>@{profile.handle}</Text>
+        {/* Web parity: `openToWork` / `hiring` have been on the DTO all along
+            and neither platform showed them. */}
+        {profile.openToWork || profile.hiring ? (
+          <View style={{ flexDirection: "row", gap: 6, marginTop: 8 }}>
+            {profile.openToWork ? (
+              <Badge tone="brand" dot srLabel={t("profile.openToWork")}>
+                {t("profile.openToWork")}
+              </Badge>
+            ) : null}
+            {profile.hiring ? (
+              <Badge tone="accent" dot srLabel={t("profile.hiring")}>
+                {t("profile.hiring")}
+              </Badge>
+            ) : null}
+          </View>
+        ) : null}
       </View>
 
       {onEdit ? (

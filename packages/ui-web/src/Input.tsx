@@ -56,9 +56,9 @@ const SIZE_CLASSES: Record<InputSize, string> = {
   // Raising `sm` to the 40px web minimum would also make it taller than `md`
   // (36px), which is incoherent. Revisit by removing `sm` altogether if the
   // density it buys stops being worth it.
-  sm: "h-7 text-[13px] px-2.5",
+  sm: "h-7 text-small px-2.5",
   md: "h-9 text-sm px-3",
-  lg: "h-11 text-[15px] px-3.5",
+  lg: "h-11 text-body px-3.5",
 };
 
 const ICON_PADDING: Record<InputSize, { leading: string; trailing: string }> = {
@@ -168,7 +168,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
           // is not an interruption.
           role={errorMessage ? "alert" : undefined}
           aria-live={errorMessage ? "polite" : undefined}
-          className={cx("text-[12px]", errorMessage ? "text-danger" : "text-ink-muted")}
+          className={cx("text-caption", errorMessage ? "text-danger" : "text-ink-muted")}
         >
           {errorMessage ?? helper}
         </span>

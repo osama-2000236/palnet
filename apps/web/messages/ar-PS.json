@@ -242,8 +242,20 @@
     "uploadFailed": "تعذّر رفع الصورة."
   },
   "post": {
-    "like": "إعجاب",
-    "liked": "أعجبني",
+    "delete": "حذف المنشور",
+    "deleted": "تم حذف المنشور",
+    "deleteFailed": "تعذّر حذف المنشور.",
+    "deleteConfirmTitle": "حذف هذا المنشور؟",
+    "deleteConfirmBody": "لن يظهر المنشور لأحد بعد الحذف، ولا يمكن التراجع.",
+    "reactions": {
+      "pick": "اختر تفاعلًا",
+      "LIKE": "إعجاب",
+      "CELEBRATE": "تهنئة",
+      "SUPPORT": "مساندة",
+      "LOVE": "تقدير",
+      "INSIGHTFUL": "إفادة",
+      "FUNNY": "طرافة"
+    },
     "comment": "تعليق",
     "repost": "إعادة نشر",
     "reposted": "أعدت النشر",
@@ -335,6 +347,10 @@
   },
   "profile": {
     "title": "الملف الشخصي",
+    "openToWork": "متاح للعمل",
+    "hiring": "أوظّف الآن",
+    "openToWorkHint": "يظهر شارة على ملفك ليعرف أصحاب العمل أنك متاح.",
+    "hiringHint": "يظهر شارة على ملفك ليعرف الباحثون أنك توظّف.",
     "about": "نبذة",
     "experience": "الخبرات",
     "education": "التعليم",

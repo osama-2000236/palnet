@@ -88,7 +88,7 @@ export function MessageList({
               <li
                 role="separator"
                 aria-label={dayLabel}
-                className="text-ink-muted my-3 flex items-center gap-3 text-[11px] font-semibold"
+                className="text-ink-muted text-micro my-3 flex items-center gap-3 font-semibold"
               >
                 <span aria-hidden="true" className="bg-line-soft h-px flex-1" />
                 <span>{dayLabel}</span>
@@ -150,7 +150,7 @@ export function MessageList({
                         variant="secondary"
                         size="sm"
                         onClick={() => onEdit(message)}
-                        className="h-7 rounded-full px-2 text-[11px]"
+                        className="text-micro h-7 rounded-full px-2"
                       >
                         {t("edit.action")}
                       </Button>
@@ -158,7 +158,7 @@ export function MessageList({
                         variant="danger-ghost"
                         size="sm"
                         onClick={() => void onDelete(message)}
-                        className="border-danger/40 bg-surface h-7 rounded-full border px-2 text-[11px]"
+                        className="border-danger/40 bg-surface text-micro h-7 rounded-full border px-2"
                       >
                         {t("delete.action")}
                       </Button>
@@ -168,7 +168,7 @@ export function MessageList({
                       variant="secondary"
                       size="sm"
                       onClick={() => onReport(message)}
-                      className="h-7 rounded-full px-2 text-[11px]"
+                      className="text-micro h-7 rounded-full px-2"
                     >
                       {tSafety("report.action")}
                     </Button>

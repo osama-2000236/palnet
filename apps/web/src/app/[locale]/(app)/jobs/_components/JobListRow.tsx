@@ -1,10 +1,10 @@
 "use client";
 
-import type { Job } from "@baydar/shared";
-import { Chip, Icon, Skeleton, Surface, cx } from "@baydar/ui-web";
+import { formatRelativeTime, type Job } from "@baydar/shared";
+import { Badge, Chip, Icon, Skeleton, Surface, cx } from "@baydar/ui-web";
 import Image from "next/image";
 import Link from "next/link";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 export function JobListRow({
   job,
@@ -18,6 +18,7 @@ export function JobListRow({
   onToggleSave?: () => void;
 }): JSX.Element {
   const t = useTranslations("jobs");
+  const locale = useLocale();
   const metaParts = [
     job.city,
     t(`locationLabels.${job.locationMode}`),
@@ -40,8 +41,25 @@ export function JobListRow({
               </h2>
               <p className="bidi-plaintext text-ink-muted truncate text-sm">{job.company.name}</p>
             </div>
-            <p className="text-ink-muted mt-1 text-xs">{metaParts.join(" · ")}</p>
-            {salary ? <p className="text-ink mt-1 text-xs font-semibold">{salary}</p> : null}
+            {/* Salary joins the meta line instead of claiming its own row: on a
+                jobs board these are read as one fact ("Ramallah · hybrid ·
+                full-time · ₪2,500–4,500"), and the extra line was pushing the
+                skill chips below the fold on a 390px screen. */}
+            <p className="text-ink-muted mt-1 text-xs">
+              {metaParts.join(" · ")}
+              {salary ? (
+                <>
+                  {" · "}
+                  <span className="text-ink font-semibold">{salary}</span>
+                </>
+              ) : null}
+            </p>
+            {/* Recency is the first thing anyone scans a jobs list for, and it
+                was the one fact the row never showed — `createdAt` has always
+                been on the DTO. */}
+            <p className="text-ink-subtle text-micro mt-1">
+              {formatRelativeTime(job.createdAt, locale)}
+            </p>
             {job.skillsRequired.length > 0 ? (
               <ul className="mt-2 flex flex-wrap gap-1">
                 {job.skillsRequired.slice(0, 5).map((s) => (
@@ -54,14 +72,13 @@ export function JobListRow({
           </div>
         </Link>
         <div className="flex shrink-0 items-start gap-2">
+          {/* Was a `Chip` with three classes overriding the chip recipe's own
+              border, background and text colour — i.e. a Badge, hand-rolled out
+              of the wrong primitive. */}
           {job.viewer.hasApplied ? (
-            <Chip
-              size="sm"
-              dotClassName="bg-success"
-              className="border-success/30 bg-success/10 text-success"
-            >
+            <Badge tone="success" dot srLabel={t("appliedBadge")}>
               {t("appliedBadge")}
-            </Chip>
+            </Badge>
           ) : null}
           {onToggleSave ? (
             <button

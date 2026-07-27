@@ -12,6 +12,7 @@
     "loading": "Loading…",
     "retry": "Retry",
     "cancel": "Cancel",
+    "close": "Close",
     "back": "Back",
     "save": "Save",
     "saving": "Saving…",
@@ -272,8 +273,15 @@
     "charCount": "{{current}} / {{max}}"
   },
   "post": {
-    "like": "Like",
-    "liked": "Liked ✓",
+    "reactions": {
+      "pick": "Pick a reaction",
+      "LIKE": "Like",
+      "CELEBRATE": "Celebrate",
+      "SUPPORT": "Support",
+      "LOVE": "Appreciate",
+      "INSIGHTFUL": "Insightful",
+      "FUNNY": "Amusing"
+    },
     "comments": "Comments",
     "repost": "Repost",
     "reposted": "Reposted",
@@ -355,6 +363,10 @@
     "activeJobsCount": "{{count}} open jobs"
   },
   "profile": {
+    "openToWork": "Open to work",
+    "hiring": "Hiring",
+    "openToWorkHint": "Shows a badge on your profile so employers know you are available.",
+    "hiringHint": "Shows a badge on your profile so candidates know you are hiring.",
     "about": "About",
     "experience": "Experience",
     "education": "Education",

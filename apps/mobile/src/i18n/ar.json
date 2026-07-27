@@ -12,6 +12,7 @@
     "loading": "جارٍ التحميل…",
     "retry": "إعادة المحاولة",
     "cancel": "إلغاء",
+    "close": "إغلاق",
     "back": "رجوع",
     "save": "حفظ",
     "saving": "جارٍ الحفظ…",
@@ -272,8 +273,15 @@
     "charCount": "{{current}} / {{max}}"
   },
   "post": {
-    "like": "أعجبني",
-    "liked": "أعجبني ✓",
+    "reactions": {
+      "pick": "اختر تفاعلًا",
+      "LIKE": "إعجاب",
+      "CELEBRATE": "تهنئة",
+      "SUPPORT": "مساندة",
+      "LOVE": "تقدير",
+      "INSIGHTFUL": "إفادة",
+      "FUNNY": "طرافة"
+    },
     "comments": "تعليقات",
     "repost": "إعادة نشر",
     "reposted": "أعدت النشر",
@@ -355,6 +363,10 @@
     "activeJobsCount": "{{count}} وظائف شاغرة"
   },
   "profile": {
+    "openToWork": "متاح للعمل",
+    "hiring": "أوظّف الآن",
+    "openToWorkHint": "يظهر شارة على ملفك ليعرف أصحاب العمل أنك متاح.",
+    "hiringHint": "يظهر شارة على ملفك ليعرف الباحثون أنك توظّف.",
     "about": "نبذة",
     "experience": "الخبرات",
     "education": "التعليم",
