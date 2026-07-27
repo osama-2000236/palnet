@@ -19,9 +19,12 @@ test.describe("growth flows", () => {
     const jobs = await request.get(`${API_BASE}/jobs?limit=1`, {
       headers: { Authorization: `Bearer ${token}` },
     });
-    test.skip(!jobs.ok(), "API unavailable for seeded job discovery.");
+    // Not skips: Playwright health-gates the API before the first test, and
+    // `global-setup` seeds a job. Either condition is a failure, and skipping
+    // silently retired the whole shared-job-link flow.
+    expect(jobs.ok(), `GET /jobs failed with ${jobs.status()}`).toBe(true);
     const jobId = ((await jobs.json()) as { data?: Array<{ id: string }> }).data?.[0]?.id;
-    test.skip(!jobId, "No seeded job available.");
+    expect(jobId, "no seeded job, so the share flow was never exercised").toBeTruthy();
 
     // No auth init script: this is the WhatsApp-recipient path.
     await page.goto(`/ar-PS/j/${jobId}`);

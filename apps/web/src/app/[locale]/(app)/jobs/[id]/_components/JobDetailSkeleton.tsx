@@ -2,7 +2,11 @@ import { Skeleton, Surface } from "@baydar/ui-web";
 
 export function JobDetailSkeleton(): JSX.Element {
   return (
-    <div className="mx-auto w-full max-w-[820px] px-4 py-6">
+    // `<main>`, because the skeleton replaces the whole page — without it the
+    // loading state has no landmark at all. `aria-busy` is what the a11y sweep
+    // waits on before scanning; this skeleton set neither, so the sweep scanned
+    // the skeleton and reported the *page* as missing a main landmark and an h1.
+    <main aria-busy="true" className="mx-auto w-full max-w-[820px] px-4 py-6">
       <Surface variant="card" padding="6" aria-hidden="true">
         <div className="mb-4 flex items-start gap-3">
           <Skeleton radius="var(--radius-md)" className="h-14 w-14" />
@@ -17,6 +21,6 @@ export function JobDetailSkeleton(): JSX.Element {
           <Skeleton className="h-3 w-[90%]" />
         </div>
       </Surface>
-    </div>
+    </main>
   );
 }

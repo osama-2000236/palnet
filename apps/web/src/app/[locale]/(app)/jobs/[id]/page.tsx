@@ -115,7 +115,7 @@ export default function JobDetailPage(): JSX.Element {
 
   if (error || !job) {
     return (
-      <div className="mx-auto w-full max-w-[820px] px-4 py-6">
+      <main className="mx-auto w-full max-w-[820px] px-4 py-6">
         <Surface variant="tinted" padding="6">
           <p className="text-ink-muted text-sm">{error ?? t("notFound")}</p>
           <Link
@@ -128,7 +128,7 @@ export default function JobDetailPage(): JSX.Element {
             {t("title")}
           </Link>
         </Surface>
-      </div>
+      </main>
     );
   }
 
@@ -146,7 +146,10 @@ export default function JobDetailPage(): JSX.Element {
   );
 
   return (
-    <div className="mx-auto w-full max-w-[820px] px-4 py-6">
+    // Was a <div>. The (app) layout wraps children in a plain div, so every page
+    // owns its own landmark — and this one never had it, because the a11y sweep
+    // could not reach this route to notice.
+    <main className="mx-auto w-full max-w-[820px] px-4 py-6">
       <nav className="mb-3">
         <Link
           href="/jobs"
@@ -247,6 +250,6 @@ export default function JobDetailPage(): JSX.Element {
           onApplied={handleApplied}
         />
       ) : null}
-    </div>
+    </main>
   );
 }

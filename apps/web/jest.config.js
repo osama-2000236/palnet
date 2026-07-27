@@ -14,7 +14,10 @@ const customConfig = {
   moduleNameMapper: {
     "^@/(.*)$": "<rootDir>/src/$1",
   },
-  passWithNoTests: true,
+  // No `passWithNoTests`, here or on the CLI. With it, breaking `testMatch`
+  // printed "No tests found, exiting with code 0" and the web test gate went
+  // green having run nothing. Ten suites live here; collecting none of them is
+  // a failure, not an empty package.
 };
 
 module.exports = createJestConfig(customConfig);

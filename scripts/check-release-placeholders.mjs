@@ -5,19 +5,18 @@ import { fileURLToPath } from "node:url";
 const repoRoot = resolve(fileURLToPath(new URL(".", import.meta.url)), "..");
 const productionCheck = process.argv.includes("--production");
 
+// Every entry must exist — see `collectFiles`. Two used to be dead:
+// `apps/mobile/app.json` (the project uses `app.config.js`) and
+// `apps/web/public/.well-known` (the association files are route handlers under
+// `src/app`). Both moved legitimately, but the gate could not tell that from
+// "deleted", so it scanned three of five and printed "clean".
 const releaseTargets = [
   "apps/mobile/app.config.js",
-  "apps/mobile/app.json",
   "apps/mobile/eas.json",
-  "apps/web/public/.well-known",
   "apps/web/src/app/.well-known",
 ];
 
-const forbiddenPatterns = [
-  /REPLACE_WITH/gi,
-  /TEAMID\.ps\.baydar\.app/gi,
-  /phc_REPLACE_WITH/gi,
-];
+const forbiddenPatterns = [/REPLACE_WITH/gi, /TEAMID\.ps\.baydar\.app/gi, /phc_REPLACE_WITH/gi];
 
 const requiredProductionEnv = [
   "EXPO_PUBLIC_EAS_PROJECT_ID",
@@ -31,8 +30,13 @@ const requiredProductionEnv = [
 const collectFiles = (target) => {
   const path = join(repoRoot, target);
 
+  // Hard failure. Returning [] here meant a renamed or deleted target dropped
+  // out of the scan silently: the deep-link association files could vanish and
+  // this gate would still report clean.
   if (!existsSync(path)) {
-    return [];
+    throw new Error(
+      `release target "${target}" does not exist — update releaseTargets or restore the file`,
+    );
   }
 
   const stat = statSync(path);

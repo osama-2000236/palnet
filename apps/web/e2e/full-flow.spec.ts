@@ -94,15 +94,27 @@ test.describe("full route health", () => {
       const baseURL = process.env.PLAYWRIGHT_BASE_URL || "http://localhost:3101";
       await assertHealthyRoute(page, baseURL + `/ar-PS/in/${auth.handle}`);
 
-      const jobs = await request.get(`${API_BASE}/jobs?limit=1`);
-      test.skip(!jobs.ok(), "API unavailable for seeded job discovery.");
+      // `/jobs` requires a session. This call sent no Authorization header and
+      // had been answering 401 on every run, so the `test.skip` below it fired
+      // every time: job detail and both employer routes were never smoked, and
+      // the test reported success. `growth.spec.ts` sends the token; this did
+      // not, and nothing noticed for as long as the skip was a skip.
+      const token = (JSON.parse(auth.session) as { tokens: { accessToken: string } }).tokens
+        .accessToken;
+      const jobs = await request.get(`${API_BASE}/jobs?limit=1`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      // Not skips: Playwright health-gates the API before the first test, and
+      // `global-setup` seeds a job. Skipping here dropped job detail and every
+      // employer route below it from a smoke test that reported success.
+      expect(jobs.ok(), `GET /jobs failed with ${jobs.status()}`).toBe(true);
       const jobBody = (await jobs.json()) as { data?: Array<{ id: string }> };
       const jobId = jobBody.data?.[0]?.id;
-      test.skip(!jobId, "No seeded job available for job detail smoke.");
+      expect(jobId, "no seeded job, so job detail was never smoked").toBeTruthy();
       await assertHealthyRoute(page, baseURL + `/ar-PS/jobs/${jobId}`);
 
       const runId = await readQaRunId();
-      test.skip(!runId, "No QA run id available for seeded employer routes.");
+      expect(runId, "no QA run id, so the employer routes were never smoked").toBeTruthy();
       const slug = `${runId}-baydar-labs`.toLowerCase();
       await assertHealthyRoute(page, baseURL + `/ar-PS/employer/${slug}`);
       await assertHealthyRoute(page, baseURL + `/ar-PS/employer/${slug}/jobs/new`);
