@@ -117,11 +117,24 @@ test.describe("authenticated routes", () => {
 
     test(`a11y authed: job detail (${locale})`, async ({ page, request }) => {
       const apiBase = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000/api/v1";
-      const res = await request.get(`${apiBase}/jobs?limit=1`);
-      test.skip(!res.ok(), "API unavailable for seeded job discovery.");
+      // `/jobs` requires a session; this call sent no header and answered 401
+      // on every run, which tripped the skip below and meant job detail was
+      // never scanned. Same defect as `full-flow.spec.ts`.
+      const auth = await ensureA11yStorageState(request);
+      const token = (JSON.parse(auth.session) as { tokens: { accessToken: string } }).tokens
+        .accessToken;
+      const res = await request.get(`${apiBase}/jobs?limit=1`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      // Not skips. Playwright starts the API itself and waits on `/health`
+      // before the first test, so "API unavailable" cannot happen here — a
+      // non-ok response is the jobs endpoint failing. And `global-setup` seeds
+      // a job, so an empty list is a broken fixture. Skipping on either meant
+      // job detail was never scanned and the run still reported green.
+      expect(res.ok(), `GET /jobs failed with ${res.status()}`).toBe(true);
       const body = (await res.json()) as { data?: Array<{ id: string }> };
       const jobId = body.data?.[0]?.id;
-      test.skip(!jobId, "No seeded job available for job detail a11y.");
+      expect(jobId, "no seeded job, so job detail was never scanned").toBeTruthy();
       await page.goto(`/${locale}/jobs/${jobId}`);
       await page.waitForLoadState("domcontentloaded");
       await settle(page);
