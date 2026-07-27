@@ -11,7 +11,12 @@ import { KaramaService } from "../karama/karama.service";
 import { PrismaService } from "../prisma/prisma.service";
 import { SafetyService } from "../safety/safety.service";
 
-import { postInclude, toPostDto, type PostWithIncludes } from "./posts.mapper";
+import {
+  attachReactionBreakdown,
+  postInclude,
+  toPostDto,
+  type PostWithIncludes,
+} from "./posts.mapper";
 
 @Injectable()
 export class PostsService {
@@ -82,7 +87,8 @@ export class PostsService {
     if (!post) {
       throw new DomainException(ErrorCode.NOT_FOUND, "Post not found.", 404);
     }
-    return toPostDto(post as unknown as PostWithIncludes);
+    const [enriched] = await attachReactionBreakdown(this.prisma, [post], excludedUserIds);
+    return toPostDto(enriched as unknown as PostWithIncludes);
   }
 
   async update(viewerId: string, postId: string, body: UpdatePostBody): Promise<PostDto> {
@@ -105,7 +111,8 @@ export class PostsService {
       data: { body: body.body },
       include: postInclude(viewerId),
     });
-    return toPostDto(post as unknown as PostWithIncludes);
+    const [enriched] = await attachReactionBreakdown(this.prisma, [post]);
+    return toPostDto(enriched as unknown as PostWithIncludes);
   }
 
   async delete(viewerId: string, postId: string): Promise<void> {

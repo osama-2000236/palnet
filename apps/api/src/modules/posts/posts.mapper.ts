@@ -38,6 +38,44 @@ export interface PostWithIncludes {
   reactions: Array<{ type: string }>; // scoped to viewer (take: 1)
   reposts: Array<{ id: string }>; // scoped to viewer (take: 1)
   bookmarks: Array<{ id: string }>; // scoped to viewer (take: 1)
+  // Attached by `attachReactionBreakdown` after the page query, not by the
+  // Prisma include — an include cannot group, and the alternative (six filtered
+  // `_count` selects) is six correlated subqueries per post where one grouped
+  // query per page does the whole job.
+  reactionBreakdown?: Record<string, number>;
+}
+
+/**
+ * One `groupBy` for a whole page of posts, folded back onto each row. Callers
+ * that skip it get `byReaction: {}` and the clients fall back to the generic
+ * mark, so this is an enrichment rather than a contract every call site must
+ * honour.
+ */
+export async function attachReactionBreakdown<T extends { id: string }>(
+  prisma: {
+    reaction: {
+      groupBy(args: unknown): Promise<Array<{ postId: string; type: string; _count: number }>>;
+    };
+  },
+  posts: T[],
+  excludedUserIds: string[] = [],
+): Promise<Array<T & { reactionBreakdown: Record<string, number> }>> {
+  if (posts.length === 0) return [];
+  const rows = await prisma.reaction.groupBy({
+    by: ["postId", "type"],
+    where: {
+      postId: { in: posts.map((p) => p.id) },
+      ...(excludedUserIds.length ? { userId: { notIn: excludedUserIds } } : {}),
+    },
+    _count: true,
+  });
+  const byPost = new Map<string, Record<string, number>>();
+  for (const row of rows) {
+    const bucket = byPost.get(row.postId) ?? {};
+    bucket[row.type] = row._count;
+    byPost.set(row.postId, bucket);
+  }
+  return posts.map((post) => ({ ...post, reactionBreakdown: byPost.get(post.id) ?? {} }));
 }
 
 export function toPostDto(post: PostWithIncludes): PostDto {
@@ -64,6 +102,7 @@ export function toPostDto(post: PostWithIncludes): PostDto {
         reactions: post._count.reactions,
         comments: post._count.comments,
         reposts: post._count.reposts,
+        byReaction: post.reactionBreakdown ?? {},
       },
       viewer: {
         reaction: post.reactions[0]?.type ?? null,
@@ -109,6 +148,7 @@ export function toPostDto(post: PostWithIncludes): PostDto {
       reactions: post._count.reactions,
       comments: post._count.comments,
       reposts: post._count.reposts,
+      byReaction: post.reactionBreakdown ?? {},
     },
     viewer: {
       reaction: post.reactions[0]?.type ?? null,

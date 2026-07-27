@@ -212,6 +212,12 @@ function FeedInner(): JSX.Element {
                         posts: prev.posts.map((item) => (item.id === next.id ? next : item)),
                       }))
                     }
+                    onDeleted={(id) =>
+                      setPosts((prev) => ({
+                        ...prev,
+                        posts: prev.posts.filter((item) => item.id !== id),
+                      }))
+                    }
                   />
                 </li>
               ))}

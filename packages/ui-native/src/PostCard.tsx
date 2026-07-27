@@ -1,12 +1,13 @@
 import { useMemo } from "react";
-import { Pressable, StyleSheet, Text, View, type StyleProp, type ViewStyle } from "react-native";
+import { Pressable, Text, View, type StyleProp, type ViewStyle } from "react-native";
 
 import { Avatar } from "./Avatar";
 import { Icon, type IconName } from "./Icon";
+import { makeStyles } from "./PostCard.styles";
 import type { PostCardProps } from "./PostCard.types";
+import { ReactionGlyph } from "./ReactionGlyph";
 import { Surface } from "./Surface";
 import { useThemeTokens } from "./ThemeProvider";
-import { nativeTokens } from "./tokens";
 
 export type { PostCardAction, PostCardProps } from "./PostCard.types";
 
@@ -18,6 +19,7 @@ export function PostCard({
   body,
   media,
   reactionCount,
+  reactionKinds,
   commentCount,
   repostCount,
   actions,
@@ -31,10 +33,13 @@ export function PostCard({
 }: PostCardProps): JSX.Element {
   const c = useThemeTokens().color;
   const styles = useMemo(() => makeStyles(c), [c]);
-  // Web hides the labels below `sm`; the phone is always below `sm`, so the
-  // equivalent trigger here is action count — past three, labels truncate at
-  // 390. accessibilityLabel still carries the text (MOBILE.md §a11y).
-  const iconOnly = actions.length > 3;
+  // Was `> 3`, mirroring web's "hide the labels below `sm`". Web re-measured
+  // that rule at 390px in Arabic with the four actions that remain after
+  // share/send was deleted: the row wants 308px of 340px available and nothing
+  // clips, so web shows the labels again — and a bare-icon row on the platform
+  // where icons are *smaller* was the wrong half of the parity to keep.
+  // Five would still overflow, so the threshold moves rather than disappears.
+  const iconOnly = actions.length > 4;
   const stat = (icon: IconName, value: number | string | undefined, wrap: StyleProp<ViewStyle>) =>
     value === undefined ? null : (
       <View style={wrap}>
@@ -107,7 +112,19 @@ export function PostCard({
           "0 ⇄ 0" noise; the row hides entirely when every stat is empty. */}
       {reactionCount !== undefined || commentCount !== undefined || repostCount !== undefined ? (
         <View style={styles.stats}>
-          {stat("thumb", reactionCount, styles.reactionPill)}
+          {reactionCount === undefined ? null : (
+            <View style={styles.reactionPill}>
+              {(reactionKinds && reactionKinds.length > 0
+                ? reactionKinds
+                : (["LIKE"] as const)
+              ).map((kind) => (
+                <ReactionGlyph key={kind} kind={kind} size={12} tinted strokeWidth={2.2} />
+              ))}
+              <Text selectable style={styles.statText}>
+                {reactionCount}
+              </Text>
+            </View>
+          )}
           <View style={styles.statEnd}>
             {stat("comment", commentCount, styles.statItem)}
             {stat("repost", repostCount, styles.statItem)}
@@ -120,9 +137,11 @@ export function PostCard({
           <Pressable
             key={action.key}
             onPress={action.onPress}
+            onLongPress={action.onLongPress}
             disabled={action.disabled}
             accessibilityRole="button"
             accessibilityLabel={action.accessibilityLabel ?? action.label}
+            accessibilityHint={action.accessibilityHint}
             accessibilityState={{ selected: action.selected, disabled: action.disabled }}
             testID={action.testID}
             style={({ pressed }) => [
@@ -132,11 +151,13 @@ export function PostCard({
               action.disabled ? styles.disabled : null,
             ]}
           >
-            <Icon
-              name={action.icon}
-              size={iconOnly ? 20 : 16}
-              color={action.selected ? c.brand700 : c.inkMuted}
-            />
+            {action.glyph ?? (
+              <Icon
+                name={action.icon}
+                size={iconOnly ? 20 : 16}
+                color={action.selected ? c.brand700 : c.inkMuted}
+              />
+            )}
             {iconOnly ? null : (
               <Text
                 numberOfLines={1}
@@ -153,140 +174,3 @@ export function PostCard({
     </Surface>
   );
 }
-
-const makeStyles = (c: typeof nativeTokens.color) =>
-  StyleSheet.create({
-    card: {
-      overflow: "hidden",
-    },
-    headerPressable: {
-      paddingHorizontal: nativeTokens.space[4],
-      paddingTop: nativeTokens.space[4],
-      paddingBottom: nativeTokens.space[2],
-    },
-    header: {
-      flexDirection: "row",
-      alignItems: "flex-start",
-      gap: nativeTokens.space[3],
-    },
-    authorText: {
-      flex: 1,
-      minWidth: 0,
-    },
-    authorName: {
-      color: c.ink,
-      fontFamily: nativeTokens.type.family.sans,
-      fontSize: nativeTokens.type.scale.h3.size,
-      lineHeight: nativeTokens.type.scale.h3.line,
-      fontWeight: "700",
-      textAlign: "auto",
-    },
-    authorMeta: {
-      color: c.inkMuted,
-      fontFamily: nativeTokens.type.family.sans,
-      fontSize: nativeTokens.type.scale.small.size,
-      lineHeight: nativeTokens.type.scale.small.line,
-      textAlign: "auto",
-    },
-    timestamp: {
-      color: c.inkSubtle,
-      fontFamily: nativeTokens.type.family.sans,
-      fontSize: nativeTokens.type.scale.caption.size,
-      lineHeight: nativeTokens.type.scale.caption.line,
-      textAlign: "auto",
-    },
-    moreWrap: {
-      minWidth: nativeTokens.space[8],
-      minHeight: nativeTokens.space[8],
-      alignItems: "center",
-      justifyContent: "center",
-    },
-    bodyWrap: {
-      paddingHorizontal: nativeTokens.space[4],
-      paddingBottom: nativeTokens.space[3],
-    },
-    body: {
-      color: c.ink,
-      fontFamily: nativeTokens.type.family.body,
-      fontSize: nativeTokens.type.scale.body.size,
-      lineHeight: nativeTokens.type.scale.body.line,
-      textAlign: "auto",
-    },
-    media: {
-      overflow: "hidden",
-    },
-    stats: {
-      minHeight: nativeTokens.space[10],
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "space-between",
-      paddingHorizontal: nativeTokens.space[4],
-      paddingVertical: nativeTokens.space[2],
-    },
-    reactionPill: {
-      flexDirection: "row",
-      alignItems: "center",
-      gap: nativeTokens.space[1],
-      borderRadius: nativeTokens.radius.full,
-      backgroundColor: c.brand50,
-      paddingHorizontal: nativeTokens.space[2],
-      paddingVertical: nativeTokens.space[1],
-    },
-    statEnd: {
-      flexDirection: "row",
-      alignItems: "center",
-      gap: nativeTokens.space[3],
-    },
-    statItem: {
-      flexDirection: "row",
-      alignItems: "center",
-      gap: nativeTokens.space[1],
-    },
-    statText: {
-      color: c.inkMuted,
-      fontFamily: nativeTokens.type.family.mono,
-      fontSize: nativeTokens.type.scale.caption.size,
-      lineHeight: nativeTokens.type.scale.caption.line,
-    },
-    actionBar: {
-      borderTopWidth: 1,
-      borderTopColor: c.lineSoft,
-      flexDirection: "row",
-      padding: nativeTokens.space[1],
-      gap: nativeTokens.space[1],
-    },
-    action: {
-      flex: 1,
-      minHeight: nativeTokens.chrome.minHit,
-      borderRadius: nativeTokens.radius.md,
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "center",
-      gap: nativeTokens.space[1],
-      paddingHorizontal: nativeTokens.space[1],
-    },
-    actionSelected: {
-      backgroundColor: c.brand50,
-    },
-    actionLabel: {
-      color: c.inkMuted,
-      fontFamily: nativeTokens.type.family.sans,
-      fontSize: nativeTokens.type.scale.caption.size,
-      fontWeight: "700",
-    },
-    actionLabelSelected: {
-      color: c.brand700,
-    },
-    comments: {
-      borderTopWidth: 1,
-      borderTopColor: c.lineSoft,
-      backgroundColor: c.surfaceSubtle,
-      padding: nativeTokens.space[3],
-    },
-    pressed: {
-      opacity: 0.88,
-    },
-    disabled: {
-      opacity: 0.5,
-    },
-  });

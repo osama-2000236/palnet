@@ -252,6 +252,16 @@ samp {
   background-color: rgb(var(--ink-rgb) / var(--state-selected));
 }
 
+/* …except in the post action bar. `--state-selected` (12% ink) is tuned for a
+ * chip-sized control; across an 83px action cell it paints a grey slab that
+ * outweighs the post body above it — the "محفوظ" cell was the heaviest object
+ * on the card. A post action already carries its state three other ways before
+ * colour: the glyph, the semibold weight, and the label text itself changing
+ * ("حفظ" → "محفوظ"). So it keeps a whisper of fill instead of a block. */
+.state-layer.react-press[aria-pressed="true"]::after {
+  background-color: rgb(var(--ink-rgb) / var(--state-hover));
+}
+
 .state-layer:disabled::after,
 .state-layer[aria-disabled="true"]::after {
   background-color: rgb(var(--ink-rgb) / 0);

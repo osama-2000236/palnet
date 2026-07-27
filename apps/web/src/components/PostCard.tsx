@@ -8,15 +8,17 @@
 import {
   Bookmark,
   BookmarkType,
-  ReportReason,
+  formatNumber,
   formatRelativeTime,
   type Post,
 } from "@baydar/shared";
 import {
+  Button,
+  Dialog,
   PostCard as PostCardShell,
   ReportDialog,
   useToast,
-  type ReportDialogLabels,
+  type ReactionKind,
 } from "@baydar/ui-web";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
@@ -25,14 +27,18 @@ import { useState } from "react";
 import { Comments } from "@/components/Comments";
 import { apiCall, apiFetch } from "@/lib/api";
 import { useReport } from "@/lib/api/safety";
-import { getAccessToken } from "@/lib/session";
+import { getAccessToken, readSession } from "@/lib/session";
+import { useReportLabels } from "@/lib/report-labels";
 
 export function PostCard({
   post,
   onChange,
+  onDeleted,
 }: {
   post: Post;
   onChange?: (next: Post) => void;
+  /** Called after the author deletes this post, so the host can drop the row. */
+  onDeleted?: (id: string) => void;
 }): JSX.Element {
   const t = useTranslations("post");
   const tCommon = useTranslations("common");
@@ -46,34 +52,59 @@ export function PostCard({
   const report = useReport();
   const [saveBusy, setSaveBusy] = useState(false);
   const [repostBusy, setRepostBusy] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const formatCount = (value: number): string => formatNumber(value, locale);
+  // `DELETE /posts/:id` has existed since the posts module was written and no
+  // surface on either platform ever called it: an author could publish but
+  // never take it back. The overflow menu is where it belongs, and it is the
+  // second item that makes the menu a menu rather than a mislabelled button.
+  const isAuthor = readSession()?.user.id === post.authorId;
 
-  async function toggleReaction(): Promise<void> {
+  async function deletePost(): Promise<void> {
+    const token = getAccessToken();
+    if (!token) return;
+    setConfirmDelete(false);
+    try {
+      await apiCall(`/posts/${post.id}`, { method: "DELETE", token });
+      onDeleted?.(post.id);
+      showToast({ message: t("deleted"), kind: "success" });
+    } catch {
+      showToast({ message: t("deleteFailed"), kind: "error" });
+    }
+  }
+
+  /**
+   * `next === null` clears; anything else sets that type. Switching between two
+   * types is an update, not a remove-then-add, so the total does not move —
+   * which is also exactly what the API's upsert does on the server side.
+   */
+  async function setReaction(next: ReactionKind | null): Promise<void> {
     const token = getAccessToken();
     if (!token || busy) return;
-    const wasLiked = post.viewer.reaction !== null;
-    const optimistic: Post = {
+    const previous = post.viewer.reaction as ReactionKind | null;
+    if (previous === next) return;
+
+    const delta = (previous === null ? 0 : -1) + (next === null ? 0 : 1);
+    const byReaction = { ...post.counts.byReaction };
+    if (previous) byReaction[previous] = Math.max(0, (byReaction[previous] ?? 1) - 1);
+    if (next) byReaction[next] = (byReaction[next] ?? 0) + 1;
+
+    onChange?.({
       ...post,
-      viewer: { ...post.viewer, reaction: wasLiked ? null : "LIKE" },
+      viewer: { ...post.viewer, reaction: next },
       counts: {
         ...post.counts,
-        reactions: Math.max(0, post.counts.reactions + (wasLiked ? -1 : 1)),
+        reactions: Math.max(0, post.counts.reactions + delta),
+        byReaction,
       },
-    };
-    onChange?.(optimistic);
+    });
     setBusy(true);
     try {
-      if (wasLiked) {
-        await apiCall(`/posts/${post.id}/reaction`, {
-          method: "DELETE",
-          token,
-        });
-      } else {
-        await apiCall(`/posts/${post.id}/reaction`, {
-          method: "PUT",
-          body: { type: "LIKE" },
-          token,
-        });
-      }
+      await apiCall(`/posts/${post.id}/reaction`, {
+        method: next === null ? "DELETE" : "PUT",
+        body: next === null ? undefined : { type: next },
+        token,
+      });
     } catch {
       onChange?.(post);
     } finally {
@@ -135,23 +166,7 @@ export function PostCard({
       setSaveBusy(false);
     }
   }
-
-  const reportLabels: ReportDialogLabels = {
-    title: tSafety("report.title"),
-    detailsLabel: tSafety("report.details_label"),
-    cancel: tCommon("cancel"),
-    submit: tSafety("report.submit"),
-    close: tSafety("report.close"),
-    reasons: {
-      [ReportReason.SPAM]: tSafety("report.reason.spam"),
-      [ReportReason.HARASSMENT]: tSafety("report.reason.harassment"),
-      [ReportReason.HATE]: tSafety("report.reason.hate"),
-      [ReportReason.MISINFORMATION]: tSafety("report.reason.misinformation"),
-      [ReportReason.NUDITY]: tSafety("report.reason.nudity"),
-      [ReportReason.VIOLENCE]: tSafety("report.reason.violence"),
-      [ReportReason.OTHER]: tSafety("report.reason.other"),
-    },
-  };
+  const reportLabels = useReportLabels();
 
   return (
     <>
@@ -173,15 +188,25 @@ export function PostCard({
         }))}
         timestamp={formatRelativeTime(post.createdAt, locale)}
         counts={post.counts}
-        liked={post.viewer.reaction !== null}
+        reaction={post.viewer.reaction as ReactionKind | null}
+        formatCount={formatCount}
         busy={busy}
         reposted={post.viewer.reposted}
         repostBusy={repostBusy}
         saved={post.viewer.bookmarkId !== null}
         saveBusy={saveBusy}
         labels={{
-          like: t("like"),
-          liked: t("liked"),
+          reactions: {
+            pick: t("reactions.pick"),
+            kind: {
+              LIKE: t("reactions.LIKE"),
+              CELEBRATE: t("reactions.CELEBRATE"),
+              SUPPORT: t("reactions.SUPPORT"),
+              LOVE: t("reactions.LOVE"),
+              INSIGHTFUL: t("reactions.INSIGHTFUL"),
+              FUNNY: t("reactions.FUNNY"),
+            },
+          },
           comment: t("comment"),
           repost: t("repost"),
           reposted: t("reposted"),
@@ -196,7 +221,20 @@ export function PostCard({
         }}
         commentsOpen={commentsOpen}
         onToggleComments={setCommentsOpen}
-        onToggleReaction={() => void toggleReaction()}
+        menuItems={
+          isAuthor
+            ? [
+                {
+                  id: "delete",
+                  label: t("delete"),
+                  icon: "x" as const,
+                  destructive: true,
+                  onSelect: () => setConfirmDelete(true),
+                },
+              ]
+            : undefined
+        }
+        onSetReaction={(next) => void setReaction(next)}
         onToggleRepost={() => void toggleRepost()}
         onToggleSave={() => void toggleSave()}
         onReport={() => setReportOpen(true)}
@@ -216,6 +254,24 @@ export function PostCard({
           />
         }
       />
+      <Dialog
+        open={confirmDelete}
+        onClose={() => setConfirmDelete(false)}
+        title={t("deleteConfirmTitle")}
+        description={t("deleteConfirmBody")}
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setConfirmDelete(false)}>
+              {tCommon("cancel")}
+            </Button>
+            <Button variant="accent" onClick={() => void deletePost()}>
+              {t("delete")}
+            </Button>
+          </>
+        }
+      >
+        {null}
+      </Dialog>
       <ReportDialog
         open={reportOpen}
         onOpenChange={setReportOpen}

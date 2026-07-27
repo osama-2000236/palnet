@@ -1,7 +1,12 @@
 import { takePage, type CursorPageMeta, type Post as PostDto } from "@baydar/shared";
 import { Injectable } from "@nestjs/common";
 
-import { postInclude, toPostDto, type PostWithIncludes } from "../posts/posts.mapper";
+import {
+  attachReactionBreakdown,
+  postInclude,
+  toPostDto,
+  type PostWithIncludes,
+} from "../posts/posts.mapper";
 import { PrismaService } from "../prisma/prisma.service";
 import { SafetyService } from "../safety/safety.service";
 
@@ -51,6 +56,8 @@ export class FeedService {
     });
 
     const { rows: page, meta } = takePage(rows, limit);
-    return { data: page.map((p) => toPostDto(p as unknown as PostWithIncludes)), meta };
+    // One grouped query for the whole page, not one per post.
+    const enriched = await attachReactionBreakdown(this.prisma, page, excludedUserIds);
+    return { data: enriched.map((p) => toPostDto(p as unknown as PostWithIncludes)), meta };
   }
 }

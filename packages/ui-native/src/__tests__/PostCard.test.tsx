@@ -34,7 +34,7 @@ describe("PostCard", () => {
     expect(screen.getByText("حفظ")).toBeTruthy();
   });
 
-  it("drops to icon-only past three actions, keeping the label accessible", () => {
+  it("keeps four labels visible, and drops to icon-only past four", () => {
     const onLike = jest.fn();
     const screen = render(
       <PostCard
@@ -48,11 +48,30 @@ describe("PostCard", () => {
       />,
     );
 
-    // Four labels at 390 truncate, so the text is dropped — but every action
-    // still has to be reachable by name.
-    expect(screen.queryByText("إعادة نشر")).toBeNull();
+    // Four labelled actions were re-measured at 390px in Arabic on web (the
+    // row wants 308px of 340px available, nothing clips) and the threshold
+    // moved from three to four on both platforms. The labels are visible.
+    expect(screen.getByText("إعادة نشر")).toBeTruthy();
     fireEvent.press(screen.getByLabelText("أعجبني"));
     expect(onLike).toHaveBeenCalledTimes(1);
+    expect(screen.getByLabelText("حفظ")).toBeTruthy();
+  });
+
+  it("drops to icon-only past four actions, keeping every label accessible", () => {
+    const screen = render(
+      <PostCard
+        {...base}
+        actions={[
+          { key: "like", label: "أعجبني", icon: "thumb" },
+          { key: "comment", label: "تعليقات", icon: "comment" },
+          { key: "repost", label: "إعادة نشر", icon: "repost" },
+          { key: "save", label: "حفظ", icon: "bookmark" },
+          { key: "extra", label: "مشاركة", icon: "share" },
+        ]}
+      />,
+    );
+
+    expect(screen.queryByText("إعادة نشر")).toBeNull();
     expect(screen.getByLabelText("إعادة نشر")).toBeTruthy();
     expect(screen.getByLabelText("حفظ")).toBeTruthy();
   });

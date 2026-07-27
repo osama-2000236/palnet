@@ -18,7 +18,11 @@ import { useState, type ReactNode } from "react";
 import { Avatar, type AvatarUser } from "./Avatar";
 import { cx } from "./cx";
 import { Icon } from "./Icon";
+import { Menu, type MenuItemSpec } from "./Menu";
 import { PostCardAction } from "./PostCardAction";
+import { PostCardStats } from "./PostCardStats";
+import { ReactionPicker, type ReactionPickerLabels } from "./ReactionPicker";
+import type { ReactionKind } from "./reactions";
 import { Surface } from "./Surface";
 
 export interface PostCardAuthor extends AvatarUser {
@@ -35,13 +39,13 @@ export interface PostCardCounts {
   reactions: number;
   comments: number;
   reposts: number;
+  /** Per-type breakdown, e.g. `{ LIKE: 4, INSIGHTFUL: 1 }`. Absent → no glyph row. */
+  byReaction?: Partial<Record<ReactionKind, number>>;
 }
 
 export interface PostCardLabels {
-  /** e.g. "إعجاب" — resting state of the like button. */
-  like: string;
-  /** e.g. "أعجبني" — active state of the like button. */
-  liked: string;
+  /** Per-reaction names + the flyout's accessible name. */
+  reactions: ReactionPickerLabels;
   comment: string;
   repost: string;
   /** e.g. "أعدت النشر" — active state of the repost button. */
@@ -70,8 +74,11 @@ export interface PostCardProps {
   /** Pre-formatted timestamp (host decides locale + relative vs absolute). */
   timestamp: string;
   counts: PostCardCounts;
-  /** Whether the viewer has reacted (any reaction type counts as liked). */
-  liked: boolean;
+  /**
+   * The viewer's reaction, or null. Was `liked: boolean` — which is what threw
+   * away five of the six types the API has always accepted.
+   */
+  reaction: ReactionKind | null;
   /** Disable the like button while a request is in flight. */
   busy?: boolean;
   /** Whether the viewer has reposted this post. */
@@ -86,8 +93,8 @@ export interface PostCardProps {
 
   /** Click the author name/avatar — host routes to the profile page. */
   onOpenProfile?(authorId: string): void;
-  /** Toggle reaction — host performs the API call + optimistic update. */
-  onToggleReaction?(): void;
+  /** Set or clear the viewer's reaction — host performs the call + reconcile. */
+  onSetReaction?(next: ReactionKind | null): void;
   /** Toggle repost — host performs the API call + optimistic update.
    *  Omit it and the button is not rendered, same rule as save: a post has no
    *  public permalink, so an external "share" action has nowhere to point. */
@@ -95,6 +102,10 @@ export interface PostCardProps {
   /** Toggle save/bookmark. */
   onToggleSave?(): void;
   onReport?(): void;
+  /** Extra items appended to the overflow menu (copy link, unfollow, …). */
+  menuItems?: MenuItemSpec[];
+  /** Formats a count for display. Injected — ui-web never calls Intl itself. */
+  formatCount?(value: number): string;
   /**
    * When the viewer expands comments, the host mounts the Comments region
    * here. The button just toggles; the node decides what to render.
@@ -112,7 +123,7 @@ export function PostCard({
   media = [],
   timestamp,
   counts,
-  liked,
+  reaction,
   busy = false,
   reposted = false,
   repostBusy = false,
@@ -120,10 +131,12 @@ export function PostCard({
   saveBusy = false,
   labels,
   onOpenProfile,
-  onToggleReaction,
+  onSetReaction,
   onToggleRepost,
   onToggleSave,
   onReport,
+  menuItems,
+  formatCount = String,
   commentsSlot,
   commentsOpen,
   onToggleComments,
@@ -135,6 +148,24 @@ export function PostCard({
     if (onToggleComments) onToggleComments(next);
     else setInternalOpen(next);
   };
+
+  // The overflow control was labelled `moreOptions` and wired straight to
+  // `onReport` — a menu affordance whose only outcome was reporting the post.
+  // It is a real menu now, and it renders nothing when there is nothing in it.
+  const overflow: MenuItemSpec[] = [
+    ...(menuItems ?? []),
+    ...(onReport && labels.report
+      ? [
+          {
+            id: "report",
+            label: labels.report,
+            icon: "x" as const,
+            destructive: true,
+            onSelect: onReport,
+          },
+        ]
+      : []),
+  ];
 
   const name =
     `${author.firstName ?? ""} ${author.lastName ?? ""}`.trim() ||
@@ -174,19 +205,14 @@ export function PostCard({
             {labels.publicAudience}
           </span>
         </div>
-        <button
-          type="button"
-          aria-label={labels.moreOptions}
-          onClick={onReport}
-          className="text-ink-muted hover:bg-surface-subtle hover:text-ink inline-flex h-8 w-8 items-center justify-center rounded-md focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
-        >
-          <Icon name="more" size={18} />
-        </button>
+        {overflow.length > 0 ? (
+          <Menu label={labels.moreOptions} items={overflow} className="shrink-0" />
+        ) : null}
       </header>
 
       {/* Body */}
       {body ? (
-        <div className="bidi-plaintext text-ink whitespace-pre-wrap px-4 pb-3 text-[15px] leading-[1.7]">
+        <div className="bidi-plaintext text-ink text-body whitespace-pre-wrap px-4 pb-3">
           {body}
         </div>
       ) : null}
@@ -208,37 +234,25 @@ export function PostCard({
         </ul>
       ) : null}
 
-      {/* Stats row — hidden entirely for untouched posts (no "0 · 0" noise),
-          matching the native twin's behavior. */}
-      {counts.reactions + counts.comments + counts.reposts > 0 ? (
-        <div className="flex items-center gap-2 px-4 py-2.5">
-          <span
-            aria-hidden="true"
-            className="bg-brand-600 text-ink-inverse inline-flex h-[18px] w-[18px] items-center justify-center rounded-full"
-          >
-            <Icon name="thumb" size={10} strokeWidth={2.4} />
-          </span>
-          <span aria-live="polite" className="text-ink-muted text-xs tabular-nums">
-            {counts.reactions}
-          </span>
-          <div className="flex-1" />
-          <span className="text-ink-muted text-xs">
-            {labels.commentsCount(counts.comments)}
-            {" · "}
-            {labels.repostsCount(counts.reposts)}
-          </span>
-        </div>
-      ) : null}
+      <PostCardStats counts={counts} labels={labels} formatCount={formatCount} />
 
       <div className="border-line-soft border-t" />
 
-      {/* Action bar */}
-      <div className="flex items-stretch p-1">
-        <PostCardAction
-          icon="thumb"
-          label={liked ? labels.liked : labels.like}
-          onClick={onToggleReaction}
-          active={liked}
+      {/* Action bar.
+          Grid, not flex. With `flex-1` the four cells did not come out equal:
+          the reaction cell measured 71px against 87px for the other three at
+          390px, because it is a positioned wrapper (the picker flyout needs an
+          anchor) rather than the bare <button> the others are, and the two
+          resolve their base size differently even with identical
+          `flex:1 1 0%; min-width:0`. `auto-cols-fr` makes every cell exactly
+          1fr whatever it contains and whatever the action count is — and the
+          count does vary, since repost and save only render when the host wires
+          a handler. */}
+      <div className="grid auto-cols-fr grid-flow-col items-stretch p-1">
+        <ReactionPicker
+          reaction={reaction}
+          labels={labels.reactions}
+          onSelect={(next) => onSetReaction?.(next)}
           disabled={busy}
         />
         <PostCardAction
