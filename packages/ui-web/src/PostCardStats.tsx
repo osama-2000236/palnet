@@ -46,11 +46,20 @@ export function PostCardStats({
         </>
       ) : null}
       <div className="flex-1" />
-      <span className="text-ink-muted text-xs">
-        {labels.commentsCount(counts.comments)}
-        {" · "}
-        {labels.repostsCount(counts.reposts)}
-      </span>
+      {/* Each half of this line appears only when it has something to say. The
+          strip showed "٠ تعليق · ٠ إعادة نشر" beside a single reaction, which
+          is three facts where one was true — the same "no 0 · 0 noise" rule the
+          whole strip already follows, applied one level down. */}
+      {counts.comments > 0 || counts.reposts > 0 ? (
+        <span className="text-ink-muted text-xs">
+          {[
+            counts.comments > 0 ? labels.commentsCount(counts.comments) : null,
+            counts.reposts > 0 ? labels.repostsCount(counts.reposts) : null,
+          ]
+            .filter(Boolean)
+            .join(" · ")}
+        </span>
+      ) : null}
     </div>
   );
 }
