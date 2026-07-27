@@ -163,7 +163,10 @@ test.describe("keyboard traversal", () => {
       await page.waitForTimeout(AUTHED.has(route) ? 1_200 : 700);
 
       const targets = await focusables(page);
-      test.skip(targets.length === 0, "no interactive controls on this surface");
+      // Not a skip: every route here renders navigation at minimum, so an empty
+      // list means the selector stopped matching or the page failed to render —
+      // both of which this sweep exists to catch.
+      expect(targets.length, `${route}: no interactive controls found at all`).toBeGreaterThan(0);
 
       await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
       const visited = await walk(page, targets.length + 8);
@@ -196,7 +199,9 @@ test.describe("keyboard traversal", () => {
     await page.waitForSelector('[role="tab"]', { timeout: 30_000 });
     const tabs = page.getByRole("tab");
     const count = await tabs.count();
-    test.skip(count < 3, "profile tabs not rendered");
+    // `waitForSelector` above guarantees one tab, not the strip. A skip on a
+    // half-rendered strip would hide exactly the regression worth catching.
+    expect(count, "profile tab strip did not render").toBeGreaterThanOrEqual(3);
 
     const selected = (): Promise<string> =>
       page.evaluate(
@@ -244,7 +249,7 @@ test.describe("keyboard traversal", () => {
     await page.waitForSelector('[role="tab"]', { timeout: 30_000 });
 
     const active = page.locator('[role="tab"][aria-selected="true"]');
-    test.skip((await active.count()) === 0, "profile tabs not rendered");
+    expect(await active.count(), "no tab is selected, so there is no underline to measure").toBe(1);
 
     const offset = await active.evaluate((el) => {
       const tab = el.getBoundingClientRect();
@@ -265,29 +270,42 @@ test.describe("keyboard traversal", () => {
     // tab strip itself rather than a fixed delay — a cold route compile made
     // this test skip silently, which is worse than failing.
     await page.waitForSelector('[role="tab"]', { timeout: 30_000 });
-    const badges = page.locator('[role="tab"] span[aria-hidden="true"]');
+    // Filtered to spans that actually carry text. Each tab renders *two*
+    // `aria-hidden` spans — the count badge and the active-underline rule — and
+    // the underline is empty. Without the filter the bare count is 6 for 5 tabs
+    // and the `n === 0` guard below can never fire, so the loop's `continue` on
+    // empty text silently swallowed the whole assertion: setting `hasCount` to
+    // `false` in `Tabs.tsx`, which removes every badge from the page, left this
+    // test PASSING.
+    const badges = page.locator('[role="tab"] span[aria-hidden="true"]').filter({ hasText: /\S/ });
     const n = await badges.count();
-    test.skip(n === 0, "no tab carries a count on this profile");
+    // Hard failure, not a skip. A skip here reads as "nothing to check" when it
+    // means "the thing under test disappeared" — and this test exists because a
+    // count once rendered as a Latin "1" in an Arabic UI.
+    expect(n, "no tab rendered a count, so this test asserts nothing").toBeGreaterThan(0);
 
     for (let i = 0; i < n; i += 1) {
       const text = (await badges.nth(i).textContent())?.trim() ?? "";
-      if (!text) continue;
       expect(text, `tab count "${text}" uses Latin digits in ar-PS`).not.toMatch(/[0-9]/);
     }
   });
 
-  test("Escape closes the composer without stranding focus", async ({ page }) => {
-    await page.goto("/ar-PS/feed", { waitUntil: "domcontentloaded" });
-    await page.waitForTimeout(1_200);
-    const composer = page.getByRole("textbox").first();
-    if ((await composer.count()) === 0) test.skip(true, "composer not present");
-    await composer.focus();
-    await page.keyboard.press("Escape");
-    // Focus must stay somewhere real. Losing it to <body> is the bug where a
-    // keyboard user has to Tab from the top of the document again.
-    const parked = await page.evaluate(() => document.activeElement?.tagName ?? "NONE");
-    expect(parked).not.toBe("NONE");
-  });
+  // Deleted: "Escape closes the composer without stranding focus".
+  //
+  // It was false three times over. The composer renders collapsed — a button,
+  // no textbox — so `getByRole("textbox")` matched nothing and the test skipped
+  // itself on every run since it was written. There is no Escape handler in
+  // `ui-web/src/Composer.tsx` or its web wrapper, so the behaviour it was named
+  // for does not exist. And its only assertion was that `document.activeElement`
+  // is not `<body>`, which is true on nearly any page — so even had it run, it
+  // could not have noticed the missing behaviour.
+  //
+  // Not replaced with a working version, because the behaviour is not owed: the
+  // composer expands inline rather than as a modal, and APG requires Escape of
+  // dialogs, not of disclosures. A keyboard user can Tab out of it. Worth adding
+  // as an affordance — it does steal focus into the textarea on expand — but
+  // that is a feature, and inventing one to justify a test is how the fake got
+  // here.
 });
 
 test.describe("skip link and toast timing", () => {
