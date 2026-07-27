@@ -73,7 +73,7 @@ export function EmptyState({
         <p
           className={cx(
             "text-ink font-semibold",
-            inline ? "text-base leading-snug" : "text-[19px] leading-snug",
+            inline ? "text-base leading-snug" : "text-h2 leading-snug",
           )}
         >
           {title}
@@ -82,7 +82,7 @@ export function EmptyState({
           <p
             className={cx(
               "text-ink-muted max-w-[48ch]",
-              inline ? "text-[13px] leading-relaxed" : "text-[15px] leading-relaxed",
+              inline ? "text-small leading-relaxed" : "text-body leading-relaxed",
             )}
           >
             {body}

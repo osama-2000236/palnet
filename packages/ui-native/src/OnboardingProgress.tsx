@@ -110,7 +110,7 @@ export function OnboardingProgress({
                 <Text
                   style={{
                     fontFamily: nativeTokens.type.family.mono,
-                    fontSize: 10,
+                    fontSize: nativeTokens.type.scale.micro.size,
                     letterSpacing: 0.4,
                     color: n === safe ? c.brand700 : c.inkSubtle,
                     fontWeight: n === safe ? "600" : "500",
@@ -139,7 +139,7 @@ export function OnboardingProgress({
             style={{
               color: c.ink,
               fontFamily: nativeTokens.type.family.sans,
-              fontSize: 13,
+              fontSize: nativeTokens.type.scale.small.size,
               fontWeight: "600",
             }}
           >
@@ -173,7 +173,7 @@ export function OnboardingProgress({
 const styles = StyleSheet.create({
   counter: {
     fontFamily: nativeTokens.type.family.mono,
-    fontSize: 11,
+    fontSize: nativeTokens.type.scale.micro.size,
     letterSpacing: 0.4,
     // "٢ / ٤" is a numeric run with a separator — under RTL the bidi algorithm
     // swaps the two numbers. Pin it LTR, same as the web twin. See RTL.md.

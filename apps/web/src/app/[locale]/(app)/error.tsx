@@ -51,7 +51,7 @@ export default function AppSegmentError({
         />
         {error.digest ? (
           <p
-            className="text-ink-subtle border-line-soft border-t px-6 pb-4 pt-3 text-center font-mono text-[11px]"
+            className="text-ink-subtle border-line-soft text-micro border-t px-6 pb-4 pt-3 text-center font-mono"
             dir="ltr"
           >
             Error ID: {error.digest}

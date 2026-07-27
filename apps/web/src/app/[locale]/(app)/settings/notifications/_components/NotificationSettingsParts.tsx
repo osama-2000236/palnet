@@ -2,7 +2,7 @@ import { Skeleton, Surface } from "@baydar/ui-web";
 
 export function ChannelHeader({ label }: { label: string }): JSX.Element {
   return (
-    <span className="text-ink-subtle text-center font-sans text-[11px] font-semibold uppercase tracking-wider">
+    <span className="text-ink-subtle text-micro text-center font-sans font-semibold uppercase tracking-wider">
       {label}
     </span>
   );

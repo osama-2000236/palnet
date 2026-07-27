@@ -78,7 +78,7 @@ export function Checkbox({
               style={{
                 color: c.inkInverse,
                 fontFamily: nativeTokens.type.family.sans,
-                fontSize: 12,
+                fontSize: nativeTokens.type.scale.caption.size,
                 lineHeight: 14,
                 fontWeight: "700",
               }}

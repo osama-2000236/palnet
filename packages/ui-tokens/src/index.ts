@@ -91,6 +91,17 @@ export const tokens = {
       body: { size: 15, weight: 400, line: 1.6, track: "0" },
       small: { size: 13, weight: 400, line: 1.5, track: "0" },
       caption: { size: 12, weight: 500, line: 1.4, track: "0.01em" },
+      // The eighth step. The seven-step scale stopped at 12, so every piece of
+      // dense chrome that needed to go smaller — nav labels, `sm` chips, count
+      // badges, message meta, section overlines — invented its own size:
+      // `text-[11px]` appeared 28 times, `text-[10px]` three more, alongside
+      // `text-[13.5px]` and `text-[14px]`. Naming the step is what stops the
+      // invention; `micro` is the floor, and nothing may go below it.
+      // Line height is deliberately tighter than every other step. `micro` is
+      // the dense-chrome step — nav labels, count badges, timestamps, overlines
+      // — and it lives inside fixed-height chrome. At 1.45 the AppShell profile
+      // label clipped against the 56px nav bar the first time this shipped.
+      micro: { size: 11, weight: 500, line: 1.2, track: "0.01em" },
     },
   },
   // 4px unit scale. Stick to these values.

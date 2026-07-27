@@ -83,17 +83,40 @@ All UI color must map through the tokens in [packages/ui-tokens/src/index.ts](pa
 
 ### 5.2 Typography
 
-| Step      | Web | Mobile | Weight | Line | Use                        |
-| --------- | --- | ------ | ------ | ---- | -------------------------- |
-| `display` | 36  | 28     | 700    | 1.15 | Landing hero, empty states |
-| `h1`      | 26  | 22     | 600    | 1.25 | Page title                 |
-| `h2`      | 19  | 18     | 600    | 1.35 | Section header             |
-| `h3`      | 16  | 16     | 600    | 1.40 | Card header, name in post  |
-| `body`    | 15  | 15     | 400    | 1.60 | Post body, messages        |
-| `small`   | 13  | 13     | 400    | 1.50 | Headline, meta             |
-| `caption` | 12  | 12     | 500    | 1.40 | Timestamps, counts         |
+| Step      | Web | Mobile | Weight | Line | Use                                             |
+| --------- | --- | ------ | ------ | ---- | ----------------------------------------------- |
+| `display` | 36  | 28     | 700    | 1.15 | Landing hero, empty states                      |
+| `h1`      | 26  | 22     | 600    | 1.25 | Page title                                      |
+| `h2`      | 19  | 18     | 600    | 1.35 | Section header                                  |
+| `h3`      | 16  | 16     | 600    | 1.40 | Card header, name in post                       |
+| `body`    | 15  | 15     | 400    | 1.60 | Post body, messages                             |
+| `small`   | 13  | 13     | 400    | 1.50 | Headline, meta                                  |
+| `caption` | 12  | 12     | 500    | 1.40 | Timestamps, counts                              |
+| `micro`   | 11  | 11     | 500    | 1.20 | Nav labels, count badges, `sm` chips, overlines |
 
 Mobile values come from `nativeTokens.type.scale` in [packages/ui-tokens/src/tokens.native.ts](packages/ui-tokens/src/tokens.native.ts).
+
+**`micro` is the floor.** It was added in 2026-07 because the seven-step scale
+stopped at 12 and every piece of dense chrome that needed to go smaller invented
+its own size: `text-[11px]` appeared 28 times, `text-[10px]` three more, beside
+`text-[13.5px]` and `text-[14px]`. Its line height is tighter than every other
+step on purpose — it lives inside fixed-height chrome, and at 1.45 it clipped
+the AppShell profile label against the 56px nav bar.
+
+**Tailwind's t-shirt names are aliases of these steps, not a second scale.**
+`text-xs` → `caption`, `text-sm` → `small`, `text-base` → `body`, `text-lg` →
+`h3`, `text-xl` → `h2`, `text-2xl`/`text-3xl` → `h1`, `text-4xl`/`text-5xl` →
+`display`. This is not cosmetic: a count in 2026-07 found the semantic
+utilities used **three times** across `apps/web/src` + `packages/ui-web/src`
+against ~530 uses of Tailwind's default scale in 94 files. Every page title
+rendered at 30px against a spec of 26, body copy at 14 against 15, and the
+landing hero at 48 against a display step of 36 — the table above was
+documentation of something that wasn't shipping. Re-pointing the aliases in the
+preset fixed all 530 call sites at once and makes an off-scale size
+unreachable. Two aliases collapsing onto one step is the scale doing its job.
+
+`pnpm lint:tokens` fails on `text-[Npx]`, on `text-6xl` and above, and on a raw
+`fontSize:` number in native.
 
 **Families:**
 
@@ -153,15 +176,17 @@ Truth: what exists in `packages/ui-web/src/` and `packages/ui-native/src/` today
 
 ### 7.1 Atoms
 
-| Component            | Web | Native | Spec                                                     |
-| -------------------- | --- | ------ | -------------------------------------------------------- |
-| `Button`             | ✅  | ✅     | [docs/components/Button.md](docs/components/Button.md)   |
-| `Avatar`             | ✅  | ✅     | [docs/components/Avatar.md](docs/components/Avatar.md)   |
-| `Icon`               | ✅  | ✅     | wraps lucide-react / lucide-react-native                 |
-| `Surface`            | ✅  | ✅     | [docs/components/Surface.md](docs/components/Surface.md) |
-| `Input` / `Textarea` | 🟡  | 🟡     | App-local for now — promote when 3+ screens reuse        |
-| `Badge`              | 🟡  | 🟡     | App-local — promote when reused                          |
-| `Chip`               | 🟡  | 🟡     | App-local — promote when reused                          |
+| Component              | Web | Native | Spec                                                       |
+| ---------------------- | --- | ------ | ---------------------------------------------------------- |
+| `Badge`                | ✅  | ✅     | count + status pill; replaced 8 hand-rolled recipes        |
+| `Button`               | ✅  | ✅     | [docs/components/Button.md](docs/components/Button.md)     |
+| `Avatar`               | ✅  | ✅     | [docs/components/Avatar.md](docs/components/Avatar.md)     |
+| `Icon`                 | ✅  | ✅     | wraps lucide-react / lucide-react-native                   |
+| `Surface`              | ✅  | ✅     | [docs/components/Surface.md](docs/components/Surface.md)   |
+| `Input`                | ✅  | ✅     | shared; `error` / `helper` / `leading` / `trailing`        |
+| `Textarea`             | ✅  | ✅     | web owns `autoGrow`; native wraps `Input multiline`        |
+| `Chip`                 | ✅  | ✅     | selected state carries a check, not colour alone           |
+| `Switch` / `SwitchRow` | ✅  | ✅     | `SwitchRow` is the labelled setting row; whole row toggles |
 
 ### 7.2 Molecules
 
@@ -174,6 +199,10 @@ Truth: what exists in `packages/ui-web/src/` and `packages/ui-native/src/` today
 | `RoomRow`          | ✅                    | 🟡 (app-local) | [docs/components/RoomRow.md](docs/components/RoomRow.md)                   |
 | `TypingIndicator`  | ✅                    | 🟡 (app-local) | [docs/components/TypingIndicator.md](docs/components/TypingIndicator.md)   |
 | `ConnectionRow`    | 🟡 (app-local)        | 🟡 (app-local) | — promote to shared kit                                                    |
+| `ReactionPicker`   | ✅                    | n/a            | Touch opens `ActionSheet` instead — see §12                                |
+| `ReactionGlyph`    | ✅                    | ✅             | Six reaction marks on Icon's 24×24 grid, one path set for both             |
+| `Menu`             | ✅                    | n/a            | Native counterpart is `ActionSheet`                                        |
+| `ActionSheet`      | n/a                   | ✅             | Same `items` vocabulary as `Menu`, sheet container                         |
 
 ### 7.3 Organisms
 
@@ -269,6 +298,15 @@ When onboarding gets multiple steps (signup → verify → profile → first con
 - **Hover** (web): `surface-subtle` background fill, 120ms ease.
 - **Press / active**: 1px translateY down (web), opacity 0.85 + scale 0.97 + light haptic (mobile), 80ms.
 - **Focus**: 2px outline in `--brand-600`, 2px offset, 4px radius. Visible on keyboard only (`:focus-visible`).
+- **Reactions**: six types (`LIKE` / `CELEBRATE` / `SUPPORT` / `LOVE` /
+  `INSIGHTFUL` / `FUNNY`), drawn as line glyphs on Icon's 24×24 grid — never
+  emoji, which §13 forbids in product chrome and which is also what every other
+  product in the category does. Tap toggles; the rest are reached by pointer
+  dwell **or focus** on web (a hover-only flyout is unreachable by keyboard) and
+  by long-press on native, which opens `ActionSheet` rather than a flyout. The
+  chosen reaction settles rather than pops — Baydar's currency is Karama, a
+  ledger. The stats strip shows which reactions a post actually received, up to
+  three, most-used first.
 - **Optimistic UI**: reactions, connection requests, message sends all update instantly; reconcile on server echo by `clientMessageId`.
 - **Empty states**: always include an illustration slot, a line of explanation in Arabic-first copy, and a primary action when one is recoverable. Never a bare "No results."
 - **Loading states**: skeleton items for any list that fetches. Three minimum, animated with a slow shimmer (web 1.4s, mobile 1.2s loop in `Skeleton.tsx`).

@@ -84,7 +84,7 @@ export function AppShellProfileMenu({
         aria-controls={menuId}
         aria-current={active ? "page" : undefined}
         className={cx(
-          "relative -mb-px inline-flex flex-col items-center gap-0.5 rounded-t-md border-b-2 px-3 py-1.5 text-[11px] font-medium transition-colors focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]",
+          "text-micro relative -mb-px inline-flex flex-col items-center gap-0.5 rounded-t-md border-b-2 px-3 py-1.5 font-medium transition-colors focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]",
           active
             ? "border-brand-600 text-ink"
             : "text-ink-muted hover:bg-surface-subtle hover:text-ink border-transparent",

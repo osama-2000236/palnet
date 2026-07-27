@@ -5,6 +5,7 @@
 // English: this file used to be English-only, which is the one thing CLAUDE.md
 // says never to ship.
 
+import { Illustration } from "@baydar/ui-web";
 import Link from "next/link";
 import type { JSX } from "react";
 
@@ -15,10 +16,13 @@ export default function NotFound(): JSX.Element {
         dir="rtl"
         className="border-line-soft bg-surface shadow-card w-full max-w-[480px] rounded-lg border px-6 py-10 text-center sm:px-8"
       >
-        <div className="text-brand-600 mb-4 font-sans text-[80px] font-bold leading-none sm:text-[88px]">
-          ٤٠٤
+        {/* DESIGN.md §7.5 puts the `block` kit on the failure surfaces and
+            names not-found.tsx as one of them; this file was drawing an 80/88px
+            numeral instead — two sizes that exist nowhere in the scale. */}
+        <div className="mb-4 flex justify-center">
+          <Illustration motif="error" direction="block" size="md" tint="sand" />
         </div>
-        <h1 className="text-[22px] font-semibold leading-tight">راحت الصفحة</h1>
+        <h1 className="text-h1 font-semibold leading-tight">راحت الصفحة</h1>
         <p className="text-ink-muted mx-auto mt-2 max-w-[44ch] text-sm leading-relaxed">
           يمكن الرابط غلط، أو المنشور محذوف، أو المعرّف مش موجود. جرّب البحث، أو ارجع لموجزك.
         </p>

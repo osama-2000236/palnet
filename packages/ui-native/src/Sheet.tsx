@@ -253,7 +253,7 @@ const styles = StyleSheet.create({
     borderRadius: nativeTokens.radius.full,
   },
   closeGlyph: {
-    fontSize: 18,
+    fontSize: nativeTokens.type.scale.h2.size,
     fontWeight: "600",
   },
   body: {

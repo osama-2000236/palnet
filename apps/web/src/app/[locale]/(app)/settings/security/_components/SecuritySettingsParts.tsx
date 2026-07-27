@@ -84,7 +84,7 @@ export function SessionsList({
                 {formatUserAgent(session.device) ?? t("sessions.unknownDevice")}
               </span>
               {session.id === thisDeviceId ? (
-                <span className="bg-brand-50 text-brand-700 rounded-full px-2 py-0.5 text-[11px] font-semibold">
+                <span className="bg-brand-50 text-brand-700 text-micro rounded-full px-2 py-0.5 font-semibold">
                   {t("sessions.thisDevice")}
                 </span>
               ) : null}

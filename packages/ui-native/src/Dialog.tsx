@@ -62,7 +62,11 @@ export function Dialog({ open, onClose, title, blocking, children }: DialogProps
               paddingVertical: nativeTokens.space[4],
             }}
           >
-            <Text style={{ color: c.ink, fontSize: 16, fontWeight: "600" }}>{title}</Text>
+            <Text
+              style={{ color: c.ink, fontSize: nativeTokens.type.scale.h3.size, fontWeight: "600" }}
+            >
+              {title}
+            </Text>
           </View>
           <View
             style={{

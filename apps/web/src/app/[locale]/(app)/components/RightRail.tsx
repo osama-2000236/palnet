@@ -72,7 +72,7 @@ export function RightRail({
                   {s.user.headline ? (
                     <span className="text-ink-muted truncate text-xs">{s.user.headline}</span>
                   ) : null}
-                  <span className="text-ink-muted mt-0.5 text-[11px]">{t("pymkReason")}</span>
+                  <span className="text-ink-muted text-micro mt-0.5">{t("pymkReason")}</span>
                 </div>
                 <Link
                   href={`/in/${s.user.handle}`}
@@ -141,7 +141,7 @@ export function RightRail({
                       <span className="text-ink truncate text-sm font-semibold">{j.title}</span>
                       <span className="text-ink-muted truncate text-xs">{j.company.name}</span>
                       {metaParts.length > 0 ? (
-                        <span className="text-ink-muted mt-0.5 truncate text-[11px]">
+                        <span className="text-ink-muted text-micro mt-0.5 truncate">
                           {metaParts.join(" · ")}
                         </span>
                       ) : null}

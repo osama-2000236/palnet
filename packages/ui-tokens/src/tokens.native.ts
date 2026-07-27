@@ -101,6 +101,10 @@ export const nativeTokens = {
       body: { size: 15, weight: "400", line: 24 },
       small: { size: 13, weight: "400", line: 20 },
       caption: { size: 12, weight: "500", line: 16 },
+      // Eighth step, mirroring tokens.type.scale.micro on web. The floor for
+      // dense chrome — nothing renders below it.
+      // Tighter than the rest on purpose — see the web twin's comment.
+      micro: { size: 11, weight: "500", line: 14 },
     },
   },
   space: {

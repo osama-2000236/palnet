@@ -134,6 +134,17 @@ function* walk(dir) {
 // `zIndex:`. `z-nav`/`z-modal`/… are token names and pass.
 const rawZIndexRe = /\b(?:z-\[\d+\]|z-(?:0|10|20|30|40|50)\b|zIndex:\s*-?\d+)/g;
 
+// Type scale. DESIGN.md §5.2 documents eight steps and §13 forbids inventing a
+// ninth — but nothing enforced it, and a count in 2026-07 found the semantic
+// utilities used 3 times against ~530 uses of Tailwind's default scale, plus 51
+// arbitrary `text-[11px]`-style sizes. The preset now re-points every t-shirt
+// key at a Baydar step, so `text-sm` is on-scale; what stays off-scale is an
+// arbitrary length and the `6xl`+ keys nobody re-pointed.
+const offScaleTypeRe = /\btext-(?:\[[\d.]+(?:px|rem|em)\]|[6-9]xl)\b/g;
+// Same rule on native, where the escape hatch is a bare number instead of a
+// class: `fontSize: 13`. It must come from `type.scale`.
+const rawFontSizeRe = /\bfontSize:\s*\d/g;
+
 const hits = [];
 
 for (const scanDir of SCAN_DIRS) {
@@ -182,6 +193,12 @@ for (const scanDir of SCAN_DIRS) {
           match: m[0],
           raw: line,
         });
+      }
+      for (const m of line.matchAll(offScaleTypeRe)) {
+        hits.push({ rel, line: i + 1, kind: "off-scale-type", match: m[0], raw: line });
+      }
+      for (const m of line.matchAll(rawFontSizeRe)) {
+        hits.push({ rel, line: i + 1, kind: "raw-font-size", match: m[0].trim(), raw: line });
       }
     });
   }

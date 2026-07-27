@@ -219,7 +219,7 @@ export default function NotificationsSettingsScreen(): JSX.Element {
                         <Text
                           style={{
                             color: c.inkSubtle,
-                            fontSize: 11,
+                            fontSize: nativeTokens.type.scale.micro.size,
                             fontWeight: "600",
                             marginBottom: 4,
                           }}
@@ -237,7 +237,7 @@ export default function NotificationsSettingsScreen(): JSX.Element {
                         <Text
                           style={{
                             color: c.inkSubtle,
-                            fontSize: 11,
+                            fontSize: nativeTokens.type.scale.micro.size,
                             fontWeight: "600",
                             marginBottom: 4,
                           }}

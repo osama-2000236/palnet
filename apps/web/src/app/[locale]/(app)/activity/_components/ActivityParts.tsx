@@ -172,7 +172,7 @@ function ActivityTaskRow({ task }: { task: ActivityTask }): JSX.Element {
         </div>
         <Link
           href={task.href}
-          className="target-area state-layer border-line-hard bg-surface text-ink inline-flex h-7 items-center justify-center rounded-md border px-2.5 text-[13px] font-semibold focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+          className="target-area state-layer border-line-hard bg-surface text-ink text-small inline-flex h-7 items-center justify-center rounded-md border px-2.5 font-semibold focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
         >
           {task.cta}
         </Link>
