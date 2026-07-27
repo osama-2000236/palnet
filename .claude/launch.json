@@ -15,6 +15,12 @@
       "autoPort": true
     },
     {
+      "name": "api-4100",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["scripts/run-api-local.mjs", ".env.qa.local"],
+      "port": 4100
+    },
+    {
       "name": "web-qa",
       "runtimeExecutable": "pnpm",
       "runtimeArgs": ["--filter", "@baydar/web", "exec", "next", "dev", "-p", "3100"],

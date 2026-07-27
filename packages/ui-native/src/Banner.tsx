@@ -45,7 +45,9 @@ export function Banner({
         gap: nativeTokens.space[3],
       }}
     >
-      <Text style={{ color: palette.fg, fontSize: 13, flex: 1 }}>{children}</Text>
+      <Text style={{ color: palette.fg, fontSize: nativeTokens.type.scale.small.size, flex: 1 }}>
+        {children}
+      </Text>
       {dismissible && onDismiss ? (
         <Pressable
           onPress={onDismiss}
@@ -53,7 +55,7 @@ export function Banner({
           hitSlop={12}
           style={{ width: 24, height: 24, alignItems: "center", justifyContent: "center" }}
         >
-          <Text style={{ color: c.inkMuted, fontSize: 16 }}>×</Text>
+          <Text style={{ color: c.inkMuted, fontSize: nativeTokens.type.scale.h3.size }}>×</Text>
         </Pressable>
       ) : null}
     </View>

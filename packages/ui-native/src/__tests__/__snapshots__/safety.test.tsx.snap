@@ -55,14 +55,15 @@ exports[`safety primitives renders BlockButton resting state 1`] = `
           "alignSelf": "flex-start",
           "backgroundColor": "transparent",
           "borderColor": "transparent",
-          "borderRadius": 9999,
+          "borderRadius": 10,
           "borderWidth": 1,
           "flexDirection": "row",
           "gap": 8,
-          "height": 36,
           "justifyContent": "center",
+          "minHeight": 36,
           "opacity": 1,
           "paddingHorizontal": 16,
+          "paddingVertical": 4,
         },
         null,
         undefined,
@@ -70,14 +71,13 @@ exports[`safety primitives renders BlockButton resting state 1`] = `
     }
   >
     <Text
-      adjustsFontSizeToFit={true}
-      numberOfLines={1}
+      numberOfLines={2}
       style={
         [
           {
             "color": "#a83232",
             "fontFamily": "IBMPlexSansArabic",
-            "fontSize": 14,
+            "fontSize": 13,
             "fontWeight": "600",
           },
           undefined,
@@ -228,14 +228,15 @@ exports[`safety primitives renders BlockedListItem identity 1`] = `
           "alignSelf": "flex-start",
           "backgroundColor": "#ffffff",
           "borderColor": "rgba(26, 26, 23, 0.16)",
-          "borderRadius": 9999,
+          "borderRadius": 10,
           "borderWidth": 1,
           "flexDirection": "row",
           "gap": 6,
-          "height": 28,
           "justifyContent": "center",
+          "minHeight": 28,
           "opacity": 1,
           "paddingHorizontal": 10,
+          "paddingVertical": 4,
         },
         null,
         undefined,
@@ -243,8 +244,7 @@ exports[`safety primitives renders BlockedListItem identity 1`] = `
     }
   >
     <Text
-      adjustsFontSizeToFit={true}
-      numberOfLines={1}
+      numberOfLines={2}
       style={
         [
           {
@@ -1172,14 +1172,15 @@ exports[`safety primitives renders ReportSheet content 1`] = `
                   "alignSelf": "flex-start",
                   "backgroundColor": "#ffffff",
                   "borderColor": "rgba(26, 26, 23, 0.16)",
-                  "borderRadius": 9999,
+                  "borderRadius": 10,
                   "borderWidth": 1,
                   "flexDirection": "row",
                   "gap": 8,
-                  "height": 36,
                   "justifyContent": "center",
+                  "minHeight": 36,
                   "opacity": 1,
                   "paddingHorizontal": 16,
+                  "paddingVertical": 4,
                 },
                 null,
                 undefined,
@@ -1187,14 +1188,13 @@ exports[`safety primitives renders ReportSheet content 1`] = `
             }
           >
             <Text
-              adjustsFontSizeToFit={true}
-              numberOfLines={1}
+              numberOfLines={2}
               style={
                 [
                   {
                     "color": "#1a1a17",
                     "fontFamily": "IBMPlexSansArabic",
-                    "fontSize": 14,
+                    "fontSize": 13,
                     "fontWeight": "600",
                   },
                   undefined,
@@ -1250,14 +1250,15 @@ exports[`safety primitives renders ReportSheet content 1`] = `
                   "alignSelf": "flex-start",
                   "backgroundColor": "#526030",
                   "borderColor": "#526030",
-                  "borderRadius": 9999,
+                  "borderRadius": 10,
                   "borderWidth": 1,
                   "flexDirection": "row",
                   "gap": 8,
-                  "height": 36,
                   "justifyContent": "center",
+                  "minHeight": 36,
                   "opacity": 1,
                   "paddingHorizontal": 16,
+                  "paddingVertical": 4,
                 },
                 null,
                 undefined,
@@ -1265,14 +1266,13 @@ exports[`safety primitives renders ReportSheet content 1`] = `
             }
           >
             <Text
-              adjustsFontSizeToFit={true}
-              numberOfLines={1}
+              numberOfLines={2}
               style={
                 [
                   {
                     "color": "#ffffff",
                     "fontFamily": "IBMPlexSansArabic",
-                    "fontSize": 14,
+                    "fontSize": 13,
                     "fontWeight": "600",
                   },
                   undefined,

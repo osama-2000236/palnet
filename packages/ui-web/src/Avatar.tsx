@@ -27,13 +27,22 @@ export interface AvatarProps {
   ring?: boolean;
   online?: boolean;
   className?: string;
-  blurhash?: string | null;
   /** Accessible label override. Defaults to the person's name. */
   alt?: string;
 }
+// `blurhash` used to be declared here and read by nothing — a prop that does
+// nothing, which is the same defect class this repo already deleted from
+// PostCard (a fifth action wired to no handler) and Sheet (a grabber that did
+// not drag). The native twin genuinely uses it, because expo-image decodes a
+// blurhash for free; the web has no decoder without a new dependency, and a
+// 24–96px circle does not warrant one — the tokenized initials chip is already
+// painted underneath, so the image fades in over a filled shape rather than
+// over nothing. `AvatarUser.avatarBlurhash` stays: it is data the API returns
+// and one platform consumes, so both platforms keep accepting the same user
+// object. Recorded in PARITY.md.
 
 const BOX_CLASSES: Record<AvatarSize, string> = {
-  xs: "h-6 w-6 text-[10px]",
+  xs: "h-6 w-6 text-micro",
   sm: "h-8 w-8 text-xs",
   md: "h-10 w-10 text-sm",
   lg: "h-14 w-14 text-lg",
@@ -108,7 +117,12 @@ export function Avatar({
   const box = cx(
     "relative inline-flex shrink-0 select-none items-center justify-center overflow-hidden rounded-full font-semibold",
     BOX_CLASSES[size],
-    user.avatarUrl ? "bg-surface-sunken" : palette,
+    // The palette chip is painted whether or not there is a photo. It used to
+    // be swapped for a flat `surface-sunken` the moment an `avatarUrl` existed,
+    // which meant a slow image showed a grey hole and a broken one (a deleted
+    // upload, an expired signed URL) showed a grey hole permanently. Now the
+    // initials sit underneath and the photo covers them.
+    palette,
     ring && "ring-2 ring-brand-600 ring-offset-2 ring-offset-surface",
     className,
   );
@@ -117,11 +131,19 @@ export function Avatar({
 
   return (
     <span className={box} {...a11yProps}>
+      <span aria-hidden="true">{initials}</span>
       {user.avatarUrl ? (
-        <img src={user.avatarUrl} alt={label} className="h-full w-full object-cover" />
-      ) : (
-        <span aria-hidden="true">{initials}</span>
-      )}
+        <img
+          src={user.avatarUrl}
+          // Empty on purpose: the wrapper is `role="img"` with the person's
+          // name as its `aria-label`, so a non-empty alt here is the same name
+          // announced twice.
+          alt=""
+          loading="lazy"
+          decoding="async"
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+      ) : null}
       {online ? (
         <span
           aria-hidden="true"

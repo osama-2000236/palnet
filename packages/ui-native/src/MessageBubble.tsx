@@ -176,7 +176,7 @@ export function MessageBubble({
                 writingDirection: "ltr",
                 color: c.inkMuted,
                 fontFamily: nativeTokens.type.family.sans,
-                fontSize: 11,
+                fontSize: nativeTokens.type.scale.micro.size,
               }}
             >
               {timestamp}
@@ -194,7 +194,7 @@ export function MessageBubble({
               style={{
                 color: c.inkMuted,
                 fontFamily: nativeTokens.type.family.sans,
-                fontSize: 11,
+                fontSize: nativeTokens.type.scale.micro.size,
               }}
             >
               {labels.editedSuffix}
@@ -210,7 +210,7 @@ export function MessageBubble({
           ) : (
             <Text
               style={{
-                fontSize: 11,
+                fontSize: nativeTokens.type.scale.micro.size,
                 color: c.danger,
                 fontFamily: nativeTokens.type.family.sans,
               }}

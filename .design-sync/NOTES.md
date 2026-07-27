@@ -196,3 +196,27 @@ preview harness that only does SSR will show nothing for it.
 real `Intl.NumberFormat("ar-PS-u-nu-arab")` formatter on purpose: without it
 the badge renders Latin digits inside an Arabic UI, which is the exact defect
 A2.14 fixed, and a preview showing it uncorrected would teach the wrong thing.
+
+## design-system v3 (2026-07-27) — what changed for the sync
+
+**The type scale changed under every card.** The preset now re-points Tailwind's
+own t-shirt keys at Baydar's steps (`text-sm` is 13px, not 14; `text-3xl` is
+26px, not 30) and adds an eighth step, `micro` (11px). Both come off the preset,
+so the safelist picks them up with no edit here — but every generated design
+built before this will render one step different, and that is correct rather
+than a regression. `text-micro` is the floor; `lint:tokens` now fails on
+`text-[Npx]` and on `text-6xl`+.
+
+One more hand-written rule is mirrored into `ds-styles/input.css`, and like the
+other three it cannot be generated from the preset:
+
+| Class                                         | Does                                                                                   |
+| --------------------------------------------- | -------------------------------------------------------------------------------------- |
+| `.state-layer.react-press[aria-pressed=true]` | Drops the selected slab to hover strength inside the post action bar (see globals.css) |
+
+New components the previews do not cover yet: `Badge`, `Textarea`, `Menu`,
+`SwitchRow`, `ReactionGlyph`, `ReactionPicker`. `PostCard`'s props changed —
+`liked: boolean` + `onToggleReaction` became `reaction: ReactionKind | null` +
+`onSetReaction`, and `labels.like` / `labels.liked` became `labels.reactions`
+(a `{ pick, kind }` bundle). A preview written against the old shape renders
+without a reaction button and throws on `labels.kind[shown]`.

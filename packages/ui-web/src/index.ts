@@ -47,6 +47,12 @@ export type {
   PostCardCounts,
 } from "./PostCard";
 export { PostCardSkeleton } from "./PostCardSkeleton";
+export { ReactionGlyph } from "./ReactionGlyph";
+export type { ReactionGlyphProps } from "./ReactionGlyph";
+export { ReactionPicker } from "./ReactionPicker";
+export type { ReactionPickerProps, ReactionPickerLabels } from "./ReactionPicker";
+export { REACTION_TYPES, REACTION_TINT, topReactions } from "./reactions";
+export type { ReactionKind } from "./reactions";
 
 // ── Messaging ────────────────────────────────────────────────────────
 export { MessageBubble } from "./MessageBubble";
@@ -61,6 +67,8 @@ export type { GroupedMessage, GroupMessagesOptions } from "./groupMessages";
 // ── Atoms ────────────────────────────────────────────────────────────
 export { Alert } from "./Alert";
 export type { AlertProps, AlertKind } from "./Alert";
+export { Badge } from "./Badge";
+export type { BadgeProps, BadgeSize, BadgeTone } from "./Badge";
 export { Banner } from "./Banner";
 export type { BannerProps, BannerKind } from "./Banner";
 export { Button } from "./Button";
@@ -73,6 +81,8 @@ export { Dialog } from "./Dialog";
 export type { DialogProps } from "./Dialog";
 export { Input } from "./Input";
 export type { InputProps, InputSize } from "./Input";
+export { Menu } from "./Menu";
+export type { MenuProps, MenuItemSpec } from "./Menu";
 export { RadioGroup } from "./RadioGroup";
 export type { RadioGroupItem, RadioGroupProps } from "./RadioGroup";
 export { RetryChip } from "./RetryChip";
@@ -81,6 +91,10 @@ export { Skeleton } from "./Skeleton";
 export type { SkeletonProps } from "./Skeleton";
 export { Switch } from "./Switch";
 export type { SwitchProps } from "./Switch";
+export { SwitchRow } from "./SwitchRow";
+export type { SwitchRowProps } from "./SwitchRow";
+export { Textarea } from "./Textarea";
+export type { TextareaProps, TextareaSize } from "./Textarea";
 export { Tabs, Tab, TabPanel } from "./Tabs";
 export type { TabsProps, TabProps, TabPanelProps } from "./Tabs";
 export { Toast, ToastHost, ToastProvider, useToast } from "./Toast";

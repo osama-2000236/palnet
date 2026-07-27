@@ -14,6 +14,7 @@ import {
   type ViewStyle,
 } from "react-native";
 
+import { Icon } from "./Icon";
 import { useThemeTokens } from "./ThemeProvider";
 import { nativeTokens } from "./tokens";
 
@@ -111,6 +112,11 @@ export function Chip({
             backgroundColor: dotColor,
           }}
         />
+      ) : null}
+      {/* Selected was colour-only on both platforms. See the web twin for why
+          the check is the cue and why only a toggleable chip gets one. */}
+      {interactive && isSelected ? (
+        <Icon name="check" size={size === "sm" ? 12 : 14} color={c.brand700} strokeWidth={2.6} />
       ) : null}
       {leading ? <View pointerEvents="none">{leading}</View> : null}
       {typeof children === "string" ? (

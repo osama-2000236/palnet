@@ -44,7 +44,7 @@ export function RetryChip({
       <Text
         style={{
           color: c.brand700,
-          fontSize: 12,
+          fontSize: nativeTokens.type.scale.caption.size,
           fontWeight: "600",
         }}
       >

@@ -1,5 +1,5 @@
 import { Profile as ProfileSchema, UpdateProfileBody } from "@baydar/shared";
-import { Avatar, Button } from "@baydar/ui-native";
+import { Avatar, Button, SwitchRow } from "@baydar/ui-native";
 import * as ImagePicker from "expo-image-picker";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -21,6 +21,8 @@ export function BasicsCard({ profile, onChanged, onError }: ProfileCardProps): J
   const [headline, setHeadline] = useState(profile.headline ?? "");
   const [about, setAbout] = useState(profile.about ?? "");
   const [location, setLocation] = useState(profile.location ?? "");
+  const [openToWork, setOpenToWork] = useState(profile.openToWork);
+  const [hiring, setHiring] = useState(profile.hiring);
   const [busy, setBusy] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string | null>>({});
@@ -71,6 +73,8 @@ export function BasicsCard({ profile, onChanged, onError }: ProfileCardProps): J
       headline: headline || null,
       about: about || null,
       location: location || null,
+      openToWork,
+      hiring,
     });
     if (!parsed.success) {
       const errors = parsed.error.flatten().fieldErrors;
@@ -156,6 +160,20 @@ export function BasicsCard({ profile, onChanged, onError }: ProfileCardProps): J
         fullWidth
       />
       <CityField value={location} onChange={setLocation} />
+      {/* Web parity: the two availability signals the DTO always carried and
+          no editor on either platform ever let anyone set. */}
+      <SwitchRow
+        checked={openToWork}
+        onChange={setOpenToWork}
+        label={t("profile.openToWork")}
+        description={t("profile.openToWorkHint")}
+      />
+      <SwitchRow
+        checked={hiring}
+        onChange={setHiring}
+        label={t("profile.hiring")}
+        description={t("profile.hiringHint")}
+      />
       <Button onPress={save} disabled={busy} loading={busy} fullWidth>
         {t("common.saveChanges")}
       </Button>

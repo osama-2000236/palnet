@@ -53,7 +53,7 @@ export function RoomRow({
           <span className="bidi-plaintext text-ink truncate text-sm font-semibold">
             {`${user.firstName ?? ""} ${user.lastName ?? ""}`.trim() || user.handle || ""}
           </span>
-          <span dir="ltr" className="text-ink-muted shrink-0 text-[11px] tabular-nums">
+          <span dir="ltr" className="text-ink-muted text-micro shrink-0 tabular-nums">
             {timestamp}
           </span>
         </div>
@@ -68,7 +68,7 @@ export function RoomRow({
             {preview}
           </span>
           {unreadCount > 0 ? (
-            <span className="bg-accent-600 text-ink-inverse inline-flex h-5 min-w-[20px] items-center justify-center rounded-full px-1.5 text-[11px] font-semibold">
+            <span className="bg-accent-600 text-ink-inverse text-micro inline-flex h-5 min-w-[20px] items-center justify-center rounded-full px-1.5 font-semibold">
               {unreadCount > 99 ? "99+" : unreadCount}
             </span>
           ) : null}

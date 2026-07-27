@@ -100,11 +100,11 @@ export default function AccountSettingsPage(): JSX.Element {
               {me.email}
             </span>
             {me.emailVerified ? (
-              <span className="bg-brand-50 text-brand-700 rounded-full px-2 py-0.5 text-[11px] font-semibold">
+              <span className="bg-brand-50 text-brand-700 text-micro rounded-full px-2 py-0.5 font-semibold">
                 {t("email.verified")}
               </span>
             ) : (
-              <span className="bg-surface-subtle text-ink-muted rounded-full px-2 py-0.5 text-[11px] font-semibold">
+              <span className="bg-surface-subtle text-ink-muted text-micro rounded-full px-2 py-0.5 font-semibold">
                 {t("email.unverified")}
               </span>
             )}

@@ -24,7 +24,7 @@ export default function RootError({
         >
           ب
         </div>
-        <h1 className="text-[22px] font-semibold leading-tight">Something broke on our end</h1>
+        <h1 className="text-h1 font-semibold leading-tight">Something broke on our end</h1>
         <p className="text-ink-muted mx-auto mt-2 max-w-[38ch] text-sm leading-relaxed">
           We hit an unexpected error while loading Baydar. Try again, or head back home.
         </p>
@@ -44,7 +44,7 @@ export default function RootError({
           </Link>
         </div>
         {error.digest ? (
-          <p className="text-ink-subtle mt-6 font-mono text-[11px]" dir="ltr">
+          <p className="text-ink-subtle text-micro mt-6 font-mono" dir="ltr">
             Error ID: {error.digest}
           </p>
         ) : null}

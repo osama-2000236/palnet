@@ -75,6 +75,12 @@ samp {
   background-color: rgb(var(--ink-rgb) / var(--state-selected));
 }
 
+/* Mirrors globals.css: the post action bar keeps a whisper of fill instead of
+ * the 12% selected slab, which reads as a grey block across an 83px cell. */
+.state-layer.react-press[aria-pressed="true"]::after {
+  background-color: rgb(var(--ink-rgb) / var(--state-hover));
+}
+
 .state-layer:disabled::after,
 .state-layer[aria-disabled="true"]::after {
   background-color: rgb(var(--ink-rgb) / 0);

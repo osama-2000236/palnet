@@ -39,7 +39,7 @@ export default function LocaleErrorBoundary({
           {tCommon("goHome")}
         </Link>
         {error.digest ? (
-          <p className="text-ink-subtle font-mono text-[11px]">{error.digest}</p>
+          <p className="text-ink-subtle text-micro font-mono">{error.digest}</p>
         ) : null}
       </Surface>
     </main>

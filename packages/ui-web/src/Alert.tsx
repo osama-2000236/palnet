@@ -136,9 +136,9 @@ export function Alert({
       </span>
       <div className="text-ink min-w-0 flex-1">
         {title ? (
-          <div className="font-sans text-[14px] font-semibold leading-snug">{title}</div>
+          <div className="text-body font-sans font-semibold leading-snug">{title}</div>
         ) : null}
-        <div className={cx("text-ink-muted text-[13.5px] leading-relaxed", title && "mt-1")}>
+        <div className={cx("text-ink-muted text-small leading-relaxed", title && "mt-1")}>
           {children}
         </div>
       </div>

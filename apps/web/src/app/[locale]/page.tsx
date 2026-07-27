@@ -70,7 +70,7 @@ export default async function LandingPage({
       {/* ── Hero. Two-column on desktop: copy + decorative panel. ───── */}
       <section className="mx-auto grid w-full max-w-[1128px] grid-cols-1 items-center gap-10 px-6 py-12 lg:grid-cols-[1.1fr_1fr] lg:gap-16 lg:py-20">
         <div className="flex flex-col gap-6">
-          <p className="text-brand-700 text-[12px] font-semibold uppercase tracking-[0.12em]">
+          <p className="text-brand-700 text-caption font-semibold uppercase tracking-[0.12em]">
             {t("hero.eyebrow")}
           </p>
           <h1 className="text-ink font-sans text-4xl font-bold leading-[1.1] tracking-tight md:text-5xl">
@@ -148,7 +148,7 @@ export default async function LandingPage({
       <section aria-labelledby="employer-track" className="bg-surface-muted">
         <div className="mx-auto grid w-full max-w-[1128px] grid-cols-1 items-center gap-10 px-6 py-16 md:grid-cols-[1fr_auto]">
           <div>
-            <p className="text-accent-700 text-[12px] font-semibold uppercase tracking-[0.12em]">
+            <p className="text-accent-700 text-caption font-semibold uppercase tracking-[0.12em]">
               {t("employer.eyebrow")}
             </p>
             <h2

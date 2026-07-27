@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { MediaKind } from "../enums";
+import { MediaKind, ReactionType } from "../enums";
 
 export const MediaRef = z.object({
   id: z.string().cuid().optional(),
@@ -39,6 +39,13 @@ export const Post = z.object({
     reactions: z.number().int().nonnegative(),
     comments: z.number().int().nonnegative(),
     reposts: z.number().int().nonnegative(),
+    // Per-type breakdown, e.g. `{ LIKE: 4, INSIGHTFUL: 1 }`. Only non-zero
+    // types appear. `ReactionType` has had six members since the schema was
+    // written and `PUT /posts/:id/reaction` has always accepted all six, but
+    // the DTO exposed only a total, so no client could show which reactions a
+    // post actually received. Defaulted so a cached or older payload still
+    // parses.
+    byReaction: z.record(z.nativeEnum(ReactionType), z.number().int().nonnegative()).default({}),
   }),
   viewer: z.object({
     reaction: z.string().nullable(),

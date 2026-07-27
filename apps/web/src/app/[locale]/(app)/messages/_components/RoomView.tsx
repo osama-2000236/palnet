@@ -1,14 +1,7 @@
 "use client";
 
-import { ReportReason, type ChatRoom, type Message } from "@baydar/shared";
-import {
-  Avatar,
-  Button,
-  EmptyState,
-  ReportDialog,
-  type GroupedMessage,
-  type ReportDialogLabels,
-} from "@baydar/ui-web";
+import type { ChatRoom, Message } from "@baydar/shared";
+import { Avatar, Button, EmptyState, ReportDialog, type GroupedMessage } from "@baydar/ui-web";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import type { MutableRefObject } from "react";
@@ -18,6 +11,7 @@ import { useReport } from "@/lib/api/safety";
 import { shortDate } from "../_utils";
 import { MessageList } from "./MessageList";
 import { RoomComposer } from "./RoomComposer";
+import { useReportLabels } from "@/lib/report-labels";
 
 export interface RoomViewProps {
   activeRoomId: string | null;
@@ -101,25 +95,9 @@ export function RoomView({
   onTyping,
 }: RoomViewProps): JSX.Element {
   const t = useTranslations("messaging");
-  const tCommon = useTranslations("common");
   const tSafety = useTranslations("safety");
   const report = useReport();
-  const reportLabels: ReportDialogLabels = {
-    title: tSafety("report.title"),
-    detailsLabel: tSafety("report.details_label"),
-    cancel: tCommon("cancel"),
-    submit: tSafety("report.submit"),
-    close: tSafety("report.close"),
-    reasons: {
-      [ReportReason.SPAM]: tSafety("report.reason.spam"),
-      [ReportReason.HARASSMENT]: tSafety("report.reason.harassment"),
-      [ReportReason.HATE]: tSafety("report.reason.hate"),
-      [ReportReason.MISINFORMATION]: tSafety("report.reason.misinformation"),
-      [ReportReason.NUDITY]: tSafety("report.reason.nudity"),
-      [ReportReason.VIOLENCE]: tSafety("report.reason.violence"),
-      [ReportReason.OTHER]: tSafety("report.reason.other"),
-    },
-  };
+  const reportLabels = useReportLabels();
 
   if (!activeRoomId) {
     return (
@@ -144,7 +122,7 @@ export function RoomView({
             <span className="text-ink truncate text-sm font-semibold">
               {activeRoom.title ?? activeRoom.id}
             </span>
-            <span className="text-ink-muted text-[11px]">
+            <span className="text-ink-muted text-micro">
               {t("newGroup.memberCount", { count: activeRoom.members.length })}
             </span>
           </div>
@@ -173,7 +151,7 @@ export function RoomView({
               >
                 {`${otherMember.firstName} ${otherMember.lastName}`.trim() || otherMember.handle}
               </Link>
-              <span className="text-ink-muted text-[11px]">
+              <span className="text-ink-muted text-micro">
                 {otherOnline
                   ? t("onlineNow")
                   : otherMember.lastSeenAt
@@ -198,7 +176,7 @@ export function RoomView({
             variant="secondary"
             size="sm"
             onClick={onLoadOlder}
-            className="mb-3 h-7 self-center rounded-full px-3 text-[11px]"
+            className="text-micro mb-3 h-7 self-center rounded-full px-3"
           >
             {t("loadOlder")}
           </Button>
@@ -209,31 +187,42 @@ export function RoomView({
             variant="secondary"
             size="sm"
             onClick={onScrollToUnread}
-            className="bg-brand-100 text-brand-700 border-brand-200 mb-3 h-7 self-center rounded-full px-3 text-[11px]"
+            className="bg-brand-100 text-brand-700 border-brand-200 text-micro mb-3 h-7 self-center rounded-full px-3"
           >
             {t("unreadJump.banner", { count: unreadCount })}
           </Button>
         ) : null}
 
-        <MessageList
-          activeRoom={activeRoom}
-          activeTyping={activeTyping}
-          failedClientIds={failedClientIds}
-          firstUnreadIndex={firstUnreadIndex}
-          firstUnreadRef={firstUnreadRef}
-          grouped={grouped}
-          locale={locale}
-          memberById={memberById}
-          messages={messages}
-          otherLastReadAtMs={otherLastReadAtMs}
-          otherMember={otherMember}
-          viewerId={viewerId}
-          onDelete={onDeleteMessage}
-          onEdit={onEditMessage}
-          onNewMessage={onNewMessage}
-          onReport={onReportMessage}
-          onRetryFailed={onRetryFailed}
-        />
+        {/* Bottom-anchors a short thread. A two-message conversation used to
+            render at the top of a ~700px pane, putting the newest message as
+            far as possible from the composer the user is about to type in;
+            every messenger in the category stacks from the bottom edge.
+            `mt-auto` on the content rather than `justify-end` on the scroll
+            container: with `justify-content: flex-end` an overflowing thread
+            has its oldest messages pushed past the scroll origin and they
+            cannot be scrolled back to. An auto margin collapses to zero once
+            the content is taller than the box, so a long thread is untouched. */}
+        <div className="mt-auto">
+          <MessageList
+            activeRoom={activeRoom}
+            activeTyping={activeTyping}
+            failedClientIds={failedClientIds}
+            firstUnreadIndex={firstUnreadIndex}
+            firstUnreadRef={firstUnreadRef}
+            grouped={grouped}
+            locale={locale}
+            memberById={memberById}
+            messages={messages}
+            otherLastReadAtMs={otherLastReadAtMs}
+            otherMember={otherMember}
+            viewerId={viewerId}
+            onDelete={onDeleteMessage}
+            onEdit={onEditMessage}
+            onNewMessage={onNewMessage}
+            onReport={onReportMessage}
+            onRetryFailed={onRetryFailed}
+          />
+        </div>
       </div>
 
       <RoomComposer

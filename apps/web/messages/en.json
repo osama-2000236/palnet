@@ -242,8 +242,20 @@
     "uploadFailed": "Could not upload."
   },
   "post": {
-    "like": "Like",
-    "liked": "Liked",
+    "delete": "Delete post",
+    "deleted": "Post deleted",
+    "deleteFailed": "Could not delete the post.",
+    "deleteConfirmTitle": "Delete this post?",
+    "deleteConfirmBody": "It stops being visible to everyone, and this cannot be undone.",
+    "reactions": {
+      "pick": "Pick a reaction",
+      "LIKE": "Like",
+      "CELEBRATE": "Celebrate",
+      "SUPPORT": "Support",
+      "LOVE": "Appreciate",
+      "INSIGHTFUL": "Insightful",
+      "FUNNY": "Amusing"
+    },
     "comment": "Comment",
     "repost": "Repost",
     "reposted": "Reposted",
@@ -335,6 +347,10 @@
   },
   "profile": {
     "title": "Profile",
+    "openToWork": "Open to work",
+    "hiring": "Hiring",
+    "openToWorkHint": "Shows a badge on your profile so employers know you are available.",
+    "hiringHint": "Shows a badge on your profile so candidates know you are hiring.",
     "about": "About",
     "experience": "Experience",
     "education": "Education",

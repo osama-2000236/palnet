@@ -87,7 +87,7 @@ export function MessageBubble({
       )}
     >
       {!mine && groupAuthor ? (
-        <div className="text-ink-muted mb-1 flex items-center gap-1.5 text-[11px] font-semibold">
+        <div className="text-ink-muted text-micro mb-1 flex items-center gap-1.5 font-semibold">
           <Avatar user={groupAuthor} size="xs" />
           <span className="truncate">{groupAuthor.firstName || groupAuthor.handle}</span>
         </div>
@@ -117,7 +117,7 @@ export function MessageBubble({
       {timestamp || edited || (mine && status) ? (
         <div
           className={cx(
-            "mt-0.5 flex items-center gap-1 text-[11px]",
+            "text-micro mt-0.5 flex items-center gap-1",
             mine ? "text-ink-muted self-end" : "text-ink-muted self-start",
           )}
         >
@@ -142,7 +142,7 @@ export function MessageBubble({
           {onRetry ? (
             <RetryChip onRetry={onRetry} label={labels.failedHint} inline />
           ) : (
-            <span className="text-danger text-[11px]">{labels.failedHint}</span>
+            <span className="text-danger text-micro">{labels.failedHint}</span>
           )}
         </div>
       ) : null}

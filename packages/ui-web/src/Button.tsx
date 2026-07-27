@@ -51,9 +51,9 @@ const VARIANT_CLASSES: Record<ButtonVariant, string> = {
 
 const SIZE_CLASSES: Record<ButtonSize, string> = {
   // Heights come from the spec table: 28 / 36 / 44 px.
-  sm: "h-7 px-2.5 text-[13px] gap-1.5",
+  sm: "h-7 px-2.5 text-small gap-1.5",
   md: "h-9 px-4 text-sm gap-2",
-  lg: "h-11 px-5 text-[15px] gap-2",
+  lg: "h-11 px-5 text-body gap-2",
 };
 
 export function Button({

@@ -5,16 +5,22 @@ import {
   formatRelativeTime,
   type Post,
 } from "@baydar/shared";
-import { PostCard, ReportSheet, useToast, type PostCardAction } from "@baydar/ui-native";
+import {
+  PostCard,
+  ReactionGlyph,
+  topReactions,
+  useToast,
+  type PostCardAction,
+  type ReactionKind,
+} from "@baydar/ui-native";
 import { router } from "expo-router";
 import { memo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { CommentsList } from "@/components/CommentsList";
 import { PostMedia } from "@/components/rows/PostMedia";
+import { PostRowSheets } from "@/components/rows/PostRowSheets";
 import { apiCall, apiFetch } from "@/lib/api";
-import { useReport } from "@/api/safety";
-import { useReportLabels } from "@/lib/report-labels";
 import { successHaptic, tapHaptic } from "@/lib/haptics";
 import { getAccessToken } from "@/lib/session";
 
@@ -28,41 +34,45 @@ export const PostRow = memo(function PostRow({ post, onChange }: PostRowProps): 
   const { showToast } = useToast();
   const [showComments, setShowComments] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
+  const [pickerOpen, setPickerOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [saveBusy, setSaveBusy] = useState(false);
   const [repostBusy, setRepostBusy] = useState(false);
-  const report = useReport();
-  const reportLabels = useReportLabels();
 
-  async function toggleReaction(): Promise<void> {
+  /**
+   * `next === null` clears; anything else sets that type. Switching between two
+   * types is an update, not remove-then-add, so the total does not move — which
+   * is what the API's upsert does server-side too.
+   */
+  async function setReaction(next: ReactionKind | null): Promise<void> {
     if (busy) return;
     const token = await getAccessToken();
     if (!token) return;
-    const wasLiked = post.viewer.reaction !== null;
-    const optimistic: Post = {
+    const previous = post.viewer.reaction as ReactionKind | null;
+    if (previous === next) return;
+
+    const delta = (previous === null ? 0 : -1) + (next === null ? 0 : 1);
+    const byReaction = { ...post.counts.byReaction };
+    if (previous) byReaction[previous] = Math.max(0, (byReaction[previous] ?? 1) - 1);
+    if (next) byReaction[next] = (byReaction[next] ?? 0) + 1;
+
+    onChange?.({
       ...post,
-      viewer: { ...post.viewer, reaction: wasLiked ? null : "LIKE" },
+      viewer: { ...post.viewer, reaction: next },
       counts: {
         ...post.counts,
-        reactions: Math.max(0, post.counts.reactions + (wasLiked ? -1 : 1)),
+        reactions: Math.max(0, post.counts.reactions + delta),
+        byReaction,
       },
-    };
-    onChange?.(optimistic);
+    });
     setBusy(true);
     try {
       tapHaptic();
-      if (wasLiked) {
-        await apiCall(`/posts/${post.id}/reaction`, {
-          method: "DELETE",
-          token,
-        });
-      } else {
-        await apiCall(`/posts/${post.id}/reaction`, {
-          method: "PUT",
-          body: { type: "LIKE" },
-          token,
-        });
-      }
+      await apiCall(`/posts/${post.id}/reaction`, {
+        method: next === null ? "DELETE" : "PUT",
+        body: next === null ? undefined : { type: next },
+        token,
+      });
       successHaptic();
     } catch {
       onChange?.(post);
@@ -133,19 +143,33 @@ export const PostRow = memo(function PostRow({ post, onChange }: PostRowProps): 
     }
   }
 
-  const liked = post.viewer.reaction !== null;
+  const reaction = post.viewer.reaction as ReactionKind | null;
+  const shownReaction: ReactionKind = reaction ?? "LIKE";
   const saved = post.viewer.bookmarkId !== null;
   const reposted = post.viewer.reposted;
   const authorName = `${post.author.firstName} ${post.author.lastName}`.trim();
   const actions: PostCardAction[] = [
     {
       key: "like",
-      label: liked ? t("post.liked") : t("post.like"),
+      label: t(`post.reactions.${shownReaction}`),
       icon: "thumb",
-      selected: liked,
+      glyph: (
+        <ReactionGlyph
+          kind={shownReaction}
+          size={20}
+          tinted={reaction !== null}
+          strokeWidth={reaction !== null ? 2.2 : 1.8}
+        />
+      ),
+      selected: reaction !== null,
       disabled: busy,
       testID: `post-like-${post.id}`,
-      onPress: () => void toggleReaction(),
+      // Tap toggles; long-press reaches the other five. Web's equivalent is
+      // hover-dwell plus focus (ReactionPicker) — same capability, each
+      // platform's own gesture.
+      accessibilityHint: t("post.reactions.pick"),
+      onPress: () => void setReaction(reaction ? null : "LIKE"),
+      onLongPress: () => setPickerOpen(true),
     },
     {
       key: "comment",
@@ -197,6 +221,7 @@ export const PostRow = memo(function PostRow({ post, onChange }: PostRowProps): 
         reactionCount={
           post.counts.reactions > 0 ? formatNumber(post.counts.reactions, i18n.language) : undefined
         }
+        reactionKinds={topReactions(post.counts.byReaction)}
         commentCount={
           post.counts.comments > 0 ? formatNumber(post.counts.comments, i18n.language) : undefined
         }
@@ -225,23 +250,19 @@ export const PostRow = memo(function PostRow({ post, onChange }: PostRowProps): 
           ) : null
         }
       />
-      <ReportSheet
-        open={reportOpen}
-        onOpenChange={setReportOpen}
-        target={{ kind: "post", id: post.id }}
-        labels={reportLabels}
-        submitting={report.isPending}
-        onSubmit={(input) => {
-          report.mutate(input, {
-            onSuccess: () => {
-              setReportOpen(false);
-              showToast({ message: t("safety.report.success"), kind: "success" });
-            },
-            onError: () => {
-              showToast({ message: t("safety.report.error"), kind: "error" });
-            },
-          });
+      <PostRowSheets
+        postId={post.id}
+        reaction={reaction}
+        pickerOpen={pickerOpen}
+        reportOpen={reportOpen}
+        onPickerClose={() => setPickerOpen(false)}
+        onReportOpenChange={setReportOpen}
+        onSetReaction={(next) => void setReaction(next)}
+        onReported={() => {
+          setReportOpen(false);
+          showToast({ message: t("safety.report.success"), kind: "success" });
         }}
+        onReportError={() => showToast({ message: t("safety.report.error"), kind: "error" })}
       />
     </>
   );

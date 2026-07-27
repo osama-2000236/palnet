@@ -1,7 +1,7 @@
 "use client";
 
 import { Profile as ProfileSchema, UpdateProfileBody, type Profile } from "@baydar/shared";
-import { Avatar, Surface } from "@baydar/ui-web";
+import { Avatar, Surface, SwitchRow, Textarea } from "@baydar/ui-web";
 import { useTranslations } from "next-intl";
 import { useState, type ChangeEvent, type ReactNode } from "react";
 
@@ -28,6 +28,8 @@ export function BasicsSection({
     headline: profile.headline ?? "",
     about: profile.about ?? "",
     location: profile.location ?? "",
+    openToWork: profile.openToWork,
+    hiring: profile.hiring,
   });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -64,6 +66,8 @@ export function BasicsSection({
       headline: state.headline || null,
       about: state.about || null,
       location: state.location || null,
+      openToWork: state.openToWork,
+      hiring: state.hiring,
     });
     if (!parsed.success) {
       setError(t("validationFailed"));
@@ -138,9 +142,10 @@ export function BasicsSection({
         />
       </Field>
       <Field label={t("about")}>
-        <textarea
-          className={inputClass}
+        <Textarea
+          fullWidth
           rows={4}
+          autoGrow
           value={state.about}
           onChange={(e) => setState({ ...state, about: e.target.value })}
           maxLength={4000}
@@ -152,6 +157,25 @@ export function BasicsSection({
           onChange={(city) => setState({ ...state, location: city })}
         />
       </Field>
+      {/* `openToWork` and `hiring` have been on the Profile DTO and accepted by
+          `UpdateProfileBody` since the schema was written, with no way to set
+          them and nowhere that showed them. They are the two most-scanned
+          signals on a professional network, so they get a row each rather than
+          a buried checkbox. */}
+      <div className="border-line-soft mt-4 flex flex-col gap-3 border-t pt-4">
+        <SwitchRow
+          checked={state.openToWork}
+          onChange={(next) => setState({ ...state, openToWork: next })}
+          label={t("openToWork")}
+          description={t("openToWorkHint")}
+        />
+        <SwitchRow
+          checked={state.hiring}
+          onChange={(next) => setState({ ...state, hiring: next })}
+          label={t("hiring")}
+          description={t("hiringHint")}
+        />
+      </div>
       {error ? <p className="text-danger text-sm">{error}</p> : null}
       <div className="mt-3 flex justify-end">
         <button

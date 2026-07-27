@@ -1,5 +1,26 @@
 {
   "enabledPlugins": {
     "frontend-design@claude-plugins-official": true
+  },
+  "permissions": {
+    "allow": [
+      "Bash(node scripts/lint-tokens.mjs)",
+      "Bash(node scripts/qa-design.mjs)",
+      "Bash(node scripts/check-release-placeholders.mjs)",
+      "Bash(node scripts/check-native-versions.mjs)",
+      "Bash(node apps/web/scripts/assert-security-headers.mjs)",
+      "Bash(node apps/web/e2e/shots.mjs *)",
+      "Bash(pnpm format:check)",
+      "Bash(pnpm lint*)",
+      "Bash(pnpm type-check)",
+      "Bash(pnpm test)",
+      "Bash(pnpm qa:design)",
+      "Bash(pnpm tokens:build)",
+      "Bash(pnpm mobile:recovery-check)",
+      "Bash(pnpm --filter @baydar/* exec tsc --noEmit*)",
+      "Bash(npx playwright test *)",
+      "Bash(npx jest *)",
+      "Bash(npx prettier --check *)"
+    ]
   }
 }

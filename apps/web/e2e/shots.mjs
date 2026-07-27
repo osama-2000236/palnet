@@ -12,8 +12,10 @@ import { chromium } from "@playwright/test";
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 
-const API = "http://localhost:4000/api/v1";
-const WEB = "http://localhost:3000";
+// Ports are overridable so a second worktree can shoot its own stack without
+// colliding with whatever is already on 3000/4000.
+const API = process.env.QA_SHOTS_API ?? "http://localhost:4000/api/v1";
+const WEB = process.env.QA_SHOTS_WEB ?? "http://localhost:3000";
 // Repo-relative and gitignored, so the harness works from any checkout.
 // Override with QA_SHOTS_OUT to dump elsewhere.
 const OUT_DIR = process.env.QA_SHOTS_OUT ?? path.resolve(import.meta.dirname, "../.qa-shots");

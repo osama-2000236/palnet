@@ -22,8 +22,17 @@ const user = {
 };
 
 const postLabels = {
-  like: "Like",
-  liked: "Liked",
+  reactions: {
+    pick: "Pick a reaction",
+    kind: {
+      LIKE: "Like",
+      CELEBRATE: "Celebrate",
+      SUPPORT: "Support",
+      LOVE: "Appreciate",
+      INSIGHTFUL: "Insightful",
+      FUNNY: "Amusing",
+    },
+  },
   comment: "Comment",
   repost: "Repost",
   send: "Send",
@@ -126,10 +135,10 @@ describe("web feed and safety component coverage", () => {
           author: user,
           body: "Hello world",
           timestamp: "09:41",
-          counts: { reactions: 1, comments: 2, reposts: 3 },
-          liked: false,
+          counts: { reactions: 1, comments: 2, reposts: 3, byReaction: { INSIGHTFUL: 1 } },
+          reaction: null,
           labels: postLabels,
-          onToggleReaction: onToggle,
+          onSetReaction: onToggle,
           commentsSlot: React.createElement("p", null, "Comments"),
         }),
         React.createElement(

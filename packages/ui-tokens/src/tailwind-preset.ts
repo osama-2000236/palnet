@@ -19,6 +19,29 @@ const v = (name: string): string => `rgb(var(--${name}-rgb) / <alpha-value>)`;
 const scale = (prefix: string, keys: readonly (string | number)[]): Record<string, string> =>
   Object.fromEntries(keys.map((k) => [k, v(`${prefix}-${k}`)]));
 
+type FontSizeEntry = [string, { lineHeight: string; letterSpacing?: string }];
+
+const step = (name: keyof typeof tokens.type.scale): FontSizeEntry => {
+  const s = tokens.type.scale[name];
+  return [
+    `${s.size}px`,
+    { lineHeight: `${s.line}`, ...(s.track === "0" ? {} : { letterSpacing: s.track }) },
+  ];
+};
+
+// See the comment at the `...aliases` spread below for why these exist.
+const aliases: Record<string, FontSizeEntry> = {
+  xs: step("caption"),
+  sm: step("small"),
+  base: step("body"),
+  lg: step("h3"),
+  xl: step("h2"),
+  "2xl": step("h1"),
+  "3xl": step("h1"),
+  "4xl": step("display"),
+  "5xl": step("display"),
+};
+
 const preset: TailwindPreset = {
   darkMode: "class",
   theme: {
@@ -96,6 +119,27 @@ const preset: TailwindPreset = {
             letterSpacing: tokens.type.scale.caption.track,
           },
         ],
+        micro: [
+          `${tokens.type.scale.micro.size}px`,
+          {
+            lineHeight: `${tokens.type.scale.micro.line}`,
+            letterSpacing: tokens.type.scale.micro.track,
+          },
+        ],
+        // Tailwind's own t-shirt keys, re-pointed at Baydar's steps.
+        //
+        // DESIGN.md §5.2 documents a seven-step scale. The product did not use
+        // it: a count across `apps/web/src` + `packages/ui-web/src` found the
+        // semantic utilities used **3 times** against ~530 uses of Tailwind's
+        // default scale in 94 files. Every page title rendered at 30px against
+        // a spec of 26; body copy at 14 against 15; the landing hero at 48
+        // against a display step of 36. The documented scale was fiction.
+        //
+        // Re-pointing the aliases fixes all 530 call sites at once and makes
+        // the off-scale size unreachable — you cannot land between two steps
+        // even by accident. Two aliases collapsing onto one step (2xl/3xl →
+        // h1, 4xl/5xl → display) is the scale doing its job, not a loss.
+        ...aliases,
       },
       spacing: {
         ...Object.fromEntries(Object.entries(tokens.space).map(([k, v]) => [k, `${v}px`])),
