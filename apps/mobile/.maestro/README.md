@@ -64,6 +64,13 @@ device reaches neither Metro nor the API and every screen shoots an offline
 state. Override the output directory with `QA_SHOTS_OUT`, and the adb binary
 with `ADB` if it is not at the default SDK path.
 
+`QA_ACCOUNT` (default `demo@baydar.ps`) picks the account every id is resolved
+from, and it must match whoever the device is signed in as — `set-appearance`
+deliberately does not `clearState`, so the session persists across the run. The
+three employer screens only exist for an account with a company: `demo` has
+none, so they are skipped with a note. Use `QA_ACCOUNT=owner@baydar.ps` to
+capture them.
+
 The web twin is `apps/web/e2e/shots.mjs` (46 routes × 2 locales × 2 themes ×
 2 viewports); keep the two in step when routes are added.
 
