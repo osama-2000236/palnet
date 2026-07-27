@@ -8,7 +8,7 @@
     "start": "next start -p 3000",
     "lint": "next lint",
     "type-check": "tsc --noEmit",
-    "test": "jest --passWithNoTests --runInBand",
+    "test": "jest --runInBand",
     "e2e": "playwright test",
     "test:a11y": "playwright test e2e/a11y.spec.ts",
     "lhci": "npx --yes @lhci/cli@0.14.x autorun --config=./lighthouserc.json"
