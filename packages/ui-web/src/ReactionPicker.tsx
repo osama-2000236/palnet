@@ -52,14 +52,23 @@ export function ReactionPicker({
   const rootRef = useRef<HTMLDivElement | null>(null);
   const triggerRef = useRef<HTMLButtonElement | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // A long-press on touch fires the timer AND, on release, a plain `click`.
+  // Without this the gesture both opened the picker and toggled the reaction,
+  // so choosing "تهنئة" from the flyout meant undoing a LIKE you never asked
+  // for. The flag is set when the long-press opens and consumed by the next
+  // click.
+  const longPressed = useRef(false);
 
   const clearTimer = (): void => {
     if (timer.current) clearTimeout(timer.current);
     timer.current = null;
   };
-  const openAfter = (ms: number): void => {
+  const openAfter = (ms: number, viaLongPress = false): void => {
     clearTimer();
-    timer.current = setTimeout(() => setOpen(true), ms);
+    timer.current = setTimeout(() => {
+      if (viaLongPress) longPressed.current = true;
+      setOpen(true);
+    }, ms);
   };
 
   useEffect(() => clearTimer, []);
@@ -113,6 +122,10 @@ export function ReactionPicker({
         aria-expanded={open}
         onClick={() => {
           clearTimer();
+          if (longPressed.current) {
+            longPressed.current = false;
+            return;
+          }
           setOpen(false);
           onSelect(active ? null : "LIKE");
         }}
@@ -121,7 +134,7 @@ export function ReactionPicker({
         }}
         onPointerDown={(event) => {
           if (disabled || event.pointerType === "mouse") return;
-          openAfter(LONG_PRESS_MS);
+          openAfter(LONG_PRESS_MS, true);
         }}
         onPointerUp={clearTimer}
         className={cx(

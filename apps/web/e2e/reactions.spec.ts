@@ -87,6 +87,34 @@ test("picking a type sets it, and picking the same one again clears it", async (
   await expect(afterReload).toContainText("إعجاب");
 });
 
+test("a long press opens the picker without also toggling the reaction", async ({ page }) => {
+  // On touch, a long press fires the open timer *and* a plain `click` on
+  // release, so the gesture used to do both: choose "تهنئة" from the flyout and
+  // you had also just liked (or un-liked) the post on the way in. Synthetic
+  // pointer events rather than `page.touchscreen`, because what matters is the
+  // `pointerType: "touch"` branch, and a real touch tap would not let us hold.
+  const trigger = page.locator("button.react-press[aria-haspopup='true']").first();
+  await expect(trigger).toHaveAttribute("aria-pressed", "false");
+
+  await trigger.evaluate((el) => {
+    el.dispatchEvent(
+      new PointerEvent("pointerdown", { pointerType: "touch", bubbles: true, isPrimary: true }),
+    );
+  });
+  await page.waitForTimeout(600);
+  await expect(page.getByRole("group", { name: "اختر تفاعلًا" })).toBeVisible();
+
+  await trigger.evaluate((el) => {
+    el.dispatchEvent(
+      new PointerEvent("pointerup", { pointerType: "touch", bubbles: true, isPrimary: true }),
+    );
+    el.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+  });
+
+  // The picker is open and nothing was reacted to.
+  await expect(trigger).toHaveAttribute("aria-pressed", "false");
+});
+
 test("post action labels do not clip at 390px in Arabic", async ({ page }) => {
   // PART 0 of the design brief removed these labels when five actions
   // overflowed, and requires any new label treatment to be re-measured here.
