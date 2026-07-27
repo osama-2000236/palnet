@@ -20,6 +20,7 @@
 import type { JSX, KeyboardEvent, ReactNode } from "react";
 
 import { cx } from "./cx";
+import { Icon } from "./Icon";
 
 export type ChipSize = "sm" | "md";
 export type ChipVariant = ChipSize;
@@ -47,8 +48,8 @@ export interface ChipProps {
 }
 
 const SIZE_CLASSES: Record<ChipSize, string> = {
-  sm: "target-area h-6 px-2.5 text-[11px] gap-1",
-  md: "target-area h-7 px-3   text-[13px] gap-1.5",
+  sm: "target-area h-6 px-2.5 text-micro gap-1",
+  md: "target-area h-7 px-3   text-small gap-1.5",
 };
 
 const CLOSE_SIZE: Record<ChipSize, string> = {
@@ -93,6 +94,18 @@ export function Chip({
           aria-hidden="true"
           className={cx("h-1.5 w-1.5 shrink-0 rounded-full", dotClassName)}
         />
+      ) : null}
+      {/* The selected state was carried by colour alone — olive border, olive
+          tint, olive label — which the design brief's own acceptance criteria
+          forbid ("no state conveyed by colour alone: switch, chip selected, tab
+          active, error"). `role="switch"` + `aria-checked` already covered
+          screen readers; sighted users with low colour discrimination had
+          nothing. The check is the cue, and it only appears on a chip that can
+          actually be toggled — a static tag has no state to convey. */}
+      {interactive && active ? (
+        <span aria-hidden="true" className="inline-flex shrink-0">
+          <Icon name="check" size={size === "sm" ? 12 : 14} strokeWidth={2.6} />
+        </span>
       ) : null}
       {leading ? (
         <span aria-hidden="true" className="inline-flex shrink-0">

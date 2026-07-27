@@ -36,7 +36,18 @@ export interface InputProps extends Omit<TextInputProps, "style"> {
 
 const SIZE_HEIGHT: Record<InputSize, number> = { sm: 28, md: 36, lg: 44 };
 const SIZE_PAD_X: Record<InputSize, number> = { sm: 10, md: 12, lg: 14 };
-const SIZE_FONT: Record<InputSize, number> = { sm: 13, md: 14, lg: 15 };
+// Was a raw 13 / 14 / 15. `14` is on neither platform's scale, and web `md`
+// resolves to `small`, so this was a parity gap as well as a token one.
+const SIZE_FONT: Record<InputSize, number> = {
+  sm: nativeTokens.type.scale.small.size,
+  md: nativeTokens.type.scale.small.size,
+  lg: nativeTokens.type.scale.body.size,
+};
+const SIZE_LINE: Record<InputSize, number> = {
+  sm: nativeTokens.type.scale.small.line,
+  md: nativeTokens.type.scale.small.line,
+  lg: nativeTokens.type.scale.body.line,
+};
 const SIZE_GAP: Record<InputSize, number> = { sm: 6, md: 8, lg: 8 };
 
 export function Input({
@@ -59,10 +70,18 @@ export function Input({
   const message = errorMessage ?? helperText ?? helper;
   const c = useThemeTokens().color;
 
+  // `rows` only matters when the host asked for multiline; a single-line field
+  // keeps its fixed control height.
+  const rows = rest.multiline ? Math.max(1, rest.numberOfLines ?? 3) : 1;
   const wrapperStyle: ViewStyle = {
-    minHeight: SIZE_HEIGHT[size],
+    minHeight: rest.multiline
+      ? SIZE_LINE[size] * rows + nativeTokens.space[2] * 2
+      : SIZE_HEIGHT[size],
     flexDirection: "row",
-    alignItems: "center",
+    // A multiline field's leading icon and caret belong at the top, not
+    // vertically centred against a box that grows as the user types.
+    alignItems: rest.multiline ? "flex-start" : "center",
+    paddingVertical: rest.multiline ? nativeTokens.space[2] : 0,
     gap: SIZE_GAP[size],
     borderRadius: nativeTokens.radius.md,
     borderWidth: 1,
@@ -79,8 +98,10 @@ export function Input({
     color: disabled ? c.inkSubtle : c.ink,
     fontFamily: nativeTokens.type.family.sans,
     fontSize: SIZE_FONT[size],
+    lineHeight: SIZE_LINE[size],
     textAlign: "auto",
     writingDirection: "auto",
+    textAlignVertical: rest.multiline ? "top" : "center",
   };
 
   return (

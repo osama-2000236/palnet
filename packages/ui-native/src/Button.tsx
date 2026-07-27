@@ -43,11 +43,20 @@ export interface ButtonProps extends Omit<PressableProps, "style" | "children"> 
   children?: ReactNode;
 }
 
-// Spec heights: 28 / 36 / 44. Minimum touch target is 44pt on mobile
-// (spec: mobile hit area = 44 for sm/md, 48 for lg).
+// Spec heights: 28 / 36 / 44 — a *minimum*, not a fixed height. They were fixed
+// heights with `adjustsFontSizeToFit` on the label, which is the auto-shrink the
+// design brief forbids outright: a long Arabic label or an OS large-text setting
+// silently dropped below the type scale instead of the control growing. The
+// button now grows.
 const SIZE_HEIGHT: Record<ButtonSize, number> = { sm: 28, md: 36, lg: 44 };
 const SIZE_PAD_X: Record<ButtonSize, number> = { sm: 10, md: 16, lg: 22 };
-const SIZE_FONT: Record<ButtonSize, number> = { sm: 13, md: 14, lg: 15 };
+const SIZE_FONT: Record<ButtonSize, number> = {
+  sm: nativeTokens.type.scale.small.size,
+  // Was a raw 14 — a size that exists in no scale on either platform. Web `md`
+  // resolves to `small` too, so this is also a parity fix.
+  md: nativeTokens.type.scale.small.size,
+  lg: nativeTokens.type.scale.body.size,
+};
 const SIZE_GAP: Record<ButtonSize, number> = { sm: 6, md: 8, lg: 8 };
 const SIZE_HIT_TARGET: Record<ButtonSize, number> = { sm: 44, md: 44, lg: 48 };
 
@@ -106,9 +115,15 @@ export function Button({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    height: SIZE_HEIGHT[size],
+    minHeight: SIZE_HEIGHT[size],
     paddingHorizontal: SIZE_PAD_X[size],
-    borderRadius: nativeTokens.radius.full,
+    paddingVertical: nativeTokens.space[1],
+    // PARITY.md recorded "Button radius — **Open.** Web is `rounded-md` (10px),
+    // native is `radius.full` (pill)". Settled at `md` on both: the pill is the
+    // category default (LinkedIn, X) and CLAUDE.md says take the other option
+    // where a decision would converge. Web keeps what it already had, so this
+    // costs one platform's pixels and buys the same button everywhere.
+    borderRadius: nativeTokens.radius.md,
     borderWidth: 1,
     borderColor: VARIANT_BORDER[variant],
     backgroundColor: VARIANT_BG[variant],
@@ -158,7 +173,7 @@ export function Button({
       ) : null}
       {children !== undefined && children !== null ? (
         typeof children === "string" ? (
-          <Text numberOfLines={1} adjustsFontSizeToFit style={[label, textStyle]}>
+          <Text numberOfLines={2} style={[label, textStyle]}>
             {children}
           </Text>
         ) : (

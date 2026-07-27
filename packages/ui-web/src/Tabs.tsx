@@ -175,7 +175,12 @@ export function Tab({ value, children, count, countLabel }: TabProps): JSX.Eleme
         // the tab happens to sit on the last row — Arabic labels wrap this strip
         // at 390px, which left the underline floating mid-component (F1).
         // min-h-11 == space[11] == 44px, the CLAUDE.md touch minimum (A3).
-        "me-6 inline-flex min-h-11 flex-col justify-end px-0.5 font-sans text-sm font-medium",
+        "me-6 inline-flex min-h-11 min-w-11 flex-col items-center justify-end px-0.5 font-sans text-sm font-medium",
+        // `min-w-11` for the same reason as `min-h-11`: a tab is sized by
+        // its label, and a short one ("الشركات" on /search) measured 43.6px
+        // wide once the type scale put it on the 13px `small` step. Height
+        // was pinned and width was not, so the control was legal in one
+        // axis only.
         "focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]",
         active ? "text-ink" : "text-ink-muted hover:text-ink",
       )}

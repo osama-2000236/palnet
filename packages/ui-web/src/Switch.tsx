@@ -21,6 +21,8 @@ export interface SwitchProps {
    * value rides on a hidden input — `name` on the button did nothing at all.
    */
   name?: string;
+  /** Points at the row's description text, so the switch announces both. */
+  "aria-describedby"?: string;
 }
 
 export function Switch({
@@ -30,6 +32,7 @@ export function Switch({
   disabled,
   id,
   name,
+  "aria-describedby": ariaDescribedBy,
 }: SwitchProps): ReactElement {
   return (
     // A3: the track is 20×36px, well under the 44px minimum. The wrapper takes
@@ -43,6 +46,7 @@ export function Switch({
         id={id}
         aria-checked={checked}
         aria-label={ariaLabel}
+        aria-describedby={ariaDescribedBy}
         disabled={disabled}
         onClick={() => onChange(!checked)}
         className={cx(
