@@ -57,6 +57,8 @@ export function ActionSheet({
             accessibilityHint={item.description}
             accessibilityState={{ disabled: Boolean(item.disabled) }}
             onPress={() => {
+              // Close first: an item that pushes a route would otherwise leave
+              // the sheet mounted behind the screen it just opened.
               onClose();
               item.onSelect();
             }}
