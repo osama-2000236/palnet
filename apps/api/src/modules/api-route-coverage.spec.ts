@@ -1,67 +1,38 @@
 import "reflect-metadata";
 
+import { readdirSync } from "node:fs";
+import path from "node:path";
+
 import { RequestMethod, type Type } from "@nestjs/common";
 import { METHOD_METADATA, PATH_METADATA, SSE_METADATA } from "@nestjs/common/constants";
 
-import { AccountController } from "./account/account.controller";
-import { AdminBillingController } from "./admin/admin-billing.controller";
-import { AdminInternalController } from "./admin/admin-internal.controller";
-import { AdminModerationController } from "./admin/admin-moderation.controller";
-import { AuthController } from "./auth/auth.controller";
-import { BillingController } from "./billing/billing.controller";
-import { BookmarksController } from "./bookmarks/bookmarks.controller";
-import { CommentsController } from "./comments/comments.controller";
-import { CompaniesController } from "./companies/companies.controller";
-import { CompanyJobsController } from "./companies/company-jobs.controller";
-import { CompanyMembersController } from "./companies/company-members.controller";
-import { ConnectionsController } from "./connections/connections.controller";
-import { FeedController } from "./feed/feed.controller";
-import { HealthController } from "./health/health.controller";
-import { JobsController } from "./jobs/jobs.controller";
-import { KaramaController } from "./karama/karama.controller";
-import { MediaController } from "./media/media.controller";
-import { MessagingController } from "./messaging/messaging.controller";
-import { DevicesController } from "./notifications/devices.controller";
-import { NotificationsController } from "./notifications/notifications.controller";
-import { NotificationPreferencesController } from "./notifications/preferences.controller";
-import { PostsController } from "./posts/posts.controller";
-import { ProfilesController } from "./profiles/profiles.controller";
-import { RatingsController } from "./ratings/ratings.controller";
-import { ReactionsController } from "./reactions/reactions.controller";
-import { RepostsController } from "./reposts/reposts.controller";
-import { SafetyController } from "./safety/safety.controller";
-import { SearchController } from "./search/search.controller";
+import { IS_PUBLIC_KEY } from "./auth/decorators/public.decorator";
 
-const CONTROLLERS: Array<Type<unknown>> = [
-  AccountController,
-  AdminBillingController,
-  AdminInternalController,
-  AdminModerationController,
-  AuthController,
-  BillingController,
-  BookmarksController,
-  CommentsController,
-  CompaniesController,
-  CompanyJobsController,
-  CompanyMembersController,
-  ConnectionsController,
-  FeedController,
-  HealthController,
-  JobsController,
-  KaramaController,
-  MediaController,
-  MessagingController,
-  DevicesController,
-  NotificationsController,
-  NotificationPreferencesController,
-  PostsController,
-  ProfilesController,
-  RatingsController,
-  ReactionsController,
-  RepostsController,
-  SafetyController,
-  SearchController,
-];
+/**
+ * Every controller on disk, not a list somebody remembered to update.
+ *
+ * The hand-maintained array this replaces could not detect what it was for.
+ * Dropping a new `@Public()` controller into `src/modules` — `GET
+ * /leaky/secrets`, no auth — left both pins below passing, because the routes
+ * it exposed belonged to a class the list had never heard of. A coverage check
+ * whose input is curated by hand only covers what you already knew about.
+ */
+function controllerFiles(dir: string): string[] {
+  return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) return controllerFiles(full);
+    return entry.name.endsWith(".controller.ts") ? [full] : [];
+  });
+}
+
+const CONTROLLERS: Type<unknown>[] = controllerFiles(__dirname).flatMap((file) =>
+  // Dynamic by necessity: a static import list is the defect this replaces.
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  Object.values(require(file) as Record<string, unknown>).filter(
+    (value): value is Type<unknown> =>
+      typeof value === "function" && Reflect.hasMetadata(PATH_METADATA, value),
+  ),
+);
 
 const EXPECTED_ROUTES = [
   "POST /account/delete",
@@ -193,9 +164,47 @@ const EXPECTED_ROUTES = [
   "GET /search/jobs",
 ].sort();
 
+// Routes reachable without a session. The global `JwtAuthGuard` is default-deny,
+// so this list is the entire unauthenticated attack surface — and it was pinned
+// by nothing. The route list above pins paths and methods, which is the half
+// that breaks a client; this is the half that leaks data.
+//
+// Adding `@Public()` anywhere now fails here until someone edits this list,
+// which is the point: it should take a deliberate edit, in a diff a reviewer
+// can see.
+const EXPECTED_PUBLIC_ROUTES = [
+  // Token-authenticated automation, not open: the controller carries
+  // `@UseGuards(InternalTokenGuard)`, covered in internal-token.guard.spec.ts.
+  "POST /admin/internal/account-retention/run",
+  "POST /admin/internal/karama-decay/run",
+  "POST /admin/internal/billing/invoices/:invoiceId/action",
+  "POST /admin/internal/media/scan",
+  // Credential surfaces. Each is rate-limited at the route.
+  "POST /account/restore",
+  "POST /auth/register",
+  "POST /auth/login",
+  "POST /auth/refresh",
+  "POST /auth/verify-email/send",
+  "POST /auth/verify-email/confirm",
+  "POST /auth/forgot-password",
+  "POST /auth/reset-password",
+  // Signature-verified by the provider, so it cannot carry a session.
+  "POST /billing/webhooks/hyperpay",
+  // Liveness and readiness, scraped by the platform.
+  "GET /health",
+  "GET /health/ready",
+  // The one deliberately anonymous read: a shared job link must open for a
+  // logged-out visitor.
+  "GET /jobs/public/:id",
+].sort();
+
 describe("API route coverage", () => {
   it("pins every public controller route", () => {
     expect(collectRoutes(CONTROLLERS).sort()).toEqual(EXPECTED_ROUTES);
+  });
+
+  it("pins every route reachable without a session", () => {
+    expect(collectPublicRoutes(CONTROLLERS).sort()).toEqual(EXPECTED_PUBLIC_ROUTES);
   });
 });
 
@@ -208,6 +217,30 @@ function collectRoutes(controllers: Array<Type<unknown>>): string[] {
       const path = Reflect.getMetadata(PATH_METADATA, handler);
       const method = Reflect.getMetadata(METHOD_METADATA, handler) as RequestMethod | undefined;
       if (path === undefined || method === undefined) return [];
+      const isSse = Reflect.getMetadata(SSE_METADATA, handler) === true;
+      return [`${isSse ? "SSE" : methodName(method)} ${joinPaths(prefix, normalizePath(path))}`];
+    });
+  });
+}
+
+/**
+ * Routes the global JWT guard will not challenge.
+ *
+ * `@Public()` is both a method and a class decorator, and on a class it covers
+ * every route in it — `admin/internal` uses exactly that form. Reading only the
+ * handler metadata would report those four routes as authenticated.
+ */
+function collectPublicRoutes(controllers: Type<unknown>[]): string[] {
+  return controllers.flatMap((controller) => {
+    const classPublic = Reflect.getMetadata(IS_PUBLIC_KEY, controller) === true;
+    const prefix = normalizePath(Reflect.getMetadata(PATH_METADATA, controller));
+    return Object.getOwnPropertyNames(controller.prototype).flatMap((property) => {
+      if (property === "constructor") return [];
+      const handler = controller.prototype[property] as (...args: unknown[]) => unknown;
+      const path = Reflect.getMetadata(PATH_METADATA, handler);
+      const method = Reflect.getMetadata(METHOD_METADATA, handler) as RequestMethod | undefined;
+      if (path === undefined || method === undefined) return [];
+      if (!classPublic && Reflect.getMetadata(IS_PUBLIC_KEY, handler) !== true) return [];
       const isSse = Reflect.getMetadata(SSE_METADATA, handler) === true;
       return [`${isSse ? "SSE" : methodName(method)} ${joinPaths(prefix, normalizePath(path))}`];
     });
