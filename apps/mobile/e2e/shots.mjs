@@ -265,23 +265,40 @@ async function main() {
     );
   }
 
-  const session = await login("demo@baydar.ps", "Password123");
+  // ONE account resolves every id, and it must be the account the device is
+  // signed in as — `set-appearance.yaml` deliberately does not `clearState`,
+  // so whoever logged in last owns the run.
+  //
+  // This used to resolve most ids from `demo` and the employer ids from
+  // `owner`. Two accounts, one device: `demo` has no companies at all
+  // (`GET /companies/me` -> []) and gets 403 on owner's, so the three employer
+  // screens could only ever photograph an error state. They were filed as
+  // "unreviewed" for a whole round because a 403 page is a perfectly valid
+  // PNG — the same silent-wrong-answer this harness keeps producing.
+  const ACCOUNT = process.env.QA_ACCOUNT ?? "demo@baydar.ps";
+  const session = await login(ACCOUNT, "Password123");
   const jobId = first(await api(session, "/jobs?limit=5"))?.id;
   const handle = (await api(session, "/profiles/me"))?.handle ?? "demo";
   const roomId = first(await api(session, "/messaging/rooms?limit=5"))?.id;
 
-  const owner = await login("owner@baydar.ps", "Password123").catch(() => null);
-  const ownerCompany = owner ? first(await api(owner, "/companies/me")) : null;
-  const employerSlug = ownerCompany?.slug ?? (owner ? "baydar" : null);
-  // Same company the employer screens use. This was a full-text search for "ش"
-  // with a hardcoded fallback — the search matches nothing once fixture debris
-  // is swept, so it silently shot the fallback every time. Seeded membership is
-  // the one thing guaranteed to resolve. Mirrors apps/web/e2e/shots.mjs.
+  // Employer screens exist only for an account with a company. Skipping them
+  // loudly beats shooting three 403s: run with
+  // `QA_ACCOUNT=owner@baydar.ps` to review them.
+  const myCompany = first(await api(session, "/companies/me"));
+  const employerSlug = myCompany?.slug ?? null;
   const companySlug = employerSlug ?? "baydar";
+  if (!employerSlug) {
+    process.stdout.write(
+      `note: ${ACCOUNT} belongs to no company — skipping the 3 employer screens.
+` +
+        `      re-run with QA_ACCOUNT=owner@baydar.ps to capture them.
+`,
+    );
+  }
   // The jobs route keys on company id, not slug — passing the slug 403s with
   // "Not a member of this company", which reads like a permissions problem.
-  const employerJobId = ownerCompany?.id
-    ? first(await api(owner, `/companies/${ownerCompany.id}/jobs?limit=5`))?.id
+  const employerJobId = myCompany?.id
+    ? first(await api(session, `/companies/${myCompany.id}/jobs?limit=5`))?.id
     : null;
 
   // Expo Router drops `(group)` segments from the URL, so these mirror the file
