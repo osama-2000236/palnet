@@ -10,9 +10,3 @@ export const ApiError = z.object({
   }),
 });
 export type ApiError = z.infer<typeof ApiError>;
-
-export const ApiOk = <T extends z.ZodTypeAny>(data: T) =>
-  z.object({
-    data,
-    meta: z.record(z.unknown()).optional(),
-  });

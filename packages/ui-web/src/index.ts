@@ -6,8 +6,8 @@ export { cx } from "./cx";
 export { staggerDelay } from "./useStagger";
 
 // ── Layout primitives ────────────────────────────────────────────────
-export { Surface } from "./layout";
-export type { SurfaceProps, SurfaceVariant, SurfacePadding } from "./layout";
+export { Surface } from "./Surface";
+export type { SurfaceProps, SurfaceVariant, SurfacePadding } from "./Surface";
 
 // ── Illustration & empty states ──────────────────────────────────────
 export { Illustration, ILLUSTRATION_MOTIFS, ILLUSTRATION_DIRECTIONS } from "./Illustration";
