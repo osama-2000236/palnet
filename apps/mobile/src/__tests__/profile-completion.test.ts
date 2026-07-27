@@ -1,6 +1,4 @@
-import type { Profile } from "@baydar/shared";
-
-import { profileCompletion } from "@/lib/profile-completion";
+import { profileCompletion, type Profile } from "@baydar/shared";
 
 const bare = {
   userId: "u1",

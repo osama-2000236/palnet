@@ -1,5 +1,3 @@
-import type { WalletProvider } from "@baydar/shared";
-
 // USD-relative exchange-rate snapshot: the boot/fallback rates for
 // FxService, which overlays live rates from FX_FEED_URL when configured.
 // Each entry expresses "1 USD = N <currency>".
@@ -26,5 +24,3 @@ export function deriveDisplayCurrency(localeOrCountry: string | null | undefined
   if (upper.includes("GB") || upper.includes("UK")) return "GBP";
   return "USD";
 }
-
-export const WALLET_PROVIDERS: ReadonlyArray<WalletProvider> = ["JAWWALPAY", "PALPAY", "REFLECT"];

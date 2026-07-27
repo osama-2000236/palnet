@@ -23,7 +23,6 @@ import { cx } from "./cx";
 import { Icon } from "./Icon";
 
 export type ChipSize = "sm" | "md";
-export type ChipVariant = ChipSize;
 
 export interface ChipProps {
   children: ReactNode;

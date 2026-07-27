@@ -61,12 +61,6 @@ export function getInitialLocale(): SupportedLocale {
   );
 }
 
-export async function readLocalePreference(): Promise<SupportedLocale | null> {
-  if (Platform.OS === "web") return readWebPreference();
-  const raw = await SecureStore.getItemAsync(KEY).catch(() => null);
-  return raw ? normalizeLocale(raw) : null;
-}
-
 export async function writeLocalePreference(locale: SupportedLocale): Promise<void> {
   if (Platform.OS === "web") {
     getWebStorage()?.setItem(KEY, locale);

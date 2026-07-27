@@ -1,4 +1,4 @@
-import { Profile as ProfileSchema, type Profile } from "@baydar/shared";
+import { profileCompletion, Profile as ProfileSchema, type Profile } from "@baydar/shared";
 import { Avatar, Button, SegmentedControl, Surface } from "@baydar/ui-native";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
@@ -10,7 +10,6 @@ import { FieldCover } from "@/components/FieldCover";
 import { StateMessage } from "@/components/StateMessage";
 import { apiFetch } from "@/lib/api";
 import { apiErrorMessage } from "@/lib/api-errors";
-import { profileCompletion } from "@/lib/profile-completion";
 import { clearSession, getAccessToken } from "@/lib/session";
 
 import { Section } from "@/screens/me/Section";

@@ -1,10 +1,8 @@
-import { formatNumber, type Profile } from "@baydar/shared";
+import { profileCompletion, formatNumber, type Profile } from "@baydar/shared";
 import { AppHeader, Avatar, Button, Icon, Surface, useThemeTokens } from "@baydar/ui-native";
 import { router } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { Pressable, Text, View } from "react-native";
-
-import { profileCompletion } from "@/lib/profile-completion";
 
 import { useFeedStyles } from "./styles";
 

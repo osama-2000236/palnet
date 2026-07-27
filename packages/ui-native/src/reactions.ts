@@ -3,7 +3,7 @@
 // why the union is declared locally rather than imported from @baydar/shared,
 // and why these are line glyphs rather than emoji.
 
-import { nativeTokens, type NativeTokens } from "./tokens";
+import type { NativeTokens } from "./tokens";
 
 export const REACTION_TYPES = [
   "LIKE",
@@ -57,7 +57,3 @@ export function topReactions(
     .sort((a, b) => (counts[b] ?? 0) - (counts[a] ?? 0))
     .slice(0, limit);
 }
-
-// Re-exported so a consumer that only needs the glyph size does not reach into
-// the token bundle for it.
-export const REACTION_GLYPH_SIZE = nativeTokens.space[5];
