@@ -1,32 +1,9 @@
 "use client";
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { createNotificationsApi } from "@baydar/shared/react";
 
-import { apiCall } from "@/lib/api";
-import { getAccessToken } from "@/lib/session";
+import { apiClient } from "@/lib/api";
 
-export const notificationQueryKeys = {
-  list: ["notifications", "list"] as const,
-  unreadCount: ["notifications", "unread-count"] as const,
-};
+export { notificationQueryKeys } from "@baydar/shared/react";
 
-function token(): string {
-  const value = getAccessToken();
-  if (!value) throw new Error("AUTH_UNAUTHORIZED");
-  return value;
-}
-
-export function useDismissNotification() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async (notificationId: string) =>
-      apiCall(`/notifications/${notificationId}`, {
-        method: "DELETE",
-        token: token(),
-      }),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: [...notificationQueryKeys.list] });
-      void queryClient.invalidateQueries({ queryKey: [...notificationQueryKeys.unreadCount] });
-    },
-  });
-}
+export const { useDismissNotification } = createNotificationsApi(apiClient);

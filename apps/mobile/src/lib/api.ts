@@ -1,156 +1,87 @@
-import { ApiError, AuthSession } from "@baydar/shared";
+import {
+  ApiRequestError,
+  AuthSession,
+  CLIENT_ERROR_CODE,
+  createApiClient,
+  type ApiFetchOptions,
+} from "@baydar/shared";
 import { router } from "expo-router";
-import type { z } from "zod";
 
 import { clearSession, getAccessToken, getDeviceId, readSession, writeSession } from "./session";
 
 export const API_BASE = process.env.EXPO_PUBLIC_API_URL ?? "http://localhost:4000/api/v1";
 
-let refreshPromise: Promise<string> | null = null;
+export { ApiRequestError };
+export type { ApiFetchOptions };
 
-export class ApiRequestError extends Error {
-  constructor(
-    public readonly status: number,
-    public readonly code: string,
-    public readonly details?: unknown,
-  ) {
-    super(`API ${status} ${code}`);
-  }
-}
+/**
+ * The React Native half of the API client. The request/refresh/decode logic
+ * lives in `@baydar/shared` so it cannot drift from web's copy again; what is
+ * here is what genuinely differs.
+ *
+ * Mobile has no cookie jar, so the refresh token travels in the body and the
+ * server is opted into returning it there via `X-Auth-Transport`.
+ */
 
-export interface ApiFetchOptions extends Omit<RequestInit, "body"> {
-  body?: unknown;
-  token?: string | null;
-  skipAuth?: boolean;
-}
-
-type MobileRequestInit = RequestInit & {
-  cache?: "no-store";
+const MOBILE_HEADERS: Record<string, string> = {
+  // Mobile has no cookie jar — opt the API into returning refresh tokens in the
+  // JSON body. The server's default transport is an httpOnly cookie for web.
+  "X-Auth-Transport": "body",
+  // React Native/OkHttp can replay ETag validators and return 304 responses
+  // without exposing the cached JSON body to JS. Every response here is
+  // schema-validated before rendering, so a body-less 304 is a hard failure.
+  "Cache-Control": "no-store",
+  Pragma: "no-cache",
 };
 
-export async function apiFetch<T extends z.ZodTypeAny>(
-  path: string,
-  schema: T,
-  opts: ApiFetchOptions = {},
-): Promise<z.infer<T>> {
-  const res = await requestWithAuth(path, opts);
-
-  const json = (await res.json().catch(() => ({}))) as unknown;
-
-  if (!res.ok) {
-    const parsed = ApiError.safeParse(json);
-    const code = parsed.success ? parsed.data.error.code : "INTERNAL";
-    const details = parsed.success ? parsed.data.error.details : undefined;
-    throw new ApiRequestError(res.status, code, details);
-  }
-
-  const body = (json as { data?: unknown }).data ?? json;
-  const parsed = schema.safeParse(body);
-  if (!parsed.success) {
-    throw new ApiRequestError(0, "INVALID_RESPONSE", parsed.error.flatten());
-  }
-  return parsed.data as z.infer<T>;
-}
-
-// For mutation endpoints returning 204 No Content (or where the response body is not needed).
-export async function apiCall(path: string, opts: ApiFetchOptions = {}): Promise<void> {
-  const res = await requestWithAuth(path, opts);
-  if (res.ok) return;
-  const json = (await res.json().catch(() => ({}))) as unknown;
-  const parsed = ApiError.safeParse(json);
-  const code = parsed.success ? parsed.data.error.code : "INTERNAL";
-  const details = parsed.success ? parsed.data.error.details : undefined;
-  throw new ApiRequestError(res.status, code, details);
-}
-
-export async function apiFetchPage<T extends z.ZodTypeAny>(
-  path: string,
-  envelope: T,
-  opts: ApiFetchOptions = {},
-): Promise<z.infer<T>> {
-  const res = await requestWithAuth(path, opts);
-  const json = (await res.json().catch(() => ({}))) as unknown;
-  if (!res.ok) {
-    const parsed = ApiError.safeParse(json);
-    const code = parsed.success ? parsed.data.error.code : "INTERNAL";
-    throw new ApiRequestError(res.status, code);
-  }
-  const parsed = envelope.safeParse(json);
-  if (!parsed.success) {
-    throw new ApiRequestError(0, "INVALID_RESPONSE", parsed.error.flatten());
-  }
-  return parsed.data as z.infer<T>;
-}
-
-async function requestWithAuth(path: string, opts: ApiFetchOptions): Promise<Response> {
-  const token = opts.skipAuth
-    ? null
-    : opts.token === undefined
-      ? await getAccessToken()
-      : opts.token;
-  const res = await request(path, opts, token);
-  if (res.status !== 401 || opts.skipAuth) return res;
-
-  const nextToken = await refreshAccessToken();
-  if (!nextToken) return res;
-  return request(path, opts, nextToken);
-}
-
-async function request(
-  path: string,
-  opts: ApiFetchOptions,
-  token: string | null,
-): Promise<Response> {
-  const headers = new Headers(opts.headers);
-  if (opts.body !== undefined) headers.set("Content-Type", "application/json");
-  if (token) headers.set("Authorization", `Bearer ${token}`);
-  // Mobile has no cookie jar — opt the API into returning refresh tokens in
-  // the JSON body (the default transport on the server is now httpOnly
-  // cookie for the web client).
-  headers.set("X-Auth-Transport", "body");
-  // React Native/OkHttp can replay ETag validators and return 304 responses
-  // without exposing the cached JSON body to JS. Authenticated API calls need
-  // fresh bodies because every response is schema-validated before rendering.
-  headers.set("Cache-Control", "no-store");
-  headers.set("Pragma", "no-cache");
-  headers.delete("If-None-Match");
-  headers.delete("If-Modified-Since");
-
-  const { body, token: _token, skipAuth: _skipAuth, ...init } = opts;
-  void _token;
-  void _skipAuth;
-  const method = init.method?.toUpperCase() ?? "GET";
-  const requestPath = method === "GET" || method === "HEAD" ? withCacheBuster(path) : path;
-
-  try {
-    const requestInit: MobileRequestInit = {
-      ...init,
-      cache: "no-store",
-      headers,
-      body: body === undefined ? undefined : JSON.stringify(body),
-    };
-    return await fetch(`${API_BASE}${requestPath}`, requestInit);
-  } catch (error) {
-    throw new ApiRequestError(0, "NETWORK_ERROR", error);
-  }
-}
-
-function withCacheBuster(path: string): string {
+// ponytail: query-string cache buster, because the headers above are not enough
+// on their own — OkHttp still replays conditional requests. Drop it when RN's
+// fetch stops handing JS a 304 with no body.
+function bustCache(path: string): string {
   const url = new URL(path, "https://baydar.local");
   url.searchParams.set("_", String(Date.now()));
   return `${url.pathname}${url.search}`;
 }
 
-async function refreshAccessToken(): Promise<string | null> {
-  if (!refreshPromise) {
-    refreshPromise = refreshSession()
-      .then((session) => session.tokens.accessToken)
-      .finally(() => {
-        refreshPromise = null;
-      });
+export const apiClient = createApiClient({
+  baseUrl: API_BASE,
+  fetch: async (url, init) => {
+    const headers = new Headers(init.headers);
+    // Strip validators OkHttp would otherwise attach for us.
+    headers.delete("If-None-Match");
+    headers.delete("If-Modified-Since");
+    try {
+      return await fetch(url, { ...init, headers, cache: "no-store" } as RequestInit);
+    } catch (error) {
+      // ponytail: web lets the raw TypeError through and maps it in
+      // `error-message.ts`. Unify when the two message catalogs merge — the web
+      // catalog keys this as `errors.NETWORK`, mobile as `NETWORK_ERROR`.
+      throw new ApiRequestError(0, CLIENT_ERROR_CODE.NETWORK_ERROR, error);
+    }
+  },
+  getToken: getAccessToken,
+  refresh,
+  headers: MOBILE_HEADERS,
+  rewriteGetPath: bustCache,
+});
+
+async function refresh(): Promise<string | null> {
+  const session = await readSession();
+  const refreshToken = session?.tokens.refreshToken;
+  if (!refreshToken) {
+    await clearSession();
+    router.replace("/(auth)/login");
+    return null;
   }
+
   try {
-    return await refreshPromise;
+    const next = await apiClient.apiFetch("/auth/refresh", AuthSession, {
+      method: "POST",
+      body: { refreshToken, deviceId: await getDeviceId() },
+      skipAuth: true,
+    });
+    await writeSession(next);
+    return next.tokens.accessToken;
   } catch {
     await clearSession();
     router.replace("/(auth)/login");
@@ -158,36 +89,4 @@ async function refreshAccessToken(): Promise<string | null> {
   }
 }
 
-async function refreshSession(): Promise<z.infer<typeof AuthSession>> {
-  const session = await readSession();
-  if (!session?.tokens.refreshToken) {
-    throw new ApiRequestError(401, "AUTH_UNAUTHORIZED");
-  }
-
-  const res = await request(
-    "/auth/refresh",
-    {
-      method: "POST",
-      body: {
-        refreshToken: session.tokens.refreshToken,
-        deviceId: await getDeviceId(),
-      },
-      skipAuth: true,
-    },
-    null,
-  );
-  const json = (await res.json().catch(() => ({}))) as unknown;
-  if (!res.ok) {
-    const parsed = ApiError.safeParse(json);
-    throw new ApiRequestError(
-      res.status,
-      parsed.success ? parsed.data.error.code : "AUTH_UNAUTHORIZED",
-      parsed.success ? parsed.data.error.details : undefined,
-    );
-  }
-
-  const body = (json as { data?: unknown }).data ?? json;
-  const next = AuthSession.parse(body);
-  await writeSession(next);
-  return next;
-}
+export const { apiFetch, apiCall, apiFetchPage, getValidAccessToken } = apiClient;

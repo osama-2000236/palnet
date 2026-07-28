@@ -10,6 +10,12 @@
       "react-native": "./src/index.ts",
       "node": "./dist/index.js",
       "default": "./src/index.ts"
+    },
+    "./react": {
+      "types": "./src/react/index.ts",
+      "react-native": "./src/react/index.ts",
+      "node": "./dist/react/index.js",
+      "default": "./src/react/index.ts"
     }
   },
   "files": [
@@ -26,10 +32,25 @@
   "dependencies": {
     "zod": "^3.23.8"
   },
+  "peerDependencies": {
+    "@tanstack/react-query": "^5.59.15",
+    "react": "^19.1.0"
+  },
+  "peerDependenciesMeta": {
+    "@tanstack/react-query": {
+      "optional": true
+    },
+    "react": {
+      "optional": true
+    }
+  },
   "devDependencies": {
     "@baydar/config": "workspace:*",
+    "@tanstack/react-query": "^5.59.15",
     "@types/jest": "^29.5.12",
+    "@types/react": "~19.1.10",
     "jest": "^29.7.0",
+    "react": "19.1.0",
     "ts-jest": "^29.2.5",
     "typescript": "~5.9.2"
   }

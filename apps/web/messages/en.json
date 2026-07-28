@@ -202,9 +202,6 @@
     "empty": {
       "feed": "Start by publishing your first post, or connect with people to see updates here."
     },
-    "emptyTitle": "Your feed is quiet…",
-    "emptyDesc": "Start a post, or connect with new people to see their posts here.",
-    "welcome": "Welcome {name} — your account is ready.",
     "onboardingDoneTitle": "Welcome {name} — your profile is ready.",
     "onboardingDoneBody": "You can start posting, connect with people, or explore roles that match your experience.",
     "loadMore": "Load more",
@@ -213,24 +210,17 @@
     "errorBody": "We could not load your feed. Try again.",
     "retry": "Retry feed",
     "rail": {
-      "followers": "Profile followers",
-      "connections": "Connections",
-      "quickAccess": "Quick access",
-      "groups": "My groups",
-      "events": "Events",
       "pymk": "People you may know",
       "pymkAll": "See all",
       "pymkReason": "Suggested for you",
       "pymkFailed": "Could not load suggestions.",
       "jobs": "Suggested jobs",
-      "jobsComingSoon": "Coming soon — we'll suggest jobs that match your experience.",
       "jobsEmpty": "Browse open roles →",
       "jobsFailed": "Could not load jobs.",
       "connect": "Connect"
     }
   },
   "composer": {
-    "title": "What's on your mind?",
     "placeholder": "Start a post…",
     "audienceHint": "Posting publicly",
     "submit": "Post",
@@ -261,13 +251,10 @@
     "reposted": "Reposted",
     "save": "Save",
     "saved": "Saved",
-    "comments": "Comments",
-    "reposts": "Reposts",
     "commentsCount": "{count, number} comments",
     "repostsCount": "{count, number} reposts",
     "publicAudience": "Public post",
     "moreOptions": "Options",
-    "authorLabel": "View profile",
     "commentPlaceholder": "Add a comment…",
     "commentSubmit": "Reply",
     "commentError": "Could not post comment.",
@@ -355,7 +342,6 @@
     "experience": "Experience",
     "education": "Education",
     "skills": "Skills",
-    "notFound": "Profile not found.",
     "edit": "Edit profile",
     "editTitle": "Edit profile",
     "viewPublic": "View public profile",
@@ -391,9 +377,6 @@
     "endorseSignIn": "Sign in to endorse skills.",
     "posts": "Activity",
     "postsEmpty": "No posts yet.",
-    "endorseCountLabel": "{count, number} endorsements",
-    "endorseThanks": "Skill endorsed.",
-    "endorseError": "Could not endorse this skill.",
     "cvLink": "CV"
   },
   "karama": {
@@ -608,31 +591,9 @@
     }
   },
   "me": {
-    "title": "Profile",
-    "editProfile": "Edit Profile",
     "tabs": {
-      "posts": "Posts",
-      "about": "About",
       "karama": "Karama"
-    },
-    "posts": {
-      "empty": "No posts yet",
-      "emptyDesc": "Start sharing your thoughts and updates to see them here.",
-      "createPost": "Create Post"
-    },
-    "connections": {
-      "title": "Connections",
-      "subtitle": "Manage your professional network",
-      "tabs": {
-        "accepted": "Accepted",
-        "pending": "Pending"
-      },
-      "connections": {
-        "empty": "No connections yet",
-        "emptyDesc": "Start connecting with professionals to build your network"
-      }
-    },
-    "createPost": "Create Post"
+    }
   },
   "saved": {
     "title": "Saved",
@@ -856,9 +817,6 @@
     "security": {
       "title": "Security",
       "subtitle": "Review account protection and session controls before backend actions are enabled.",
-      "noticeTitle": "No fake security actions",
-      "noticeBody": "Password, session, and two-factor controls are visible as a contract, but actions are disabled until the security API exists.",
-      "disabledHint": "Saving is disabled because there are no backend-backed security changes on this screen yet.",
       "password": {
         "title": "Change password",
         "desc": "Keep your account protected with a strong password.",
@@ -890,23 +848,6 @@
         "desc": "Add an extra verification step to protect sign-in.",
         "comingSoon": "Coming soon",
         "enable": "Enable"
-      },
-      "rows": {
-        "password": {
-          "title": "Password",
-          "body": "Password changes stay in the dedicated reset flow until in-session password updates are wired.",
-          "state": "Reset flow"
-        },
-        "sessions": {
-          "title": "Active sessions",
-          "body": "Session review and revoke controls need a server session list before they can be enabled.",
-          "state": "Coming"
-        },
-        "twoFactor": {
-          "title": "Two-factor authentication",
-          "body": "Two-factor setup is planned, but not enabled for this release.",
-          "state": "Not available"
-        }
       }
     },
     "appearance": {
@@ -947,18 +888,10 @@
       "button": "Delete my account",
       "confirmTitle": "Confirm account deletion",
       "confirmBody": "Type DELETE_MY_ACCOUNT to continue.",
-      "confirmInput": "Confirmation phrase",
       "confirmButton": "Delete account",
       "cancel": "Cancel",
       "deleting": "Deleting…",
       "error": "Could not delete your account. Try again."
-    },
-    "restore": {
-      "title": "Restore account",
-      "body": "Use your original email and password during the 30-day grace period.",
-      "button": "Restore account",
-      "success": "Your account has been restored.",
-      "error": "Could not restore this account."
     }
   },
   "admin": {
@@ -1075,14 +1008,12 @@
   },
   "company": {
     "about": "About",
-    "jobs": "Jobs",
     "openJobs": "Open jobs",
     "noJobs": "No open roles right now.",
     "loadError": "Could not load this company.",
     "visitWebsite": "Visit website",
     "verified": "Verified",
-    "viewAllJobs": "View all jobs",
-    "notFound": "Company not found."
+    "viewAllJobs": "View all jobs"
   },
   "employer": {
     "title": "Employer workspace",
