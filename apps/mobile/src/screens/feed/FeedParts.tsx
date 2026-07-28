@@ -140,6 +140,3 @@ export function ProfileSummary({ profile }: { profile: Profile }): JSX.Element {
     </Surface>
   );
 }
-
-// expo-router colocation: not a screen.
-export default (): null => null;

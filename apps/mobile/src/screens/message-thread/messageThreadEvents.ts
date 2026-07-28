@@ -80,6 +80,3 @@ export function createOptimisticMessage({
     deletedAt: null,
   };
 }
-
-// expo-router colocation: not a screen.
-export default (): null => null;

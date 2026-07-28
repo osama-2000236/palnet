@@ -70,6 +70,3 @@ export function ProfileHero({
     </Surface>
   );
 }
-
-// expo-router colocation: not a screen.
-export default (): null => null;

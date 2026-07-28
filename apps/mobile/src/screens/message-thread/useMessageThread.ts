@@ -290,6 +290,3 @@ export function useMessageThread(roomId: string | undefined) {
     closeActions,
   };
 }
-
-// expo-router colocation: not a screen.
-export default (): null => null;

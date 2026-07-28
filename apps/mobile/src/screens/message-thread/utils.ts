@@ -89,6 +89,3 @@ export function isSameDay(a: string, b: string): boolean {
     da.getDate() === db.getDate()
   );
 }
-
-// expo-router colocation: not a screen.
-export default (): null => null;

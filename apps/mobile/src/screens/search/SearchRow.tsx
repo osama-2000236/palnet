@@ -154,6 +154,3 @@ function CompanyRow({ item }: { item: SearchCompanyHit }): JSX.Element {
     />
   );
 }
-
-// expo-router colocation: not a screen.
-export default (): null => null;

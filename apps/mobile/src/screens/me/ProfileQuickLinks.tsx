@@ -61,6 +61,3 @@ export function ProfileQuickLinks(): JSX.Element {
     </Surface>
   );
 }
-
-// expo-router colocation: not a screen.
-export default (): null => null;
