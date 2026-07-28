@@ -69,7 +69,7 @@ async function refresh(): Promise<string | null> {
   return accessToken;
 }
 
-const client = createApiClient({
+export const apiClient = createApiClient({
   baseUrl: BASE,
   // `Headers` rather than the plain record the shared client hands over: that
   // is what the browser's fetch wants, and what the suite asserts on.
@@ -79,4 +79,4 @@ const client = createApiClient({
   init: { credentials: "include" },
 });
 
-export const { apiFetch, apiCall, apiFetchPage, getValidAccessToken } = client;
+export const { apiFetch, apiCall, apiFetchPage, getValidAccessToken } = apiClient;

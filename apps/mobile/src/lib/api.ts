@@ -43,7 +43,7 @@ function bustCache(path: string): string {
   return `${url.pathname}${url.search}`;
 }
 
-const client = createApiClient({
+export const apiClient = createApiClient({
   baseUrl: API_BASE,
   fetch: async (url, init) => {
     const headers = new Headers(init.headers);
@@ -75,7 +75,7 @@ async function refresh(): Promise<string | null> {
   }
 
   try {
-    const next = await client.apiFetch("/auth/refresh", AuthSession, {
+    const next = await apiClient.apiFetch("/auth/refresh", AuthSession, {
       method: "POST",
       body: { refreshToken, deviceId: await getDeviceId() },
       skipAuth: true,
@@ -89,4 +89,4 @@ async function refresh(): Promise<string | null> {
   }
 }
 
-export const { apiFetch, apiCall, apiFetchPage, getValidAccessToken } = client;
+export const { apiFetch, apiCall, apiFetchPage, getValidAccessToken } = apiClient;
