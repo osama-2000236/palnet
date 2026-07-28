@@ -6,6 +6,7 @@ export * from "./format";
 export * from "./user-agent";
 export * from "./palestine";
 export * from "./profile-completion";
+export * from "./sse-retry";
 export * from "./schemas/auth";
 export * from "./schemas/profile";
 export * from "./schemas/connection";

@@ -17,7 +17,7 @@ import { apiFetch, ApiRequestError } from "@/lib/api";
 import { nextNotificationBadge } from "@/lib/notification-badge";
 import { cachedProfileStatus, fetchProfileStatus } from "@/lib/profile-state";
 import { registerForPushAsync } from "@/lib/push";
-import { clearSession, getAccessToken, readSession } from "@/lib/session";
+import { clearSession, readSession } from "@/lib/session";
 import { subscribeSse } from "@/lib/sse";
 import {
   HIDDEN_APP_TAB_ROUTES,
@@ -111,6 +111,16 @@ export default function AppTabsLayout(): JSX.Element {
 
   const unsubscribeRef = useRef<(() => void) | undefined>(undefined);
 
+  const refreshBadge = useCallback(async (): Promise<void> => {
+    try {
+      const out = await apiFetch("/notifications/unread-count", UnreadCountEnvelope);
+      setNotificationBadge(out.count);
+    } catch {
+      // A stale badge is better than a crashed shell; the next event or the
+      // next reconnect corrects it.
+    }
+  }, []);
+
   useEffect(() => {
     if (!isConnected || gateState !== "ready" || pathname.includes("/onboarding")) {
       // Clean up if we're disconnecting or not ready
@@ -119,39 +129,37 @@ export default function AppTabsLayout(): JSX.Element {
       return;
     }
 
-    void (async () => {
-      let token = await getAccessToken();
-      if (!token) return;
+    void refreshBadge();
 
-      try {
-        const out = await apiFetch("/notifications/unread-count", UnreadCountEnvelope, { token });
-        setNotificationBadge(out.count);
-        token = (await getAccessToken()) ?? token;
-      } catch {
-        token = await getAccessToken();
-        if (!token) return;
-      }
+    // Clean up any existing subscription first
+    unsubscribeRef.current?.();
 
-      // Clean up any existing subscription first
-      unsubscribeRef.current?.();
-
-      // Set up new subscription
-      unsubscribeRef.current = subscribeSse({
-        path: "/notifications/stream",
-        token,
-        schema: WsNotificationEvent,
-        onEvent: (event) => {
-          setNotificationBadge((count) => nextNotificationBadge(count, event));
-        },
-      });
-    })();
+    // `subscribeSse` owns reconnection and mints a fresh stream token per
+    // attempt, so a drop no longer kills the badge until this effect happens to
+    // re-run. No token is threaded in: the mint resolves one per attempt, which
+    // is the whole point — a captured 15-minute access token is exactly what
+    // made the first reconnect after a long background 401.
+    unsubscribeRef.current = subscribeSse({
+      scope: "notifications",
+      schema: WsNotificationEvent,
+      onEvent: (event) => {
+        setNotificationBadge((count) => nextNotificationBadge(count, event));
+      },
+      // Events that fired while the stream was down are gone, so the count is
+      // only trustworthy after a fresh read. Same reasoning as web's rooms
+      // refetch in apps/web/src/app/[locale]/(app)/layout.tsx.
+      onOpen: () => void refreshBadge(),
+      // No token could be minted at all — the session is probably gone. Let the
+      // gate decide whether that means a redirect to login.
+      onFailed: () => void verifyGate(),
+    });
 
     // Cleanup function for when component unmounts or dependencies change
     return () => {
       unsubscribeRef.current?.();
       unsubscribeRef.current = undefined;
     };
-  }, [gateState, isConnected, pathname]);
+  }, [gateState, isConnected, pathname, refreshBadge, verifyGate]);
 
   if (gateState === "checking") {
     return (
