@@ -82,9 +82,9 @@ export function useMessageThread(roomId: string | undefined) {
     void refresh().then(() => {
       void apiCall(`/messaging/rooms/${roomId}/read`, { method: "POST", token }).catch(() => {});
     });
+    let opened = false;
     return subscribeSse({
-      path: "/messaging/stream",
-      token,
+      scope: "messaging",
       schema: WsChatEvent,
       onEvent: (event) =>
         applyThreadEvent({
@@ -96,6 +96,13 @@ export function useMessageThread(roomId: string | undefined) {
           setRoom,
           setTyping,
         }),
+      // Messages sent while the stream was down never arrive as events — the
+      // thread is only complete after a fresh read. Skipped on the first open,
+      // where the `refresh()` above has just run.
+      onOpen: () => {
+        if (opened) void refresh();
+        opened = true;
+      },
     });
   }, [token, roomId, refresh, isConnected, viewerId, setTyping]);
 
