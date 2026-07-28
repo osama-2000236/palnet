@@ -27,7 +27,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  NODE_VERSION: "20"
+  NODE_VERSION: "24"
   PNPM_VERSION: "9.12.0"
   # Dummy values so Zod env validation passes during build steps — real secrets live in Render/Vercel.
   DATABASE_URL: "postgresql://ci:ci@localhost:5432/baydar_ci?schema=public"
