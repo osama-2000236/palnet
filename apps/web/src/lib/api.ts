@@ -76,6 +76,7 @@ export const apiClient = createApiClient({
   fetch: (url, init) => fetch(url, { ...init, headers: new Headers(init.headers) } as RequestInit),
   getToken: currentToken,
   refresh,
+  hasSession: () => readSession() !== null,
   init: { credentials: "include" },
 });
 
