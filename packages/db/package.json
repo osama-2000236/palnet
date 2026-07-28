@@ -33,7 +33,7 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@prisma/client": "^5.22.0"
+    "@prisma/client": "^6.19.1"
   },
   "devDependencies": {
     "@baydar/config": "workspace:*",
@@ -42,7 +42,7 @@
     "@types/node": "^22.7.5",
     "bcrypt": "^5.1.1",
     "dotenv": "16.4.7",
-    "prisma": "^5.22.0",
+    "prisma": "^6.19.1",
     "tsx": "^4.19.0",
     "typescript": "~5.9.2",
     "eslint": "^9.39.5"
