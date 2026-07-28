@@ -13,7 +13,7 @@
     "clean": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\"",
     "lint": "eslint .",
     "type-check": "tsc --noEmit",
-    "test": "tsc -p tsconfig.json && node ../../apps/web/node_modules/jest/bin/jest.js --config jest.config.cjs --runInBand"
+    "test": "tsc -p tsconfig.json && jest --config jest.config.cjs --runInBand"
   },
   "dependencies": {
     "@baydar/ui-tokens": "workspace:*",
@@ -31,6 +31,7 @@
     "jest-environment-jsdom": "^29.7.0",
     "react": "19.1.0",
     "react-dom": "19.1.0",
-    "typescript": "~5.9.2"
+    "typescript": "~5.9.2",
+    "eslint": "^9.39.5"
   }
 }

@@ -2,9 +2,9 @@
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
 
+import type { AppShellProps, AppShellRoute } from "./AppShell.types";
 import { AppShellNav } from "./AppShellNav";
 import { AppShellSearch } from "./AppShellSearch";
-import type { AppShellProps, AppShellRoute } from "./AppShell.types";
 import { Icon } from "./Icon";
 
 export type { AppShellLabels, AppShellProps, AppShellRoute } from "./AppShell.types";

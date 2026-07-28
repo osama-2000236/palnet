@@ -10,8 +10,8 @@ import {
   type ReactNode,
 } from "react";
 
-import { Icon } from "./Icon";
 import { cx } from "./cx";
+import { Icon } from "./Icon";
 
 export type ToastKind = "info" | "success" | "error";
 

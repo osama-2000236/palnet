@@ -2,10 +2,10 @@
 
 import { useEffect, useId, useRef, type KeyboardEvent, type ReactNode } from "react";
 
+import type { AppShellLabels } from "./AppShell.types";
 import { Avatar, type AvatarUser } from "./Avatar";
 import { cx } from "./cx";
 import { Icon } from "./Icon";
-import type { AppShellLabels } from "./AppShell.types";
 
 interface AppShellProfileMenuProps {
   active: boolean;

@@ -60,6 +60,7 @@
     "pino-pretty": "^11.3.0",
     "supertest": "^7.0.0",
     "ts-jest": "^29.2.5",
-    "typescript": "~5.9.2"
+    "typescript": "~5.9.2",
+    "eslint": "^9.39.5"
   }
 }
