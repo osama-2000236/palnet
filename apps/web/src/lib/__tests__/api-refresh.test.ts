@@ -112,12 +112,19 @@ describe("api refresh handling", () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
-  it("refreshes apiFetchPage after a reload leaves only the blank stored access token", async () => {
+  it("refreshes before the first request when a reload leaves only the blank stored token", async () => {
+    // The access token lives in memory only — `writeSession` deliberately blanks
+    // the stored copy — so after a reload there is a session but no usable
+    // token. Sending anyway is a guaranteed 401, a refresh, and a replay.
+    //
+    // Measured on a real cold `/feed` before this: 17 API requests across five
+    // dependent waves, with `/feed`, `/profiles/me`, `/connections/suggestions`
+    // and `/jobs` each fired, 401'd, and fired again. Refreshing first is one
+    // round trip instead of three, for every query on the page.
     writeSession(makeSession("old-access"));
     clearAccessToken();
     const fetchMock = jest.mocked(global.fetch);
     fetchMock
-      .mockResolvedValueOnce(unauthorized())
       .mockResolvedValueOnce(jsonResponse({ data: makeSession("new-access") }))
       .mockResolvedValueOnce(
         jsonResponse({
@@ -131,12 +138,23 @@ describe("api refresh handling", () => {
       meta: { nextCursor: null, hasMore: false },
     });
 
-    expect(fetchMock).toHaveBeenCalledTimes(3);
-    expect((fetchMock.mock.calls[0]?.[1]?.headers as Headers).get("Authorization")).toBeNull();
-    expect(fetchMock.mock.calls[1]?.[0]).toBe(`${apiBase}/auth/refresh`);
-    expect((fetchMock.mock.calls[2]?.[1]?.headers as Headers).get("Authorization")).toBe(
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(fetchMock.mock.calls[0]?.[0]).toBe(`${apiBase}/auth/refresh`);
+    expect((fetchMock.mock.calls[1]?.[1]?.headers as Headers).get("Authorization")).toBe(
       "Bearer new-access",
     );
+  });
+
+  it("does not refresh for a visitor with no session at all", async () => {
+    // The guard on the optimisation above: a logged-out visitor on a public
+    // page must still send unauthenticated, not trigger a refresh per request.
+    const fetchMock = jest.mocked(global.fetch);
+    fetchMock.mockResolvedValueOnce(jsonResponse({ data: { ok: true } }));
+
+    await expect(apiFetch("/jobs/public/abc", OkPayload)).resolves.toEqual({ ok: true });
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(fetchMock.mock.calls[0]?.[0]).toBe(`${apiBase}/jobs/public/abc`);
   });
 
   it("refreshes apiCall once after a 401 and retries the mutation", async () => {

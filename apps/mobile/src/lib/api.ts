@@ -61,6 +61,7 @@ export const apiClient = createApiClient({
   },
   getToken: getAccessToken,
   refresh,
+  hasSession: async () => (await readSession()) !== null,
   headers: MOBILE_HEADERS,
   rewriteGetPath: bustCache,
 });

@@ -88,6 +88,19 @@ export interface ApiClientAdapter {
    * that means (clearing the session, redirecting to login).
    */
   refresh(): Promise<string | null>;
+  /**
+   * Whether a session exists at all, regardless of whether its access token is
+   * still usable. Cheap and local — no network.
+   *
+   * This is what lets the client tell "signed in, but the in-memory access
+   * token did not survive the page load" from "not signed in". The first is
+   * worth refreshing for before sending anything; the second must not be, or a
+   * logged-out visitor triggers a pointless refresh on every public request.
+   *
+   * Omit it and the client keeps the old behaviour of sending first and
+   * refreshing on the 401.
+   */
+  hasSession?(): boolean | Promise<boolean>;
   /** Headers added to every request. */
   headers?: Record<string, string>;
   /** Extra `fetch` init on every request (web needs `credentials: "include"`). */
@@ -143,7 +156,23 @@ export function createApiClient(adapter: ApiClientAdapter): ApiClient {
 
   const tokenFor = async (opts: ApiFetchOptions): Promise<string | null> => {
     if (opts.skipAuth) return null;
-    return usable(await adapter.getToken()) ?? usable(opts.token);
+    const token = usable(await adapter.getToken()) ?? usable(opts.token);
+    if (token) return token;
+
+    // Signed in, but the access token did not survive the page load — it lives
+    // in memory only, and `session.ts` deliberately blanks the stored copy.
+    // Sending anyway means a guaranteed 401 followed by a refresh and a replay,
+    // so on a cold load every query on the page ran twice: measured on `/feed`,
+    // 17 requests across five dependent waves, with `/feed`,
+    // `/connections/suggestions`, `/jobs` and `/profiles/me` all fired, 401'd,
+    // and fired again. Refreshing first collapses that.
+    //
+    // Guarded by `hasSession` so a logged-out visitor still sends
+    // unauthenticated rather than triggering a refresh on every public request.
+    if (adapter.hasSession && (await adapter.hasSession())) {
+      return usable(await refreshOnce());
+    }
+    return null;
   };
 
   const send = async (

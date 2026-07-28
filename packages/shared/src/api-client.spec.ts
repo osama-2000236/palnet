@@ -182,6 +182,31 @@ describe("auth", () => {
     expect(refresh).not.toHaveBeenCalled();
   });
 
+  it("refreshes before sending when a session exists but its token did not survive", async () => {
+    // The access token lives in memory only. On a cold page load there is a
+    // session and no usable token, so sending first is a guaranteed 401, a
+    // refresh, and a replay — measured on a real `/feed`, that made every query
+    // on the page run twice.
+    const { client, calls, refresh } = harness({ getToken: () => null, hasSession: () => true });
+    await client.apiFetch("/feed", Payload);
+
+    expect(refresh).toHaveBeenCalledTimes(1);
+    expect(calls).toHaveLength(1);
+    expect(calls[0]!.headers.Authorization).toBe("Bearer refreshed-token");
+  });
+
+  it("never calls refresh for a visitor with no session", async () => {
+    // The guard on the optimisation above, and it is load-bearing on mobile
+    // rather than web: web's `refresh()` returns null without a network call,
+    // but mobile's clears the session and routes to /login. Without this a
+    // logged-out user on a public screen is bounced to login by any request.
+    const { client, calls, refresh } = harness({ getToken: () => null, hasSession: () => false });
+    await client.apiFetch("/jobs/public/abc", Payload);
+
+    expect(refresh).not.toHaveBeenCalled();
+    expect(calls[0]!.headers.Authorization).toBeUndefined();
+  });
+
   it("getValidAccessToken refreshes only when nothing is stored", async () => {
     const stored = harness();
     await expect(stored.client.getValidAccessToken()).resolves.toBe("stored-token");
