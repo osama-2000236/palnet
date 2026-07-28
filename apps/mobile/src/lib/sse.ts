@@ -7,8 +7,7 @@ import {
 import EventSource, { type EventSourceListener } from "react-native-sse";
 import type { z } from "zod";
 
-import { API_BASE, apiFetch } from "./api";
-import { getAccessToken } from "./session";
+import { API_BASE, apiFetch, getValidAccessToken } from "./api";
 
 const CUSTOM_EVENT_TYPES = [
   "message.new",
@@ -72,7 +71,7 @@ export function subscribeSse<T extends z.ZodTypeAny>({
 }: SubscribeArgs<T>): () => void {
   return openStreamLoop({
     mintToken: async () => {
-      const accessToken = await getAccessToken();
+      const accessToken = await getValidAccessToken();
       if (!accessToken) return null;
       const minted = await apiFetch("/auth/stream-token", StreamTokenResponse, {
         method: "POST",

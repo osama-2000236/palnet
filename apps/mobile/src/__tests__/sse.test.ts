@@ -34,10 +34,9 @@ const mockGetAccessToken = jest.fn();
 jest.mock("@/lib/api", () => ({
   API_BASE: "https://api.test/api/v1",
   apiFetch: (...args: unknown[]) => mockApiFetch(...args),
-}));
-
-jest.mock("@/lib/session", () => ({
-  getAccessToken: () => mockGetAccessToken(),
+  // Not the raw stored token: the mint refreshes first if there is none, so a
+  // reconnect after a long background does not fail on an expired access token.
+  getValidAccessToken: () => mockGetAccessToken(),
 }));
 
 jest.mock("react-native-sse", () => ({
