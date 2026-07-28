@@ -8,7 +8,7 @@ import { FX_TO_USD } from "./currency";
 
 // Feed must return USD-relative rates: { "rates": { "ILS": 3.6, ... } }.
 // open.er-api.com/v6/latest/USD and exchangerate.host both match this shape.
-const FeedSchema = z.object({ rates: z.record(z.number().positive()) });
+const FeedSchema = z.object({ rates: z.record(z.string(), z.number().positive()) });
 
 const REFRESH_INTERVAL_MS = 6 * 60 * 60 * 1000;
 

@@ -35,7 +35,7 @@ import { CompanyRoleGuard, RequireCompanyRole } from "../companies/guards/compan
 
 import { BillingService } from "./billing.service";
 
-const HyperPayWebhookBody = z.record(z.unknown());
+const HyperPayWebhookBody = z.record(z.string(), z.unknown());
 type HyperPayWebhookBody = z.infer<typeof HyperPayWebhookBody>;
 
 @ApiTags("billing")

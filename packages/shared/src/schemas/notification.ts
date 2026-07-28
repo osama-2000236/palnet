@@ -11,7 +11,7 @@ export const Notification = z.object({
   connectionId: z.string().cuid().nullable(),
   messageId: z.string().cuid().nullable(),
   jobId: z.string().cuid().nullable(),
-  data: z.record(z.unknown()).nullable(),
+  data: z.record(z.string(), z.unknown()).nullable(),
   readAt: z.string().datetime().nullable(),
   createdAt: z.string().datetime(),
   actor: z
