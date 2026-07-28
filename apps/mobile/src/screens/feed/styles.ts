@@ -181,6 +181,3 @@ export function useFeedStyles(): FeedStyles {
   const c = useThemeTokens().color;
   return useMemo(() => makeFeedStyles(c), [c]);
 }
-
-// expo-router colocation: not a screen.
-export default (): null => null;

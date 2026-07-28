@@ -149,6 +149,3 @@ export function useKaramaStyles(): KaramaStylesSheet {
   const c = useThemeTokens().color;
   return useMemo(() => makeKaramaStyles(c), [c]);
 }
-
-// expo-router colocation: not a screen.
-export default (): null => null;

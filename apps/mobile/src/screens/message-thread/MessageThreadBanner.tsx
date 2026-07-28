@@ -68,6 +68,3 @@ export function ThreadErrorBanner({ error }: { error: string | null }): JSX.Elem
     </View>
   );
 }
-
-// expo-router colocation: not a screen.
-export default (): null => null;

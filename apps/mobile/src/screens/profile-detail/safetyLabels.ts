@@ -40,6 +40,3 @@ export function reportSheetLabels(t: TFunction): ReportSheetLabels {
     },
   };
 }
-
-// expo-router colocation: not a screen.
-export default (): null => null;

@@ -15,6 +15,3 @@ export function Section({ title, children }: { title: string; children: ReactNod
     </Surface>
   );
 }
-
-// expo-router colocation: not a screen.
-export default (): null => null;

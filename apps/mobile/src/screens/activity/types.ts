@@ -22,6 +22,3 @@ export interface ActivityTask {
   cta: string;
   tone?: "default" | "warning";
 }
-
-// expo-router colocation: not a screen.
-export default (): null => null;
