@@ -82,6 +82,28 @@ export function Input({
   );
 }
 
+/**
+ * Visible label above a control that is not an `Input` — the city picker.
+ * It was the only field in the basics card with no label, so a filled picker
+ * read as a stray value ("رام الله") with nothing naming it. Web wraps its
+ * twin in the same shape (`<Field label={tOn("location")}>`).
+ */
+export function LabeledField({
+  label,
+  children,
+}: {
+  label: string;
+  children: ReactNode;
+}): JSX.Element {
+  const styles = useStyles();
+  return (
+    <View style={styles.labeledField}>
+      <Text style={styles.fieldLabel}>{label}</Text>
+      {children}
+    </View>
+  );
+}
+
 export function parseDateInput(value: string): string | null {
   const timestamp = Date.parse(value);
   if (Number.isNaN(timestamp)) return null;

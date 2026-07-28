@@ -62,7 +62,7 @@
     "registerSubtitle": "Start with a clear, trusted account. We will help you complete your profile next.",
     "email": "Email",
     "password": "Password",
-    "passwordHint": "Use at least 8 characters.",
+    "passwordHint": "Use at least 10 characters with an uppercase letter, a lowercase letter, and a digit.",
     "firstName": "First name",
     "lastName": "Last name",
     "acceptTerms": "I agree to the Terms and Privacy Policy",
@@ -98,10 +98,11 @@
       "required": "This field is required.",
       "email": "Enter a valid email address.",
       "nameMax": "That name is too long.",
-      "passwordMin": "Password must be at least 8 characters.",
-      "passwordLetter": "Add at least one letter.",
+      "passwordMin": "Password must be at least 10 characters.",
       "passwordDigit": "Add at least one number.",
-      "terms": "You must accept the terms to continue."
+      "terms": "You must accept the terms to continue.",
+      "passwordLower": "Add at least one lowercase letter.",
+      "passwordUpper": "Add at least one uppercase letter."
     },
     "verify": {
       "kicker": "Email verification",
@@ -136,7 +137,11 @@
         "passwordUpper": "Add at least one uppercase letter.",
         "passwordDigit": "Add at least one number."
       }
-    }
+    },
+    "termsLink": "the Terms",
+    "privacyLink": "the Privacy Policy",
+    "acceptTermsPrefix": "I agree to",
+    "acceptTermsSeparator": "and"
   },
   "onboarding": {
     "title": "Complete your profile",
@@ -786,25 +791,41 @@
     },
     "security": {
       "title": "Security",
-      "subtitle": "Review account protection and session controls before backend actions are enabled.",
-      "noticeBody": "Password, session, and two-factor controls are visible as a contract, but actions are disabled until the security API exists.",
-      "disabledHint": "Saving is disabled because there are no backend-backed security changes on this screen yet.",
-      "rows": {
-        "password": {
-          "title": "Password",
-          "body": "Password changes stay in the dedicated reset flow until in-session password updates are wired.",
-          "state": "Reset flow"
-        },
-        "sessions": {
-          "title": "Active sessions",
-          "body": "Session review and revoke controls need a server session list before they can be enabled.",
-          "state": "Coming"
-        },
-        "twoFactor": {
-          "title": "Two-factor authentication",
-          "body": "Two-factor setup is planned, but not enabled for this release.",
-          "state": "Not available"
-        }
+      "subtitle": "Review your account protection and the devices signed in to it.",
+      "password": {
+        "title": "Change password",
+        "desc": "Keep your account safe with a strong password.",
+        "current": "Current password",
+        "new": "New password",
+        "confirm": "Confirm new password",
+        "requirements": "Use at least 10 characters with an uppercase letter, a lowercase letter, and a digit.",
+        "tooShort": "Use at least 10 characters with an uppercase letter, a lowercase letter, and a digit.",
+        "mismatch": "The new passwords do not match.",
+        "sameAsOld": "Choose a password different from the current one.",
+        "savedToast": "Password updated.",
+        "button": "Update password",
+        "show": "Show",
+        "hide": "Hide",
+        "showPassword": "Show password",
+        "hidePassword": "Hide password"
+      },
+      "sessions": {
+        "title": "Active sessions",
+        "desc": "Review the devices signed in to your account.",
+        "signedOutOthersToast": "Other sessions signed out.",
+        "revokedToast": "Session signed out.",
+        "signOutOthers": "Sign out other devices",
+        "unknownDevice": "Unknown device",
+        "thisDevice": "This device",
+        "lastActive": "Last active {{when}}",
+        "signOutThis": "Sign out this device",
+        "signOut": "Sign out",
+        "empty": "No active sessions yet."
+      },
+      "twoFactor": {
+        "title": "Two-factor authentication",
+        "desc": "Add an extra verification step to protect sign-in.",
+        "comingSoon": "Coming soon"
       }
     },
     "appearance": {
@@ -880,7 +901,7 @@
   "employer": {
     "title": "Employer",
     "subtitle": "Manage company pages, jobs, and applicants.",
-    "empty": "No companies yet.",
+    "empty": "You do not belong to any company yet.",
     "verified": "Verified",
     "viewerRole": {
       "OWNER": "Owner",
@@ -913,6 +934,23 @@
       "salaryCurrency": "Currency",
       "submit": "Publish",
       "submitting": "Publishing…"
+    },
+    "emptyDesc": "Create a company page to post jobs and manage applicants.",
+    "createCompany": "Create a company page",
+    "newCompany": {
+      "title": "New company page",
+      "subtitle": "Introduce your company so candidates recognise it."
+    },
+    "form": {
+      "name": "Company name",
+      "slug": "Handle",
+      "slugHelp": "Lowercase letters, digits and hyphens. It appears in the link.",
+      "tagline": "Short description",
+      "website": "Website",
+      "industry": "Industry",
+      "city": "City",
+      "submit": "Save",
+      "submitting": "Saving…"
     }
   },
   "premium": {
@@ -968,7 +1006,7 @@
     },
     "cancel": {
       "action": "Stop renewal",
-      "confirm": "Stop the renewal? Premium stays active to the end of the period you paid for."
+      "confirm": "Stop renewing the membership? It stays active until the end of the paid period."
     }
   },
   "billing": {

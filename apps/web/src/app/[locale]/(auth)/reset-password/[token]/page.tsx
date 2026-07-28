@@ -6,6 +6,8 @@ import { useParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 
+import { AuthShell } from "../../_components/AuthShell";
+
 import { ApiRequestError, resetPasswordAction } from "@/lib/auth-actions";
 
 export default function ResetPasswordPage(): JSX.Element {
@@ -44,11 +46,8 @@ export default function ResetPasswordPage(): JSX.Element {
   }
 
   return (
-    <main className="mx-auto w-full max-w-md px-6 py-12">
+    <AuthShell kicker={t("reset.kicker")} title={t("reset.title")} subtitle={t("reset.body")}>
       <form onSubmit={onSubmit} className="flex flex-col gap-4" noValidate>
-        <h1 className="text-ink text-3xl font-bold">{t("reset.title")}</h1>
-        <p className="text-ink-muted text-sm">{t("reset.body")}</p>
-
         <label className="flex flex-col gap-1">
           <span className="text-ink-muted text-sm">{t("reset.newPassword")}</span>
           <Input
@@ -83,6 +82,6 @@ export default function ResetPasswordPage(): JSX.Element {
           {t("reset.backToLogin")}
         </Link>
       </form>
-    </main>
+    </AuthShell>
   );
 }

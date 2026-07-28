@@ -1,3 +1,4 @@
+import { formatDate } from "@baydar/shared";
 import { Icon } from "@baydar/ui-web";
 import Link from "next/link";
 
@@ -135,7 +136,10 @@ export function LegalPage({ kind, locale }: { kind: LegalKind; locale: string })
         <header className="border-line-soft border-b pb-4">
           <p className="text-brand-700 text-sm font-semibold">{shell.eyebrow}</p>
           <h1 className="text-ink mt-2 text-3xl font-bold">{copy.title}</h1>
-          <p className="text-ink-muted mt-1 text-sm">{shell.meta(UPDATED)}</p>
+          {/* Formatted, not the raw ISO string: `2026-05-15` rendered Latin
+              digits inside an Arabic page and bidi re-ordered it to read
+              "15-05-2026", i.e. the wrong date. */}
+          <p className="text-ink-muted mt-1 text-sm">{shell.meta(formatDate(UPDATED, locale))}</p>
         </header>
         <section className="flex flex-col gap-4">
           {copy.body.map((paragraph) => (

@@ -326,6 +326,7 @@ async function main() {
     ["profile-public", `in/${handle}`],
     ["company", `company/${companySlug}`],
     ["employer", "employer"],
+    ["employer-new", "employer/new"],
     employerSlug && ["employer-detail", `employer/${employerSlug}`],
     employerSlug && ["employer-billing", `employer/${employerSlug}/billing`],
     employerSlug && ["employer-job-new", `employer/${employerSlug}/jobs/new`],

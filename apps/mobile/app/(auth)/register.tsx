@@ -32,10 +32,12 @@ const registerSchema = z.object({
     .max(60, "auth.validation.nameMax"),
   lastName: z.string().trim().min(1, "auth.validation.required").max(60, "auth.validation.nameMax"),
   email: z.string().trim().min(1, "auth.validation.required").email("auth.validation.email"),
+  // Mirrors `Password` in @baydar/shared — one policy, not a laxer client one.
   password: z
     .string()
-    .min(8, "auth.validation.passwordMin")
-    .regex(/[A-Za-z]/, "auth.validation.passwordLetter")
+    .min(10, "auth.validation.passwordMin")
+    .regex(/[a-z]/, "auth.validation.passwordLower")
+    .regex(/[A-Z]/, "auth.validation.passwordUpper")
     .regex(/\d/, "auth.validation.passwordDigit"),
   acceptTerms: z.boolean().refine((v) => v, "auth.validation.terms"),
 });

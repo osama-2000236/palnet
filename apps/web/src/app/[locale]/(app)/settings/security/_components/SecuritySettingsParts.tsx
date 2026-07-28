@@ -20,6 +20,7 @@ export function PasswordField({
   helper?: string;
   required?: boolean;
 }): JSX.Element {
+  const t = useTranslations("settings.security.password");
   const [reveal, setReveal] = useState(false);
   return (
     <label className="flex flex-col gap-1">
@@ -40,10 +41,10 @@ export function PasswordField({
           variant="ghost"
           size="sm"
           onClick={() => setReveal((r) => !r)}
-          aria-label={reveal ? "Hide password" : "Show password"}
+          aria-label={reveal ? t("hidePassword") : t("showPassword")}
           className="absolute inset-y-1 end-1 h-auto px-2 text-xs"
         >
-          {reveal ? "Hide" : "Show"}
+          {reveal ? t("hide") : t("show")}
         </Button>
       </span>
       {helper ? <span className="text-ink-muted text-xs">{helper}</span> : null}

@@ -8,20 +8,20 @@
 //   • Submit button uses the standard <Button loading> spinner instead of
 //     disabled-opacity-60.
 //
-// The terms checkbox stays raw for now — the Checkbox atom from the UI Kit
-// will land in the next sweep. Marking it explicitly so the future PR is
-// easy to find.
-
 import { RegisterBody } from "@baydar/shared";
 import { Alert, Button, Checkbox, Input } from "@baydar/ui-web";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
+
+import { AuthShell, AuthSwitch } from "../_components/AuthShell";
 
 import { ApiRequestError, registerAction } from "@/lib/auth-actions";
 
 export default function RegisterPage(): JSX.Element {
   const t = useTranslations("auth");
+  const locale = useLocale();
   const router = useRouter();
   const [state, setState] = useState({
     firstName: "",
@@ -70,10 +70,15 @@ export default function RegisterPage(): JSX.Element {
   }
 
   return (
-    <main className="mx-auto w-full max-w-md px-6 py-12">
+    <AuthShell
+      kicker={t("registerKicker")}
+      title={t("createProfile")}
+      subtitle={t("registerSubtitle")}
+      footer={
+        <AuthSwitch prompt={t("haveAccount")} href={`/${locale}/login`} action={t("login")} />
+      }
+    >
       <form onSubmit={onSubmit} className="flex flex-col gap-4" noValidate>
-        <h1 className="text-ink text-3xl font-bold">{t("register")}</h1>
-
         <label className="flex flex-col gap-1">
           <span className="text-ink-muted text-sm">{t("firstName")}</span>
           <Input
@@ -120,17 +125,36 @@ export default function RegisterPage(): JSX.Element {
             onChange={(e) => setState({ ...state, password: e.target.value })}
             required
             autoComplete="new-password"
-            minLength={8}
+            minLength={10}
             dir="ltr"
             helper={t("passwordHint")}
           />
         </label>
 
+        {/* The label used to be plain text: the user had to accept two documents
+            they had no way to open. Both pages already existed at /legal/*. */}
         <Checkbox
           checked={state.acceptTerms}
           onCheckedChange={(checked) => setState({ ...state, acceptTerms: checked })}
           required
-          label={t("acceptTerms")}
+          label={
+            <span>
+              {t("acceptTermsPrefix")}{" "}
+              <Link
+                href={`/${locale}/legal/tos`}
+                className="text-brand-700 font-semibold underline"
+              >
+                {t("termsLink")}
+              </Link>{" "}
+              {t("acceptTermsSeparator")}{" "}
+              <Link
+                href={`/${locale}/legal/privacy`}
+                className="text-brand-700 font-semibold underline"
+              >
+                {t("privacyLink")}
+              </Link>
+            </span>
+          }
         />
 
         {error ? <Alert kind="danger">{error}</Alert> : null}
@@ -139,6 +163,6 @@ export default function RegisterPage(): JSX.Element {
           {t("submitRegister")}
         </Button>
       </form>
-    </main>
+    </AuthShell>
   );
 }

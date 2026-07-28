@@ -120,12 +120,16 @@ export default function NetworkRoute(): JSX.Element {
                 key={c.connectionId}
                 variant="row"
                 padding="4"
-                className="animate-enter-up hover:bg-surface-subtle flex flex-wrap items-center justify-between gap-3 transition-colors last:border-b-0"
+                // No `flex-wrap`: a long headline ("مهندسة برمجيات أولى — React و
+                // TypeScript") pushed the row action onto a second line at 390px,
+                // so one row in the list broke the rhythm of the rest. The text
+                // column truncates instead.
+                className="animate-enter-up hover:bg-surface-subtle flex items-center justify-between gap-3 transition-colors last:border-b-0"
                 style={{ animationDelay: `${staggerDelay(i)}ms` }}
               >
                 <Link
                   href={`/in/${c.user.handle}`}
-                  className="flex min-w-0 items-center gap-3 rounded-md focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+                  className="flex min-w-0 flex-1 items-center gap-3 rounded-md focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
                 >
                   <Avatar
                     user={{
@@ -138,17 +142,17 @@ export default function NetworkRoute(): JSX.Element {
                     size="md"
                   />
                   <div className="flex min-w-0 flex-col">
-                    <span className="text-ink font-semibold">
+                    <span className="text-ink truncate font-semibold">
                       {c.user.firstName} {c.user.lastName}
                     </span>
                     {c.user.headline ? (
-                      <span className="text-ink-muted text-sm">{c.user.headline}</span>
+                      <span className="text-ink-muted truncate text-sm">{c.user.headline}</span>
                     ) : null}
                   </div>
                 </Link>
 
                 {filter === "INCOMING" ? (
-                  <div className="flex gap-2">
+                  <div className="flex shrink-0 gap-2">
                     <Button
                       variant="secondary"
                       size="sm"
@@ -165,13 +169,19 @@ export default function NetworkRoute(): JSX.Element {
                     </Button>
                   </div>
                 ) : filter === "OUTGOING" ? (
-                  <Button variant="ghost" size="sm" onClick={() => void withdraw(c.connectionId)}>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="shrink-0"
+                    onClick={() => void withdraw(c.connectionId)}
+                  >
                     {t("withdraw")}
                   </Button>
                 ) : (
                   <Button
                     variant="danger-ghost"
                     size="sm"
+                    className="shrink-0"
                     onClick={() => void remove(c.connectionId)}
                   >
                     {t("removeConnection")}

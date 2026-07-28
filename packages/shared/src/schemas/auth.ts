@@ -1,10 +1,23 @@
 import { z } from "zod";
 
 // Password: min 8, at least one letter, one number. Keep rule stable across clients.
+/**
+ * The one password policy. Register, change-password and reset-password all use
+ * it.
+ *
+ * They did not. Register and change-password required 8 characters plus a letter
+ * and a digit; reset-password required 10 plus upper, lower and a digit — so the
+ * app told the same user two different rules on two screens, and the stricter one
+ * was decorative: anybody forced through it could walk straight to
+ * Settings → Security and set an 8-character password again. Unified on the
+ * stricter rule, which is the only direction that does not weaken an account.
+ */
 export const Password = z
   .string()
-  .min(8, { message: "PASSWORD_TOO_SHORT" })
-  .regex(/[A-Za-z]/, { message: "PASSWORD_NEEDS_LETTER" })
+  .min(10, { message: "PASSWORD_TOO_SHORT" })
+  .max(200, { message: "PASSWORD_TOO_LONG" })
+  .regex(/[a-z]/, { message: "PASSWORD_NEEDS_LOWERCASE" })
+  .regex(/[A-Z]/, { message: "PASSWORD_NEEDS_UPPERCASE" })
   .regex(/\d/, { message: "PASSWORD_NEEDS_DIGIT" });
 
 export const Email = z.string().email().toLowerCase().trim();
@@ -74,17 +87,9 @@ export const ForgotPasswordBody = z.object({
 });
 export type ForgotPasswordBody = z.infer<typeof ForgotPasswordBody>;
 
-export const ResetPassword = z
-  .string()
-  .min(10, { message: "PASSWORD_TOO_SHORT" })
-  .max(200, { message: "PASSWORD_TOO_LONG" })
-  .regex(/[a-z]/, { message: "PASSWORD_NEEDS_LOWERCASE" })
-  .regex(/[A-Z]/, { message: "PASSWORD_NEEDS_UPPERCASE" })
-  .regex(/\d/, { message: "PASSWORD_NEEDS_DIGIT" });
-
 export const ResetPasswordBody = z.object({
   token: z.string().length(64),
-  newPassword: ResetPassword,
+  newPassword: Password,
 });
 export type ResetPasswordBody = z.infer<typeof ResetPasswordBody>;
 

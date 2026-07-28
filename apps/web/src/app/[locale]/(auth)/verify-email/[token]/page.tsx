@@ -1,9 +1,12 @@
 "use client";
 
+import { Alert, Button } from "@baydar/ui-web";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
+
+import { AuthShell } from "../../_components/AuthShell";
 
 import { confirmVerifyEmailAction } from "@/lib/auth-actions";
 
@@ -28,18 +31,32 @@ export default function VerifyEmailPage(): JSX.Element {
   }, [params.token]);
 
   return (
-    <main className="mx-auto flex w-full max-w-md flex-col gap-4 px-6 py-12">
-      <h1 className="text-ink text-3xl font-bold">{t("verify.title")}</h1>
-      <p className="text-ink-muted text-sm">
-        {status === "loading"
+    <AuthShell
+      kicker={t("verify.kicker")}
+      title={t("verify.title")}
+      subtitle={
+        status === "loading"
           ? t("verify.loading")
           : status === "success"
             ? t("verify.success")
-            : t("verify.error")}
-      </p>
-      <Link href={`/${locale}/login`} className="text-brand-700 text-sm font-semibold">
-        {t("verify.backToLogin")}
-      </Link>
-    </main>
+            : t("verify.error")
+      }
+    >
+      <div className="flex flex-col gap-4">
+        {/* An expired link is the state most people arriving here are in. It read
+            as a grey sentence with no severity; the kit already has the right
+            treatment for both outcomes. */}
+        {status !== "loading" ? (
+          <Alert kind={status === "success" ? "success" : "danger"}>
+            {status === "success" ? t("verify.success") : t("verify.error")}
+          </Alert>
+        ) : null}
+        <Link href={`/${locale}/login`} className="block w-full">
+          <Button variant="primary" fullWidth>
+            {t("verify.backToLogin")}
+          </Button>
+        </Link>
+      </div>
+    </AuthShell>
   );
 }

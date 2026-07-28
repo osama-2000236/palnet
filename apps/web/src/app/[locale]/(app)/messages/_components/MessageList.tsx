@@ -95,9 +95,16 @@ export function MessageList({
                 <span aria-hidden="true" className="bg-line-soft h-px flex-1" />
               </li>
             ) : null}
+            {/* `flex` + justify here, not only `self-end` inside MessageBubble:
+                this wrapper is the flex child of the <ul>, so the bubble's own
+                `self-end` was scoped to a full-width block and every outgoing
+                message floated in the middle of the thread instead of hugging
+                the end. */}
             <div
               ref={index === firstUnreadIndex ? firstUnreadRef : undefined}
-              className={`group relative ${startsRun ? "mt-2 first:mt-0" : ""}`}
+              className={`group relative flex ${mine ? "justify-end" : "justify-start"} ${
+                startsRun ? "mt-2 first:mt-0" : ""
+              }`}
             >
               <MessageBubble
                 side={mine ? "mine" : "theirs"}

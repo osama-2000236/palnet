@@ -1,11 +1,19 @@
 "use client";
 
+// Create a company page. Fields mirror `CreateCompanyBody`; the native twin is
+// apps/mobile/app/(app)/employer/new.tsx.
+//
+// The controls used to be raw <input>/<button> with hand-written border and
+// background classes, which is why this screen rendered as an unstyled stack of
+// boxes next to the rest of the app. They are kit atoms now — same focus ring,
+// same hover, same disabled treatment as every other form.
 import { Company, CreateCompanyBody, PS_INDUSTRIES } from "@baydar/shared";
-import { Surface } from "@baydar/ui-web";
+import { Alert, Button, Input, Surface } from "@baydar/ui-web";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 
+import { CityField } from "@/components/CityField";
 import { apiFetch } from "@/lib/api";
 import { toErrorMessage } from "@/lib/error-message";
 import { readSession } from "@/lib/session";
@@ -80,45 +88,47 @@ export default function NewCompanyPage(): JSX.Element {
       <Surface variant="card" padding="4">
         <form onSubmit={onSubmit} className="grid grid-cols-1 gap-3">
           <Field label={t("name")} required>
-            <input
+            <Input
+              fullWidth
               required
               value={form.name}
               onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-              className="border-line-hard bg-surface text-ink w-full rounded-md border px-3 py-1.5 text-sm"
             />
           </Field>
           <Field label={t("slug")} hint={t("slugHelp")} required>
-            <input
+            <Input
+              fullWidth
               required
+              dir="ltr"
               value={form.slug}
               onChange={(e) => setForm((f) => ({ ...f, slug: e.target.value.toLowerCase() }))}
               pattern="[a-z0-9][a-z0-9-]*[a-z0-9]"
-              className="border-line-hard bg-surface text-ink w-full rounded-md border px-3 py-1.5 text-sm"
             />
           </Field>
           <Field label={t("tagline")}>
-            <input
+            <Input
+              fullWidth
               value={form.tagline}
               onChange={(e) => setForm((f) => ({ ...f, tagline: e.target.value }))}
-              className="border-line-hard bg-surface text-ink w-full rounded-md border px-3 py-1.5 text-sm"
             />
           </Field>
           <Field label={t("website")}>
-            <input
+            <Input
+              fullWidth
               type="url"
+              dir="ltr"
               value={form.website}
               onChange={(e) => setForm((f) => ({ ...f, website: e.target.value }))}
-              className="border-line-hard bg-surface text-ink w-full rounded-md border px-3 py-1.5 text-sm"
             />
           </Field>
           <Field label={t("industry")}>
             {/* Canonical PS_INDUSTRIES suggestions so the jobs sector facet
                 matches; free text stays allowed. */}
-            <input
+            <Input
+              fullWidth
               value={form.industry}
               onChange={(e) => setForm((f) => ({ ...f, industry: e.target.value }))}
               list="ps-industries"
-              className="border-line-hard bg-surface text-ink w-full rounded-md border px-3 py-1.5 text-sm"
             />
             <datalist id="ps-industries">
               {PS_INDUSTRIES.map((industry) => (
@@ -130,35 +140,31 @@ export default function NewCompanyPage(): JSX.Element {
           </Field>
           <div className="grid grid-cols-2 gap-3">
             <Field label={t("city")}>
-              <input
-                value={form.city}
-                onChange={(e) => setForm((f) => ({ ...f, city: e.target.value }))}
-                className="border-line-hard bg-surface text-ink w-full rounded-md border px-3 py-1.5 text-sm"
-              />
+              {/* The curated PS picker every other city field on both platforms
+                  uses — this one was a free-text box, so a company could store a
+                  spelling the jobs city facet never matches. */}
+              <CityField value={form.city} onChange={(city) => setForm((f) => ({ ...f, city }))} />
             </Field>
             <Field label={t("country")}>
-              <input
+              <Input
+                fullWidth
+                dir="ltr"
                 value={form.country}
                 onChange={(e) => setForm((f) => ({ ...f, country: e.target.value.toUpperCase() }))}
                 maxLength={2}
-                className="border-line-hard bg-surface text-ink w-full rounded-md border px-3 py-1.5 text-sm"
               />
             </Field>
           </div>
 
-          {error ? <p className="text-status-danger text-sm">{error}</p> : null}
+          {error ? <Alert kind="danger">{error}</Alert> : null}
 
           <div className="flex items-center gap-3 pt-2">
-            <button
-              type="submit"
-              disabled={submitting}
-              className="bg-brand-500 hover:bg-brand-600 inline-flex items-center rounded-md px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
-            >
+            <Button type="submit" variant="primary" loading={submitting}>
               {submitting ? t("submitting") : t("submit")}
-            </button>
-            <button type="button" onClick={() => router.back()} className="text-ink-muted text-sm">
+            </Button>
+            <Button type="button" variant="ghost" onClick={() => router.back()}>
               {tCommon("cancel")}
-            </button>
+            </Button>
           </div>
         </form>
       </Surface>

@@ -7,6 +7,7 @@ export const HIDDEN_APP_TAB_ROUTES = [
   "employer/[slug]/index",
   "employer/[slug]/jobs/new",
   "employer/index",
+  "employer/new",
   "in/[handle]",
   "jobs/[id]",
   "jobs/index",

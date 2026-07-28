@@ -313,5 +313,11 @@
  * NON-DIRECTIONAL: clocks, email, padlock, magnifier, camera, numbers.
  * Apply .rtl-mirror to the FORMER only. */
 [dir="rtl"] .rtl-mirror {
-  transform: scaleX(-1);
+  /* `scale`, not `transform: scaleX(-1)`. Tailwind's rotate/translate/scale
+   * utilities all compile to one `transform` declaration, and this selector
+   * outranks a bare utility class — so `rtl-mirror rotate-90` silently dropped
+   * the rotation and the legal-page back chevron pointed straight down in
+   * Arabic. The individual `scale` property composes with `transform` instead
+   * of replacing it (transform applies first, then scale). */
+  scale: -1 1;
 }

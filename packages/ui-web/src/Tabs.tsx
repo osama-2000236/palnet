@@ -113,7 +113,15 @@ export function Tabs({
       <div
         role="tablist"
         aria-label={label}
-        className={cx("border-line-soft flex flex-wrap items-end border-b", className)}
+        // Scrolls, does not wrap. Arabic labels pushed the five profile tabs onto
+        // a second row at 390px, which put the active indicator in the gap
+        // *between* the rows — reading as an overline on whichever tab happened
+        // to fall underneath it. Same treatment the app shell's nav strip uses:
+        // one row, edge-fade mask as the affordance, no visible scrollbar.
+        className={cx(
+          "border-line-soft flex items-end overflow-x-auto overscroll-contain border-b [mask-image:linear-gradient(to_right,transparent_0,black_16px,black_calc(100%-16px),transparent_100%)] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
+          className,
+        )}
       >
         {children}
       </div>
@@ -175,7 +183,9 @@ export function Tab({ value, children, count, countLabel }: TabProps): JSX.Eleme
         // the tab happens to sit on the last row — Arabic labels wrap this strip
         // at 390px, which left the underline floating mid-component (F1).
         // min-h-11 == space[11] == 44px, the CLAUDE.md touch minimum (A3).
-        "me-6 inline-flex min-h-11 min-w-11 flex-col items-center justify-end px-0.5 font-sans text-sm font-medium",
+        // `shrink-0` + `whitespace-nowrap`: the strip scrolls now, so a tab must
+        // keep its natural width instead of being squeezed or broken mid-label.
+        "me-6 inline-flex min-h-11 min-w-11 shrink-0 flex-col items-center justify-end whitespace-nowrap px-0.5 font-sans text-sm font-medium",
         // `min-w-11` for the same reason as `min-h-11`: a tab is sized by
         // its label, and a short one ("الشركات" on /search) measured 43.6px
         // wide once the type scale put it on the 13px `small` step. Height

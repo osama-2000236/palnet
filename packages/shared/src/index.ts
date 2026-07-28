@@ -3,6 +3,7 @@ export * from "./enums";
 export * from "./pagination";
 export * from "./errors";
 export * from "./format";
+export * from "./place";
 export * from "./user-agent";
 export * from "./palestine";
 export * from "./profile-completion";
