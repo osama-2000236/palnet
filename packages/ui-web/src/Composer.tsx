@@ -23,8 +23,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { Avatar, type AvatarUser } from "./Avatar";
-import { FileChip, QuietChip } from "./ComposerChips";
 import { Button } from "./Button";
+import { FileChip, QuietChip } from "./ComposerChips";
 import { Icon } from "./Icon";
 import { Surface } from "./Surface";
 

@@ -3,11 +3,11 @@
 import { type KeyboardEvent, type RefObject } from "react";
 
 import { NAV_ITEMS, formatBadge } from "./AppShell.constants";
+import type { AppShellLabels, AppShellRoute } from "./AppShell.types";
 import { AppShellProfileMenu } from "./AppShellProfileMenu";
+import type { AvatarUser } from "./Avatar";
 import { cx } from "./cx";
 import { Icon } from "./Icon";
-import type { AppShellLabels, AppShellRoute } from "./AppShell.types";
-import type { AvatarUser } from "./Avatar";
 
 interface AppShellNavProps {
   navRef: RefObject<HTMLElement | null>;

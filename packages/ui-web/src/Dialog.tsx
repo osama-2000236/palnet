@@ -27,8 +27,8 @@ import {
 import { createPortal } from "react-dom";
 
 import { Button } from "./Button";
-import { Icon } from "./Icon";
 import { cx } from "./cx";
+import { Icon } from "./Icon";
 
 export interface DialogProps {
   open: boolean;

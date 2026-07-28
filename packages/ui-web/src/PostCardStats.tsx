@@ -2,9 +2,9 @@
 // PostCard.tsx for the same reason PostCardAction was — that file sits against
 // qa:design's 300-LOC ceiling. Not exported from the package index.
 
+import type { PostCardCounts, PostCardLabels } from "./PostCard";
 import { ReactionGlyph } from "./ReactionGlyph";
 import { topReactions, type ReactionKind } from "./reactions";
-import type { PostCardCounts, PostCardLabels } from "./PostCard";
 
 export function PostCardStats({
   counts,
