@@ -24,29 +24,13 @@ env:
   BANK_TRANSFER_IBAN: "PS00CI00000000000000000000000"
   BANK_TRANSFER_BENEFICIARY: "Baydar CI"
 
+# There is deliberately no `install` job. One used to sit in front of every
+# other job as `needs: install`, but a job's node_modules do not outlive it —
+# it installed, generated the Prisma client, threw both away, and the four jobs
+# behind it each installed again from scratch. `needs:` was buying sequencing,
+# not reuse, and the jobs are independent. They install in parallel now.
 jobs:
-  install:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-
-      - uses: pnpm/action-setup@v6
-        with:
-          version: ${{ env.PNPM_VERSION }}
-
-      - uses: actions/setup-node@v6
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: pnpm
-
-      - name: Install deps
-        run: pnpm install --frozen-lockfile
-
-      - name: Generate Prisma client
-        run: pnpm --filter @baydar/db db:generate
-
   lint:
-    needs: install
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -67,7 +51,6 @@ jobs:
       - run: pnpm check:security-headers
 
   type-check:
-    needs: install
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -83,7 +66,6 @@ jobs:
       - run: pnpm type-check
 
   test:
-    needs: install
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -115,7 +97,6 @@ jobs:
       - run: pnpm --filter @baydar/mobile test
 
   build-web:
-    needs: install
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -133,6 +114,20 @@ jobs:
           NEXT_PUBLIC_API_URL: http://localhost:4000/api/v1
           NEXT_PUBLIC_WS_URL: http://localhost:4000
           NEXT_PUBLIC_DEFAULT_LOCALE: ar-PS
+      # The one web build in this workflow. `e2e-web` and `lighthouse-web` both
+      # `needs: build-web` and both used to rebuild it from scratch anyway —
+      # three full Next builds per PR to ship one artifact. They download this
+      # instead. `.next/cache` is excluded: `next start` never reads it and it
+      # is the bulk of the directory.
+      - name: Upload built web app
+        uses: actions/upload-artifact@v6
+        with:
+          name: web-build-${{ github.run_id }}
+          path: |
+            apps/web/.next
+            !apps/web/.next/cache
+          retention-days: 1
+          include-hidden-files: true
 
   e2e-web:
     needs: build-web
@@ -164,12 +159,11 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @baydar/db db:generate
       - run: pnpm --filter @baydar/db db:deploy
-      - name: Build web app for Playwright
-        run: pnpm turbo run build --filter @baydar/web
-        env:
-          NEXT_PUBLIC_API_URL: http://localhost:4000/api/v1
-          NEXT_PUBLIC_WS_URL: http://localhost:4000
-          NEXT_PUBLIC_DEFAULT_LOCALE: ar-PS
+      - name: Download the web build
+        uses: actions/download-artifact@v6
+        with:
+          name: web-build-${{ github.run_id }}
+          path: apps/web/.next
       - run: pnpm --filter @baydar/web exec playwright install --with-deps chromium
       - name: Start API + Web and run Playwright
         run: pnpm --filter @baydar/web e2e
@@ -201,11 +195,11 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @baydar/db db:generate
-      - run: pnpm turbo run build --filter @baydar/web
-        env:
-          NEXT_PUBLIC_API_URL: http://localhost:4000/api/v1
-          NEXT_PUBLIC_WS_URL: http://localhost:4000
-          NEXT_PUBLIC_DEFAULT_LOCALE: ar-PS
+      - name: Download the web build
+        uses: actions/download-artifact@v6
+        with:
+          name: web-build-${{ github.run_id }}
+          path: apps/web/.next
       - name: Lighthouse CI (desktop)
         run: npx --yes @lhci/cli@0.14.x autorun --config=./apps/web/lighthouserc.json
         env:
