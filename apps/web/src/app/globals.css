@@ -18,12 +18,18 @@
  *   "./tokens.css": "./src/tokens.css"  ✓
  */
 
+/* Single source of truth — every brand/ink/surface/line/semantic token.
+ *
+ * Must come before the @tailwind directives. CSS requires @import to precede
+ * every other rule, and those directives expand into thousands of them — so
+ * with the import below them the spec violation only surfaced after Tailwind
+ * ran. Next 15 tolerated it; Next 16 fails the build on it. Tokens first is
+ * also the right order: Tailwind's preset reads these custom properties. */
+@import "@baydar/ui-tokens/tokens.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-/* Single source of truth — every brand/ink/surface/line/semantic token. */
-@import "@baydar/ui-tokens/tokens.css";
 
 :root {
   color-scheme: light;
