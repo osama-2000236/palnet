@@ -9,6 +9,10 @@ export interface RadioGroupItem {
   label: ReactNode;
   description?: ReactNode;
   disabled?: boolean;
+  /** Locale-independent handle for E2E — labels are translated, so a flow that
+   *  changes the locale cannot find its own control by text. Rendered as
+   *  `data-testid` on the pill, the twin of native's Pressable. */
+  testID?: string;
 }
 
 export interface RadioGroupProps {
@@ -51,6 +55,7 @@ export function RadioGroup({
           return (
             <label
               key={item.value}
+              data-testid={item.testID}
               className={cx(
                 // A3: the pill rendered 32px tall.
                 "target-area min-h-target inline-flex cursor-pointer items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors",

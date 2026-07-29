@@ -27,26 +27,32 @@ tags:
     timeout: 60000
 
 - openLink: baydar://settings/appearance
+# Wait on the radio this run is about to tap rather than on a container id: the
+# pickers are RadioGroups now (they are settings, not filters — DESIGN.md §6.3),
+# and RadioGroup gives ids to the options, not to the group.
 - extendedWaitUntil:
     visible:
-      id: "appearance-segmented"
+      id: "appearance-${THEME}"
     timeout: 30000
 - tapOn:
     id: "appearance-${THEME}"
-# Wait for the segment to actually report itself selected before moving on.
+# Wait for the option to actually report itself checked before moving on.
 # `tapOn` completing only means the tap was dispatched; the preference write is
 # async (SecureStore), and the `launchApp` further down force-stops the app. A
 # whole 38-screen cell was once captured in light and filed under `__dark`
 # because the write lost that race and every step still reported COMPLETED.
+# `checked`, not `selected`: a radio carries accessibilityState.checked, which
+# Android exposes as isChecked. `selected: true` never matches here and the wait
+# would burn its timeout on every cell.
 - extendedWaitUntil:
     visible:
       id: "appearance-${THEME}"
-      selected: true
+      checked: true
     timeout: 10000
 
 - extendedWaitUntil:
     visible:
-      id: "language-segmented"
+      id: "language-${LOCALE}"
     timeout: 10000
 - tapOn:
     id: "language-${LOCALE}"
