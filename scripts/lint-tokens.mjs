@@ -21,6 +21,8 @@
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative, sep } from "node:path";
 
+import { hardcodedColors } from "./hardcoded-color.mjs";
+
 const ROOT = process.cwd();
 const SCAN_DIRS = [
   "apps/web/src",
@@ -83,9 +85,10 @@ const paletteRe = new RegExp(
   "g",
 );
 
-// Hex colors. Allow black/white (we're moving them to tokens too, but don't
-// fail a PR over `#fff` in a throwaway comment). Strict on 6- and 8-char hex.
-const hexRe = /#[0-9a-fA-F]{6}(?:[0-9a-fA-F]{2})?\b|#[0-9a-fA-F]{3}\b/g;
+// Hex colours come from `hardcodedColors`, shared with `qa:design`. Both gates
+// carried their own copy of the same regex, and both read a PR reference like
+// `#128` in a comment as a three-digit colour — the same bug fixed twice is why
+// it is one tested function now.
 
 // Physical directional classes. The web .eslintrc already catches these but we
 // re-check here so the mobile package is covered too.
@@ -167,12 +170,12 @@ for (const scanDir of SCAN_DIRS) {
           raw: line,
         });
       }
-      for (const m of line.matchAll(hexRe)) {
+      for (const hex of hardcodedColors(line)) {
         hits.push({
           rel,
           line: i + 1,
           kind: "hex-color",
-          match: m[0],
+          match: hex,
           raw: line,
         });
       }

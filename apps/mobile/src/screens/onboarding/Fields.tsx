@@ -1,7 +1,6 @@
 import {
   Button,
   Input as NativeInput,
-  Surface,
   nativeTokens,
   type InputProps,
   useThemeTokens,
@@ -129,25 +128,5 @@ export function ChoiceButton({
     >
       {label}
     </Button>
-  );
-}
-
-export function EmptyState({ message }: { message: string }): JSX.Element {
-  const c = useThemeTokens().color;
-  return (
-    <Surface padding="4" variant="tinted">
-      <Text
-        selectable
-        style={{
-          color: c.inkMuted,
-          fontFamily: nativeTokens.type.family.body,
-          fontSize: nativeTokens.type.scale.body.size,
-          lineHeight: nativeTokens.type.scale.body.line,
-          textAlign: "auto",
-        }}
-      >
-        {message}
-      </Text>
-    </Surface>
   );
 }
