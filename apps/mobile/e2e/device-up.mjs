@@ -241,7 +241,33 @@ function buildBundle() {
  * bundle does not survive the emulator's NAT. So `.bundle` is answered from the
  * file built above (~5.7MB, minified) with a real `Content-Length`. Metro still
  * serves assets, `/symbolicate` and everything else.
+ *
+ * The bundle goes out in paced chunks rather than one `res.end(buffer)`. A
+ * single 5.6MB burst also dies with `unexpected end of stream` — the same
+ * exception, one order of magnitude smaller, and intermittently enough that the
+ * first run of the day succeeds and the dev client's cache hides it until
+ * something clears app state. Respecting backpressure is what makes it
+ * survivable.
  */
+const CHUNK = 64 * 1024;
+
+function sendPaced(res, buffer) {
+  let offset = 0;
+  const pump = () => {
+    while (offset < buffer.length) {
+      const end = Math.min(offset + CHUNK, buffer.length);
+      const more = res.write(buffer.subarray(offset, end));
+      offset = end;
+      if (!more) {
+        res.once("drain", pump);
+        return;
+      }
+    }
+    res.end();
+  };
+  pump();
+}
+
 function startProxy() {
   const bundleBytes = readFileSync(BUNDLE);
   return new Promise((resolve) => {
@@ -253,7 +279,8 @@ function startProxy() {
             "content-type": "application/javascript; charset=UTF-8",
             "content-length": String(bundleBytes.length),
           });
-          res.end(bundleBytes);
+          res.on("error", (e) => say(`    proxy bundle write failed: ${e.message}`));
+          sendPaced(res, bundleBytes);
           say(`    proxy 200 (from disk) ${url.slice(0, 52)} -> ${bundleBytes.length}b`);
           return;
         }
