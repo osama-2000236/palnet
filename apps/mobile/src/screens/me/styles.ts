@@ -9,12 +9,6 @@ export function makeStyles(c: NativeTheme["color"]) {
       flex: 1,
       backgroundColor: c.surfaceMuted,
     },
-    centerScreen: {
-      flex: 1,
-      justifyContent: "center",
-      backgroundColor: c.surfaceMuted,
-      padding: nativeTokens.space[4],
-    },
     errorScreen: {
       flex: 1,
       backgroundColor: c.surfaceMuted,

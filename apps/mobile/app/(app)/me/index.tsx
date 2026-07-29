@@ -7,6 +7,7 @@ import { Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { FieldCover } from "@/components/FieldCover";
+import { ProfileScreenSkeleton } from "@/components/ScreenSkeleton";
 import { StateMessage } from "@/components/StateMessage";
 import { apiFetch } from "@/lib/api";
 import { apiErrorMessage } from "@/lib/api-errors";
@@ -67,8 +68,8 @@ export default function MeScreen(): JSX.Element {
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.centerScreen}>
-        <StateMessage message={t("common.loading")} role="text" />
+      <SafeAreaView style={styles.screen}>
+        <ProfileScreenSkeleton />
       </SafeAreaView>
     );
   }

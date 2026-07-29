@@ -20,6 +20,7 @@ import { useTranslation } from "react-i18next";
 import { ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { CardStackSkeleton } from "@/components/ScreenSkeleton";
 import { StateMessage } from "@/components/StateMessage";
 import { apiFetch } from "@/lib/api";
 import { apiErrorMessage } from "@/lib/api-errors";
@@ -105,8 +106,8 @@ export default function KaramaScreen(): JSX.Element {
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.centerScreen}>
-        <StateMessage message={t("common.loading")} role="text" />
+      <SafeAreaView style={styles.screen}>
+        <CardStackSkeleton />
       </SafeAreaView>
     );
   }

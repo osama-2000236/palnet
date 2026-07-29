@@ -12,7 +12,7 @@ import { FlatList, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { useBlockedUsers, useUnblock } from "@/api/safety";
-import { StateMessage } from "@/components/StateMessage";
+import { ListSkeleton } from "@/components/ScreenSkeleton";
 
 export default function BlockedUsersScreen(): JSX.Element {
   const c = useThemeTokens().color;
@@ -60,7 +60,7 @@ export default function BlockedUsersScreen(): JSX.Element {
           )}
           ListEmptyComponent={
             blocked.isLoading ? (
-              <StateMessage message={t("common.loading")} role="text" />
+              <ListSkeleton />
             ) : (
               <EmptyState variant="inline" motif="settings" title={t("safety.blocked.empty")} />
             )

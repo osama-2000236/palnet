@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import { KeyboardAvoidingView, Platform, ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { CardStackSkeleton } from "@/components/ScreenSkeleton";
 import { StateMessage } from "@/components/StateMessage";
 import { apiFetch } from "@/lib/api";
 import { apiErrorMessage } from "@/lib/api-errors";
@@ -60,12 +61,18 @@ export default function EditProfileScreen(): JSX.Element {
     [showToast, t],
   );
 
-  if (loading || !profile) {
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.screen}>
+        <CardStackSkeleton />
+      </SafeAreaView>
+    );
+  }
+
+  if (!profile) {
     return (
       <SafeAreaView style={styles.centerScreen}>
-        {loading ? (
-          <StateMessage message={t("common.loading")} role="text" />
-        ) : error ? (
+        {error ? (
           <View style={styles.errorWrap}>
             <StateMessage
               message={error}
