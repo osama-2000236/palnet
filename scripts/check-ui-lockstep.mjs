@@ -68,9 +68,7 @@ const PLATFORM_IDIOMS = {
  */
 const KNOWN_DRIFT = {
   web: {},
-  native: {
-    SearchField: "web only has AppShellSearch, which is chrome-bound",
-  },
+  native: {},
 };
 
 function exportedNames(indexPath) {

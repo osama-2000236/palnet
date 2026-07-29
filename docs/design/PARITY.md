@@ -46,7 +46,6 @@ from memory.
 | `Sheet`                                         | native   | Same. Genuinely drag-dismissable as of A4.9.                                                                                                                                                                                                                                                          |
 | `ReportDialog` / `ReportSheet`                  | split    | Same content, correct container per platform. Prop vocabulary matches.                                                                                                                                                                                                                                |
 | `AppHeader`                                     | native   | Web's chrome is `AppShell`'s sticky header. Mobile screens each own a header because there is no persistent top bar.                                                                                                                                                                                  |
-| `SearchField`                                   | native   | Web search lives inside `AppShell`; mobile has no persistent shell to host it.                                                                                                                                                                                                                        |
 | `RecordCard` / `RecordCardSkeleton`             | native   | The mobile list idiom. Web uses `Surface variant="row"` inside a `flat` container — the composition PR #89 settled on.                                                                                                                                                                                |
 | `ComposerEntry`                                 | native   | The collapsed composer. Web's `Composer` has a collapsed state built in; mobile needs a separate entry point because composing is a pushed route.                                                                                                                                                     |
 | `ThemeProvider` / `useTheme` / `useThemeTokens` | native   | Web re-themes through CSS variables under `.dark`, so there is nothing for a provider to do.                                                                                                                                                                                                          |
@@ -83,6 +82,13 @@ deleting it, never by restating it:
 ## Prop drift
 
 None open.
+
+## Drift ledger
+
+`scripts/check-ui-lockstep.mjs` reports **0 known drift entries** as of
+2026-07-29. It had carried three since it was written, and had never shrunk.
+Every component below is now Shared or Platform-only-with-a-reason; there is no
+third category left. A new entry is an argument, not a reflex.
 
 ## Shape decisions
 

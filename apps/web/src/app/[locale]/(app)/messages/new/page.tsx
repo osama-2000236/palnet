@@ -15,7 +15,7 @@ import {
   ConnectionListItem,
   type ConnectionListItem as ConnectionListItemType,
 } from "@baydar/shared";
-import { Alert, Avatar, Button, Chip, Icon, Input, Surface } from "@baydar/ui-web";
+import { Alert, Avatar, Button, Chip, Input, SearchField, Surface } from "@baydar/ui-web";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -29,6 +29,7 @@ const ConnectionsEnvelope = z.object({ data: z.array(ConnectionListItem) });
 
 export default function NewMessagePage(): JSX.Element {
   const t = useTranslations("messaging");
+  const tCommon = useTranslations("common");
   const router = useRouter();
   const [token, setToken] = useState<string | null>(null);
   const [connections, setConnections] = useState<ConnectionListItemType[]>([]);
@@ -129,13 +130,13 @@ export default function NewMessagePage(): JSX.Element {
 
         <label className="flex flex-col gap-1">
           <span className="text-ink text-sm font-semibold">{t("newGroup.search")}</span>
-          <Input
-            fullWidth
-            type="search"
+          <SearchField
             value={query}
             onChange={(e) => setQuery(e.currentTarget.value)}
+            onClear={() => setQuery("")}
+            clearLabel={tCommon("clear")}
             placeholder={t("newGroup.searchPlaceholder")}
-            leading={<Icon name="search" size={16} />}
+            containerClassName="w-full"
           />
         </label>
 

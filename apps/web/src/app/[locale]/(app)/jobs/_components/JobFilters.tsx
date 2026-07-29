@@ -1,7 +1,7 @@
 "use client";
 
 import { JobLocationMode, JobType, PS_INDUSTRIES } from "@baydar/shared";
-import { Chip, Icon, Input, Surface } from "@baydar/ui-web";
+import { Chip, SearchField, Surface } from "@baydar/ui-web";
 import { useLocale, useTranslations } from "next-intl";
 
 import { CityField } from "@/components/CityField";
@@ -24,6 +24,7 @@ export function JobFilters({
   onChange: (filters: JobFiltersState) => void;
 }): JSX.Element {
   const t = useTranslations("jobs");
+  const tCommon = useTranslations("common");
   const locale = useLocale();
   const isArabic = locale.startsWith("ar");
 
@@ -35,15 +36,14 @@ export function JobFilters({
         <label htmlFor="jobs-q" className="text-ink-muted mb-1 block text-xs">
           {t("search")}
         </label>
-        <Input
+        <SearchField
           id="jobs-q"
-          type="search"
-          size="sm"
-          fullWidth
           value={filters.q}
           onChange={(e) => onChange({ ...filters, q: e.target.value })}
+          onClear={() => onChange({ ...filters, q: "" })}
+          clearLabel={tCommon("clear")}
           placeholder={t("searchPlaceholder")}
-          leading={<Icon name="search" size={14} />}
+          containerClassName="w-full"
           aria-label={t("search")}
         />
       </div>

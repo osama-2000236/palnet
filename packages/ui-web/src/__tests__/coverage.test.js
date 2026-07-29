@@ -24,6 +24,7 @@ const { OnboardingProgress } = require("../../dist/OnboardingProgress");
 const { PostCardSkeleton } = require("../../dist/PostCardSkeleton");
 const { RadioGroup } = require("../../dist/RadioGroup");
 const { RetryChip } = require("../../dist/RetryChip");
+const { SearchField } = require("../../dist/SearchField");
 const { Skeleton } = require("../../dist/Skeleton");
 const { Surface } = require("../../dist/Surface");
 const { Switch } = require("../../dist/Switch");
@@ -211,5 +212,29 @@ describe("public web component coverage", () => {
       "One",
     );
     unmount();
+  });
+
+  // The clear button is the reason this component exists: web repeated an
+  // `Input` + search-icon composition at three call sites and none of them
+  // could clear the field.
+  it("shows a clear button only when SearchField has a value", () => {
+    const onClear = jest.fn();
+    const empty = renderClient(
+      React.createElement(SearchField, { value: "", onClear, clearLabel: "Clear", readOnly: true }),
+    );
+    expect(empty.container.querySelector('[aria-label="Clear"]')).toBeNull();
+    empty.unmount();
+
+    const filled = renderClient(
+      React.createElement(SearchField, {
+        value: "ramallah",
+        onClear,
+        clearLabel: "Clear",
+        readOnly: true,
+      }),
+    );
+    click(filled.container.querySelector('[aria-label="Clear"]'));
+    expect(onClear).toHaveBeenCalledTimes(1);
+    filled.unmount();
   });
 });
