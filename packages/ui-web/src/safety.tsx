@@ -94,12 +94,12 @@ export function ReportDialog({
         id={formId}
         tabIndex={-1}
         data-autofocus
-        // `focus:outline-none` (not focus-visible): Dialog focuses this
+        // `focus:outline-hidden` (not focus-visible): Dialog focuses this
         // tabIndex={-1} form programmatically on open, and the UA outline would
         // paint a box around the whole form. No ring replaces it here on
         // purpose — the form isn't keyboard-reachable, and the real controls
         // inside carry their own focus rings.
-        className="flex flex-col gap-4 focus:outline-none"
+        className="focus:outline-hidden flex flex-col gap-4"
         onSubmit={(event) => {
           event.preventDefault();
           onSubmit({ target, reason, details: details.trim() || undefined });
@@ -120,7 +120,7 @@ export function ReportDialog({
             onChange={(event) => setDetails(event.currentTarget.value)}
             maxLength={2000}
             rows={4}
-            className="border-line-hard text-ink focus-visible:border-brand-600 rounded-md border bg-transparent px-3 py-2 text-sm focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+            className="border-line-hard text-ink focus-visible:border-brand-600 focus-visible:outline-hidden rounded-md border bg-transparent px-3 py-2 text-sm focus-visible:[box-shadow:var(--focus-ring)]"
           />
         </label>
       </form>

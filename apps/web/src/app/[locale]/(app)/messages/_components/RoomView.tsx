@@ -122,7 +122,7 @@ export function RoomView({
             <span className="text-ink truncate text-sm font-semibold">
               {activeRoom.title ?? activeRoom.id}
             </span>
-            <span className="text-ink-muted text-micro">
+            <span className="text-micro text-ink-muted">
               {t("newGroup.memberCount", { count: activeRoom.members.length })}
             </span>
           </div>
@@ -151,7 +151,7 @@ export function RoomView({
               >
                 {`${otherMember.firstName} ${otherMember.lastName}`.trim() || otherMember.handle}
               </Link>
-              <span className="text-ink-muted text-micro">
+              <span className="text-micro text-ink-muted">
                 {otherOnline
                   ? t("onlineNow")
                   : otherMember.lastSeenAt
@@ -187,7 +187,7 @@ export function RoomView({
             variant="secondary"
             size="sm"
             onClick={onScrollToUnread}
-            className="bg-brand-100 text-brand-700 border-brand-200 text-micro mb-3 h-7 self-center rounded-full px-3"
+            className="border-brand-200 bg-brand-100 text-micro text-brand-700 mb-3 h-7 self-center rounded-full px-3"
           >
             {t("unreadJump.banner", { count: unreadCount })}
           </Button>

@@ -184,7 +184,7 @@ export function PostCard({
           // both were under the 44px minimum — the sweep never caught them
           // because no PostCard had ever been on the test user's feed until
           // `reactions.spec.ts` started seeding one.
-          className="target-area shrink-0 rounded-full focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+          className="target-area focus-visible:outline-hidden shrink-0 rounded-full focus-visible:[box-shadow:var(--focus-ring)]"
         >
           <Avatar user={author} size="md" />
         </button>
@@ -192,7 +192,7 @@ export function PostCard({
           <button
             type="button"
             onClick={() => author.id && onOpenProfile?.(author.id)}
-            className="bidi-plaintext text-ink target-area truncate text-start text-sm font-semibold hover:underline focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+            className="bidi-plaintext target-area text-ink focus-visible:outline-hidden truncate text-start text-sm font-semibold hover:underline focus-visible:[box-shadow:var(--focus-ring)]"
           >
             {name}
           </button>
@@ -216,7 +216,7 @@ export function PostCard({
 
       {/* Body */}
       {body ? (
-        <div className="bidi-plaintext text-ink text-body whitespace-pre-wrap px-4 pb-3">
+        <div className="bidi-plaintext text-body text-ink whitespace-pre-wrap px-4 pb-3">
           {body}
         </div>
       ) : null}

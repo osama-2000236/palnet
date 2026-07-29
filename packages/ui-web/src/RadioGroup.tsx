@@ -82,7 +82,7 @@ export function RadioGroup({
                 aria-hidden="true"
                 className={cx(
                   "h-2 w-2 rounded-full border",
-                  checked ? "bg-brand-600 border-brand-600" : "border-ink-subtle bg-transparent",
+                  checked ? "border-brand-600 bg-brand-600" : "border-ink-subtle bg-transparent",
                 )}
               />
               <span>{item.label}</span>

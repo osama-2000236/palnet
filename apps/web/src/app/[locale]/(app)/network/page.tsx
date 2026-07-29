@@ -125,7 +125,7 @@ export default function NetworkRoute(): JSX.Element {
               >
                 <Link
                   href={`/in/${c.user.handle}`}
-                  className="flex min-w-0 items-center gap-3 rounded-md focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+                  className="focus-visible:outline-hidden flex min-w-0 items-center gap-3 rounded-md focus-visible:[box-shadow:var(--focus-ring)]"
                 >
                   <Avatar
                     user={{
@@ -216,8 +216,8 @@ function FilterTab({
       onClick={onClick}
       className={
         active
-          ? "bg-brand-600 text-ink-inverse rounded-md px-4 py-1.5 text-sm font-semibold focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
-          : "border-ink-muted/30 text-ink hover:bg-ink-muted/5 rounded-md border px-4 py-1.5 text-sm focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+          ? "bg-brand-600 text-ink-inverse focus-visible:outline-hidden rounded-md px-4 py-1.5 text-sm font-semibold focus-visible:[box-shadow:var(--focus-ring)]"
+          : "border-ink-muted/30 text-ink hover:bg-ink-muted/5 focus-visible:outline-hidden rounded-md border px-4 py-1.5 text-sm focus-visible:[box-shadow:var(--focus-ring)]"
       }
     >
       {children}

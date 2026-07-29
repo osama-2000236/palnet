@@ -69,7 +69,7 @@ function AboutPanel({ profile }: { profile: Profile }): JSX.Element {
         {profile.viewer?.isSelf ? (
           <Link
             href="/me/edit"
-            className="text-brand-700 text-sm font-semibold hover:underline focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+            className="text-brand-700 focus-visible:outline-hidden text-sm font-semibold hover:underline focus-visible:[box-shadow:var(--focus-ring)]"
           >
             {t("edit")}
           </Link>

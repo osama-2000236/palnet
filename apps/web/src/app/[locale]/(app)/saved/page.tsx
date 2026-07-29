@@ -203,7 +203,7 @@ function SavedRow({
       <div className="flex items-start gap-3">
         <Link
           href={item.href}
-          className="flex min-w-0 flex-1 items-start gap-3 rounded-md focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+          className="focus-visible:outline-hidden flex min-w-0 flex-1 items-start gap-3 rounded-md focus-visible:[box-shadow:var(--focus-ring)]"
         >
           <div
             className="bg-surface-sunken text-ink-muted relative flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-md"
@@ -233,7 +233,7 @@ function SavedRow({
         </Link>
         <button
           type="button"
-          className="text-ink-muted hover:bg-surface-subtle hover:text-danger target-area state-layer inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
+          className="target-area state-layer text-ink-muted hover:bg-surface-subtle hover:text-danger focus-visible:outline-hidden inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md focus-visible:[box-shadow:var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-60"
           aria-label={removeLabel}
           disabled={removing}
           onClick={onRemove}

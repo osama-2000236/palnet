@@ -43,7 +43,7 @@ export default function EditProfilePage(): JSX.Element {
         <h1 className="text-ink text-3xl font-bold">{t("editTitle")}</h1>
         <Link
           href={`/in/${profile.handle}`}
-          className="target-area text-ink-muted inline-flex items-center text-sm hover:underline focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+          className="target-area text-ink-muted focus-visible:outline-hidden inline-flex items-center text-sm hover:underline focus-visible:[box-shadow:var(--focus-ring)]"
         >
           {t("viewPublic")}
         </Link>

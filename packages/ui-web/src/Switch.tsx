@@ -58,10 +58,10 @@ export function Switch({
           // A6: the OFF track is 1.23:1 against the surface — no fill in this
           // palette can reach the 3:1 WCAG 1.4.11 needs, so the boundary is a
           // border. `--ink-subtle` measures 5.20 (light) / 5.51 (dark).
-          checked ? "bg-brand-600 border-brand-600" : "bg-surface-sunken border-ink-subtle",
+          checked ? "border-brand-600 bg-brand-600" : "border-ink-subtle bg-surface-sunken",
           disabled && "cursor-not-allowed opacity-55",
           // The ring is drawn on the visible track, not the padded wrapper.
-          "focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]",
+          "focus-visible:outline-hidden focus-visible:[box-shadow:var(--focus-ring)]",
         )}
       >
         <span

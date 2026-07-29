@@ -19,9 +19,9 @@ import { readSession } from "@/lib/session";
  * there is no redirect to flash.
  */
 const PRIMARY =
-  "bg-brand-600 text-ink-inverse hover:bg-brand-700 shadow-card inline-flex items-center rounded-md px-6 py-3 text-base font-semibold focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]";
+  "bg-brand-600 text-ink-inverse hover:bg-brand-700 shadow-card inline-flex items-center rounded-md px-6 py-3 text-base font-semibold focus-visible:outline-hidden focus-visible:[box-shadow:var(--focus-ring)]";
 const SECONDARY =
-  "border-line-hard text-ink hover:bg-surface-subtle inline-flex items-center rounded-md border bg-transparent px-6 py-3 text-base font-semibold focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]";
+  "border-line-hard text-ink hover:bg-surface-subtle inline-flex items-center rounded-md border bg-transparent px-6 py-3 text-base font-semibold focus-visible:outline-hidden focus-visible:[box-shadow:var(--focus-ring)]";
 
 export function HeroCtas({ locale }: { locale: string }): JSX.Element {
   const t = useTranslations("landing");

@@ -144,7 +144,7 @@ export function ReactionPicker({
           // to 77 and buys 6px of headroom; the pressable box is unaffected
           // because `target-area` owns it, not the padding.
           "gap-1.5 px-1 sm:gap-2 sm:px-2",
-          "focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]",
+          "focus-visible:outline-hidden focus-visible:[box-shadow:var(--focus-ring)]",
           "disabled:cursor-not-allowed disabled:opacity-60",
           active ? cx("font-semibold", REACTION_TINT[shown]) : "text-ink-muted hover:text-ink",
         )}
@@ -174,8 +174,8 @@ export function ReactionPicker({
             nodes[index === -1 ? 0 : (index + step + nodes.length) % nodes.length]?.focus();
           }}
           className={cx(
-            "border-line-soft bg-surface shadow-pop z-dropdown absolute bottom-full start-0 mb-1 flex items-center gap-0.5 rounded-full border p-1",
-            "duration-base ease-emphasized animate-enter-up",
+            "z-dropdown border-line-soft bg-surface shadow-pop absolute bottom-full start-0 mb-1 flex items-center gap-0.5 rounded-full border p-1",
+            "animate-enter-up duration-base ease-emphasized",
           )}
         >
           {REACTION_TYPES.map((kind) => (
@@ -191,7 +191,7 @@ export function ReactionPicker({
               }}
               className={cx(
                 "state-layer inline-flex h-10 w-10 items-center justify-center rounded-full",
-                "focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]",
+                "focus-visible:outline-hidden focus-visible:[box-shadow:var(--focus-ring)]",
                 // Settle, don't pop: PR #96 established that Baydar's reaction
                 // moment resolves rather than bursts, because the currency here
                 // is Karama — a ledger — not a like count.

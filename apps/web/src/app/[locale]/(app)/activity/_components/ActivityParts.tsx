@@ -52,7 +52,7 @@ export function ActivityMetrics({ metrics }: { metrics: ActivityMetric[] }): JSX
           <li key={metric.href}>
             <Link
               href={metric.href}
-              className="target-area state-layer flex h-full flex-col justify-center gap-1 rounded-md px-4 py-3 focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+              className="target-area state-layer focus-visible:outline-hidden flex h-full flex-col justify-center gap-1 rounded-md px-4 py-3 focus-visible:[box-shadow:var(--focus-ring)]"
             >
               <span className="text-ink-muted text-sm">{metric.label}</span>
               <span
@@ -172,7 +172,7 @@ function ActivityTaskRow({ task }: { task: ActivityTask }): JSX.Element {
         </div>
         <Link
           href={task.href}
-          className="target-area state-layer border-line-hard bg-surface text-ink text-small inline-flex h-7 items-center justify-center rounded-md border px-2.5 font-semibold focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+          className="target-area state-layer border-line-hard bg-surface text-small text-ink focus-visible:outline-hidden inline-flex h-7 items-center justify-center rounded-md border px-2.5 font-semibold focus-visible:[box-shadow:var(--focus-ring)]"
         >
           {task.cta}
         </Link>

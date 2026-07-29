@@ -232,7 +232,7 @@ export default function AdminBillingPage(): JSX.Element {
                         href={invoice.bankReceiptUrl}
                         target="_blank"
                         rel="noreferrer"
-                        className="text-brand-700 mt-2 inline-flex flex-col gap-2 rounded-sm text-sm font-semibold hover:underline focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+                        className="text-brand-700 focus-visible:outline-hidden mt-2 inline-flex flex-col gap-2 rounded-sm text-sm font-semibold hover:underline focus-visible:[box-shadow:var(--focus-ring)]"
                       >
                         {t("receipt")}
                         {canPreviewReceipt(invoice.bankReceiptUrl) ? (

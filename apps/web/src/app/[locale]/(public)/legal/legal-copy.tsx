@@ -114,14 +114,14 @@ export function LegalPage({ kind, locale }: { kind: LegalKind; locale: string })
         <div className="mx-auto flex h-14 w-full max-w-[800px] items-center justify-between px-6">
           <Link
             href={`/${locale}`}
-            className="target-area text-ink inline-flex items-center gap-2 rounded-md font-semibold focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+            className="target-area text-ink focus-visible:outline-hidden inline-flex items-center gap-2 rounded-md font-semibold focus-visible:[box-shadow:var(--focus-ring)]"
           >
             <Icon name="logo" size={28} />
             <span>{shell.home}</span>
           </Link>
           <Link
             href={`/${locale}`}
-            className="target-area text-ink-muted hover:text-ink inline-flex items-center gap-1 rounded-md text-sm focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+            className="target-area text-ink-muted hover:text-ink focus-visible:outline-hidden inline-flex items-center gap-1 rounded-md text-sm focus-visible:[box-shadow:var(--focus-ring)]"
           >
             {/* The kit has no back arrow; `chevron-down` rotated is what the
                 rest of the app uses, and `rtl-mirror` flips it in Arabic. */}

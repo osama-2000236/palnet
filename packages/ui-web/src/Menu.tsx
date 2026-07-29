@@ -131,8 +131,8 @@ export function Menu({
         aria-controls={open ? menuId : undefined}
         onClick={() => setOpen(!open)}
         className={cx(
-          "text-ink-muted hover:text-ink target-area state-layer inline-flex items-center justify-center rounded-md",
-          "focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]",
+          "target-area state-layer text-ink-muted hover:text-ink inline-flex items-center justify-center rounded-md",
+          "focus-visible:outline-hidden focus-visible:[box-shadow:var(--focus-ring)]",
           trigger ? null : "h-8 w-8",
           triggerClassName,
         )}
@@ -148,8 +148,8 @@ export function Menu({
           aria-label={label}
           onKeyDown={onPanelKeyDown}
           className={cx(
-            "border-line-soft bg-surface shadow-pop z-dropdown absolute top-full mt-1 min-w-[240px] rounded-md border py-1",
-            "duration-base ease-emphasized animate-enter-up",
+            "z-dropdown border-line-soft bg-surface shadow-pop absolute top-full mt-1 min-w-[240px] rounded-md border py-1",
+            "animate-enter-up duration-base ease-emphasized",
             align === "end" ? "end-0" : "start-0",
           )}
         >
@@ -166,7 +166,7 @@ export function Menu({
               }}
               className={cx(
                 "state-layer flex w-full items-start gap-2.5 px-3 py-2 text-start",
-                "focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]",
+                "focus-visible:outline-hidden focus-visible:[box-shadow:var(--focus-ring)]",
                 item.destructive ? "text-danger" : "text-ink",
                 item.disabled && "cursor-not-allowed opacity-55",
               )}
@@ -179,7 +179,7 @@ export function Menu({
               <span className="min-w-0 flex-1">
                 <span className="block truncate text-sm font-medium">{item.label}</span>
                 {item.description ? (
-                  <span className="text-ink-muted text-caption mt-0.5 block">
+                  <span className="text-caption text-ink-muted mt-0.5 block">
                     {item.description}
                   </span>
                 ) : null}

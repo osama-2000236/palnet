@@ -31,15 +31,15 @@
     "@axe-core/playwright": "^4.11.2",
     "@baydar/config": "workspace:*",
     "@playwright/test": "^1.48.1",
+    "@tailwindcss/postcss": "^4.3.3",
     "@types/node": "^22.7.5",
     "@types/react": "~19.1.10",
     "@types/react-dom": "~19.1.10",
-    "autoprefixer": "^10.4.20",
     "eslint": "^9.39.5",
     "eslint-config-next": "^16.2.12",
     "jest": "^29.7.0",
     "postcss": "^8.4.47",
-    "tailwindcss": "^3.4.14",
+    "tailwindcss": "^4.3.3",
     "typescript": "~5.9.2"
   }
 }

@@ -170,7 +170,7 @@ export default function KaramaPage(): JSX.Element {
                     {t("premiumActive")}{" "}
                     <Link
                       href={`/${locale}/me/premium`}
-                      className="text-brand-700 font-semibold underline focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+                      className="text-brand-700 focus-visible:outline-hidden font-semibold underline focus-visible:[box-shadow:var(--focus-ring)]"
                     >
                       {t("premiumLink")}
                     </Link>

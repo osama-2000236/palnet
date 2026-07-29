@@ -167,7 +167,7 @@ export function Dialog({
         tabIndex={-1}
         onKeyDown={onKeyDown}
         className={cx(
-          "dialog-panel bg-surface text-ink shadow-pop w-full max-w-md rounded-lg focus:outline-none focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]",
+          "dialog-panel bg-surface text-ink shadow-pop focus:outline-hidden focus-visible:outline-hidden w-full max-w-md rounded-lg focus-visible:[box-shadow:var(--focus-ring)]",
           className,
         )}
       >

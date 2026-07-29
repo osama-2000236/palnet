@@ -66,7 +66,7 @@ export default function CvPage(): JSX.Element {
       <div className="mb-6 flex items-center justify-between gap-3 print:hidden">
         <Link
           href={`/${locale}/me`}
-          className="text-ink-muted hover:text-ink text-sm focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+          className="text-ink-muted hover:text-ink focus-visible:outline-hidden text-sm focus-visible:[box-shadow:var(--focus-ring)]"
         >
           <span aria-hidden="true" className="inline-block rtl:rotate-180">
             ←

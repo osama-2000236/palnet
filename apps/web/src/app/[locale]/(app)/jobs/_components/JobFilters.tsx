@@ -69,7 +69,7 @@ export function JobFilters({
           id="jobs-industry"
           value={filters.industry}
           onChange={(e) => onChange({ ...filters, industry: e.target.value })}
-          className="bg-surface text-ink border-line-hard hover:border-line-hard focus-visible:border-brand-600 h-9 w-full rounded-md border px-3 text-sm focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+          className="border-line-hard bg-surface text-ink hover:border-line-hard focus-visible:border-brand-600 focus-visible:outline-hidden h-9 w-full rounded-md border px-3 text-sm focus-visible:[box-shadow:var(--focus-ring)]"
         >
           <option value="">{t("any")}</option>
           {PS_INDUSTRIES.map((industry) => (

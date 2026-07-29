@@ -87,7 +87,7 @@ export function Toast({
         <button
           type="button"
           onClick={action.onAction}
-          className="target-area shrink-0 rounded-md px-2 py-1 text-sm font-bold underline focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+          className="target-area focus-visible:outline-hidden shrink-0 rounded-md px-2 py-1 text-sm font-bold underline focus-visible:[box-shadow:var(--focus-ring)]"
         >
           {action.label}
         </button>
@@ -96,7 +96,7 @@ export function Toast({
         type="button"
         aria-label={dismissLabel}
         onClick={onDismiss}
-        className="target-area inline-flex h-7 w-7 flex-none items-center justify-center rounded-md text-current opacity-80 hover:opacity-100 focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+        className="target-area focus-visible:outline-hidden inline-flex h-7 w-7 flex-none items-center justify-center rounded-md text-current opacity-80 hover:opacity-100 focus-visible:[box-shadow:var(--focus-ring)]"
       >
         <Icon name="x" size={16} strokeWidth={2.2} />
       </button>

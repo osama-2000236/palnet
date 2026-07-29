@@ -32,19 +32,19 @@ export default function RootError({
           <button
             type="button"
             onClick={() => reset()}
-            className="border-brand-600 bg-brand-600 text-ink-inverse rounded-md border px-4 py-2 text-sm font-semibold focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+            className="border-brand-600 bg-brand-600 text-ink-inverse focus-visible:outline-hidden rounded-md border px-4 py-2 text-sm font-semibold focus-visible:[box-shadow:var(--focus-ring)]"
           >
             Try again
           </button>
           <Link
             href="/"
-            className="border-line-hard bg-surface text-ink rounded-md border px-4 py-2 text-sm font-semibold no-underline focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+            className="border-line-hard bg-surface text-ink focus-visible:outline-hidden rounded-md border px-4 py-2 text-sm font-semibold no-underline focus-visible:[box-shadow:var(--focus-ring)]"
           >
             Go home
           </Link>
         </div>
         {error.digest ? (
-          <p className="text-ink-subtle text-micro mt-6 font-mono" dir="ltr">
+          <p className="text-micro text-ink-subtle mt-6 font-mono" dir="ltr">
             Error ID: {error.digest}
           </p>
         ) : null}

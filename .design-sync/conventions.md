@@ -18,8 +18,8 @@ right:
 
 ```jsx
 <Surface variant="card" padding="4" className="max-w-md">
-  <h2 className="text-ink text-h3 font-semibold">خلاصتك</h2>
-  <p className="text-ink-muted text-small mt-1">ابدأ منشورًا لتظهر تحديثاتك هنا.</p>
+  <h2 className="text-h3 text-ink font-semibold">خلاصتك</h2>
+  <p className="text-small text-ink-muted mt-1">ابدأ منشورًا لتظهر تحديثاتك هنا.</p>
   <div className="mt-3 flex gap-2">
     <Button variant="primary">انشر</Button>
     <Button variant="ghost">إلغاء</Button>

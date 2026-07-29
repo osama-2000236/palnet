@@ -119,7 +119,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(function 
           "bg-surface text-ink w-full rounded-md border",
           "placeholder:text-ink-subtle",
           "duration-base ease-standard transition-colors",
-          "focus:border-brand-600 focus:outline-none focus:[box-shadow:var(--focus-ring)]",
+          "focus:border-brand-600 focus:outline-hidden focus:[box-shadow:var(--focus-ring)]",
           "hover:border-line-hard",
           autoGrow ? "resize-none overflow-y-auto" : "resize-y",
           SIZE_CLASSES[size],
