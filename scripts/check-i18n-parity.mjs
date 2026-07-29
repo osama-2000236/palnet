@@ -108,9 +108,9 @@ const PLATFORM_ONLY_NAMESPACES = {
  * A ratchet, not a target: the check fails when a number goes **up**, and also
  * when it goes down without this line being lowered, so closing a gap has to be
  * recorded. Both directions matter — 163 keys of web surface that mobile does
- * not have, and 101 the other way.
+ * not have, and 100 the other way.
  */
-const MAX_PLATFORM_ONLY_KEYS = { web: 163, mobile: 101 };
+const MAX_PLATFORM_ONLY_KEYS = { web: 163, mobile: 100 };
 
 /**
  * Namespaces whose keys are reached through a template literal or a translator
