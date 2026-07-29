@@ -50,13 +50,14 @@ Maestro is involved: switching theme and locale means tapping a specific
 segment, and only Maestro can do that by testID.
 
 ```bash
-# 1. emulator running with the dev client (ps.baydar.app) installed
-# 2. API on :4000  ->  node scripts/run-api-local.mjs .env.qa.local
-# 3. Metro         ->  pnpm --filter @baydar/mobile start
-node apps/mobile/e2e/shots.mjs
+# terminal 1 — emulator already booted; this brings up everything else
+pnpm --filter @baydar/mobile e2e:device-up
+
+# terminal 2
+pnpm --filter @baydar/mobile e2e:shots
 
 # subsets
-node apps/mobile/e2e/shots.mjs --only=feed,me --locale=ar-PS --theme=dark
+pnpm --filter @baydar/mobile e2e:shots -- --only=feed,me --locale=ar-PS --theme=dark
 ```
 
 The script sets `adb reverse` for 8081 and 4000 itself — without those the
@@ -73,6 +74,53 @@ capture them.
 
 The web twin is `apps/web/e2e/shots.mjs` (46 routes × 2 locales × 2 themes ×
 2 viewports); keep the two in step when routes are added.
+
+## Getting a current build onto the emulator
+
+`../e2e/device-up.mjs` is the one command between a booted emulator and a
+rendering app. It stays in the foreground and owns the API, Metro and a bundle
+proxy; Ctrl-C takes all three down. It exists because three separate blockers
+sit between "the code is merged" and "the screen is on the emulator", and each
+one presents as a bug in your change:
+
+1. **A dev client older than the RN it runs red-boxes with
+   `Compiling JS failed: <line>:<col>:')' expected`.** That is the APK's Hermes
+   failing to compile a current bundle, not a syntax error in your code — an
+   hour went into debugging perfectly good JS before that was understood.
+   `device-up` compares the APK's install age against `pnpm-lock.yaml`'s mtime
+   and refuses to start, printing the rebuild command. (Ages, not timestamps:
+   the emulator's clock is on a different timezone than the host.)
+2. **This emulator cannot receive Metro's bundle.** RN asks for
+   `Accept: multipart/mixed`; OkHttp then dies on the chunked multipart with
+   `ProtocolException: Expected leading [0-9a-fA-F] character but was 0xd`, and
+   the plain path dies at 13–17MB with `unexpected end of stream`. Metro is
+   innocent — `curl` pulls the identical response cleanly on the host. So
+   `device-up` builds a ~5.5MB `expo export:embed --dev false` artifact and a
+   small proxy answers `*.bundle` from disk with a real `Content-Length`.
+   The proxy has to own **8081**: the dev client persists `10.0.2.2:8081` and
+   ignores the `?url=` it was launched with, and `10.0.2.2` bypasses
+   `adb reverse`. Metro moves to 8083.
+3. **Without the local API the app parks on "نحتاج التأكد من ملفك".** `device-up`
+   starts it from `.env.qa.local` and sets `adb reverse tcp:4000`.
+
+Rebuilding the dev client itself still needs the short-path worktree, because
+the pnpm store pushes native object paths past CMake's limit under the normal
+worktree base:
+
+```bash
+git worktree add --detach C:\b HEAD
+# copy .npmrc (virtual-store-dir-max-length=50) and apps/mobile/.env into C:\b
+cd C:\b && pnpm install
+cd apps/mobile && npx expo run:android   # ~3 minutes
+```
+
+Do not reach for the release variant: `RelWithDebInfo` object paths are longer
+than `Debug` by just enough to blow that same CMake limit, so it cannot build
+here at all.
+
+Bundled **raster assets** come from the installed APK, not from the served
+bundle — adding a new bundled image needs a native rebuild, not just a
+`device-up`.
 
 ## CI
 

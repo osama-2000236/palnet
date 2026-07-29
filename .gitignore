@@ -106,6 +106,8 @@ tools/CLAUDE-OPENROUTER-SETUP.md
 
 # Vision-QA screenshot output (apps/web/e2e/shots.mjs)
 .qa-shots/
+# The bundle apps/mobile/e2e/device-up.mjs builds and serves to the emulator.
+.qa-bundle/
 
 # design-sync
 .ds-sync/
