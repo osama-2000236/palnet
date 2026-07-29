@@ -51,7 +51,12 @@ export const SearchField = forwardRef<HTMLInputElement, SearchFieldProps>(functi
         type="search"
         value={value}
         className={cx(
-          "text-ink placeholder:text-ink-muted focus-visible:outline-hidden min-w-0 flex-1",
+          "text-ink placeholder:text-ink-muted min-w-0 flex-1",
+          // The ring goes on the input as well as the wrapper. The wrapper's
+          // `focus-within` draws the pill, but the a11y focus walk in
+          // apps/web/e2e asserts an indicator on the *focused element*, and
+          // `outline-hidden` alone silently drops the forced-colors ring too.
+          "focus-visible:outline-hidden focus-visible:[box-shadow:var(--focus-ring)]",
           // The UA's own clear affordance would sit next to ours.
           "rounded-sm bg-transparent text-sm [&::-webkit-search-cancel-button]:hidden",
           inputClassName,
