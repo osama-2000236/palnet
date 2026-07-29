@@ -96,7 +96,7 @@ describe("new web atoms", () => {
         value: "public",
         onValueChange,
         items: [
-          { value: "public", label: "Public" },
+          { value: "public", label: "Public", testID: "visibility-public" },
           { value: "private", label: "Private" },
         ],
       }),
@@ -106,6 +106,8 @@ describe("new web atoms", () => {
 
     expect(container.textContent).toContain("Visibility");
     expect(onValueChange).toHaveBeenCalledWith("private");
+    // Twin of native's `testID` on the Pressable: the pill, not the sr-only input.
+    expect(container.querySelector("[data-testid='visibility-public']").tagName).toBe("LABEL");
     unmount();
   });
 

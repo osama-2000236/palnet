@@ -16,6 +16,9 @@ export interface RadioGroupItem {
   label: ReactNode;
   description?: ReactNode;
   disabled?: boolean;
+  /** Locale-independent handle for E2E — labels are translated, so a flow that
+   *  changes the locale cannot find its own control by text. */
+  testID?: string;
 }
 
 export interface RadioGroupProps {
@@ -69,6 +72,7 @@ export function RadioGroup({
           return (
             <Pressable
               key={item.value}
+              testID={item.testID}
               accessibilityRole="radio"
               accessibilityLabel={typeof item.label === "string" ? item.label : undefined}
               accessibilityState={{ checked, disabled: isDisabled }}

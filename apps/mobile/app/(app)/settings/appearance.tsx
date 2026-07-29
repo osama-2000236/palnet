@@ -1,4 +1,4 @@
-import { Surface, Tab, Tabs, useThemeTokens } from "@baydar/ui-native";
+import { RadioGroup, Surface, useThemeTokens } from "@baydar/ui-native";
 import { useTranslation } from "react-i18next";
 import { Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -15,6 +15,9 @@ export default function AppearanceSettingsScreen(): JSX.Element {
   const setChoice = useThemeStore((state) => state.setChoice);
   const locale = normalizeLocale(i18n.language);
 
+  // Theme and language are settings, not filters or sub-routes, so they are
+  // RadioGroups — DESIGN.md §6.3 scopes the tab strip to filters and sub-routes,
+  // and web's twin screen already picks the theme with a RadioGroup.
   const options: { key: ThemeChoice; label: string; desc: string }[] = [
     {
       key: "light",
@@ -62,23 +65,15 @@ export default function AppearanceSettingsScreen(): JSX.Element {
 
         <Surface variant="card" padding="4">
           <View style={{ gap: tk.space[3] }}>
-            <Tabs
+            <RadioGroup
+              items={options.map((option) => ({
+                value: option.key,
+                label: option.label,
+                testID: `appearance-${option.key}`,
+              }))}
               value={choice}
-              onChange={(key) => setChoice(key as ThemeChoice)}
-              testID="appearance-segmented"
-            >
-              {options.map((option) => (
-                <Tab
-                  key={option.key}
-                  value={option.key}
-                  // Locale-independent handle for E2E — the labels are translated,
-                  // so tapping by text can't drive the locale switch itself.
-                  testID={`appearance-${option.key}`}
-                >
-                  {option.label}
-                </Tab>
-              ))}
-            </Tabs>
+              onValueChange={(value) => setChoice(value as ThemeChoice)}
+            />
             <Text
               style={{
                 color: tk.color.inkMuted,
@@ -133,18 +128,14 @@ export default function AppearanceSettingsScreen(): JSX.Element {
 
         <Surface variant="card" padding="4">
           <View style={{ gap: tk.space[3] }}>
-            <Tabs
+            <RadioGroup
+              items={[
+                { value: "ar-PS", label: t("settings.language.arabic"), testID: "language-ar-PS" },
+                { value: "en", label: t("settings.language.english"), testID: "language-en" },
+              ]}
               value={locale}
-              onChange={(key) => void setAppLocale(key as SupportedLocale)}
-              testID="language-segmented"
-            >
-              <Tab value="ar-PS" testID="language-ar-PS">
-                {t("settings.language.arabic")}
-              </Tab>
-              <Tab value="en" testID="language-en">
-                {t("settings.language.english")}
-              </Tab>
-            </Tabs>
+              onValueChange={(value) => void setAppLocale(value as SupportedLocale)}
+            />
             {needsRestartForDirection(locale) ? (
               <Text
                 style={{
