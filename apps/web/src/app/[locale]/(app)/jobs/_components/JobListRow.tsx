@@ -1,7 +1,7 @@
 "use client";
 
 import { formatRelativeTime, type Job } from "@baydar/shared";
-import { Badge, Chip, Icon, Skeleton, Surface, cx } from "@baydar/ui-web";
+import { Badge, Chip, Icon, RecordCardSkeleton, Surface, cx } from "@baydar/ui-web";
 import Image from "next/image";
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
@@ -118,16 +118,5 @@ function CompanyLogo({ job }: { job: Job }): JSX.Element {
 }
 
 export function JobRowSkeleton(): JSX.Element {
-  return (
-    <Surface variant="row" padding="4" aria-hidden="true">
-      <div className="flex items-start gap-3">
-        <Skeleton radius="var(--radius-md)" className="h-12 w-12 shrink-0" />
-        <div className="flex-1 space-y-2">
-          <Skeleton className="h-4 w-2/3" />
-          <Skeleton className="h-3 w-1/3" />
-          <Skeleton className="h-3 w-1/2" />
-        </div>
-      </div>
-    </Surface>
-  );
+  return <RecordCardSkeleton variant="row" />;
 }

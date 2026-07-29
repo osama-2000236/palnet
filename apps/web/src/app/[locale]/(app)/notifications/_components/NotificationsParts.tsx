@@ -1,7 +1,7 @@
 "use client";
 
 import { formatRelativeTime, NotificationType, type Notification } from "@baydar/shared";
-import { Avatar, Button, EmptyState, Skeleton, Surface } from "@baydar/ui-web";
+import { Avatar, Button, EmptyState, RecordCardSkeleton, Skeleton, Surface } from "@baydar/ui-web";
 import { Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
@@ -154,13 +154,12 @@ function NotificationRow({
 
 function NotificationRowSkeleton(): JSX.Element {
   return (
-    <div className="border-ink-muted/20 bg-surface flex items-start gap-3 rounded-md border p-3">
-      <Skeleton kind="circle" className="h-10 w-10" />
-      <div className="flex-1 space-y-2">
-        <Skeleton className="h-3 w-3/4" />
-        <Skeleton className="h-3 w-1/4" />
-      </div>
-    </div>
+    <RecordCardSkeleton
+      variant="card"
+      density="compact"
+      meta={false}
+      leading={<Skeleton kind="circle" className="h-10 w-10 shrink-0" />}
+    />
   );
 }
 

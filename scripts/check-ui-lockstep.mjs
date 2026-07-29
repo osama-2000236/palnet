@@ -70,8 +70,6 @@ const KNOWN_DRIFT = {
     SegmentedControl: "same concept as web's Tabs — converge the name and props",
     StateMessage: "merges web's EmptyState + Alert; native's `tone` API is the better one",
     SearchField: "web only has AppShellSearch, which is chrome-bound",
-    RecordCard: "web repeats this list-row markup inline across jobs, network, saved",
-    RecordCardSkeleton: "part of RecordCard",
   },
 };
 
