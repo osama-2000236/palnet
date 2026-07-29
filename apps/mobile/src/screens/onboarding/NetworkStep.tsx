@@ -2,6 +2,7 @@ import {
   Alert,
   Avatar,
   Button,
+  EmptyState,
   Icon,
   Surface,
   nativeTokens,
@@ -11,7 +12,7 @@ import { type Control, type FieldErrors } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { ActivityIndicator, Pressable, Text, View } from "react-native";
 
-import { ControlledField, EmptyState } from "./Fields";
+import { ControlledField } from "./Fields";
 import type { PersonSuggestionDto } from "./api";
 import type { OnboardingFormValues } from "./types";
 
@@ -71,7 +72,12 @@ export function NetworkStep({
           </Button>
         </View>
       ) : suggestions.length === 0 ? (
-        <EmptyState message={t("onboarding.network.empty")} />
+        <EmptyState
+          motif="network"
+          variant="inline"
+          title={t("onboarding.network.emptyTitle")}
+          body={t("onboarding.network.emptyBody")}
+        />
       ) : (
         <View style={{ gap: nativeTokens.space[2] }}>
           {suggestions.map((suggestion) => (

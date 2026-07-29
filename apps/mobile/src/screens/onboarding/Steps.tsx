@@ -1,7 +1,7 @@
-import { Surface, nativeTokens, useThemeTokens } from "@baydar/ui-native";
+import { Checkbox, Surface, nativeTokens, useThemeTokens } from "@baydar/ui-native";
 import { Controller, type Control, type FieldErrors } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import { Pressable, Switch, Text, View } from "react-native";
+import { Text, View } from "react-native";
 
 import { CityField } from "@/components/CityField";
 
@@ -16,7 +16,6 @@ export function IdentityStep({
   control: Control<OnboardingFormValues>;
   errors: FieldErrors<OnboardingFormValues>;
 }): JSX.Element {
-  const c = useThemeTokens().color;
   const { t } = useTranslation();
 
   return (
@@ -45,43 +44,17 @@ export function IdentityStep({
         render={({ field: { onChange, value } }) => (
           <View style={{ gap: nativeTokens.space[1] }}>
             <Surface padding="3" variant="tinted">
-              <Pressable
-                accessibilityLabel={t("onboarding.identity.confirm")}
-                accessibilityRole="switch"
-                accessibilityState={{ checked: value }}
+              {/* Consent, so a checkbox — the same control register uses for the
+                  same job since #128. A switch says "this setting is on now";
+                  this is an assertion the user makes on submit. */}
+              <Checkbox
+                checked={value}
+                onChange={onChange}
+                label={t("onboarding.identity.confirm")}
+                ariaLabel={t("onboarding.identity.confirm")}
+                error={Boolean(errors.identityConfirmed)}
                 testID="onboarding-identity-confirm"
-                style={{
-                  minHeight: nativeTokens.chrome.minHit,
-                  flexDirection: "row",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  gap: nativeTokens.space[3],
-                }}
-                onPress={() => onChange(!value)}
-              >
-                <Text
-                  selectable
-                  style={{
-                    flex: 1,
-                    color: c.ink,
-                    fontFamily: nativeTokens.type.family.body,
-                    fontSize: nativeTokens.type.scale.small.size,
-                    lineHeight: nativeTokens.type.scale.small.line,
-                    textAlign: "auto",
-                  }}
-                >
-                  {t("onboarding.identity.confirm")}
-                </Text>
-                <Switch
-                  thumbColor={value ? c.brand600 : c.surface}
-                  trackColor={{
-                    false: c.surfaceSunken,
-                    true: c.brand200,
-                  }}
-                  value={value}
-                  onValueChange={onChange}
-                />
-              </Pressable>
+              />
             </Surface>
             {errors.identityConfirmed?.message ? (
               <FieldError message={String(errors.identityConfirmed.message)} />

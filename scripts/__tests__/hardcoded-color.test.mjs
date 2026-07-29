@@ -52,6 +52,14 @@ test("an inline comment is not a whole-line comment", () => {
   assert.deepEqual(hardcodedColors('const c = "#fff"; // white'), ["#fff"]);
 });
 
+test("a continuation line inside a JSX block comment is prose too", () => {
+  // The real failure: `{/* … */}` wraps onto a second line that starts with a
+  // word, so the whole-line-comment skip cannot see it. This is what tripped
+  // lint:tokens on a `#128` reference, and why the issue-reference rule is the
+  // load-bearing half rather than the comment skip.
+  assert.deepEqual(hardcodedColors("                  same job since #128. A switch says"), []);
+});
+
 test("six- and eight-digit all-decimal values stay colours", () => {
   // #526030 is the brand colour and every digit is decimal, so the
   // issue-reference exception has to stop at three digits.
