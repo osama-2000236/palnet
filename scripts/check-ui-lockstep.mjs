@@ -32,6 +32,10 @@ const PLATFORM_IDIOMS = {
   web: {
     Menu: "native uses ActionSheet — a bottom sheet, not a dropdown",
     MenuItemSpec: "type for Menu",
+    Dialog:
+      "native uses Sheet — a centred modal is not a mobile pattern. Native " +
+      "did export a Dialog; no screen ever mounted it, so it was deleted " +
+      "rather than left as a twin nothing uses",
     ReportDialog: "native uses ReportSheet, the same flow in a sheet",
     RoomRow: "native renders rooms through RecordCard",
     TypingIndicator: "inlined in native's message thread",

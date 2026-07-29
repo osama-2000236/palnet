@@ -69,14 +69,18 @@ from memory.
 
 ## Shipped in both barrels, mounted by nothing
 
-Kept, because the fix is to wire them rather than delete them — but stated
-plainly so nobody records them as parity. Adopted from #93's finding.
+Empty as of 2026-07-29. Every row was closed by wiring the component or
+deleting it, never by restating it:
 
-| Component            | Status                                                                                                                                                                          |
-| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `OnboardingProgress` | Native: mounted by **no screen**. Mobile _has_ an onboarding flow and does not use it, so web shows step progress and mobile does not. A screen-parity gap, not an idle export. |
-| `Dialog`             | Native barrel exports it; nothing mounts it. `Sheet` is the real one.                                                                                                           |
-| `Toast`              | Native: the provider is mounted, the component is not.                                                                                                                          |
+- `OnboardingProgress` — mobile's onboarding rendered a local `StepDots`, which
+  was this component with the `progressbar` role removed. Wired; the local copy
+  is gone.
+- `Dialog` — deleted from `ui-native`. `Sheet` is the mobile idiom and always
+  was, so the export was a twin nothing could mount. Reason recorded above.
+- `Toast` — **the entry was wrong.** `ToastProvider` renders `<Toast>` for every
+  queued item, and eight mobile screens call `showToast`. What was genuinely
+  dead is the `ToastHost` alias, on _both_ platforms; that is deleted.
+- `Illustration` sets — see the `outline` row above.
 
 ## Prop drift
 

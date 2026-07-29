@@ -141,8 +141,6 @@ export function ToastProvider({
   );
 }
 
-export const ToastHost = ToastProvider;
-
 export function useToast(): ToastContextValue {
   const ctx = useContext(ToastContext);
   if (!ctx) throw new Error("useToast must be used inside <ToastProvider>");

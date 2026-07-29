@@ -101,7 +101,7 @@ export { Textarea } from "./Textarea";
 export type { TextareaProps, TextareaSize } from "./Textarea";
 export { Tabs, Tab, TabPanel } from "./Tabs";
 export type { TabsProps, TabProps, TabPanelProps } from "./Tabs";
-export { Toast, ToastHost, ToastProvider, useToast } from "./Toast";
+export { Toast, ToastProvider, useToast } from "./Toast";
 export type {
   ShowToastInput,
   ToastAction,

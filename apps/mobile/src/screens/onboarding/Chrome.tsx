@@ -4,35 +4,12 @@ import { Text, View } from "react-native";
 
 import type { StepKey } from "./types";
 
-export function OnboardingHeader({
-  active,
-  count,
-  label,
-  step,
-}: {
-  active: number;
-  count: number;
-  label: string;
-  step: StepKey;
-}): JSX.Element {
+export function OnboardingHeader({ label, step }: { label: string; step: StepKey }): JSX.Element {
   const c = useThemeTokens().color;
   const { t } = useTranslation();
 
   return (
     <View style={{ gap: nativeTokens.space[2] }}>
-      <Text
-        selectable
-        style={{
-          color: c.brand600,
-          fontFamily: nativeTokens.type.family.sans,
-          fontSize: nativeTokens.type.scale.caption.size,
-          fontWeight: "700",
-          lineHeight: nativeTokens.type.scale.caption.line,
-          textAlign: "auto",
-        }}
-      >
-        {t("onboarding.progress", { current: active + 1, total: count })}
-      </Text>
       <Text
         selectable
         style={{
@@ -58,28 +35,6 @@ export function OnboardingHeader({
       >
         {t(`onboarding.stepCopy.${step}`)}
       </Text>
-    </View>
-  );
-}
-
-export function StepDots({ active, count }: { active: number; count: number }): JSX.Element {
-  const c = useThemeTokens().color;
-  return (
-    <View
-      accessibilityElementsHidden
-      style={{ flexDirection: "row", justifyContent: "center", gap: nativeTokens.space[1] }}
-    >
-      {Array.from({ length: count }).map((_, index) => (
-        <View
-          key={index}
-          style={{
-            width: index === active ? nativeTokens.space[6] : nativeTokens.space[2],
-            height: nativeTokens.space[2],
-            borderRadius: nativeTokens.radius.full,
-            backgroundColor: index === active ? c.brand600 : c.surfaceSunken,
-          }}
-        />
-      ))}
     </View>
   );
 }
