@@ -9,6 +9,8 @@
     "ios": "expo start --ios",
     "build": "echo \"Mobile builds run in EAS — nothing to build locally.\" && exit 0",
     "lint": "eslint \"app/**/*.{ts,tsx}\" \"src/**/*.{ts,tsx}\"",
+    "e2e:device-up": "node e2e/device-up.mjs",
+    "e2e:shots": "node e2e/shots.mjs",
     "type-check": "node ../../scripts/generate-mobile-router-types.mjs && tsc --noEmit",
     "test": "jest --coverage"
   },

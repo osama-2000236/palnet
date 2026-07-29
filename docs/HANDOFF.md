@@ -69,11 +69,12 @@ composited over `surfaceMuted`. `/in/demo` reproduces it exactly (underline y=16
 and `/messages` confirmed visually. Every strip rendered on **one row**; wrapping is now structurally
 impossible because the strip is a horizontal `ScrollView`.
 
-Getting there needed three workarounds worth knowing before the next device pass — see
-[[mobile-device-qa]] in the session memory, or in short: the installed dev client was two months
-stale and its Hermes could not compile a current bundle; the emulator's OkHttp cannot receive
-Metro's chunked multipart bundle; and the release variant cannot build here because
-`RelWithDebInfo` paths exceed the CMake limit that `Debug` just fits under.
+Getting there took ~90 minutes of rediscovering three unrelated blockers, each of which presents as
+a bug in your own change. That is now one command — `pnpm --filter @baydar/mobile e2e:device-up`
+(`apps/mobile/e2e/device-up.mjs`), which refuses to run against a dev client older than the
+lockfile, builds and serves the bundle from disk because this emulator cannot receive Metro's, and
+starts the API. Rationale for each workaround, and the rebuild recipe for the dev client itself:
+`apps/mobile/.maestro/README.md` §"Getting a current build onto the emulator".
 
 ## Launch blockers
 

@@ -17,6 +17,7 @@ import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { pathToFileURL } from "node:url";
 
 const sha1 = (buf) => createHash("sha1").update(buf).digest("hex").slice(0, 12);
 
@@ -45,7 +46,7 @@ const arg = (name, fallback) => {
   return hit ? hit.split("=").slice(1).join("=") : fallback;
 };
 
-const adb = (args, opts = {}) =>
+export const adb = (args, opts = {}) =>
   execFileSync(ADB, args, { encoding: "buffer", maxBuffer: 64 * 1024 * 1024, ...opts });
 
 async function login(email, password) {
@@ -80,7 +81,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
  * Raw rather than `screencap -p`, because a PNG is opaque — you cannot crop it
  * or count colours in it without a decoder, and both checks below need to.
  */
-function grabFrame() {
+export function grabFrame() {
   const buf = adb(["exec-out", "screencap"]);
   return { width: buf.readUInt32LE(0), height: buf.readUInt32LE(4), pixels: buf.subarray(16) };
 }
@@ -107,7 +108,7 @@ function contentSlice({ width, height, pixels }) {
  * threshold and the cell gets skipped. Colour count is resolution independent,
  * and the margin is not subtle — a blank splash scores 1, the launcher 902.
  */
-function paintedness(frame) {
+export function paintedness(frame) {
   const slice = contentSlice(frame);
   const seen = new Set();
   // Prime stride, so samples never align with a repeating pixel pattern.
@@ -165,7 +166,7 @@ const PAINTED_MIN = Number(process.env.QA_PAINTED_MIN ?? 8);
  * end of each cell is what catches a run that photographed one error screen
  * N times.
  */
-async function warmUp(timeoutMs = 90_000) {
+export async function warmUp(timeoutMs = 90_000) {
   const started = Date.now();
   // Launch once, then poll. The previous version re-issued `am start` every 4s,
   // up to 22 times, restarting the very app it was waiting for.
@@ -498,7 +499,12 @@ async function main() {
   if (failures.length) process.stdout.write(`failures:\n${JSON.stringify(failures, null, 2)}\n`);
 }
 
-main().catch((error) => {
-  console.error(error);
-  process.exit(1);
-});
+// Importable, so `device-up.mjs` can reuse `adb` and `warmUp` instead of
+// keeping a second copy of the framebuffer logic. Only run the matrix when this
+// file is the process entry point.
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  main().catch((error) => {
+    console.error(error);
+    process.exit(1);
+  });
+}
