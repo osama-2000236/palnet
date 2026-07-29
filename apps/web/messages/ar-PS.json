@@ -1,5 +1,6 @@
 {
   "common": {
+    "clear": "مسح",
     "appName": "بيدر",
     "cityField": {
       "label": "المدينة",

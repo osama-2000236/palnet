@@ -91,6 +91,8 @@ export { RadioGroup } from "./RadioGroup";
 export type { RadioGroupItem, RadioGroupProps } from "./RadioGroup";
 export { RetryChip } from "./RetryChip";
 export type { RetryChipProps } from "./RetryChip";
+export { SearchField } from "./SearchField";
+export type { SearchFieldProps } from "./SearchField";
 export { Skeleton } from "./Skeleton";
 export type { SkeletonProps } from "./Skeleton";
 export { Switch } from "./Switch";

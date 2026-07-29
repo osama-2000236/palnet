@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 
 import type { AppShellProps, AppShellRoute } from "./AppShell.types";
 import { AppShellNav } from "./AppShellNav";
-import { AppShellSearch } from "./AppShellSearch";
+import { SearchField } from "./SearchField";
 import { Icon } from "./Icon";
 
 export type { AppShellLabels, AppShellProps, AppShellRoute } from "./AppShell.types";
@@ -85,13 +85,18 @@ export function AppShell({
             <span className="hidden text-lg font-semibold sm:inline">{labels.logoAlt}</span>
           </button>
 
-          <AppShellSearch
-            inputRef={searchInputRef}
+          <SearchField
+            ref={searchInputRef}
             value={searchValue}
             placeholder={labels.searchPlaceholder}
-            label={labels.searchLabel}
-            onChange={onSearchChange}
-            onSubmit={onSearchSubmit}
+            aria-label={labels.searchLabel}
+            onChange={(event) => onSearchChange?.(event.currentTarget.value)}
+            onKeyDown={(event) => {
+              if (event.key !== "Enter") return;
+              event.preventDefault();
+              onSearchSubmit?.(event.currentTarget.value);
+            }}
+            containerClassName="flex-1 sm:max-w-[320px]"
           />
 
           <AppShellNav

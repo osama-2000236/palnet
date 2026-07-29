@@ -1,7 +1,7 @@
 "use client";
 
 import { type ChatRoom, formatNumber } from "@baydar/shared";
-import { EmptyState, Icon, Input, RoomRow, Tab, Tabs } from "@baydar/ui-web";
+import { EmptyState, Icon, RoomRow, SearchField, Tab, Tabs } from "@baydar/ui-web";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
@@ -28,6 +28,7 @@ export function InboxList({
   onSelectRoom,
 }: InboxListProps): JSX.Element {
   const t = useTranslations("messaging");
+  const tCommon = useTranslations("common");
   // Message requests: DMs from people outside the accepted network live under
   // their own tab so the main inbox stays focused.
   const [tab, setTab] = useState<"focused" | "requests">("focused");
@@ -49,16 +50,14 @@ export function InboxList({
         </Link>
       </div>
       <div className="px-3 py-2">
-        <Input
-          type="search"
+        <SearchField
           value={searchTerm}
           onChange={(event) => onSearchTermChange(event.target.value)}
+          onClear={() => onSearchTermChange("")}
+          clearLabel={tCommon("clear")}
           placeholder={t("searchPlaceholder")}
           aria-label={t("searchPlaceholder")}
-          size="sm"
-          fullWidth
-          leading={<Icon name="search" size={14} />}
-          className="rounded-full"
+          containerClassName="w-full"
         />
       </div>
       <div className="border-line-soft border-b px-3">
