@@ -131,7 +131,7 @@ function NotificationRow({
       {href ? (
         <Link
           href={href}
-          className="flex min-w-0 flex-1 items-start gap-3 rounded-sm hover:opacity-90 focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+          className="focus-visible:outline-hidden flex min-w-0 flex-1 items-start gap-3 rounded-sm hover:opacity-90 focus-visible:[box-shadow:var(--focus-ring)]"
         >
           {content}
         </Link>
@@ -140,7 +140,7 @@ function NotificationRow({
       )}
       <button
         type="button"
-        className="text-ink-muted hover:text-danger hover:bg-danger/10 target-area state-layer flex h-9 w-9 flex-none items-center justify-center rounded-md focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-50"
+        className="target-area state-layer text-ink-muted hover:bg-danger/10 hover:text-danger focus-visible:outline-hidden flex h-9 w-9 flex-none items-center justify-center rounded-md focus-visible:[box-shadow:var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-50"
         aria-label={t("dismiss.aria")}
         title={t("dismiss.action")}
         disabled={dismissing}

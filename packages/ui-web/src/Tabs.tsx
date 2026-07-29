@@ -181,7 +181,7 @@ export function Tab({ value, children, count, countLabel }: TabProps): JSX.Eleme
         // wide once the type scale put it on the 13px `small` step. Height
         // was pinned and width was not, so the control was legal in one
         // axis only.
-        "focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]",
+        "focus-visible:outline-hidden focus-visible:[box-shadow:var(--focus-ring)]",
         active ? "text-ink" : "text-ink-muted hover:text-ink",
       )}
     >
@@ -241,7 +241,7 @@ export function TabPanel({ value, children, className }: TabPanelProps): JSX.Ele
       aria-labelledby={`${ctx.baseId}-tab-${value}`}
       tabIndex={0}
       className={cx(
-        "focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]",
+        "focus-visible:outline-hidden focus-visible:[box-shadow:var(--focus-ring)]",
         className,
       )}
     >

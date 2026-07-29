@@ -56,8 +56,8 @@ export function CityField({
           }
         }}
         className={[
-          "bg-surface text-ink border-line-hard hover:border-line-hard h-9 w-full rounded-md border px-3 text-sm",
-          "focus-visible:border-brand-600 focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]",
+          "border-line-hard bg-surface text-ink hover:border-line-hard h-9 w-full rounded-md border px-3 text-sm",
+          "focus-visible:border-brand-600 focus-visible:outline-hidden focus-visible:[box-shadow:var(--focus-ring)]",
           disabled ? "bg-surface-subtle text-ink-subtle cursor-not-allowed" : "",
         ].join(" ")}
       >

@@ -58,7 +58,7 @@ export function Banner({
           type="button"
           onClick={onDismiss}
           aria-label={dismissLabel ?? "إغلاق"}
-          className="text-ink-muted hover:text-ink inline-flex h-6 w-6 items-center justify-center rounded focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+          className="text-ink-muted hover:text-ink focus-visible:outline-hidden inline-flex h-6 w-6 items-center justify-center rounded focus-visible:[box-shadow:var(--focus-ring)]"
         >
           <span aria-hidden="true">×</span>
         </button>

@@ -49,7 +49,7 @@ export default function AdminLayout({ children }: { children: ReactNode }): JSX.
     <>
       <nav
         aria-label={t("label")}
-        className="border-line-soft bg-surface z-nav sticky top-0 border-b"
+        className="z-nav border-line-soft bg-surface sticky top-0 border-b"
       >
         <div className="mx-auto flex w-full max-w-[1040px] items-center gap-1 px-6 py-2">
           {links
@@ -61,7 +61,7 @@ export default function AdminLayout({ children }: { children: ReactNode }): JSX.
                   key={link.href}
                   href={link.href}
                   aria-current={active ? "page" : undefined}
-                  className={`rounded-md px-3 py-2 text-sm font-semibold focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)] ${
+                  className={`focus-visible:outline-hidden rounded-md px-3 py-2 text-sm font-semibold focus-visible:[box-shadow:var(--focus-ring)] ${
                     active ? "bg-brand-50 text-brand-700" : "text-ink-muted hover:text-ink"
                   }`}
                 >
@@ -72,7 +72,7 @@ export default function AdminLayout({ children }: { children: ReactNode }): JSX.
           <span className="flex-1" />
           <Link
             href="/feed"
-            className="text-ink-muted hover:text-ink rounded-md px-3 py-2 text-sm focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+            className="text-ink-muted hover:text-ink focus-visible:outline-hidden rounded-md px-3 py-2 text-sm focus-visible:[box-shadow:var(--focus-ring)]"
           >
             {t("backToApp")}
           </Link>

@@ -88,7 +88,7 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(function Che
           }}
           className={cx(
             "rounded-xs border-line-hard text-brand-600 accent-brand-600 h-4 w-4 shrink-0",
-            "focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]",
+            "focus-visible:outline-hidden focus-visible:[box-shadow:var(--focus-ring)]",
             error && "border-danger text-danger accent-danger",
             inputClassName,
           )}

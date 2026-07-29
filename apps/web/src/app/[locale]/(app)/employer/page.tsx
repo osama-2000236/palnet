@@ -52,7 +52,7 @@ export default function EmployerHomePage(): JSX.Element {
         </div>
         <Link
           href={`/${locale}/employer/new`}
-          className="bg-brand-600 text-ink-inverse hover:bg-brand-700 inline-flex items-center rounded-md px-4 py-2 text-sm font-semibold focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+          className="bg-brand-600 text-ink-inverse hover:bg-brand-700 focus-visible:outline-hidden inline-flex items-center rounded-md px-4 py-2 text-sm font-semibold focus-visible:[box-shadow:var(--focus-ring)]"
         >
           {t("createCompany")}
         </Link>

@@ -154,7 +154,7 @@ function NavButton({
       aria-current={active ? "page" : undefined}
       title={disconnected ? labels.bellDisconnected : undefined}
       className={cx(
-        "text-micro relative -mb-px inline-flex h-full min-h-0 min-w-[64px] shrink-0 flex-col items-center justify-center gap-0.5 whitespace-nowrap border-b-2 px-3 font-medium focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]",
+        "text-micro focus-visible:outline-hidden relative -mb-px inline-flex h-full min-h-0 min-w-[64px] shrink-0 flex-col items-center justify-center gap-0.5 whitespace-nowrap border-b-2 px-3 font-medium focus-visible:[box-shadow:var(--focus-ring)]",
         active ? "border-brand-600 text-ink" : "text-ink-muted hover:text-ink border-transparent",
       )}
     >
@@ -163,7 +163,7 @@ function NavButton({
         {badgeText ? (
           <span
             aria-hidden="true"
-            className="bg-accent-600 text-ink-inverse text-micro absolute -top-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full px-1 font-bold leading-none ltr:-end-1.5 rtl:-start-1.5"
+            className="bg-accent-600 text-micro text-ink-inverse absolute -top-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full px-1 font-bold leading-none ltr:-end-1.5 rtl:-start-1.5"
           >
             {badgeText}
           </span>

@@ -181,7 +181,7 @@ export default function ActivityRoute(): JSX.Element {
                   <li key={job.id}>
                     <Link
                       href={`/jobs/${job.id}`}
-                      className="block h-full rounded-md focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+                      className="focus-visible:outline-hidden block h-full rounded-md focus-visible:[box-shadow:var(--focus-ring)]"
                     >
                       <Surface variant="flat" padding="4" className="h-full">
                         <p className="text-ink text-sm font-semibold">{job.title}</p>

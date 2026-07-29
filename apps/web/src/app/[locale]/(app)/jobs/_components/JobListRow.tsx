@@ -31,7 +31,7 @@ export function JobListRow({
       <div className="flex items-start gap-3">
         <Link
           href={`/jobs/${job.id}`}
-          className="flex min-w-0 flex-1 items-start gap-3 rounded-md focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+          className="focus-visible:outline-hidden flex min-w-0 flex-1 items-start gap-3 rounded-md focus-visible:[box-shadow:var(--focus-ring)]"
         >
           <CompanyLogo job={job} />
           <div className="min-w-0 flex-1">
@@ -57,7 +57,7 @@ export function JobListRow({
             {/* Recency is the first thing anyone scans a jobs list for, and it
                 was the one fact the row never showed — `createdAt` has always
                 been on the DTO. */}
-            <p className="text-ink-subtle text-micro mt-1">
+            <p className="text-micro text-ink-subtle mt-1">
               {formatRelativeTime(job.createdAt, locale)}
             </p>
             {job.skillsRequired.length > 0 ? (
@@ -88,7 +88,7 @@ export function JobListRow({
               disabled={saving}
               onClick={onToggleSave}
               className={cx(
-                "hover:bg-surface-subtle target-area state-layer inline-flex h-9 w-9 items-center justify-center rounded-md focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]",
+                "target-area state-layer hover:bg-surface-subtle focus-visible:outline-hidden inline-flex h-9 w-9 items-center justify-center rounded-md focus-visible:[box-shadow:var(--focus-ring)]",
                 "disabled:cursor-not-allowed disabled:opacity-60",
                 saved ? "text-brand-700" : "text-ink-muted hover:text-ink",
               )}

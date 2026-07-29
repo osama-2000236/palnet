@@ -43,7 +43,7 @@ export function AppShellSearch({
         onKeyDown={onSearchKey}
         placeholder={placeholder}
         aria-label={label}
-        className="text-ink placeholder:text-ink-muted min-w-0 flex-1 rounded-sm bg-transparent text-sm focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+        className="text-ink placeholder:text-ink-muted focus-visible:outline-hidden min-w-0 flex-1 rounded-sm bg-transparent text-sm focus-visible:[box-shadow:var(--focus-ring)]"
       />
     </div>
   );

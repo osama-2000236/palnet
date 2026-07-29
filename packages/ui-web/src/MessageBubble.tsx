@@ -87,7 +87,7 @@ export function MessageBubble({
       )}
     >
       {!mine && groupAuthor ? (
-        <div className="text-ink-muted text-micro mb-1 flex items-center gap-1.5 font-semibold">
+        <div className="text-micro text-ink-muted mb-1 flex items-center gap-1.5 font-semibold">
           <Avatar user={groupAuthor} size="xs" />
           <span className="truncate">{groupAuthor.firstName || groupAuthor.handle}</span>
         </div>
@@ -97,10 +97,10 @@ export function MessageBubble({
         className={cx(
           "whitespace-pre-wrap break-words rounded-[14px] border px-3.5 py-2.5 text-sm leading-[1.6]",
           deleted
-            ? "bg-surface-subtle border-line-soft text-ink-muted italic"
+            ? "border-line-soft bg-surface-subtle text-ink-muted italic"
             : mine
-              ? "bg-brand-100 border-brand-200 text-ink"
-              : "bg-surface border-line-soft text-ink",
+              ? "border-brand-200 bg-brand-100 text-ink"
+              : "border-line-soft bg-surface text-ink",
           // Tail — the only corner that goes tight (4px). Logical so it
           // flips correctly in RTL.
           tail && mine && "rounded-ee-[4px]",
@@ -142,7 +142,7 @@ export function MessageBubble({
           {onRetry ? (
             <RetryChip onRetry={onRetry} label={labels.failedHint} inline />
           ) : (
-            <span className="text-danger text-micro">{labels.failedHint}</span>
+            <span className="text-micro text-danger">{labels.failedHint}</span>
           )}
         </div>
       ) : null}
@@ -193,7 +193,7 @@ function StatusTick({
           type="button"
           onClick={onRetry}
           aria-label={labels.statusFailed}
-          className="text-danger inline-flex items-center focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+          className="text-danger focus-visible:outline-hidden inline-flex items-center focus-visible:[box-shadow:var(--focus-ring)]"
         >
           <Icon name="x" size={14} />
         </button>

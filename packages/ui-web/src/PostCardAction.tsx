@@ -33,7 +33,7 @@ export function PostCardAction({
         // to 77 and buys 6px of headroom; the pressable box is unaffected
         // because `target-area` owns it, not the padding.
         "gap-1.5 px-1 sm:gap-2 sm:px-2",
-        "focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]",
+        "focus-visible:outline-hidden focus-visible:[box-shadow:var(--focus-ring)]",
         "disabled:cursor-not-allowed disabled:opacity-60",
         active ? "text-brand-700 font-semibold" : "text-ink-muted hover:text-ink",
       )}

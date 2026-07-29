@@ -85,7 +85,7 @@ export default async function PublicJobPage(props: {
         <Link
           href={`/${locale}`}
           aria-label={tLanding("brand")}
-          className="flex items-center gap-2 rounded-md focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+          className="focus-visible:outline-hidden flex items-center gap-2 rounded-md focus-visible:[box-shadow:var(--focus-ring)]"
         >
           <span
             className="bg-brand-600 text-ink-inverse flex h-9 w-9 items-center justify-center rounded-lg font-sans text-xl font-bold"
@@ -97,7 +97,7 @@ export default async function PublicJobPage(props: {
         </Link>
         <Link
           href={`/${locale}/login?next=${encodeURIComponent(`/jobs/${job.id}`)}`}
-          className="text-ink hover:bg-surface-subtle rounded-md px-4 py-2 text-sm font-semibold focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+          className="text-ink hover:bg-surface-subtle focus-visible:outline-hidden rounded-md px-4 py-2 text-sm font-semibold focus-visible:[box-shadow:var(--focus-ring)]"
         >
           {tLanding("nav.signIn")}
         </Link>
@@ -105,7 +105,7 @@ export default async function PublicJobPage(props: {
 
       <div className="mx-auto flex w-full max-w-[760px] flex-col gap-5 px-6 pb-16">
         {/* Job hero */}
-        <section className="bg-surface border-line-soft shadow-card rounded-lg border p-6">
+        <section className="border-line-soft bg-surface shadow-card rounded-lg border p-6">
           <div className="flex items-start gap-4">
             <span
               aria-hidden="true"
@@ -138,19 +138,19 @@ export default async function PublicJobPage(props: {
             <div className="mt-5 flex flex-wrap items-center gap-3">
               <Link
                 href={`/${locale}/login?next=${encodeURIComponent(`/jobs/${job.id}`)}`}
-                className="bg-brand-600 text-ink-inverse hover:bg-brand-700 inline-flex items-center rounded-md px-5 py-2.5 text-sm font-semibold focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+                className="bg-brand-600 text-ink-inverse hover:bg-brand-700 focus-visible:outline-hidden inline-flex items-center rounded-md px-5 py-2.5 text-sm font-semibold focus-visible:[box-shadow:var(--focus-ring)]"
               >
                 {t("applyCta")}
               </Link>
               <Link
                 href={`/${locale}/register`}
-                className="border-line-hard text-ink hover:bg-surface-subtle inline-flex items-center rounded-md border px-5 py-2.5 text-sm font-semibold focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+                className="border-line-hard text-ink hover:bg-surface-subtle focus-visible:outline-hidden inline-flex items-center rounded-md border px-5 py-2.5 text-sm font-semibold focus-visible:[box-shadow:var(--focus-ring)]"
               >
                 {t("registerCta")}
               </Link>
             </div>
           ) : (
-            <div className="bg-surface-subtle border-line-soft mt-5 rounded-md border p-4">
+            <div className="border-line-soft bg-surface-subtle mt-5 rounded-md border p-4">
               <p className="text-ink text-sm font-semibold">{t("closed.title")}</p>
               <p className="text-ink-muted mt-1 text-sm">{t("closed.body")}</p>
             </div>
@@ -158,14 +158,14 @@ export default async function PublicJobPage(props: {
         </section>
 
         {/* Description */}
-        <section className="bg-surface border-line-soft shadow-card rounded-lg border p-6">
+        <section className="border-line-soft bg-surface shadow-card rounded-lg border p-6">
           <h2 className="text-ink mb-3 font-sans text-lg font-semibold">{tJobs("description")}</h2>
           <p className="text-ink whitespace-pre-wrap text-base leading-7">{job.description}</p>
         </section>
 
         {/* Skills */}
         {job.skillsRequired.length > 0 ? (
-          <section className="bg-surface border-line-soft shadow-card rounded-lg border p-6">
+          <section className="border-line-soft bg-surface shadow-card rounded-lg border p-6">
             <h2 className="text-ink mb-3 font-sans text-lg font-semibold">{tJobs("skills")}</h2>
             <ul className="flex flex-wrap gap-2">
               {job.skillsRequired.map((skill) => (

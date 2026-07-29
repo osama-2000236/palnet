@@ -156,13 +156,13 @@ export default function ProfileRoute(): JSX.Element {
             <>
               <Link
                 href="/me/edit"
-                className="border-ink-muted/30 text-ink hover:bg-ink-muted/5 rounded-md border px-4 py-2 text-sm focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+                className="border-ink-muted/30 text-ink hover:bg-ink-muted/5 focus-visible:outline-hidden rounded-md border px-4 py-2 text-sm focus-visible:[box-shadow:var(--focus-ring)]"
               >
                 {t("edit")}
               </Link>
               <Link
                 href="/cv"
-                className="border-ink-muted/30 text-ink hover:bg-ink-muted/5 rounded-md border px-4 py-2 text-sm focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+                className="border-ink-muted/30 text-ink hover:bg-ink-muted/5 focus-visible:outline-hidden rounded-md border px-4 py-2 text-sm focus-visible:[box-shadow:var(--focus-ring)]"
               >
                 {t("cvLink")}
               </Link>
@@ -194,14 +194,14 @@ export default function ProfileRoute(): JSX.Element {
                     setOpeningDm(false);
                   }
                 }}
-                className="border-ink-muted/30 text-ink hover:bg-ink-muted/5 rounded-md border px-4 py-2 text-sm focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)] disabled:opacity-60"
+                className="border-ink-muted/30 text-ink hover:bg-ink-muted/5 focus-visible:outline-hidden rounded-md border px-4 py-2 text-sm focus-visible:[box-shadow:var(--focus-ring)] disabled:opacity-60"
               >
                 {tMsg("newMessage")}
               </button>
               <button
                 type="button"
                 onClick={() => setReportOpen(true)}
-                className="border-line-hard text-ink hover:bg-surface-subtle rounded-md border px-4 py-2 text-sm focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+                className="border-line-hard text-ink hover:bg-surface-subtle focus-visible:outline-hidden rounded-md border px-4 py-2 text-sm focus-visible:[box-shadow:var(--focus-ring)]"
               >
                 {tSafety("report.action")}
               </button>

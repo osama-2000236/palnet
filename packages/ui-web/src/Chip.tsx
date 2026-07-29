@@ -81,7 +81,7 @@ export function Chip({
     interactive && !active && "hover:bg-surface-subtle",
     interactive && active && "hover:bg-brand-100",
     interactive &&
-      "cursor-pointer focus-visible:[box-shadow:var(--focus-ring)] focus-visible:outline-none",
+      "cursor-pointer focus-visible:[box-shadow:var(--focus-ring)] focus-visible:outline-hidden",
     disabled && "cursor-not-allowed opacity-55",
     className,
   );
@@ -129,7 +129,7 @@ export function Chip({
           className={cx(
             "inline-flex shrink-0 items-center justify-center rounded-full",
             "text-current/70 hover:bg-current/10 hover:text-current",
-            "focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]",
+            "focus-visible:outline-hidden focus-visible:[box-shadow:var(--focus-ring)]",
             CLOSE_SIZE[size],
           )}
         >

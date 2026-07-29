@@ -65,21 +65,21 @@ export function AppShell({
           // `min-h-target` even while `sr-only`: the link is reachable by Tab in
           // both states, so the targets sweep measures it in both. Meeting the
           // minimum is cheaper than arguing for an exemption.
-          className="bg-surface text-ink z-tooltip shadow-pop min-h-target min-w-target sr-only items-center justify-center rounded-md px-4 py-2 text-sm font-semibold focus:not-sr-only focus:fixed focus:top-2 focus:inline-flex focus:[box-shadow:var(--focus-ring)] focus:[inset-inline-start:0.5rem]"
+          className="z-tooltip min-h-target min-w-target bg-surface text-ink shadow-pop sr-only items-center justify-center rounded-md px-4 py-2 text-sm font-semibold focus:not-sr-only focus:fixed focus:top-2 focus:inline-flex focus:[box-shadow:var(--focus-ring)] focus:[inset-inline-start:0.5rem]"
         >
           {labels.skipToContent}
         </a>
       ) : null}
       <header
         role="banner"
-        className="border-line-soft bg-surface z-nav sticky top-0 h-14 border-b"
+        className="z-nav border-line-soft bg-surface sticky top-0 h-14 border-b"
       >
         <div className="mx-auto flex h-full w-full min-w-0 max-w-[1128px] items-center gap-2 px-3 sm:gap-4 sm:px-5">
           <button
             type="button"
             onClick={() => onNavigate("feed")}
             aria-label={labels.logoAlt}
-            className="target-area text-ink flex shrink-0 items-center gap-2 rounded-md py-1 hover:opacity-90 focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+            className="target-area text-ink focus-visible:outline-hidden flex shrink-0 items-center gap-2 rounded-md py-1 hover:opacity-90 focus-visible:[box-shadow:var(--focus-ring)]"
           >
             <Icon name="logo" size={32} />
             <span className="hidden text-lg font-semibold sm:inline">{labels.logoAlt}</span>
@@ -119,7 +119,7 @@ export function AppShell({
           focus actually lands here — an anchor jump to a non-focusable element
           scrolls without moving focus in several browsers, which strands the
           keyboard user back at the top of the tab order. */}
-      <div id={CONTENT_ID} tabIndex={-1} className="focus:outline-none">
+      <div id={CONTENT_ID} tabIndex={-1} className="focus:outline-hidden">
         {children}
       </div>
     </ShellFrame>
