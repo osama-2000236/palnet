@@ -4,6 +4,7 @@
 
 import { Company, EmployerJob, JobLocationMode, JobType } from "@baydar/shared";
 import {
+  Alert,
   AppHeader,
   Button,
   Input,
@@ -20,7 +21,6 @@ import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from "re
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { CityField } from "@/components/CityField";
-import { StateMessage } from "@/components/StateMessage";
 import { apiFetch } from "@/lib/api";
 import { apiErrorMessage } from "@/lib/api-errors";
 
@@ -180,11 +180,7 @@ export default function NewJobScreen(): JSX.Element {
               />
             </View>
             {error ? (
-              <StateMessage
-                message={error}
-                actionLabel={t("common.retry")}
-                onAction={() => void onSubmit()}
-              />
+              <Alert body={error} cta={t("common.retry")} onAction={() => void onSubmit()} />
             ) : null}
             <Button
               variant="primary"

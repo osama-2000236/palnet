@@ -83,7 +83,7 @@ export function InvoiceList({
     <Surface as="section" variant="flat" padding="5" className="flex flex-col gap-3">
       <h2 className="text-ink text-lg font-semibold">{t("title")}</h2>
 
-      {error ? <Alert kind="danger">{error}</Alert> : null}
+      {error ? <Alert kind="danger" body={error} /> : null}
 
       {invoices.length === 0 ? (
         <p className="text-ink-muted text-sm">{t("empty")}</p>

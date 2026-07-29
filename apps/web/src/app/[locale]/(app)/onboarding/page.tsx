@@ -177,7 +177,7 @@ export default function OnboardingPage(): JSX.Element {
           <CityField value={state.location} onChange={(city) => updateField("location", city)} />
         </label>
 
-        {error ? <Alert kind="danger">{error}</Alert> : null}
+        {error ? <Alert kind="danger" body={error} /> : null}
 
         <Button type="submit" loading={busy} fullWidth>
           {t("submit")}

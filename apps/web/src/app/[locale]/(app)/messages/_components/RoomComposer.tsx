@@ -37,9 +37,7 @@ export function RoomComposer({
     <>
       {error ? (
         <div className="border-line-soft border-t px-3 py-2">
-          <Alert kind="danger" className="rounded-md">
-            {error}
-          </Alert>
+          <Alert kind="danger" className="rounded-md" body={error} />
         </div>
       ) : null}
 

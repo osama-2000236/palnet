@@ -135,14 +135,10 @@ export default function PremiumPage(): JSX.Element {
       {!loading && error ? (
         <Alert
           kind="danger"
-          action={
-            <Button variant="ghost" size="sm" onClick={() => void load()}>
-              {tCommon("retry")}
-            </Button>
-          }
-        >
-          {t("loadError")}
-        </Alert>
+          cta={tCommon("retry")}
+          onAction={() => void load()}
+          body={t("loadError")}
+        />
       ) : null}
 
       {!loading && !error && hasPremium && subscription ? (
@@ -153,24 +149,37 @@ export default function PremiumPage(): JSX.Element {
               ? t("current.pastDueTitle")
               : t("current.activeTitle")
           }
-        >
-          <div className="flex flex-wrap items-center gap-3">
-            <span>
-              {subscription.status === "PAST_DUE"
-                ? t("current.pastDueBody")
-                : subscription.currentPeriodEnd
-                  ? t(subscription.cancelAtPeriodEnd ? "current.endsBody" : "current.renewsBody", {
-                      date: dateFormatter.format(new Date(subscription.currentPeriodEnd)),
-                    })
-                  : t("current.activeTitle")}
-            </span>
-            {subscription.cancelAtPeriodEnd ? null : (
-              <Button variant="ghost" size="sm" loading={cancelBusy} onClick={() => void cancel()}>
-                {t("cancel.action")}
-              </Button>
-            )}
-          </div>
-        </Alert>
+          body={
+            <>
+              <div className="flex flex-wrap items-center gap-3">
+                <span>
+                  {subscription.status === "PAST_DUE"
+                    ? t("current.pastDueBody")
+                    : subscription.currentPeriodEnd
+                      ? t(
+                          subscription.cancelAtPeriodEnd
+                            ? "current.endsBody"
+                            : "current.renewsBody",
+                          {
+                            date: dateFormatter.format(new Date(subscription.currentPeriodEnd)),
+                          },
+                        )
+                      : t("current.activeTitle")}
+                </span>
+                {subscription.cancelAtPeriodEnd ? null : (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    loading={cancelBusy}
+                    onClick={() => void cancel()}
+                  >
+                    {t("cancel.action")}
+                  </Button>
+                )}
+              </div>
+            </>
+          }
+        />
       ) : null}
 
       {!loading && !error && plan ? (

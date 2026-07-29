@@ -23,7 +23,7 @@ import {
   Tab,
   Tabs,
   Sheet,
-  StateMessage,
+  Alert,
   Switch,
   ThemeProvider,
 } from "@baydar/ui-native";
@@ -109,7 +109,7 @@ const CASES: [string, ReactElement][] = [
       <Tab value="b">داكن</Tab>
     </Tabs>,
   ],
-  ["StateMessage", <StateMessage title="حدث خطأ" message="أعد المحاولة." />],
+  ["Alert", <Alert title="حدث خطأ" body="أعد المحاولة." />],
   // A4.1 — the switch was not in this list at all, so the audit's claim that
   // native-theming covered it was false. Covers the thumb/track colours; the
   // spring itself is still unchecked.

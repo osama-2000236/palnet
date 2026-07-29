@@ -8,36 +8,33 @@
 // Surface — no severity colour, no icon, no action. After this lands,
 // replace that block with:
 //
-//   <Alert kind="danger" title={errorTitle}>
-//     {errorMessage}
-//     <Alert.Action onClick={retry}>{tCommon("retry")}</Alert.Action>
-//   </Alert>
+//   <Alert kind="danger" title={errorTitle} body={errorMessage}
+//          cta={tCommon("retry")} onAction={retry} />
 //
 // Rules:
 //   • Pick the right kind. `info` is the default; reserve `danger` for things
 //     the user must address.
 //   • Title is optional but encouraged — without one, the body should read
 //     as a complete sentence.
-//   • Pass `closable` only for dismissible nags. Errors that block a flow
-//     should NOT be closable.
+//   • `cta` + `onAction` render the button; the caller does not pass a node.
+//     `EmptyState` already worked that way on both platforms, and it is what
+//     lets the kit pick the right button variant per severity.
 
 import type { JSX, ReactNode } from "react";
 
+import { Button } from "./Button";
 import { cx } from "./cx";
-import { Icon } from "./Icon";
 
 export type AlertKind = "info" | "success" | "warning" | "danger";
 
 export interface AlertProps {
   kind?: AlertKind;
   title?: ReactNode;
-  children: ReactNode;
-  /** Primary action node — typically a <Button variant="ghost" size="sm">. */
-  action?: ReactNode;
-  /** Show a close button. Calls `onClose`. */
-  closable?: boolean;
-  onClose?: () => void;
-  closeAriaLabel?: string;
+  body: ReactNode;
+  /** Primary action label. Paired with `onAction`, as on `EmptyState`. */
+  cta?: string;
+  onAction?: () => void;
+  busy?: boolean;
   className?: string;
 }
 
@@ -114,11 +111,10 @@ const KIND_ICON: Record<AlertKind, JSX.Element> = {
 export function Alert({
   kind = "info",
   title,
-  children,
-  action,
-  closable = false,
-  onClose,
-  closeAriaLabel = "Dismiss",
+  body,
+  cta,
+  onAction,
+  busy = false,
   className,
 }: AlertProps): JSX.Element {
   return (
@@ -139,19 +135,21 @@ export function Alert({
           <div className="text-body font-sans font-semibold leading-snug">{title}</div>
         ) : null}
         <div className={cx("text-small text-ink-muted leading-relaxed", title && "mt-1")}>
-          {children}
+          {body}
         </div>
       </div>
-      {action ? <div className="shrink-0">{action}</div> : null}
-      {closable ? (
-        <button
-          type="button"
-          onClick={onClose}
-          aria-label={closeAriaLabel}
-          className="text-current/70 focus-visible:outline-hidden ms-1 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md hover:text-current focus-visible:[box-shadow:var(--focus-ring)]"
-        >
-          <Icon name="x" size={14} strokeWidth={2.2} />
-        </button>
+      {cta && onAction ? (
+        <div className="shrink-0">
+          <Button
+            variant={kind === "danger" ? "secondary" : "ghost"}
+            size="sm"
+            loading={busy}
+            disabled={busy}
+            onClick={onAction}
+          >
+            {cta}
+          </Button>
+        </div>
       ) : null}
     </div>
   );

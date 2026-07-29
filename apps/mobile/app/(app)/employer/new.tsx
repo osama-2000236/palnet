@@ -7,6 +7,7 @@
 
 import { Company, CreateCompanyBody, PS_INDUSTRIES } from "@baydar/shared";
 import {
+  Alert,
   AppHeader,
   Button,
   Chip,
@@ -23,7 +24,6 @@ import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } fr
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { CityField } from "@/components/CityField";
-import { StateMessage } from "@/components/StateMessage";
 import { apiFetch } from "@/lib/api";
 import { apiErrorMessage } from "@/lib/api-errors";
 
@@ -182,11 +182,7 @@ export default function NewCompanyScreen(): JSX.Element {
               <CityField value={form.city} onChange={(city) => setForm((f) => ({ ...f, city }))} />
             </Field>
             {error ? (
-              <StateMessage
-                message={error}
-                actionLabel={t("common.retry")}
-                onAction={() => void onSubmit()}
-              />
+              <Alert body={error} cta={t("common.retry")} onAction={() => void onSubmit()} />
             ) : null}
             <Button
               variant="primary"

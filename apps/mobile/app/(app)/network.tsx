@@ -3,6 +3,7 @@ import {
   type ConnectionListItem,
 } from "@baydar/shared";
 import {
+  Alert,
   EmptyState,
   AppHeader,
   RecordCardSkeleton,
@@ -17,7 +18,6 @@ import { FlatList, RefreshControl, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { z } from "zod";
 
-import { StateMessage } from "@/components/StateMessage";
 import { apiFetch } from "@/lib/api";
 import { apiErrorMessage } from "@/lib/api-errors";
 import { successHaptic, tapHaptic } from "@/lib/haptics";
@@ -187,9 +187,9 @@ export default function NetworkScreen(): JSX.Element {
         </Tabs>
 
         {error && items.length > 0 ? (
-          <StateMessage
-            message={error}
-            actionLabel={t("common.retry")}
+          <Alert
+            body={error}
+            cta={t("common.retry")}
             busy={loading}
             onAction={() => void load(filter)}
             style={styles.inlineError}
@@ -217,9 +217,9 @@ export default function NetworkScreen(): JSX.Element {
                 <RecordCardSkeleton variant="row" />
               </View>
             ) : error ? (
-              <StateMessage
-                message={error}
-                actionLabel={t("common.retry")}
+              <Alert
+                body={error}
+                cta={t("common.retry")}
                 busy={loading}
                 onAction={() => void load(filter)}
               />

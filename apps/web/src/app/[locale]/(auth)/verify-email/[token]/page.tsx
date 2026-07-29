@@ -47,9 +47,10 @@ export default function VerifyEmailPage(): JSX.Element {
             as a grey sentence with no severity; the kit already has the right
             treatment for both outcomes. */}
         {status !== "loading" ? (
-          <Alert kind={status === "success" ? "success" : "danger"}>
-            {status === "success" ? t("verify.success") : t("verify.error")}
-          </Alert>
+          <Alert
+            kind={status === "success" ? "success" : "danger"}
+            body={status === "success" ? t("verify.success") : t("verify.error")}
+          />
         ) : null}
         <Link href={`/${locale}/login`} className="block w-full">
           <Button variant="primary" fullWidth>

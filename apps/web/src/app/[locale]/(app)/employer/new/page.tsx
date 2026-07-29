@@ -156,7 +156,7 @@ export default function NewCompanyPage(): JSX.Element {
             </Field>
           </div>
 
-          {error ? <Alert kind="danger">{error}</Alert> : null}
+          {error ? <Alert kind="danger" body={error} /> : null}
 
           <div className="flex items-center gap-3 pt-2">
             <Button type="submit" variant="primary" loading={submitting}>

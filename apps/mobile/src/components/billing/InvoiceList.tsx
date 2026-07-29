@@ -7,13 +7,19 @@ import {
   type BankTransferDestination as BankTransferDestinationDto,
   type Invoice as InvoiceDto,
 } from "@baydar/shared";
-import { Button, Surface, nativeTokens, useThemeTokens, type NativeTheme } from "@baydar/ui-native";
+import {
+  Alert,
+  Button,
+  Surface,
+  nativeTokens,
+  useThemeTokens,
+  type NativeTheme,
+} from "@baydar/ui-native";
 import * as ImagePicker from "expo-image-picker";
 import { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { StyleSheet, Text, View } from "react-native";
 
-import { StateMessage } from "@/components/StateMessage";
 import { apiFetch } from "@/lib/api";
 import { getAccessToken } from "@/lib/session";
 import { uploadAsset } from "@/lib/uploads";
@@ -96,7 +102,7 @@ export function InvoiceList({
     <Surface variant="flat" padding="5" style={styles.card}>
       <Text style={styles.title}>{t("billing.invoices.title")}</Text>
 
-      {error ? <StateMessage message={error} tone="error" /> : null}
+      {error ? <Alert body={error} kind="danger" /> : null}
 
       {invoices.length === 0 ? (
         <Text style={styles.bodyText}>{t("billing.invoices.empty")}</Text>

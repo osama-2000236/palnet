@@ -1,5 +1,6 @@
 import { cursorPage, Notification as NotificationSchema, type Notification } from "@baydar/shared";
 import {
+  Alert,
   EmptyState,
   AppHeader,
   Icon,
@@ -17,7 +18,6 @@ import { Swipeable } from "react-native-gesture-handler";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { useDismissNotification } from "@/api/notifications";
-import { StateMessage } from "@/components/StateMessage";
 import { NotificationRow } from "@/components/rows/NotificationRow";
 import { apiCall, apiFetchPage } from "@/lib/api";
 import { apiErrorMessage } from "@/lib/api-errors";
@@ -166,9 +166,9 @@ export default function NotificationsScreen(): JSX.Element {
                 <RecordCardSkeleton variant="row" />
               </View>
             ) : error ? (
-              <StateMessage
-                message={error}
-                actionLabel={t("common.retry")}
+              <Alert
+                body={error}
+                cta={t("common.retry")}
                 busy={loading}
                 onAction={() => void load(null)}
               />

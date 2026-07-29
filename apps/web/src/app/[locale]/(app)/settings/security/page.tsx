@@ -189,7 +189,7 @@ export default function SecuritySettingsPage(): JSX.Element {
             autoComplete="new-password"
             required
           />
-          {pwError ? <Alert kind="danger">{pwError}</Alert> : null}
+          {pwError ? <Alert kind="danger" body={pwError} /> : null}
           <div className="flex justify-end">
             <Button
               type="submit"

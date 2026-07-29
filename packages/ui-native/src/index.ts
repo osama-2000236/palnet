@@ -63,8 +63,8 @@ export { SearchField } from "./SearchField";
 export type { SearchFieldProps } from "./SearchField";
 export { Tabs, Tab } from "./Tabs";
 export type { TabsProps, TabProps } from "./Tabs";
-export { StateMessage } from "./StateMessage";
-export type { StateMessageProps } from "./StateMessage";
+export { Alert } from "./Alert";
+export type { AlertKind, AlertProps } from "./Alert";
 export { Toast, ToastProvider, useToast } from "./Toast";
 export type {
   ShowToastInput,

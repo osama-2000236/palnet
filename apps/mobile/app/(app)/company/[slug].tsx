@@ -6,7 +6,14 @@ import {
   type Company as CompanyDto,
   type Job,
 } from "@baydar/shared";
-import { Button, Surface, nativeTokens, useThemeTokens, type NativeTheme } from "@baydar/ui-native";
+import {
+  Alert,
+  Button,
+  Surface,
+  nativeTokens,
+  useThemeTokens,
+  type NativeTheme,
+} from "@baydar/ui-native";
 import { Image } from "expo-image";
 import { router, useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useState, useMemo } from "react";
@@ -16,7 +23,6 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { JobRow } from "@/components/rows/JobRow";
 import { DetailScreenSkeleton } from "@/components/ScreenSkeleton";
-import { StateMessage } from "@/components/StateMessage";
 import { apiFetch, apiFetchPage } from "@/lib/api";
 import { apiErrorMessage } from "@/lib/api-errors";
 
@@ -62,10 +68,10 @@ export default function CompanyScreen(): JSX.Element {
   if (error || !company) {
     return (
       <SafeAreaView style={styles.centerScreen}>
-        <StateMessage
-          message={t("company.loadError")}
-          tone="error"
-          actionLabel={t("common.retry")}
+        <Alert
+          body={t("company.loadError")}
+          kind="danger"
+          cta={t("common.retry")}
           onAction={() => void load()}
         />
       </SafeAreaView>

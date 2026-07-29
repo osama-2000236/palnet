@@ -13,7 +13,7 @@ import {
   type KaramaBalance as KaramaBalanceDto,
   type KaramaReward as KaramaRewardDto,
 } from "@baydar/shared";
-import { Button, Surface } from "@baydar/ui-native";
+import { Alert, Button, Surface } from "@baydar/ui-native";
 import { useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -21,7 +21,6 @@ import { ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { CardStackSkeleton } from "@/components/ScreenSkeleton";
-import { StateMessage } from "@/components/StateMessage";
 import { apiFetch } from "@/lib/api";
 import { apiErrorMessage } from "@/lib/api-errors";
 import { makeIdempotencyKey } from "@/lib/idempotency";
@@ -127,11 +126,10 @@ export default function KaramaScreen(): JSX.Element {
         </View>
 
         {notice ? (
-          <StateMessage
-            message={notice.text}
-            tone={notice.kind}
-            role={notice.kind === "error" ? "alert" : "text"}
-            actionLabel={notice.kind === "error" ? t("common.retry") : undefined}
+          <Alert
+            body={notice.text}
+            kind={notice.kind === "error" ? "danger" : "success"}
+            cta={notice.kind === "error" ? t("common.retry") : undefined}
             onAction={notice.kind === "error" ? () => void load() : undefined}
           />
         ) : null}

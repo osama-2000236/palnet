@@ -96,7 +96,7 @@ export function LoginForm(): JSX.Element {
     >
       <form onSubmit={onSubmit} className="flex flex-col gap-4" noValidate>
         {params.get("deleted") === "grace" ? (
-          <Alert kind="info">{t("deletedGraceBanner")}</Alert>
+          <Alert kind="info" body={t("deletedGraceBanner")} />
         ) : null}
 
         <label className="flex flex-col gap-1">
@@ -135,7 +135,7 @@ export function LoginForm(): JSX.Element {
           {t("forgot.link")}
         </Link>
 
-        {error ? <Alert kind="danger">{error}</Alert> : null}
+        {error ? <Alert kind="danger" body={error} /> : null}
 
         <Button type="submit" variant="primary" loading={busy} fullWidth>
           {t("submitLogin")}

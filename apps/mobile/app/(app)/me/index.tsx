@@ -1,5 +1,5 @@
 import { profileCompletion, Profile as ProfileSchema, type Profile } from "@baydar/shared";
-import { Avatar, Button, Surface, Tab, Tabs } from "@baydar/ui-native";
+import { Alert, Avatar, Button, Surface, Tab, Tabs } from "@baydar/ui-native";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -8,7 +8,6 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { FieldCover } from "@/components/FieldCover";
 import { ProfileScreenSkeleton } from "@/components/ScreenSkeleton";
-import { StateMessage } from "@/components/StateMessage";
 import { apiFetch } from "@/lib/api";
 import { apiErrorMessage } from "@/lib/api-errors";
 import { clearSession, getAccessToken } from "@/lib/session";
@@ -77,9 +76,9 @@ export default function MeScreen(): JSX.Element {
   if (error || !profile) {
     return (
       <SafeAreaView style={styles.errorScreen}>
-        <StateMessage
-          message={error ?? t("profile.notFound")}
-          actionLabel={t("common.retry")}
+        <Alert
+          body={error ?? t("profile.notFound")}
+          cta={t("common.retry")}
           onAction={() => void load()}
         />
       </SafeAreaView>
@@ -190,7 +189,7 @@ export default function MeScreen(): JSX.Element {
               </Text>
             </Section>
           ) : (
-            <StateMessage message={t("profile.aboutEmpty")} role="text" />
+            <Alert body={t("profile.aboutEmpty")} />
           )
         ) : null}
 

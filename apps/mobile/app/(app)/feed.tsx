@@ -5,7 +5,13 @@ import {
   type Post,
   type Profile,
 } from "@baydar/shared";
-import { EmptyState, ComposerEntry, PostCardSkeleton, useThemeTokens } from "@baydar/ui-native";
+import {
+  Alert,
+  EmptyState,
+  ComposerEntry,
+  PostCardSkeleton,
+  useThemeTokens,
+} from "@baydar/ui-native";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { z } from "zod";
@@ -13,7 +19,6 @@ import { useTranslation } from "react-i18next";
 import { FlatList, RefreshControl, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { StateMessage } from "@/components/StateMessage";
 import { PostRow } from "@/components/rows/PostRow";
 import { apiFetch, apiFetchPage } from "@/lib/api";
 import { track } from "@/lib/analytics";
@@ -150,12 +155,12 @@ export default function FeedScreen(): JSX.Element {
               <JobsEntry />
 
               {feedError ? (
-                <StateMessage
-                  message={feedError}
-                  actionLabel={t("common.retry")}
+                <Alert
+                  body={feedError}
+                  cta={t("common.retry")}
                   busy={loading}
                   onAction={() => void load(null)}
-                  tone="error"
+                  kind="danger"
                   style={feedStyles.errorBox}
                 />
               ) : null}

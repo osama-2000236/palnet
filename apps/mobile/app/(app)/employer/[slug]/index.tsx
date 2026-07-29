@@ -1,5 +1,6 @@
 import { Company, cursorPage, EmployerJob } from "@baydar/shared";
 import {
+  Alert,
   AppHeader,
   Button,
   EmptyState,
@@ -15,7 +16,6 @@ import { useTranslation } from "react-i18next";
 import { FlatList, Pressable, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { StateMessage } from "@/components/StateMessage";
 import { apiFetch, apiFetchPage } from "@/lib/api";
 import { apiErrorMessage } from "@/lib/api-errors";
 
@@ -104,9 +104,9 @@ export default function CompanyJobsScreen(): JSX.Element {
           onRefresh={load}
           ListEmptyComponent={
             error ? (
-              <StateMessage
-                message={error}
-                actionLabel={t("common.retry")}
+              <Alert
+                body={error}
+                cta={t("common.retry")}
                 busy={loading}
                 onAction={() => void load()}
               />

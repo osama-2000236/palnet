@@ -2,7 +2,15 @@
 // Applied badge flips optimistically on press, rolls back on failure.
 
 import { ApplyToJobBody, Bookmark, BookmarkType, Job as JobSchema, type Job } from "@baydar/shared";
-import { AppHeader, Button, Icon, Surface, nativeTokens, useThemeTokens } from "@baydar/ui-native";
+import {
+  Alert,
+  AppHeader,
+  Button,
+  Icon,
+  Surface,
+  nativeTokens,
+  useThemeTokens,
+} from "@baydar/ui-native";
 import { Image } from "expo-image";
 import { router, useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
@@ -11,7 +19,6 @@ import { ScrollView, Share, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { DetailScreenSkeleton } from "@/components/ScreenSkeleton";
-import { StateMessage } from "@/components/StateMessage";
 import { apiCall, apiFetch } from "@/lib/api";
 import { apiErrorMessage } from "@/lib/api-errors";
 import { track } from "@/lib/analytics";
@@ -151,9 +158,9 @@ export default function JobDetailScreen(): JSX.Element {
     return (
       <SafeAreaView style={styles.screen}>
         <View style={{ padding: nativeTokens.space[4] }}>
-          <StateMessage
-            message={error ?? t("jobs.notFound")}
-            actionLabel={t("common.back")}
+          <Alert
+            body={error ?? t("jobs.notFound")}
+            cta={t("common.back")}
             onAction={() => router.back()}
           />
         </View>

@@ -1,11 +1,10 @@
-import { AppHeader, Button, Surface, nativeTokens, useThemeTokens } from "@baydar/ui-native";
+import { Alert, AppHeader, Button, Surface, nativeTokens, useThemeTokens } from "@baydar/ui-native";
 import { router } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { RefreshControl, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { StateMessage } from "@/components/StateMessage";
 import { apiErrorMessage } from "@/lib/api-errors";
 import { getAccessToken, readSession } from "@/lib/session";
 
@@ -88,9 +87,9 @@ export default function ActivityScreen(): JSX.Element {
         {loading ? (
           <ActivitySkeleton />
         ) : error || !state ? (
-          <StateMessage
-            message={error ?? t("activity.errorBody")}
-            actionLabel={t("common.retry")}
+          <Alert
+            body={error ?? t("activity.errorBody")}
+            cta={t("common.retry")}
             onAction={() => void load()}
           />
         ) : (

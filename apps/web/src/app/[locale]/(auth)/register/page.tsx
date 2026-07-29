@@ -157,7 +157,7 @@ export default function RegisterPage(): JSX.Element {
           }
         />
 
-        {error ? <Alert kind="danger">{error}</Alert> : null}
+        {error ? <Alert kind="danger" body={error} /> : null}
 
         <Button type="submit" variant="primary" loading={busy} fullWidth>
           {t("submitRegister")}

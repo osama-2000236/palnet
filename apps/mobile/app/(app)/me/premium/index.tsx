@@ -11,17 +11,16 @@ import {
   type Invoice as InvoiceDto,
   type KaramaBalance as KaramaBalanceDto,
 } from "@baydar/shared";
-import { Button, Surface } from "@baydar/ui-native";
+import { Alert, Button, Surface } from "@baydar/ui-native";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Alert, ScrollView, Text, View } from "react-native";
+import { Alert as RNAlert, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { z } from "zod";
 
 import { CheckoutPanel } from "@/components/billing/CheckoutPanel";
 import { InvoiceList } from "@/components/billing/InvoiceList";
 import { CardStackSkeleton } from "@/components/ScreenSkeleton";
-import { StateMessage } from "@/components/StateMessage";
 
 import { FeatureList, TRUST_KEYS, TrustRow, useStyles } from "@/screens/premium/parts";
 import { apiFetch } from "@/lib/api";
@@ -74,7 +73,7 @@ export default function PremiumScreen(): JSX.Element {
   // OS two-button confirm is enough — the account-delete Modal idiom is for
   // things you cannot undo.
   const cancel = useCallback((): void => {
-    Alert.alert(t("premium.cancel.action"), t("premium.cancel.confirm"), [
+    RNAlert.alert(t("premium.cancel.action"), t("premium.cancel.confirm"), [
       { text: t("common.cancel"), style: "cancel" },
       {
         text: t("premium.cancel.action"),
@@ -114,24 +113,23 @@ export default function PremiumScreen(): JSX.Element {
         </View>
 
         {error ? (
-          <StateMessage
-            message={t("premium.loadError")}
-            tone="error"
-            actionLabel={t("common.retry")}
+          <Alert
+            body={t("premium.loadError")}
+            kind="danger"
+            cta={t("common.retry")}
             onAction={() => void load()}
           />
         ) : null}
 
         {!error && hasPremium && subscription ? (
-          <StateMessage
-            role="text"
-            tone={subscription.status === "PAST_DUE" ? "offline" : "success"}
+          <Alert
+            kind={subscription.status === "PAST_DUE" ? "warning" : "success"}
             title={
               subscription.status === "PAST_DUE"
                 ? t("premium.current.pastDueTitle")
                 : t("premium.current.activeTitle")
             }
-            message={
+            body={
               subscription.status === "PAST_DUE"
                 ? t("premium.current.pastDueBody")
                 : subscription.currentPeriodEnd

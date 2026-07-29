@@ -1,5 +1,5 @@
 import { ChatRoom as ChatRoomSchema, Profile as ProfileSchema, type Profile } from "@baydar/shared";
-import { Button, ReportSheet, Tab, Tabs, useToast } from "@baydar/ui-native";
+import { Alert, Button, ReportSheet, Tab, Tabs, useToast } from "@baydar/ui-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -7,7 +7,6 @@ import { ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { ProfileScreenSkeleton } from "@/components/ScreenSkeleton";
-import { StateMessage } from "@/components/StateMessage";
 import { useBlock, useReport, useUnblock } from "@/api/safety";
 import { apiFetch } from "@/lib/api";
 import { apiErrorMessage } from "@/lib/api-errors";
@@ -89,7 +88,7 @@ export default function ProfileScreen(): JSX.Element {
   if (loadError || !profile) {
     return (
       <SafeAreaView style={profileStyles.errorScreen}>
-        <StateMessage message={loadError ?? t("profile.notFound")} />
+        <Alert body={loadError ?? t("profile.notFound")} />
       </SafeAreaView>
     );
   }
@@ -167,9 +166,9 @@ export default function ProfileScreen(): JSX.Element {
         />
 
         {actionError ? (
-          <StateMessage
-            message={actionError}
-            actionLabel={t("common.retry")}
+          <Alert
+            body={actionError}
+            cta={t("common.retry")}
             busy={busy}
             onAction={() => setActionError(null)}
           />
