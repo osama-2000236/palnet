@@ -175,7 +175,18 @@ async function assertVisualRoute(page: Page, route: string, checkOverflow: boole
     chars: (document.body.innerText ?? "").trim().length,
     // Whole document, not `main *`: not every route renders a <main>
     // (/me/edit does not), and "did it render" is a question about the page.
-    elements: document.body.querySelectorAll("*").length,
+    //
+    // Elements the page PUT ON SCREEN. A bare `*` also counts the <script>
+    // tags the framework injects into <body> — 10 of them in the served
+    // /ar-PS/cv document — so a third of this number was a function of how the
+    // bundler splits chunks rather than of what rendered. That is what the
+    // Next 16 bump exposed: `/cv` cleared the floor below on Next 15 and
+    // landed on exactly 30 under Turbopack, with a trace snapshot showing the
+    // page fully rendered — name, headline, contact line, experience section.
+    // The count has to be of the page, not of the build.
+    elements: document.body.querySelectorAll(
+      "*:not(script):not(template):not(style):not(link):not(noscript)",
+    ).length,
   }));
 
   // `/me` is a redirect stub, not a screen: it resolves the handle and replaces
@@ -193,6 +204,12 @@ async function assertVisualRoute(page: Page, route: string, checkOverflow: boole
   // Element count is data-independent. A page that failed to render has a
   // handful; a page that rendered has dozens.
   //
+  // 12, not 30: 30 was set when the count still included the <script> tags
+  // above. `/cv` — the smallest screen here, a print resume for a profile with
+  // one job — puts 20 elements on screen, and its unrendered state is the
+  // `<main role="status" aria-busy>` loading shell it server-renders: 4.
+  // Nothing sits between those two that this number needs to split.
+  //
   // `/me` is exempt from the element floor: it is a redirect stub, not a
   // screen — it resolves the handle and replaces to `/in/<handle>`, and the
   // rubric excluded it from scoring for the same reason. It must still put
@@ -200,7 +217,7 @@ async function assertVisualRoute(page: Page, route: string, checkOverflow: boole
   const isRedirectStub = /\/me$/.test(route);
   expect(rendered.chars, `${route} rendered no text at all`).toBeGreaterThan(0);
   if (!isRedirectStub) {
-    expect(rendered.elements, `${route} rendered almost no elements`).toBeGreaterThan(30);
+    expect(rendered.elements, `${route} rendered almost no elements`).toBeGreaterThan(12);
   }
 
   // Still taken: it forces a full paint, and it is what `--update-snapshots`
