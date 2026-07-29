@@ -343,7 +343,7 @@
   },
   "search": {
     "title": "Search",
-    "placeholder": "Search people, posts, jobs, or companies",
+    "placeholder": "Search people, posts, jobs, or companies…",
     "submit": "Search",
     "filters": "Filters",
     "tabs": {

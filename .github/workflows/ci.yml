@@ -51,6 +51,8 @@ jobs:
       - run: pnpm check:ui-lockstep
       - run: pnpm check:release-placeholders
       - run: pnpm check:security-headers
+      - run: pnpm check:native-versions
+      - run: pnpm test:gates
 
   type-check:
     runs-on: ubuntu-latest
