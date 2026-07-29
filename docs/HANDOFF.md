@@ -60,6 +60,21 @@ the shared api-client spec, and `check:security-headers`.
 `brand-600` underline and scrolls rather than wrapping, matching its web twin; `docs/design/PARITY.md`
 carries the two smaller gaps that remain.
 
+**Device evidence for the `Tabs` underline — captured 2026-07-29**, closing the caveat PARITY.md
+attached to it. Pixel 7 Pro emulator (1440×3120, ~3.5×), Arabic RTL, light. Sampled from the PNGs
+rather than eyeballed: on `/search` the active tab's label is `#1a1a17` (`ink`) over a `#526030`
+(`brand600`) underline spanning y=732–738 — 7px, i.e. the specified 2dp — while inactive labels are
+`#5c5a52` (`inkMuted`) with no underline above the strip's `#e8e7e4` border, which is `lineSoft`
+composited over `surfaceMuted`. `/in/demo` reproduces it exactly (underline y=1605–1611). `/network`
+and `/messages` confirmed visually. Every strip rendered on **one row**; wrapping is now structurally
+impossible because the strip is a horizontal `ScrollView`.
+
+Getting there needed three workarounds worth knowing before the next device pass — see
+[[mobile-device-qa]] in the session memory, or in short: the installed dev client was two months
+stale and its Hermes could not compile a current bundle; the emulator's OkHttp cannot receive
+Metro's chunked multipart bundle; and the release variant cannot build here because
+`RelWithDebInfo` paths exceed the CMake limit that `Debug` just fits under.
+
 ## Launch blockers
 
 All of these need an account, a credential, or a human that only the owner can supply. Verified
