@@ -91,7 +91,7 @@ export function ReportRow({
             className="mt-0.5 shrink-0"
             checked={selected}
             aria-label={t("bulk.selectOne")}
-            onCheckedChange={onSelectedChange}
+            onChange={onSelectedChange}
           />
         ) : null}
         <div className="min-w-0 md:flex-1">

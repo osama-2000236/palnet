@@ -63,7 +63,7 @@ from memory.
 | `Textarea`, both platforms         | `Input.tsx:10` documents "for multi-line, use `<Textarea>`". It exists in neither barrel; consumers hand-roll a `<textarea>`.                                                                                                                                            |
 | `ProfileHeader`, native            | Web-only. Mobile builds the profile header inline on the screen.                                                                                                                                                                                                         |
 | `Tab` counts, native               | Web's `Tab` takes `count` + `formatCount`; native's does not, because no mobile screen puts a badge on a tab. Adding an unused one to reach parity would be parity theatre — but mobile `/in/[handle]` still shows four tabs to web's five, and that part is a real gap. |
-| `Checkbox` `indeterminate`, native | Web supports it and it is live on `/moderation`'s select-all. Native does not.                                                                                                                                                                                           |
+| `Checkbox` `indeterminate`, native | **Not a gap — settled 2026-07-29.** Web needs it for `/moderation`'s select-all; mobile ships no admin surface and no multi-select list, so native would carry a prop no screen can pass. Add it with the first native screen that selects many rows.                    |
 | `RoomRow` prop shape               | Exists on both, but the shapes have not been diffed since either side last changed. Verify before treating as shared.                                                                                                                                                    |
 
 ## Shipped in both barrels, mounted by nothing
@@ -74,16 +74,13 @@ plainly so nobody records them as parity. Adopted from #93's finding.
 | Component            | Status                                                                                                                                                                          |
 | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `OnboardingProgress` | Native: mounted by **no screen**. Mobile _has_ an onboarding flow and does not use it, so web shows step progress and mobile does not. A screen-parity gap, not an idle export. |
-| `Checkbox`           | Native: renders on no screen at all.                                                                                                                                            |
 | `Dialog`             | Native barrel exports it; nothing mounts it. `Sheet` is the real one.                                                                                                           |
 | `Toast`              | Native: the provider is mounted, the component is not.                                                                                                                          |
 | `Illustration` sets  | No mobile screen passes `direction`, so `OutlineSet` and `BlockSet` (~210 lines of `react-native-svg`) are unreachable on native.                                               |
 
 ## Prop drift
 
-| Component  | Drift                                                                        |
-| ---------- | ---------------------------------------------------------------------------- |
-| `Checkbox` | Web `onCheckedChange`, native `onChange`. Unresolved — pick one and migrate. |
+None open.
 
 ## Shape decisions
 
@@ -97,6 +94,7 @@ plainly so nobody records them as parity. Adopted from #93's finding.
 | Post action labels  | **Settled 2026-07-27.** Re-measured at 390px in `ar-PS`: four labelled actions want 308px of 340px available and nothing clips, so both platforms show labels. Native's icon-only threshold moved from `> 3` to `> 4`. Five would still overflow.                                                                                                                                                                                                                               |
 | Colour resolution   | **Settled 2026-07-26.** No colour in a module-scope `StyleSheet.create` on native — `lint:tokens` fails on it. Colours resolve at render from `useThemeTokens()`.                                                                                                                                                                                                                                                                                                               |
 | Touch targets       | **Settled 2026-07-26.** `tokens.target` (`min: 44`, `compact: 40`). Web expands the pressable box with `.target-area` without changing layout; native derives `hitSlop` from the same token.                                                                                                                                                                                                                                                                                    |
+| Boolean controls    | **Settled 2026-07-29.** `Checkbox` and `Switch` both take `checked` + `onChange(value: boolean)` on both platforms. `Switch` already did; web's `Checkbox` was the odd one out with `onCheckedChange`. Mobile's register consent field was a raw React Native `Switch` — the wrong control for consent, and outside the kit — and is the same `Checkbox` web ships now.                                                                                                         |
 
 ## Screen-level parity
 

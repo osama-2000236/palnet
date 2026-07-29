@@ -24,7 +24,12 @@ export interface CheckboxProps extends Omit<
   className?: string;
   labelClassName?: string;
   inputClassName?: string;
-  onCheckedChange?(checked: boolean): void;
+  /**
+   * Named to match `Switch`, the other boolean control, which already takes
+   * `checked` + `onChange(value)` identically on both platforms. The DOM
+   * `onChange` is omitted above, so this is the only `onChange` a caller sees.
+   */
+  onChange?(value: boolean): void;
 }
 
 export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(function Checkbox(
@@ -39,7 +44,7 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(function Che
     className,
     labelClassName,
     inputClassName,
-    onCheckedChange,
+    onChange,
     "aria-describedby": ariaDescribedBy,
     ...rest
   },
@@ -84,7 +89,7 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(function Che
           }
           onChange={(event) => {
             if (disabled) return;
-            onCheckedChange?.(event.currentTarget.checked);
+            onChange?.(event.currentTarget.checked);
           }}
           className={cx(
             "rounded-xs border-line-hard text-brand-600 accent-brand-600 h-4 w-4 shrink-0",

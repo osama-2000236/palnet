@@ -1,10 +1,10 @@
-import { Button, Surface, nativeTokens, useThemeTokens } from "@baydar/ui-native";
+import { Button, Checkbox, Surface, nativeTokens } from "@baydar/ui-native";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { router } from "expo-router";
 import { useState } from "react";
 import { Controller, useForm, type Resolver } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import { Pressable, Switch, Text, View } from "react-native";
+import { View } from "react-native";
 import { z } from "zod";
 
 import {
@@ -43,7 +43,6 @@ const registerSchema = z.object({
 });
 
 export default function RegisterScreen(): JSX.Element {
-  const c = useThemeTokens().color;
   const { i18n, t } = useTranslation();
   const [error, setError] = useState<string | null>(null);
   const isConnected = useNetworkStore((state) => state.isConnected);
@@ -200,63 +199,21 @@ export default function RegisterScreen(): JSX.Element {
       />
 
       <Surface variant="tinted" padding="3">
-        <Pressable
-          accessibilityRole="switch"
-          accessibilityState={{ checked: accept }}
-          accessibilityLabel={t("auth.acceptTerms")}
+        {/* Web's register uses Checkbox for this field; mobile used a raw RN
+            Switch, which is the wrong control for consent and bypassed the kit
+            entirely. Same component on both platforms now. */}
+        <Checkbox
+          checked={accept}
+          onChange={(value) =>
+            setValue("acceptTerms", value, { shouldDirty: true, shouldValidate: true })
+          }
+          disabled={isSubmitting}
+          label={t("auth.acceptTerms")}
+          ariaLabel={t("auth.acceptTerms")}
+          error={!!errors.acceptTerms}
+          errorMessage={errors.acceptTerms?.message ? t(errors.acceptTerms.message) : undefined}
           testID="register-accept-terms"
-          onPress={() => {
-            setValue("acceptTerms", !accept, { shouldDirty: true, shouldValidate: true });
-          }}
-          style={{
-            minHeight: nativeTokens.chrome.minHit,
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: nativeTokens.space[3],
-          }}
-        >
-          <Text
-            selectable
-            style={{
-              flex: 1,
-              color: c.ink,
-              fontFamily: nativeTokens.type.family.body,
-              fontSize: nativeTokens.type.scale.small.size,
-              lineHeight: nativeTokens.type.scale.small.line,
-              textAlign: "auto",
-            }}
-          >
-            {t("auth.acceptTerms")}
-          </Text>
-          <Switch
-            value={accept}
-            onValueChange={(value) =>
-              setValue("acceptTerms", value, { shouldDirty: true, shouldValidate: true })
-            }
-            disabled={isSubmitting}
-            trackColor={{
-              false: c.surfaceSunken,
-              true: c.brand200,
-            }}
-            thumbColor={accept ? c.brand600 : c.surface}
-          />
-        </Pressable>
-        {errors.acceptTerms?.message ? (
-          <Text
-            selectable
-            accessibilityRole="alert"
-            style={{
-              color: c.danger,
-              fontFamily: nativeTokens.type.family.sans,
-              fontSize: nativeTokens.type.scale.caption.size,
-              lineHeight: nativeTokens.type.scale.caption.line,
-              textAlign: "auto",
-            }}
-          >
-            {t(errors.acceptTerms.message)}
-          </Text>
-        ) : null}
+        />
       </Surface>
 
       {error ? <AuthError message={error} /> : null}

@@ -163,7 +163,7 @@ describe("public web component coverage", () => {
         React.createElement(Checkbox, {
           label: "Agree",
           checked: false,
-          onCheckedChange: onChange,
+          onChange,
         }),
         React.createElement(Chip, { active: true, onClick: onRetry }, "Remote"),
         React.createElement(RadioGroup, {

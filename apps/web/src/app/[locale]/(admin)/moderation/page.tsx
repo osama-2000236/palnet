@@ -143,7 +143,7 @@ export default function ModerationPage(): JSX.Element {
           <Checkbox
             checked={allSelected}
             indeterminate={selected.length > 0 && !allSelected}
-            onCheckedChange={(checked) => setSelected(checked ? openIds : [])}
+            onChange={(checked) => setSelected(checked ? openIds : [])}
             label={t("bulk.selectAll")}
           />
           {selected.length > 0 ? (
