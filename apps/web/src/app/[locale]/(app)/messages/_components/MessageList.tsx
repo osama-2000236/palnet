@@ -88,7 +88,7 @@ export function MessageList({
               <li
                 role="separator"
                 aria-label={dayLabel}
-                className="text-ink-muted text-micro my-3 flex items-center gap-3 font-semibold"
+                className="text-micro text-ink-muted my-3 flex items-center gap-3 font-semibold"
               >
                 <span aria-hidden="true" className="bg-line-soft h-px flex-1" />
                 <span>{dayLabel}</span>

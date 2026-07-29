@@ -55,7 +55,7 @@ export function ProfileHeader({
           <Avatar user={user} size="xl" className="-mt-12" />
           <h1 className="bidi-plaintext text-h1 text-ink mt-2">{fullName}</h1>
           {headline ? (
-            <p className="bidi-plaintext text-small text-ink-muted font-body">{headline}</p>
+            <p className="bidi-plaintext font-body text-small text-ink-muted">{headline}</p>
           ) : null}
           {meta ? <p className="text-caption text-ink-muted">{meta}</p> : null}
           {badges ? <div className="mt-2 flex flex-wrap items-center gap-1.5">{badges}</div> : null}

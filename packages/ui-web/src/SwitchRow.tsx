@@ -54,7 +54,7 @@ export function SwitchRow({
       <div className="min-w-0">
         <div className="text-ink text-sm font-medium">{label}</div>
         {description ? (
-          <div id={descriptionId} className="text-ink-muted text-caption mt-0.5">
+          <div id={descriptionId} className="text-caption text-ink-muted mt-0.5">
             {description}
           </div>
         ) : null}

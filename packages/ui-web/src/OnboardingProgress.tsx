@@ -88,7 +88,7 @@ export function OnboardingProgress({
         })}
         <span
           dir="ltr"
-          className="text-ink-subtle text-micro ms-auto font-mono tabular-nums tracking-[.04em]"
+          className="text-micro text-ink-subtle ms-auto font-mono tabular-nums tracking-[.04em]"
         >
           {counter}
         </span>
@@ -147,10 +147,10 @@ export function OnboardingProgress({
       className={cx("flex flex-col gap-2 px-5 py-3", className)}
     >
       <div className="flex items-baseline justify-between gap-3">
-        {label ? <span className="text-ink text-small font-semibold">{label}</span> : <span />}
+        {label ? <span className="text-small text-ink font-semibold">{label}</span> : <span />}
         <span
           dir="ltr"
-          className="text-ink-subtle text-micro font-mono tabular-nums tracking-[.04em]"
+          className="text-micro text-ink-subtle font-mono tabular-nums tracking-[.04em]"
         >
           {counter}
         </span>
