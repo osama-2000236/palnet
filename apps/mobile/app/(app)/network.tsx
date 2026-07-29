@@ -2,7 +2,14 @@ import {
   ConnectionListItem as ConnectionListItemSchema,
   type ConnectionListItem,
 } from "@baydar/shared";
-import { AppHeader, RecordCardSkeleton, Tab, Tabs, useThemeTokens } from "@baydar/ui-native";
+import {
+  EmptyState,
+  AppHeader,
+  RecordCardSkeleton,
+  Tab,
+  Tabs,
+  useThemeTokens,
+} from "@baydar/ui-native";
 import { router } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -217,7 +224,7 @@ export default function NetworkScreen(): JSX.Element {
                 onAction={() => void load(filter)}
               />
             ) : (
-              <StateMessage message={t("network.empty")} role="text" />
+              <EmptyState motif="network" title={t("network.empty")} />
             )
           }
           renderItem={({ item }) => (

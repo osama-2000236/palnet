@@ -3,6 +3,7 @@
 
 import { ChatRoom as ChatRoomSchema, type ChatRoom } from "@baydar/shared";
 import {
+  EmptyState,
   AppHeader,
   Button,
   Icon,
@@ -193,9 +194,9 @@ export default function MessagesListScreen(): JSX.Element {
                 testID="messages-list-error"
               />
             ) : (
-              <StateMessage
-                message={t(tab === "requests" ? "messaging.emptyRequests" : "messaging.emptyList")}
-                role="text"
+              <EmptyState
+                motif="messages"
+                title={t(tab === "requests" ? "messaging.emptyRequests" : "messaging.emptyList")}
               />
             )
           }

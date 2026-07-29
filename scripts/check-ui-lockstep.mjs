@@ -33,7 +33,6 @@ const PLATFORM_IDIOMS = {
     Menu: "native uses ActionSheet — a bottom sheet, not a dropdown",
     MenuItemSpec: "type for Menu",
     ReportDialog: "native uses ReportSheet, the same flow in a sheet",
-    Alert: "native folds this into StateMessage's `tone` prop",
     RoomRow: "native renders rooms through RecordCard",
     TypingIndicator: "inlined in native's message thread",
     Composer: "native uses ComposerEntry — a tap target that opens a screen",
@@ -64,9 +63,18 @@ const PLATFORM_IDIOMS = {
  * to it should be an argument, not a reflex.
  */
 const KNOWN_DRIFT = {
-  web: {},
+  web: {
+    Alert:
+      "same persistent in-flow message as native's StateMessage, under another " +
+      "name. Web takes an `action` node plus `closable` and `kind`; native takes " +
+      "`actionLabel` + `onAction` + `busy` and `tone`. Converge both.",
+  },
   native: {
-    StateMessage: "merges web's EmptyState + Alert; native's `tone` API is the better one",
+    // This used to read "merges web's EmptyState + Alert". It does not: both
+    // packages export `EmptyState`, and they are paired. StateMessage is the
+    // Alert half only — the empty half was mobile screens reaching for the
+    // wrong component, which is fixed.
+    StateMessage: "web's Alert under another name — see the entry there",
     SearchField: "web only has AppShellSearch, which is chrome-bound",
   },
 };

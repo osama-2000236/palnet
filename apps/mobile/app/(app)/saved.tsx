@@ -6,6 +6,7 @@ import {
   type Bookmark as BookmarkDto,
 } from "@baydar/shared";
 import {
+  EmptyState,
   AppHeader,
   Button,
   Icon,
@@ -166,7 +167,7 @@ export default function SavedScreen(): JSX.Element {
                   onAction={() => void load(null)}
                 />
               ) : (
-                <StateMessage message={t("saved.empty")} role="text" />
+                <EmptyState motif="saved" title={t("saved.empty")} />
               )
             }
             ListFooterComponent={

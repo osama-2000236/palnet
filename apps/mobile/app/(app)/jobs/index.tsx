@@ -10,6 +10,7 @@ import {
   type Job,
 } from "@baydar/shared";
 import {
+  EmptyState,
   AppHeader,
   Button,
   Chip,
@@ -250,7 +251,7 @@ export default function JobsScreen(): JSX.Element {
                     onAction={() => void load(null, filters)}
                   />
                 ) : (
-                  <StateMessage message={t("jobs.emptyTitle")} role="text" />
+                  <EmptyState motif="jobs" title={t("jobs.emptyTitle")} />
                 )
               }
               ListFooterComponent={

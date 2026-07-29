@@ -1,5 +1,6 @@
 import { cursorPage, Notification as NotificationSchema, type Notification } from "@baydar/shared";
 import {
+  EmptyState,
   AppHeader,
   Icon,
   RecordCardSkeleton,
@@ -172,7 +173,7 @@ export default function NotificationsScreen(): JSX.Element {
                 onAction={() => void load(null)}
               />
             ) : (
-              <StateMessage message={t("notifications.empty")} role="text" />
+              <EmptyState motif="notifications" title={t("notifications.empty")} />
             )
           }
         />
