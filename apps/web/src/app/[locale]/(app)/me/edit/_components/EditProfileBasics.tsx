@@ -11,7 +11,7 @@ import { getAccessToken } from "@/lib/session";
 import { uploadFile } from "@/lib/uploads";
 
 const inputClass =
-  "border-ink-muted/30 w-full rounded-md border px-3 py-2 focus-visible:[box-shadow:var(--focus-ring)] focus-visible:outline-none";
+  "border-ink-muted/30 w-full rounded-md border px-3 py-2 focus-visible:[box-shadow:var(--focus-ring)] focus-visible:outline-hidden";
 
 export function BasicsSection({
   profile,
@@ -182,7 +182,7 @@ export function BasicsSection({
           type="button"
           onClick={save}
           disabled={busy}
-          className="target-area state-layer bg-brand-600 text-ink-inverse inline-flex items-center rounded-md px-4 py-2 text-sm font-semibold focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)] disabled:opacity-60"
+          className="target-area state-layer bg-brand-600 text-ink-inverse focus-visible:outline-hidden inline-flex items-center rounded-md px-4 py-2 text-sm font-semibold focus-visible:[box-shadow:var(--focus-ring)] disabled:opacity-60"
         >
           {t("save")}
         </button>

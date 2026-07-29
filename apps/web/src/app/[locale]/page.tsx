@@ -41,7 +41,7 @@ export default async function LandingPage({
         <Link
           href="/"
           aria-label={t("brand")}
-          className="flex items-center gap-2 rounded-md focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+          className="focus-visible:outline-hidden flex items-center gap-2 rounded-md focus-visible:[box-shadow:var(--focus-ring)]"
         >
           <span
             className="bg-brand-600 text-ink-inverse flex h-9 w-9 items-center justify-center rounded-lg font-sans text-xl font-bold"
@@ -54,13 +54,13 @@ export default async function LandingPage({
         <nav aria-label={t("nav.label")} className="flex items-center gap-2">
           <Link
             href={`/${locale}/login`}
-            className="text-ink hover:bg-surface-subtle hidden rounded-md px-4 py-2 text-sm font-semibold focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)] sm:inline-flex"
+            className="text-ink hover:bg-surface-subtle focus-visible:outline-hidden hidden rounded-md px-4 py-2 text-sm font-semibold focus-visible:[box-shadow:var(--focus-ring)] sm:inline-flex"
           >
             {t("nav.signIn")}
           </Link>
           <Link
             href={`/${locale}/register`}
-            className="bg-brand-600 text-ink-inverse hover:bg-brand-700 rounded-md px-4 py-2 text-sm font-semibold focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+            className="bg-brand-600 text-ink-inverse hover:bg-brand-700 focus-visible:outline-hidden rounded-md px-4 py-2 text-sm font-semibold focus-visible:[box-shadow:var(--focus-ring)]"
           >
             {t("nav.register")}
           </Link>
@@ -70,7 +70,7 @@ export default async function LandingPage({
       {/* ── Hero. Two-column on desktop: copy + decorative panel. ───── */}
       <section className="mx-auto grid w-full max-w-[1128px] grid-cols-1 items-center gap-10 px-6 py-12 lg:grid-cols-[1.1fr_1fr] lg:gap-16 lg:py-20">
         <div className="flex flex-col gap-6">
-          <p className="text-brand-700 text-caption font-semibold uppercase tracking-[0.12em]">
+          <p className="text-caption text-brand-700 font-semibold uppercase tracking-[0.12em]">
             {t("hero.eyebrow")}
           </p>
           <h1 className="text-ink font-sans text-4xl font-bold leading-[1.1] tracking-tight md:text-5xl">
@@ -86,7 +86,7 @@ export default async function LandingPage({
         {/* Decorative panel — the wheat mark in a tinted square. No external
          *  asset; SVG is inlined so the page is server-renderable without a
          *  font/image dependency. */}
-        <div className="bg-brand-50 border-line-soft relative aspect-[5/4] overflow-hidden rounded-2xl border">
+        <div className="border-line-soft bg-brand-50 relative aspect-[5/4] overflow-hidden rounded-2xl border">
           <svg
             viewBox="0 0 320 256"
             xmlns="http://www.w3.org/2000/svg"
@@ -148,7 +148,7 @@ export default async function LandingPage({
       <section aria-labelledby="employer-track" className="bg-surface-muted">
         <div className="mx-auto grid w-full max-w-[1128px] grid-cols-1 items-center gap-10 px-6 py-16 md:grid-cols-[1fr_auto]">
           <div>
-            <p className="text-accent-700 text-caption font-semibold uppercase tracking-[0.12em]">
+            <p className="text-caption text-accent-700 font-semibold uppercase tracking-[0.12em]">
               {t("employer.eyebrow")}
             </p>
             <h2
@@ -161,7 +161,7 @@ export default async function LandingPage({
           </div>
           <Link
             href={`/${locale}/register?as=employer`}
-            className="border-accent-600 text-accent-700 hover:bg-accent-50 inline-flex items-center whitespace-nowrap rounded-md border bg-transparent px-5 py-3 text-base font-semibold focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+            className="border-accent-600 text-accent-700 hover:bg-accent-50 focus-visible:outline-hidden inline-flex items-center whitespace-nowrap rounded-md border bg-transparent px-5 py-3 text-base font-semibold focus-visible:[box-shadow:var(--focus-ring)]"
           >
             {t("employer.cta")}
           </Link>
@@ -177,25 +177,25 @@ export default async function LandingPage({
           <nav aria-label={t("footer.label")} className="flex flex-wrap gap-x-5 gap-y-2">
             <Link
               href={`/${locale}/legal/tos`}
-              className="text-ink-muted hover:text-brand-700 rounded-sm focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+              className="text-ink-muted hover:text-brand-700 focus-visible:outline-hidden rounded-sm focus-visible:[box-shadow:var(--focus-ring)]"
             >
               {t("footer.tos")}
             </Link>
             <Link
               href={`/${locale}/legal/privacy`}
-              className="text-ink-muted hover:text-brand-700 rounded-sm focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+              className="text-ink-muted hover:text-brand-700 focus-visible:outline-hidden rounded-sm focus-visible:[box-shadow:var(--focus-ring)]"
             >
               {t("footer.privacy")}
             </Link>
             <Link
               href={`/${locale}/legal/community`}
-              className="text-ink-muted hover:text-brand-700 rounded-sm focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+              className="text-ink-muted hover:text-brand-700 focus-visible:outline-hidden rounded-sm focus-visible:[box-shadow:var(--focus-ring)]"
             >
               {t("footer.community")}
             </Link>
             <Link
               href={`/${locale}/legal/employer`}
-              className="text-ink-muted hover:text-brand-700 rounded-sm focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+              className="text-ink-muted hover:text-brand-700 focus-visible:outline-hidden rounded-sm focus-visible:[box-shadow:var(--focus-ring)]"
             >
               {t("footer.employer")}
             </Link>

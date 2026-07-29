@@ -45,7 +45,10 @@ export const Post = z.object({
     // the DTO exposed only a total, so no client could show which reactions a
     // post actually received. Defaulted so a cached or older payload still
     // parses.
-    byReaction: z.record(z.nativeEnum(ReactionType), z.number().int().nonnegative()).default({}),
+    // Zod 4 makes an enum-keyed `record` exhaustive — every ReactionType would be
+    // required. The API only sends reactions this post actually received, so the
+    // partial form is the one that matches the wire shape.
+    byReaction: z.partialRecord(z.enum(ReactionType), z.number().int().nonnegative()).default({}),
   }),
   viewer: z.object({
     reaction: z.string().nullable(),

@@ -2,9 +2,11 @@
 
 // Tabs — the APG tabs pattern, RTL-aware.
 //
-// The native counterpart is `SegmentedControl` in packages/ui-native, which is
-// a different control with a different capability set (no counts). See
-// docs/design/PARITY.md.
+// The native twin is `Tabs` in packages/ui-native — same name, same
+// `value`/`onChange` + `<Tab>` shape. It has no `count` because no mobile
+// screen shows an unread badge on a tab, and it still draws the pill strip it
+// drew as `SegmentedControl` rather than the underline DESIGN.md §6.3
+// specifies. Both gaps are recorded there, not silently absorbed here.
 
 import {
   createContext,
@@ -191,7 +193,7 @@ export function Tab({ value, children, count, countLabel }: TabProps): JSX.Eleme
         // wide once the type scale put it on the 13px `small` step. Height
         // was pinned and width was not, so the control was legal in one
         // axis only.
-        "focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]",
+        "focus-visible:outline-hidden focus-visible:[box-shadow:var(--focus-ring)]",
         active ? "text-ink" : "text-ink-muted hover:text-ink",
       )}
     >
@@ -251,7 +253,7 @@ export function TabPanel({ value, children, className }: TabPanelProps): JSX.Ele
       aria-labelledby={`${ctx.baseId}-tab-${value}`}
       tabIndex={0}
       className={cx(
-        "focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]",
+        "focus-visible:outline-hidden focus-visible:[box-shadow:var(--focus-ring)]",
         className,
       )}
     >

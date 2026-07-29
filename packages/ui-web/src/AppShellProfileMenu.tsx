@@ -90,7 +90,7 @@ export function AppShellProfileMenu({
         // bottom border on every signed-in page. The avatar drops to `xs` (24px)
         // to sit on the same optical line as the 20px nav icons.
         className={cx(
-          "text-micro relative -mb-px inline-flex h-full min-h-0 shrink-0 flex-col items-center justify-center gap-0.5 rounded-t-md border-b-2 px-3 font-medium transition-colors focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]",
+          "text-micro focus-visible:outline-hidden relative -mb-px inline-flex h-full min-h-0 shrink-0 flex-col items-center justify-center gap-0.5 rounded-t-md border-b-2 px-3 font-medium transition-colors focus-visible:[box-shadow:var(--focus-ring)]",
           active
             ? "border-brand-600 text-ink"
             : "text-ink-muted hover:bg-surface-subtle hover:text-ink border-transparent",
@@ -113,7 +113,7 @@ export function AppShellProfileMenu({
           id={menuId}
           role="menu"
           onKeyDown={onMenuKeyDown}
-          className="border-line-soft bg-surface shadow-card z-dropdown absolute end-0 top-full mt-1 min-w-[240px] rounded-md border py-1"
+          className="z-dropdown border-line-soft bg-surface shadow-card absolute end-0 top-full mt-1 min-w-[240px] rounded-md border py-1"
         >
           <ProfileHero
             me={me}
@@ -168,7 +168,7 @@ function ProfileHero({
             type="button"
             role="menuitem"
             onClick={() => select(onOpenChange, onViewProfile)}
-            className="text-brand-700 hover:bg-brand-100 mt-2 rounded-md px-2 py-1 text-xs font-semibold focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+            className="text-brand-700 hover:bg-brand-100 focus-visible:outline-hidden mt-2 rounded-md px-2 py-1 text-xs font-semibold focus-visible:[box-shadow:var(--focus-ring)]"
           >
             {labels.viewProfile}
           </button>
@@ -184,7 +184,7 @@ function MenuItem({ children, onSelect }: { children: ReactNode; onSelect(): voi
       type="button"
       role="menuitem"
       onClick={onSelect}
-      className="text-ink hover:bg-surface-subtle focus:bg-surface-subtle block w-full cursor-pointer px-3 py-2 text-start text-sm focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+      className="text-ink hover:bg-surface-subtle focus:bg-surface-subtle focus-visible:outline-hidden block w-full cursor-pointer px-3 py-2 text-start text-sm focus-visible:[box-shadow:var(--focus-ring)]"
     >
       {children}
     </button>

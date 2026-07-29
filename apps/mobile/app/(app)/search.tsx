@@ -10,10 +10,12 @@ import {
   type SearchPostHit,
 } from "@baydar/shared";
 import {
+  EmptyState,
   AppHeader,
   RecordCardSkeleton,
   SearchField,
-  SegmentedControl,
+  Tab,
+  Tabs,
   nativeTokens,
   useThemeTokens,
   type NativeTheme,
@@ -142,13 +144,18 @@ export default function SearchScreen(): JSX.Element {
           }
         />
 
-        <SegmentedControl
-          items={tabs}
-          selectedKey={type}
-          onChange={changeType}
+        <Tabs
+          value={type}
+          onChange={(key) => changeType(key as SearchType)}
           style={styles.tabs}
           testID="search-tabs"
-        />
+        >
+          {tabs.map((tab) => (
+            <Tab key={tab.key} value={tab.key} testID={tab.testID}>
+              {tab.label}
+            </Tab>
+          ))}
+        </Tabs>
 
         <FlatList
           data={hits}
@@ -175,9 +182,9 @@ export default function SearchScreen(): JSX.Element {
                 onAction={() => void run(type, q, null)}
               />
             ) : (
-              <StateMessage
-                message={touched ? t(`search.empty.${type}`) : t("search.prompt")}
-                role="text"
+              <EmptyState
+                motif="search"
+                title={touched ? t(`search.empty.${type}`) : t("search.prompt")}
               />
             )
           }

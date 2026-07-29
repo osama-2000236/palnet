@@ -1,11 +1,12 @@
 import { ChatRoom as ChatRoomSchema, Profile as ProfileSchema, type Profile } from "@baydar/shared";
-import { Button, ReportSheet, SegmentedControl, useToast } from "@baydar/ui-native";
+import { Button, ReportSheet, Tab, Tabs, useToast } from "@baydar/ui-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { ProfileScreenSkeleton } from "@/components/ScreenSkeleton";
 import { StateMessage } from "@/components/StateMessage";
 import { useBlock, useReport, useUnblock } from "@/api/safety";
 import { apiFetch } from "@/lib/api";
@@ -79,8 +80,8 @@ export default function ProfileScreen(): JSX.Element {
 
   if (loading) {
     return (
-      <SafeAreaView style={profileStyles.errorScreen}>
-        <StateMessage message={t("common.loading")} role="text" />
+      <SafeAreaView style={profileStyles.screen}>
+        <ProfileScreenSkeleton />
       </SafeAreaView>
     );
   }
@@ -174,11 +175,13 @@ export default function ProfileScreen(): JSX.Element {
           />
         ) : null}
 
-        <SegmentedControl
-          items={PROFILE_TABS.map((tab) => ({ key: tab.key, label: t(tab.i18n) }))}
-          selectedKey={activeTab}
-          onChange={setActiveTab}
-        />
+        <Tabs value={activeTab} onChange={(key) => setActiveTab(key as ProfileTab)}>
+          {PROFILE_TABS.map((tab) => (
+            <Tab key={tab.key} value={tab.key}>
+              {t(tab.i18n)}
+            </Tab>
+          ))}
+        </Tabs>
 
         <ProfileTabContent profile={loadedProfile} activeTab={activeTab} />
 

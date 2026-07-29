@@ -17,11 +17,11 @@ import { apiFetch } from "@/lib/api";
 import { getAccessToken } from "@/lib/session";
 
 const inputClass =
-  "border-ink-muted/30 w-full rounded-md border px-3 py-2 focus-visible:[box-shadow:var(--focus-ring)] focus-visible:outline-none";
+  "border-ink-muted/30 w-full rounded-md border px-3 py-2 focus-visible:[box-shadow:var(--focus-ring)] focus-visible:outline-hidden";
 const primaryButtonClass =
-  "target-area state-layer bg-brand-600 text-ink-inverse inline-flex items-center rounded-md px-4 py-2 text-sm font-semibold focus-visible:[box-shadow:var(--focus-ring)] focus-visible:outline-none disabled:opacity-60";
+  "target-area state-layer bg-brand-600 text-ink-inverse inline-flex items-center rounded-md px-4 py-2 text-sm font-semibold focus-visible:[box-shadow:var(--focus-ring)] focus-visible:outline-hidden disabled:opacity-60";
 const textButtonClass =
-  "target-area text-ink-muted inline-flex items-center text-sm focus-visible:[box-shadow:var(--focus-ring)] focus-visible:outline-none";
+  "target-area text-ink-muted inline-flex items-center text-sm focus-visible:[box-shadow:var(--focus-ring)] focus-visible:outline-hidden";
 
 const EMPTY_EDUCATION: Education = {
   school: "",
@@ -86,7 +86,7 @@ export function EducationsSection({
           <button
             type="button"
             onClick={() => setDraft({ ...EMPTY_EDUCATION })}
-            className="target-area text-brand-600 inline-flex items-center text-sm hover:underline focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+            className="target-area text-brand-600 focus-visible:outline-hidden inline-flex items-center text-sm hover:underline focus-visible:[box-shadow:var(--focus-ring)]"
           >
             + {t("add")}
           </button>
@@ -113,7 +113,7 @@ export function EducationsSection({
                 type="button"
                 onClick={() => void remove(e.id as string)}
                 disabled={busy}
-                className="target-area text-danger inline-flex items-center text-xs hover:underline focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+                className="target-area text-danger focus-visible:outline-hidden inline-flex items-center text-xs hover:underline focus-visible:[box-shadow:var(--focus-ring)]"
               >
                 {t("remove")}
               </button>
@@ -227,7 +227,7 @@ export function SkillsSection({
               onClick={() => void remove(s)}
               disabled={busy}
               aria-label={t("remove")}
-              className="target-area text-danger inline-flex items-center text-xs hover:underline focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+              className="target-area text-danger focus-visible:outline-hidden inline-flex items-center text-xs hover:underline focus-visible:[box-shadow:var(--focus-ring)]"
             >
               ×
             </button>
@@ -243,7 +243,7 @@ export function SkillsSection({
           }}
           placeholder={t("addSkillPlaceholder")}
           maxLength={60}
-          className="border-ink-muted/30 min-w-0 flex-1 rounded-md border px-3 py-2 focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+          className="border-ink-muted/30 focus-visible:outline-hidden min-w-0 flex-1 rounded-md border px-3 py-2 focus-visible:[box-shadow:var(--focus-ring)]"
         />
         <button
           type="button"

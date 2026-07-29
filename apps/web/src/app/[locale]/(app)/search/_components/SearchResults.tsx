@@ -36,7 +36,7 @@ export function PeopleRow({
       <div className="flex items-start gap-3">
         <Link
           href={`/in/${item.handle}`}
-          className="flex min-w-0 flex-1 items-start gap-3 focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+          className="focus-visible:outline-hidden flex min-w-0 flex-1 items-start gap-3 focus-visible:[box-shadow:var(--focus-ring)]"
         >
           <Avatar
             user={{
@@ -81,7 +81,7 @@ export function PostRow({ item, index = 0 }: { item: SearchPostHit; index?: numb
     >
       <Link
         href={`/in/${item.authorHandle}`}
-        className="flex items-start gap-3 focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+        className="focus-visible:outline-hidden flex items-start gap-3 focus-visible:[box-shadow:var(--focus-ring)]"
       >
         <Avatar
           user={{
@@ -117,7 +117,7 @@ export function JobRow({ item, index = 0 }: { item: SearchJobHit; index?: number
     >
       <Link
         href={`/jobs/${item.id}`}
-        className="flex items-start gap-3 focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+        className="focus-visible:outline-hidden flex items-start gap-3 focus-visible:[box-shadow:var(--focus-ring)]"
       >
         <div className="bg-surface-sunken text-ink flex h-12 w-12 shrink-0 items-center justify-center rounded-md text-sm font-bold">
           {item.companyName.slice(0, 1)}
@@ -153,7 +153,7 @@ export function CompanyRow({
     >
       <Link
         href={`/company/${item.slug}`}
-        className="flex items-start gap-3 focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+        className="focus-visible:outline-hidden flex items-start gap-3 focus-visible:[box-shadow:var(--focus-ring)]"
       >
         <div className="bg-surface-sunken text-ink flex h-12 w-12 shrink-0 items-center justify-center rounded-md text-sm font-bold">
           {item.logoUrl ? (

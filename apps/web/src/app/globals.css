@@ -18,12 +18,62 @@
  *   "./tokens.css": "./src/tokens.css"  ✓
  */
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-/* Single source of truth — every brand/ink/surface/line/semantic token. */
+/* Single source of truth — every brand/ink/surface/line/semantic token.
+ *
+ * Must come before the Tailwind import. CSS requires @import to precede every
+ * other rule, and Tailwind expands into thousands of them — so with this line
+ * below it the spec violation only surfaced after Tailwind ran. Next 15
+ * tolerated it; Next 16 fails the build on it. Tokens first is also the right
+ * order: Tailwind's preset reads these custom properties. */
 @import "@baydar/ui-tokens/tokens.css";
+
+@import "tailwindcss";
+
+/* Tailwind 4 reads its theme from CSS, not from a config file — unless you
+ * point it at one. This project keeps the JS config, because the theme is not
+ * authored here: `packages/ui-tokens/src/tailwind-preset.ts` DERIVES every
+ * colour, size, radius, shadow and duration from `tokens.ts`, which is also
+ * what the native package consumes. Re-authoring it as `@theme` would copy
+ * those values into a second place and break the one rule CLAUDE.md states
+ * without qualification — tokens are the source of truth. */
+@config "../../tailwind.config.ts";
+
+/* Tailwind 4's preflight differs from 3's in three ways this product has an
+ * opinion about. Each is restored with a token doing the job a hardcoded
+ * default used to. */
+@layer base {
+  /* Tailwind 3 defaulted every border to its own gray-200 — a grey the design
+   * system never sanctioned, and an opaque one, so it stayed light in dark mode
+   * and any component that leaned on it drew a pale line on a dark surface.
+   * Tailwind 4 defaults to `currentColor`, which is worse again: an unstyled
+   * border inherits the text colour. `--line-soft` is what a Baydar border is,
+   * and it re-themes. (Naming the old hex here would trip `qa:design`, which
+   * greps this file for literal colours — correctly.) */
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--line-soft);
+  }
+
+  /* Tailwind 4 dropped `cursor: pointer` on buttons to match the browser
+   * default. 64 `<button>` elements across web and ui-web, and 8 of them name
+   * the cursor themselves — the rest looked pressable only because preflight
+   * said so. */
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+
+  /* Tailwind 3 gave placeholders gray-400. Tailwind 4 uses currentColor at 50%,
+   * which on this palette lands between `--ink-subtle` and disabled text and
+   * changes with whatever colour the field is set to. */
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--ink-subtle);
+  }
+}
 
 :root {
   color-scheme: light;

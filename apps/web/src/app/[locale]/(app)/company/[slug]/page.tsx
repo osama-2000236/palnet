@@ -147,7 +147,7 @@ export default function CompanyPage(): JSX.Element {
               {jobs.length > 0 ? (
                 <Link
                   href={`/${locale}/jobs?companyId=${company.id}&company=${encodeURIComponent(company.name)}`}
-                  className="text-brand-700 min-h-target inline-flex items-center text-sm font-semibold underline"
+                  className="min-h-target text-brand-700 inline-flex items-center text-sm font-semibold underline"
                 >
                   {t("viewAllJobs")}
                 </Link>

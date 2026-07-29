@@ -126,7 +126,7 @@ export function JobAlertsPanel({
                 type="button"
                 aria-label={t("alerts.deleteAria")}
                 title={t("alerts.deleteAria")}
-                className="text-ink-muted hover:text-danger hover:bg-danger/10 flex h-7 w-7 flex-none items-center justify-center rounded-md focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+                className="text-ink-muted hover:bg-danger/10 hover:text-danger focus-visible:outline-hidden flex h-7 w-7 flex-none items-center justify-center rounded-md focus-visible:[box-shadow:var(--focus-ring)]"
                 onClick={() => void removeAlert(alert.id)}
               >
                 <Icon name="x" size={14} aria-hidden="true" />

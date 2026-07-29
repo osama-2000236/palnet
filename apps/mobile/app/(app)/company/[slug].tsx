@@ -15,6 +15,7 @@ import { Linking, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { JobRow } from "@/components/rows/JobRow";
+import { DetailScreenSkeleton } from "@/components/ScreenSkeleton";
 import { StateMessage } from "@/components/StateMessage";
 import { apiFetch, apiFetchPage } from "@/lib/api";
 import { apiErrorMessage } from "@/lib/api-errors";
@@ -52,8 +53,8 @@ export default function CompanyScreen(): JSX.Element {
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.centerScreen}>
-        <StateMessage message={t("common.loading")} role="text" />
+      <SafeAreaView style={styles.screen}>
+        <DetailScreenSkeleton />
       </SafeAreaView>
     );
   }

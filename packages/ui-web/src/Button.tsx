@@ -85,7 +85,7 @@ export function Button({
         "target-area state-layer",
         "duration-base ease-standard transition-colors",
         // focus ring: keyboard-only
-        "focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]",
+        "focus-visible:outline-hidden focus-visible:[box-shadow:var(--focus-ring)]",
         // active: spec says 1px press on web
         "active:translate-y-px",
         // disabled

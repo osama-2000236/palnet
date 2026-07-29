@@ -29,13 +29,13 @@ export default function NotFound(): JSX.Element {
         <nav className="mt-6 flex flex-wrap justify-center gap-2" aria-label="روابط العودة">
           <Link
             href="/feed"
-            className="border-brand-600 bg-brand-600 text-ink-inverse rounded-md border px-4 py-2 text-sm font-semibold no-underline focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+            className="border-brand-600 bg-brand-600 text-ink-inverse focus-visible:outline-hidden rounded-md border px-4 py-2 text-sm font-semibold no-underline focus-visible:[box-shadow:var(--focus-ring)]"
           >
             الموجز
           </Link>
           <Link
             href="/search"
-            className="border-line-hard bg-surface text-ink rounded-md border px-4 py-2 text-sm font-semibold no-underline focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+            className="border-line-hard bg-surface text-ink focus-visible:outline-hidden rounded-md border px-4 py-2 text-sm font-semibold no-underline focus-visible:[box-shadow:var(--focus-ring)]"
           >
             بحث
           </Link>

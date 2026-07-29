@@ -1,4 +1,4 @@
-import { SegmentedControl, Surface, useThemeTokens } from "@baydar/ui-native";
+import { Surface, Tab, Tabs, useThemeTokens } from "@baydar/ui-native";
 import { useTranslation } from "react-i18next";
 import { Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -62,18 +62,23 @@ export default function AppearanceSettingsScreen(): JSX.Element {
 
         <Surface variant="card" padding="4">
           <View style={{ gap: tk.space[3] }}>
-            <SegmentedControl
-              items={options.map((option) => ({
-                key: option.key,
-                label: option.label,
-                // Locale-independent handle for E2E — the labels are translated,
-                // so tapping by text can't drive the locale switch itself.
-                testID: `appearance-${option.key}`,
-              }))}
-              selectedKey={choice}
-              onChange={(key) => setChoice(key)}
+            <Tabs
+              value={choice}
+              onChange={(key) => setChoice(key as ThemeChoice)}
               testID="appearance-segmented"
-            />
+            >
+              {options.map((option) => (
+                <Tab
+                  key={option.key}
+                  value={option.key}
+                  // Locale-independent handle for E2E — the labels are translated,
+                  // so tapping by text can't drive the locale switch itself.
+                  testID={`appearance-${option.key}`}
+                >
+                  {option.label}
+                </Tab>
+              ))}
+            </Tabs>
             <Text
               style={{
                 color: tk.color.inkMuted,
@@ -128,15 +133,18 @@ export default function AppearanceSettingsScreen(): JSX.Element {
 
         <Surface variant="card" padding="4">
           <View style={{ gap: tk.space[3] }}>
-            <SegmentedControl
-              items={[
-                { key: "ar-PS", label: t("settings.language.arabic"), testID: "language-ar-PS" },
-                { key: "en", label: t("settings.language.english"), testID: "language-en" },
-              ]}
-              selectedKey={locale}
+            <Tabs
+              value={locale}
               onChange={(key) => void setAppLocale(key as SupportedLocale)}
               testID="language-segmented"
-            />
+            >
+              <Tab value="ar-PS" testID="language-ar-PS">
+                {t("settings.language.arabic")}
+              </Tab>
+              <Tab value="en" testID="language-en">
+                {t("settings.language.english")}
+              </Tab>
+            </Tabs>
             {needsRestartForDirection(locale) ? (
               <Text
                 style={{

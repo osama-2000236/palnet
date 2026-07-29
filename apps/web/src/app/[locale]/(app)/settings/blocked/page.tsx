@@ -46,7 +46,7 @@ export default function BlockedSettingsPage(): JSX.Element {
         <button
           type="button"
           onClick={() => setCursor(blocked.data?.meta.nextCursor ?? null)}
-          className="border-line-soft bg-surface text-ink hover:bg-surface-subtle self-start rounded-md border px-4 py-2 text-sm focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+          className="border-line-soft bg-surface text-ink hover:bg-surface-subtle focus-visible:outline-hidden self-start rounded-md border px-4 py-2 text-sm focus-visible:[box-shadow:var(--focus-ring)]"
         >
           {t("blocked.loadMore")}
         </button>

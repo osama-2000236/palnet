@@ -250,7 +250,7 @@ export default function SecuritySettingsPage(): JSX.Element {
         </header>
         <div className="border-line-soft border-t" />
         <div className="flex items-center justify-between gap-3 px-4 py-3">
-          <span className="bg-surface-subtle text-ink-muted text-micro rounded-full px-2 py-0.5 font-semibold">
+          <span className="bg-surface-subtle text-micro text-ink-muted rounded-full px-2 py-0.5 font-semibold">
             {t("twoFactor.comingSoon")}
           </span>
           <Button variant="secondary" size="sm" disabled>

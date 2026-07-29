@@ -5,7 +5,7 @@ import {
   type Post,
   type Profile,
 } from "@baydar/shared";
-import { ComposerEntry, PostCardSkeleton, useThemeTokens } from "@baydar/ui-native";
+import { EmptyState, ComposerEntry, PostCardSkeleton, useThemeTokens } from "@baydar/ui-native";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { z } from "zod";
@@ -192,7 +192,7 @@ export default function FeedScreen(): JSX.Element {
                 <PostCardSkeleton />
               </View>
             ) : (
-              <StateMessage message={t("feed.empty")} role="text" />
+              <EmptyState motif="feed" title={t("feed.empty")} />
             )
           }
           ListFooterComponent={

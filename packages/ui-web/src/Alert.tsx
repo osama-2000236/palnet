@@ -138,7 +138,7 @@ export function Alert({
         {title ? (
           <div className="text-body font-sans font-semibold leading-snug">{title}</div>
         ) : null}
-        <div className={cx("text-ink-muted text-small leading-relaxed", title && "mt-1")}>
+        <div className={cx("text-small text-ink-muted leading-relaxed", title && "mt-1")}>
           {children}
         </div>
       </div>
@@ -148,7 +148,7 @@ export function Alert({
           type="button"
           onClick={onClose}
           aria-label={closeAriaLabel}
-          className="text-current/70 ms-1 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md hover:text-current focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+          className="text-current/70 focus-visible:outline-hidden ms-1 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md hover:text-current focus-visible:[box-shadow:var(--focus-ring)]"
         >
           <Icon name="x" size={14} strokeWidth={2.2} />
         </button>

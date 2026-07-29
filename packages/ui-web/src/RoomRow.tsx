@@ -44,7 +44,7 @@ export function RoomRow({
         "border-line-soft flex w-full items-center gap-3 border-b px-4 py-3 text-start transition-colors",
         "border-s-[3px]",
         active ? "border-s-brand-600 bg-brand-50" : "hover:bg-surface-subtle border-s-transparent",
-        "focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]",
+        "focus-visible:outline-hidden focus-visible:[box-shadow:var(--focus-ring)]",
       )}
     >
       <Avatar user={user} size="md" online={online} />
@@ -53,7 +53,7 @@ export function RoomRow({
           <span className="bidi-plaintext text-ink truncate text-sm font-semibold">
             {`${user.firstName ?? ""} ${user.lastName ?? ""}`.trim() || user.handle || ""}
           </span>
-          <span dir="ltr" className="text-ink-muted text-micro shrink-0 tabular-nums">
+          <span dir="ltr" className="text-micro text-ink-muted shrink-0 tabular-nums">
             {timestamp}
           </span>
         </div>
@@ -68,7 +68,7 @@ export function RoomRow({
             {preview}
           </span>
           {unreadCount > 0 ? (
-            <span className="bg-accent-600 text-ink-inverse text-micro inline-flex h-5 min-w-[20px] items-center justify-center rounded-full px-1.5 font-semibold">
+            <span className="bg-accent-600 text-micro text-ink-inverse inline-flex h-5 min-w-[20px] items-center justify-center rounded-full px-1.5 font-semibold">
               {unreadCount > 99 ? "99+" : unreadCount}
             </span>
           ) : null}

@@ -86,7 +86,7 @@ export default function LocaleNotFound(): JSX.Element {
           <div className="flex gap-3">
             <Link
               href={`/${locale}/search`}
-              className="bg-surface-muted border-line-hard hover:bg-surface-subtle flex-1 rounded-md px-4 py-2 text-center text-sm font-medium"
+              className="border-line-hard bg-surface-muted hover:bg-surface-subtle flex-1 rounded-md px-4 py-2 text-center text-sm font-medium"
             >
               {tCommon("search")}
             </Link>

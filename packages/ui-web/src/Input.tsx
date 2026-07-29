@@ -133,7 +133,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
             // produced no ring at all, so the active field was invisible in a
             // long form. Buttons and non-text controls keep `:focus-visible`;
             // a text field is where the caret is and always warrants the ring.
-            "focus:border-brand-600 focus:outline-none focus:[box-shadow:var(--focus-ring)]",
+            "focus:border-brand-600 focus:outline-hidden focus:[box-shadow:var(--focus-ring)]",
             // hover (only when not focused/disabled — outline strengthens)
             "hover:border-line-hard",
             // sizing

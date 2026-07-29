@@ -3,11 +3,13 @@
 
 import { ChatRoom as ChatRoomSchema, type ChatRoom } from "@baydar/shared";
 import {
+  EmptyState,
   AppHeader,
   Button,
   Icon,
   RecordCardSkeleton,
-  SegmentedControl,
+  Tab,
+  Tabs,
   nativeTokens,
   useThemeTokens,
   type NativeTheme,
@@ -139,22 +141,19 @@ export default function MessagesListScreen(): JSX.Element {
           }
         />
 
-        <SegmentedControl
+        <Tabs
           testID="messages-tabs"
           style={{ marginBottom: nativeTokens.space[3] }}
-          selectedKey={tab}
-          onChange={(key) => setTab(key)}
-          items={[
-            { key: "focused" as const, label: t("messaging.tabFocused") },
-            {
-              key: "requests" as const,
-              label:
-                requestCount > 0
-                  ? `${t("messaging.tabRequests")} (${requestCount})`
-                  : t("messaging.tabRequests"),
-            },
-          ]}
-        />
+          value={tab}
+          onChange={(key) => setTab(key as "focused" | "requests")}
+        >
+          <Tab value="focused">{t("messaging.tabFocused")}</Tab>
+          <Tab value="requests">
+            {requestCount > 0
+              ? `${t("messaging.tabRequests")} (${requestCount})`
+              : t("messaging.tabRequests")}
+          </Tab>
+        </Tabs>
 
         <FlatList
           testID="room-list"
@@ -195,9 +194,9 @@ export default function MessagesListScreen(): JSX.Element {
                 testID="messages-list-error"
               />
             ) : (
-              <StateMessage
-                message={t(tab === "requests" ? "messaging.emptyRequests" : "messaging.emptyList")}
-                role="text"
+              <EmptyState
+                motif="messages"
+                title={t(tab === "requests" ? "messaging.emptyRequests" : "messaging.emptyList")}
               />
             )
           }

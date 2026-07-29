@@ -142,7 +142,7 @@ export function Composer({
         <button
           type="button"
           onClick={() => setExpanded(true)}
-          className="target-area border-line-soft bg-surface-subtle text-ink-muted hover:bg-surface-muted flex-1 cursor-pointer rounded-full border px-4 py-2.5 text-start text-sm focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+          className="target-area border-line-soft bg-surface-subtle text-ink-muted hover:bg-surface-muted focus-visible:outline-hidden flex-1 cursor-pointer rounded-full border px-4 py-2.5 text-start text-sm focus-visible:[box-shadow:var(--focus-ring)]"
         >
           {labels.startPrompt}
         </button>
@@ -185,7 +185,7 @@ export function Composer({
         placeholder={labels.expandedPlaceholder}
         rows={5}
         maxLength={maxLength}
-        className="text-ink placeholder:text-ink-muted w-full resize-none rounded-md border-0 bg-transparent p-0 text-base focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+        className="text-ink placeholder:text-ink-muted focus-visible:outline-hidden w-full resize-none rounded-md border-0 bg-transparent p-0 text-base focus-visible:[box-shadow:var(--focus-ring)]"
       />
 
       {media.length > 0 ? (
@@ -208,7 +208,7 @@ export function Composer({
                   type="button"
                   onClick={() => onRemoveMedia(m.id)}
                   aria-label={labels.removeMedia}
-                  className="target-area bg-surface text-ink-muted shadow-card hover:text-danger absolute -end-2 -top-2 inline-flex h-5 w-5 items-center justify-center rounded-full focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+                  className="target-area bg-surface text-ink-muted shadow-card hover:text-danger focus-visible:outline-hidden absolute -end-2 -top-2 inline-flex h-5 w-5 items-center justify-center rounded-full focus-visible:[box-shadow:var(--focus-ring)]"
                 >
                   <Icon name="x" size={12} />
                 </button>
@@ -254,7 +254,7 @@ export function Composer({
             setExpanded(false);
             setBody("");
           }}
-          className="target-area border-line-soft text-ink hover:bg-surface-subtle rounded-md border px-3 py-1.5 text-sm focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+          className="target-area border-line-soft text-ink hover:bg-surface-subtle focus-visible:outline-hidden rounded-md border px-3 py-1.5 text-sm focus-visible:[box-shadow:var(--focus-ring)]"
         >
           {labels.cancel}
         </button>

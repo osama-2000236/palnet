@@ -2,7 +2,14 @@ import {
   ConnectionListItem as ConnectionListItemSchema,
   type ConnectionListItem,
 } from "@baydar/shared";
-import { AppHeader, RecordCardSkeleton, SegmentedControl, useThemeTokens } from "@baydar/ui-native";
+import {
+  EmptyState,
+  AppHeader,
+  RecordCardSkeleton,
+  Tab,
+  Tabs,
+  useThemeTokens,
+} from "@baydar/ui-native";
 import { router } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -166,13 +173,18 @@ export default function NetworkScreen(): JSX.Element {
       <View style={styles.content}>
         <AppHeader title={t("network.title")} compact />
 
-        <SegmentedControl
-          items={filterItems}
-          selectedKey={filter}
-          onChange={setFilter}
+        <Tabs
+          value={filter}
+          onChange={(key) => setFilter(key as NetworkFilter)}
           style={styles.tabs}
           testID="network-filter-tabs"
-        />
+        >
+          {filterItems.map((item) => (
+            <Tab key={item.key} value={item.key} testID={item.testID}>
+              {item.label}
+            </Tab>
+          ))}
+        </Tabs>
 
         {error && items.length > 0 ? (
           <StateMessage
@@ -212,7 +224,7 @@ export default function NetworkScreen(): JSX.Element {
                 onAction={() => void load(filter)}
               />
             ) : (
-              <StateMessage message={t("network.empty")} role="text" />
+              <EmptyState motif="network" title={t("network.empty")} />
             )
           }
           renderItem={({ item }) => (

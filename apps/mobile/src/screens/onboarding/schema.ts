@@ -25,8 +25,10 @@ export const onboardingSchema = z
       .trim()
       .toUpperCase()
       .regex(/^[A-Z]{2}$/, "onboarding.validation.country"),
+    // Zod 4 replaced the `errorMap` option with `error`, which takes the message
+    // directly.
     backgroundKind: z.enum(["work", "education"], {
-      errorMap: () => ({ message: "onboarding.validation.background" }),
+      error: "onboarding.validation.background",
     }),
     workTitle: shortMax,
     companyName: shortMax,

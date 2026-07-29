@@ -109,7 +109,7 @@ export const Plan = z.object({
   priceCents: z.number().int().nonnegative(),
   currency: z.string().length(3),
   intervalDays: z.number().int().positive().nullable(),
-  features: z.record(z.unknown()),
+  features: z.record(z.string(), z.unknown()),
   isActive: z.boolean(),
 });
 export type Plan = z.infer<typeof Plan>;
