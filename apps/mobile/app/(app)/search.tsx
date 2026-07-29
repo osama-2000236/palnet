@@ -10,6 +10,7 @@ import {
   type SearchPostHit,
 } from "@baydar/shared";
 import {
+  EmptyState,
   AppHeader,
   RecordCardSkeleton,
   SearchField,
@@ -181,9 +182,9 @@ export default function SearchScreen(): JSX.Element {
                 onAction={() => void run(type, q, null)}
               />
             ) : (
-              <StateMessage
-                message={touched ? t(`search.empty.${type}`) : t("search.prompt")}
-                role="text"
+              <EmptyState
+                motif="search"
+                title={touched ? t(`search.empty.${type}`) : t("search.prompt")}
               />
             )
           }
