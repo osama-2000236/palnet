@@ -1,5 +1,5 @@
 import { formatNumber } from "@baydar/shared";
-import { OnboardingProgress, nativeTokens, useThemeTokens } from "@baydar/ui-native";
+import { Alert, OnboardingProgress, nativeTokens, useThemeTokens } from "@baydar/ui-native";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as ImagePicker from "expo-image-picker";
 import { router, useLocalSearchParams } from "expo-router";
@@ -16,7 +16,7 @@ import { getAccessToken, readSession, writeProfileCache } from "@/lib/session";
 import type { PickedAsset } from "@/lib/uploads";
 import { useNetworkStore } from "@/store/network";
 
-import { OnboardingFooter, OnboardingHeader, StateMessage } from "@/screens/onboarding/Chrome";
+import { OnboardingFooter, OnboardingHeader } from "@/screens/onboarding/Chrome";
 import { StepContent } from "@/screens/onboarding/StepContent";
 import {
   SuggestionsSchema,
@@ -255,9 +255,7 @@ export default function OnboardingScreen(): JSX.Element {
               formatCount={(value) => formatNumber(value, i18n.language)}
             />
             <OnboardingHeader label={step.label} step={step.key} />
-            {!isConnected ? (
-              <StateMessage message={t("onboarding.offline")} tone="warning" />
-            ) : null}
+            {!isConnected ? <Alert body={t("onboarding.offline")} kind="warning" /> : null}
             <StepContent
               avatarAsset={avatarAsset}
               backgroundKind={backgroundKind}
@@ -278,7 +276,7 @@ export default function OnboardingScreen(): JSX.Element {
               onRetrySuggestions={() => loadSuggestions(true)}
               onToggleSuggestion={toggleSuggestion}
             />
-            {submitError ? <StateMessage message={submitError} tone="danger" /> : null}
+            {submitError ? <Alert body={submitError} kind="danger" /> : null}
           </ScrollView>
           <OnboardingFooter
             bottomInset={insets.bottom}

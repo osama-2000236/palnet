@@ -9,6 +9,7 @@ import {
   type WalletAvailability as WalletAvailabilityDto,
 } from "@baydar/shared";
 import {
+  Alert,
   Button,
   RadioGroup,
   Surface,
@@ -20,7 +21,6 @@ import { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Linking, StyleSheet, Text, View } from "react-native";
 
-import { StateMessage } from "@/components/StateMessage";
 import { apiFetch } from "@/lib/api";
 import { apiErrorMessage } from "@/lib/api-errors";
 
@@ -132,11 +132,10 @@ export function CheckoutPanel({
 
   if (session?.method === PaymentMethod.POINTS) {
     return (
-      <StateMessage
-        role="text"
-        tone="success"
+      <Alert
+        kind="success"
         title={t("billing.checkout.pointsSuccess.title")}
-        message={t("billing.checkout.pointsSuccess.body")}
+        body={t("billing.checkout.pointsSuccess.body")}
       />
     );
   }
@@ -160,7 +159,7 @@ export function CheckoutPanel({
   }
 
   if (session?.wallet) {
-    return <StateMessage role="text" message={session.wallet.instructions} />;
+    return <Alert body={session.wallet.instructions} />;
   }
 
   return (
@@ -186,7 +185,7 @@ export function CheckoutPanel({
           {t("billing.checkout.pointsInsufficient", { cost: pointsPrice })}
         </Text>
       ) : null}
-      {error ? <StateMessage message={error} tone="error" /> : null}
+      {error ? <Alert body={error} kind="danger" /> : null}
       <Button
         variant="primary"
         size="md"

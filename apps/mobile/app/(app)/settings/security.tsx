@@ -9,14 +9,13 @@
 // 2FA really is unbuilt, so that row keeps its "قريبًا" state.
 
 import { ActiveSession as ActiveSessionSchema, Password, type ActiveSession } from "@baydar/shared";
-import { Banner, Button, Chip, Surface, useToast } from "@baydar/ui-native";
+import { Alert, Banner, Button, Chip, Surface, useToast } from "@baydar/ui-native";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { z } from "zod";
 
-import { StateMessage } from "@/components/StateMessage";
 import { apiCall, apiFetch } from "@/lib/api";
 import { apiErrorMessage } from "@/lib/api-errors";
 import { getDeviceId } from "@/lib/session";
@@ -151,9 +150,9 @@ export default function SecuritySettingsScreen(): JSX.Element {
             <Text style={styles.sectionDesc}>{t("settings.security.sessions.desc")}</Text>
           </View>
           {sessionsError ? (
-            <StateMessage
-              message={sessionsError}
-              actionLabel={t("common.retry")}
+            <Alert
+              body={sessionsError}
+              cta={t("common.retry")}
               onAction={() => void loadSessions()}
             />
           ) : sessions === null ? (

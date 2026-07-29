@@ -1,5 +1,6 @@
 import { CompanySummary } from "@baydar/shared";
 import {
+  Alert,
   AppHeader,
   EmptyState,
   RecordCard,
@@ -15,7 +16,6 @@ import { FlatList, Pressable, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { z } from "zod";
 
-import { StateMessage } from "@/components/StateMessage";
 import { apiFetch } from "@/lib/api";
 import { apiErrorMessage } from "@/lib/api-errors";
 
@@ -51,9 +51,9 @@ export default function EmployerHomeScreen(): JSX.Element {
           keyExtractor={(c) => c.id}
           ListEmptyComponent={
             error ? (
-              <StateMessage
-                message={error}
-                actionLabel={t("common.retry")}
+              <Alert
+                body={error}
+                cta={t("common.retry")}
                 onAction={() => {
                   setItems(null);
                   setReloadKey((key) => key + 1);

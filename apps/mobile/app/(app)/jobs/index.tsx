@@ -10,6 +10,7 @@ import {
   type Job,
 } from "@baydar/shared";
 import {
+  Alert,
   EmptyState,
   AppHeader,
   Button,
@@ -26,7 +27,6 @@ import { useTranslation } from "react-i18next";
 import { FlatList, RefreshControl, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { StateMessage } from "@/components/StateMessage";
 import { JobRow } from "@/components/rows/JobRow";
 import { apiCall, apiFetch, apiFetchPage } from "@/lib/api";
 import { apiErrorMessage } from "@/lib/api-errors";
@@ -211,9 +211,9 @@ export default function JobsScreen(): JSX.Element {
         ) : (
           <>
             {error && items.length > 0 ? (
-              <StateMessage
-                message={error}
-                actionLabel={t("common.retry")}
+              <Alert
+                body={error}
+                cta={t("common.retry")}
                 busy={loading}
                 onAction={() => void load(null, filters)}
                 style={{ marginBottom: nativeTokens.space[3] }}
@@ -244,9 +244,9 @@ export default function JobsScreen(): JSX.Element {
               }
               ListEmptyComponent={
                 loading ? null : error ? (
-                  <StateMessage
-                    message={error}
-                    actionLabel={t("common.retry")}
+                  <Alert
+                    body={error}
+                    cta={t("common.retry")}
                     busy={loading}
                     onAction={() => void load(null, filters)}
                   />

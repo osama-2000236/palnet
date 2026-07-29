@@ -1,4 +1,4 @@
-import { Button, Surface, nativeTokens, useThemeTokens } from "@baydar/ui-native";
+import { Button, nativeTokens, useThemeTokens } from "@baydar/ui-native";
 import { useTranslation } from "react-i18next";
 import { Text, View } from "react-native";
 
@@ -36,39 +36,6 @@ export function OnboardingHeader({ label, step }: { label: string; step: StepKey
         {t(`onboarding.stepCopy.${step}`)}
       </Text>
     </View>
-  );
-}
-
-export function StateMessage({
-  message,
-  tone,
-}: {
-  message: string;
-  tone: "danger" | "warning";
-}): JSX.Element {
-  const c = useThemeTokens().color;
-  return (
-    <Surface
-      accessibilityRole={tone === "danger" ? "alert" : "text"}
-      padding="3"
-      variant="tinted"
-      style={{
-        backgroundColor: tone === "danger" ? c.dangerSoft : c.warningSoft,
-      }}
-    >
-      <Text
-        selectable
-        style={{
-          color: tone === "danger" ? c.danger : c.ink,
-          fontFamily: nativeTokens.type.family.sans,
-          fontSize: nativeTokens.type.scale.small.size,
-          lineHeight: nativeTokens.type.scale.small.line,
-          textAlign: "auto",
-        }}
-      >
-        {message}
-      </Text>
-    </Surface>
   );
 }
 

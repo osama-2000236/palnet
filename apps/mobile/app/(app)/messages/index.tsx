@@ -3,6 +3,7 @@
 
 import { ChatRoom as ChatRoomSchema, type ChatRoom } from "@baydar/shared";
 import {
+  Alert,
   EmptyState,
   AppHeader,
   Button,
@@ -21,7 +22,6 @@ import { FlatList, RefreshControl, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { z } from "zod";
 
-import { StateMessage } from "@/components/StateMessage";
 import { RoomRow } from "@/components/rows/RoomRow";
 import { apiCall, apiFetchPage } from "@/lib/api";
 import { apiErrorMessage } from "@/lib/api-errors";
@@ -186,9 +186,9 @@ export default function MessagesListScreen(): JSX.Element {
                 <RecordCardSkeleton variant="row" />
               </View>
             ) : error ? (
-              <StateMessage
-                message={error}
-                actionLabel={t("common.retry")}
+              <Alert
+                body={error}
+                cta={t("common.retry")}
                 busy={loading}
                 onAction={() => void load()}
                 testID="messages-list-error"

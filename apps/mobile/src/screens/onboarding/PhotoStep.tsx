@@ -1,11 +1,9 @@
-import { Button, Icon, nativeTokens, useThemeTokens } from "@baydar/ui-native";
+import { Alert, Button, Icon, nativeTokens, useThemeTokens } from "@baydar/ui-native";
 import { Image } from "expo-image";
 import { useTranslation } from "react-i18next";
 import { Text, View } from "react-native";
 
 import type { PickedAsset } from "@/lib/uploads";
-
-import { StateMessage } from "./Chrome";
 
 export function PhotoStep({
   avatarAsset,
@@ -79,7 +77,7 @@ export function PhotoStep({
       >
         {t("onboarding.photo.hint")}
       </Text>
-      {photoError ? <StateMessage message={photoError} tone="danger" /> : null}
+      {photoError ? <Alert body={photoError} kind="danger" /> : null}
     </View>
   );
 }

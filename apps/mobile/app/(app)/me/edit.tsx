@@ -1,5 +1,5 @@
 import { isProfileComplete, Profile as ProfileSchema, type Profile } from "@baydar/shared";
-import { AppHeader, Button, useToast } from "@baydar/ui-native";
+import { Alert, AppHeader, Button, useToast } from "@baydar/ui-native";
 import { router } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -7,7 +7,6 @@ import { KeyboardAvoidingView, Platform, ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { CardStackSkeleton } from "@/components/ScreenSkeleton";
-import { StateMessage } from "@/components/StateMessage";
 import { apiFetch } from "@/lib/api";
 import { apiErrorMessage } from "@/lib/api-errors";
 import { clearProfileCache, getAccessToken, writeProfileCache } from "@/lib/session";
@@ -74,9 +73,9 @@ export default function EditProfileScreen(): JSX.Element {
       <SafeAreaView style={styles.centerScreen}>
         {error ? (
           <View style={styles.errorWrap}>
-            <StateMessage
-              message={error}
-              actionLabel={t("common.retry")}
+            <Alert
+              body={error}
+              cta={t("common.retry")}
               onAction={() => {
                 setLoading(true);
                 void refresh().finally(() => setLoading(false));
@@ -105,11 +104,7 @@ export default function EditProfileScreen(): JSX.Element {
             }
           />
           {error ? (
-            <StateMessage
-              message={error}
-              actionLabel={t("common.retry")}
-              onAction={() => void refresh()}
-            />
+            <Alert body={error} cta={t("common.retry")} onAction={() => void refresh()} />
           ) : null}
           <BasicsCard
             profile={profile}

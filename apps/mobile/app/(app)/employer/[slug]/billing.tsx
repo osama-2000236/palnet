@@ -12,7 +12,7 @@ import {
   type Invoice as InvoiceDto,
   type PlanOffer as PlanOfferDto,
 } from "@baydar/shared";
-import { Button, Icon, Surface, useThemeTokens } from "@baydar/ui-native";
+import { Alert, Button, Icon, Surface, useThemeTokens } from "@baydar/ui-native";
 import { useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -23,7 +23,6 @@ import { z } from "zod";
 import { CheckoutPanel } from "@/components/billing/CheckoutPanel";
 import { InvoiceList } from "@/components/billing/InvoiceList";
 import { CardStackSkeleton } from "@/components/ScreenSkeleton";
-import { StateMessage } from "@/components/StateMessage";
 import { apiFetch } from "@/lib/api";
 import { apiErrorMessage } from "@/lib/api-errors";
 import { useCompanyBillingStyles } from "@/styles/company-billing";
@@ -109,10 +108,10 @@ export default function CompanyBillingScreen(): JSX.Element {
         </View>
 
         {error ? (
-          <StateMessage
-            message={t("billing.employer.loadError")}
-            tone="error"
-            actionLabel={t("common.retry")}
+          <Alert
+            body={t("billing.employer.loadError")}
+            kind="danger"
+            cta={t("common.retry")}
             onAction={() => void load()}
           />
         ) : null}

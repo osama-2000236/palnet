@@ -6,6 +6,7 @@ import {
   type Bookmark as BookmarkDto,
 } from "@baydar/shared";
 import {
+  Alert,
   EmptyState,
   AppHeader,
   Button,
@@ -22,7 +23,6 @@ import { useTranslation } from "react-i18next";
 import { FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { StateMessage } from "@/components/StateMessage";
 import { apiCall, apiFetchPage } from "@/lib/api";
 import { apiErrorMessage } from "@/lib/api-errors";
 import { getAccessToken } from "@/lib/session";
@@ -160,9 +160,9 @@ export default function SavedScreen(): JSX.Element {
             }
             ListEmptyComponent={
               error ? (
-                <StateMessage
-                  message={error}
-                  actionLabel={t("common.retry")}
+                <Alert
+                  body={error}
+                  cta={t("common.retry")}
                   busy={loading}
                   onAction={() => void load(null)}
                 />

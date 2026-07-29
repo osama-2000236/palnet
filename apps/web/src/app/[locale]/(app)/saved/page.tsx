@@ -120,14 +120,10 @@ export default function SavedPageRoute(): JSX.Element {
         <Alert
           kind="danger"
           title={t("loadFailedTitle")}
-          action={
-            <Button variant="secondary" size="sm" onClick={() => token && void load(token, null)}>
-              {tCommon("retry")}
-            </Button>
-          }
-        >
-          {error}
-        </Alert>
+          cta={tCommon("retry")}
+          onAction={() => token && void load(token, null)}
+          body={error}
+        />
       ) : items.length === 0 ? (
         <Surface variant="card" padding="0">
           <EmptyState motif="saved" title={t("emptyTitle")} body={t("emptyDesc")} />

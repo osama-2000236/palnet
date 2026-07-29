@@ -1,9 +1,16 @@
-import { Avatar, Button, Icon, Surface, nativeTokens, useThemeTokens } from "@baydar/ui-native";
+import {
+  Alert,
+  Avatar,
+  Button,
+  Icon,
+  Surface,
+  nativeTokens,
+  useThemeTokens,
+} from "@baydar/ui-native";
 import { type Control, type FieldErrors } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { ActivityIndicator, Pressable, Text, View } from "react-native";
 
-import { StateMessage } from "./Chrome";
 import { ControlledField, EmptyState } from "./Fields";
 import type { PersonSuggestionDto } from "./api";
 import type { OnboardingFormValues } from "./types";
@@ -58,7 +65,7 @@ export function NetworkStep({
         </View>
       ) : error ? (
         <View style={{ gap: nativeTokens.space[2] }}>
-          <StateMessage message={error} tone="warning" />
+          <Alert body={error} kind="warning" />
           <Button size="md" variant="secondary" onPress={() => void onRetry()}>
             {t("common.retry")}
           </Button>

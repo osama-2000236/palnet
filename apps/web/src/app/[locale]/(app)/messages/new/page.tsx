@@ -139,7 +139,7 @@ export default function NewMessagePage(): JSX.Element {
           />
         </label>
 
-        {error ? <Alert kind="danger">{error}</Alert> : null}
+        {error ? <Alert kind="danger" body={error} /> : null}
 
         <div className="flex flex-col gap-2">
           {loading ? (

@@ -9,7 +9,7 @@ import {
   type Company as CompanyDto,
   type Job,
 } from "@baydar/shared";
-import { Alert, Button, Skeleton, Surface } from "@baydar/ui-web";
+import { Alert, Skeleton, Surface } from "@baydar/ui-web";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -79,14 +79,10 @@ export default function CompanyPage(): JSX.Element {
       ) : error || !company ? (
         <Alert
           kind="danger"
-          action={
-            <Button variant="ghost" size="sm" onClick={() => void load()}>
-              {tCommon("retry")}
-            </Button>
-          }
-        >
-          {t("loadError")}
-        </Alert>
+          cta={tCommon("retry")}
+          onAction={() => void load()}
+          body={t("loadError")}
+        />
       ) : (
         <>
           <Surface as="header" variant="hero" padding="6" className="flex flex-col gap-4">

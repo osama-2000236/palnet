@@ -121,11 +121,7 @@ export function CheckoutPanel({
   }
 
   if (session?.method === PaymentMethod.POINTS) {
-    return (
-      <Alert kind="success" title={t("pointsSuccess.title")}>
-        {t("pointsSuccess.body")}
-      </Alert>
-    );
+    return <Alert kind="success" title={t("pointsSuccess.title")} body={t("pointsSuccess.body")} />;
   }
 
   if (session?.bankTransfer) {
@@ -150,14 +146,22 @@ export function CheckoutPanel({
 
   if (session?.wallet) {
     return (
-      <Alert kind="info">
-        {session.wallet.instructions}
-        {session.wallet.deepLink ? (
-          <a href={session.wallet.deepLink} className="text-brand-700 ms-1 font-semibold underline">
-            {t(`methods.${WALLET_METHOD_KEYS[session.wallet.provider]}`)}
-          </a>
-        ) : null}
-      </Alert>
+      <Alert
+        kind="info"
+        body={
+          <>
+            {session.wallet.instructions}
+            {session.wallet.deepLink ? (
+              <a
+                href={session.wallet.deepLink}
+                className="text-brand-700 ms-1 font-semibold underline"
+              >
+                {t(`methods.${WALLET_METHOD_KEYS[session.wallet.provider]}`)}
+              </a>
+            ) : null}
+          </>
+        }
+      />
     );
   }
 
@@ -188,7 +192,7 @@ export function CheckoutPanel({
         </p>
       ) : null}
 
-      {error ? <Alert kind="danger">{error}</Alert> : null}
+      {error ? <Alert kind="danger" body={error} /> : null}
 
       <Button
         variant="primary"

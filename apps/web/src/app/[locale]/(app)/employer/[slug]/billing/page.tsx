@@ -122,14 +122,10 @@ export default function CompanyBillingPage(): JSX.Element {
       {!loading && error ? (
         <Alert
           kind="danger"
-          action={
-            <Button variant="ghost" size="sm" onClick={() => void load()}>
-              {tCommon("retry")}
-            </Button>
-          }
-        >
-          {t("loadError")}
-        </Alert>
+          cta={tCommon("retry")}
+          onAction={() => void load()}
+          body={t("loadError")}
+        />
       ) : null}
 
       {!loading && !error && summary ? (

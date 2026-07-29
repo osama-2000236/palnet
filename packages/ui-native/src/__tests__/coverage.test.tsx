@@ -12,7 +12,7 @@ import { RetryChip } from "../RetryChip";
 import { BlockButton, BlockedListItem, ReportSheet } from "../safety";
 import { SearchField } from "../SearchField";
 import { Tab, Tabs } from "../Tabs";
-import { StateMessage } from "../StateMessage";
+import { Alert } from "../Alert";
 import { Switch } from "../Switch";
 
 const user = {
@@ -60,12 +60,7 @@ describe("native exported component coverage", () => {
           <Text>Record child</Text>
         </RecordCard>
         <RecordCardSkeleton testID="record-skeleton" />
-        <StateMessage
-          title="Offline"
-          message="Reconnect and try again"
-          tone="offline"
-          icon="clock"
-        />
+        <Alert title="Offline" body="Reconnect and try again" kind="warning" />
       </View>,
     );
 
@@ -102,7 +97,7 @@ describe("native exported component coverage", () => {
           <Tab value="saved">Saved</Tab>
         </Tabs>
         <Switch checked={false} ariaLabel="Enable notifications" onChange={onChange} />
-        <StateMessage message="Try again" actionLabel="Reload" onAction={onPress} />
+        <Alert body="Try again" cta="Reload" onAction={onPress} />
       </View>,
     );
 

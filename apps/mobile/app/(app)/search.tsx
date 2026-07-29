@@ -10,6 +10,7 @@ import {
   type SearchPostHit,
 } from "@baydar/shared";
 import {
+  Alert,
   EmptyState,
   AppHeader,
   RecordCardSkeleton,
@@ -25,7 +26,6 @@ import { useTranslation } from "react-i18next";
 import { FlatList, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { StateMessage } from "@/components/StateMessage";
 import { apiFetchPage } from "@/lib/api";
 import { apiErrorMessage } from "@/lib/api-errors";
 import { getAccessToken } from "@/lib/session";
@@ -175,9 +175,9 @@ export default function SearchScreen(): JSX.Element {
                 <RecordCardSkeleton variant="row" />
               </View>
             ) : error ? (
-              <StateMessage
-                message={error}
-                actionLabel={t("common.retry")}
+              <Alert
+                body={error}
+                cta={t("common.retry")}
                 busy={loading}
                 onAction={() => void run(type, q, null)}
               />
