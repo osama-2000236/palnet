@@ -13,7 +13,8 @@ import {
   AppHeader,
   RecordCardSkeleton,
   SearchField,
-  SegmentedControl,
+  Tab,
+  Tabs,
   nativeTokens,
   useThemeTokens,
   type NativeTheme,
@@ -142,13 +143,18 @@ export default function SearchScreen(): JSX.Element {
           }
         />
 
-        <SegmentedControl
-          items={tabs}
-          selectedKey={type}
-          onChange={changeType}
+        <Tabs
+          value={type}
+          onChange={(key) => changeType(key as SearchType)}
           style={styles.tabs}
           testID="search-tabs"
-        />
+        >
+          {tabs.map((tab) => (
+            <Tab key={tab.key} value={tab.key} testID={tab.testID}>
+              {tab.label}
+            </Tab>
+          ))}
+        </Tabs>
 
         <FlatList
           data={hits}

@@ -1,5 +1,5 @@
 import { profileCompletion, Profile as ProfileSchema, type Profile } from "@baydar/shared";
-import { Avatar, Button, SegmentedControl, Surface } from "@baydar/ui-native";
+import { Avatar, Button, Surface, Tab, Tabs } from "@baydar/ui-native";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -169,12 +169,17 @@ export default function MeScreen(): JSX.Element {
           </Surface>
         </Pressable>
 
-        <SegmentedControl
-          items={TABS.map((tab) => ({ key: tab.key, label: t(tab.i18n) }))}
-          selectedKey={activeTab}
-          onChange={setActiveTab}
+        <Tabs
+          value={activeTab}
+          onChange={(key) => setActiveTab(key as ProfileTab)}
           testID="profile-section-tabs"
-        />
+        >
+          {TABS.map((tab) => (
+            <Tab key={tab.key} value={tab.key}>
+              {t(tab.i18n)}
+            </Tab>
+          ))}
+        </Tabs>
 
         {activeTab === "about" ? (
           profile.about ? (
