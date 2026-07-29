@@ -4,7 +4,16 @@ import {
   ConnectionListItem as ConnectionListItemSchema,
   type ConnectionListItem,
 } from "@baydar/shared";
-import { Avatar, Button, EmptyState, Skeleton, staggerDelay, Surface } from "@baydar/ui-web";
+import {
+  Avatar,
+  Button,
+  EmptyState,
+  RecordCard,
+  RecordCardSkeleton,
+  Skeleton,
+  staggerDelay,
+  Surface,
+} from "@baydar/ui-web";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -115,18 +124,15 @@ export default function NetworkRoute(): JSX.Element {
         <Surface variant="flat" padding="0">
           <ul>
             {items.map((c, i) => (
-              <Surface
+              <RecordCard
                 as="li"
                 key={c.connectionId}
                 variant="row"
-                padding="4"
-                className="animate-enter-up hover:bg-surface-subtle flex flex-wrap items-center justify-between gap-3 transition-colors last:border-b-0"
+                href={`/in/${c.user.handle}`}
+                linkAs={Link}
+                className="animate-enter-up hover:bg-surface-subtle transition-colors last:border-b-0"
                 style={{ animationDelay: `${staggerDelay(i)}ms` }}
-              >
-                <Link
-                  href={`/in/${c.user.handle}`}
-                  className="focus-visible:outline-hidden flex min-w-0 items-center gap-3 rounded-md focus-visible:[box-shadow:var(--focus-ring)]"
-                >
+                leading={
                   <Avatar
                     user={{
                       id: c.user.userId,
@@ -137,47 +143,42 @@ export default function NetworkRoute(): JSX.Element {
                     }}
                     size="md"
                   />
-                  <div className="flex min-w-0 flex-col">
-                    <span className="text-ink font-semibold">
-                      {c.user.firstName} {c.user.lastName}
-                    </span>
-                    {c.user.headline ? (
-                      <span className="text-ink-muted text-sm">{c.user.headline}</span>
-                    ) : null}
-                  </div>
-                </Link>
-
-                {filter === "INCOMING" ? (
-                  <div className="flex gap-2">
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      onClick={() => void respond(c.connectionId, "ACCEPT")}
-                    >
-                      {t("accept")}
+                }
+                title={`${c.user.firstName} ${c.user.lastName}`}
+                subtitle={c.user.headline}
+                trailing={
+                  filter === "INCOMING" ? (
+                    <>
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => void respond(c.connectionId, "ACCEPT")}
+                      >
+                        {t("accept")}
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => void respond(c.connectionId, "DECLINE")}
+                      >
+                        {t("decline")}
+                      </Button>
+                    </>
+                  ) : filter === "OUTGOING" ? (
+                    <Button variant="ghost" size="sm" onClick={() => void withdraw(c.connectionId)}>
+                      {t("withdraw")}
                     </Button>
+                  ) : (
                     <Button
-                      variant="ghost"
+                      variant="danger-ghost"
                       size="sm"
-                      onClick={() => void respond(c.connectionId, "DECLINE")}
+                      onClick={() => void remove(c.connectionId)}
                     >
-                      {t("decline")}
+                      {t("removeConnection")}
                     </Button>
-                  </div>
-                ) : filter === "OUTGOING" ? (
-                  <Button variant="ghost" size="sm" onClick={() => void withdraw(c.connectionId)}>
-                    {t("withdraw")}
-                  </Button>
-                ) : (
-                  <Button
-                    variant="danger-ghost"
-                    size="sm"
-                    onClick={() => void remove(c.connectionId)}
-                  >
-                    {t("removeConnection")}
-                  </Button>
-                )}
-              </Surface>
+                  )
+                }
+              />
             ))}
           </ul>
         </Surface>
@@ -227,18 +228,13 @@ function FilterTab({
 
 function ConnectionRowSkeleton(): JSX.Element {
   return (
-    <li
-      aria-hidden="true"
-      className="border-line-soft flex items-center justify-between gap-3 border-b p-4 last:border-b-0"
-    >
-      <div className="flex min-w-0 items-center gap-3">
-        <Skeleton kind="circle" className="h-10 w-10" />
-        <div className="flex flex-col gap-2">
-          <Skeleton className="h-3 w-40" />
-          <Skeleton className="h-3 w-24" />
-        </div>
-      </div>
-      <Skeleton radius="var(--radius-md)" className="h-7 w-24" />
-    </li>
+    <RecordCardSkeleton
+      as="li"
+      variant="row"
+      meta={false}
+      className="last:border-b-0"
+      leading={<Skeleton kind="circle" className="h-10 w-10 shrink-0" />}
+      trailing={<Skeleton kind="pill" className="h-7 w-24" />}
+    />
   );
 }
