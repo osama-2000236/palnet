@@ -45,25 +45,25 @@ function key(element, keyName) {
 
 describe("new web atoms", () => {
   it("renders Checkbox and reports checked changes", () => {
-    const onCheckedChange = jest.fn();
+    const onChange = jest.fn();
     const { container, unmount } = renderClient(
       React.createElement(Checkbox, {
         label: "Agree to terms",
         checked: false,
-        onCheckedChange,
+        onChange,
       }),
     );
 
     click(container.querySelector("input"));
 
     expect(container.textContent).toContain("Agree to terms");
-    expect(onCheckedChange).toHaveBeenCalledWith(true);
+    expect(onChange).toHaveBeenCalledWith(true);
     unmount();
   });
 
   it("exposes Checkbox disabled, checked, error, and ARIA states in RTL", () => {
     document.documentElement.dir = "rtl";
-    const onCheckedChange = jest.fn();
+    const onChange = jest.fn();
     const { container, unmount } = renderClient(
       React.createElement(Checkbox, {
         label: "Agree",
@@ -71,7 +71,7 @@ describe("new web atoms", () => {
         disabled: true,
         error: true,
         errorMessage: "Required",
-        onCheckedChange,
+        onChange,
       }),
     );
 
@@ -83,7 +83,7 @@ describe("new web atoms", () => {
     expect(input.getAttribute("aria-invalid")).toBe("true");
     expect(input.getAttribute("aria-describedby")).toContain("-message");
     expect(container.textContent).toContain("Required");
-    expect(onCheckedChange).not.toHaveBeenCalled();
+    expect(onChange).not.toHaveBeenCalled();
     document.documentElement.dir = "";
     unmount();
   });

@@ -135,7 +135,7 @@ export default function RegisterPage(): JSX.Element {
             they had no way to open. Both pages already existed at /legal/*. */}
         <Checkbox
           checked={state.acceptTerms}
-          onCheckedChange={(checked) => setState({ ...state, acceptTerms: checked })}
+          onChange={(checked) => setState({ ...state, acceptTerms: checked })}
           required
           label={
             <span>
