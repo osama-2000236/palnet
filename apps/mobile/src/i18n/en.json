@@ -146,7 +146,6 @@
   "onboarding": {
     "title": "Complete your profile",
     "subtitle": "This helps others find you.",
-    "progress": "Step {{current}} of {{total}}",
     "back": "Back",
     "offline": "You're offline. You can review fields, but final saving needs a connection.",
     "handle": "Your handle",

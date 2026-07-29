@@ -4,7 +4,7 @@ export { ThemeProvider, useTheme, useThemeTokens } from "./ThemeProvider";
 export type { ThemeProviderProps } from "./ThemeProvider";
 export { Surface } from "./Surface";
 export type { SurfaceProps, SurfaceVariant, SurfacePadding } from "./Surface";
-// shadowStyle is package-internal (Surface/Dialog/Sheet/Toast). Only the type
+// shadowStyle is package-internal (Surface/Sheet/Toast). Only the type
 // is public — consumers describe shadows, they don't build them.
 export type { ShadowKind } from "./shadow";
 export { Illustration, ILLUSTRATION_MOTIFS, ILLUSTRATION_DIRECTIONS } from "./Illustration";
@@ -40,8 +40,6 @@ export { Switch } from "./Switch";
 export type { SwitchProps } from "./Switch";
 export { SwitchRow } from "./SwitchRow";
 export type { SwitchRowProps } from "./SwitchRow";
-export { Dialog } from "./Dialog";
-export type { DialogProps } from "./Dialog";
 export { ActionSheet } from "./ActionSheet";
 export type { ActionSheetProps, ActionSheetItem } from "./ActionSheet";
 export { Badge } from "./Badge";
@@ -67,7 +65,7 @@ export { Tabs, Tab } from "./Tabs";
 export type { TabsProps, TabProps } from "./Tabs";
 export { StateMessage } from "./StateMessage";
 export type { StateMessageProps } from "./StateMessage";
-export { Toast, ToastHost, ToastProvider, useToast } from "./Toast";
+export { Toast, ToastProvider, useToast } from "./Toast";
 export type {
   ShowToastInput,
   ToastContextValue,

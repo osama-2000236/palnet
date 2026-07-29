@@ -4,7 +4,6 @@ import { Text, View } from "react-native";
 import { AppHeader } from "../AppHeader";
 import { Banner } from "../Banner";
 import { ComposerEntry } from "../ComposerEntry";
-import { Dialog } from "../Dialog";
 import { EmptyState } from "../EmptyState";
 import { OnboardingProgress } from "../OnboardingProgress";
 import { RecordCard } from "../RecordCard";
@@ -55,9 +54,6 @@ describe("native exported component coverage", () => {
       <View>
         <AppHeader title="Feed" subtitle="Latest posts" trailing={<Text>Action</Text>} />
         <Banner kind="info">Network restored</Banner>
-        <Dialog open title="Dialog title" onClose={jest.fn()}>
-          <Text>Dialog body</Text>
-        </Dialog>
         <EmptyState motif="search" title="No results" body="Try another search" />
         <OnboardingProgress current={2} total={4} labels={["One", "Two", "Three", "Four"]} />
         <RecordCard title="Record title" subtitle="Record subtitle" meta="2026" metaDirection="ltr">
@@ -75,7 +71,6 @@ describe("native exported component coverage", () => {
 
     expect(screen.getByText("Feed")).toBeTruthy();
     expect(screen.getByText("Network restored")).toBeTruthy();
-    expect(screen.getByText("Dialog body")).toBeTruthy();
     expect(screen.getByText("No results")).toBeTruthy();
     expect(screen.getByText("Two")).toBeTruthy();
     expect(screen.getByText("Record child")).toBeTruthy();

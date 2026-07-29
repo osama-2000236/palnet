@@ -1,4 +1,5 @@
-import { nativeTokens, useThemeTokens } from "@baydar/ui-native";
+import { formatNumber } from "@baydar/shared";
+import { OnboardingProgress, nativeTokens, useThemeTokens } from "@baydar/ui-native";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as ImagePicker from "expo-image-picker";
 import { router, useLocalSearchParams } from "expo-router";
@@ -15,12 +16,7 @@ import { getAccessToken, readSession, writeProfileCache } from "@/lib/session";
 import type { PickedAsset } from "@/lib/uploads";
 import { useNetworkStore } from "@/store/network";
 
-import {
-  OnboardingFooter,
-  OnboardingHeader,
-  StateMessage,
-  StepDots,
-} from "@/screens/onboarding/Chrome";
+import { OnboardingFooter, OnboardingHeader, StateMessage } from "@/screens/onboarding/Chrome";
 import { StepContent } from "@/screens/onboarding/StepContent";
 import {
   SuggestionsSchema,
@@ -38,7 +34,7 @@ import {
 
 export default function OnboardingScreen(): JSX.Element {
   const c = useThemeTokens().color;
-  const { t } = useTranslation();
+  const { i18n, t } = useTranslation();
   const insets = useSafeAreaInsets();
   const params = useLocalSearchParams<{ firstName?: string; lastName?: string }>();
   const isConnected = useNetworkStore((state) => state.isConnected);
@@ -248,13 +244,17 @@ export default function OnboardingScreen(): JSX.Element {
             keyboardShouldPersistTaps="handled"
             style={{ flex: 1 }}
           >
-            <OnboardingHeader
-              active={stepIndex}
-              count={steps.length}
-              label={step.label}
-              step={step.key}
+            {/* The kit component, not the local dots it replaced: those were
+                `accessibilityElementsHidden`, so a screen reader got no
+                progress at all on the one flow a new member cannot skip. */}
+            <OnboardingProgress
+              current={stepIndex + 1}
+              total={steps.length}
+              style="dots"
+              labels={steps.map((item) => item.label)}
+              formatCount={(value) => formatNumber(value, i18n.language)}
             />
-            <StepDots active={stepIndex} count={steps.length} />
+            <OnboardingHeader label={step.label} step={step.key} />
             {!isConnected ? (
               <StateMessage message={t("onboarding.offline")} tone="warning" />
             ) : null}
