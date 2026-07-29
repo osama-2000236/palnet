@@ -364,17 +364,16 @@ async function main() {
       try {
         execFileSync(
           "maestro",
-          [
-            "test",
-            path.resolve(import.meta.dirname, "../.maestro/set-appearance.yaml"),
-            "-e",
-            `THEME=${theme}`,
-            "-e",
-            `LOCALE=${locale}`,
-          ],
+          ["test", ".maestro/set-appearance.yaml", "-e", `THEME=${theme}`, "-e", `LOCALE=${locale}`],
           // shell:true because maestro ships as a .cmd shim on Windows, which
-          // execFileSync cannot spawn directly.
-          { stdio: "inherit", shell: true },
+          // execFileSync cannot spawn directly. That makes the flow path a
+          // shell argument, and node picks the shell from the environment: under
+          // a POSIX shell every backslash in a Windows absolute path is eaten,
+          // and maestro reports "Flow path does not exist:
+          // C:\...\LinkedIn.claudeworktrees…". A relative path with no
+          // backslashes survives either shell — hence `cwd` rather than
+          // `path.resolve`.
+          { cwd: path.resolve(import.meta.dirname, ".."), stdio: "inherit", shell: true },
         );
       } catch {
         failures.push({ cell: `${locale}/${theme}`, error: "set-appearance flow failed" });
