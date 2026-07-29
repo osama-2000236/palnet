@@ -56,9 +56,9 @@ the shared api-client spec, and `check:security-headers`.
 
 **Left on the design system:** two drift entries in `scripts/check-ui-lockstep.mjs` — native
 `StateMessage` (converge web's `EmptyState` + `Alert` onto its `tone` API) and native `SearchField`
-(web only has the chrome-bound `AppShellSearch`). Native `Tabs` still draws a pill strip where
-DESIGN.md §6.3 specifies a `brand-600` underline; `docs/design/PARITY.md` carries that and two
-smaller gaps.
+(web only has the chrome-bound `AppShellSearch`). Native `Tabs` now draws the DESIGN.md §6.3
+`brand-600` underline and scrolls rather than wrapping, matching its web twin; `docs/design/PARITY.md`
+carries the two smaller gaps that remain.
 
 ## Launch blockers
 
