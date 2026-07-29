@@ -1,5 +1,5 @@
 import { ChatRoom as ChatRoomSchema, Profile as ProfileSchema, type Profile } from "@baydar/shared";
-import { Button, ReportSheet, SegmentedControl, useToast } from "@baydar/ui-native";
+import { Button, ReportSheet, Tab, Tabs, useToast } from "@baydar/ui-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -174,11 +174,13 @@ export default function ProfileScreen(): JSX.Element {
           />
         ) : null}
 
-        <SegmentedControl
-          items={PROFILE_TABS.map((tab) => ({ key: tab.key, label: t(tab.i18n) }))}
-          selectedKey={activeTab}
-          onChange={setActiveTab}
-        />
+        <Tabs value={activeTab} onChange={(key) => setActiveTab(key as ProfileTab)}>
+          {PROFILE_TABS.map((tab) => (
+            <Tab key={tab.key} value={tab.key}>
+              {t(tab.i18n)}
+            </Tab>
+          ))}
+        </Tabs>
 
         <ProfileTabContent profile={loadedProfile} activeTab={activeTab} />
 

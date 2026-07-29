@@ -41,6 +41,9 @@ const PLATFORM_IDIOMS = {
     ReactionPicker: "native uses a long-press ActionSheet",
     REACTION_TINT: "web-only styling helper",
     GroupedMessage: "type from groupMessages, web-only helper",
+    TabPanel:
+      "web's tabs own their panel for `aria-controls`; a native screen renders " +
+      "the section below the strip and has nothing to label",
   },
   native: {
     ActionSheet: "platform idiom — see web's Menu",
@@ -61,13 +64,8 @@ const PLATFORM_IDIOMS = {
  * to it should be an argument, not a reflex.
  */
 const KNOWN_DRIFT = {
-  web: {
-    Tabs: "same concept as native's SegmentedControl, different name and props",
-    Tab: "part of Tabs",
-    TabPanel: "part of Tabs",
-  },
+  web: {},
   native: {
-    SegmentedControl: "same concept as web's Tabs — converge the name and props",
     StateMessage: "merges web's EmptyState + Alert; native's `tone` API is the better one",
     SearchField: "web only has AppShellSearch, which is chrome-bound",
   },

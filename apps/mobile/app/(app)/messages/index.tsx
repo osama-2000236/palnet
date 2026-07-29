@@ -7,7 +7,8 @@ import {
   Button,
   Icon,
   RecordCardSkeleton,
-  SegmentedControl,
+  Tab,
+  Tabs,
   nativeTokens,
   useThemeTokens,
   type NativeTheme,
@@ -139,22 +140,19 @@ export default function MessagesListScreen(): JSX.Element {
           }
         />
 
-        <SegmentedControl
+        <Tabs
           testID="messages-tabs"
           style={{ marginBottom: nativeTokens.space[3] }}
-          selectedKey={tab}
-          onChange={(key) => setTab(key)}
-          items={[
-            { key: "focused" as const, label: t("messaging.tabFocused") },
-            {
-              key: "requests" as const,
-              label:
-                requestCount > 0
-                  ? `${t("messaging.tabRequests")} (${requestCount})`
-                  : t("messaging.tabRequests"),
-            },
-          ]}
-        />
+          value={tab}
+          onChange={(key) => setTab(key as "focused" | "requests")}
+        >
+          <Tab value="focused">{t("messaging.tabFocused")}</Tab>
+          <Tab value="requests">
+            {requestCount > 0
+              ? `${t("messaging.tabRequests")} (${requestCount})`
+              : t("messaging.tabRequests")}
+          </Tab>
+        </Tabs>
 
         <FlatList
           testID="room-list"

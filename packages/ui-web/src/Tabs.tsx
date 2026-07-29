@@ -2,9 +2,11 @@
 
 // Tabs — the APG tabs pattern, RTL-aware.
 //
-// The native counterpart is `SegmentedControl` in packages/ui-native, which is
-// a different control with a different capability set (no counts). See
-// docs/design/PARITY.md.
+// The native twin is `Tabs` in packages/ui-native — same name, same
+// `value`/`onChange` + `<Tab>` shape. It has no `count` because no mobile
+// screen shows an unread badge on a tab, and it still draws the pill strip it
+// drew as `SegmentedControl` rather than the underline DESIGN.md §6.3
+// specifies. Both gaps are recorded there, not silently absorbed here.
 
 import {
   createContext,

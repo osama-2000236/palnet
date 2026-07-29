@@ -12,7 +12,7 @@ import { RecordCardSkeleton } from "../RecordCardSkeleton";
 import { RetryChip } from "../RetryChip";
 import { BlockButton, BlockedListItem, ReportSheet } from "../safety";
 import { SearchField } from "../SearchField";
-import { SegmentedControl } from "../SegmentedControl";
+import { Tab, Tabs } from "../Tabs";
 import { StateMessage } from "../StateMessage";
 import { Switch } from "../Switch";
 
@@ -102,14 +102,10 @@ describe("native exported component coverage", () => {
           clearLabel="Clear search"
           accessibilityLabel="Search"
         />
-        <SegmentedControl
-          selectedKey="all"
-          onChange={onChange}
-          items={[
-            { key: "all", label: "All" },
-            { key: "saved", label: "Saved" },
-          ]}
-        />
+        <Tabs value="all" onChange={onChange}>
+          <Tab value="all">All</Tab>
+          <Tab value="saved">Saved</Tab>
+        </Tabs>
         <Switch checked={false} ariaLabel="Enable notifications" onChange={onChange} />
         <StateMessage message="Try again" actionLabel="Reload" onAction={onPress} />
       </View>,

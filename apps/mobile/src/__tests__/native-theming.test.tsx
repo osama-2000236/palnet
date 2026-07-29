@@ -20,7 +20,8 @@ import {
   EmptyState,
   RecordCard,
   SearchField,
-  SegmentedControl,
+  Tab,
+  Tabs,
   Sheet,
   StateMessage,
   Switch,
@@ -102,15 +103,11 @@ const CASES: [string, ReactElement][] = [
   ["RecordCard", <RecordCard title="مهندس منصة" subtitle="بيدر" meta="رام الله" />],
   ["SearchField", <SearchField value="" onChangeText={() => {}} placeholder="ابحث" />],
   [
-    "SegmentedControl",
-    <SegmentedControl
-      items={[
-        { key: "a", label: "فاتح" },
-        { key: "b", label: "داكن" },
-      ]}
-      selectedKey="a"
-      onChange={() => {}}
-    />,
+    "Tabs",
+    <Tabs value="a" onChange={() => {}}>
+      <Tab value="a">فاتح</Tab>
+      <Tab value="b">داكن</Tab>
+    </Tabs>,
   ],
   ["StateMessage", <StateMessage title="حدث خطأ" message="أعد المحاولة." />],
   // A4.1 — the switch was not in this list at all, so the audit's claim that
