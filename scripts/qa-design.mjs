@@ -1,6 +1,8 @@
 import { execSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 
+import { hardcodedColors } from "./hardcoded-color.mjs";
+
 const tracked = execSync("git ls-files", { encoding: "utf8" })
   .split(/\r?\n/)
   .filter(Boolean)
@@ -47,8 +49,9 @@ for (const file of sourceFiles) {
 
   if (!allowedColorPaths.some((pattern) => pattern.test(file))) {
     lines.forEach((line, index) => {
-      if (/#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})\b/.test(line)) {
-        colorViolations.push(`${file}:${index + 1}: hard-coded hex color`);
+      const found = hardcodedColors(line);
+      if (found.length > 0) {
+        colorViolations.push(`${file}:${index + 1}: hard-coded hex color ${found.join(", ")}`);
       }
     });
   }

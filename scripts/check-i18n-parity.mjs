@@ -16,6 +16,11 @@
 //      deliberate act.
 //   3. A key defined but never referenced is dead weight. Namespaces built
 //      from dynamic keys (`t(\`errors.${code}\`)`) are exempt by name.
+//   4. A key that exists on one platform and not the other is surface one
+//      platform has and the other does not. That was invisible: the gate
+//      printed "931 web keys, 819 mobile keys" and drew no conclusion from the
+//      112-key difference. It is now counted, attributed to a namespace, and
+//      ratcheted — the numbers below may only go down.
 //
 // Exits non-zero on any hit. Prints a grep-friendly report.
 
@@ -47,12 +52,10 @@ const DIVERGENCES = new Map([
   ["composer.placeholder", "unreconciled: mobile prompt is longer"],
   ["composer.submit", "unreconciled: نشر vs انشر"],
   ["composer.addImage", "unreconciled: label vs action phrasing"],
-  ["search.placeholder", "unreconciled"],
   ["messaging.emptyThread", "unreconciled"],
   ["notifications.empty", "unreconciled"],
   ["notifications.templates.JOB_APPLICATION_UPDATE", "unreconciled"],
   ["activity.subtitle", "unreconciled"],
-  ["activity.errorBody", "unreconciled"],
   ["activity.metrics.requests", "unreconciled"],
   ["activity.metrics.jobs", "unreconciled"],
   ["activity.tasks.empty", "unreconciled"],
@@ -73,6 +76,41 @@ const DIVERGENCES = new Map([
   ["employer.subtitle", "unreconciled"],
   ["billing.checkout.cardRedirect", "unreconciled"],
 ]);
+
+/**
+ * Namespaces that exist on one platform because the *surface* does. Each needs
+ * a reason, same as the drift ledgers: a namespace listed here is a decision, a
+ * namespace missing from here is counted against the ceiling below.
+ */
+const PLATFORM_ONLY_NAMESPACES = {
+  web: {
+    admin: "mobile ships no admin surface — no moderation, no billing console",
+    publicJob: "the public /j/[id] SEO route; mobile has no unauthenticated job page",
+    chrome: "AppShell's persistent chrome. Mobile screens each own an AppHeader",
+    cv: "the CV builder is web-only — no mobile screen references cv.*",
+  },
+  mobile: {
+    api: "native map from API error codes to copy; web's equivalent is `errors`",
+    appGate: "the native update/maintenance gate. A web tab just reloads",
+    system: "native crash and offline chrome, outside any screen",
+    onboarding:
+      "mobile runs a six-step wizard against web's single form — a screen-parity " +
+      "difference tracked in docs/audit, not a copy gap",
+  },
+  both: {
+    landing: "web is acquisition, mobile is the post-install intro — see DIVERGENCES",
+  },
+};
+
+/**
+ * Keys present on one platform only, after the namespaces above are excused.
+ *
+ * A ratchet, not a target: the check fails when a number goes **up**, and also
+ * when it goes down without this line being lowered, so closing a gap has to be
+ * recorded. Both directions matter — 163 keys of web surface that mobile does
+ * not have, and 101 the other way.
+ */
+const MAX_PLATFORM_ONLY_KEYS = { web: 163, mobile: 101 };
 
 /**
  * Namespaces whose keys are reached through a template literal or a translator
@@ -187,6 +225,36 @@ for (const key of DIVERGENCES.keys()) {
   }
 }
 
+// --- 2b. surface one platform has and the other does not ---------------------
+const platformOnly = { web: [], mobile: [] };
+for (const [platform, own, other] of [
+  ["web", web, mobile],
+  ["mobile", mobile, web],
+]) {
+  const excused = { ...PLATFORM_ONLY_NAMESPACES[platform], ...PLATFORM_ONLY_NAMESPACES.both };
+  for (const key of own.keys()) {
+    if (other.has(key)) continue;
+    if (Object.keys(excused).some((ns) => key === ns || key.startsWith(`${ns}.`))) continue;
+    platformOnly[platform].push(key);
+  }
+  const found = platformOnly[platform].length;
+  const ceiling = MAX_PLATFORM_ONLY_KEYS[platform];
+  if (found > ceiling) {
+    hits.push({
+      kind: "platform-only message keys grew",
+      detail:
+        `${platform}: ${found} keys exist here and not on the other platform, ` +
+        `over the ${ceiling} recorded in MAX_PLATFORM_ONLY_KEYS. Add the twin, ` +
+        `or record the namespace in PLATFORM_ONLY_NAMESPACES with a reason.`,
+    });
+  } else if (found < ceiling) {
+    hits.push({
+      kind: "stale platform-only ceiling",
+      detail: `${platform}: down to ${found} from ${ceiling}. Lower MAX_PLATFORM_ONLY_KEYS.${platform}.`,
+    });
+  }
+}
+
 // --- 3. defined but never referenced -----------------------------------------
 /**
  * Every `const t = useTranslations("ns")` in a file, including the destructured
@@ -280,11 +348,41 @@ for (const [platform, catalog, consumed, dynamic] of [
 }
 
 // --- report -------------------------------------------------------------------
+/** Top namespaces of a key list, so a number points somewhere. */
+function byNamespace(keys) {
+  const counts = new Map();
+  for (const key of keys) {
+    const ns = key.split(".")[0];
+    counts.set(ns, (counts.get(ns) ?? 0) + 1);
+  }
+  return [...counts]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 6)
+    .map(([ns, n]) => `${ns}:${n}`)
+    .join(" ");
+}
+
 if (hits.length === 0) {
+  console.log(`check:i18n — clean. ${web.size} web keys, ${mobile.size} mobile keys.`);
+
+  // A count is not a list. "32 known divergences" told nobody which strings say
+  // different things on the same screen, so nobody could work the number down.
+  console.log(`\n${diverged.length} known copy divergence(s) — run with --values to see them:`);
+  for (const key of diverged) console.log(`  ${key} — ${DIVERGENCES.get(key)}`);
+  if (process.argv.includes("--values")) {
+    for (const key of diverged) {
+      console.log(`\n  ${key}\n    web:    ${web.get(key)}\n    mobile: ${mobile.get(key)}`);
+    }
+  }
+
   console.log(
-    `check:i18n — clean. ${web.size} web keys, ${mobile.size} mobile keys, ` +
-      `${diverged.length} known divergence(s).`,
+    `\nplatform-only keys (surface one side has and the other does not), at the recorded ceiling:`,
   );
+  for (const platform of ["web", "mobile"]) {
+    console.log(
+      `  ${platform}: ${platformOnly[platform].length} — ${byNamespace(platformOnly[platform])}`,
+    );
+  }
   process.exit(0);
 }
 

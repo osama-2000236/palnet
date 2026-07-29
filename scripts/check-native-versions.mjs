@@ -1,3 +1,13 @@
+// One `react-native` / `react-native-svg` / `react` across the workspace.
+//
+// It does NOT check that the dev client installed on a device is new enough to
+// run the current RN — the failure where a two-month-old APK red-boxes with
+// "Compiling JS failed: <line>:<col>:')' expected", which reads exactly like a
+// syntax error in your change. That check needs `adb` and a booted emulator,
+// neither of which exists in the CI runner this script is wired into, so it
+// lives in `apps/mobile/e2e/device-up.mjs` where a device is a precondition
+// rather than a coincidence. Deliberate split, not an oversight.
+
 import fs from "node:fs";
 import path from "node:path";
 
@@ -37,11 +47,7 @@ function scanNodeModules(base) {
   }
 }
 
-for (const base of [
-  root,
-  path.join(root, "apps/mobile"),
-  path.join(root, "packages/ui-native"),
-]) {
+for (const base of [root, path.join(root, "apps/mobile"), path.join(root, "packages/ui-native")]) {
   scanNodeModules(base);
 }
 
@@ -49,7 +55,9 @@ const failures = [];
 for (const name of requiredSingle) {
   const versions = observed.get(name) ?? new Map();
   if (versions.size !== 1) {
-    failures.push(`${name}: expected exactly one installed version, found ${[...versions.keys()].join(", ") || "none"}`);
+    failures.push(
+      `${name}: expected exactly one installed version, found ${[...versions.keys()].join(", ") || "none"}`,
+    );
   }
 }
 

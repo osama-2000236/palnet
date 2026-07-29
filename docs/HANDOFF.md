@@ -1,7 +1,7 @@
 # HANDOFF — live status
 
 The one status document. Rewritten in place, not appended to — if you want history, use
-`git log`, `gh pr list --state all`, and `CHANGELOG.md`. Last verified against `main` on 2026-07-29.
+`git log`, `gh pr list --state all`, and `CHANGELOG.md`. Last verified against `main` on 2026-07-30.
 
 Read order: `CLAUDE.md` → `project-spec.md` → `DESIGN.md` → `BRAND.md` → this file.
 
@@ -40,10 +40,13 @@ NestJS 11, next-intl 4, Next 16 (Turbopack), Tailwind 4.
 same P1 the round-2 review had fixed on web only.
 
 **Five gates exist that did not**, each a root `scripts/*.mjs` in the lint job with a ledger of
-known exceptions that fails when an entry goes stale: `check:i18n` (cross-platform copy drift and
-dead keys), `check:ui-lockstep` (ui-web ↔ ui-native pairing, ledger down from 8 entries to 2),
+known exceptions that fails when an entry goes stale: `check:i18n` (cross-platform copy drift, dead
+keys, and — since 2026-07-30 — a ratchet on keys that exist on one platform only),
+`check:ui-lockstep` (ui-web ↔ ui-native pairing, **ledger at 0 entries** as of 2026-07-30),
 `packages/config/__tests__/rtl-rules` (the RTL eslint selectors, run against known-bad source),
-the shared api-client spec, and `check:security-headers`.
+the shared api-client spec, and `check:security-headers`. `check:native-versions` and
+`test:gates` (`scripts/__tests__/`, the gates' own tests) joined the lint job on 2026-07-30;
+`check:native-versions` had never run in CI at all.
 
 **Blocked upstream — verified against the packages, not assumed:**
 
@@ -54,11 +57,14 @@ the shared api-client spec, and `check:security-headers`.
 | Prisma 7     | Rejects `datasource.url` in the schema. Needs `prisma.config.ts` plus a driver adapter — a rewire of the production DB connection, and its own PR with a staging soak. |
 | Expo 54 → 57 | Needs the physical-device smoke run below. Do not ship it on emulator evidence.                                                                                        |
 
-**Left on the design system:** two drift entries in `scripts/check-ui-lockstep.mjs` — native
-`StateMessage` (converge web's `EmptyState` + `Alert` onto its `tone` API) and native `SearchField`
-(web only has the chrome-bound `AppShellSearch`). Native `Tabs` now draws the DESIGN.md §6.3
-`brand-600` underline and scrolls rather than wrapping, matching its web twin; `docs/design/PARITY.md`
-carries the two smaller gaps that remain.
+**Design-system drift is at zero.** `check:ui-lockstep` reported 3 known drift entries for three
+sprints and had never shrunk; it reports **0** as of 2026-07-30, and `docs/design/PARITY.md`'s
+"mounted by nothing" table is empty. Closed by converging `Checkbox` onto `Switch`'s prop
+vocabulary, merging native `StateMessage` into one `Alert` on both platforms, giving web the
+`SearchField` it never had (and deleting `AppShellSearch`), wiring `OnboardingProgress` and the
+`block` illustration kit into the mobile screens that should always have used them, and deleting
+what nothing mounted — native `Dialog`, the `outline` illustration kit on native, and the
+`ToastHost` alias on both. Every remaining one-platform component now carries a written reason.
 
 **Device evidence for the `Tabs` underline — captured 2026-07-29**, closing the caveat PARITY.md
 attached to it. Pixel 7 Pro emulator (1440×3120, ~3.5×), Arabic RTL, light. Sampled from the PNGs
