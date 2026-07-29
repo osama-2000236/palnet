@@ -5,6 +5,8 @@ import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 
+import { AuthShell } from "../_components/AuthShell";
+
 import { ApiRequestError, forgotPasswordAction } from "@/lib/auth-actions";
 
 export default function ForgotPasswordPage(): JSX.Element {
@@ -35,11 +37,8 @@ export default function ForgotPasswordPage(): JSX.Element {
   }
 
   return (
-    <main className="mx-auto w-full max-w-md px-6 py-12">
+    <AuthShell kicker={t("forgot.kicker")} title={t("forgot.title")} subtitle={t("forgot.body")}>
       <form onSubmit={onSubmit} className="flex flex-col gap-4" noValidate>
-        <h1 className="text-ink text-3xl font-bold">{t("forgot.title")}</h1>
-        <p className="text-ink-muted text-sm">{t("forgot.body")}</p>
-
         <label className="flex flex-col gap-1">
           <span className="text-ink-muted text-sm">{t("email")}</span>
           <Input
@@ -62,6 +61,6 @@ export default function ForgotPasswordPage(): JSX.Element {
           {t("forgot.backToLogin")}
         </Link>
       </form>
-    </main>
+    </AuthShell>
   );
 }

@@ -1,6 +1,7 @@
 import {
   Company,
   cursorPage,
+  formatPlace,
   Job as JobSchema,
   type Company as CompanyDto,
   type Job,
@@ -23,7 +24,7 @@ const JobsPage = cursorPage(JobSchema);
 
 export default function CompanyScreen(): JSX.Element {
   const styles = useStyles();
-  const { t } = useTranslation();
+  const { i18n, t } = useTranslation();
   const { slug } = useLocalSearchParams<{ slug: string }>();
 
   const [company, setCompany] = useState<CompanyDto | null>(null);
@@ -71,7 +72,9 @@ export default function CompanyScreen(): JSX.Element {
     );
   }
 
-  const location = [company.city, company.country].filter(Boolean).join(", ");
+  // Was `[city, country].join(", ")`, which printed the raw ISO code and a Latin
+  // comma on an Arabic screen: "رام الله, PS".
+  const location = formatPlace(company.city, company.country, i18n.language);
 
   return (
     <SafeAreaView style={styles.screen}>

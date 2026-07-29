@@ -16,7 +16,6 @@
     "cancel": "Cancel",
     "save": "Save",
     "saving": "Saving…",
-    "unsavedChanges": "You have unsaved changes",
     "revert": "Revert",
     "continue": "Continue",
     "goHome": "Go home",
@@ -127,7 +126,7 @@
     "logout": "Sign out",
     "email": "Email",
     "password": "Password",
-    "passwordHint": "Use at least 8 characters with a letter and a number.",
+    "passwordHint": "Use at least 10 characters with an uppercase letter, a lowercase letter, and a digit.",
     "firstName": "First name",
     "lastName": "Last name",
     "acceptTerms": "I agree to the Terms and Privacy Policy",
@@ -181,7 +180,21 @@
         "passwordUpper": "Add at least one uppercase letter.",
         "passwordDigit": "Add at least one number."
       }
-    }
+    },
+    "loginKicker": "Secure sign-in",
+    "registerKicker": "Join Baydar",
+    "welcomeBack": "Welcome back",
+    "loginSubtitle": "Pick your conversations and openings up where you left off.",
+    "createProfile": "Create your professional profile",
+    "registerSubtitle": "Start with a clear, trusted account — we will help you finish your profile next.",
+    "noAccount": "No account yet?",
+    "haveAccount": "Already have an account?",
+    "secureHintTitle": "Your data stays protected",
+    "secureHint": "We use a secure session and never display your email or password back to you.",
+    "termsLink": "the Terms",
+    "privacyLink": "the Privacy Policy",
+    "acceptTermsPrefix": "I agree to",
+    "acceptTermsSeparator": "and"
   },
   "onboarding": {
     "title": "Complete your profile",
@@ -758,44 +771,8 @@
     "privacy": {
       "title": "Privacy",
       "subtitle": "Review who can discover, view, and contact your professional profile.",
-      "noticeTitle": "Backend support is staged",
       "noticeBody": "These controls show the intended privacy contract. They are disabled until the privacy API is connected, so no setting is silently changed.",
       "disabledHint": "Saving is disabled until backend-backed privacy preferences are available.",
-      "savedToast": "Privacy settings saved.",
-      "discoverabilityTitle": "Discoverability",
-      "discoverabilityDesc": "Control where your profile can appear across Baydar.",
-      "fields": {
-        "profileVisibility": {
-          "title": "Profile visibility",
-          "desc": "Choose who can view your public professional profile."
-        },
-        "whoCanMessage": {
-          "title": "Who can message you",
-          "desc": "Limit direct messages to trusted people when needed."
-        },
-        "whoCanSeeConnections": {
-          "title": "Who can see your connections",
-          "desc": "Control whether your network list is visible."
-        },
-        "whoCanSeeContact": {
-          "title": "Who can see contact info",
-          "desc": "Keep email and phone details visible only to the people you choose."
-        },
-        "appearInSearch": {
-          "title": "Appear in search",
-          "desc": "Allow your profile to appear in Baydar search results."
-        },
-        "appearInSuggestions": {
-          "title": "Appear in suggestions",
-          "desc": "Allow Baydar to suggest your profile to relevant members."
-        }
-      },
-      "options": {
-        "public": "Public",
-        "connections": "Connections",
-        "private": "Private",
-        "anyone": "Anyone"
-      },
       "rows": {
         "profile": {
           "title": "Profile visibility",
@@ -816,19 +793,23 @@
     },
     "security": {
       "title": "Security",
-      "subtitle": "Review account protection and session controls before backend actions are enabled.",
+      "subtitle": "Review your account protection and the devices signed in to it.",
       "password": {
         "title": "Change password",
         "desc": "Keep your account protected with a strong password.",
         "current": "Current password",
         "new": "New password",
         "confirm": "Confirm new password",
-        "requirements": "Use at least 8 characters.",
-        "tooShort": "Use at least 8 characters.",
+        "requirements": "Use at least 10 characters with an uppercase letter, a lowercase letter, and a digit.",
+        "tooShort": "Use at least 10 characters with an uppercase letter, a lowercase letter, and a digit.",
         "mismatch": "The new passwords do not match.",
         "sameAsOld": "Choose a password that is different from your current one.",
         "savedToast": "Password updated.",
-        "button": "Update password"
+        "button": "Update password",
+        "show": "Show",
+        "hide": "Hide",
+        "showPassword": "Show password",
+        "hidePassword": "Hide password"
       },
       "sessions": {
         "title": "Active sessions",

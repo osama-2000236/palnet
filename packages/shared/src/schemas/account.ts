@@ -32,19 +32,11 @@ export const AccountExportEnvelope = z.object({
 });
 export type AccountExportEnvelope = z.infer<typeof AccountExportEnvelope>;
 
-// Privacy settings
-export const PrivacyVisibility = z.enum(["public", "connections", "private", "anyone"]);
-export type PrivacyVisibility = z.infer<typeof PrivacyVisibility>;
-
-export const PrivacySettings = z.object({
-  profileVisibility: PrivacyVisibility,
-  whoCanMessage: PrivacyVisibility,
-  whoCanSeeConnections: PrivacyVisibility,
-  whoCanSeeContact: PrivacyVisibility,
-  appearInSearch: z.boolean(),
-  appearInSuggestions: z.boolean(),
-});
-export type PrivacySettings = z.infer<typeof PrivacySettings>;
+// Privacy settings had a schema here for a `/me/privacy` endpoint that was
+// never built — no controller, no Prisma column, no consumer once the web form
+// that 500'd on every load was replaced by the read-only contract both clients
+// now render. Deleted rather than kept as a promise; re-add it beside the
+// controller that serves it.
 
 // Active session
 export const ActiveSession = z.object({

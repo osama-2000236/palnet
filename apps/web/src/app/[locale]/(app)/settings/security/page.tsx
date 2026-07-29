@@ -15,7 +15,7 @@
 //
 // Mutations all funnel through `apiCall` so 204s are handled uniformly.
 
-import { ActiveSession as ActiveSessionSchema, type ActiveSession } from "@baydar/shared";
+import { ActiveSession as ActiveSessionSchema, Password, type ActiveSession } from "@baydar/shared";
 import { Alert, Button, Surface, useToast } from "@baydar/ui-web";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -85,7 +85,10 @@ export default function SecuritySettingsPage(): JSX.Element {
     if (!token) return;
     setPwError(null);
 
-    if (newPw.length < 8) {
+    // The schema the server validates with, not a hand-copied length check —
+    // this one said 8 while `Password` required 10 plus case and a digit, so a
+    // legal-looking password was rejected by the API with a generic error.
+    if (!Password.safeParse(newPw).success) {
       setPwError(t("password.tooShort"));
       return;
     }

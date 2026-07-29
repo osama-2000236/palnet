@@ -42,14 +42,12 @@ const DIVERGENCES = new Map([
   // Unreconciled copy drift. These say different things on the same screen and
   // need a native-speaker read, which `docs/HANDOFF.md` already records as
   // owed. Listed so no more can join them silently.
-  ["auth.passwordHint", "unreconciled: mobile omits the digit requirement web states"],
   ["auth.deletedGraceBanner", "unreconciled: web names the restore path, mobile does not"],
   ["onboarding.submit", "unreconciled: different calls to action"],
   ["composer.placeholder", "unreconciled: mobile prompt is longer"],
   ["composer.submit", "unreconciled: نشر vs انشر"],
   ["composer.addImage", "unreconciled: label vs action phrasing"],
   ["search.placeholder", "unreconciled"],
-  ["profile.endorseAlready", "unreconciled"],
   ["messaging.emptyThread", "unreconciled"],
   ["notifications.empty", "unreconciled"],
   ["notifications.templates.JOB_APPLICATION_UPDATE", "unreconciled"],
@@ -69,22 +67,10 @@ const DIVERGENCES = new Map([
   ["jobs.cityPlaceholder", "unreconciled"],
   ["jobs.emptyTitle", "unreconciled"],
   ["settings.items.appearanceDesc", "unreconciled"],
-  ["settings.notifications.events.newConnection.desc", "unreconciled"],
-  ["settings.notifications.events.newMessage.desc", "unreconciled"],
-  ["settings.notifications.events.newComment.desc", "unreconciled"],
-  ["settings.notifications.events.newReaction.desc", "unreconciled"],
-  ["settings.notifications.events.applicationStatus.desc", "unreconciled"],
   ["settings.notifications.events.karamaUpdate.desc", "unreconciled"],
-  ["settings.privacy.subtitle", "unreconciled"],
-  ["settings.privacy.noticeBody", "unreconciled"],
-  ["settings.privacy.disabledHint", "unreconciled"],
-  ["settings.privacy.rows.profile.body", "unreconciled"],
-  ["settings.privacy.rows.messages.body", "unreconciled"],
-  ["settings.privacy.rows.search.body", "unreconciled"],
   ["account.export.success", "unreconciled"],
   ["employer.title", "unreconciled"],
   ["employer.subtitle", "unreconciled"],
-  ["employer.empty", "unreconciled"],
   ["billing.checkout.cardRedirect", "unreconciled"],
 ]);
 

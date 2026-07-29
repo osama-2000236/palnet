@@ -4,7 +4,7 @@ import { OnboardProfileBody, Profile } from "@baydar/shared";
 import { Alert, Button, Input, OnboardingProgress, Surface } from "@baydar/ui-web";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { CityField } from "@/components/CityField";
 import { apiFetch, ApiRequestError } from "@/lib/api";
@@ -26,6 +26,38 @@ export default function OnboardingPage(): JSX.Element {
   });
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+
+  // Seed from the profile the account already has. Register collects first and
+  // last name, and this screen asked for them again from a blank form — so the
+  // first thing a brand-new user saw was their own name missing. The native twin
+  // does this on mount too (apps/mobile/src/screens/onboarding/api.ts).
+  //
+  // Fills only fields the user has not touched: the fetch is in flight while the
+  // form is already interactive, and overwriting a keystroke is worse than
+  // showing a blank.
+  useEffect(() => {
+    const token = getAccessToken();
+    if (!token) return;
+    let active = true;
+    void apiFetch("/profiles/me", Profile.partial(), { token })
+      .then((profile) => {
+        if (!active) return;
+        setState((prev) => ({
+          handle: prev.handle || (profile.handle ?? ""),
+          firstName: prev.firstName || (profile.firstName ?? ""),
+          lastName: prev.lastName || (profile.lastName ?? ""),
+          headline: prev.headline || (profile.headline ?? ""),
+          location: prev.location || (profile.location ?? ""),
+          country: prev.country,
+        }));
+      })
+      .catch(() => {
+        // A failed prefill is a blank form, which is what this screen was before.
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   function updateField(field: keyof typeof state, value: string): void {
     setState((prev) => ({ ...prev, [field]: value }));

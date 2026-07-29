@@ -19,6 +19,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 
+import { AuthShell, AuthSwitch } from "../_components/AuthShell";
+
 import { ApiRequestError, loginAction, restoreAccountAction } from "@/lib/auth-actions";
 
 // Post-login destination — only same-origin paths (public share pages link to
@@ -84,60 +86,67 @@ export function LoginForm(): JSX.Element {
   }
 
   return (
-    <form onSubmit={onSubmit} className="flex flex-col gap-4" noValidate>
-      <h1 className="text-ink text-3xl font-bold">{t("login")}</h1>
+    <AuthShell
+      kicker={t("loginKicker")}
+      title={t("welcomeBack")}
+      subtitle={t("loginSubtitle")}
+      footer={
+        <AuthSwitch prompt={t("noAccount")} href={`/${locale}/register`} action={t("register")} />
+      }
+    >
+      <form onSubmit={onSubmit} className="flex flex-col gap-4" noValidate>
+        {params.get("deleted") === "grace" ? (
+          <Alert kind="info">{t("deletedGraceBanner")}</Alert>
+        ) : null}
 
-      {params.get("deleted") === "grace" ? (
-        <Alert kind="info">{t("deletedGraceBanner")}</Alert>
-      ) : null}
+        <label className="flex flex-col gap-1">
+          <span className="text-ink-muted text-sm">{t("email")}</span>
+          <Input
+            type="email"
+            fullWidth
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            autoComplete="email"
+            inputMode="email"
+            dir="ltr"
+            error={Boolean(error)}
+          />
+        </label>
 
-      <label className="flex flex-col gap-1">
-        <span className="text-ink-muted text-sm">{t("email")}</span>
-        <Input
-          type="email"
-          fullWidth
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-          autoComplete="email"
-          inputMode="email"
-          dir="ltr"
-          error={Boolean(error)}
-        />
-      </label>
+        <label className="flex flex-col gap-1">
+          <span className="text-ink-muted text-sm">{t("password")}</span>
+          <Input
+            type="password"
+            fullWidth
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            autoComplete="current-password"
+            dir="ltr"
+            error={Boolean(error)}
+          />
+        </label>
 
-      <label className="flex flex-col gap-1">
-        <span className="text-ink-muted text-sm">{t("password")}</span>
-        <Input
-          type="password"
-          fullWidth
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          autoComplete="current-password"
-          dir="ltr"
-          error={Boolean(error)}
-        />
-      </label>
+        <Link
+          href={`/${locale}/forgot-password`}
+          className="text-brand-700 hover:text-brand-800 min-h-target inline-flex items-center text-sm font-semibold"
+        >
+          {t("forgot.link")}
+        </Link>
 
-      <Link
-        href={`/${locale}/forgot-password`}
-        className="min-h-target text-brand-700 hover:text-brand-800 inline-flex items-center text-sm font-semibold"
-      >
-        {t("forgot.link")}
-      </Link>
+        {error ? <Alert kind="danger">{error}</Alert> : null}
 
-      {error ? <Alert kind="danger">{error}</Alert> : null}
-
-      <Button type="submit" variant="primary" loading={busy} fullWidth>
-        {t("submitLogin")}
-      </Button>
-
-      {errorCode === "ACCOUNT_DELETED_PENDING_RESTORE" ? (
-        <Button type="button" variant="secondary" loading={busy} fullWidth onClick={onRestore}>
-          {t("restoreCta")}
+        <Button type="submit" variant="primary" loading={busy} fullWidth>
+          {t("submitLogin")}
         </Button>
-      ) : null}
-    </form>
+
+        {errorCode === "ACCOUNT_DELETED_PENDING_RESTORE" ? (
+          <Button type="button" variant="secondary" loading={busy} fullWidth onClick={onRestore}>
+            {t("restoreCta")}
+          </Button>
+        ) : null}
+      </form>
+    </AuthShell>
   );
 }

@@ -10,7 +10,7 @@ import { apiFetch } from "@/lib/api";
 import { apiErrorMessage } from "@/lib/api-errors";
 import { getAccessToken } from "@/lib/session";
 import { uploadAsset } from "@/lib/uploads";
-import { Card, Input, type ProfileCardProps } from "./shared";
+import { Card, Input, LabeledField, type ProfileCardProps } from "./shared";
 import { useStyles } from "./styles";
 
 export function BasicsCard({ profile, onChanged, onError }: ProfileCardProps): JSX.Element {
@@ -159,7 +159,9 @@ export function BasicsCard({ profile, onChanged, onError }: ProfileCardProps): J
         error={fieldErrors.about}
         fullWidth
       />
-      <CityField value={location} onChange={setLocation} />
+      <LabeledField label={t("onboarding.location")}>
+        <CityField value={location} onChange={setLocation} />
+      </LabeledField>
       {/* Web parity: the two availability signals the DTO always carried and
           no editor on either platform ever let anyone set. */}
       <SwitchRow

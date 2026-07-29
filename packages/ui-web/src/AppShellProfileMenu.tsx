@@ -83,17 +83,23 @@ export function AppShellProfileMenu({
         aria-expanded={open}
         aria-controls={menuId}
         aria-current={active ? "page" : undefined}
+        // Same box as `NavItem`: `h-full min-h-0 justify-center` and no vertical
+        // padding. Without them this button sized to its own content — a 32px
+        // avatar plus a label line plus `py-1.5` is 60px inside a 56px (`h-14`)
+        // header — so the "my profile" label was sliced in half by the header's
+        // bottom border on every signed-in page. The avatar drops to `xs` (24px)
+        // to sit on the same optical line as the 20px nav icons.
         className={cx(
-          "text-micro focus-visible:outline-hidden relative -mb-px inline-flex flex-col items-center gap-0.5 rounded-t-md border-b-2 px-3 py-1.5 font-medium transition-colors focus-visible:[box-shadow:var(--focus-ring)]",
+          "text-micro focus-visible:outline-hidden relative -mb-px inline-flex h-full min-h-0 shrink-0 flex-col items-center justify-center gap-0.5 rounded-t-md border-b-2 px-3 font-medium transition-colors focus-visible:[box-shadow:var(--focus-ring)]",
           active
             ? "border-brand-600 text-ink"
             : "text-ink-muted hover:bg-surface-subtle hover:text-ink border-transparent",
         )}
       >
         {me ? (
-          <Avatar user={me} size="sm" />
+          <Avatar user={me} size="xs" />
         ) : (
-          <span className="bg-surface-sunken h-8 w-8 animate-pulse rounded-full" />
+          <span className="bg-surface-sunken h-6 w-6 animate-pulse rounded-full" />
         )}
         <span className="inline-flex items-center gap-0.5">
           {labels.myProfile}

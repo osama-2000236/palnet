@@ -8,7 +8,7 @@ import {
   useThemeTokens,
   type NativeTheme,
 } from "@baydar/ui-native";
-import { Link, Stack } from "expo-router";
+import { Link, Stack, router } from "expo-router";
 import { useEffect, useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { FlatList, Pressable, StyleSheet, View } from "react-native";
@@ -65,7 +65,16 @@ export default function EmployerHomeScreen(): JSX.Element {
                 <RecordCardSkeleton variant="row" />
               </View>
             ) : (
-              <EmptyState motif="jobs" title={t("employer.empty")} />
+              // Was title-only, so the screen dead-ended: no explanation and no
+              // way to create the company it was asking for. Same body + CTA the
+              // web twin has.
+              <EmptyState
+                motif="jobs"
+                title={t("employer.empty")}
+                body={t("employer.emptyDesc")}
+                cta={t("employer.createCompany")}
+                onAction={() => router.push("/(app)/employer/new")}
+              />
             )
           }
           renderItem={({ item }) => (
