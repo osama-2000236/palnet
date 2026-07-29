@@ -87,4 +87,4 @@ Mobile bundle evidence is valuable before release: run Expo iOS and Android dev 
 
 ## Cleanup Policy
 
-Generated agent worktrees, Codex run outputs, logs, local env files, build artifacts, coverage, and dependency folders are not source. They are ignored and may be removed at any time. See [`docs/repo-cleanup-2026-04-28.md`](docs/repo-cleanup-2026-04-28.md) for the current cleanup record.
+Generated agent worktrees, Codex run outputs, logs, local env files, build artifacts, coverage, and dependency folders are not source. They are ignored and may be removed at any time.

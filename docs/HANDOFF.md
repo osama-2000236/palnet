@@ -1,7 +1,7 @@
 # HANDOFF — live status
 
 The one status document. Rewritten in place, not appended to — if you want history, use
-`git log`, `gh pr list --state all`, and `CHANGELOG.md`. Last verified against `review/opus5-round-2` on 2026-07-25.
+`git log`, `gh pr list --state all`, and `CHANGELOG.md`. Last verified against `main` on 2026-07-29.
 
 Read order: `CLAUDE.md` → `project-spec.md` → `DESIGN.md` → `BRAND.md` → this file.
 
@@ -15,8 +15,9 @@ Run `pnpm --filter @baydar/db db:generate` immediately after `pnpm install`, **b
 
 Feature-complete against `project-spec.md`, including monetization UI, admin moderation and
 billing surfaces, Redis-backed rate limiting and SSE fanout, live FX overlay, and the Resend mail
-transport. What stands between this and real users is not code — it is the provisioning below,
-plus evidence nobody has gathered yet.
+transport. The dependency stack is current (see the upgrade section below). What stands between
+this and real users is not code — it is the provisioning below, plus evidence nobody has
+gathered yet.
 
 The round-2 review (`review/opus5-round-2`, 2026-07-25) closed three P1s that no gate could have
 caught: Karama points could be minted by toggling an application's hire status, the points
@@ -24,6 +25,40 @@ checkout could be charged twice, and web SSE never reconnected after any dropped
 Findings and corrections: [`docs/audit/OPUS5-ROUND2-2026-07-25.md`](audit/OPUS5-ROUND2-2026-07-25.md).
 Screen scores: [`docs/audit/OPUS5-RUBRIC-2026-07-25.md`](audit/OPUS5-RUBRIC-2026-07-25.md).
 Arabic copy review list: [`docs/audit/ARABIC-REGISTER-2026-07-25.md`](audit/ARABIC-REGISTER-2026-07-25.md).
+
+## Platform upgrade — done, PRs #109–#120
+
+The features were finished; the platform under them was one to three majors behind on every axis,
+two foundations were past end of life, and web and mobile had drifted into two implementations of
+one client. That is closed.
+
+**Current on every axis the repo controls:** Node 24, ESLint 9 flat config, Zod 4, Prisma 6,
+NestJS 11, next-intl 4, Next 16 (Turbopack), Tailwind 4.
+
+**Deduplicated:** one HTTP client, one set of resource hooks and one string catalog in
+`packages/shared`, consumed by both platforms. Mobile SSE reconnects — it never did, which was the
+same P1 the round-2 review had fixed on web only.
+
+**Five gates exist that did not**, each a root `scripts/*.mjs` in the lint job with a ledger of
+known exceptions that fails when an entry goes stale: `check:i18n` (cross-platform copy drift and
+dead keys), `check:ui-lockstep` (ui-web ↔ ui-native pairing, ledger down from 8 entries to 2),
+`packages/config/__tests__/rtl-rules` (the RTL eslint selectors, run against known-bad source),
+the shared api-client spec, and `check:security-headers`.
+
+**Blocked upstream — verified against the packages, not assumed:**
+
+|              | Blocker                                                                                                                                                                |
+| ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Jest 30      | `jest-expo@57`, the latest, still depends on the Jest 29 toolchain. Not gated on the Expo upgrade, as the plan had assumed.                                            |
+| ESLint 10    | `eslint-plugin-import`, latest, caps at 9.                                                                                                                             |
+| Prisma 7     | Rejects `datasource.url` in the schema. Needs `prisma.config.ts` plus a driver adapter — a rewire of the production DB connection, and its own PR with a staging soak. |
+| Expo 54 → 57 | Needs the physical-device smoke run below. Do not ship it on emulator evidence.                                                                                        |
+
+**Left on the design system:** two drift entries in `scripts/check-ui-lockstep.mjs` — native
+`StateMessage` (converge web's `EmptyState` + `Alert` onto its `tone` API) and native `SearchField`
+(web only has the chrome-bound `AppShellSearch`). Native `Tabs` still draws a pill strip where
+DESIGN.md §6.3 specifies a `brand-600` underline; `docs/design/PARITY.md` carries that and two
+smaller gaps.
 
 ## Launch blockers
 
