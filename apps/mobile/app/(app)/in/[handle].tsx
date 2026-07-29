@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import { ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { ProfileScreenSkeleton } from "@/components/ScreenSkeleton";
 import { StateMessage } from "@/components/StateMessage";
 import { useBlock, useReport, useUnblock } from "@/api/safety";
 import { apiFetch } from "@/lib/api";
@@ -79,8 +80,8 @@ export default function ProfileScreen(): JSX.Element {
 
   if (loading) {
     return (
-      <SafeAreaView style={profileStyles.errorScreen}>
-        <StateMessage message={t("common.loading")} role="text" />
+      <SafeAreaView style={profileStyles.screen}>
+        <ProfileScreenSkeleton />
       </SafeAreaView>
     );
   }

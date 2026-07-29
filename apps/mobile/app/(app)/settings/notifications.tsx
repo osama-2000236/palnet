@@ -14,6 +14,7 @@ import { useTranslation } from "react-i18next";
 import { ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { ListSkeleton } from "@/components/ScreenSkeleton";
 import { apiCall, apiFetch } from "@/lib/api";
 import { apiErrorMessage } from "@/lib/api-errors";
 
@@ -142,9 +143,7 @@ export default function NotificationsSettingsScreen(): JSX.Element {
         </View>
 
         {loading ? (
-          <Surface variant="card" padding="6">
-            <Text style={{ color: c.inkMuted }}>{t("common.loading")}</Text>
-          </Surface>
+          <ListSkeleton />
         ) : prefs ? (
           <>
             {EVENT_GROUPS.map((group) => (

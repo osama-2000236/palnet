@@ -5,12 +5,6 @@ import { StyleSheet } from "react-native";
 export function makeCompanyBillingStyles(c: NativeTheme["color"]) {
   return StyleSheet.create({
     screen: { flex: 1, backgroundColor: c.surfaceMuted },
-    centerScreen: {
-      flex: 1,
-      justifyContent: "center",
-      backgroundColor: c.surfaceMuted,
-      padding: nativeTokens.space[4],
-    },
     scrollBody: { padding: nativeTokens.space[4], gap: nativeTokens.space[4] },
     kicker: {
       color: c.brand700,

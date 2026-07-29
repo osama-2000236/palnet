@@ -10,6 +10,7 @@ import { useTranslation } from "react-i18next";
 import { ScrollView, Share, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { DetailScreenSkeleton } from "@/components/ScreenSkeleton";
 import { StateMessage } from "@/components/StateMessage";
 import { apiCall, apiFetch } from "@/lib/api";
 import { apiErrorMessage } from "@/lib/api-errors";
@@ -141,9 +142,7 @@ export default function JobDetailScreen(): JSX.Element {
   if (loading) {
     return (
       <SafeAreaView style={styles.screen}>
-        <View style={{ padding: nativeTokens.space[4] }}>
-          <StateMessage message={t("common.loading")} role="text" />
-        </View>
+        <DetailScreenSkeleton />
       </SafeAreaView>
     );
   }

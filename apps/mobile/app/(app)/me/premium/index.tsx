@@ -20,6 +20,7 @@ import { z } from "zod";
 
 import { CheckoutPanel } from "@/components/billing/CheckoutPanel";
 import { InvoiceList } from "@/components/billing/InvoiceList";
+import { CardStackSkeleton } from "@/components/ScreenSkeleton";
 import { StateMessage } from "@/components/StateMessage";
 
 import { FeatureList, TRUST_KEYS, TrustRow, useStyles } from "@/screens/premium/parts";
@@ -95,8 +96,8 @@ export default function PremiumScreen(): JSX.Element {
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.centerScreen}>
-        <StateMessage message={t("common.loading")} role="text" />
+      <SafeAreaView style={styles.screen}>
+        <CardStackSkeleton />
       </SafeAreaView>
     );
   }
