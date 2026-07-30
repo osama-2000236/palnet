@@ -145,6 +145,50 @@ function meanLuminance(frame) {
 // is the mislabel above, not a design change.
 const THEME_LUMA_SPLIT = Number(process.env.QA_THEME_LUMA_SPLIT ?? 140);
 
+/**
+ * Drive Settings → Appearance for one cell.
+ *
+ * shell:true because maestro ships as a .cmd shim on Windows, which
+ * execFileSync cannot spawn directly. That makes the flow path a shell
+ * argument, and node picks the shell from the environment: under a POSIX shell
+ * every backslash in a Windows absolute path is eaten and maestro reports
+ * "Flow path does not exist: C:\...\LinkedIn.claudeworktrees…". A relative path
+ * with no backslashes survives either shell — hence `cwd` rather than
+ * `path.resolve`.
+ */
+function setAppearance(locale, theme) {
+  execFileSync(
+    "maestro",
+    ["test", ".maestro/set-appearance.yaml", "-e", `THEME=${theme}`, "-e", `LOCALE=${locale}`],
+    { cwd: path.resolve(import.meta.dirname, ".."), stdio: "inherit", shell: true },
+  );
+}
+
+/**
+ * The writing direction this launch actually rendered with.
+ *
+ * The theme had a silent-mislabel bug and got `meanLuminance`. Direction had the
+ * same bug and nothing to catch it: both `en` cells of the 2026-07-30 matrix —
+ * 70 screenshots — were captured with English strings in an **RTL layout**, a
+ * state no user ever reaches. The locale preference lands, so the strings flip;
+ * `I18nManager.forceRTL` writes through `SharedPreferences.apply()`, which is
+ * asynchronous, and the relaunch that is supposed to pick it up force-stops the
+ * process before the write flushes. Every step reports COMPLETED and every PNG
+ * is valid.
+ *
+ * RN persists the flag where `run-as` can read it on a debug build, which the
+ * dev client always is (`device-up` refuses the release variant outright). That
+ * makes this exact rather than inferred from pixels.
+ */
+function forcedRtl() {
+  const prefs =
+    `/data/data/${APP_ID}/shared_prefs/` + "com.facebook.react.modules.i18nmanager.I18nUtil.xml";
+  const xml = adb(["shell", `run-as ${APP_ID} cat ${prefs}`]).toString("utf8");
+  const hit = /name="RCTI18nUtil_forceRTL" value="(true|false)"/.exec(xml);
+  if (!hit) throw new Error(`could not read the RTL flag from ${prefs}:\n${xml.slice(0, 200)}`);
+  return hit[1] === "true";
+}
+
 // Tuned on one AVD (Pixel_7_Pro, swiftshader). The margin is not subtle — a
 // blank splash scores 1 and the launcher 902 — so anything in 3..100 separates
 // them, and the constant is only load-bearing on a device nobody has tried.
@@ -361,25 +405,59 @@ async function main() {
   for (const locale of locales) {
     for (const theme of themes) {
       process.stdout.write(`\n── ${locale} / ${theme} ──\n`);
-      try {
-        execFileSync(
-          "maestro",
-          ["test", ".maestro/set-appearance.yaml", "-e", `THEME=${theme}`, "-e", `LOCALE=${locale}`],
-          // shell:true because maestro ships as a .cmd shim on Windows, which
-          // execFileSync cannot spawn directly. That makes the flow path a
-          // shell argument, and node picks the shell from the environment: under
-          // a POSIX shell every backslash in a Windows absolute path is eaten,
-          // and maestro reports "Flow path does not exist:
-          // C:\...\LinkedIn.claudeworktrees…". A relative path with no
-          // backslashes survives either shell — hence `cwd` rather than
-          // `path.resolve`.
-          { cwd: path.resolve(import.meta.dirname, ".."), stdio: "inherit", shell: true },
-        );
-      } catch {
+
+      // Both preference writes behind this flow are asynchronous — SecureStore
+      // for the theme, `SharedPreferences.apply()` for the direction — and both
+      // race the relaunch meant to pick them up. One retry is what a human does,
+      // and it is cheap against the ~13 minutes a cell costs.
+      const wantRtl = locale === "ar-PS";
+      let rtl = null;
+      let flowFailed = false;
+      for (let attempt = 1; attempt <= 2; attempt += 1) {
+        try {
+          setAppearance(locale, theme);
+        } catch {
+          flowFailed = true;
+          break;
+        }
+        // The flow's own relaunch may have beaten the direction write to disk.
+        // By now it has flushed, so one force-stop makes the direction the app
+        // will render match the persisted flag this reads.
+        adb(["shell", "am", "force-stop", APP_ID]);
+        try {
+          rtl = forcedRtl();
+        } catch (error) {
+          failures.push({ cell: `${locale}/${theme}`, error: String(error).slice(0, 160) });
+          process.stdout.write(`ERR ${locale}/${theme}: ${String(error).slice(0, 160)}\n`);
+          rtl = null;
+          break;
+        }
+        if (rtl === wantRtl) break;
+        if (attempt === 1) {
+          process.stdout.write(
+            `    direction read ${rtl}, wanted ${wantRtl} — retrying the flow\n`,
+          );
+        }
+      }
+      if (flowFailed) {
         failures.push({ cell: `${locale}/${theme}`, error: "set-appearance flow failed" });
         process.stdout.write(`ERR could not set ${locale}/${theme} — cell skipped\n`);
         continue;
       }
+      if (rtl === null) continue;
+      if (rtl !== wantRtl) {
+        failures.push({
+          cell: `${locale}/${theme}`,
+          error: `direction did not apply — forceRTL=${rtl}, expected ${wantRtl}`,
+        });
+        process.stdout.write(
+          `ERR ${locale}/${theme}: forceRTL=${rtl}, expected ${wantRtl} — cell skipped\n` +
+            `    the locale preference landed but the direction did not, so the app would\n` +
+            `    render ${rtl ? "RTL" : "LTR"} layout under ${locale} strings. Re-run this cell.\n`,
+        );
+        continue;
+      }
+      process.stdout.write(`    direction verified (forceRTL=${rtl})\n`);
 
       // Changing theme or locale restarts the app (RTL is applied at startup),
       // and captureStable cannot see that: a blank white screen is perfectly
