@@ -63,6 +63,24 @@ The current `main` line includes:
 - Search, shared Arabic number/date formatting, and tokenized web/mobile UI atoms.
 - Mobile deep links, offline banner, haptics, pull-to-refresh, and Expo Go recovery guardrails.
 
+## Approved And Not Yet Built — the crafts expansion
+
+Approved by the owner on 2026-07-30. Baydar's audience widens past the salaried, CV-shaped
+worker to the crafts, shops and food trades that make up most of the Palestinian labour
+market — with a rank per craft, earned only from finished work a counterparty confirmed.
+
+- Decisions: [`docs/design/CRAFTS.md`](docs/design/CRAFTS.md) — the ladder, its labels, its
+  thresholds, the screen recipes, and what was verified against the ISCO-aligned Arabic
+  occupational classification.
+- Rationale and phase plan: [`docs/NEXT-SESSION-PROMPT.md`](docs/NEXT-SESSION-PROMPT.md) §B.
+- The rank is a credential, not a currency: unspendable, unpurchasable, non-decaying — the
+  opposite of Karama on every axis. If a rank can be bought, Baydar is selling trust.
+- Off-platform work confirmation needs phone OTP, so it needs an SMS credential. Phases 1–4
+  must be useful on on-platform records alone.
+- Still out of scope, and not implied by any of the above: ordering, carts, delivery
+  tracking, in-app payment for jobs, escrow. A bakery gets a profile and hires a baker;
+  nobody orders through Baydar.
+
 ## Definition of Done
 
 For feature work:
@@ -85,6 +103,8 @@ You are contributing to Baydar, an Arabic-first RTL professional network in a Tu
 
 ## Deferred Until Explicitly Approved
 
+- Marketplace mechanics of any kind: ordering, carts, delivery tracking, in-app payment for
+  craft work, escrow. Explicitly excluded from the crafts expansion above.
 - Algorithmic ranking beyond the current pragmatic feed behavior.
 - Premium subscriptions, billing, ads, recruiter workspace, learning, newsletters, and creator analytics.
 - Third-party verification programs.

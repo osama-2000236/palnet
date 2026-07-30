@@ -108,15 +108,17 @@ test that fails if `billing/*` or `karama/*` can reach the rank writer.
 
 ## B2. Arabic terminology — the corrected ground
 
-The first draft of this doc proposed **أسطى** for tier 3. **That was wrong and is withdrawn.**
+> **This section is now decided and verified. The ladder, its labels, its thresholds, the
+> screen recipes and the taxonomy corrections live in
+> [`docs/design/CRAFTS.md`](design/CRAFTS.md) — read that, not the history below.** Two things
+> the first draft got wrong were corrected against the ISCO-aligned Arabic occupational
+> classification: **أسطى** (owner's catch, 0 occurrences in 2,993 official occupations) and
+> **فني أول** (0 occurrences; its live usage is Gulf industrial HR, not a Nablus workshop).
+> Rungs are now `مساعد + الحرفة → الحرفة → + ماهر / فني + المجال → معلّم + الحرفة`, and
+> متدرّب moved to `JobType.APPRENTICESHIP` («تلمذة مهنية», the ministry's own term) where it
+> belongs. What remains below is the reasoning that does not repeat CRAFTS.md.
 
-> **Research constraint, stated honestly:** WebSearch and WebFetch were both unavailable in
-> the session that wrote this (`x-ai/grok-4.5` routing error — WebFetch returns HTTP status
-> but its summarizer never runs). Everything below is reasoned from linguistic knowledge and
-> repo evidence, with a confidence label per claim and a verify-list in §B14. Do not treat
-> the ⚠️ rows as settled.
-
-### Why أسطى is out — high confidence
+### Why أسطى is out
 
 - Turkish loanword (_usta_, "master craftsman"), itself from Persian; entered Arabic through
   Ottoman administration. Same root family as أستاذ.
@@ -127,90 +129,39 @@ The first draft of this doc proposed **أسطى** for tier 3. **That was wrong a
   or dated. It is not what a Palestinian صنايعي calls himself.
 - Verdict: **do not ship it**, in any tier, in any register. The owner's correction stands.
 
-### The words Palestinians actually use — high confidence
+### Words the ladder deliberately does not use
 
-| Word                     | What it means in the trades                                                   | Register             | Use in product                                          |
-| ------------------------ | ----------------------------------------------------------------------------- | -------------------- | ------------------------------------------------------- |
-| **صنايعي** (pl. صنايعية) | a skilled manual tradesman — the category word                                | Levantine colloquial | ✅ tier 2 default, and the audience-facing noun         |
-| **معلّم**                | the master: runs the workshop, takes on trainees, answers for the job         | Levantine, universal | ✅ tier 4 — see the collision warning below             |
-| **ماهر**                 | "skilled" — the word official classifications use (عامل ماهر / نصف ماهر)      | formal, pan-Arab     | ✅ tier 3 as a qualifier (`صنايعي ماهر`)                |
-| **حرفي / حرفة**          | craftsperson / craft                                                          | MSA                  | ✅ category chrome ("الحرف والمهن"), and the fem. forms |
-| **فني**                  | technician — the _higher_ register for HVAC, electronics, appliances, devices | formal, pan-Arab     | ✅ per-family ladder override (see below)               |
-| **متدرّب**               | trainee, someone on a path                                                    | formal-neutral       | ✅ tier 1                                               |
-| **مياومة / عامل مياومة** | day-rate work / day labourer                                                  | standard + official  | ✅ `JobType.DAY_LABOR` copy                             |
-| **بالمقطوعة**            | the whole job for one agreed price                                            | standard             | ✅ `JobType.PIECE_WORK` copy                            |
-| **صبي** (صبي المعلّم)    | the apprentice boy in a workshop                                              | Levantine colloquial | ❌ **do not use** — see below                           |
-| **خليفة**                | foreman / second under the معلّم (Syrian workshop usage)                      | narrow               | ❌ too regional, most Palestinians won't know it        |
+Rationale that CRAFTS.md records as verdicts, kept here because the reasoning is what stops
+someone reintroducing them:
 
-**صبي is the trap.** It is the most authentic word for tier 1 and must still be rejected: it
-literally means "boy", so it is gendered, it reads as demeaning to a 40-year-old changing
-trade, and shipping a child-shaped label on a labour product is a safeguarding optics problem
-nobody wants to explain. **متدرّب** carries the same slot with none of that. Note the framing
-that goes with it: **مبتدئ names a lack; متدرّب names a path.** Use مبتدئ only in
-explanatory copy ("من متدرّب إلى معلّم"), never as a label.
+- **صبي** is the most authentic word for the entry rung and must still be rejected: it means
+  "boy", so it is gendered, it reads as demeaning to a 40-year-old changing trade, and a
+  child-shaped label on a labour product is a safeguarding optics problem nobody wants to
+  explain. **مساعد** carries the slot with none of that.
+- **مبتدئ names a lack; متدرّب names a path** — which is why neither is a rank. متدرّب is the
+  state's word for someone enrolled in a تلمذة مهنية, and مبتدئ belongs only in explanatory
+  copy («من مساعد إلى معلّم»).
+- **خليفة** (foreman under the معلّم) is real in Syrian workshops and unknown to most
+  Palestinians. Too regional to carry a rung.
+- **معلّم means teacher** in every formal register — verified, all 52 occurrences in the
+  official classification are teaching titles, and `معلم مهني` is an occupied title meaning
+  vocational school teacher. Two engineering consequences: rank is a structured field the
+  query filters, never text matched out of a headline through `baydar_fold`; and the label
+  always renders with its craft, which is how the trade says it anyway.
 
-**معلّم collides with "school teacher"** — high confidence, and it has two concrete
-engineering consequences, not just a copy nit:
-
-1. Search: an occupation string "معلّم" and a craft rank "معلّم" land in the same folded
-   index (`baydar_fold`). Rank must be a structured field the query filters on, never text
-   matched out of a headline.
-2. Copy: the rank must always render with its craft — «معلّم بلاط», «معلّم كهرباء» — never
-   bare. That is also how the trade actually says it, so this costs nothing.
-
-### One ladder, four rungs, labels resolved per craft family
-
-Any single vocabulary misfits half the crafts: a tiler's summit is **معلّم**, but an HVAC
-worker's summit is **فني أول** and calling him معلّم sounds like a demotion; a cook's is
-**رئيس طهاة**. So model **rank as a number 1–4** and resolve the label from
-`craftFamily` in the string catalog. Zero extra logic, no schema cost, and if the
-native-speaker reviewer decides one set is fine, the map collapses to one entry and nothing
-else changes.
-
-**Default set (construction, metal, wood, stone, vehicle, general):**
-
-| Rank | Masculine      | Feminine        | Note                                     |
-| ---- | -------------- | --------------- | ---------------------------------------- |
-| 1    | متدرّب         | متدرّبة         | entry, no age or gender implication      |
-| 2    | صنايعي         | حرفية           | fem. of صنايعي is awkward → MSA register |
-| 3    | صنايعي ماهر    | حرفية ماهرة     | ماهر is the official skill word          |
-| 4    | معلّم + الحرفة | معلّمة + الحرفة | always rendered with the craft           |
-
-**Overrides — ⚠️ medium confidence on exact wording, reviewer decides:**
-
-| Family                                  | 1      | 2              | 3          | 4           |
-| --------------------------------------- | ------ | -------------- | ---------- | ----------- |
-| تكييف وتبريد · إلكترونيات · صيانة أجهزة | متدرّب | فني مساعد      | فني        | فني أول     |
-| طعام ومخابز وحلويات                     | متدرّب | طاهٍ / خبّاز   | طاهٍ أول   | رئيس طهاة   |
-| خياطة وتطريز                            | متدرّب | خيّاط / مطرّزة | خيّاط ماهر | معلّم خياطة |
-| زراعة وحصاد                             | —      | —              | —          | —           |
-| نقل وتوصيل · تنظيف · بيع بالتجزئة       | —      | —              | —          | —           |
-
-**Two families deliberately have no ladder.** Driving is licensed elsewhere and cleaning,
-delivery and retail have no apprenticeship structure to model — a four-rung ladder there is a
-game mechanic pretending to be a qualification. They get confirmed-work count and rating,
-no rank. Say so in the UI rather than hiding it. Scoping the ladder to the crafts that
-actually have one is what keeps it credible.
-
-### The gender consequence — high confidence, and it is bigger than it looks
+### The gender consequence — bigger than it looks
 
 Palestinian women work in خياطة، تطريز، تجميل وحلاقة نسائية، طهي وصناعات غذائية منزلية،
 زراعة, and the craft vocabulary is far more gendered than the office vocabulary the app was
 built on. `docs/localization-palestine.md` already specifies `key.masc` / `key.fem` keyed off
-`Profile.pronouns`. **Every rank label needs both forms from the first commit**, and where the
-feminine of the market word is awkward (صنايعية) the feminine uses the MSA register
-(حرفية). This roughly doubles the rank string count — plan for it rather than discovering it
-in review, and note `check:i18n` will hold you to parity across both platforms.
+`Profile.pronouns`. **Every rank label needs both forms from the first commit** — CRAFTS.md §2
+carries both columns. This roughly doubles the rank string count; plan for it rather than
+discovering it in review, and note `check:i18n` will hold you to parity across both platforms.
 
-### Words that are banned
-
-- **معتمد** (certified) and **مرخّص** (licensed) — Baydar does not license tradespeople.
-  A licence claim is a legal exposure, not a wording preference. **موثّق** stays reserved for
-  identity verification only.
-- **خبير** (expert) — title inflation with nothing behind it.
-- **محترف** — right for the marketing line ("من متدرّب إلى معلّم"), wrong as a label; it reads
-  as a game tier.
-- Anything implying a Ministry of Labour or union qualification the app has not verified.
+The banned-word list (معتمد، مرخّص، خبير، محترف-as-a-label، معلم مهني، فني أول، أسطى) lives in
+CRAFTS.md §2 with the reason for each. The short version: Baydar does not license
+tradespeople, and a licence claim is a legal exposure rather than a wording preference —
+**موثّق** stays reserved for identity verification only.
 
 ## B3. The taxonomy — wide, and compatible on purpose
 
@@ -223,9 +174,11 @@ exactly like `normalizeCity`, or "كهربائي" and "كهربائى" become tw
 it buys: CV export that maps to a standard code, comparability with PCBS/ILO labour data, and
 ingestibility by any future TVET, ministry or ILO-programme partner. Retrofitting taxonomy
 keys after launch is painful; adding them now is a line of data per row.
-⚠️ Verify the exact Arabic ISCO group names against the official ILO Arabic translation
-before printing them in UI; the group numbers below are high confidence, the Arabic wording
-is not.
+The nine major-group names are now verified in official Arabic — see CRAFTS.md §4, and note
+group 7 is **«الحرفيون والمهنيون»**, which is where this section's own name comes from. Three
+naming traps found while verifying (سباكة officially means metal casting, aluminium work is
+`حداد ألمنيوم`, tiling is `عامل بلاط`) are corrected in CRAFTS.md §4; the example crafts in the
+table below are pre-correction and CRAFTS.md wins.
 
 | Family key     | Arabic                     | Example crafts                                             | ISCO-08 |
 | -------------- | -------------------------- | ---------------------------------------------------------- | ------- |
@@ -253,8 +206,9 @@ is not.
 `heritage`, `stone-marble`, `home-food` and the تطريز entry are the rows that make this
 Palestine-first rather than a generic handyman clone. Stone and marble is one of the
 territory's largest industrial export sectors; صابون نابلسي and Hebron glass are named
-crafts with real workshops behind them. ⚠️ Confirm the family list with someone in the trade
-before freezing keys — keys are forever, Arabic labels are an i18n edit.
+crafts with real workshops behind them. **Still open:** confirm the family list with someone in
+the trade before freezing keys — keys are forever, Arabic labels are an i18n edit. It is the
+one item CRAFTS.md §6 could not close, and a search engine cannot close it.
 
 ## B4. Job types — three axes, currently collapsed into one
 
@@ -273,19 +227,19 @@ form and a bigger diff. Keep `JobType` as the single engagement facet, extend it
 which the ones that matter are `packages/shared/src/enums.ts`, `schema.prisma`, both message
 catalogs, `jobs/filters.tsx`, both `employer/.../jobs/new` forms, and `job-alerts.service`.
 
-| Value               | Arabic (`jobs.typeLabels.*`) | Why it exists                                                                                         |
-| ------------------- | ---------------------------- | ----------------------------------------------------------------------------------------------------- |
-| `FULL_TIME` ✓       | دوام كامل                    | unchanged                                                                                             |
-| `PART_TIME` ✓       | دوام جزئي                    | unchanged                                                                                             |
-| `CONTRACT` ✓        | عقد محدد المدة               | **relabel** — today just "عقد", which a مقاول reads as مقاولة. Fixed-term employment, not a job price |
-| `TEMPORARY` ✓       | عمل مؤقت                     | unchanged                                                                                             |
-| `INTERNSHIP` ✓      | تدريب جامعي                  | **relabel** — today "تدريب", which now collides with the new apprenticeship value                     |
-| `VOLUNTEER` ✓       | تطوع                         | unchanged                                                                                             |
-| `DAY_LABOR` 🆕      | مياومة                       | the single biggest gap; day-wage work is a large share of this market and has no representation       |
-| `PIECE_WORK` 🆕     | بالمقطوعة                    | tiler per metre, painter per room, tailor per piece, picker per tree — the craft default              |
-| `SEASONAL` 🆕       | عمل موسمي                    | olive season, planting, Ramadan retail, tourism. Recurs annually — see below                          |
-| `APPRENTICESHIP` 🆕 | تدريب مهني (صنعة)            | a معلّم posting for a متدرّب. This is the ladder's entry ramp — the two halves of B2 and B4 meet here |
-| `FREELANCE` 🆕      | عمل حر                       | design, tutoring, accounting, remote work — a real Palestinian export sector, unrepresented           |
+| Value               | Arabic (`jobs.typeLabels.*`) | Why it exists                                                                                                                            |
+| ------------------- | ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `FULL_TIME` ✓       | دوام كامل                    | unchanged                                                                                                                                |
+| `PART_TIME` ✓       | دوام جزئي                    | unchanged                                                                                                                                |
+| `CONTRACT` ✓        | عقد محدد المدة               | **relabel** — today just "عقد", which a مقاول reads as مقاولة. Fixed-term employment, not a job price                                    |
+| `TEMPORARY` ✓       | عمل مؤقت                     | unchanged                                                                                                                                |
+| `INTERNSHIP` ✓      | تدريب جامعي                  | **relabel** — today "تدريب", which now collides with the new apprenticeship value                                                        |
+| `VOLUNTEER` ✓       | تطوع                         | unchanged                                                                                                                                |
+| `DAY_LABOR` 🆕      | مياومة                       | the single biggest gap; day-wage work is a large share of this market and has no representation                                          |
+| `PIECE_WORK` 🆕     | بالمقطوعة                    | tiler per metre, painter per room, tailor per piece, picker per tree — the craft default                                                 |
+| `SEASONAL` 🆕       | عمل موسمي                    | olive season, planting, Ramadan retail, tourism. Recurs annually — see below                                                             |
+| `APPRENTICESHIP` 🆕 | تلمذة مهنية                  | the Ministry of Labour's own term (`نظام التلمذة المهنية`). A معلّم posting for a متدرّب — the ladder's entry ramp, where B2 and B4 meet |
+| `FREELANCE` 🆕      | عمل حر                       | design, tutoring, accounting, remote work — a real Palestinian export sector, unrepresented                                              |
 
 Rejected on purpose: `ON_CALL` (`PIECE_WORK` covers it, no distinct behaviour),
 `COOPERATIVE`, `SHIFT`. One enum value with no behaviour behind it is a filter that returns
@@ -480,14 +434,14 @@ owner-gated. Do not design a ladder that is inert until an SMS account exists.
    to that ask rather than waiting on it.
 6. **Register.** The reviewer may reject صنايعي as too colloquial for UI chrome under
    `docs/localization-palestine.md`'s فصحى rule. That is why every label is an i18n key from
-   commit one and the MSA ladder (متدرّب / حرفي / حرفي ماهر / معلّم حرفة) is written down: the
-   swap must be a JSON edit, never a refactor.
+   commit one and the MSA fallback ladder (مساعد حرفي / حرفي / حرفي ماهر / معلّم حرفة, CRAFTS.md
+   §2) is written down: the swap must be a JSON edit, never a refactor.
 
 ## B12. Phases — one PR each, each shippable alone
 
 | Phase | Deliverable                                                                                                                                                                                                                                                                          | Gated on                       |
 | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------ |
-| 0     | `docs/design/CRAFTS.md`: both label registers + the per-family map, ladder thresholds, screen recipes in `docs/design/SCREENS.md` format, and the §B14 verify-list answered. Plus the `project-spec.md` §Current Feature Surface / §Deferred edits. **No code.**                     | —                              |
+| 0     | ✅ **Done 2026-07-30** — [`docs/design/CRAFTS.md`](design/CRAFTS.md) + the `project-spec.md` §Approved And Not Yet Built / §Deferred edits. Open residual: craft family keys, CRAFTS.md §6 item 5                                                                                    | —                              |
 | 1     | Taxonomy + contracts: `PS_CRAFTS` (+ISCO keys) + `normalizeCraft`, `Company.kind`, nullable `Job.companyId`, the 5 new `JobType` values + 2 relabels, `payBasis` + basis-aware money copy, `Post.isWorkSample`, `governorateOfCity`, `acceptingWork`, Zod, migration. **No new UI.** | Phase 0                        |
 | 2     | Onboarding fork + profile craft section + work-sample posts. Both platforms, lockstep.                                                                                                                                                                                               | Phase 1 + design routing (§B9) |
 | 3     | Rank engine on existing HIRED + rating primitives, `CraftLadder` component both platforms, vouching + founding seeds, and the §B8 test suite.                                                                                                                                        | Phase 2                        |
@@ -510,22 +464,18 @@ stays the realtime transport; digit-script policy lives only in `@baydar/shared`
 routes through `design-handoff-2026-06/`. Do not recreate LinkedIn — and note LinkedIn has
 no answer at all for this audience, so there is nothing here to copy.
 
-## B14. Verify before phase 1 — the citation list this doc owes
+## B14. Verify before phase 1 — closed
 
-Web research was unavailable when this was written (§B2). Phase 0 must close these. Each is
-cheap with either working web tools or one conversation with a Palestinian tradesperson.
+All six items are answered in [`docs/design/CRAFTS.md`](design/CRAFTS.md) §6, against the
+ISCO-aligned Arabic occupational classification and the Palestinian Ministry of Labour's own
+TVET material. Two mattered:
 
-1. **Register of صنايعي and معلّم** in Palestinian usage, and whether a native reviewer
-   accepts them in UI chrome given the فصحى rule. → the ARABIC-REGISTER reviewer.
-2. **The per-family override wording** in §B2 (فني أول، رئيس طهاة، معلّم خياطة) — ⚠️ medium
-   confidence, most likely thing in this doc to be wrong.
-3. **ISCO-08 Arabic group names** against the official ILO Arabic translation. Group numbers
-   are high confidence; the Arabic is not.
-4. **Palestinian TVET / national qualifications levels** — if there is a recognized
-   وزارة العمل or PQF skill ladder, align the four rungs to it and let a real
-   شهادة مهنية count as evidence toward a rank. This is the strongest legitimacy path
-   available and it may already exist.
-5. **The craft family list** — confirm nothing large is missing before keys freeze.
-   Keys are forever; Arabic labels are a JSON edit.
-6. **Current construction-labour composition** (§B5) — needed only if someone wants to
-   revisit the permit decision. Do not act on 2023-era assumptions.
+- **فني أول is out** — zero occurrences in 2,993 official occupations; its live usage is Gulf
+  industrial HR. Bare **فني** replaces it, backed by 234 official titles.
+- **There is no national qualifications ladder to align to yet.** The Palestinian NQF was
+  still pre-Cabinet as of 2026-05-17, with its own law being drafted. Do not claim alignment.
+  Revisit when ratified — it includes recognition of prior learning, which is exactly what a
+  confirmed-work record is.
+
+**One item stays open and phase 1 must not freeze `PS_CRAFTS` keys until it closes:** the
+craft family list needs a tradesperson, not a search engine.
