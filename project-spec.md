@@ -63,23 +63,42 @@ The current `main` line includes:
 - Search, shared Arabic number/date formatting, and tokenized web/mobile UI atoms.
 - Mobile deep links, offline banner, haptics, pull-to-refresh, and Expo Go recovery guardrails.
 
-## Approved And Not Yet Built — the crafts expansion
+## Approved And Not Yet Built — the occupation platform
 
-Approved by the owner on 2026-07-30. Baydar's audience widens past the salaried, CV-shaped
-worker to the crafts, shops and food trades that make up most of the Palestinian labour
-market — with a rank per craft, earned only from finished work a counterparty confirmed.
+Approved by the owner on 2026-07-30, in two steps the same day. Baydar's audience widens past
+the salaried, CV-shaped worker to **every occupation this market has** — crafts and shops and
+food businesses, and equally the accounting practices, law offices, engineering consultancies,
+clinics and studios. Standing is earned from finished work a counterparty confirmed, and the
+feed, job search and hiring surfaces all become evidence-driven rather than keyword-driven.
 
-- Decisions: [`docs/design/CRAFTS.md`](docs/design/CRAFTS.md) — the ladder, its labels, its
-  thresholds, the screen recipes, and what was verified against the ISCO-aligned Arabic
-  occupational classification.
-- Rationale and phase plan: [`docs/NEXT-SESSION-PROMPT.md`](docs/NEXT-SESSION-PROMPT.md) §B.
-- The rank is a credential, not a currency: unspendable, unpurchasable, non-decaying — the
-  opposite of Karama on every axis. If a rank can be bought, Baydar is selling trust.
-- Off-platform work confirmation needs phone OTP, so it needs an SMS credential. Phases 1–4
-  must be useful on on-platform records alone.
-- Still out of scope, and not implied by any of the above: ordering, carts, delivery
-  tracking, in-app payment for jobs, escrow. A bakery gets a profile and hires a baker;
-  nobody orders through Baydar.
+Three decision records, each authoritative in its lane:
+
+| Doc                                                          | Owns                                                                                                      |
+| ------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------- |
+| [`docs/design/OCCUPATIONS.md`](docs/design/OCCUPATIONS.md)   | the naming spine, the occupation taxonomy, the three progression tracks, the craft ladder, business kinds |
+| [`docs/design/FEED-RANKING.md`](docs/design/FEED-RANKING.md) | the behaviour-derived interest model and the ranked, finite, explainable feed                             |
+| [`docs/design/MATCHING.md`](docs/design/MATCHING.md)         | structured job requirements, match scoring both ways, the structured application, applicant intelligence  |
+
+Rationale and the crafts phase plan: [`docs/NEXT-SESSION-PROMPT.md`](docs/NEXT-SESSION-PROMPT.md) §B.
+
+Non-negotiables that cut across all three:
+
+- **One vocabulary.** `OCCUPATIONS.md` §0 is the naming spine; a lint gate enforces it. One
+  concept, one word, identical in Prisma, Zod, REST, i18n and both UI kits.
+- **One evidence primitive.** `WorkProof` is the only proof of work in the product. Three tracks
+  differ only in how they summarise it: a peer-earned `Standing` (crafts), a verified `Licence`
+  (licensed professions), or raw evidence (services). There is no second reputation system.
+- **Standing is a credential, not a currency** — unspendable, unpurchasable, non-decaying, the
+  opposite of Karama on every axis. If it can be bought, Baydar is selling trust.
+- **Baydar does not out-rank a نقابة.** Licensed professions get licence verification, never an
+  invented rank.
+- **Ranking decides order, never volume, and never outcome.** The feed stays finite and
+  explainable; no score may auto-reject an applicant; protected attributes are never inputs.
+- Off-platform work confirmation needs phone OTP, so it needs an SMS credential. Every phase
+  before that must be useful on on-platform records alone.
+- Still out of scope, and not implied by any of the above: ordering, carts, delivery tracking,
+  in-app payment for jobs, escrow. A bakery gets a profile and hires a baker; nobody orders
+  through Baydar.
 
 ## Definition of Done
 
@@ -105,7 +124,9 @@ You are contributing to Baydar, an Arabic-first RTL professional network in a Tu
 
 - Marketplace mechanics of any kind: ordering, carts, delivery tracking, in-app payment for
   craft work, escrow. Explicitly excluded from the crafts expansion above.
-- Algorithmic ranking beyond the current pragmatic feed behavior.
+- ~~Algorithmic ranking beyond the current pragmatic feed behavior.~~ **Approved 2026-07-30** —
+  see `docs/design/FEED-RANKING.md`. Ranked for relevance, still finite, always explainable, and
+  session length is explicitly not an objective.
 - Premium subscriptions, billing, ads, recruiter workspace, learning, newsletters, and creator analytics.
 - Third-party verification programs.
 - Video transcoding pipeline.

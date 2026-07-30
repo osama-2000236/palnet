@@ -110,13 +110,13 @@ test that fails if `billing/*` or `karama/*` can reach the rank writer.
 
 > **This section is now decided and verified. The ladder, its labels, its thresholds, the
 > screen recipes and the taxonomy corrections live in
-> [`docs/design/CRAFTS.md`](design/CRAFTS.md) — read that, not the history below.** Two things
+> [`docs/design/OCCUPATIONS.md`](design/OCCUPATIONS.md) — read that, not the history below.** Two things
 > the first draft got wrong were corrected against the ISCO-aligned Arabic occupational
 > classification: **أسطى** (owner's catch, 0 occurrences in 2,993 official occupations) and
 > **فني أول** (0 occurrences; its live usage is Gulf industrial HR, not a Nablus workshop).
 > Rungs are now `مساعد + الحرفة → الحرفة → + ماهر / فني + المجال → معلّم + الحرفة`, and
 > متدرّب moved to `JobType.APPRENTICESHIP` («تلمذة مهنية», the ministry's own term) where it
-> belongs. What remains below is the reasoning that does not repeat CRAFTS.md.
+> belongs. What remains below is the reasoning that does not repeat OCCUPATIONS.md.
 
 ### Why أسطى is out
 
@@ -131,7 +131,7 @@ test that fails if `billing/*` or `karama/*` can reach the rank writer.
 
 ### Words the ladder deliberately does not use
 
-Rationale that CRAFTS.md records as verdicts, kept here because the reasoning is what stops
+Rationale that OCCUPATIONS.md records as verdicts, kept here because the reasoning is what stops
 someone reintroducing them:
 
 - **صبي** is the most authentic word for the entry rung and must still be rejected: it means
@@ -154,12 +154,12 @@ someone reintroducing them:
 Palestinian women work in خياطة، تطريز، تجميل وحلاقة نسائية، طهي وصناعات غذائية منزلية،
 زراعة, and the craft vocabulary is far more gendered than the office vocabulary the app was
 built on. `docs/localization-palestine.md` already specifies `key.masc` / `key.fem` keyed off
-`Profile.pronouns`. **Every rank label needs both forms from the first commit** — CRAFTS.md §2
+`Profile.pronouns`. **Every rank label needs both forms from the first commit** — OCCUPATIONS.md §2
 carries both columns. This roughly doubles the rank string count; plan for it rather than
 discovering it in review, and note `check:i18n` will hold you to parity across both platforms.
 
 The banned-word list (معتمد، مرخّص، خبير، محترف-as-a-label، معلم مهني، فني أول، أسطى) lives in
-CRAFTS.md §2 with the reason for each. The short version: Baydar does not license
+OCCUPATIONS.md §2 with the reason for each. The short version: Baydar does not license
 tradespeople, and a licence claim is a legal exposure rather than a wording preference —
 **موثّق** stays reserved for identity verification only.
 
@@ -174,11 +174,11 @@ exactly like `normalizeCity`, or "كهربائي" and "كهربائى" become tw
 it buys: CV export that maps to a standard code, comparability with PCBS/ILO labour data, and
 ingestibility by any future TVET, ministry or ILO-programme partner. Retrofitting taxonomy
 keys after launch is painful; adding them now is a line of data per row.
-The nine major-group names are now verified in official Arabic — see CRAFTS.md §4, and note
+The nine major-group names are now verified in official Arabic — see OCCUPATIONS.md §4, and note
 group 7 is **«الحرفيون والمهنيون»**, which is where this section's own name comes from. Three
 naming traps found while verifying (سباكة officially means metal casting, aluminium work is
-`حداد ألمنيوم`, tiling is `عامل بلاط`) are corrected in CRAFTS.md §4; the example crafts in the
-table below are pre-correction and CRAFTS.md wins.
+`حداد ألمنيوم`, tiling is `عامل بلاط`) are corrected in OCCUPATIONS.md §4; the example crafts in the
+table below are pre-correction and OCCUPATIONS.md wins.
 
 | Family key     | Arabic                     | Example crafts                                             | ISCO-08 |
 | -------------- | -------------------------- | ---------------------------------------------------------- | ------- |
@@ -208,7 +208,7 @@ Palestine-first rather than a generic handyman clone. Stone and marble is one of
 territory's largest industrial export sectors; صابون نابلسي and Hebron glass are named
 crafts with real workshops behind them. **Still open:** confirm the family list with someone in
 the trade before freezing keys — keys are forever, Arabic labels are an i18n edit. It is the
-one item CRAFTS.md §6 could not close, and a search engine cannot close it.
+one item OCCUPATIONS.md §6 could not close, and a search engine cannot close it.
 
 ## B4. Job types — three axes, currently collapsed into one
 
@@ -434,14 +434,14 @@ owner-gated. Do not design a ladder that is inert until an SMS account exists.
    to that ask rather than waiting on it.
 6. **Register.** The reviewer may reject صنايعي as too colloquial for UI chrome under
    `docs/localization-palestine.md`'s فصحى rule. That is why every label is an i18n key from
-   commit one and the MSA fallback ladder (مساعد حرفي / حرفي / حرفي ماهر / معلّم حرفة, CRAFTS.md
+   commit one and the MSA fallback ladder (مساعد حرفي / حرفي / حرفي ماهر / معلّم حرفة, OCCUPATIONS.md
    §2) is written down: the swap must be a JSON edit, never a refactor.
 
 ## B12. Phases — one PR each, each shippable alone
 
 | Phase | Deliverable                                                                                                                                                                                                                                                                          | Gated on                       |
 | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------ |
-| 0     | ✅ **Done 2026-07-30** — [`docs/design/CRAFTS.md`](design/CRAFTS.md) + the `project-spec.md` §Approved And Not Yet Built / §Deferred edits. Open residual: craft family keys, CRAFTS.md §6 item 5                                                                                    | —                              |
+| 0     | ✅ **Done 2026-07-30** — [`docs/design/OCCUPATIONS.md`](design/OCCUPATIONS.md) + the `project-spec.md` §Approved And Not Yet Built / §Deferred edits. Open residual: craft family keys, OCCUPATIONS.md §6 item 5                                                                     | —                              |
 | 1     | Taxonomy + contracts: `PS_CRAFTS` (+ISCO keys) + `normalizeCraft`, `Company.kind`, nullable `Job.companyId`, the 5 new `JobType` values + 2 relabels, `payBasis` + basis-aware money copy, `Post.isWorkSample`, `governorateOfCity`, `acceptingWork`, Zod, migration. **No new UI.** | Phase 0                        |
 | 2     | Onboarding fork + profile craft section + work-sample posts. Both platforms, lockstep.                                                                                                                                                                                               | Phase 1 + design routing (§B9) |
 | 3     | Rank engine on existing HIRED + rating primitives, `CraftLadder` component both platforms, vouching + founding seeds, and the §B8 test suite.                                                                                                                                        | Phase 2                        |
@@ -466,7 +466,7 @@ no answer at all for this audience, so there is nothing here to copy.
 
 ## B14. Verify before phase 1 — closed
 
-All six items are answered in [`docs/design/CRAFTS.md`](design/CRAFTS.md) §6, against the
+All six items are answered in [`docs/design/OCCUPATIONS.md`](design/OCCUPATIONS.md) §6, against the
 ISCO-aligned Arabic occupational classification and the Palestinian Ministry of Labour's own
 TVET material. Two mattered:
 

@@ -85,5 +85,5 @@ Claim before launch:
 
 - Not a LinkedIn clone. We design for Arabic first, we differentiate with regional warmth, we cut features LinkedIn bloats (stories, audio rooms, newsletters).
 - Not a dating product. No "meet new people" framing.
-- Not a casual social network. No infinite scroll optimized for engagement. The feed is chronological and finite.
+- Not a casual social network. No infinite scroll optimized for engagement. The feed is **finite, ranked for usefulness, and explains itself** — every post says why it is there, a slate ends with an end-state instead of loading forever, and session length is not an objective. Ranking decides order; it never decides volume. See `docs/design/FEED-RANKING.md` §1.
 - Not B2B SaaS. We talk to people, not "organizations" or "stakeholders."

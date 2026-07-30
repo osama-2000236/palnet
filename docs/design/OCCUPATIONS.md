@@ -1,10 +1,50 @@
-# CRAFTS.md — the craft ladder, decided
+# OCCUPATIONS.md — the occupation model, the naming spine, and the ladder
 
-Phase 0 of the crafts expansion. `DESIGN.md` stays the design authority and
-`docs/NEXT-SESSION-PROMPT.md` §B holds the rationale and the phase plan; this file is the
-decision record the later phases build against. Written 2026-07-30.
+The decision record for who Baydar is for and how standing works. `DESIGN.md` stays the
+design authority; `docs/NEXT-SESSION-PROMPT.md` §B holds the rationale and the phase plan.
+Companion decisions: [`FEED-RANKING.md`](FEED-RANKING.md) and [`MATCHING.md`](MATCHING.md).
 
-Nothing here is code. Phase 1 implements §3–§5; phase 0 is closed when the owner accepts §2.
+Written 2026-07-30, widened the same day from crafts-only to **every occupation** — an
+accounting practice, a law office, an engineering consultancy, a clinic, a design studio and
+a bakery are all first-class here, and the naming spine in §0 exists so that breadth does not
+turn into a pile of near-synonyms.
+
+Read §0 before writing any code. It is the part that stops the vocabulary rotting.
+
+## 0. The naming spine — one word per concept, everywhere
+
+The failure mode this section prevents: "craft rank" in the API, "level" in the UI, "tier" in
+the tests, "badge" in the copy, and a `WorkRecord` next to a `WorkProof` next to the existing
+`Experience`. Four names for one idea and nobody can grep.
+
+**The rule: one concept, one word, identical in Prisma, Zod, REST path, i18n key, and both UI
+kits.** Phase 1 ships `scripts/check-naming.mjs` in the lint job with the banned synonyms
+below as a ledger, so drift fails CI rather than accumulating.
+
+| Concept                                            | Code           | Arabic       | Notes                                                            |
+| -------------------------------------------------- | -------------- | ------------ | ---------------------------------------------------------------- |
+| A row in the occupation taxonomy                   | `Occupation`   | مهنة         | replaces the earlier `Craft`. Covers crafts _and_ professions    |
+| A group of occupations                             | `Family`       | مجموعة مهنية | ISCO-keyed. `Occupation.family`                                  |
+| How progression works for a family                 | `Track`        | مسار         | `CRAFT` · `LICENSED` · `SERVICE` — §2                            |
+| A person's claim on an occupation                  | `Claim`        | مهنة معلنة   | declared, unproven. `OccupationClaim`                            |
+| Earned level, `CRAFT` track only                   | `Standing` 1–4 | مستوى        | never "rank", "tier", "level", "badge"                           |
+| Statutory licence, `LICENSED` track only           | `Licence`      | رخصة مزاولة  | verified against a body, never invented — §3                     |
+| One finished unit of work a counterparty confirmed | `WorkProof`    | إثبات عمل    | the single evidence primitive, all three tracks                  |
+| A معلّم sponsoring someone onto the ladder         | `Vouch`        | تزكية        | distinct from endorsement                                        |
+| Self-declared CV history (**exists**)              | `Experience`   | خبرة معلنة   | unchanged model; copy gains "معلنة" to contrast with `WorkProof` |
+| Skill endorsement (**exists**)                     | `endorsements` | تأييد        | `ProfileSkill.endorsements`. Not a `Vouch`                       |
+| Activity points (**exists**)                       | `Karama`       | كرامة        | spendable currency. Not `Standing` — see §5                      |
+
+**Banned synonyms, enforced:** `craft rank`, `rank` (as a field name), `tier`, `level`,
+`badge`, `WorkRecord`, `JobProof`, `verified craftsman`, `certification`. Also banned as
+user-facing copy: معتمد، مرخّص (unless a real `Licence` is verified)، خبير، محترف as a label.
+`موثّق` is reserved for identity verification and nothing else.
+
+**One evidence primitive, three summaries.** Every occupation on Baydar accumulates the same
+`WorkProof` records and the same two-sided ratings. What differs is only how that evidence is
+_summarised_: a `CRAFT` occupation earns a `Standing`, a `LICENSED` one shows a `Licence` plus
+raw evidence, a `SERVICE` one shows raw evidence alone. There is no second reputation system
+anywhere in the product.
 
 ## 1. What was verified, and against what
 
@@ -45,9 +85,64 @@ Secondary sources, Palestinian Ministry of Labour:
 - Vocational training **centres** are licensed (مرخصة / غير مرخصة) — one more reason Baydar
   must never put مرخّص or معتمد on a person.
 
-## 2. The ladder — decided
+Professional-services titles, same source, same method — these are the "accounting company and
+others" half of the product and they are **not** an afterthought:
 
-Rank is an integer **1–4** on `(user, craft)`. Labels resolve from the craft family in the
+- Accounting has a real ladder in official Arabic: `محاسب عام (نفقات وإيرادات)`،
+  `محاسب تكاليف`، `محاسب رواتب وأجور`، `محاسب شركات`، and above them `محاسب قانوني` —
+  plus `مدقق (مراجع) حسابات`، `مدير تدقيق حسابات`، `مستشار ضريبي`، `مستشار مالي`.
+- Law splits the way the local profession does: `محامي نظامي`، `محامي شرعي`،
+  `محامي نظامي وشرعي`، and `مستشار قانوني`، `مترجم محلف (قانوني)`.
+- **Nursing carries the most explicit official ladder anywhere in the classification** —
+  `ممرض مساعد مختص → ممرض عام → ممرض مؤهل → ممرض مختص → ممرض مختص متقدم → ممرض مستشار`.
+  Note the senior modifiers: **متقدم** and **مستشار**, never أول. This independently confirms
+  dropping فني أول.
+- Also present and claimable: `مهندس معماري`، `مهندس مساحة`، `صيدلي` (many kinds)،
+  `أخصائي تغذية`، `مصمم جرافيك`، `مبرمج تطبيقات`، `مترجم`، `وسيط عقاري`، `أخصائي علاقات عامة`.
+
+## 1b. Licensed professions — the bodies, verified
+
+Palestinian practice licensing is statutory, and Baydar does not get to out-rank it.
+
+| Body                                                   | Site         | What it proves                                                                                                                                      |
+| ------------------------------------------------------ | ------------ | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **مجلس مهنة تدقيق الحسابات**                           | `bopa.ps`    | created under art. 3 of **قانون مزاولة مهنة تدقيق الحسابات رقم (9) لسنة 2004**; its **لجنة الترخيص** issues the **رخصة مزاولة مهنة تدقيق الحسابات** |
+| **جمعية مدققي الحسابات القانونيين الفلسطينية** (PACPA) | `pacpa.ps`   | 350+ members, split into **مدققين مزاولين وغير مزاولين**                                                                                            |
+| **نقابة المحامين الفلسطينيين**                         | `pbaps.ps`   | its own portal serves **«المحامين المزاولين والمتدربين»**                                                                                           |
+| **نقابة المهندسين**                                    | `paleng.org` | engineering practice                                                                                                                                |
+
+**The professions' own status vocabulary is the model — no invention required:**
+**متدرّب** → **مزاول** → **غير مزاول**. That is the bar association's and PACPA's language,
+and it is where متدرّب legitimately lives (alongside تلمذة مهنية for crafts) — which is exactly
+why متدرّب is not a craft `Standing` rung.
+
+Consequence for the schema: `Licence { occupationKey, bodyKey, number, status, expiresAt }`
+with `status ∈ DECLARED | VERIFIED | EXPIRED` and `practice ∈ TRAINEE | PRACTISING | NON_PRACTISING`.
+`DECLARED` renders as «رخصة معلنة» and carries no more weight than any other claim. Bodies live
+in `PS_PROFESSIONAL_BODIES` beside `PS_OCCUPATIONS`, as constants.
+
+## 2. Tracks — three regimes, one evidence primitive
+
+A single progression model cannot serve a tiler, a licensed auditor and a delivery driver. The
+`Family` decides which regime applies, and the regime is the only thing that varies.
+
+| Track      | Who                                                                                                                    | Standing                                     | Why                                                                                                                                         |
+| ---------- | ---------------------------------------------------------------------------------------------------------------------- | -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `CRAFT`    | construction, stone, wood, metal, aluminium, tiling, finishing, vehicles, textile, food, heritage, beauty, agriculture | **peer-earned 1–4**, §2b                     | no statutory ladder exists, and word-of-mouth is the only reputation these workers carry                                                    |
+| `LICENSED` | accounting, audit, law, engineering, medicine, dentistry, pharmacy, nursing, surveying, translation (sworn)            | **none — a verified `Licence` instead**      | a نقابة or a مجلس already decides who may practise. A Baydar rank next to a statutory licence is at best noise and at worst a legal problem |
+| `SERVICE`  | logistics and driving, cleaning, retail selling, general assistance                                                    | **none — `WorkProof` count and rating only** | no apprenticeship structure to model; four rungs here is a game mechanic in a qualification's clothes                                       |
+
+A person can hold claims on several occupations across different tracks — a licensed engineer
+who also runs a workshop is one profile with two claims and two regimes. That is normal here,
+not an edge case.
+
+Unclassified professional work (marketing, design, software, HR, media) sits on `SERVICE` for
+standing purposes and leans on `WorkProof`, portfolio posts and `Experience` — no rank, because
+no body defines one. `MATCHING.md` is where that evidence does its work.
+
+## 2b. The craft ladder — decided
+
+`Standing` is an integer **1–4** on `(user, occupation)`, `CRAFT` track only. Labels resolve from the family in the
 string catalog, because one vocabulary cannot fit every trade: a painter's rung 3 is
 **دهّان ماهر**, an electrician's is **فني تمديدات كهربائية**, and swapping them reads as a
 demotion in both directions.
@@ -98,10 +193,10 @@ Worked examples: `مساعد دهّان → دهّان → دهّان ماهر �
 
 ### Families with no ladder
 
-`logistics` (drivers), `cleaning`, and retail selling get confirmed-work count and rating,
-**no rank**. Driving is licensed elsewhere and none of the three has an apprenticeship
-structure to model; four rungs there is a game mechanic wearing a qualification's clothes.
-Say so in the UI rather than hiding the absence.
+Per §2: the `LICENSED` and `SERVICE` tracks have no `Standing` at all. Show the absence
+plainly — a `SERVICE` profile says «لا يوجد مستوى لهذه المهنة» next to its evidence, and a
+`LICENSED` profile shows the licence where the standing would be. Hiding the gap is what makes
+a reputation system feel arbitrary.
 
 ### MSA fallback ladder
 
@@ -155,7 +250,7 @@ to the framework once it is ratified (§6).
 ## 4. Taxonomy corrections found while verifying
 
 Colloquial and classification Arabic disagree in three places. Store the official form,
-accept the colloquial one as a search synonym through `normalizeCraft`.
+accept the colloquial one as a search synonym through `normalizeOccupation`.
 
 | Trap                                                                                                              | Store                                     | Synonym      |
 | ----------------------------------------------------------------------------------------------------------------- | ----------------------------------------- | ------------ |
@@ -163,7 +258,7 @@ accept the colloquial one as a search synonym through `normalizeCraft`.
 | **Aluminium work is a metal trade**: the official title is `حداد / المنيوم`, and المنيوم is the official spelling | `حداد ألمنيوم`                            | نجار ألمنيوم |
 | Tiling                                                                                                            | `عامل بلاط` / `بليط رخام`                 | مبلّط، بلّاط |
 
-Official titles worth lifting verbatim into `PS_CRAFTS`, since they are both correct and
+Official titles worth lifting verbatim into `PS_OCCUPATIONS`, since they are both correct and
 locally exact: `بناء حجر`، `نقاش حجر بناء`، `مكحل حجر`، `راصف أرضيات حجر`، `خباز تنور`،
 `خباز صاج`، `خياط شعبي`، `مطرز يدوي`، `نجّار طوبار`، `حداد تسليح أبنية`، `عامل تنجيد`،
 `مركب زجاج ومرايا`.
@@ -173,21 +268,41 @@ confirmed in official Arabic: 5 «العاملون في البيع والخدم�
 والغابات وصيد الأسماك» · 7 «الحرفيون والمهنيون» · 8 «مشغلو المصانع والآلات وعمال التجميع» ·
 9 «عمال المهن الأولية».
 
+## 4b. Business kinds
+
+`Company` already carries verified, city, industry, members, jobs, subscriptions, invoices and
+credits. One enum turns it into every kind of employer this market has, with no second model:
+
+| `Company.kind` | Arabic        | Page shows instead of a size bucket                                                                                |
+| -------------- | ------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `EMPLOYER`     | شركة أو مؤسسة | default — existing behaviour, unchanged                                                                            |
+| `FIRM`         | مكتب مهني     | practice `Licence`, the professions practised, partners — accounting, audit, law, engineering, consulting, clinics |
+| `SHOP`         | متجر          | opening hours, occupations it hires                                                                                |
+| `WORKSHOP`     | ورشة          | occupations, `Standing` of its معلّم, work-sample posts                                                            |
+| `FOOD`         | منشأة غذائية  | مخبز / مطعم / مطبخ — occupations, not a "company size"                                                             |
+| `FARM`         | مزرعة         | seasonal hiring, governorate                                                                                       |
+| `SOLO`         | عمل فردي      | one person's own business; profile-shaped, not org-shaped                                                          |
+
+A `FIRM` is not cosmetic: an accounting practice's page must be able to show a verified
+practice licence, because that is the first thing a client looks for, and «حجم الشركة: 11-50»
+answers nothing they asked.
+
 ## 5. Screen recipes
 
 Format follows `docs/design/SCREENS.md`. Every row answers the Global Recipe there, and no
-screen ships below 7/10 on the five dimensions. i18n namespace: `crafts`.
+screen ships below 7/10 on the five dimensions. i18n namespace: `occupations`.
 
-| Screen                | Web route                | Mobile route               | Recipe                                                                                                                           | Required states                                                  |
-| --------------------- | ------------------------ | -------------------------- | -------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
-| Services listings     | `/jobs` (`services` tab) | `(app)/jobs/index` tab     | existing `Tabs` strip «الوظائف \| الخدمات», craft + governorate chips, dense `RecordCard`, one contact action — **no new route** | loading, empty-in-governorate, no-craft-selected, offline retry  |
-| Craft worker search   | `/search`                | `(app)/search`             | craft + governorate facets, ordered rank → rating → recency; rank chip on every result row                                       | initial prompt, no results in governorate, mixed-direction query |
-| Craft section, public | `/in/[handle]`           | `(app)/in/[handle]`        | rank chip bound to craft, confirmed-record count, rating, work-sample strip, «حرفة معلنة» when unranked                          | unranked, no work samples, suspended rank, viewer-is-self        |
-| Ladder detail         | sheet from the rank chip | `Sheet` from the rank chip | current rung, the four conditions with progress, what is missing — **a sheet, not a route**                                      | at rank 4, blocked by cooldown, blocked by rating, suspended     |
-| Craft onboarding fork | `/(app)/onboarding`      | `(app)/onboarding`         | «أعمل بحرفة» branch → craft picker, governorate, declared years, work photos; reuses `OnboardingProgress`                        | validation, upload failure, skip, resume mid-fork                |
-| Work confirmation     | application detail       | application detail         | counterparty confirms finished work in a bounded window; worker cannot confirm both ends                                         | pending, expired window, confirmed, disputed, already counted    |
-| Shop page             | `/company/[slug]`        | `(app)/company/[slug]`     | header shaped by `Company.kind`; KITCHEN/WORKSHOP show crafts, not a company-size bucket                                         | no crafts listed, unverified, no jobs                            |
-| Service request       | `/(app)/jobs/request`    | `(app)/jobs/request`       | a person posts `DAY_LABOR`/`PIECE_WORK` with no company; basis-aware money copy («أجر اليوم»، «سعر المقطوعة»)                    | validation, no craft chosen, posted, quota/rate-limited          |
+| Screen                | Web route                    | Mobile route            | Recipe                                                                                                                                            | Required states                                                       |
+| --------------------- | ---------------------------- | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- |
+| Services listings     | `/jobs` (`services` tab)     | `(app)/jobs/index` tab  | existing `Tabs` strip «الوظائف \| الخدمات», occupation + governorate chips, dense `RecordCard`, one contact action — **no new route**             | loading, empty-in-governorate, no-occupation-selected, offline retry  |
+| Practitioner search   | `/search`                    | `(app)/search`          | occupation + governorate facets; order by `Standing` → licence → rating → recency, per track                                                      | initial prompt, no results in governorate, mixed-direction query      |
+| Occupation section    | `/in/[handle]`               | `(app)/in/[handle]`     | one block per `Claim`: `Standing` chip (CRAFT), licence chip (LICENSED), or evidence only (SERVICE); `WorkProof` count, rating, work-sample strip | unclaimed, «مهنة معلنة» unproven, expired licence, suspended standing |
+| Standing detail       | sheet from the standing chip | `Sheet` from the chip   | current rung, the five conditions with progress, what is missing — **a sheet, not a route**                                                       | at rank 4, cooldown, rating-blocked, suspended, wrong track           |
+| Licence claim         | `/me/edit` section           | `(app)/me/edit` section | occupation + body picker from `PS_PROFESSIONAL_BODIES`, number, expiry, practice status (متدرّب/مزاول/غير مزاول)                                  | declared-not-verified, verification pending, expired, rejected        |
+| Occupation onboarding | `/(app)/onboarding`          | `(app)/onboarding`      | fork on «أعمل بمهنة حرة أو حرفة» → occupation picker, governorate, declared years, work photos or licence; reuses `OnboardingProgress`            | validation, upload failure, skip, resume mid-fork                     |
+| Work confirmation     | application detail           | application detail      | counterparty confirms a finished `WorkProof` in a bounded window; the worker cannot confirm both ends                                             | pending, expired window, confirmed, disputed, already counted         |
+| Business page by kind | `/company/[slug]`            | `(app)/company/[slug]`  | header shaped by `Company.kind` per §4b; `FIRM` leads with its practice licence                                                                   | no occupations listed, unverified, expired firm licence, no jobs      |
+| Service request       | `/(app)/jobs/request`        | `(app)/jobs/request`    | a person posts `DAY_LABOR`/`PIECE_WORK` with no company; basis-aware money copy («أجر اليوم»، «سعر المقطوعة»)                                     | validation, no occupation chosen, posted, quota/rate-limited          |
 
 **Mobile overrides** are the ones already in `SCREENS.md` — `SafeAreaView`, `FlatList` for the
 listing screens, 44pt targets, haptics on the confirm action, one column at
@@ -211,6 +326,9 @@ Closes `NEXT-SESSION-PROMPT.md` §B14.
 | 4   | Palestinian TVET / NQF ladder   | **Answered: nothing to align to yet.** The PNQF was still pre-Cabinet as of 2026-05-17 — a ministerial committee formed end-2021, first draft consulted with GIZ and ETF, «سيتم رفع الإطار إلى مجلس الوزراء» plus a dedicated law being drafted. Do not claim alignment. **Revisit when ratified**: it includes recognition of prior learning, which is exactly what a confirmed-work record is, and its own reference models are the Jordanian framework and إطار المؤهلات العربي |
 | 5   | Craft family list               | **Open — the one item still owed.** Needs a tradesperson, not a search engine. §4 fixed three naming traps; the family set itself is unconfirmed and keys are forever                                                                                                                                                                                                                                                                                                              |
 | 6   | Construction labour composition | **Not needed.** No permit facet is being built, so nothing depends on it                                                                                                                                                                                                                                                                                                                                                                                                           |
+| 7   | Licensed-profession bodies      | **Closed** — §1b. BOPA under law 9/2004 with a licensing committee, PACPA's مزاول/غير مزاول split, the bar's مزاولين/متدربين portal, نقابة المهندسين. Baydar verifies licences and invents no rank for these professions                                                                                                                                                                                                                                                           |
 
-Phase 1 may start on §3–§5 while item 5 is open, **except** freezing `PS_CRAFTS` keys. Land
-the family keys last in that PR, after one conversation with someone in the trade.
+Phase 1 may start on §2–§5 while item 5 is open, **except** freezing `PS_OCCUPATIONS` keys.
+Land the family keys last in that PR, after one conversation with someone in the trade.
+Everything else — enums, `Standing`, `WorkProof`, `Licence`, contracts, the naming gate — is
+unblocked.
