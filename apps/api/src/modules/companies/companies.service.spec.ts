@@ -329,6 +329,60 @@ describe("CompaniesService", () => {
     });
   });
 
+  describe("updateJob", () => {
+    // UpdateJobBody is the un-refined base .partial(), so neither of these is
+    // caught by Zod — and a PATCH carrying only one half of a pair has nothing
+    // to validate against except the stored row.
+    it("rejects a minStanding patched onto a stored licensed occupation", async () => {
+      prisma.job.findFirst.mockResolvedValue({
+        id: "j_1",
+        occupationKey: "nurse",
+        minStanding: null,
+        salaryMin: null,
+        salaryMax: null,
+      });
+
+      await expect(service.updateJob("co_1", "j_1", { minStanding: 3 })).rejects.toMatchObject({
+        code: ErrorCode.VALIDATION_FAILED,
+      });
+      expect(prisma.job.update).not.toHaveBeenCalled();
+    });
+
+    it("rejects a salaryMax patched below the stored salaryMin", async () => {
+      prisma.job.findFirst.mockResolvedValue({
+        id: "j_1",
+        occupationKey: null,
+        minStanding: null,
+        salaryMin: 4000,
+        salaryMax: 6000,
+      });
+
+      await expect(service.updateJob("co_1", "j_1", { salaryMax: 900 })).rejects.toMatchObject({
+        code: ErrorCode.VALIDATION_FAILED,
+      });
+      expect(prisma.job.update).not.toHaveBeenCalled();
+    });
+
+    it("allows a minStanding on a craft occupation and forwards the new fields", async () => {
+      prisma.job.findFirst.mockResolvedValue({
+        id: "j_1",
+        occupationKey: "builder",
+        minStanding: null,
+        salaryMin: null,
+        salaryMax: null,
+      });
+      prisma.job.update.mockResolvedValue(jobRow());
+
+      await service.updateJob("co_1", "j_1", { minStanding: 2, payBasis: "DAILY" as const });
+
+      expect(prisma.job.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ minStanding: 2, payBasis: "DAILY" }),
+        }),
+      );
+    });
+  });
+
   describe("archiveJob", () => {
     it("soft-deletes and flips isActive false", async () => {
       prisma.job.findFirst.mockResolvedValue({ id: "j_1" });

@@ -10,6 +10,7 @@ import {
   type EmployerApplicant,
   type EmployerJob,
   ErrorCode,
+  hasStanding,
   type UpdateApplicationStatusBody,
   type UpdateCompanyBody,
   type UpdateCompanyMemberBody,
@@ -315,9 +316,35 @@ export class CompaniesService {
   async updateJob(companyId: string, jobId: string, body: UpdateJobBody): Promise<EmployerJob> {
     const existing = await this.prisma.job.findFirst({
       where: { id: jobId, companyId, deletedAt: null },
-      select: { id: true },
+      select: {
+        id: true,
+        occupationKey: true,
+        minStanding: true,
+        salaryMin: true,
+        salaryMax: true,
+      },
     });
     if (!existing) throw new DomainException(ErrorCode.NOT_FOUND, "Job not found.", 404);
+
+    // `CreateJobBody`'s refinements cannot carry over: `.partial()` only exists on
+    // the un-refined base, and a PATCH of `minStanding` alone has no occupationKey
+    // to check it against anyway. So the pair is re-checked here against the merge
+    // of body and stored row — the only place that sees both.
+    const occupationKey =
+      body.occupationKey !== undefined ? body.occupationKey : existing.occupationKey;
+    const minStanding = body.minStanding !== undefined ? body.minStanding : existing.minStanding;
+    if (minStanding && occupationKey && !hasStanding(occupationKey)) {
+      throw new DomainException(
+        ErrorCode.VALIDATION_FAILED,
+        "MIN_STANDING_REQUIRES_CRAFT_OCCUPATION",
+        400,
+      );
+    }
+    const salaryMin = body.salaryMin !== undefined ? body.salaryMin : existing.salaryMin;
+    const salaryMax = body.salaryMax !== undefined ? body.salaryMax : existing.salaryMax;
+    if (salaryMin && salaryMax && salaryMax < salaryMin) {
+      throw new DomainException(ErrorCode.VALIDATION_FAILED, "SALARY_RANGE_INVERTED", 400);
+    }
 
     const job = await this.prisma.job.update({
       where: { id: jobId },
@@ -332,6 +359,20 @@ export class CompaniesService {
         ...(body.salaryMax !== undefined ? { salaryMax: body.salaryMax ?? null } : {}),
         ...(body.salaryCurrency !== undefined ? { salaryCurrency: body.salaryCurrency } : {}),
         ...(body.skillsRequired !== undefined ? { skillsRequired: body.skillsRequired } : {}),
+        // Without these the contract accepts eight fields and silently drops them:
+        // an employer editing a job's pay basis would get a 200 and no change.
+        ...(body.occupationKey !== undefined ? { occupationKey: body.occupationKey ?? null } : {}),
+        ...(body.minStanding !== undefined ? { minStanding: body.minStanding ?? null } : {}),
+        ...(body.requiresLicence !== undefined ? { requiresLicence: body.requiresLicence } : {}),
+        ...(body.licenceBodyKey !== undefined
+          ? { licenceBodyKey: body.licenceBodyKey ?? null }
+          : {}),
+        ...(body.payBasis !== undefined ? { payBasis: body.payBasis } : {}),
+        ...(body.mustSkills !== undefined ? { mustSkills: body.mustSkills } : {}),
+        ...(body.startsAt !== undefined
+          ? { startsAt: body.startsAt ? new Date(body.startsAt) : null }
+          : {}),
+        ...(body.durationDays !== undefined ? { durationDays: body.durationDays ?? null } : {}),
         ...(body.expiresAt !== undefined
           ? { expiresAt: body.expiresAt ? new Date(body.expiresAt) : null }
           : {}),
