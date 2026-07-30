@@ -1,7 +1,7 @@
 import type { AuthSession as AuthSessionType } from "@baydar/shared";
 import { z } from "zod";
 
-import { apiCall, apiFetch, apiFetchPage, getValidAccessToken } from "../api";
+import { apiCall, apiFetch, apiFetchPage, getValidAccessToken, signOut } from "../api";
 import { clearAccessToken, getAccessToken, readSession, writeSession } from "../session";
 
 const OkPayload = z.object({ ok: z.literal(true) });
@@ -228,6 +228,44 @@ describe("api refresh handling", () => {
       status: 401,
       code: "AUTH_UNAUTHORIZED",
     });
+
+    expect(readSession()).toBeNull();
+  });
+});
+
+describe("signOut", () => {
+  beforeEach(() => {
+    window.localStorage.clear();
+    window.localStorage.setItem("baydar.deviceId", "web-device");
+    clearAccessToken();
+    global.fetch = jest.fn();
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+    clearAccessToken();
+  });
+
+  it("revokes this device's refresh token before dropping the local session", async () => {
+    writeSession(makeSession("access"));
+    const fetchMock = jest.mocked(global.fetch);
+    fetchMock.mockResolvedValueOnce(jsonResponse(undefined, 204));
+
+    await signOut();
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(fetchMock.mock.calls[0]?.[0]).toBe(`${apiBase}/auth/logout`);
+    expect(JSON.parse(String(fetchMock.mock.calls[0]?.[1]?.body))).toEqual({
+      deviceId: "web-device",
+    });
+    expect(readSession()).toBeNull();
+  });
+
+  it("still signs out locally when the revoke call fails", async () => {
+    writeSession(makeSession("access"));
+    jest.mocked(global.fetch).mockRejectedValueOnce(new TypeError("offline"));
+
+    await expect(signOut()).resolves.toBeUndefined();
 
     expect(readSession()).toBeNull();
   });

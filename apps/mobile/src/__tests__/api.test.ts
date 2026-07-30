@@ -1,6 +1,7 @@
 import { z } from "zod";
 
-import { apiFetch } from "@/lib/api";
+import { apiFetch, signOut } from "@/lib/api";
+import { clearSession, getAccessToken } from "@/lib/session";
 
 const mockFetch = jest.fn();
 
@@ -46,5 +47,27 @@ describe("mobile api client", () => {
     expect(headers.get("Pragma")).toBe("no-cache");
     expect(headers.has("If-None-Match")).toBe(false);
     expect(headers.has("If-Modified-Since")).toBe(false);
+  });
+
+  it("revokes this device's refresh token on sign-out before clearing the session", async () => {
+    jest.mocked(getAccessToken).mockResolvedValueOnce("access");
+    mockFetch.mockResolvedValue({ ok: true, status: 204, json: async () => ({}) });
+
+    await signOut();
+
+    expect(mockFetch.mock.calls[0]?.[0]).toEqual(expect.stringContaining("/api/v1/auth/logout"));
+    expect(JSON.parse(String((mockFetch.mock.calls[0]?.[1] as RequestInit).body))).toEqual({
+      deviceId: "test-device",
+    });
+    expect(clearSession).toHaveBeenCalledTimes(1);
+  });
+
+  it("still clears the session when the revoke call fails", async () => {
+    jest.mocked(getAccessToken).mockResolvedValueOnce("access");
+    mockFetch.mockRejectedValue(new TypeError("offline"));
+
+    await expect(signOut()).resolves.toBeUndefined();
+
+    expect(clearSession).toHaveBeenCalledTimes(1);
   });
 });
