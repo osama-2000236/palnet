@@ -1,52 +1,19 @@
-import { localeTag, type Message } from "@baydar/shared";
-import type { MessageStatus } from "@baydar/ui-web";
+import { localeTag } from "@baydar/shared";
+
+// Message state, the typing constants and `shortTime` live in
+// `@baydar/shared/messaging` — mobile had its own copy of all four. What is
+// left here is web-only presentation: the inbox row's "last message at" and
+// the thread's day separator, neither of which mobile draws this way.
 
 export const ONLINE_WINDOW_MS = 2 * 60 * 1000;
-export const TYPING_TTL_MS = 5 * 1000;
-export const TYPING_POST_THROTTLE_MS = 3 * 1000;
-
-export function computeStatus(
-  message: Message,
-  failedClientIds: Set<string>,
-  otherLastReadAtMs: number,
-): MessageStatus {
-  if (message.clientMessageId && failedClientIds.has(message.clientMessageId)) {
-    return "failed";
-  }
-  if (message.id.startsWith("pending-")) return "sending";
-  const createdAtMs = Date.parse(message.createdAt);
-  if (otherLastReadAtMs >= createdAtMs) return "read";
-  return "sent";
-}
-
-export function upsertMessage(current: Message[], incoming: Message): Message[] {
-  const idx = current.findIndex(
-    (item) =>
-      item.id === incoming.id ||
-      (!!item.clientMessageId && item.clientMessageId === incoming.clientMessageId),
-  );
-  if (idx === -1) return [...current, incoming];
-  const next = current.slice();
-  next[idx] = incoming;
-  return next;
-}
-
-export function shortTime(iso: string, locale: string): string {
-  try {
-    const tag = locale.toLowerCase().startsWith("ar") ? `${locale}-u-nu-arab` : locale;
-    return new Date(iso).toLocaleTimeString(tag, {
-      hour: "numeric",
-      minute: "2-digit",
-    });
-  } catch {
-    return "";
-  }
-}
 
 export function shortDate(iso: string, locale: string): string {
+  const date = new Date(iso);
+  // `toLocale*` renders the literal "Invalid Date" rather than throwing, so the
+  // try/catch below (which is there for a malformed locale tag) never saw it.
+  if (Number.isNaN(date.getTime())) return "";
   try {
-    const tag = locale.toLowerCase().startsWith("ar") ? `${locale}-u-nu-arab` : locale;
-    return new Date(iso).toLocaleString(tag, {
+    return date.toLocaleString(localeTag(locale), {
       month: "short",
       day: "numeric",
       hour: "numeric",
@@ -58,8 +25,12 @@ export function shortDate(iso: string, locale: string): string {
 }
 
 export function shortDayLabel(iso: string, locale: string): string {
+  const date = new Date(iso);
+  // `toLocale*` renders the literal "Invalid Date" rather than throwing, so the
+  // try/catch below (which is there for a malformed locale tag) never saw it.
+  if (Number.isNaN(date.getTime())) return "";
   try {
-    return new Date(iso).toLocaleDateString(localeTag(locale), {
+    return date.toLocaleDateString(localeTag(locale), {
       weekday: "long",
       month: "short",
       day: "numeric",
@@ -67,14 +38,4 @@ export function shortDayLabel(iso: string, locale: string): string {
   } catch {
     return "";
   }
-}
-
-export function isSameLocalDay(aIso: string, bIso: string): boolean {
-  const a = new Date(aIso);
-  const b = new Date(bIso);
-  return (
-    a.getFullYear() === b.getFullYear() &&
-    a.getMonth() === b.getMonth() &&
-    a.getDate() === b.getDate()
-  );
 }

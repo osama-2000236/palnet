@@ -1,14 +1,10 @@
-import {
-  CursorPageMeta,
-  Message as MessageSchema,
-  type ChatRoom,
-  type Message,
-} from "@baydar/shared";
-import type { MessageStatus } from "@baydar/ui-native";
+import { CursorPageMeta, localeTag, Message as MessageSchema, type ChatRoom } from "@baydar/shared";
 import { z } from "zod";
 
-export const TYPING_TTL_MS = 5_000;
-export const TYPING_POST_THROTTLE_MS = 3_000;
+// Message state, the typing constants and `shortTime` live in
+// `@baydar/shared/messaging` — web had its own copy of all four. What is left
+// here is mobile-only: the page envelope, the room-member name lookup, and a
+// day separator that reads differently from web's.
 
 /** Cursor-paged message list as the API returns it. */
 export const MessagesPageEnvelope = z.object({
@@ -30,47 +26,15 @@ export function memberDisplayName(
   return `${member.firstName} ${member.lastName}`.trim() || member.handle || null;
 }
 
-export function computeStatus(
-  message: Message,
-  failedClientIds: Set<string>,
-  otherLastReadAtMs: number,
-): MessageStatus {
-  if (message.clientMessageId && failedClientIds.has(message.clientMessageId)) return "failed";
-  if (message.id.startsWith("pending-")) return "sending";
-  if (otherLastReadAtMs >= Date.parse(message.createdAt)) return "read";
-  return "sent";
-}
-
-export function upsertMessage(current: Message[], incoming: Message): Message[] {
-  const idx = current.findIndex(
-    (item) =>
-      item.id === incoming.id ||
-      (!!item.clientMessageId && item.clientMessageId === incoming.clientMessageId),
-  );
-  if (idx === -1) return [...current, incoming];
-  const next = current.slice();
-  next[idx] = incoming;
-  return next;
-}
-
-export function shortTime(iso: string, locale: string): string {
-  try {
-    const tag = locale.toLowerCase().startsWith("ar") ? `${locale}-u-nu-arab` : locale;
-    return new Date(iso).toLocaleTimeString(tag, {
-      hour: "numeric",
-      minute: "2-digit",
-    });
-  } catch {
-    return "";
-  }
-}
-
 // "اليوم"-style day label for thread separators. Weekday+date reads better
 // than a bare date in a chat context; Arabic locales get Arabic-Indic digits.
 export function dayLabel(iso: string, locale: string): string {
+  const date = new Date(iso);
+  // `toLocale*` renders the literal "Invalid Date" rather than throwing, so the
+  // try/catch below (which is there for a malformed locale tag) never saw it.
+  if (Number.isNaN(date.getTime())) return "";
   try {
-    const tag = locale.toLowerCase().startsWith("ar") ? `${locale}-u-nu-arab` : locale;
-    return new Date(iso).toLocaleDateString(tag, {
+    return date.toLocaleDateString(localeTag(locale), {
       weekday: "long",
       day: "numeric",
       month: "long",
@@ -78,14 +42,4 @@ export function dayLabel(iso: string, locale: string): string {
   } catch {
     return "";
   }
-}
-
-export function isSameDay(a: string, b: string): boolean {
-  const da = new Date(a);
-  const db = new Date(b);
-  return (
-    da.getFullYear() === db.getFullYear() &&
-    da.getMonth() === db.getMonth() &&
-    da.getDate() === db.getDate()
-  );
 }

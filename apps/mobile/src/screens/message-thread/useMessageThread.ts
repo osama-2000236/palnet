@@ -3,6 +3,7 @@
 import {
   ChatRoom as ChatRoomSchema,
   Message as MessageSchema,
+  upsertMessage,
   WsChatEvent,
   type ChatRoom,
   type Message,
@@ -22,7 +23,7 @@ import { useNetworkStore } from "@/store/network";
 import { applyThreadEvent, createOptimisticMessage } from "./messageThreadEvents";
 import { useThreadDerived } from "./useThreadDerived";
 import { useTypingIndicator } from "./useTypingIndicator";
-import { MessagesPageEnvelope, upsertMessage } from "./utils";
+import { MessagesPageEnvelope } from "./utils";
 
 export function useMessageThread(roomId: string | undefined) {
   const { t } = useTranslation();
