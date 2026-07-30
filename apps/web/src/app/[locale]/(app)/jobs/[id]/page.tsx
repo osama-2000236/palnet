@@ -14,6 +14,8 @@ import {
   formatSalaryRange,
   Job as JobSchema,
   type Job,
+  jobSource,
+  jobSourceInitial,
 } from "@baydar/shared";
 import { Button, Icon, Surface } from "@baydar/ui-web";
 import Image from "next/image";
@@ -168,9 +170,9 @@ export default function JobDetailPage(): JSX.Element {
             className="bg-surface-sunken text-ink-muted flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-md text-base font-semibold"
             aria-hidden="true"
           >
-            {job.company.logoUrl ? (
+            {jobSource(job).imageUrl ? (
               <Image
-                src={job.company.logoUrl}
+                src={jobSource(job).imageUrl!}
                 alt=""
                 width={56}
                 height={56}
@@ -178,16 +180,16 @@ export default function JobDetailPage(): JSX.Element {
                 sizes="56px"
               />
             ) : (
-              (job.company.name[0] ?? "?").toUpperCase()
+              jobSourceInitial(jobSource(job))
             )}
           </div>
           <div className="min-w-0 flex-1">
             <h1 className="text-ink truncate text-xl font-semibold">{job.title}</h1>
             <Link
-              href={`/companies/${job.company.slug}`}
+              href={jobSource(job).href}
               className="text-ink-muted hover:text-ink focus-visible:outline-hidden text-sm focus-visible:[box-shadow:var(--focus-ring)]"
             >
-              {job.company.name}
+              {jobSource(job).name}
             </Link>
             <p className="text-ink-muted mt-1 text-xs">{metaParts.join(" · ")}</p>
             {salary ? <p className="text-ink mt-1 text-sm font-semibold">{salary}</p> : null}
@@ -218,7 +220,7 @@ export default function JobDetailPage(): JSX.Element {
           </div>
         </div>
         <div className="border-line-soft mt-4 border-t pt-3">
-          <ShareJobButtons jobId={job.id} title={`${job.title} — ${job.company.name}`} />
+          <ShareJobButtons jobId={job.id} title={`${job.title} — ${jobSource(job).name}`} />
         </div>
       </Surface>
 

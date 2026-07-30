@@ -333,6 +333,13 @@ export class SearchService {
         c."name"         AS "companyName",
         c."logoUrl"      AS "companyLogoUrl"
       FROM   "Job"     j
+      -- ponytail: INNER JOIN, so a job with a null companyId is silently absent
+      -- from search rather than wrong in it. Safe only while nothing can create
+      -- one: the composer that posts work without a company is phase 5. Phase 4
+      -- (discovery) owns the fix and it is not a one-word change: a bare LEFT
+      -- JOIN feeds NULL into the non-nullable companyName DTO field, so it needs
+      -- the poster profile joined and COALESCEd in, or the field renamed off
+      -- "company". Do not ship phase 5 before this.
       JOIN   "Company" c ON c."id" = j."companyId"
       WHERE  j."isActive"  = TRUE
         AND  j."deletedAt" IS NULL

@@ -1,6 +1,6 @@
 "use client";
 
-import { formatRelativeTime, type Job } from "@baydar/shared";
+import { formatRelativeTime, type Job, jobSource, jobSourceInitial } from "@baydar/shared";
 import { Badge, Chip, Icon, RecordCardSkeleton, Surface, cx } from "@baydar/ui-web";
 import Image from "next/image";
 import Link from "next/link";
@@ -33,13 +33,15 @@ export function JobListRow({
           href={`/jobs/${job.id}`}
           className="focus-visible:outline-hidden flex min-w-0 flex-1 items-start gap-3 rounded-md focus-visible:[box-shadow:var(--focus-ring)]"
         >
-          <CompanyLogo job={job} />
+          <SourceLogo job={job} />
           <div className="min-w-0 flex-1">
             <div className="min-w-0">
               <h2 className="bidi-plaintext text-ink truncate text-base font-semibold">
                 {job.title}
               </h2>
-              <p className="bidi-plaintext text-ink-muted truncate text-sm">{job.company.name}</p>
+              <p className="bidi-plaintext text-ink-muted truncate text-sm">
+                {jobSource(job).name}
+              </p>
             </div>
             {/* Salary joins the meta line instead of claiming its own row: on a
                 jobs board these are read as one fact ("Ramallah · hybrid ·
@@ -102,16 +104,22 @@ export function JobListRow({
   );
 }
 
-function CompanyLogo({ job }: { job: Job }): JSX.Element {
+function SourceLogo({ job }: { job: Job }): JSX.Element {
   return (
     <div
       className="bg-surface-sunken text-ink-muted flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-md text-sm font-semibold"
       aria-hidden="true"
     >
-      {job.company.logoUrl ? (
-        <Image src={job.company.logoUrl} alt="" width={48} height={48} className="object-cover" />
+      {jobSource(job).imageUrl ? (
+        <Image
+          src={jobSource(job).imageUrl!}
+          alt=""
+          width={48}
+          height={48}
+          className="object-cover"
+        />
       ) : (
-        (job.company.name[0] ?? "?").toUpperCase()
+        jobSourceInitial(jobSource(job))
       )}
     </div>
   );

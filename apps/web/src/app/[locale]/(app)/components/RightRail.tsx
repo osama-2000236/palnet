@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Avatar, Icon, RetryChip, Skeleton, Surface } from "@baydar/ui-web";
 import Image from "next/image";
 import { useLocale, useTranslations } from "next-intl";
+import { jobSource, jobSourceInitial } from "@baydar/shared";
 import type { Job, PersonSuggestion } from "@baydar/shared";
 
 interface RightRailProps {
@@ -124,9 +125,9 @@ export function RightRail({
                       className="bg-surface-sunken text-ink-muted flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-md text-xs font-semibold"
                       aria-hidden="true"
                     >
-                      {j.company.logoUrl ? (
+                      {jobSource(j).imageUrl ? (
                         <Image
-                          src={j.company.logoUrl}
+                          src={jobSource(j).imageUrl!}
                           alt=""
                           width={36}
                           height={36}
@@ -134,12 +135,12 @@ export function RightRail({
                           sizes="36px"
                         />
                       ) : (
-                        (j.company.name[0] ?? "?").toUpperCase()
+                        jobSourceInitial(jobSource(j))
                       )}
                     </div>
                     <div className="flex min-w-0 flex-1 flex-col">
                       <span className="text-ink truncate text-sm font-semibold">{j.title}</span>
-                      <span className="text-ink-muted truncate text-xs">{j.company.name}</span>
+                      <span className="text-ink-muted truncate text-xs">{jobSource(j).name}</span>
                       {metaParts.length > 0 ? (
                         <span className="text-micro text-ink-muted mt-0.5 truncate">
                           {metaParts.join(" · ")}

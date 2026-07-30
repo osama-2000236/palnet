@@ -109,6 +109,32 @@ describe("BookmarksService", () => {
     expect(result.data).toHaveLength(1);
   });
 
+  it("falls back to the poster when a saved job has no company", async () => {
+    prisma.bookmark.findMany.mockResolvedValue([makeIndividualJobBookmark()]);
+
+    const result = await service.list("user_1", { after: null, limit: 10, type: null });
+
+    expect(result.data[0]).toEqual(
+      expect.objectContaining({
+        subtitle: "رشا عبد",
+        imageUrl: "https://cdn.example.com/rasha.png",
+      }),
+    );
+  });
+
+  it("still prefers the company over the poster when the job has one", async () => {
+    prisma.bookmark.findMany.mockResolvedValue([makeJobBookmark()]);
+
+    const result = await service.list("user_1", { after: null, limit: 10, type: null });
+
+    expect(result.data[0]).toEqual(
+      expect.objectContaining({
+        subtitle: "Nimbus Cloud",
+        imageUrl: "https://cdn.example.com/nimbus.png",
+      }),
+    );
+  });
+
   it("removes only the viewer-owned bookmark row", async () => {
     prisma.bookmark.deleteMany.mockResolvedValue({ count: 1 });
 
@@ -161,9 +187,25 @@ function makeJobBookmark() {
       locationMode: "HYBRID",
       type: "FULL_TIME",
       company: {
+        id: "co_1",
+        slug: "nimbus-cloud",
         name: "Nimbus Cloud",
         logoUrl: "https://cdn.example.com/nimbus.png",
       },
+      postedBy: {
+        profile: {
+          handle: "rasha",
+          firstName: "رشا",
+          lastName: "عبد",
+          avatarUrl: "https://cdn.example.com/rasha.png",
+        },
+      },
     },
   };
+}
+
+/** Individual-posted work: `Job.companyId` is nullable, so `company` is absent. */
+function makeIndividualJobBookmark() {
+  const row = makeJobBookmark();
+  return { ...row, job: { ...row.job, company: null } };
 }

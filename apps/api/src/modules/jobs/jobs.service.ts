@@ -15,8 +15,16 @@ import { PrismaService } from "../prisma/prisma.service";
 
 interface JobRow {
   id: string;
-  companyId: string;
+  companyId: string | null;
   postedById: string;
+  occupationKey: string | null;
+  minStanding: number | null;
+  requiresLicence: boolean;
+  licenceBodyKey: string | null;
+  payBasis: JobDto["payBasis"];
+  mustSkills: string[];
+  startsAt: Date | null;
+  durationDays: number | null;
   title: string;
   description: string;
   type: JobDto["type"];
@@ -35,6 +43,14 @@ interface JobRow {
     slug: string;
     name: string;
     logoUrl: string | null;
+  } | null;
+  postedBy: {
+    profile: {
+      handle: string;
+      firstName: string;
+      lastName: string;
+      avatarUrl: string | null;
+    } | null;
   };
   applications: { id: string }[];
   bookmarks: { id: string }[];
@@ -43,6 +59,11 @@ interface JobRow {
 const jobInclude = (viewerId: string) =>
   ({
     company: { select: { id: true, slug: true, name: true, logoUrl: true } },
+    postedBy: {
+      select: {
+        profile: { select: { handle: true, firstName: true, lastName: true, avatarUrl: true } },
+      },
+    },
     applications: {
       where: { applicantId: viewerId },
       select: { id: true },
@@ -127,7 +148,14 @@ export class JobsService {
   async getPublic(id: string): Promise<PublicJobDto> {
     const row = await this.prisma.job.findFirst({
       where: { id, deletedAt: null },
-      include: { company: { select: { id: true, slug: true, name: true, logoUrl: true } } },
+      include: {
+        company: { select: { id: true, slug: true, name: true, logoUrl: true } },
+        postedBy: {
+          select: {
+            profile: { select: { handle: true, firstName: true, lastName: true, avatarUrl: true } },
+          },
+        },
+      },
     });
     if (!row) {
       throw new DomainException(ErrorCode.NOT_FOUND, "Job not found.", 404);
@@ -141,11 +169,25 @@ export class JobsService {
       locationMode: row.locationMode as PublicJobDto["locationMode"],
       city: row.city,
       country: row.country,
+      occupationKey: row.occupationKey,
+      minStanding: row.minStanding,
+      requiresLicence: row.requiresLicence,
+      licenceBodyKey: row.licenceBodyKey,
+      payBasis: row.payBasis as PublicJobDto["payBasis"],
+      mustSkills: row.mustSkills,
+      startsAt: row.startsAt ? row.startsAt.toISOString() : null,
+      durationDays: row.durationDays,
       salaryMin: row.salaryMin,
       salaryMax: row.salaryMax,
       salaryCurrency: row.salaryCurrency,
       skillsRequired: row.skillsRequired,
       isActive: row.isActive,
+      poster: {
+        handle: row.postedBy.profile?.handle ?? "",
+        firstName: row.postedBy.profile?.firstName ?? "",
+        lastName: row.postedBy.profile?.lastName ?? "",
+        avatarUrl: row.postedBy.profile?.avatarUrl ?? null,
+      },
       expiresAt: row.expiresAt ? row.expiresAt.toISOString() : null,
       createdAt: row.createdAt.toISOString(),
       company: row.company,
@@ -219,6 +261,14 @@ function toJobDto(row: JobRow): JobDto {
     id: row.id,
     companyId: row.companyId,
     postedById: row.postedById,
+    occupationKey: row.occupationKey,
+    minStanding: row.minStanding,
+    requiresLicence: row.requiresLicence,
+    licenceBodyKey: row.licenceBodyKey,
+    payBasis: row.payBasis,
+    mustSkills: row.mustSkills,
+    startsAt: row.startsAt ? row.startsAt.toISOString() : null,
+    durationDays: row.durationDays,
     title: row.title,
     description: row.description,
     type: row.type,
@@ -233,6 +283,14 @@ function toJobDto(row: JobRow): JobDto {
     expiresAt: row.expiresAt ? row.expiresAt.toISOString() : null,
     createdAt: row.createdAt.toISOString(),
     company: row.company,
+    // A job always has a poster; a profile-less user cannot reach the composer,
+    // so the empty fallback is defensive rather than expected.
+    poster: {
+      handle: row.postedBy.profile?.handle ?? "",
+      firstName: row.postedBy.profile?.firstName ?? "",
+      lastName: row.postedBy.profile?.lastName ?? "",
+      avatarUrl: row.postedBy.profile?.avatarUrl ?? null,
+    },
     viewer: {
       hasApplied: row.applications.length > 0,
       bookmarkId: row.bookmarks[0]?.id ?? null,

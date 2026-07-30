@@ -61,6 +61,8 @@ enum NotificationType {
   JOB_ALERT
   PROFILE_VIEW
   MODERATION_ACTION
+  STANDING_ADVANCED
+  WORK_PROOF_REQUESTED
 }
 
 enum DevicePlatform {
@@ -72,9 +74,92 @@ enum JobType {
   FULL_TIME
   PART_TIME
   CONTRACT
-  INTERNSHIP
-  VOLUNTEER
   TEMPORARY
+  SEASONAL
+  DAY_LABOR
+  PIECE_WORK
+  APPRENTICESHIP
+  INTERNSHIP
+  FREELANCE
+  VOLUNTEER
+}
+
+// What the money is per. MONTHLY is the default so every pre-existing Job row
+// keeps its meaning: salaryMin/salaryMax are a range *in this basis*.
+enum PayBasis {
+  MONTHLY
+  DAILY
+  HOURLY
+  PER_JOB
+  PER_PIECE
+  COMMISSION
+}
+
+// What kind of business a Company is. One enum instead of a second model.
+// EMPLOYER is the default, so existing rows are unchanged.
+enum CompanyKind {
+  EMPLOYER
+  FIRM
+  SHOP
+  WORKSHOP
+  FOOD
+  FARM
+  SOLO
+}
+
+// Only CONFIRMED counts toward a Standing, and the counterparty moves it there
+// -- never the worker. docs/design/OCCUPATIONS.md sec 8.
+enum WorkProofStatus {
+  PENDING
+  CONFIRMED
+  DECLINED
+  EXPIRED
+  DISPUTED
+}
+
+enum StandingReason {
+  EARNED
+  VOUCHED
+  FOUNDING
+  SUSPENDED
+  DEMOTED
+  REINSTATED
+}
+
+enum PracticeStatus {
+  TRAINEE
+  PRACTISING
+  NON_PRACTISING
+}
+
+enum LicenceStatus {
+  DECLARED
+  VERIFIED
+  EXPIRED
+}
+
+enum TopicSource {
+  AUTHOR_OCCUPATION
+  HASHTAG
+  COMPANY
+  TEXT_MATCH
+  GOVERNORATE
+}
+
+enum SignalKind {
+  POST_EXPAND
+  POST_DWELL
+  LINK_CLICK
+  PROFILE_VISIT
+  SEARCH_QUERY
+  JOB_APPLY
+  NOT_INTERESTED
+  HIDE_POST
+}
+
+enum RequirementLevel {
+  MUST
+  NICE
 }
 
 enum JobLocationMode {
@@ -221,6 +306,15 @@ model User {
   ratingsReceived         UserRating[]             @relation("RatingRatee")
   bookmarks               Bookmark[]
   jobAlerts               JobAlert[]
+  workProofsAsWorker      WorkProof[]              @relation("WorkProofWorker")
+  workProofsAsClient      WorkProof[]              @relation("WorkProofClient")
+  standings               Standing[]
+  vouchesGiven            Vouch[]                  @relation("VouchVoucher")
+  vouchesReceived         Vouch[]                  @relation("VouchVouchee")
+  licences                Licence[]
+  interestWeights         InterestWeight[]
+  feedSlates              FeedSlate[]
+  topicMutes              TopicMute[]
 
   @@index([email])
   @@index([role])
@@ -292,28 +386,36 @@ model SseStreamToken {
 // ──────────────────────────────────────────────────────────────────────────
 
 model Profile {
-  id         String   @id @default(cuid())
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId     String   @unique
-  handle     String   @unique // e.g. /in/osama-hamad
-  firstName  String
-  lastName   String
-  headline   String?
-  about      String?  @db.Text
-  location   String? // city in Palestine, e.g. "Ramallah" or "رام الله"
-  country    String   @default("PS")
-  avatarUrl  String?
-  coverUrl   String?
-  website    String?
-  pronouns   String?
-  openToWork Boolean  @default(false)
-  hiring     Boolean  @default(false)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id                 String   @id @default(cuid())
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId             String   @unique
+  handle             String   @unique // e.g. /in/osama-hamad
+  firstName          String
+  lastName           String
+  headline           String?
+  about              String?  @db.Text
+  location           String? // city in Palestine, e.g. "Ramallah" or "رام الله"
+  country            String   @default("PS")
+  avatarUrl          String?
+  coverUrl           String?
+  website            String?
+  pronouns           String?
+  openToWork         Boolean  @default(false)
+  hiring             Boolean  @default(false)
+  // A self-employed practitioner is permanently taking work, which is not the
+  // same fact as a salaried member job-hunting. Hence a second boolean.
+  acceptingWork      Boolean  @default(false)
+  // Whether this member visits the client, has a workshop, or both. A customer's
+  // first question is "do you come to me?".
+  servesAtClientSite Boolean  @default(false)
+  hasWorkshop        Boolean  @default(false)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
 
   experiences Experience[]
   educations  Education[]
   skills      ProfileSkill[]
+  claims      OccupationClaim[]
   // FTS: add Postgres GIN index on (firstName || lastName || headline || about) via raw SQL migration.
 
   @@index([handle])
@@ -413,18 +515,24 @@ model BlockedUser {
 // ──────────────────────────────────────────────────────────────────────────
 
 model Post {
-  id        String    @id @default(cuid())
-  author    User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  authorId  String
-  body      String    @db.Text
-  language  String    @default("ar")
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  deletedAt DateTime?
+  id           String    @id @default(cuid())
+  // Work portfolio rides on posts: photos are the CV for most crafts, and this
+  // way the portfolio inherits feed distribution, comments and reactions.
+  // ponytail: no ordering or curation. Add a join table only if members ask to
+  // reorder their samples.
+  isWorkSample Boolean   @default(false)
+  author       User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  authorId     String
+  body         String    @db.Text
+  language     String    @default("ar")
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  deletedAt    DateTime?
 
   media     Media[]
   reactions Reaction[]
   comments  Comment[]
+  topics    PostTopic[]
   reposts   Repost[]
   bookmarks Bookmark[]
   // FTS: raw SQL GIN index on body added in a later migration.
@@ -613,21 +721,22 @@ model DeviceToken {
 // ──────────────────────────────────────────────────────────────────────────
 
 model Company {
-  id         String   @id @default(cuid())
-  slug       String   @unique
+  id         String      @id @default(cuid())
+  slug       String      @unique
+  kind       CompanyKind @default(EMPLOYER)
   name       String
   tagline    String?
-  about      String?  @db.Text
+  about      String?     @db.Text
   website    String?
   industry   String?
   sizeBucket String? // "1-10", "11-50", ...
   logoUrl    String?
   coverUrl   String?
-  country    String   @default("PS")
+  country    String      @default("PS")
   city       String?
-  verified   Boolean  @default(false)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  verified   Boolean     @default(false)
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
 
   members       CompanyMember[]
   jobs          Job[]
@@ -635,8 +744,11 @@ model Company {
   subscriptions Subscription[]
   invoices      Invoice[]
   credits       EmployerCredit[]
+  workProofs    WorkProof[]
+  licences      Licence[]
 
   @@index([name])
+  @@index([kind])
 }
 
 model CompanyMember {
@@ -653,33 +765,53 @@ model CompanyMember {
 }
 
 model Job {
-  id             String          @id @default(cuid())
-  company        Company         @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  companyId      String
-  postedBy       User            @relation("JobPoster", fields: [postedById], references: [id], onDelete: Cascade)
-  postedById     String
-  title          String
-  description    String          @db.Text
-  type           JobType
-  locationMode   JobLocationMode
-  city           String?
-  country        String          @default("PS")
-  salaryMin      Int?
-  salaryMax      Int?
-  salaryCurrency String?         @default("ILS")
-  skillsRequired String[]
-  isActive       Boolean         @default(true)
-  expiresAt      DateTime?
-  createdAt      DateTime        @default(now())
-  updatedAt      DateTime        @updatedAt
-  deletedAt      DateTime?
+  id                 String          @id @default(cuid())
+  // Nullable on purpose: this one column is what lets an individual post
+  // "need someone to rewire two rooms in Ramallah". postedById already carries
+  // the human. Application -> HIRED -> two-sided UserRating then works
+  // unchanged, which is where WorkProof gets its data.
+  company            Company?        @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  companyId          String?
+  postedBy           User            @relation("JobPoster", fields: [postedById], references: [id], onDelete: Cascade)
+  postedById         String
+  title              String
+  description        String          @db.Text
+  type               JobType
+  locationMode       JobLocationMode
+  city               String?
+  country            String          @default("PS")
+  // Structured requirements. Without these nothing can be matched: the old
+  // skillsRequired String[] is free text and stays only for the long tail.
+  occupationKey      String?
+  minStanding        Int?
+  requiresLicence    Boolean         @default(false)
+  licenceBodyKey     String?
+  // salaryMin/Max are a range *in payBasis*. MONTHLY default keeps every
+  // existing row's meaning, so there is no data migration.
+  payBasis           PayBasis        @default(MONTHLY)
+  salaryMin          Int?
+  salaryMax          Int?
+  salaryCurrency     String?         @default("ILS")
+  skillsRequired     String[]
+  mustSkills         String[]
+  startsAt           DateTime?
+  durationDays       Int?
+  screeningQuestions Json?
+  isActive           Boolean         @default(true)
+  expiresAt          DateTime?
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+  deletedAt          DateTime?
 
   applications Application[]
   bookmarks    Bookmark[]
+  workProofs   WorkProof[]
   // FTS: raw SQL GIN index on (title || description) added in a later migration.
 
   @@index([companyId])
   @@index([isActive, createdAt])
+  @@index([occupationKey, isActive])
+  @@index([type, isActive])
 }
 
 // Saved job search → notification on matching new job. All filter fields are
@@ -699,16 +831,28 @@ model JobAlert {
 }
 
 model Application {
-  id          String            @id @default(cuid())
-  job         Job               @relation(fields: [jobId], references: [id], onDelete: Cascade)
-  jobId       String
-  applicant   User              @relation(fields: [applicantId], references: [id], onDelete: Cascade)
-  applicantId String
-  resumeUrl   String?
-  coverLetter String?           @db.Text
-  status      ApplicationStatus @default(SUBMITTED)
-  createdAt   DateTime          @default(now())
-  updatedAt   DateTime          @updatedAt
+  id               String            @id @default(cuid())
+  job              Job               @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  jobId            String
+  applicant        User              @relation(fields: [applicantId], references: [id], onDelete: Cascade)
+  applicantId      String
+  resumeUrl        String?
+  coverLetter      String?           @db.Text
+  // Structure the employer currently reconstructs by reading PDFs.
+  screeningAnswers Json?
+  expectedPay      Int?
+  expectedPayBasis PayBasis?
+  availableFrom    DateTime?
+  attachedProofIds String[]
+  portfolioPostIds String[]
+  // The score AS COMPUTED AT SUBMISSION, with its weights version. Frozen, so a
+  // later profile edit or a weight change cannot rewrite a past decision.
+  matchSnapshot    Json?
+  status           ApplicationStatus @default(SUBMITTED)
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  workProofs WorkProof[]
 
   @@unique([jobId, applicantId])
   @@index([applicantId])
@@ -888,4 +1032,186 @@ model UserRating {
   @@unique([raterId, rateeId, context, jobId])
   @@index([rateeId, context])
   @@index([raterId])
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// Occupations, standing and evidence
+//
+// docs/design/OCCUPATIONS.md is the decision record. The naming spine there is
+// law: one concept, one word, and scripts/check-naming.mjs fails CI on a
+// synonym. Occupation keys are constants in @baydar/shared, not a table --
+// same reasoning as PS_CITIES.
+// ──────────────────────────────────────────────────────────────────────────
+
+// A member's claim on an occupation. Declared, unproven -- rendered as
+// «مهنة معلنة». Evidence is what turns it into a Standing or backs a Licence.
+model OccupationClaim {
+  profile       Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  profileId     String
+  occupationKey String
+  declaredYears Int?
+  isPrimary     Boolean  @default(false)
+  createdAt     DateTime @default(now())
+
+  @@id([profileId, occupationKey])
+  @@index([occupationKey])
+}
+
+// One finished unit of work a counterparty confirmed. THE evidence primitive:
+// all three tracks accumulate these and differ only in how they are summarised.
+//
+// Counted once, keyed on (workerId, occupationKey, applicationId) -- a hire
+// status toggled HIRED -> REJECTED -> HIRED advances nothing the second time.
+// That is the exact attack that minted Karama in the round-2 review.
+model WorkProof {
+  id               String          @id @default(cuid())
+  worker           User            @relation("WorkProofWorker", fields: [workerId], references: [id], onDelete: Cascade)
+  workerId         String
+  // Who confirms. Exactly one of these is set; the worker may never be either.
+  clientUser       User?           @relation("WorkProofClient", fields: [clientUserId], references: [id], onDelete: SetNull)
+  clientUserId     String?
+  clientCompany    Company?        @relation(fields: [clientCompanyId], references: [id], onDelete: SetNull)
+  clientCompanyId  String?
+  occupationKey    String
+  job              Job?            @relation(fields: [jobId], references: [id], onDelete: SetNull)
+  jobId            String?
+  application      Application?    @relation(fields: [applicationId], references: [id], onDelete: SetNull)
+  applicationId    String?
+  city             String?
+  summary          String?         @db.Text
+  status           WorkProofStatus @default(PENDING)
+  completedAt      DateTime?
+  // Confirmation is bounded: an unanswered request expires rather than hanging
+  // around as leverage.
+  confirmExpiresAt DateTime?
+  confirmedAt      DateTime?
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  @@unique([workerId, occupationKey, applicationId])
+  @@index([workerId, occupationKey, status])
+  @@index([clientUserId])
+  @@index([status, confirmExpiresAt])
+}
+
+// Earned level, CRAFT track only -- 1..4. One row per (user, occupation),
+// written only on transition so the "you advanced" notification has a diff.
+// Never recomputed on read, never decays, and no billing or karama code path
+// may write it.
+model Standing {
+  id            String         @id @default(cuid())
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId        String
+  occupationKey String
+  value         Int
+  reason        StandingReason @default(EARNED)
+  // Set when an upheld report suspends the standing. Suspension, not decay.
+  suspendedAt   DateTime?
+  attainedAt    DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  @@unique([userId, occupationKey])
+  @@index([occupationKey, value])
+}
+
+// A معلّم sponsoring someone onto the ladder. Skin in the game: if the vouchee's
+// work is disputed and upheld, the voucher loses vouch capacity for a window,
+// or this is a favour economy.
+model Vouch {
+  id            String    @id @default(cuid())
+  voucher       User      @relation("VouchVoucher", fields: [voucherId], references: [id], onDelete: Cascade)
+  voucherId     String
+  vouchee       User      @relation("VouchVouchee", fields: [voucheeId], references: [id], onDelete: Cascade)
+  voucheeId     String
+  occupationKey String
+  note          String?   @db.Text
+  revokedAt     DateTime?
+  createdAt     DateTime  @default(now())
+
+  @@unique([voucherId, voucheeId, occupationKey])
+  @@index([voucheeId, occupationKey])
+}
+
+// Statutory practice licence, LICENSED track only. Baydar verifies; it never
+// invents a rank beside a نقابة. Body keys are constants in @baydar/shared.
+// Held by a member, or by a FIRM for its practice.
+model Licence {
+  id            String         @id @default(cuid())
+  user          User?          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId        String?
+  company       Company?       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  companyId     String?
+  occupationKey String
+  bodyKey       String
+  number        String?
+  status        LicenceStatus  @default(DECLARED)
+  practice      PracticeStatus @default(PRACTISING)
+  issuedAt      DateTime?
+  expiresAt     DateTime?
+  verifiedAt    DateTime?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  @@unique([userId, occupationKey, bodyKey])
+  @@index([companyId])
+  @@index([status, expiresAt])
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// Feed ranking -- docs/design/FEED-RANKING.md
+// ──────────────────────────────────────────────────────────────────────────
+
+// Deterministic tags written once on post create. No ML, no model to host:
+// author occupations, hashtags, company mentions, folded-Arabic taxonomy match,
+// and the author's governorate.
+model PostTopic {
+  post     Post        @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId   String
+  topicKey String
+  source   TopicSource
+
+  @@id([postId, topicKey])
+  @@index([topicKey])
+}
+
+// Sparse topic interest, updated by EWMA on signal arrival and decayed on read.
+// Embeddings would rank marginally better and cost the ability to say WHY a
+// post was shown, which is the whole reason ranking is acceptable here.
+// ponytail: sparse topics in Postgres; revisit only if explainability stops
+// being a product requirement.
+model InterestWeight {
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  topicKey  String
+  weight    Float    @default(0)
+  updatedAt DateTime @updatedAt
+
+  @@id([userId, topicKey])
+  @@index([userId, weight])
+}
+
+// A frozen ranked page order. Score-ordered results plus a cursor duplicates
+// and skips posts, because cursor pagination assumes a stable total order and a
+// ranked feed has none. Paging walks an offset into postIds instead.
+model FeedSlate {
+  id          String   @id @default(cuid())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String
+  postIds     String[]
+  generatedAt DateTime @default(now())
+  expiresAt   DateTime
+
+  @@index([userId, generatedAt])
+  @@index([expiresAt])
+}
+
+// Negative feedback. Without a correction signal the interest model has no way
+// to be wrong, so this ships with the model, not after it.
+model TopicMute {
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  topicKey  String
+  createdAt DateTime @default(now())
+
+  @@id([userId, topicKey])
 }

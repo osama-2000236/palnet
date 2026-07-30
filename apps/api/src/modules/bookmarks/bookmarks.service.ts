@@ -1,6 +1,7 @@
 import {
   BookmarkType,
   ErrorCode,
+  jobSource,
   type Bookmark as BookmarkDto,
   type CreateBookmarkBody,
   type CursorPageMeta,
@@ -38,9 +39,22 @@ interface BookmarkRow {
     city: string | null;
     locationMode: JobLocationMode;
     type: JobType;
+    // Null for individual-posted work. The rows here are read through an
+    // `as unknown as` cast, so this shape is the only thing standing between a
+    // nullable column and a null-deref at render time — keep it honest.
     company: {
+      id: string;
+      slug: string;
       name: string;
       logoUrl: string | null;
+    } | null;
+    postedBy: {
+      profile: {
+        handle: string;
+        firstName: string;
+        lastName: string;
+        avatarUrl: string | null;
+      } | null;
     };
   } | null;
 }
@@ -74,8 +88,22 @@ const bookmarkInclude = {
       type: true,
       company: {
         select: {
+          id: true,
+          slug: true,
           name: true,
           logoUrl: true,
+        },
+      },
+      postedBy: {
+        select: {
+          profile: {
+            select: {
+              handle: true,
+              firstName: true,
+              lastName: true,
+              avatarUrl: true,
+            },
+          },
         },
       },
     },
@@ -223,16 +251,27 @@ function toBookmarkDto(row: BookmarkRow): BookmarkDto {
   }
 
   if (row.type === BookmarkType.JOB && row.job) {
+    // The business if there is one, else the person who posted it. Shared with
+    // web and mobile so a saved individual-posted job reads the same everywhere.
+    const source = jobSource({
+      company: row.job.company,
+      poster: {
+        handle: row.job.postedBy.profile?.handle ?? "",
+        firstName: row.job.postedBy.profile?.firstName ?? "",
+        lastName: row.job.postedBy.profile?.lastName ?? "",
+        avatarUrl: row.job.postedBy.profile?.avatarUrl ?? null,
+      },
+    });
     return {
       id: row.id,
       type: row.type,
       targetId: row.job.id,
       title: row.job.title,
-      subtitle: row.job.company.name,
+      subtitle: source.name,
       // Enums stay enums here — the client owns their Arabic labels.
       description: null,
       href: `/jobs/${row.job.id}`,
-      imageUrl: row.job.company.logoUrl,
+      imageUrl: source.imageUrl,
       savedAt: row.createdAt.toISOString(),
       jobMeta: {
         city: row.job.city,

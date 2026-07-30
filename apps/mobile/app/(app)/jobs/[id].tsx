@@ -1,7 +1,15 @@
 // Mobile job detail. Hero with company logo + title + meta + apply button.
 // Applied badge flips optimistically on press, rolls back on failure.
 
-import { ApplyToJobBody, Bookmark, BookmarkType, Job as JobSchema, type Job } from "@baydar/shared";
+import {
+  ApplyToJobBody,
+  Bookmark,
+  BookmarkType,
+  Job as JobSchema,
+  jobSource,
+  jobSourceInitial,
+  type Job,
+} from "@baydar/shared";
 import {
   Alert,
   AppHeader,
@@ -141,7 +149,7 @@ export default function JobDetailScreen(): JSX.Element {
     if (!job) return;
     const locale = i18n.language.startsWith("ar") ? "ar-PS" : "en";
     const url = `${WEB_ORIGIN}/${locale}/j/${job.id}`;
-    await Share.share({ message: `${job.title} — ${job.company.name}\n${url}` }).catch(
+    await Share.share({ message: `${job.title} — ${jobSource(job).name}\n${url}` }).catch(
       () => undefined,
     );
   }, [job, i18n.language]);
@@ -168,6 +176,8 @@ export default function JobDetailScreen(): JSX.Element {
     );
   }
 
+  // A job posted by an individual has no company — show the person instead.
+  const source = jobSource(job);
   const metaParts = [
     job.city,
     t(`jobs.locationLabels.${job.locationMode}`),
@@ -192,24 +202,22 @@ export default function JobDetailScreen(): JSX.Element {
         <Surface variant="hero" padding="6">
           <View style={{ flexDirection: "row", gap: nativeTokens.space[3] }}>
             <View style={styles.logoBox}>
-              {job.company.logoUrl ? (
+              {source.imageUrl ? (
                 <Image
-                  source={{ uri: job.company.logoUrl }}
+                  source={{ uri: source.imageUrl }}
                   style={{ width: "100%", height: "100%" }}
                   contentFit="cover"
                   cachePolicy="memory-disk"
                 />
               ) : (
-                <Text style={styles.logoFallback}>
-                  {(job.company.name[0] ?? "?").toUpperCase()}
-                </Text>
+                <Text style={styles.logoFallback}>{jobSourceInitial(source)}</Text>
               )}
             </View>
             <View style={{ flex: 1 }}>
               <Text style={styles.title} numberOfLines={2}>
                 {job.title}
               </Text>
-              <Text style={styles.muted}>{job.company.name}</Text>
+              <Text style={styles.muted}>{source.name}</Text>
               <Text style={[styles.muted, { marginTop: nativeTokens.space[1] }]}>
                 {metaParts.join(" · ")}
               </Text>
@@ -257,7 +265,7 @@ export default function JobDetailScreen(): JSX.Element {
         {applyOpen && !job.viewer.hasApplied ? (
           <ApplyCard
             title={job.title}
-            company={job.company.name}
+            company={source.name}
             coverLetter={coverLetter}
             onChangeCoverLetter={setCoverLetter}
             submitting={submitting}

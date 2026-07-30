@@ -122,3 +122,76 @@ export function normalizeCity(input: string): string {
   );
   return hit ? hit.ar : cleaned;
 }
+
+// ── Governorate + region ───────────────────────────────────────────────────
+// This closes the header's "add a governorate column only if governorate-level
+// filtering is ever needed": craft hiring is hyper-local, so it is needed. Still
+// derived rather than stored — see governorateOfCity below.
+
+/**
+ * Region matters because travel between them is not possible, so a job in the
+ * other one is not a weak match — it is not a match. MATCHING.md §3.
+ */
+export const PsRegion = {
+  WEST_BANK: "WEST_BANK",
+  GAZA: "GAZA",
+} as const;
+export type PsRegion = (typeof PsRegion)[keyof typeof PsRegion];
+
+const GAZA_GOVERNORATES = new Set(["gaza", "khan-younis", "rafah", "deir-al-balah"]);
+
+const GOVERNORATE_BY_FOLDED_CITY = (() => {
+  const index = new Map<string, string>();
+  for (const gov of PS_GOVERNORATES) {
+    for (const city of gov.cities) {
+      index.set(foldArabic(city.ar), gov.key);
+      index.set(city.en.toLowerCase(), gov.key);
+      index.set(city.key, gov.key);
+    }
+  }
+  return index;
+})();
+
+/**
+ * Governorate key for a city string, or null for diaspora / free-text cities.
+ * Derived from PS_GOVERNORATES rather than stored, and a free-text city must
+ * degrade to "no governorate" rather than to a wrong one.
+ *
+ * ponytail: derive-on-read; add Profile.governorate only if the query planner
+ * needs an index on it.
+ */
+export function governorateOfCity(city: string | null | undefined): string | null {
+  if (!city) return null;
+  const cleaned = city.trim().replace(/\s+/g, " ");
+  if (!cleaned) return null;
+  return (
+    GOVERNORATE_BY_FOLDED_CITY.get(foldArabic(cleaned)) ??
+    GOVERNORATE_BY_FOLDED_CITY.get(cleaned.toLowerCase()) ??
+    null
+  );
+}
+
+export function regionOfGovernorate(governorateKey: string | null): PsRegion | null {
+  if (!governorateKey) return null;
+  if (!PS_GOVERNORATES.some((g) => g.key === governorateKey)) return null;
+  return GAZA_GOVERNORATES.has(governorateKey) ? PsRegion.GAZA : PsRegion.WEST_BANK;
+}
+
+/**
+ * Proximity score in [0,1] for matching and feed ranking. Unknown location is
+ * 0.3 — neutral-ish, because a diaspora member applying remotely is plausible
+ * while a wrong-region match is not.
+ */
+export function proximityScore(
+  cityA: string | null | undefined,
+  cityB: string | null | undefined,
+): number {
+  const govA = governorateOfCity(cityA);
+  const govB = governorateOfCity(cityB);
+  if (!govA || !govB) return 0.3;
+  if (govA === govB) return 1;
+  const regionA = regionOfGovernorate(govA);
+  const regionB = regionOfGovernorate(govB);
+  if (regionA !== regionB) return 0;
+  return 0.6;
+}

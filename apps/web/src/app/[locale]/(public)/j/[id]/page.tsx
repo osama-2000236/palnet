@@ -9,7 +9,13 @@
 // endpoint (public cache, no auth) — fetch() memoization dedupes the
 // generateMetadata + page calls into one upstream request per render.
 
-import { PublicJob as PublicJobSchema, formatSalaryRange, type PublicJob } from "@baydar/shared";
+import {
+  PublicJob as PublicJobSchema,
+  formatSalaryRange,
+  type PublicJob,
+  jobSource,
+  jobSourceInitial,
+} from "@baydar/shared";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -36,7 +42,7 @@ export async function generateMetadata(props: {
   const { locale, id } = await props.params;
   const job = await fetchPublicJob(id);
   if (!job) return {};
-  const title = `${job.title} — ${job.company.name}`;
+  const title = `${job.title} — ${jobSource(job).name}`;
   const description = job.description.replace(/\s+/g, " ").slice(0, 160);
   return {
     title,
@@ -111,9 +117,9 @@ export default async function PublicJobPage(props: {
               aria-hidden="true"
               className="bg-brand-100 text-brand-700 flex h-14 w-14 flex-none items-center justify-center overflow-hidden rounded-lg text-xl font-bold"
             >
-              {job.company.logoUrl ? (
+              {jobSource(job).imageUrl ? (
                 <Image
-                  src={job.company.logoUrl}
+                  src={jobSource(job).imageUrl!}
                   alt=""
                   width={56}
                   height={56}
@@ -121,12 +127,12 @@ export default async function PublicJobPage(props: {
                   sizes="56px"
                 />
               ) : (
-                (job.company.name[0] ?? "?").toUpperCase()
+                jobSourceInitial(jobSource(job))
               )}
             </span>
             <div className="min-w-0">
               <h1 className="text-ink font-sans text-2xl font-bold leading-tight">{job.title}</h1>
-              <p className="text-ink-muted mt-1 text-base">{job.company.name}</p>
+              <p className="text-ink-muted mt-1 text-base">{jobSource(job).name}</p>
               <p className="text-ink-muted mt-1 text-sm">{metaParts.join(" · ")}</p>
               {salary ? (
                 <p className="text-brand-700 mt-1 text-sm font-semibold">{salary}</p>

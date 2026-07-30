@@ -1,6 +1,6 @@
 "use client";
 
-import { ApplyToJobBody, type Job } from "@baydar/shared";
+import { ApplyToJobBody, jobSource, type Job } from "@baydar/shared";
 import { Button } from "@baydar/ui-web";
 import { useTranslations } from "next-intl";
 import { useEffect, useId, useRef, useState } from "react";
@@ -89,7 +89,7 @@ export function ApplyDialog({ job, token, onClose, onApplied }: ApplyDialogProps
             {t("applyTitle", { title: job.title })}
           </h2>
           <p id={hintId} className="text-ink-muted mt-1 text-sm">
-            {t("applySubtitle", { company: job.company.name })}
+            {t("applySubtitle", { company: jobSource(job).name })}
           </p>
         </div>
 

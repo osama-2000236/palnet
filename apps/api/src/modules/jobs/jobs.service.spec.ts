@@ -33,6 +33,10 @@ function buildPrisma(): PrismaStub {
   };
 }
 
+// Zod .default() makes these required on the parsed body, so the minimal
+// application is not `{}`.
+const EMPTY_APPLY = { attachedProofIds: [], portfolioPostIds: [] };
+
 describe("JobsService", () => {
   let service: JobsService;
   let prisma: PrismaStub;
@@ -102,6 +106,8 @@ describe("JobsService", () => {
 
       const result = await service.apply("user_1", "job_1", {
         coverLetter: "I can help with React Native and Node.js.",
+        attachedProofIds: [],
+        portfolioPostIds: [],
       });
 
       expect(result).toEqual({ id: "app_1", status: "SUBMITTED" });
@@ -120,7 +126,7 @@ describe("JobsService", () => {
       prisma.job.findFirst.mockResolvedValue({ id: "job_1" });
       prisma.application.findUnique.mockResolvedValue({ id: "app_existing", status: "SUBMITTED" });
 
-      await expect(service.apply("user_1", "job_1", {})).resolves.toEqual({
+      await expect(service.apply("user_1", "job_1", EMPTY_APPLY)).resolves.toEqual({
         id: "app_existing",
         status: "SUBMITTED",
       });
@@ -136,7 +142,7 @@ describe("JobsService", () => {
         status: "SUBMITTED",
       });
 
-      await expect(service.apply("user_1", "job_1", {})).resolves.toEqual({
+      await expect(service.apply("user_1", "job_1", EMPTY_APPLY)).resolves.toEqual({
         id: "app_winner",
         status: "SUBMITTED",
       });
@@ -145,7 +151,7 @@ describe("JobsService", () => {
     it("404s when the job is unavailable", async () => {
       prisma.job.findFirst.mockResolvedValue(null);
 
-      await expect(service.apply("user_1", "job_missing", {})).rejects.toMatchObject({
+      await expect(service.apply("user_1", "job_missing", EMPTY_APPLY)).rejects.toMatchObject({
         code: ErrorCode.NOT_FOUND,
       });
     });

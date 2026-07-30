@@ -6,6 +6,7 @@ export * from "./format";
 export * from "./place";
 export * from "./user-agent";
 export * from "./palestine";
+export * from "./occupations";
 export * from "./profile-completion";
 export * from "./api-client";
 export * from "./sse-retry";
