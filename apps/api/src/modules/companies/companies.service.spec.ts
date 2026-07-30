@@ -298,6 +298,9 @@ describe("CompaniesService", () => {
           country: "PS",
           salaryCurrency: "ILS",
           skillsRequired: [],
+          mustSkills: [],
+          requiresLicence: false,
+          payBasis: "MONTHLY" as const,
           salaryMin: 1000,
           salaryMax: 500,
         }),
@@ -316,6 +319,9 @@ describe("CompaniesService", () => {
         country: "PS",
         salaryCurrency: "ILS",
         skillsRequired: [],
+        mustSkills: [],
+        requiresLicence: false,
+        payBasis: "MONTHLY" as const,
       });
 
       expect(entitlements.assertCanCreateJob).toHaveBeenCalledWith("co_1", expect.anything());

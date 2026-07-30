@@ -259,7 +259,10 @@ export const PS_OCCUPATIONS: readonly PsOccupation[] = [
   o("real-estate-broker", "وسيط عقاري", "Real Estate Broker", "retail"),
   o("admin-assistant", "مساعد إداري", "Administrative Assistant", "office"),
   o("hr-specialist", "أخصائي موارد بشرية", "HR Specialist", "office"),
-  o("pr-specialist", "أخصائي علاقات عامة", "PR Specialist", "office"),
+  // Spelled out, not `pr-specialist`: the RTL lint rule matches `\bpr-` anywhere in a string
+  // literal to catch Tailwind's padding-right, and it cannot tell a taxonomy key from a class.
+  // Widening that rule to allow this one key would blunt a gate CLAUDE.md calls non-negotiable.
+  o("public-relations-specialist", "أخصائي علاقات عامة", "PR Specialist", "office"),
   o("software-developer", "مبرمج تطبيقات", "Software Developer", "tech", ["مبرمج", "مطور"]),
   o("database-developer", "مبرمج قاعدة بيانات", "Database Developer", "tech"),
   o("graphic-designer", "مصمم جرافيك", "Graphic Designer", "design-media", ["مصمم"]),

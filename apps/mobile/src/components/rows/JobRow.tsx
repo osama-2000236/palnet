@@ -1,4 +1,4 @@
-import { type Job } from "@baydar/shared";
+import { jobSource, jobSourceInitial, type Job } from "@baydar/shared";
 import {
   Icon,
   RecordCard,
@@ -30,27 +30,29 @@ export const JobRow = memo(function JobRow({
     t(`jobs.typeLabels.${job.type}`),
   ].filter(Boolean) as string[];
   const saved = job.viewer.bookmarkId !== null;
+  // A job posted by an individual has no company — show the person instead.
+  const source = jobSource(job);
 
   return (
     <RecordCard
       variant="row"
       title={job.title}
-      subtitle={job.company.name}
+      subtitle={source.name}
       meta={metaParts.join(" . ")}
       onPress={() => router.push({ pathname: "/(app)/jobs/[id]", params: { id: job.id } })}
-      accessibilityLabel={`${job.title} - ${job.company.name}`}
+      accessibilityLabel={`${job.title} - ${source.name}`}
       testID={`job-row-${job.id}`}
       leading={
         <View style={styles.logoBox}>
-          {job.company.logoUrl ? (
+          {source.imageUrl ? (
             <Image
-              source={{ uri: job.company.logoUrl }}
+              source={{ uri: source.imageUrl }}
               style={StyleSheet.absoluteFill}
               contentFit="cover"
               cachePolicy="memory-disk"
             />
           ) : (
-            <Text style={styles.logoFallback}>{(job.company.name[0] ?? "?").toUpperCase()}</Text>
+            <Text style={styles.logoFallback}>{jobSourceInitial(source)}</Text>
           )}
         </View>
       }

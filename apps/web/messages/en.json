@@ -657,12 +657,17 @@
     "from": "from",
     "upTo": "up to",
     "typeLabels": {
-      "FULL_TIME": "Full-time",
-      "PART_TIME": "Part-time",
-      "CONTRACT": "Contract",
+      "FULL_TIME": "Full time",
+      "PART_TIME": "Part time",
+      "CONTRACT": "Fixed-term contract",
+      "TEMPORARY": "Temporary",
+      "SEASONAL": "Seasonal",
+      "DAY_LABOR": "Day labour",
+      "PIECE_WORK": "Per job",
+      "APPRENTICESHIP": "Apprenticeship",
       "INTERNSHIP": "Internship",
-      "VOLUNTEER": "Volunteer",
-      "TEMPORARY": "Temporary"
+      "FREELANCE": "Freelance",
+      "VOLUNTEER": "Volunteer"
     },
     "locationLabels": {
       "ONSITE": "On-site",
@@ -684,6 +689,30 @@
       "deleteAria": "Delete alert",
       "createdToast": "Alert created — we'll notify you when a matching job is posted.",
       "errorToast": "Couldn't save the alert. Try again."
+    },
+    "payBasisLabels": {
+      "MONTHLY": "Monthly",
+      "DAILY": "Daily",
+      "HOURLY": "Hourly",
+      "PER_JOB": "Per job",
+      "PER_PIECE": "Per piece",
+      "COMMISSION": "Commission"
+    },
+    "payMinLabels": {
+      "MONTHLY": "Minimum salary",
+      "DAILY": "Minimum day rate",
+      "HOURLY": "Minimum hourly rate",
+      "PER_JOB": "Minimum job price",
+      "PER_PIECE": "Minimum piece price",
+      "COMMISSION": "Minimum commission"
+    },
+    "payMaxLabels": {
+      "MONTHLY": "Maximum salary",
+      "DAILY": "Maximum day rate",
+      "HOURLY": "Maximum hourly rate",
+      "PER_JOB": "Maximum job price",
+      "PER_PIECE": "Maximum piece price",
+      "COMMISSION": "Maximum commission"
     }
   },
   "settings": {

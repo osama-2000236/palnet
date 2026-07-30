@@ -1,6 +1,6 @@
 import {
   ApplicationStatus,
-  CreateJobBody,
+  CreateJobBodyBase,
   CursorPageQuery,
   type CursorPageMeta,
   type EmployerApplicant,
@@ -40,7 +40,7 @@ const ApplicantListQuery = CursorPageQuery.extend({
 });
 type ApplicantListQuery = z.infer<typeof ApplicantListQuery>;
 
-const CreateJobBodyForCompany = CreateJobBody.omit({ companyId: true });
+const CreateJobBodyForCompany = CreateJobBodyBase.omit({ companyId: true });
 
 @ApiTags("companies")
 @ApiBearerAuth()

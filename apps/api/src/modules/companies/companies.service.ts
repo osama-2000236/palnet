@@ -295,6 +295,14 @@ export class CompaniesService {
           salaryMax: body.salaryMax ?? null,
           salaryCurrency: body.salaryCurrency,
           skillsRequired: body.skillsRequired,
+          occupationKey: body.occupationKey ?? null,
+          minStanding: body.minStanding ?? null,
+          requiresLicence: body.requiresLicence,
+          licenceBodyKey: body.licenceBodyKey ?? null,
+          payBasis: body.payBasis,
+          mustSkills: body.mustSkills,
+          startsAt: body.startsAt ? new Date(body.startsAt) : null,
+          durationDays: body.durationDays ?? null,
           expiresAt: body.expiresAt ? new Date(body.expiresAt) : null,
         },
       });
@@ -551,7 +559,10 @@ type JobCounts = { applicantCount: number; shortlistCount: number };
 
 type JobRow = {
   id: string;
-  companyId: string;
+  // Nullable at the DB level for individual-posted work. Every job reaching
+  // this employer-scoped mapper does have a company, but the type follows the
+  // schema rather than the happy path.
+  companyId: string | null;
   title: string;
   type: EmployerJob["type"];
   locationMode: EmployerJob["locationMode"];

@@ -1,6 +1,6 @@
 "use client";
 
-import { formatRelativeTime, type Job } from "@baydar/shared";
+import { formatRelativeTime, type Job, jobSource, jobSourceInitial } from "@baydar/shared";
 import { Badge, Chip, Icon, RecordCardSkeleton, Surface, cx } from "@baydar/ui-web";
 import Image from "next/image";
 import Link from "next/link";
@@ -39,7 +39,9 @@ export function JobListRow({
               <h2 className="bidi-plaintext text-ink truncate text-base font-semibold">
                 {job.title}
               </h2>
-              <p className="bidi-plaintext text-ink-muted truncate text-sm">{job.company.name}</p>
+              <p className="bidi-plaintext text-ink-muted truncate text-sm">
+                {jobSource(job).name}
+              </p>
             </div>
             {/* Salary joins the meta line instead of claiming its own row: on a
                 jobs board these are read as one fact ("Ramallah · hybrid ·
@@ -108,10 +110,16 @@ function CompanyLogo({ job }: { job: Job }): JSX.Element {
       className="bg-surface-sunken text-ink-muted flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-md text-sm font-semibold"
       aria-hidden="true"
     >
-      {job.company.logoUrl ? (
-        <Image src={job.company.logoUrl} alt="" width={48} height={48} className="object-cover" />
+      {jobSource(job).imageUrl ? (
+        <Image
+          src={jobSource(job).imageUrl!}
+          alt=""
+          width={48}
+          height={48}
+          className="object-cover"
+        />
       ) : (
-        (job.company.name[0] ?? "?").toUpperCase()
+        jobSourceInitial(jobSource(job))
       )}
     </div>
   );

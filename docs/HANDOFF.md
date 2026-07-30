@@ -43,7 +43,7 @@ closed before anything is added.
 
 | #   | Gap                                                                                                                                                                                                                                                                                                                                                                                                        | Status                 | Evidence                                                                                                                                                                                                                     |
 | --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | **Two Karama rewards debit points and grant nothing.** `KaramaService.redeem()` has no switch on `body.reward` — it writes a negative ledger row and echoes the reward back. `PREMIUM_30D` works only because billing orchestrates it. `BOOST_APPLICATION` (100 pts) and `FEATURED_PROFILE_7D` (1000 pts) are offered in both clients and grant nothing: no state column exists, and no ranking reads one. | **open — defect**      | `karama.service.ts:152-208`; `billing.service.ts:239`; `me/karama/page.tsx:30,32`; no `boostedUntil`/`featuredUntil` in `schema.prisma`; `jobs.service.ts:114` orders by `createdAt`, `search.service.ts:166` by `updatedAt` |
+| 1   | **Two Karama rewards debit points and grant nothing.** `KaramaService.redeem()` has no switch on `body.reward` — it writes a negative ledger row and echoes the reward back. `PREMIUM_30D` works only because billing orchestrates it. `BOOST_APPLICATION` (100 pts) and `FEATURED_PROFILE_7D` (1000 pts) are offered in both clients and grant nothing: no state column exists, and no ranking reads one. | **open — defect**      | `karama.service.ts:152-208`; `billing.service.ts:239`; `me/karama/page.tsx:30,32`; no `boostedUntil`/`featuredUntil` in `schema.prisma`; `jobs.service.ts:135` orders by `createdAt`, `search.service.ts:166` by `updatedAt` |
 | 2   | **Sign-out never revokes the session.** `POST /auth/logout` exists and sets `revokedAt` correctly; neither client calls it. The refresh token stays valid until expiry, and because `listSessions()` filters `revokedAt: null`, Settings → Security keeps listing the signed-out device as active — the screen states something false.                                                                     | **open — defect**      | `auth.service.ts:126-131,140`; clients only `clearSession()` at `apps/web/src/lib/api.ts:51,59` and `apps/mobile/src/lib/api.ts:73,87`                                                                                       |
 | 3   | **Two-sided ratings: complete backend, zero UI.** `UserRating` model, `CANDIDATE_RATES_EMPLOYER`/`EMPLOYER_RATES_CANDIDATE`, 1–5 + comment, scoped to a job, plus a purpose-built `/summary` endpoint. 0 client files mention it.                                                                                                                                                                          | **open — not started** | `schema.prisma:875-891`; `packages/shared/src/schemas/rating.ts:3-7`; `ratings.controller.ts`                                                                                                                                |
 | 4   | **Company team management: complete backend with RBAC, zero UI.** OWNER/ADMIN/EDITOR guards on four endpoints. Consequence: every employer is a one-person account — a recruiter and a hiring manager cannot share a job.                                                                                                                                                                                  | **open — not started** | `company-members.controller.ts:40-70`; `schema.prisma:642-653`                                                                                                                                                               |
@@ -63,6 +63,43 @@ This is the only item on the list that needs a product decision before code.
 `EmailVerificationToken`, `PasswordResetToken`, `SseStreamToken`, `ProfileSkill`, `ChatRoomMember`.
 All six are token or join tables and correctly server-side. Push registration, job alerts and skill
 endorsements were checked and _are_ wired.
+
+## Occupation platform — phase 1 landed, contracts only
+
+The audience widening described in [`docs/design/OCCUPATIONS.md`](design/OCCUPATIONS.md),
+[`FEED-RANKING.md`](design/FEED-RANKING.md) and [`MATCHING.md`](design/MATCHING.md). Phase 1 of
+`docs/NEXT-SESSION-PROMPT.md` §B12: taxonomy, enums, Zod, schema and migration. **No new UI**, so
+nothing about this is visible to a user yet.
+
+Shipped: `PS_OCCUPATION_FAMILIES` / `PS_OCCUPATIONS` / `normalizeOccupation` / `governorateOfCity`
+in `packages/shared/src/occupations.ts` with a `check:naming` gate over its vocabulary;
+`JobType` +5 values and 2 relabels; `PayBasis`; `CompanyKind`; `Post.isWorkSample`;
+`Profile.acceptingWork` / `servesAtClientSite` / `hasWorkshop`; and **`Job.companyId` is now
+nullable**, which is the change with the widest blast radius.
+
+`jobSource()` in `packages/shared/src/schemas/job.ts` is the single place that decides whether a
+job reads as a business or a person. Every renderer on both platforms goes through it — do not
+re-invent that fallback locally, which is the whole reason it is shared.
+
+Owed, and easy to lose:
+
+- **`search.service.ts` still INNER JOINs `Company`.** A null-`companyId` job is silently missing
+  from job search rather than wrong in it. Harmless only because nothing can create one yet — the
+  composer that posts work without a company is phase 5. Phase 4 owns it; the `ponytail:` comment
+  at the JOIN names why it is not a one-word fix. **Do not ship phase 5 before this.**
+- **Nine models have no engine.** `OccupationClaim`, `WorkProof`, `Standing`, `Vouch`, `Licence`,
+  `PostTopic`, `InterestWeight`, `FeedSlate`, `TopicMute` are created by the migration and read or
+  written by nothing. They are the phase 3–4 data model, front-loaded into one migration. Either
+  those phases land or the tables get dropped; empty tables that outlive their plan are how a
+  schema rots.
+- **Account deletion is a soft delete** (`deletedAt` + anonymize, with a restore grace window), so
+  none of the migration's 15 new foreign keys ever fires its delete rule — 11 `ON DELETE CASCADE`
+  plus 4 `ON DELETE SET NULL` on `WorkProof`'s optional counterparty, job and application refs
+  (all four columns are nullable, so the rule is valid). Nothing leaks today because the tables are
+  empty. Whoever builds the rank engine owns the answer for what a deleted account's `Standing`,
+  `WorkProof` and outbound `Vouch` rows mean.
+- **Craft family keys are still unconfirmed** — `OCCUPATIONS.md` §6 item 5. Keys are forever,
+  Arabic labels are an i18n edit. Needs a tradesperson, not a search engine.
 
 ## Platform upgrade — done, PRs #109–#120
 

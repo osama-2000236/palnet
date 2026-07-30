@@ -48,15 +48,125 @@ export const NotificationType = {
 } as const;
 export type NotificationType = (typeof NotificationType)[keyof typeof NotificationType];
 
+/**
+ * Engagement type — what the working relationship is. The five values added in
+ * 2026-07 exist because JobType was collapsing three orthogonal axes into one
+ * (engagement, time commitment, pay basis) and had no way to say "مياومة".
+ * Pay basis is now `PayBasis`; time commitment stays encoded in FULL_TIME /
+ * PART_TIME, which is only meaningful for salaried work anyway.
+ * docs/design/OCCUPATIONS.md, and NEXT-SESSION-PROMPT.md §B4 for the reasoning.
+ */
 export const JobType = {
   FULL_TIME: "FULL_TIME",
   PART_TIME: "PART_TIME",
   CONTRACT: "CONTRACT",
-  INTERNSHIP: "INTERNSHIP",
-  VOLUNTEER: "VOLUNTEER",
   TEMPORARY: "TEMPORARY",
+  /** موسمي — olive season, planting, Ramadan retail. Recurs, so JobAlert matters. */
+  SEASONAL: "SEASONAL",
+  /** مياومة — day-wage work. The single biggest gap in the original six. */
+  DAY_LABOR: "DAY_LABOR",
+  /** بالمقطوعة — the whole job for one agreed price. The craft default. */
+  PIECE_WORK: "PIECE_WORK",
+  /** تلمذة مهنية — the Ministry of Labour's own term. The ladder's entry ramp. */
+  APPRENTICESHIP: "APPRENTICESHIP",
+  /** تدريب جامعي — relabelled, since «تدريب» now collides with APPRENTICESHIP. */
+  INTERNSHIP: "INTERNSHIP",
+  /** عمل حر */
+  FREELANCE: "FREELANCE",
+  VOLUNTEER: "VOLUNTEER",
 } as const;
 export type JobType = (typeof JobType)[keyof typeof JobType];
+
+/**
+ * What the money is per. `MONTHLY` is the default so every pre-existing Job row
+ * keeps its meaning without a data migration: `salaryMin`/`salaryMax` are a
+ * range *in this basis*.
+ */
+export const PayBasis = {
+  MONTHLY: "MONTHLY",
+  DAILY: "DAILY",
+  HOURLY: "HOURLY",
+  PER_JOB: "PER_JOB",
+  PER_PIECE: "PER_PIECE",
+  COMMISSION: "COMMISSION",
+} as const;
+export type PayBasis = (typeof PayBasis)[keyof typeof PayBasis];
+
+/**
+ * What kind of business a `Company` is. One enum instead of a second model —
+ * Company already carries verified, city, industry, members, jobs and billing.
+ * `EMPLOYER` is the default so existing rows are unchanged.
+ */
+export const CompanyKind = {
+  EMPLOYER: "EMPLOYER",
+  /** مكتب مهني — accounting, audit, law, engineering, consulting, clinics. Leads with its practice licence. */
+  FIRM: "FIRM",
+  SHOP: "SHOP",
+  WORKSHOP: "WORKSHOP",
+  /** منشأة غذائية — bakery, restaurant, kitchen. */
+  FOOD: "FOOD",
+  FARM: "FARM",
+  /** عمل فردي — one person's own business. Profile-shaped, not org-shaped. */
+  SOLO: "SOLO",
+} as const;
+export type CompanyKind = (typeof CompanyKind)[keyof typeof CompanyKind];
+
+/**
+ * A `WorkProof`'s lifecycle. Only `CONFIRMED` counts toward a `Standing`, and
+ * the counterparty — never the worker — moves it there.
+ */
+export const WorkProofStatus = {
+  PENDING: "PENDING",
+  CONFIRMED: "CONFIRMED",
+  DECLINED: "DECLINED",
+  EXPIRED: "EXPIRED",
+  DISPUTED: "DISPUTED",
+} as const;
+export type WorkProofStatus = (typeof WorkProofStatus)[keyof typeof WorkProofStatus];
+
+/** Why a `Standing` row changed. Every transition is auditable. */
+export const StandingReason = {
+  EARNED: "EARNED",
+  VOUCHED: "VOUCHED",
+  FOUNDING: "FOUNDING",
+  SUSPENDED: "SUSPENDED",
+  DEMOTED: "DEMOTED",
+  REINSTATED: "REINSTATED",
+} as const;
+export type StandingReason = (typeof StandingReason)[keyof typeof StandingReason];
+
+/** How a `PostTopic` was derived. Deterministic tagger — FEED-RANKING.md §3. */
+export const TopicSource = {
+  AUTHOR_OCCUPATION: "AUTHOR_OCCUPATION",
+  HASHTAG: "HASHTAG",
+  COMPANY: "COMPANY",
+  TEXT_MATCH: "TEXT_MATCH",
+  GOVERNORATE: "GOVERNORATE",
+} as const;
+export type TopicSource = (typeof TopicSource)[keyof typeof TopicSource];
+
+/**
+ * Behaviour signals that move `InterestWeight`. Message content is deliberately
+ * absent and must stay absent — FEED-RANKING.md §2.
+ */
+export const SignalKind = {
+  POST_EXPAND: "POST_EXPAND",
+  POST_DWELL: "POST_DWELL",
+  LINK_CLICK: "LINK_CLICK",
+  PROFILE_VISIT: "PROFILE_VISIT",
+  SEARCH_QUERY: "SEARCH_QUERY",
+  JOB_APPLY: "JOB_APPLY",
+  NOT_INTERESTED: "NOT_INTERESTED",
+  HIDE_POST: "HIDE_POST",
+} as const;
+export type SignalKind = (typeof SignalKind)[keyof typeof SignalKind];
+
+/** Whether a job requirement is a knockout or a preference — MATCHING.md §2. */
+export const RequirementLevel = {
+  MUST: "MUST",
+  NICE: "NICE",
+} as const;
+export type RequirementLevel = (typeof RequirementLevel)[keyof typeof RequirementLevel];
 
 export const JobLocationMode = {
   ONSITE: "ONSITE",

@@ -30,7 +30,8 @@ export interface AlertableJob {
   city: string | null;
   type: string;
   locationMode: string;
-  companyId: string;
+  // Null when an individual posted the work rather than a business.
+  companyId: string | null;
   postedById: string;
 }
 
@@ -94,10 +95,15 @@ export class JobAlertsService {
         this.prisma.jobAlert.findMany({
           where: { userId: { not: job.postedById } },
         }) as Promise<JobAlertRow[]>,
-        this.prisma.company.findUnique({
-          where: { id: job.companyId },
-          select: { industry: true },
-        }),
+        // An individual-posted job has no company, so it has no industry to
+        // match an `industry` alert against — and that is the correct outcome:
+        // such an alert should not fire on it rather than fire on everything.
+        job.companyId
+          ? this.prisma.company.findUnique({
+              where: { id: job.companyId },
+              select: { industry: true },
+            })
+          : Promise.resolve(null),
       ]);
       if (alerts.length === 0) return;
 

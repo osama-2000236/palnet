@@ -10,6 +10,7 @@ import {
   type ConnectionListItem,
   type Job,
   type Profile,
+  jobSource,
 } from "@baydar/shared";
 import { EmptyState, Surface } from "@baydar/ui-web";
 import Link from "next/link";
@@ -185,7 +186,7 @@ export default function ActivityRoute(): JSX.Element {
                     >
                       <Surface variant="flat" padding="4" className="h-full">
                         <p className="text-ink text-sm font-semibold">{job.title}</p>
-                        <p className="text-ink-muted mt-1 text-sm">{job.company.name}</p>
+                        <p className="text-ink-muted mt-1 text-sm">{jobSource(job).name}</p>
                       </Surface>
                     </Link>
                   </li>

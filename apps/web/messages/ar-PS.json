@@ -659,10 +659,15 @@
     "typeLabels": {
       "FULL_TIME": "دوام كامل",
       "PART_TIME": "دوام جزئي",
-      "CONTRACT": "عقد",
-      "INTERNSHIP": "تدريب",
-      "VOLUNTEER": "تطوع",
-      "TEMPORARY": "مؤقت"
+      "CONTRACT": "عقد محدد المدة",
+      "TEMPORARY": "عمل مؤقت",
+      "SEASONAL": "عمل موسمي",
+      "DAY_LABOR": "مياومة",
+      "PIECE_WORK": "بالمقطوعة",
+      "APPRENTICESHIP": "تلمذة مهنية",
+      "INTERNSHIP": "تدريب جامعي",
+      "FREELANCE": "عمل حر",
+      "VOLUNTEER": "تطوع"
     },
     "locationLabels": {
       "ONSITE": "من المكتب",
@@ -684,6 +689,30 @@
       "deleteAria": "حذف التنبيه",
       "createdToast": "تم إنشاء التنبيه — سنعلمك عند نشر وظيفة مطابقة.",
       "errorToast": "تعذر حفظ التنبيه. حاول مجددًا."
+    },
+    "payBasisLabels": {
+      "MONTHLY": "شهري",
+      "DAILY": "يومي",
+      "HOURLY": "بالساعة",
+      "PER_JOB": "بالمقطوعة",
+      "PER_PIECE": "بالقطعة",
+      "COMMISSION": "بالعمولة"
+    },
+    "payMinLabels": {
+      "MONTHLY": "الحد الأدنى للراتب",
+      "DAILY": "الحد الأدنى لأجر اليوم",
+      "HOURLY": "الحد الأدنى لأجر الساعة",
+      "PER_JOB": "الحد الأدنى لسعر المقطوعة",
+      "PER_PIECE": "الحد الأدنى لسعر القطعة",
+      "COMMISSION": "الحد الأدنى للعمولة"
+    },
+    "payMaxLabels": {
+      "MONTHLY": "الحد الأعلى للراتب",
+      "DAILY": "الحد الأعلى لأجر اليوم",
+      "HOURLY": "الحد الأعلى لأجر الساعة",
+      "PER_JOB": "الحد الأعلى لسعر المقطوعة",
+      "PER_PIECE": "الحد الأعلى لسعر القطعة",
+      "COMMISSION": "الحد الأعلى للعمولة"
     }
   },
   "settings": {

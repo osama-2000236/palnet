@@ -38,10 +38,18 @@ export class RatingsService {
         throw new DomainException(ErrorCode.NOT_FOUND, "Application not found.", 404);
       }
       if (body.context === "EMPLOYER_RATES_CANDIDATE") {
-        const isMember = await this.prisma.companyMember.findFirst({
-          where: { companyId: application.job.companyId, userId: raterId },
-          select: { id: true },
-        });
+        // A job posted by an individual has no company, so there is no
+        // membership to check: the poster is the only party who may rate.
+        // Without this branch a null companyId would widen the check rather
+        // than narrow it.
+        const isMember = application.job.companyId
+          ? await this.prisma.companyMember.findFirst({
+              where: { companyId: application.job.companyId, userId: raterId },
+              select: { id: true },
+            })
+          : application.job.postedById === raterId
+            ? { id: application.job.postedById }
+            : null;
         if (!isMember) {
           throw new DomainException(
             ErrorCode.AUTH_FORBIDDEN,

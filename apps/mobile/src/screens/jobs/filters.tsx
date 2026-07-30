@@ -28,14 +28,10 @@ export const EMPTY_FILTERS: Filters = {
   industry: "",
 };
 
-export const TYPE_VALUES: JobType[] = [
-  JobType.FULL_TIME,
-  JobType.PART_TIME,
-  JobType.CONTRACT,
-  JobType.INTERNSHIP,
-  JobType.VOLUNTEER,
-  JobType.TEMPORARY,
-];
+// Derived, not hand-listed: web's JobFilters maps Object.values(JobType), so a
+// second hardcoded copy here is a drift source — it silently dropped the five
+// engagement types added in 2026-07 while web showed them.
+export const TYPE_VALUES: JobType[] = Object.values(JobType);
 
 export const LOCATION_VALUES: JobLocationMode[] = [
   JobLocationMode.ONSITE,
