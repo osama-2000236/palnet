@@ -1,10 +1,9 @@
 "use client";
 
-import { Message as MessageSchema, type Message } from "@baydar/shared";
+import { Message as MessageSchema, TYPING_POST_THROTTLE_MS, type Message } from "@baydar/shared";
 import { useCallback, type Dispatch, type MutableRefObject, type SetStateAction } from "react";
 
 import { apiCall, apiFetch, ApiRequestError } from "@/lib/api";
-import { TYPING_POST_THROTTLE_MS } from "../_utils";
 
 interface UseRoomMessageSendActionsInput {
   token: string | null;

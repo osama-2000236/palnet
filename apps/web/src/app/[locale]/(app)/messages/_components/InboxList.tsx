@@ -1,12 +1,12 @@
 "use client";
 
-import { type ChatRoom, formatNumber } from "@baydar/shared";
+import { formatNumber, shortTime, type ChatRoom } from "@baydar/shared";
 import { EmptyState, Icon, RoomRow, SearchField, Tab, Tabs } from "@baydar/ui-web";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 
-import { ONLINE_WINDOW_MS, shortTime } from "../_utils";
+import { ONLINE_WINDOW_MS } from "../_utils";
 
 export interface InboxListProps {
   rooms: ChatRoom[];

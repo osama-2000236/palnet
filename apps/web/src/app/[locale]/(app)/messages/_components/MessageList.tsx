@@ -1,6 +1,12 @@
 "use client";
 
-import type { ChatRoom, Message } from "@baydar/shared";
+import {
+  computeStatus,
+  isSameLocalDay,
+  shortTime,
+  type ChatRoom,
+  type Message,
+} from "@baydar/shared";
 import {
   Button,
   EmptyState,
@@ -12,7 +18,7 @@ import {
 import { useTranslations } from "next-intl";
 import { Fragment, type MutableRefObject } from "react";
 
-import { computeStatus, isSameLocalDay, shortDayLabel, shortTime } from "../_utils";
+import { shortDayLabel } from "../_utils";
 
 export interface MessageListProps {
   activeRoom: ChatRoom | null;

@@ -1,6 +1,12 @@
 "use client";
 
-import { type ChatRoom, type Message, type WsChatEvent } from "@baydar/shared";
+import {
+  TYPING_TTL_MS,
+  upsertMessage,
+  type ChatRoom,
+  type Message,
+  type WsChatEvent,
+} from "@baydar/shared";
 import {
   useCallback,
   useEffect,
@@ -10,7 +16,6 @@ import {
 } from "react";
 
 import { apiCall } from "@/lib/api";
-import { TYPING_TTL_MS, upsertMessage } from "../_utils";
 import { useMessagesStream } from "./useMessagesStream";
 
 type TypingByRoom = Record<string, { userId: string; expiresAt: number }>;

@@ -81,3 +81,24 @@ export const apiClient = createApiClient({
 });
 
 export const { apiFetch, apiCall, apiFetchPage, getValidAccessToken } = apiClient;
+
+/**
+ * User-initiated sign-out. Revokes this device's refresh token server-side
+ * before dropping the local copy: `clearSession()` on its own leaves the token
+ * valid until it expires, and Settings → Security keeps listing the device as
+ * active because `listSessions()` filters on `revokedAt: null`.
+ *
+ * Best-effort — a failed revoke must still sign the user out locally, or a
+ * network blip strands them inside an authenticated shell.
+ */
+export async function signOut(): Promise<void> {
+  const token = await getValidAccessToken().catch(() => null);
+  if (token) {
+    await apiCall("/auth/logout", {
+      method: "POST",
+      token,
+      body: { deviceId: getDeviceId() },
+    }).catch(() => undefined);
+  }
+  clearSession();
+}

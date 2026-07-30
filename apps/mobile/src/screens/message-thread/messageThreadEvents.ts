@@ -1,8 +1,13 @@
-import { type ChatRoom, type Message, type WsChatEvent } from "@baydar/shared";
+import {
+  TYPING_TTL_MS,
+  upsertMessage,
+  type ChatRoom,
+  type Message,
+  type WsChatEvent,
+} from "@baydar/shared";
 import type { Dispatch, SetStateAction } from "react";
 
 import { apiCall } from "@/lib/api";
-import { TYPING_TTL_MS, upsertMessage } from "./utils";
 
 export function applyThreadEvent({
   event,

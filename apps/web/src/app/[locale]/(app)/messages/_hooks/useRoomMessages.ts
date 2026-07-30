@@ -1,12 +1,16 @@
 "use client";
 
-import { Message as MessageSchema, type ChatRoom, type Message } from "@baydar/shared";
+import {
+  Message as MessageSchema,
+  upsertMessage,
+  type ChatRoom,
+  type Message,
+} from "@baydar/shared";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { apiCall, apiFetch, ApiRequestError, apiFetchPage } from "@/lib/api";
 
-import { upsertMessage } from "../_utils";
 import { useRoomMessageSendActions } from "./useRoomMessageSendActions";
 import { useRoomMessagesDerived } from "./useRoomMessagesDerived";
 import { useRoomMessagesEvents } from "./useRoomMessagesEvents";

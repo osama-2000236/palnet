@@ -134,32 +134,32 @@ describe("KaramaService", () => {
 
     await expect(
       service.redeem("user-1", {
-        reward: "BOOST_APPLICATION",
+        reward: "PREMIUM_30D",
         idempotencyKey: "k".repeat(16),
       }),
     ).rejects.toMatchObject({ code: ErrorCode.VALIDATION_FAILED });
     expect(tx.user.update).not.toHaveBeenCalled();
   });
 
-  it("redeems boost and writes a negative-delta ledger row", async () => {
+  it("redeems premium and writes a negative-delta ledger row", async () => {
     prisma.karamaLedger.findFirst.mockResolvedValue(null);
-    tx.user.findUnique.mockResolvedValue({ karamaBalance: 300 });
+    tx.user.findUnique.mockResolvedValue({ karamaBalance: 700 });
     tx.user.update.mockResolvedValue({ karamaBalance: 200 });
     tx.karamaLedger.create.mockResolvedValue({ createdAt: new Date("2026-05-15T00:00:00Z") });
 
     const result = await service.redeem("user-1", {
-      reward: "BOOST_APPLICATION",
+      reward: "PREMIUM_30D",
       idempotencyKey: "key1".padEnd(16, "0"),
     });
 
     expect(result.balance).toBe(200);
-    expect(result.reward).toBe("BOOST_APPLICATION");
+    expect(result.reward).toBe("PREMIUM_30D");
     expect(tx.karamaLedger.create).toHaveBeenCalledWith({
       data: expect.objectContaining({
         userId: "user-1",
-        delta: -100,
+        delta: -500,
         balanceAfter: 200,
-        reason: "REDEEM_BOOST_APPLICATION",
+        reason: "REDEEM_PREMIUM",
         refType: "REDEEM",
       }),
     });
@@ -169,7 +169,7 @@ describe("KaramaService", () => {
   // callers with the same key both miss the lookup. The ledger unique picks a
   // winner; the loser must report the winner's balance, not debit again.
   it("returns the winner's outcome when a concurrent replay loses the unique", async () => {
-    tx.user.findUnique.mockResolvedValue({ karamaBalance: 300 });
+    tx.user.findUnique.mockResolvedValue({ karamaBalance: 700 });
     tx.user.update.mockResolvedValue({ karamaBalance: 200 });
     tx.karamaLedger.create.mockRejectedValue(Object.assign(new Error("unique"), { code: "P2002" }));
     // Second call (after the P2002) resolves the winner's row.
@@ -178,7 +178,7 @@ describe("KaramaService", () => {
       .mockResolvedValueOnce({ balanceAfter: 200, createdAt: new Date("2026-05-15T00:00:00Z") });
 
     const result = await service.redeem("user-1", {
-      reward: "BOOST_APPLICATION",
+      reward: "PREMIUM_30D",
       idempotencyKey: "race".padEnd(16, "0"),
     });
 
@@ -199,7 +199,7 @@ describe("KaramaService", () => {
     prisma.karamaLedger.findFirst.mockResolvedValue(previous);
 
     const result = await service.redeem("user-1", {
-      reward: "BOOST_APPLICATION",
+      reward: "PREMIUM_30D",
       idempotencyKey: "key1".padEnd(16, "0"),
     });
 

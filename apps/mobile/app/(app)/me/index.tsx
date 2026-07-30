@@ -8,9 +8,9 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { FieldCover } from "@/components/FieldCover";
 import { ProfileScreenSkeleton } from "@/components/ScreenSkeleton";
-import { apiFetch } from "@/lib/api";
+import { apiFetch, signOut } from "@/lib/api";
 import { apiErrorMessage } from "@/lib/api-errors";
-import { clearSession, getAccessToken } from "@/lib/session";
+import { getAccessToken } from "@/lib/session";
 
 import { Section } from "@/screens/me/Section";
 import { ProfileQuickLinks } from "@/screens/me/ProfileQuickLinks";
@@ -61,7 +61,7 @@ export default function MeScreen(): JSX.Element {
 
   const logout = useCallback(async (): Promise<void> => {
     setLoggingOut(true);
-    await clearSession();
+    await signOut();
     router.replace("/(auth)/login");
   }, []);
 

@@ -56,13 +56,13 @@ from memory.
 
 ## To be built — real gaps
 
-| Gap                                | Detail                                                                                                                                                                                                                                                                   |
-| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `Textarea`, both platforms         | `Input.tsx:10` documents "for multi-line, use `<Textarea>`". It exists in neither barrel; consumers hand-roll a `<textarea>`.                                                                                                                                            |
-| `ProfileHeader`, native            | Web-only. Mobile builds the profile header inline on the screen.                                                                                                                                                                                                         |
-| `Tab` counts, native               | Web's `Tab` takes `count` + `formatCount`; native's does not, because no mobile screen puts a badge on a tab. Adding an unused one to reach parity would be parity theatre — but mobile `/in/[handle]` still shows four tabs to web's five, and that part is a real gap. |
-| `Checkbox` `indeterminate`, native | **Not a gap — settled 2026-07-29.** Web needs it for `/moderation`'s select-all; mobile ships no admin surface and no multi-select list, so native would carry a prop no screen can pass. Add it with the first native screen that selects many rows.                    |
-| `RoomRow` prop shape               | Exists on both, but the shapes have not been diffed since either side last changed. Verify before treating as shared.                                                                                                                                                    |
+| Gap                                | Detail                                                                                                                                                                                                                                                                                                                                                                  |
+| ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Textarea`, both platforms         | `Input.tsx:10` documents "for multi-line, use `<Textarea>`". It exists in neither barrel; consumers hand-roll a `<textarea>`.                                                                                                                                                                                                                                           |
+| `ProfileHeader`, native            | Web-only. Mobile builds the profile header inline on the screen.                                                                                                                                                                                                                                                                                                        |
+| `Tab` counts, native               | **Closed 2026-07-30.** Native's `Tab` takes `count` and native's `Tabs` takes `formatCount`, same contract as web's, and both `/network` strips now render the three connection counts `GET /connections/counts` had been serving to nobody. Zero draws nothing on both. Mobile `/in/[handle]` showing four tabs to web's five is unrelated and still open — see below. |
+| `Checkbox` `indeterminate`, native | **Not a gap — settled 2026-07-29.** Web needs it for `/moderation`'s select-all; mobile ships no admin surface and no multi-select list, so native would carry a prop no screen can pass. Add it with the first native screen that selects many rows.                                                                                                                   |
+| `RoomRow` prop shape               | Exists on both, but the shapes have not been diffed since either side last changed. Verify before treating as shared.                                                                                                                                                                                                                                                   |
 
 ## Shipped in both barrels, mounted by nothing
 
@@ -112,7 +112,8 @@ screens against their web twins. Two gaps found there are screen-level rather
 than component-level:
 
 - `profile-public` renders four tabs on mobile against web's five (no النشاط).
-  Downstream of the native `Tab` count gap above.
+  Not downstream of the `Tab` count gap, which is closed — the fifth tab has no
+  count on either platform. Mobile is missing the activity surface itself.
 - `network` and `me-connections` render the same screen on mobile; web treats
   them as two surfaces.
 

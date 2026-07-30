@@ -1,4 +1,10 @@
-import { type ChatRoom, type Message } from "@baydar/shared";
+import {
+  computeStatus,
+  isSameLocalDay,
+  shortTime,
+  type ChatRoom,
+  type Message,
+} from "@baydar/shared";
 import {
   Button,
   MessageBubble,
@@ -9,7 +15,7 @@ import {
 } from "@baydar/ui-native";
 import { FlatList, Pressable, RefreshControl, Text, View } from "react-native";
 
-import { computeStatus, dayLabel, isSameDay, shortTime } from "./utils";
+import { dayLabel } from "./utils";
 
 export function MessageThreadList({
   listRef,
@@ -180,7 +186,7 @@ function MessageRow({
   const prevSameAuthor = prev && prev.authorId === item.authorId;
   const nextSameAuthor = next && next.authorId === item.authorId;
   const author = memberById.get(item.authorId);
-  const newDay = !prev || !isSameDay(prev.createdAt, item.createdAt);
+  const newDay = !prev || !isSameLocalDay(prev.createdAt, item.createdAt);
 
   return (
     <View style={{ marginTop: prevSameAuthor ? 0 : nativeTokens.space[2] }}>

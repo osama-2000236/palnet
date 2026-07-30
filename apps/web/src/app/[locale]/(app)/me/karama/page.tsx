@@ -5,14 +5,11 @@ import {
   CheckoutSession,
   CheckoutSessionBody,
   KaramaBalance,
-  KaramaReward,
-  KaramaRedeemResult,
+  KARAMA_REWARD_COSTS,
   PaymentMethod,
   PlanCode,
-  RedeemKaramaBody,
   type BillingMe as BillingMeDto,
   type KaramaBalance as KaramaBalanceDto,
-  type KaramaReward as KaramaRewardDto,
   formatNumber,
 } from "@baydar/shared";
 import { Button, Surface } from "@baydar/ui-web";
@@ -23,14 +20,11 @@ import { useCallback, useEffect, useState } from "react";
 
 import { apiFetch, getValidAccessToken } from "@/lib/api";
 
-type RewardKey = "boost" | "premium" | "featured";
 type Notice = { kind: "success" | "error"; text: string };
 
-const REWARDS: { reward: KaramaRewardDto; key: RewardKey; cost: number }[] = [
-  { reward: KaramaReward.BOOST_APPLICATION, key: "boost", cost: 100 },
-  { reward: KaramaReward.PREMIUM_30D, key: "premium", cost: 500 },
-  { reward: KaramaReward.FEATURED_PROFILE_7D, key: "featured", cost: 1000 },
-];
+// One card, because premium is the only reward that grants anything — the two
+// that did not are gone from `KaramaReward` in @baydar/shared.
+const PREMIUM_COST = KARAMA_REWARD_COSTS.PREMIUM_30D;
 
 export default function KaramaPage(): JSX.Element {
   const router = useRouter();
@@ -39,7 +33,7 @@ export default function KaramaPage(): JSX.Element {
   const [balance, setBalance] = useState<KaramaBalanceDto | null>(null);
   const [billingMe, setBillingMe] = useState<BillingMeDto | null>(null);
   const [notice, setNotice] = useState<Notice | null>(null);
-  const [busyReward, setBusyReward] = useState<KaramaRewardDto | null>(null);
+  const [busy, setBusy] = useState(false);
 
   const load = useCallback(async (): Promise<void> => {
     const token = await getValidAccessToken();
@@ -64,47 +58,31 @@ export default function KaramaPage(): JSX.Element {
     void load();
   }, [load]);
 
-  async function redeemPremiumWithPoints(token: string): Promise<void> {
-    const body = CheckoutSessionBody.parse({
-      planCode: PlanCode.USER_PREMIUM,
-      returnUrl: window.location.href,
-      method: PaymentMethod.POINTS,
-    });
-    await apiFetch("/billing/checkout-session", CheckoutSession, {
-      method: "POST",
-      body,
-      token,
-    });
-  }
-
-  async function redeem(reward: KaramaRewardDto): Promise<void> {
+  // Premium is bought through billing checkout, not `POST /karama/redeem`:
+  // billing debits the points itself and is the only thing that can create the
+  // subscription the points pay for.
+  async function redeemPremiumWithPoints(): Promise<void> {
     const token = await getValidAccessToken();
     if (!token) return;
-    setBusyReward(reward);
+    setBusy(true);
     setNotice(null);
     try {
-      if (reward === KaramaReward.PREMIUM_30D) {
-        await redeemPremiumWithPoints(token);
-      } else {
-        const parsed = RedeemKaramaBody.parse({
-          reward,
-          idempotencyKey: `${reward}-${crypto.randomUUID()}`,
-        });
-        await apiFetch("/karama/redeem", KaramaRedeemResult, {
-          method: "POST",
-          body: parsed,
-          token,
-        });
-      }
-      await load();
-      setNotice({
-        kind: "success",
-        text: reward === KaramaReward.PREMIUM_30D ? t("checkoutSuccess") : t("redeemSuccess"),
+      const body = CheckoutSessionBody.parse({
+        planCode: PlanCode.USER_PREMIUM,
+        returnUrl: window.location.href,
+        method: PaymentMethod.POINTS,
       });
+      await apiFetch("/billing/checkout-session", CheckoutSession, {
+        method: "POST",
+        body,
+        token,
+      });
+      await load();
+      setNotice({ kind: "success", text: t("checkoutSuccess") });
     } catch {
       setNotice({ kind: "error", text: t("redeemFailed") });
     } finally {
-      setBusyReward(null);
+      setBusy(false);
     }
   }
 
@@ -139,57 +117,43 @@ export default function KaramaPage(): JSX.Element {
       ) : null}
 
       <section className="grid gap-3 md:grid-cols-3">
-        {REWARDS.map((item) => {
-          const isPremium = item.reward === KaramaReward.PREMIUM_30D;
-          const disabled =
-            !balance ||
-            balance.balance < item.cost ||
-            busyReward !== null ||
-            (isPremium && hasPremium);
-          return (
-            <Surface key={item.reward} as="article" variant="card" padding="4">
-              <div className="flex h-full flex-col gap-3">
-                <div className="flex-1">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <h2 className="text-ink text-base font-semibold">
-                      {t(`rewards.${item.key}.title`)}
-                    </h2>
-                    {isPremium ? (
-                      <span className="border-accent-600 text-accent-700 rounded-full border px-2 py-0.5 text-xs font-semibold">
-                        {t("checkoutBadge")}
-                      </span>
-                    ) : null}
-                  </div>
-                  <p className="text-ink-muted mt-1 text-sm">{t(`rewards.${item.key}.body`)}</p>
-                  <p className="text-brand-700 mt-3 text-sm font-semibold">
-                    <span>{formatNumber(item.cost, locale)}</span> {t("points")}
-                  </p>
-                </div>
-                {isPremium && hasPremium ? (
-                  <p className="text-ink-muted text-sm">
-                    {t("premiumActive")}{" "}
-                    <Link
-                      href={`/${locale}/me/premium`}
-                      className="text-brand-700 focus-visible:outline-hidden font-semibold underline focus-visible:[box-shadow:var(--focus-ring)]"
-                    >
-                      {t("premiumLink")}
-                    </Link>
-                  </p>
-                ) : (
-                  <Button
-                    variant={isPremium ? "primary" : "secondary"}
-                    size="md"
-                    disabled={disabled}
-                    loading={busyReward === item.reward}
-                    onClick={() => void redeem(item.reward)}
-                  >
-                    {t("redeem")}
-                  </Button>
-                )}
+        <Surface as="article" variant="card" padding="4">
+          <div className="flex h-full flex-col gap-3">
+            <div className="flex-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <h2 className="text-ink text-base font-semibold">{t("rewards.premium.title")}</h2>
+                <span className="border-accent-600 text-accent-700 rounded-full border px-2 py-0.5 text-xs font-semibold">
+                  {t("checkoutBadge")}
+                </span>
               </div>
-            </Surface>
-          );
-        })}
+              <p className="text-ink-muted mt-1 text-sm">{t("rewards.premium.body")}</p>
+              <p className="text-brand-700 mt-3 text-sm font-semibold">
+                <span>{formatNumber(PREMIUM_COST, locale)}</span> {t("points")}
+              </p>
+            </div>
+            {hasPremium ? (
+              <p className="text-ink-muted text-sm">
+                {t("premiumActive")}{" "}
+                <Link
+                  href={`/${locale}/me/premium`}
+                  className="text-brand-700 focus-visible:outline-hidden font-semibold underline focus-visible:[box-shadow:var(--focus-ring)]"
+                >
+                  {t("premiumLink")}
+                </Link>
+              </p>
+            ) : (
+              <Button
+                variant="primary"
+                size="md"
+                disabled={!balance || balance.balance < PREMIUM_COST || busy}
+                loading={busy}
+                onClick={() => void redeemPremiumWithPoints()}
+              >
+                {t("redeem")}
+              </Button>
+            )}
+          </div>
+        </Surface>
       </section>
 
       <Surface as="section" variant="flat" padding="6">

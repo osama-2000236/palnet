@@ -3,6 +3,7 @@
 import {
   ChatRoom as ChatRoomSchema,
   Message as MessageSchema,
+  upsertMessage,
   WsChatEvent,
   type ChatRoom,
   type Message,
@@ -22,7 +23,7 @@ import { useNetworkStore } from "@/store/network";
 import { applyThreadEvent, createOptimisticMessage } from "./messageThreadEvents";
 import { useThreadDerived } from "./useThreadDerived";
 import { useTypingIndicator } from "./useTypingIndicator";
-import { MessagesPageEnvelope, upsertMessage } from "./utils";
+import { MessagesPageEnvelope } from "./utils";
 
 export function useMessageThread(roomId: string | undefined) {
   const { t } = useTranslation();
@@ -120,11 +121,8 @@ export function useMessageThread(roomId: string | undefined) {
     setLoadingOlder(true);
     try {
       const qs = new URLSearchParams({ limit: "30", after: nextCursor });
-      const page = await apiFetchPage(
-        `/messaging/rooms/${roomId}/messages?${qs.toString()}`,
-        MessagesPageEnvelope,
-        { token },
-      );
+      const path = `/messaging/rooms/${roomId}/messages?${qs.toString()}`;
+      const page = await apiFetchPage(path, MessagesPageEnvelope, { token });
       const olderAsc = [...page.data].reverse();
       setMessages((prev) => [...olderAsc, ...prev]);
       setNextCursor(page.meta.nextCursor);
