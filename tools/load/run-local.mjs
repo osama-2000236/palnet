@@ -10,10 +10,13 @@ if (!profiles.includes(profileName)) {
 
 const target = process.env.BAYDAR_LOAD_TARGET ?? "http://localhost:4000/api/v1";
 const command = process.platform === "win32" ? "pnpm.cmd" : "pnpm";
+// `dlx`, not a root devDependency: artillery is a large install that four
+// manual profiles reach for and CI never runs. Fetched on demand instead of
+// sitting in every `pnpm install` on every machine and every CI job.
 const result = spawnSync(
   command,
   [
-    "exec",
+    "dlx",
     "artillery",
     "run",
     "tools/load/local.yml",

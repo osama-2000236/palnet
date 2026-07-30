@@ -14,11 +14,11 @@ import { USER_PREMIUM_POINTS_PRICE } from "../billing/pricing";
 import { PrismaService } from "../prisma/prisma.service";
 
 export const KARAMA_BALANCE_CAP = 5000;
-export const KARAMA_DECAY_RATE = 0.01;
-export const KARAMA_DECAY_INACTIVITY_MS = 60 * 24 * 60 * 60 * 1000;
-export const KARAMA_DECAY_REF_TYPE = "monthly-inactivity-decay";
+const KARAMA_DECAY_RATE = 0.01;
+const KARAMA_DECAY_INACTIVITY_MS = 60 * 24 * 60 * 60 * 1000;
+const KARAMA_DECAY_REF_TYPE = "monthly-inactivity-decay";
 
-export const KARAMA_EARN: Record<KaramaReason, number> = {
+const KARAMA_EARN: Record<KaramaReason, number> = {
   PROFILE_COMPLETE: 50,
   ENDORSEMENT: 5,
   VERIFIED_HIRE: 200,
@@ -38,7 +38,7 @@ const REDEEM_COSTS: Record<KaramaReward, { reason: KaramaReason; cost: number }>
   PREMIUM_30D: { reason: "REDEEM_PREMIUM", cost: USER_PREMIUM_POINTS_PRICE },
 };
 
-export interface AwardInput {
+interface AwardInput {
   userId: string;
   reason: KaramaReason;
   delta?: number;

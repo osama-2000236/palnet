@@ -9,12 +9,20 @@
 
 Script: `pnpm lint:tokens` — greps `apps/*/src/**` and `packages/ui-web/src/**` for:
 
-- Hardcoded hex colors (`#[0-9a-f]{3,8}` not in a token file) → fail.
 - Raw `px` values outside spacing scale (except 1px borders) → fail.
 - Physical CSS props (`margin-left`, `padding-right`, `left:`, `right:` in stylesheets) → fail.
 - `bg-blue-*`, `text-slate-*`, `ring-indigo-*` Tailwind defaults → fail.
+- Colour written into a module-scope `StyleSheet.create` on native → fail.
 
-Runs in CI on every PR.
+Hardcoded hex is checked by `pnpm qa:design`, not here: it runs the same
+`hardcodedColors` matcher over every tracked `ts/tsx/js/css/svg/xml`, a strict
+superset of this script's five directories. One rule, one pass.
+
+Script: `pnpm check:tokens` — recompiles `packages/ui-tokens/src/index.ts` and
+re-emits `tokens.css`, failing if the committed file differs. `tokens.css` is
+generated; edit `index.ts` and run `pnpm tokens:build`.
+
+All three run in CI on every PR.
 
 ### 2. Component unit (automated)
 

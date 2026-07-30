@@ -21,7 +21,6 @@ import {
   Sse,
 } from "@nestjs/common";
 import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
-import { SkipThrottle } from "@nestjs/throttler";
 import { Observable } from "rxjs";
 
 import { RequireCompleteProfile } from "../../common/require-complete-profile.decorator";
@@ -90,7 +89,6 @@ export class MessagingController {
   }
 
   @Post("rooms/:id/messages")
-  @SkipThrottle({ default: true })
   @RateLimit("messagingSend")
   async sendMessage(
     @CurrentUser() user: AuthUser,

@@ -1,8 +1,15 @@
 "use client";
 
 import { formatRelativeTime, NotificationType, type Notification } from "@baydar/shared";
-import { Avatar, Button, EmptyState, RecordCardSkeleton, Skeleton, Surface } from "@baydar/ui-web";
-import { Trash2 } from "lucide-react";
+import {
+  Avatar,
+  Button,
+  EmptyState,
+  Icon,
+  RecordCardSkeleton,
+  Skeleton,
+  Surface,
+} from "@baydar/ui-web";
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 
@@ -146,7 +153,7 @@ function NotificationRow({
         disabled={dismissing}
         onClick={() => onDismiss(item)}
       >
-        <Trash2 aria-hidden="true" size={16} strokeWidth={2} />
+        <Icon name="trash" size={16} strokeWidth={2} />
       </button>
     </div>
   );

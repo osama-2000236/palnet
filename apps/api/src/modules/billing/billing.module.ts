@@ -8,7 +8,7 @@ import { BillingService } from "./billing.service";
 import { EmployerEntitlementsService } from "./employer-entitlements.service";
 import { FxService } from "./fx.service";
 import { HyperPayClient } from "./hyperpay.client";
-import { WalletRegistry } from "./wallets/wallet-registry";
+import { WalletRegistry } from "./wallets";
 
 @Module({
   imports: [PrismaModule],

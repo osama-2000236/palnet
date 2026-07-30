@@ -1,7 +1,7 @@
 import { Module } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
 import { APP_FILTER, APP_GUARD } from "@nestjs/core";
-import { ThrottlerGuard, ThrottlerModule } from "@nestjs/throttler";
+import { ThrottlerModule } from "@nestjs/throttler";
 import { LoggerModule } from "nestjs-pino";
 
 import { AllExceptionsFilter } from "./common/exception.filter";
@@ -24,7 +24,7 @@ import { NotificationsModule } from "./modules/notifications/notifications.modul
 import { PostsModule } from "./modules/posts/posts.module";
 import { PrismaModule } from "./modules/prisma/prisma.module";
 import { ProfilesModule } from "./modules/profiles/profiles.module";
-import { RateLimitModule } from "./modules/rate-limit/rate-limit.module";
+import { BaydarThrottlerGuard } from "./modules/rate-limit/rate-limit.guard";
 import { RedisThrottlerStorage } from "./modules/rate-limit/redis-throttler.storage";
 import { RatingsModule } from "./modules/ratings/ratings.module";
 import { ReactionsModule } from "./modules/reactions/reactions.module";
@@ -65,7 +65,6 @@ const defaultThrottleLimit =
     }),
     PrismaModule,
     RedisModule,
-    RateLimitModule,
     HealthModule,
     AuthModule,
     BookmarksModule,
@@ -90,7 +89,7 @@ const defaultThrottleLimit =
     AdminInternalModule,
   ],
   providers: [
-    { provide: APP_GUARD, useClass: ThrottlerGuard },
+    { provide: APP_GUARD, useClass: BaydarThrottlerGuard },
     { provide: APP_FILTER, useClass: AllExceptionsFilter },
   ],
 })

@@ -126,10 +126,6 @@ const OCCUPATION_INDEX = (() => {
   return index;
 })();
 
-export function familyByKey(key: string): PsOccupationFamily | undefined {
-  return FAMILY_BY_KEY.get(key);
-}
-
 export function occupationByKey(key: string): PsOccupation | undefined {
   return OCCUPATION_BY_KEY.get(key);
 }

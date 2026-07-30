@@ -2,12 +2,11 @@
 // Token lint — guards the visual system at the source layer.
 //
 // What it checks (see docs/design/TESTING.md §1):
-//   1. No hardcoded hex colors in .ts/.tsx source.
-//   2. No Tailwind default color scales (bg-blue-*, text-slate-*, ring-indigo-*, …).
+//   1. No Tailwind default color scales (bg-blue-*, text-slate-*, ring-indigo-*, …).
 //      The brand is olive (`brand-*`); accent is terracotta (`accent-*`); status
 //      colors are `danger|success|warning|info`. Anything else is a bug.
-//   3. No physical directional utilities — RTL must use logical (ms/me/ps/pe/start/end).
-//   4. No colour inside a module-scope `StyleSheet.create` (A1.2). That block
+//   2. No physical directional utilities — RTL must use logical (ms/me/ps/pe/start/end).
+//   3. No colour inside a module-scope `StyleSheet.create` (A1.2). That block
 //      evaluates once at import, so any colour written into it is frozen to the
 //      light palette forever. This has to be a *static* check: most of the 31
 //      occurrences found in 2026-07 were masked by an inline `useThemeTokens()`
@@ -15,13 +14,16 @@
 //      effect and no render test could ever see them — they were simply waiting
 //      for someone to reorder a style array.
 //
+// Hard-coded hex is NOT checked here: `qa:design` already runs the same
+// `hardcodedColors` matcher over every tracked ts/tsx/js/css/svg/xml, a strict
+// superset of this file's five directories. Two passes over the same rule in
+// the same CI job is one pass and one stale exemption list.
+//
 // Scope: apps/web/src, apps/mobile/src, packages/ui-web/src.
 // Exits non-zero on any hit. Prints a grep-friendly report.
 
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative, sep } from "node:path";
-
-import { hardcodedColors } from "./hardcoded-color.mjs";
 
 const ROOT = process.cwd();
 const SCAN_DIRS = [
@@ -85,11 +87,6 @@ const paletteRe = new RegExp(
   "g",
 );
 
-// Hex colours come from `hardcodedColors`, shared with `qa:design`. Both gates
-// carried their own copy of the same regex, and both read a PR reference like
-// `#128` in a comment as a three-digit colour — the same bug fixed twice is why
-// it is one tested function now.
-
 // Physical directional classes. The web .eslintrc already catches these but we
 // re-check here so the mobile package is covered too.
 const physicalClassRe = /\b(?:ml-|mr-|pl-|pr-|left-|right-)[\w-/[\]]+|\btext-(?:left|right)\b/g;
@@ -100,14 +97,7 @@ const SKIP_FILE = (p) =>
   p.includes(`${sep}.next${sep}`) ||
   p.includes(`${sep}dist${sep}`) ||
   p.includes(`${sep}.turbo${sep}`) ||
-  p.includes(`${sep}ui-tokens${sep}assets${sep}`) ||
-  // PWA manifest cannot reference Tailwind classes — brand_color / theme_color
-  // must be raw hex by spec. Treat as a sanctioned token consumer.
-  p.endsWith(`${sep}app${sep}manifest.ts`) ||
-  // global-error.tsx renders outside the locale layout's CSS shell, so it
-  // cannot use Tailwind utilities or CSS variables loaded by globals.css.
-  // Inline tokens here mirror canonical values from ui-tokens/tokens.css.
-  p.endsWith(`${sep}app${sep}global-error.tsx`);
+  p.includes(`${sep}ui-tokens${sep}assets${sep}`);
 
 // ───────────────────────────────────────────────────────────────────────────
 
@@ -170,15 +160,6 @@ for (const scanDir of SCAN_DIRS) {
           raw: line,
         });
       }
-      for (const hex of hardcodedColors(line)) {
-        hits.push({
-          rel,
-          line: i + 1,
-          kind: "hex-color",
-          match: hex,
-          raw: line,
-        });
-      }
       for (const m of line.matchAll(physicalClassRe)) {
         hits.push({
           rel,
@@ -207,7 +188,7 @@ for (const scanDir of SCAN_DIRS) {
   }
 }
 
-// -- 4. Frozen colours in module-scope StyleSheet.create ----------------------
+// -- 3. Frozen colours in module-scope StyleSheet.create ----------------------
 for (const dir of ["packages/ui-native/src", "apps/mobile/src", "apps/mobile/app"]) {
   const abs = join(ROOT, dir);
   for (const file of walk(abs)) {

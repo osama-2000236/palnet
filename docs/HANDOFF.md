@@ -205,6 +205,29 @@ Push to `main` runs gate → staging migrate (Neon) → Render staging hook + Ve
 `target=production`. The owner has no Vercel CLI or token locally, so production ships through the
 workflow, never a local push. Pre-flight checklist and rollback: `docs/deployment.md`.
 
+## Ponytail audit 7 — two earlier "cleared" calls were wrong (PR #142)
+
+Recorded so neither gets re-litigated or re-added:
+
+- **Rate limiting is one system now, not two.** An earlier audit cleared the hand-built limiter that
+  ran beside `@nestjs/throttler` on the grounds that only it could produce the app's
+  `DomainException`/`RATE_LIMITED` envelope. Throttler can: `getTracker`, `generateKey` and
+  `throwThrottlingException` are protected overrides. `BaydarThrottlerGuard` is those three;
+  the custom guard, store, module and second Redis Lua script are gone. `@RateLimit("bucket")`
+  still means one shared budget across every handler carrying that bucket — that is what
+  `generateKey` is for, and `media.controller.spec.ts` is the test that fails without it.
+- **`tokens.css` is generated for real now.** It carried a "DO NOT EDIT BY HAND — regenerate with
+  `pnpm tokens:build`" header over 323 lines of hand-synced hex while `tokens:build` was `tsc`.
+  `packages/ui-tokens/scripts/build-tokens.mjs` emits it; `pnpm check:tokens` fails CI on drift.
+  Add tokens in `index.ts`, run `pnpm tokens:build`, commit the regenerated CSS.
+  `tokens.native.ts` is still hand-authored — RN shadows, the tighter mobile type scale and
+  PostScript font names are not derivable — but it references `tokens` for every value it used to
+  restate.
+
+Not removable despite having zero imports: `react-native-reanimated`, `react-native-worklets`,
+`expo-linking`, `@react-navigation/native`. All are declared peers of `expo-router` or
+`@react-navigation/bottom-tabs`.
+
 ## Hard borders
 
 `CLAUDE.md` is law: tokens only, RTL-safe logical CSS, Arabic-first, web↔mobile lockstep,

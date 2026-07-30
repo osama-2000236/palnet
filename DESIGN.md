@@ -181,7 +181,7 @@ Truth: what exists in `packages/ui-web/src/` and `packages/ui-native/src/` today
 | `Badge`                | ✅  | ✅     | count + status pill; replaced 8 hand-rolled recipes        |
 | `Button`               | ✅  | ✅     | [docs/components/Button.md](docs/components/Button.md)     |
 | `Avatar`               | ✅  | ✅     | [docs/components/Avatar.md](docs/components/Avatar.md)     |
-| `Icon`                 | ✅  | ✅     | wraps lucide-react / lucide-react-native                   |
+| `Icon`                 | ✅  | ✅     | own glyph set, no icon dependency; unions kept in lockstep |
 | `Surface`              | ✅  | ✅     | [docs/components/Surface.md](docs/components/Surface.md)   |
 | `Input`                | ✅  | ✅     | shared; `error` / `helper` / `leading` / `trailing`        |
 | `Textarea`             | ✅  | ✅     | web owns `autoGrow`; native wraps `Input multiline`        |
