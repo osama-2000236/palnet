@@ -71,8 +71,12 @@ The audience widening described in [`docs/design/OCCUPATIONS.md`](design/OCCUPAT
 `docs/NEXT-SESSION-PROMPT.md` §B12: taxonomy, enums, Zod, schema and migration. **No new UI**, so
 nothing about this is visible to a user yet.
 
-Shipped: `PS_OCCUPATION_FAMILIES` / `PS_OCCUPATIONS` / `normalizeOccupation` / `governorateOfCity`
-in `packages/shared/src/occupations.ts` with a `check:naming` gate over its vocabulary;
+Shipped: the taxonomy in `packages/shared` with a `check:naming` gate over its vocabulary —
+`PS_OCCUPATION_FAMILIES` / `PS_OCCUPATIONS` / `PS_PROFESSIONAL_BODIES` are the tables in
+`occupations-data.ts`, re-exported from `occupations.ts`, which holds the lookups
+(`normalizeOccupation`, `trackOf`, `standingLabelKey`); `governorateOfCity` /
+`regionOfGovernorate` / `proximityScore` went into `palestine.ts` beside the city list they
+derive from. Three files rather than one because `qa:design` caps a source file at 300 LOC;
 `JobType` +5 values and 2 relabels; `PayBasis`; `CompanyKind`; `Post.isWorkSample`;
 `Profile.acceptingWork` / `servesAtClientSite` / `hasWorkshop`; and **`Job.companyId` is now
 nullable**, which is the change with the widest blast radius.

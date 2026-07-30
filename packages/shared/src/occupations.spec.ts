@@ -1,17 +1,16 @@
 import {
-  governorateOfCity,
   hasStanding,
   normalizeOccupation,
   occupationByKey,
-  proximityScore,
   PS_OCCUPATIONS,
   PS_OCCUPATION_FAMILIES,
   PS_PROFESSIONAL_BODIES,
-  regionOfGovernorate,
   standingLabelKey,
   Track,
   trackOf,
 } from "./occupations";
+// Governorate and region live beside the city list they derive from.
+import { governorateOfCity, proximityScore, regionOfGovernorate } from "./palestine";
 
 describe("occupation taxonomy integrity", () => {
   it("every occupation points at a family that exists", () => {
