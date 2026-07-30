@@ -37,9 +37,9 @@
     "src/tokens.css"
   ],
   "scripts": {
-    "build": "tsc -p tsconfig.json && node scripts/build-tokens.mjs",
+    "build": "tsc -p tsconfig.json && node ../../scripts/build-tokens.mjs",
     "dev": "tsc -p tsconfig.json --watch",
-    "clean": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\"",
+    "clean": "node -e \"for (const p of ['dist','tsconfig.tsbuildinfo']) require('fs').rmSync(p,{recursive:true,force:true})\"",
     "lint": "eslint .",
     "type-check": "tsc --noEmit"
   },

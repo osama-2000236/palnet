@@ -13,7 +13,7 @@
     "dev": "turbo run dev --parallel",
     "lint": "turbo run lint",
     "lint:tokens": "node scripts/lint-tokens.mjs",
-    "check:tokens": "pnpm --filter @baydar/ui-tokens exec tsc -p tsconfig.json && node packages/ui-tokens/scripts/build-tokens.mjs --check",
+    "check:tokens": "pnpm --filter @baydar/ui-tokens exec tsc -p tsconfig.json && node scripts/build-tokens.mjs --check",
     "qa:design": "node scripts/qa-design.mjs",
     "test:gates": "node --test \"scripts/**/*.test.mjs\"",
     "check:i18n": "node scripts/check-i18n-parity.mjs",

@@ -1,10 +1,19 @@
 #!/usr/bin/env node
-// Emit src/tokens.css from src/index.ts.
+// Emit packages/ui-tokens/src/tokens.css from that package's index.ts.
+//
+// Lives here, beside build-brand-icons.mjs, because that is where this repo
+// keeps build and gate scripts — and because it imports the package's `dist/`,
+// which does not exist at lint time and trips import/no-unresolved inside the
+// package's own eslint scope.
 //
 // The header on tokens.css claimed it was generated for months while
 // `tokens:build` was `tsc` and nothing generated anything — so 323 lines of hex
 // were kept in step with index.ts by hand, and the file that says DO NOT EDIT
 // was the only place to edit. This closes that.
+//
+// Reads the COMPILED tokens (`dist/index.js`), so `pnpm --filter @baydar/ui-tokens
+// build` must have run first — that is exactly what `tokens:build` and
+// `check:tokens` do before invoking this.
 //
 // `--check` re-emits into memory and diffs, so CI fails on drift instead of
 // rewriting a tracked file mid-build.
@@ -19,9 +28,9 @@ import { fileURLToPath } from "node:url";
 
 import { format, resolveConfig } from "prettier";
 
-import { tokens } from "../dist/index.js";
+import { tokens } from "../packages/ui-tokens/dist/index.js";
 
-const OUT = fileURLToPath(new URL("../src/tokens.css", import.meta.url));
+const OUT = fileURLToPath(new URL("../packages/ui-tokens/src/tokens.css", import.meta.url));
 
 const { color, dark } = tokens;
 
