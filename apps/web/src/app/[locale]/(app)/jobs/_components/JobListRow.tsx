@@ -33,7 +33,7 @@ export function JobListRow({
           href={`/jobs/${job.id}`}
           className="focus-visible:outline-hidden flex min-w-0 flex-1 items-start gap-3 rounded-md focus-visible:[box-shadow:var(--focus-ring)]"
         >
-          <CompanyLogo job={job} />
+          <SourceLogo job={job} />
           <div className="min-w-0 flex-1">
             <div className="min-w-0">
               <h2 className="bidi-plaintext text-ink truncate text-base font-semibold">
@@ -104,7 +104,7 @@ export function JobListRow({
   );
 }
 
-function CompanyLogo({ job }: { job: Job }): JSX.Element {
+function SourceLogo({ job }: { job: Job }): JSX.Element {
   return (
     <div
       className="bg-surface-sunken text-ink-muted flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-md text-sm font-semibold"

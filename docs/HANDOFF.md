@@ -102,6 +102,15 @@ Owed, and easy to lose:
   (all four columns are nullable, so the rule is valid). Nothing leaks today because the tables are
   empty. Whoever builds the rank engine owns the answer for what a deleted account's `Standing`,
   `WorkProof` and outbound `Vouch` rows mean.
+- **`payBasis` has copy but no display, and no writer.** `jobs.payBasisLabels` / `payMinLabels` /
+  `payMaxLabels` are in all four catalogs and read by nothing, deliberately: §B11 wants every
+  label to be an i18n key from commit one so the Arabic register reviewer can work ahead of the
+  UI. But `formatSalaryRange()` takes no basis, so a `DAY_LABOR` job's "150 ILS" would read as a
+  monthly salary. Unreachable today — no form sends `payBasis`, so every row is `MONTHLY` and a
+  suffix would never render. **Phase 2 owns both halves:** whatever adds the basis control to the
+  employer job form must also append the basis at the four `formatSalaryRange` call sites
+  (`jobs/page.tsx`, `jobs/[id]`, `company/[slug]`, public `j/[id]`) — and note mobile renders no
+  salary at all yet, so lockstep there is a new surface, not an edit.
 - **Craft family keys are still unconfirmed** — `OCCUPATIONS.md` §6 item 5. Keys are forever,
   Arabic labels are an i18n edit. Needs a tradesperson, not a search engine.
 
