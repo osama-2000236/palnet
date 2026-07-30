@@ -442,7 +442,6 @@
     "balance": "Balance",
     "cap": "Cap",
     "loadFailed": "Could not load Karama balance.",
-    "redeemSuccess": "Reward redeemed.",
     "checkoutSuccess": "Premium activated with Karama Points.",
     "checkoutBadge": "Points checkout",
     "points": "points",
@@ -451,17 +450,9 @@
     "recent": "Recent activity",
     "recentEmpty": "No recent Karama activity.",
     "rewards": {
-      "boost": {
-        "title": "Boost application",
-        "body": "Top of employer inbox for 48 hours."
-      },
       "premium": {
         "title": "Premium month",
         "body": "Unlock premium profile visibility for 30 days."
-      },
-      "featured": {
-        "title": "Featured profile",
-        "body": "Pin your profile in skill search for 7 days."
       }
     },
     "reasons": {

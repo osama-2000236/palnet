@@ -32,10 +32,10 @@ export const KARAMA_EARN: Record<KaramaReason, number> = {
   ADJUSTMENT: 0,
 };
 
+// One entry, because premium is the only reward that grants anything — see
+// `KaramaReward` in @baydar/shared for the two that were withdrawn.
 const REDEEM_COSTS: Record<KaramaReward, { reason: KaramaReason; cost: number }> = {
-  BOOST_APPLICATION: { reason: "REDEEM_BOOST_APPLICATION", cost: 100 },
   PREMIUM_30D: { reason: "REDEEM_PREMIUM", cost: USER_PREMIUM_POINTS_PRICE },
-  FEATURED_PROFILE_7D: { reason: "REDEEM_FEATURED_PROFILE", cost: 1000 },
 };
 
 export interface AwardInput {

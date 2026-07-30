@@ -15,12 +15,32 @@ export const KaramaReason = {
 } as const;
 export type KaramaReason = (typeof KaramaReason)[keyof typeof KaramaReason];
 
+/**
+ * What points can actually be spent on.
+ *
+ * `BOOST_APPLICATION` (100 pts) and `FEATURED_PROFILE_7D` (1000 pts) were
+ * priced, offered on both clients, and granted nothing: `redeem()` wrote the
+ * negative ledger row, no column recorded the grant and no ranking pass read
+ * one — and `RedeemKaramaBody` has no target field, so "boost application"
+ * could not even say *which* application. Withdrawn rather than left charging
+ * for nothing; they come back when a column and a ranking read exist.
+ *
+ * `KaramaReason` deliberately keeps `REDEEM_BOOST_APPLICATION` and
+ * `REDEEM_FEATURED_PROFILE`: ledger rows written before this must stay
+ * readable, and the Prisma enum still has both.
+ */
 export const KaramaReward = {
-  BOOST_APPLICATION: "BOOST_APPLICATION",
   PREMIUM_30D: "PREMIUM_30D",
-  FEATURED_PROFILE_7D: "FEATURED_PROFILE_7D",
 } as const;
 export type KaramaReward = (typeof KaramaReward)[keyof typeof KaramaReward];
+
+/**
+ * Points price per reward — the one copy. Both clients used to hardcode 500
+ * next to a server constant that could change without them.
+ */
+export const KARAMA_REWARD_COSTS: Record<KaramaReward, number> = {
+  PREMIUM_30D: 500,
+};
 
 export const KaramaLedgerEntry = z.object({
   id: z.string().cuid(),
