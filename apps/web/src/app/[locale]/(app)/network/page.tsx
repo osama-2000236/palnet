@@ -1,7 +1,9 @@
 "use client";
 
 import {
+  ConnectionCounts,
   ConnectionListItem as ConnectionListItemSchema,
+  type ConnectionCounts as ConnectionCountsDto,
   type ConnectionListItem,
 } from "@baydar/shared";
 import {
@@ -13,6 +15,8 @@ import {
   Skeleton,
   staggerDelay,
   Surface,
+  Tab,
+  Tabs,
 } from "@baydar/ui-web";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -22,6 +26,7 @@ import { z } from "zod";
 
 import { apiFetch, getValidAccessToken } from "@/lib/api";
 import { readSession } from "@/lib/session";
+import { useCountFormatter } from "../useAppShellLabels";
 
 const ListEnvelope = z.array(ConnectionListItemSchema);
 type Filter = "ACCEPTED" | "INCOMING" | "OUTGOING";
@@ -30,8 +35,10 @@ const Raw = z.object({}).passthrough();
 export default function NetworkRoute(): JSX.Element {
   const router = useRouter();
   const t = useTranslations("network");
+  const formatCount = useCountFormatter();
   const [filter, setFilter] = useState<Filter>("ACCEPTED");
   const [items, setItems] = useState<ConnectionListItem[]>([]);
+  const [counts, setCounts] = useState<ConnectionCountsDto | null>(null);
   const [loading, setLoading] = useState(false);
 
   const load = useCallback(async (f: Filter): Promise<void> => {
@@ -39,13 +46,27 @@ export default function NetworkRoute(): JSX.Element {
     if (!token) return;
     setLoading(true);
     try {
-      const data = await apiFetch(`/connections?filter=${f}`, ListEnvelope, {
-        token,
-      });
+      // Counts alongside the list, not derived from it: this response holds one
+      // filter, and the strip labels all three. A failed count must not fail
+      // the screen, so the tabs just go back to bare labels.
+      const [data, nextCounts] = await Promise.all([
+        apiFetch(`/connections?filter=${f}`, ListEnvelope, { token }),
+        apiFetch("/connections/counts", ConnectionCounts, { token }).catch(() => null),
+      ]);
       setItems(data);
+      setCounts(nextCounts);
     } finally {
       setLoading(false);
     }
+  }, []);
+
+  // Every mutation below moves a row between two of the three tabs, so the
+  // strip is stale the moment one lands. Re-reading the counts is one request;
+  // re-reading the list would flash the rows that did not move.
+  const refreshCounts = useCallback(async (): Promise<void> => {
+    const token = await getValidAccessToken();
+    if (!token) return;
+    setCounts(await apiFetch("/connections/counts", ConnectionCounts, { token }).catch(() => null));
   }, []);
 
   useEffect(() => {
@@ -57,6 +78,16 @@ export default function NetworkRoute(): JSX.Element {
     void load(filter);
   }, [router, filter, load]);
 
+  // One place: every mutation drops the row from the open list and re-reads the
+  // strip, because the row it dropped landed in another tab.
+  const dropRow = useCallback(
+    (id: string): void => {
+      setItems((prev) => prev.filter((x) => x.connectionId !== id));
+      void refreshCounts();
+    },
+    [refreshCounts],
+  );
+
   async function respond(id: string, action: "ACCEPT" | "DECLINE"): Promise<void> {
     const token = await getValidAccessToken();
     if (!token) return;
@@ -65,7 +96,7 @@ export default function NetworkRoute(): JSX.Element {
       token,
       body: { action },
     });
-    setItems((prev) => prev.filter((x) => x.connectionId !== id));
+    dropRow(id);
   }
 
   async function withdraw(id: string): Promise<void> {
@@ -75,7 +106,7 @@ export default function NetworkRoute(): JSX.Element {
       method: "POST",
       token,
     });
-    setItems((prev) => prev.filter((x) => x.connectionId !== id));
+    dropRow(id);
   }
 
   async function remove(id: string): Promise<void> {
@@ -85,24 +116,29 @@ export default function NetworkRoute(): JSX.Element {
       method: "DELETE",
       token,
     });
-    setItems((prev) => prev.filter((x) => x.connectionId !== id));
+    dropRow(id);
   }
 
   return (
     <main className="mx-auto flex w-full max-w-[840px] flex-col gap-4 px-6 py-8">
       <h1 className="text-ink text-3xl font-bold">{t("title")}</h1>
 
-      <nav className="flex gap-2">
-        <FilterTab active={filter === "ACCEPTED"} onClick={() => setFilter("ACCEPTED")}>
+      <Tabs
+        value={filter}
+        onChange={(next) => setFilter(next as Filter)}
+        label={t("title")}
+        formatCount={formatCount}
+      >
+        <Tab value="ACCEPTED" count={counts?.accepted}>
           {t("myConnections")}
-        </FilterTab>
-        <FilterTab active={filter === "INCOMING"} onClick={() => setFilter("INCOMING")}>
+        </Tab>
+        <Tab value="INCOMING" count={counts?.incoming}>
           {t("invitations")}
-        </FilterTab>
-        <FilterTab active={filter === "OUTGOING"} onClick={() => setFilter("OUTGOING")}>
+        </Tab>
+        <Tab value="OUTGOING" count={counts?.outgoing}>
           {t("sent")}
-        </FilterTab>
-      </nav>
+        </Tab>
+      </Tabs>
 
       {loading ? (
         <Surface variant="flat" padding="0" aria-busy="true">
@@ -201,30 +237,6 @@ const EMPTY_STATE_COPY = {
     body: "emptyOutgoingBody",
   },
 } as const satisfies Record<Filter, { title: string; body: string }>;
-
-function FilterTab({
-  active,
-  onClick,
-  children,
-}: {
-  active: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}): JSX.Element {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={
-        active
-          ? "bg-brand-600 text-ink-inverse focus-visible:outline-hidden rounded-md px-4 py-1.5 text-sm font-semibold focus-visible:[box-shadow:var(--focus-ring)]"
-          : "border-ink-muted/30 text-ink hover:bg-ink-muted/5 focus-visible:outline-hidden rounded-md border px-4 py-1.5 text-sm focus-visible:[box-shadow:var(--focus-ring)]"
-      }
-    >
-      {children}
-    </button>
-  );
-}
 
 function ConnectionRowSkeleton(): JSX.Element {
   return (

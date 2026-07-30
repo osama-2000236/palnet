@@ -1,10 +1,10 @@
 // Tabs — native twin of packages/ui-web/src/Tabs.tsx.
 //
 // Was `SegmentedControl`, with `items`/`selectedKey`/`onChange` against web's
-// `value`/`onChange` and `<Tab>` children. That rename converged the API; this
-// is the visual half it deliberately left owed, tracked in
-// docs/design/PARITY.md: DESIGN.md §6.3 specifies a `brand-600` underline with
-// an `ink` label, and this control was still drawing the filled pill strip.
+// `value`/`onChange` and `<Tab>` children. That rename converged the API, and
+// the visual half it left owed is paid: DESIGN.md §6.3's `brand-600` underline
+// under an `ink` label, verified on device (docs/HANDOFF.md), not the filled
+// pill strip this control used to draw.
 //
 // Two things carried over from web's twin rather than re-derived, because both
 // are bugs it already hit and fixed:
@@ -18,8 +18,9 @@
 //     *between* the rows, reading as an overline on whichever tab fell under
 //     it. One row that scrolls is what web settled on.
 //
-// No `count` prop: web's tabs carry unread badges and no native screen does.
-// Adding an unused badge to reach prop parity would be parity theatre.
+// `count` matches web's, including the injected `formatCount`: without it a
+// count renders as Latin digits inside an Arabic-Indic UI, and this package may
+// not import @baydar/shared (CLAUDE.md, "shared UI is framework-neutral").
 
 import type { ReactNode } from "react";
 import { createContext, useContext } from "react";
@@ -39,6 +40,7 @@ import { nativeTokens } from "./tokens";
 interface TabsCtx {
   value: string;
   onChange(next: string): void;
+  formatCount(n: number): string;
 }
 const Ctx = createContext<TabsCtx | null>(null);
 
@@ -48,14 +50,24 @@ export interface TabsProps {
   children: ReactNode;
   /** Names the tab strip for assistive tech, matching web's `label`. */
   label?: string;
+  /** Locale-aware number formatter for tab counts. Same contract as web's. */
+  formatCount?: (n: number) => string;
   style?: StyleProp<ViewStyle>;
   testID?: string;
 }
 
-export function Tabs({ value, onChange, children, label, style, testID }: TabsProps): JSX.Element {
+export function Tabs({
+  value,
+  onChange,
+  children,
+  label,
+  formatCount = String,
+  style,
+  testID,
+}: TabsProps): JSX.Element {
   const c = useThemeTokens().color;
   return (
-    <Ctx.Provider value={{ value, onChange }}>
+    <Ctx.Provider value={{ value, onChange, formatCount }}>
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -76,28 +88,45 @@ export function Tabs({ value, onChange, children, label, style, testID }: TabsPr
 export interface TabProps {
   value: string;
   children: ReactNode;
+  /** Hidden at 0, like web's — a "0" badge is noise, not information. */
+  count?: number;
   accessibilityLabel?: string;
   testID?: string;
 }
 
-export function Tab({ value, children, accessibilityLabel, testID }: TabProps): JSX.Element {
+export function Tab({ value, children, count, accessibilityLabel, testID }: TabProps): JSX.Element {
   const ctx = useContext(Ctx);
   if (!ctx) throw new Error("<Tab> must be used inside <Tabs>");
   const c = useThemeTokens().color;
   const selected = ctx.value === value;
+  const hasCount = typeof count === "number" && count > 0;
+  const label = typeof children === "string" ? children : value;
 
   return (
     <Pressable
       testID={testID}
       accessibilityRole="tab"
-      accessibilityLabel={accessibilityLabel ?? (typeof children === "string" ? children : value)}
+      // The badge is decorative for a screen reader on web (`aria-hidden`);
+      // RN has no such split inside a Pressable, so the count joins the label.
+      accessibilityLabel={
+        accessibilityLabel ?? (hasCount ? `${label} (${ctx.formatCount(count)})` : label)
+      }
       accessibilityState={{ selected }}
       onPress={() => ctx.onChange(value)}
       style={({ pressed }) => [styles.item, pressed ? styles.itemPressed : null]}
     >
-      <Text numberOfLines={1} style={[styles.label, { color: selected ? c.ink : c.inkMuted }]}>
-        {children}
-      </Text>
+      <View style={styles.labelRow}>
+        <Text numberOfLines={1} style={[styles.label, { color: selected ? c.ink : c.inkMuted }]}>
+          {children}
+        </Text>
+        {hasCount ? (
+          <View style={[styles.badge, { backgroundColor: selected ? c.brand50 : c.surfaceSubtle }]}>
+            <Text style={[styles.badgeText, { color: selected ? c.brand700 : c.inkMuted }]}>
+              {ctx.formatCount(count)}
+            </Text>
+          </View>
+        ) : null}
+      </View>
       <View
         style={[styles.indicator, { backgroundColor: selected ? c.brand600 : "transparent" }]}
       />
@@ -126,13 +155,31 @@ const styles = StyleSheet.create({
   itemPressed: {
     opacity: 0.85,
   },
-  label: {
+  labelRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: nativeTokens.space[2],
+    // The vertical padding lives here, not on the label: with a badge beside
+    // it, padding on the text alone stops centring the two against each other.
     paddingVertical: nativeTokens.space[3],
+  },
+  label: {
     fontFamily: nativeTokens.type.family.sans,
     fontSize: nativeTokens.type.scale.small.size,
     lineHeight: nativeTokens.type.scale.small.line,
     // 600 not 500: only 400/600/700 of IBMPlexSansArabic are registered in
     // apps/mobile/app/_layout.tsx, so 500 synthesises.
+    fontWeight: "600",
+  },
+  badge: {
+    borderRadius: nativeTokens.radius.full,
+    paddingHorizontal: nativeTokens.space[2],
+    paddingVertical: nativeTokens.space[0],
+  },
+  badgeText: {
+    fontFamily: nativeTokens.type.family.sans,
+    fontSize: nativeTokens.type.scale.micro.size,
+    lineHeight: nativeTokens.type.scale.caption.line,
     fontWeight: "600",
   },
   indicator: {

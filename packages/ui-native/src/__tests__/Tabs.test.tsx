@@ -45,3 +45,26 @@ it("leaves an unselected tab ink-muted with no underline", () => {
   expect(labelColor("نبذة")).toBe(nativeTokens.color.inkMuted);
   expect(underlineColor("نبذة")).toBe("transparent");
 });
+
+// The count goes through the injected formatter for the same reason web's does:
+// this package cannot import @baydar/shared, and an unformatted count renders
+// Latin digits inside an Arabic-Indic UI. A zero draws nothing — a "٠" badge is
+// noise, not information — and the badge is inside the Pressable, so the count
+// has to reach the accessibility label or a screen reader never hears it.
+it("formats a non-zero count through the injected formatter and announces it", () => {
+  render(
+    <Tabs value="incoming" onChange={() => {}} formatCount={(n) => `[${n}]`}>
+      <Tab value="incoming" count={12}>
+        الدعوات
+      </Tab>
+      <Tab value="sent" count={0}>
+        المرسلة
+      </Tab>
+    </Tabs>,
+  );
+
+  expect(screen.getByText("[12]")).toBeTruthy();
+  expect(screen.getByLabelText("الدعوات ([12])")).toBeTruthy();
+  expect(screen.queryByText("[0]")).toBeNull();
+  expect(screen.getByLabelText("المرسلة")).toBeTruthy();
+});

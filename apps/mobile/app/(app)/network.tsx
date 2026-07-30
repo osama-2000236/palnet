@@ -1,5 +1,8 @@
 import {
+  ConnectionCounts,
   ConnectionListItem as ConnectionListItemSchema,
+  formatNumber,
+  type ConnectionCounts as ConnectionCountsDto,
   type ConnectionListItem,
 } from "@baydar/shared";
 import {
@@ -32,9 +35,10 @@ const Raw = z.object({}).passthrough();
 export default function NetworkScreen(): JSX.Element {
   const c = useThemeTokens().color;
   const styles = useStyles();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [filter, setFilter] = useState<NetworkFilter>("ACCEPTED");
   const [items, setItems] = useState<ConnectionListItem[]>([]);
+  const [counts, setCounts] = useState<ConnectionCountsDto | null>(null);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -44,16 +48,23 @@ export default function NetworkScreen(): JSX.Element {
       {
         key: "ACCEPTED" as const,
         label: t("network.myConnections"),
+        count: counts?.accepted,
         testID: "network-filter-accepted",
       },
       {
         key: "INCOMING" as const,
         label: t("network.invitations"),
+        count: counts?.incoming,
         testID: "network-filter-incoming",
       },
-      { key: "OUTGOING" as const, label: t("network.sent"), testID: "network-filter-outgoing" },
+      {
+        key: "OUTGOING" as const,
+        label: t("network.sent"),
+        count: counts?.outgoing,
+        testID: "network-filter-outgoing",
+      },
     ],
-    [t],
+    [t, counts],
   );
 
   const load = useCallback(
@@ -63,10 +74,15 @@ export default function NetworkScreen(): JSX.Element {
       setLoading(true);
       setError(null);
       try {
-        const data = await apiFetch(`/connections?filter=${f}`, ListEnvelope, {
-          token,
-        });
+        // Counts alongside the list, not derived from it: this response holds
+        // one filter, and the strip labels all three. A failed count must not
+        // fail the screen, so the tabs just go back to bare labels.
+        const [data, nextCounts] = await Promise.all([
+          apiFetch(`/connections?filter=${f}`, ListEnvelope, { token }),
+          apiFetch("/connections/counts", ConnectionCounts, { token }).catch(() => null),
+        ]);
         setItems(data);
+        setCounts(nextCounts);
       } catch (caught) {
         setError(apiErrorMessage(t, caught));
       } finally {
@@ -102,6 +118,15 @@ export default function NetworkScreen(): JSX.Element {
       setError(null);
       try {
         await mutation();
+        // Every mutation here moves a row between two of the three tabs, so the
+        // strip is stale the moment one lands. Re-reading the counts is one
+        // request; re-reading the list would flash the rows that did not move.
+        const token = await getAccessToken();
+        if (token) {
+          setCounts(
+            await apiFetch("/connections/counts", ConnectionCounts, { token }).catch(() => null),
+          );
+        }
       } finally {
         setPendingIds((prev) => {
           const next = new Set(prev);
@@ -176,11 +201,12 @@ export default function NetworkScreen(): JSX.Element {
         <Tabs
           value={filter}
           onChange={(key) => setFilter(key as NetworkFilter)}
+          formatCount={(value) => formatNumber(value, i18n.language)}
           style={styles.tabs}
           testID="network-filter-tabs"
         >
           {filterItems.map((item) => (
-            <Tab key={item.key} value={item.key} testID={item.testID}>
+            <Tab key={item.key} value={item.key} count={item.count} testID={item.testID}>
               {item.label}
             </Tab>
           ))}

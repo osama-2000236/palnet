@@ -48,6 +48,16 @@ export const ConnectionListItem = z.object({
 });
 export type ConnectionListItem = z.infer<typeof ConnectionListItem>;
 
+// Counts behind the /network tab strip. Not derivable client-side: the lists
+// are fetched one filter at a time, so a tab can only show its own count by
+// loading the other two.
+export const ConnectionCounts = z.object({
+  accepted: z.number().int().nonnegative(),
+  incoming: z.number().int().nonnegative(),
+  outgoing: z.number().int().nonnegative(),
+});
+export type ConnectionCounts = z.infer<typeof ConnectionCounts>;
+
 // A single "people you may know" row — the lightweight projection used by the
 // feed right rail and the /network suggestions tab. Reuses ConnectionUser so
 // both web and (Sprint 5) mobile consume the same shape.
