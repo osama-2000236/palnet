@@ -19,12 +19,50 @@ transport. The dependency stack is current (see the upgrade section below). What
 this and real users is not code — it is the provisioning below, plus evidence nobody has
 gathered yet.
 
+**With two exceptions, and two live defects** — see "Open product gaps" below. Two whole features
+are built and tested server-side with no UI on either platform, and two Karama rewards debit a real
+balance and grant nothing. None of that is visible from the spec, the gates, or the route trees,
+which is why it survived this long.
+
 The round-2 review (`review/opus5-round-2`, 2026-07-25) closed three P1s that no gate could have
 caught: Karama points could be minted by toggling an application's hire status, the points
 checkout could be charged twice, and web SSE never reconnected after any dropped connection.
 Findings and corrections: [`docs/audit/OPUS5-ROUND2-2026-07-25.md`](audit/OPUS5-ROUND2-2026-07-25.md).
 Screen scores: [`docs/audit/OPUS5-RUBRIC-2026-07-25.md`](audit/OPUS5-RUBRIC-2026-07-25.md).
 Arabic copy review list: [`docs/audit/ARABIC-REGISTER-2026-07-25.md`](audit/ARABIC-REGISTER-2026-07-25.md).
+
+## Open product gaps
+
+Found by scanning all 143 routes in `apps/api/src/modules/api-route-coverage.spec.ts` against every
+client source tree, not by reading the spec. **Re-verified against `main` @ `c8248a7` on 2026-07-30:
+all nine are still open** — PRs #127–#138 closed the design-system drift, not these. Nothing here is
+started; none has a branch.
+
+Ordered by damage, not by effort. The first two are defects, not missing features — they should be
+closed before anything is added.
+
+| #   | Gap                                                                                                                                                                                                                                                                                                                                                                                                        | Status                 | Evidence                                                                                                                                                                                                                     |
+| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | **Two Karama rewards debit points and grant nothing.** `KaramaService.redeem()` has no switch on `body.reward` — it writes a negative ledger row and echoes the reward back. `PREMIUM_30D` works only because billing orchestrates it. `BOOST_APPLICATION` (100 pts) and `FEATURED_PROFILE_7D` (1000 pts) are offered in both clients and grant nothing: no state column exists, and no ranking reads one. | **open — defect**      | `karama.service.ts:152-208`; `billing.service.ts:239`; `me/karama/page.tsx:30,32`; no `boostedUntil`/`featuredUntil` in `schema.prisma`; `jobs.service.ts:114` orders by `createdAt`, `search.service.ts:166` by `updatedAt` |
+| 2   | **Sign-out never revokes the session.** `POST /auth/logout` exists and sets `revokedAt` correctly; neither client calls it. The refresh token stays valid until expiry, and because `listSessions()` filters `revokedAt: null`, Settings → Security keeps listing the signed-out device as active — the screen states something false.                                                                     | **open — defect**      | `auth.service.ts:126-131,140`; clients only `clearSession()` at `apps/web/src/lib/api.ts:51,59` and `apps/mobile/src/lib/api.ts:73,87`                                                                                       |
+| 3   | **Two-sided ratings: complete backend, zero UI.** `UserRating` model, `CANDIDATE_RATES_EMPLOYER`/`EMPLOYER_RATES_CANDIDATE`, 1–5 + comment, scoped to a job, plus a purpose-built `/summary` endpoint. 0 client files mention it.                                                                                                                                                                          | **open — not started** | `schema.prisma:875-891`; `packages/shared/src/schemas/rating.ts:3-7`; `ratings.controller.ts`                                                                                                                                |
+| 4   | **Company team management: complete backend with RBAC, zero UI.** OWNER/ADMIN/EDITOR guards on four endpoints. Consequence: every employer is a one-person account — a recruiter and a hiring manager cannot share a job.                                                                                                                                                                                  | **open — not started** | `company-members.controller.ts:40-70`; `schema.prisma:642-653`                                                                                                                                                               |
+| 5   | **Mobile makes users accept terms they cannot read.** `acceptTerms` is enforced; the screen contains zero links to the documents. Web has two (#114). All four `/legal/*` pages are web-only. Plausible app-store rejection, not a UX nit.                                                                                                                                                                 | **open — compliance**  | `apps/mobile/app/(auth)/register.tsx:42`; 0 matches for `legal\|tos\|privacy` in that file                                                                                                                                   |
+| 6   | **No mobile CV export.** Web renders a print-optimised résumé with correct RTL shaping and uses the print dialog as the PDF exporter. No mobile twin.                                                                                                                                                                                                                                                      | **open — not started** | `apps/web/src/app/[locale]/cv/page.tsx`                                                                                                                                                                                      |
+| 7   | **No mobile view for a shared job link.** `/j/[id]` is the public unauthenticated job page on web; mobile has no route, so a job shared into WhatsApp has nowhere to land on a phone.                                                                                                                                                                                                                      | **open — not started** | `GET /jobs/public/:id`; 0 mobile files reference `jobs/public`                                                                                                                                                               |
+| 8   | **`GET /connections/counts` unreachable.** The endpoint that would let both platforms show counts without over-fetching lists.                                                                                                                                                                                                                                                                             | **open — minor**       | 0 client references                                                                                                                                                                                                          |
+| 9   | **Copy still diverges.** 30 keys flagged `unreconciled` — the same screen phrased differently on each platform. Separately the gate now reports platform-only surface at its ceiling: **web 163 keys, mobile 100** (worst namespace: `employer`, 30 web-only vs 15 mobile-only).                                                                                                                           | **open — ledgered**    | `scripts/check-i18n-parity.mjs:35-79`; `pnpm check:i18n`                                                                                                                                                                     |
+
+**Before starting #3**, decide the anti-gaming rules — two-sided ratings fail through retaliation,
+reciprocity bias and inflation to all-fives. The usual mitigations are simultaneous blind reveal, a
+minimum count before any average is shown, and a window tied to the application lifecycle. The
+existing unique constraint `(raterId, rateeId, context, jobId)` supports all three; none is built.
+This is the only item on the list that needs a product decision before code.
+
+**Not gaps:** six Prisma models are never named in a client — `RefreshToken`,
+`EmailVerificationToken`, `PasswordResetToken`, `SseStreamToken`, `ProfileSkill`, `ChatRoomMember`.
+All six are token or join tables and correctly server-side. Push registration, job alerts and skill
+endorsements were checked and _are_ wired.
 
 ## Platform upgrade — done, PRs #109–#120
 

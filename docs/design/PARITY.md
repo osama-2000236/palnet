@@ -115,3 +115,18 @@ than component-level:
   Downstream of the native `Tab` count gap above.
 - `network` and `me-connections` render the same screen on mobile; web treats
   them as two surfaces.
+
+**Three web routes have no mobile twin at all.** Found 2026-07-29 by diffing the
+route trees (45 web pages vs 39 mobile screens) rather than by component; still
+open and unstarted at `main` @ `c8248a7` on 2026-07-30. Tracked in full in
+`docs/HANDOFF.md` §"Open product gaps" — repeated here because they are parity
+gaps, not missing features:
+
+| Web route                                                             | Mobile | Why it matters                                                                                                                                                                      |
+| --------------------------------------------------------------------- | ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/legal/tos`, `/legal/privacy`, `/legal/community`, `/legal/employer` | none   | Mobile register enforces `acceptTerms` while linking to nothing, so the user agrees to documents the app gives them no way to read. Both stores require a reachable privacy policy. |
+| `/cv`                                                                 | none   | Print-optimised résumé with correct RTL shaping, using the print dialog as the PDF exporter. One of the few things a job seeker opens the app specifically to do.                   |
+| `/j/[id]`                                                             | none   | The public unauthenticated job page. A job shared into WhatsApp has nowhere to land on a phone.                                                                                     |
+
+`(admin)/billing` and `(admin)/moderation` are also web-only and that is
+deliberate — operator surfaces, not member ones.
