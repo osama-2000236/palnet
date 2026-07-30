@@ -133,6 +133,13 @@ export function Icon({
           <path d="M7 11v9H4v-9zM7 11l4-7c1.5 0 2.5 1 2.5 2.5V10h5a2 2 0 0 1 2 2.3l-1.2 6A2 2 0 0 1 17.3 20H7" />
         </svg>
       );
+    case "trash":
+      return (
+        <svg {...common}>
+          {title ? <title>{title}</title> : null}
+          <path d="M4 7h16M10 4h4M6 7l1 13h10l1-13M10 11v6M14 11v6" />
+        </svg>
+      );
     case "comment":
       return (
         <svg {...common}>

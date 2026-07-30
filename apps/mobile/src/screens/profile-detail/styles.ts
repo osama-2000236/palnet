@@ -3,7 +3,7 @@ import { StyleSheet } from "react-native";
 
 import { nativeTokens, useThemeTokens, type NativeTheme } from "@baydar/ui-native";
 
-export function makeProfileStyles(c: NativeTheme["color"]) {
+function makeProfileStyles(c: NativeTheme["color"]) {
   return StyleSheet.create({
     screen: { flex: 1, backgroundColor: c.surfaceMuted },
     errorScreen: {

@@ -5,7 +5,7 @@ import { nativeTokens, useThemeTokens, type NativeTheme } from "@baydar/ui-nativ
 
 // Colours come from the active theme, so the sheet is built per scheme rather
 // than once at import. Sizing tokens are scheme-independent and stay static.
-export function makeFeedStyles(c: NativeTheme["color"]) {
+function makeFeedStyles(c: NativeTheme["color"]) {
   return StyleSheet.create({
     screen: {
       flex: 1,

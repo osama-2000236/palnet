@@ -25,25 +25,18 @@ interface TokenSubject {
   locale: string;
 }
 
+/** The one hash for every opaque token we store. Re-exported by auth-tokens.service. */
 export function hashToken(token: string): string {
   return crypto.createHash("sha256").update(token).digest("hex");
 }
 
-export function numberConfig(
-  config: ConfigService<Env, true>,
-  key: keyof Pick<Env, "BCRYPT_COST" | "JWT_ACCESS_TTL" | "JWT_REFRESH_TTL">,
-): number {
-  const value = config.getOrThrow<number | string>(key);
-  const parsed = typeof value === "number" ? value : Number(value);
-  if (!Number.isFinite(parsed)) {
-    throw new Error(`Invalid numeric config value: ${key}`);
-  }
-  return parsed;
-}
-
 export function signTokens(config: ConfigService<Env, true>, user: TokenSubject): AuthTokens {
-  const accessTtl = numberConfig(config, "JWT_ACCESS_TTL");
-  const refreshTtl = numberConfig(config, "JWT_REFRESH_TTL");
+  // ConfigModule is loaded with the zod-parsed env object (app.module.ts), and
+  // these are `z.coerce.number()` — so they arrive as numbers. A `numberConfig`
+  // helper used to re-parse them here, defending against a string that the
+  // schema had already ruled out.
+  const accessTtl = config.getOrThrow("JWT_ACCESS_TTL", { infer: true });
+  const refreshTtl = config.getOrThrow("JWT_REFRESH_TTL", { infer: true });
   const accessSecret = config.getOrThrow<string>("JWT_ACCESS_SECRET");
 
   const payload: AccessTokenPayload = {

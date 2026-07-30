@@ -22,6 +22,7 @@ export type IconName =
   | "send-paper"
   | "share"
   | "thumb"
+  | "trash"
   | "user"
   | "users"
   | "video"

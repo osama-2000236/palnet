@@ -62,6 +62,27 @@ const EnvSchema = z.object({
 
 export type Env = z.infer<typeof EnvSchema>;
 
+/**
+ * Optional in the schema because dev and test boot without them; mandatory the
+ * moment NODE_ENV is production. Adding a var here is the whole change — the
+ * message and the boot failure come for free.
+ */
+const REQUIRED_IN_PRODUCTION = [
+  "RESEND_API_KEY",
+  "MAIL_FROM",
+  "BAYDAR_WEB_URL",
+  "INTERNAL_CRON_TOKEN",
+  "HYPERPAY_ENTITY_ID",
+  "HYPERPAY_ACCESS_TOKEN",
+  "HYPERPAY_WEBHOOK_SECRET",
+  "BANK_TRANSFER_IBAN",
+  "BANK_TRANSFER_BENEFICIARY",
+  "CLAMAV_SCAN_URL",
+  "CLOUDFLARE_IMAGES_SCAN_URL",
+  "SENTRY_DSN",
+  "SENTRY_RELEASE",
+] as const satisfies readonly (keyof Env)[];
+
 export function loadEnv(): Env {
   // Empty string means "unset": dashboards (Render, Vercel) and template
   // .env files ship blank values, which would otherwise fail url/min
@@ -91,60 +112,14 @@ export function loadEnv(): Env {
         ],
       });
     }
-    if (!data.RESEND_API_KEY || !data.MAIL_FROM) {
-      failEnv({
-        RESEND_API_KEY: !data.RESEND_API_KEY
-          ? ["RESEND_API_KEY is required in production."]
-          : undefined,
-        MAIL_FROM: !data.MAIL_FROM ? ["MAIL_FROM is required in production."] : undefined,
-      });
-    }
-    if (!data.BAYDAR_WEB_URL) {
-      failEnv({ BAYDAR_WEB_URL: ["BAYDAR_WEB_URL is required in production."] });
-    }
-    if (!data.INTERNAL_CRON_TOKEN) {
-      failEnv({ INTERNAL_CRON_TOKEN: ["INTERNAL_CRON_TOKEN is required in production."] });
-    }
-    if (!data.HYPERPAY_ENTITY_ID || !data.HYPERPAY_ACCESS_TOKEN || !data.HYPERPAY_WEBHOOK_SECRET) {
-      failEnv({
-        HYPERPAY_ENTITY_ID: !data.HYPERPAY_ENTITY_ID
-          ? ["HYPERPAY_ENTITY_ID is required in production."]
-          : undefined,
-        HYPERPAY_ACCESS_TOKEN: !data.HYPERPAY_ACCESS_TOKEN
-          ? ["HYPERPAY_ACCESS_TOKEN is required in production."]
-          : undefined,
-        HYPERPAY_WEBHOOK_SECRET: !data.HYPERPAY_WEBHOOK_SECRET
-          ? ["HYPERPAY_WEBHOOK_SECRET is required in production."]
-          : undefined,
-      });
-    }
-    if (!data.BANK_TRANSFER_IBAN || !data.BANK_TRANSFER_BENEFICIARY) {
-      failEnv({
-        BANK_TRANSFER_IBAN: !data.BANK_TRANSFER_IBAN
-          ? ["BANK_TRANSFER_IBAN is required in production."]
-          : undefined,
-        BANK_TRANSFER_BENEFICIARY: !data.BANK_TRANSFER_BENEFICIARY
-          ? ["BANK_TRANSFER_BENEFICIARY is required in production."]
-          : undefined,
-      });
-    }
-    if (!data.CLAMAV_SCAN_URL || !data.CLOUDFLARE_IMAGES_SCAN_URL) {
-      failEnv({
-        CLAMAV_SCAN_URL: !data.CLAMAV_SCAN_URL
-          ? ["CLAMAV_SCAN_URL is required in production."]
-          : undefined,
-        CLOUDFLARE_IMAGES_SCAN_URL: !data.CLOUDFLARE_IMAGES_SCAN_URL
-          ? ["CLOUDFLARE_IMAGES_SCAN_URL is required in production."]
-          : undefined,
-      });
-    }
-    if (!data.SENTRY_DSN || !data.SENTRY_RELEASE) {
-      failEnv({
-        SENTRY_DSN: !data.SENTRY_DSN ? ["SENTRY_DSN is required in production."] : undefined,
-        SENTRY_RELEASE: !data.SENTRY_RELEASE
-          ? ["SENTRY_RELEASE is required in production."]
-          : undefined,
-      });
+    // One pass, so a fresh deploy learns about every missing var at once
+    // instead of one per boot attempt — this used to be eight near-identical
+    // blocks that each exited on the first group that failed.
+    const missing = REQUIRED_IN_PRODUCTION.filter((key) => !data[key]);
+    if (missing.length > 0) {
+      failEnv(
+        Object.fromEntries(missing.map((key) => [key, [`${key} is required in production.`]])),
+      );
     }
   }
 

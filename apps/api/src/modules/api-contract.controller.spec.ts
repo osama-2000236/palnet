@@ -26,7 +26,6 @@ import { MessagingService } from "./messaging/messaging.service";
 import { NotificationsBus } from "./notifications/notifications.bus";
 import { NotificationsController } from "./notifications/notifications.controller";
 import { NotificationsService } from "./notifications/notifications.service";
-import { RateLimitModule } from "./rate-limit/rate-limit.module";
 import { SafetyController } from "./safety/safety.controller";
 import { SafetyService } from "./safety/safety.service";
 import { SearchController } from "./search/search.controller";
@@ -45,7 +44,6 @@ async function createApp(options: {
   overrideJwt?: boolean;
 }): Promise<INestApplication> {
   const builder = Test.createTestingModule({
-    imports: [RateLimitModule],
     controllers: options.controllers,
     providers: options.providers,
   });

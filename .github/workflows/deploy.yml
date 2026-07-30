@@ -66,6 +66,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @baydar/db db:generate
       - run: pnpm lint:tokens
+      - run: pnpm check:tokens
       - run: pnpm check:release-placeholders
       - run: pnpm lint
       - run: pnpm type-check

@@ -8,7 +8,7 @@ import { BillingService } from "./billing.service";
 import { EmployerEntitlementsService } from "./employer-entitlements.service";
 import { FxService } from "./fx.service";
 import { HyperPayClient } from "./hyperpay.client";
-import { WalletRegistry } from "./wallets/wallet-registry";
+import { WalletRegistry } from "./wallets";
 
 type PrismaStub = {
   plan: { upsert: jest.Mock };
@@ -115,13 +115,9 @@ describe("BillingService", () => {
         {
           provide: WalletRegistry,
           useValue: {
-            get: jest.fn(() => ({
+            checkout: jest.fn(() => ({
               provider: "JAWWALPAY",
-              isConfigured: () => false,
-              createCheckout: jest.fn().mockResolvedValue({
-                provider: "JAWWALPAY",
-                instructions: "Coming soon",
-              }),
+              instructions: "Coming soon",
             })),
             availability: jest.fn(() => [
               { provider: "JAWWALPAY", configured: false },

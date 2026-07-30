@@ -19,7 +19,7 @@ Shared tokens live in [`packages/ui-tokens`](../packages/ui-tokens). Components 
 - `Divider`.
 - `Link` — routes to `/in/:handle`, `/company/:slug`, `/jobs/:id`, etc.
 - `Text`, `Heading` — typography primitives using `font-sans`/`font-body` tokens.
-- `Icon` — from `lucide-react` (web) / `lucide-react-native` (mobile). Only one icon set allowed.
+- `Icon` — the kit's own glyph switch, one `IconName` union kept in lockstep across web and native by `packages/ui-web/src/__tests__/icon.test.js`. No icon dependency: adding one is how a second icon set gets in.
 - `ReactionIcon` — six variants matching `ReactionType` enum.
 
 ### Molecules

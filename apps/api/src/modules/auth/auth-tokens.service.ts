@@ -11,6 +11,8 @@ import type { MailTransport } from "../mail/console-mail.transport";
 import { MAIL_TRANSPORT } from "../mail/mail.tokens";
 import { PrismaService } from "../prisma/prisma.service";
 
+import { hashToken } from "./session-tokens";
+
 const VERIFY_TTL_MS = 24 * 60 * 60 * 1000;
 const RESET_TTL_MS = 60 * 60 * 1000;
 const STREAM_TTL_MS = 60 * 1000;
@@ -239,7 +241,10 @@ export class AuthTokensService {
     });
     if (consumed.count !== 1) throw this.invalidToken();
 
-    const passwordHash = await bcrypt.hash(newPassword, this.getBcryptCost());
+    const passwordHash = await bcrypt.hash(
+      newPassword,
+      this.config.getOrThrow("BCRYPT_COST", { infer: true }),
+    );
     await this.db.user.update({
       where: { id: record.userId },
       data: { passwordHash },
@@ -355,18 +360,11 @@ export class AuthTokensService {
       process.env.BAYDAR_WEB_URL ?? process.env.NEXT_PUBLIC_WEB_URL ?? "http://localhost:3000";
     return `${base.replace(/\/$/, "")}/${locale}${path}`;
   }
-
-  private getBcryptCost(): number {
-    const value = this.config.getOrThrow<number | string>("BCRYPT_COST");
-    const parsed = typeof value === "number" ? value : Number(value);
-    if (!Number.isFinite(parsed)) throw new Error("Invalid numeric config value: BCRYPT_COST");
-    return parsed;
-  }
 }
 
-export function hashToken(token: string): string {
-  return crypto.createHash("sha256").update(token).digest("hex");
-}
+// One definition, in the dependency-free module. This file had a byte-identical
+// copy; a hash used to look up stored tokens must not be able to differ.
+export { hashToken };
 
 function createPlainToken(): string {
   return crypto.randomBytes(TOKEN_BYTES).toString("hex");

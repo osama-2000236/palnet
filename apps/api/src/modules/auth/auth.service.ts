@@ -17,7 +17,7 @@ import { isWithinRestoreGrace } from "../account/account-retention";
 import { PrismaService } from "../prisma/prisma.service";
 
 import type { AuthUser } from "./decorators/current-user.decorator";
-import { hashToken, numberConfig, signTokens } from "./session-tokens";
+import { hashToken, signTokens } from "./session-tokens";
 
 interface SessionMeta {
   userAgent?: string;
@@ -47,7 +47,10 @@ export class AuthService {
       );
     }
 
-    const passwordHash = await bcrypt.hash(body.password, numberConfig(this.config, "BCRYPT_COST"));
+    const passwordHash = await bcrypt.hash(
+      body.password,
+      this.config.getOrThrow("BCRYPT_COST", { infer: true }),
+    );
 
     const user = await this.prisma.user.create({
       data: {
@@ -175,7 +178,7 @@ export class AuthService {
 
     const passwordHash = await bcrypt.hash(
       body.newPassword,
-      numberConfig(this.config, "BCRYPT_COST"),
+      this.config.getOrThrow("BCRYPT_COST", { infer: true }),
     );
     const now = new Date();
     await this.prisma.user.update({

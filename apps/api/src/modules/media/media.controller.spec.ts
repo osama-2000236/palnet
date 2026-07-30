@@ -1,18 +1,20 @@
 import { ErrorCode, MediaKind } from "@baydar/shared";
 import type { INestApplication } from "@nestjs/common";
+import { APP_GUARD } from "@nestjs/core";
 import { Test } from "@nestjs/testing";
+import { ThrottlerModule } from "@nestjs/throttler";
 import type { NextFunction, Request, Response } from "express";
 import request from "supertest";
 
 import type { AuthUser } from "../auth/decorators/current-user.decorator";
-import { RateLimitModule } from "../rate-limit/rate-limit.module";
+import { BaydarThrottlerGuard } from "../rate-limit/rate-limit.guard";
 
 import { MediaScanService } from "./media-scan.service";
 import { MediaController } from "./media.controller";
 import { MediaService } from "./media.service";
 
 describe("MediaController rate limits", () => {
-  it("returns RATE_LIMITED after 30 presign requests per user per hour", async () => {
+  it("shares one 30/hour budget across both media handlers, per user", async () => {
     const presigned = {
       uploadUrl: "https://signed.example/put",
       publicUrl: "https://cdn.example/post_media/user-1/file.png",
@@ -23,7 +25,7 @@ describe("MediaController rate limits", () => {
     };
     const media = { presign: jest.fn().mockResolvedValue(presigned) };
     const moduleRef = await Test.createTestingModule({
-      imports: [RateLimitModule],
+      imports: [ThrottlerModule.forRoot([{ name: "default", ttl: 60_000, limit: 1_000 }])],
       controllers: [MediaController],
       providers: [
         { provide: MediaService, useValue: media },
@@ -31,6 +33,7 @@ describe("MediaController rate limits", () => {
           provide: MediaScanService,
           useValue: { scanObject: jest.fn() },
         },
+        { provide: APP_GUARD, useClass: BaydarThrottlerGuard },
       ],
     }).compile();
     const app: INestApplication = moduleRef.createNestApplication();
@@ -48,8 +51,22 @@ describe("MediaController rate limits", () => {
     };
 
     try {
-      for (let i = 0; i < 30; i += 1) {
+      // 15 on each of the two `@RateLimit("media")` handlers. They share ONE
+      // 30/hour budget, so the 31st request anywhere in the bucket is refused.
+      // Throttler keys per handler by default — without the bucket branch in
+      // BaydarThrottlerGuard.generateKey this caller would get 30 each and
+      // every request below would pass.
+      for (let i = 0; i < 15; i += 1) {
         await request(app.getHttpServer()).post("/media/presign").send(body).expect(201);
+        await request(app.getHttpServer())
+          .post("/media/confirm")
+          .send({
+            key: "post_media/user-1/file.png",
+            publicUrl: "https://cdn.example/post_media/user-1/file.png",
+            kind: MediaKind.IMAGE,
+            mimeType: "image/png",
+          })
+          .expect(201);
       }
 
       await request(app.getHttpServer())
@@ -58,6 +75,7 @@ describe("MediaController rate limits", () => {
         .expect(429)
         .expect((res) => {
           expect(res.body.error.code).toBe(ErrorCode.RATE_LIMITED);
+          expect(res.body.error.details.class).toBe("media");
         });
     } finally {
       await app.close();

@@ -4,7 +4,9 @@ import {
   type INestApplication,
   UnauthorizedException,
 } from "@nestjs/common";
+import { APP_GUARD } from "@nestjs/core";
 import { Test } from "@nestjs/testing";
+import { ThrottlerModule } from "@nestjs/throttler";
 import type { Request } from "express";
 import request from "supertest";
 
@@ -12,7 +14,7 @@ import { DomainException } from "../../common/domain-exception";
 import { AllExceptionsFilter } from "../../common/exception.filter";
 import type { AuthUser } from "../auth/decorators/current-user.decorator";
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
-import { RateLimitModule } from "../rate-limit/rate-limit.module";
+import { BaydarThrottlerGuard } from "../rate-limit/rate-limit.guard";
 
 import { SafetyController } from "./safety.controller";
 import { SafetyService } from "./safety.service";
@@ -29,9 +31,12 @@ async function createApp(options: {
   authenticated?: boolean;
 }): Promise<INestApplication> {
   const builder = Test.createTestingModule({
-    imports: [RateLimitModule],
+    imports: [ThrottlerModule.forRoot([{ name: "default", ttl: 60_000, limit: 1_000 }])],
     controllers: [SafetyController],
-    providers: [{ provide: SafetyService, useValue: options.safety }],
+    providers: [
+      { provide: SafetyService, useValue: options.safety },
+      { provide: APP_GUARD, useClass: BaydarThrottlerGuard },
+    ],
   });
 
   builder.overrideGuard(JwtAuthGuard).useValue({

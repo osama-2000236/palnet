@@ -13,6 +13,7 @@
     "dev": "turbo run dev --parallel",
     "lint": "turbo run lint",
     "lint:tokens": "node scripts/lint-tokens.mjs",
+    "check:tokens": "pnpm --filter @baydar/ui-tokens exec tsc -p tsconfig.json && node packages/ui-tokens/scripts/build-tokens.mjs --check",
     "qa:design": "node scripts/qa-design.mjs",
     "test:gates": "node --test \"scripts/**/*.test.mjs\"",
     "check:i18n": "node scripts/check-i18n-parity.mjs",
@@ -44,7 +45,6 @@
   },
   "devDependencies": {
     "@baydar/config": "workspace:^",
-    "artillery": "^2.0.31",
     "eslint-config-prettier": "9.1.0",
     "lint-staged": "^16.4.0",
     "prettier": "^3.3.3",

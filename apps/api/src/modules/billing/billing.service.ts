@@ -29,7 +29,7 @@ import { EmployerEntitlementsService } from "./employer-entitlements.service";
 import { FxService } from "./fx.service";
 import { HyperPayClient } from "./hyperpay.client";
 import { ALL_PLAN_CODES, POINTS_PRICE_BY_PLAN } from "./pricing";
-import { WalletRegistry } from "./wallets/wallet-registry";
+import { WalletRegistry } from "./wallets";
 
 const WALLET_METHODS = new Set<PaymentMethod>(["JAWWALPAY", "PALPAY", "REFLECT"]);
 
@@ -147,13 +147,7 @@ export class BillingService {
 
     if (WALLET_METHODS.has(body.method)) {
       const provider = body.method as WalletProvider;
-      const wallet = await this.wallets.get(provider).createCheckout({
-        invoiceId: invoice.id,
-        amountCents: invoice.amountCents,
-        currency: invoice.currency,
-        returnUrl: body.returnUrl,
-        customerEmail: user.email,
-      });
+      const wallet = this.wallets.checkout(provider);
       return {
         invoiceId: invoice.id,
         method: body.method,

@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { nativeTokens, useThemeTokens, type NativeTheme } from "@baydar/ui-native";
 import { StyleSheet } from "react-native";
 
-export function makeCompanyBillingStyles(c: NativeTheme["color"]) {
+function makeCompanyBillingStyles(c: NativeTheme["color"]) {
   return StyleSheet.create({
     screen: { flex: 1, backgroundColor: c.surfaceMuted },
     scrollBody: { padding: nativeTokens.space[4], gap: nativeTokens.space[4] },

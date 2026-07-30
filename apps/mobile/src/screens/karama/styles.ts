@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { nativeTokens, useThemeTokens, type NativeTheme } from "@baydar/ui-native";
 import { StyleSheet } from "react-native";
 
-export function makeKaramaStyles(c: NativeTheme["color"]) {
+function makeKaramaStyles(c: NativeTheme["color"]) {
   return StyleSheet.create({
     screen: {
       flex: 1,

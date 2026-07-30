@@ -1,10 +1,10 @@
 /* packages/ui-tokens/src/tokens.css
- * Generated from index.ts. Consumed by apps/web via globals.css import.
- * DO NOT EDIT BY HAND — regenerate with `pnpm tokens:build`.
+ * GENERATED from index.ts by scripts/build-tokens.mjs.
+ * DO NOT EDIT BY HAND — run `pnpm tokens:build`. CI checks for drift.
  */
 
 :root {
-  /* Brand (olive) */
+  /* Brand, accent, ink, surface, lines, semantics */
   --brand-50: #f4f6ef;
   --brand-100: #e6ebd6;
   --brand-200: #ccd6a8;
@@ -15,46 +15,35 @@
   --brand-700: #3f4a26;
   --brand-800: #2e371d;
   --brand-900: #1f2513;
-
-  /* Accent (terracotta) */
   --accent-50: #fbf0ea;
   --accent-100: #f4dbce;
   --accent-500: #c65a3a;
   --accent-600: #a8482c;
   --accent-700: #8b3a22;
-
-  /* Ink */
   --ink: #1a1a17;
   --ink-muted: #5c5a52;
   --ink-subtle: #6e6d66;
   --ink-inverse: #ffffff;
-
-  /* Surface */
   --surface: #ffffff;
   --surface-muted: #faf9f5;
   --surface-subtle: #f1efe7;
   --surface-sunken: #ebe8dc;
-
-  /* Lines */
   --line-soft: rgba(26, 26, 23, 0.08);
   --line-hard: rgba(26, 26, 23, 0.16);
-
-  /* Semantic */
   --success: #3b7a3b;
-  --warning: #926516;
-  --danger: #a83232;
-  --info: #2f6d8a;
-
-  /* Semantic soft (tinted backgrounds for badges, banners, dead-end pills) */
   --success-soft: rgba(59, 122, 59, 0.1);
-  --warning-soft: rgba(146, 101, 22, 0.1);
-  --danger-soft: rgba(168, 50, 50, 0.08);
-  --info-soft: rgba(47, 109, 138, 0.08);
   --success-border: rgba(59, 122, 59, 0.22);
+  --warning: #926516;
+  --warning-soft: rgba(146, 101, 22, 0.1);
   --warning-border: rgba(146, 101, 22, 0.25);
+  --danger: #a83232;
+  --danger-soft: rgba(168, 50, 50, 0.08);
   --danger-border: rgba(168, 50, 50, 0.22);
+  --info: #2f6d8a;
+  --info-soft: rgba(47, 109, 138, 0.08);
   --info-border: rgba(47, 109, 138, 0.2);
   --scrim: rgba(26, 26, 23, 0.4);
+  --switch-thumb: #ffffff;
 
   /* Spacing scale — px values match Tailwind preset. */
   --space-0: 0;
@@ -102,9 +91,6 @@
   --state-pressed: 0.09;
   --state-selected: 0.12;
 
-  /* Switch thumb */
-  --switch-thumb: #ffffff;
-
   /* Focus ring (single source) */
   --focus-ring-color: var(--brand-600);
   --focus-ring-width: 2px;
@@ -113,7 +99,7 @@
     0 0 0 var(--focus-ring-offset) var(--surface),
     0 0 0 calc(var(--focus-ring-offset) + var(--focus-ring-width)) var(--focus-ring-color);
 
-  /* Avatar palettes — Avatar.tsx no longer owns these in TS. */
+  /* Avatar palettes */
   --avatar-palette-1-bg: var(--brand-100);
   --avatar-palette-1-fg: var(--brand-800);
   --avatar-palette-2-bg: var(--accent-100);
@@ -125,11 +111,7 @@
   --avatar-palette-5-bg: #e8d5c2;
   --avatar-palette-5-fg: #6e4424;
 
-  /* Channel forms (space-separated R G B) for Tailwind alpha support.
-   * Tailwind maps each colour to `rgb(var(--<token>-rgb) / <alpha-value>)`, so
-   * utilities like `bg-ink/40` keep working AND the whole palette re-themes when
-   * the `.dark` scope swaps these channels. The hex vars above stay for direct
-   * `var(--token)` consumers (focus ring, avatar palettes, illustrations). */
+  /* Channel forms (space-separated R G B) for Tailwind alpha support. Tailwind maps each colour to `rgb(var(--<token>-rgb) / <alpha-value>)`, so utilities like `bg-ink/40` keep working AND the whole palette re-themes when the `.dark` scope swaps these channels. */
   --brand-50-rgb: 244 246 239;
   --brand-100-rgb: 230 235 214;
   --brand-200-rgb: 204 214 168;
@@ -214,47 +196,33 @@
 }
 
 /* ── Warm-dark theme ────────────────────────────────────────────────────────
- * Designed in the Baydar Mobile Kit (May 2026). Warm charcoal, NOT pure black;
- * olive + terracotta identity preserved. LIGHT IS THE DEFAULT — dark is opt-in:
- * add `.dark` or `[data-theme="dark"]` to a root element (e.g. <html>).
- * Only the tokens that change are redeclared; the rest inherit :root above.
- * Tokens defined via var() refs (focus-ring, cover-gradient, most avatar
- * palettes) re-resolve automatically inside this scope — no need to repeat them.
+ * LIGHT IS THE DEFAULT — dark is opt-in: add `.dark` or `[data-theme="dark"]`
+ * to a root element (e.g. <html>). Only the tokens that change are redeclared;
+ * the rest inherit :root above. Tokens defined via var() refs (focus-ring,
+ * cover-gradient, most avatar palettes) re-resolve automatically in this scope.
  */
 .dark,
 [data-theme="dark"] {
-  /* Brand (olive) — only the depths used at dark altitude shift. */
+  /* Brand, accent, ink, surface, lines, semantics — re-lit for the dark surface */
   --brand-50: #262a1b;
   --brand-100: #39431f;
   --brand-200: #52612e;
   --brand-600: #7e9442;
   --brand-700: #9bb059;
-
-  /* Accent (terracotta) */
   --accent-50: #3a241c;
   --accent-100: #4a2c20;
   --accent-600: #cf6743;
   --accent-700: #b5532f;
-
-  /* Ink */
   --ink: #f1efe8;
   --ink-muted: #b3afa4;
   --ink-subtle: #9b988f;
   --ink-inverse: #1a1a17;
-
-  /* Surface */
   --surface: #232220;
   --surface-muted: #1a1916;
   --surface-subtle: #2d2b27;
   --surface-sunken: #37342f;
-
-  /* Lines — switch to light-on-dark */
   --line-soft: rgba(255, 255, 255, 0.08);
   --line-hard: rgba(255, 255, 255, 0.17);
-
-  /* Semantic — all four re-lit for the dark surface. The previous note here
-   * said warning + info "read fine as-is"; measured, --info was 2.61:1 on its
-   * own tint and 3.05:1 under the Toast's ink. */
   --success: #6fae5f;
   --success-soft: rgba(111, 174, 95, 0.14);
   --success-border: rgba(111, 174, 95, 0.3);
@@ -267,8 +235,8 @@
   --info: #7ba2b6;
   --info-soft: rgba(123, 162, 182, 0.14);
   --info-border: rgba(123, 162, 182, 0.3);
-  --switch-thumb: #f1efe8;
   --scrim: rgba(0, 0, 0, 0.5);
+  --switch-thumb: #f1efe8;
 
   /* Shadow — warm-ink shadows vanish on dark; use pure black */
   --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3), 0 1px 3px rgba(0, 0, 0, 0.42);
@@ -276,15 +244,12 @@
   --shadow-nav: 0 1px 0 rgba(0, 0, 0, 0.4);
   --shadow-modal: 0 24px 60px rgba(0, 0, 0, 0.6), 0 4px 12px rgba(0, 0, 0, 0.4);
 
-  /* Avatar fg refs that would land dark-on-dark are re-pointed to a light depth.
-   * Palettes 3 (ink-muted) & 5 (literal sand) already resolve light — left alone. */
+  /* Avatar fg refs that would land dark-on-dark are re-pointed to a light depth. */
   --avatar-palette-1-fg: var(--brand-700);
   --avatar-palette-2-fg: var(--accent-600);
-  --avatar-palette-4-fg: var(--brand-700);
+  --avatar-palette-3-fg: var(--ink);
 
-  /* Channel forms — mirror the hex overrides above so Tailwind utilities
-   * (bg-surface, text-ink, bg-brand-600, …) re-theme in dark. Only the solids
-   * that change are listed. */
+  /* Channel forms — mirror the hex overrides above so Tailwind utilities re-theme in dark. Only the solids that change are listed. */
   --brand-50-rgb: 38 42 27;
   --brand-100-rgb: 57 67 31;
   --brand-200-rgb: 82 97 46;

@@ -46,9 +46,13 @@ function buildPrisma(): PrismaStub {
 
 function buildConfig(): Pick<ConfigService, "getOrThrow"> {
   const values: Record<string, unknown> = {
-    BCRYPT_COST: "4", // string mirrors ConfigService values from process.env in dev.
-    JWT_ACCESS_TTL: "900",
-    JWT_REFRESH_TTL: "2592000",
+    // Numbers, not strings: ConfigModule is loaded with the zod-parsed env
+    // object (app.module.ts) and these are `z.coerce.number()`, so this is what
+    // production actually serves. The string mocks here were the only reason a
+    // `numberConfig` re-parse helper existed.
+    BCRYPT_COST: 4,
+    JWT_ACCESS_TTL: 900,
+    JWT_REFRESH_TTL: 2592000,
     JWT_ACCESS_SECRET: "x".repeat(48),
     JWT_REFRESH_SECRET: "y".repeat(48),
   };

@@ -41,8 +41,16 @@ export default function GlobalError({
         }}
       >
         <div style={{ maxWidth: 480, textAlign: "center" }}>
-          <h1 style={{ fontSize: 22, margin: "0 0 8px" }}>Something went wrong</h1>
-          <p style={{ color: tokens.color.ink.muted, fontSize: 14, margin: "0 0 16px" }}>
+          <h1 style={{ fontSize: tokens.type.scale.h1.size, margin: "0 0 8px" }}>
+            Something went wrong
+          </h1>
+          <p
+            style={{
+              color: tokens.color.ink.muted,
+              fontSize: tokens.type.scale.body.size,
+              margin: "0 0 16px",
+            }}
+          >
             We hit an unexpected error. Try again or return home.
           </p>
           <button
@@ -83,7 +91,7 @@ export default function GlobalError({
               style={{
                 marginTop: 16,
                 fontFamily: "ui-monospace, monospace",
-                fontSize: 11,
+                fontSize: tokens.type.scale.micro.size,
                 color: tokens.color.ink.subtle,
               }}
               dir="ltr"

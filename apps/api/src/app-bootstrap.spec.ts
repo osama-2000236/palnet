@@ -64,6 +64,33 @@ describe("app bootstrap env validation", () => {
     expect(loadEnv().CORS_ORIGINS).toBe("https://web-*-osama-2000236s-projects.vercel.app");
   });
 
+  // The prod-required list is one loop over one array; this is what fails if
+  // that loop stops running, or if a var silently drops off the array. It also
+  // pins the behaviour the eight hand-written blocks did NOT have: EVERY
+  // missing var is reported, not just the first group that failed.
+  it("names every missing production var in one pass", () => {
+    const { RESEND_API_KEY, SENTRY_RELEASE, ...restOfProduction } = productionEnv;
+    process.env = {
+      ...originalEnv,
+      ...baseEnv,
+      ...restOfProduction,
+      NODE_ENV: "production",
+      CORS_ORIGINS: "https://baydar.ps",
+    };
+    jest.spyOn(process, "exit").mockImplementation(((code?: number) => {
+      throw new Error(`process.exit:${code}`);
+    }) as never);
+    const error = jest.spyOn(console, "error").mockImplementation(() => undefined);
+
+    expect(() => loadEnv()).toThrow("process.exit:1");
+    expect(error).toHaveBeenCalledWith("[env] invalid configuration:", {
+      RESEND_API_KEY: ["RESEND_API_KEY is required in production."],
+      SENTRY_RELEASE: ["SENTRY_RELEASE is required in production."],
+    });
+    expect(RESEND_API_KEY).toBeDefined();
+    expect(SENTRY_RELEASE).toBeDefined();
+  });
+
   it("rejects missing CORS origins in production", () => {
     process.env = {
       ...originalEnv,

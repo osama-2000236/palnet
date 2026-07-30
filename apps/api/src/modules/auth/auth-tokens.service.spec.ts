@@ -75,7 +75,7 @@ describe("AuthTokensService", () => {
         { provide: MAIL_TRANSPORT, useValue: mail },
         {
           provide: ConfigService,
-          useValue: { getOrThrow: jest.fn().mockReturnValue("4") },
+          useValue: { getOrThrow: jest.fn().mockReturnValue(4) },
         },
       ],
     }).compile();
