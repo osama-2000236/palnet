@@ -1,3 +1,14 @@
+import { configure } from "@testing-library/react-native";
+
+// RNTL defaults asyncUtilTimeout to 1s. This suite runs at maxWorkers:1 while the api/web/shared
+// suites saturate the same box, and a screen test that renders then awaits several fetches already
+// burns ~460ms of that budget idle — so under load the default is a coin flip, not a real assertion.
+// Set once here rather than per waitFor: 30 call sites share the same ceiling.
+configure({ asyncUtilTimeout: 5_000 });
+// Keep Jest's own per-test timeout above asyncUtilTimeout, or Jest fires first and swallows the
+// RNTL diff that tells you which element never showed up.
+jest.setTimeout(20_000);
+
 jest.mock("react-i18next", () => ({
   useTranslation: () => ({
     i18n: {
