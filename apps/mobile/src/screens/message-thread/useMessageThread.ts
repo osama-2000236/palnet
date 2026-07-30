@@ -121,11 +121,8 @@ export function useMessageThread(roomId: string | undefined) {
     setLoadingOlder(true);
     try {
       const qs = new URLSearchParams({ limit: "30", after: nextCursor });
-      const page = await apiFetchPage(
-        `/messaging/rooms/${roomId}/messages?${qs.toString()}`,
-        MessagesPageEnvelope,
-        { token },
-      );
+      const path = `/messaging/rooms/${roomId}/messages?${qs.toString()}`;
+      const page = await apiFetchPage(path, MessagesPageEnvelope, { token });
       const olderAsc = [...page.data].reverse();
       setMessages((prev) => [...olderAsc, ...prev]);
       setNextCursor(page.meta.nextCursor);
