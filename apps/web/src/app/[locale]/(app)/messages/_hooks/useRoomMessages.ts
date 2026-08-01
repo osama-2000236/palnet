@@ -42,6 +42,10 @@ export function useRoomMessages({ token, viewerId }: UseRoomMessagesInput): UseR
   const threadRef = useRef<HTMLDivElement | null>(null);
   const firstUnreadRef = useRef<HTMLDivElement | null>(null);
   const didInitialScrollRef = useRef(false);
+  // Which room the reader is actually looking at, readable *after* an await.
+  // Web switches rooms in place (mobile pushes a screen per room and cannot hit
+  // this), so a page for the room they just left can still be in flight.
+  const activeRoomIdRef = useRef<string | null>(null);
   const lastTypingPostRef = useRef<{ roomId: string | null; at: number }>({
     roomId: null,
     at: 0,
@@ -81,6 +85,11 @@ export function useRoomMessages({ token, viewerId }: UseRoomMessagesInput): UseR
         MessagesPageEnvelope,
         { token },
       );
+      // Dropped, not merged: on a slow link the previous room's page arrives
+      // after the new room's and used to overwrite it, leaving the wrong
+      // conversation on screen — with its cursor — until something else
+      // refreshed the thread.
+      if (activeRoomIdRef.current !== roomId) return;
       const asc = [...page.data].reverse();
       setMessages((prev) => (after ? [...asc, ...prev] : asc));
       setNextCursor(page.meta.nextCursor);
@@ -91,6 +100,7 @@ export function useRoomMessages({ token, viewerId }: UseRoomMessagesInput): UseR
 
   useEffect(() => {
     if (!activeRoomId || !token) return;
+    activeRoomIdRef.current = activeRoomId;
     setMessages([]);
     setNextCursor(null);
     setHasMore(false);
