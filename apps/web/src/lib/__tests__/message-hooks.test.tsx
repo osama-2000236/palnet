@@ -246,4 +246,64 @@ describe("useRoomMessages", () => {
       },
     );
   });
+
+  // Web switches rooms in place, so a page for the room the reader just left
+  // can still be in flight. On a slow link it resolved last and painted the
+  // wrong conversation into the open thread.
+  it("drops a message page for a room the reader has already left", async () => {
+    await renderProbe();
+
+    let resolveRoomOne: ((page: unknown) => void) | null = null;
+    const roomOneMessage = makeMessage({
+      id: "cm00000000000000000000203",
+      roomId: roomOne.id,
+      authorId: otherOneId,
+      body: "From the room they left",
+    });
+    const roomTwoMessage = makeMessage({
+      id: "cm00000000000000000000204",
+      roomId: roomTwo.id,
+      body: "From the room they are reading",
+    });
+
+    mockApiFetchPage.mockImplementation((path: string) => {
+      if (path.startsWith(`/messaging/rooms/${roomOne.id}/messages`)) {
+        return new Promise((resolve) => {
+          resolveRoomOne = resolve;
+        });
+      }
+      if (path.startsWith(`/messaging/rooms/${roomTwo.id}/messages`)) {
+        return Promise.resolve({
+          data: [roomTwoMessage],
+          meta: { nextCursor: "cursor-two", hasMore: true },
+        });
+      }
+      return Promise.resolve({ data: [roomOne, roomTwo] });
+    });
+
+    // Open room one — its page hangs.
+    React.act(() => {
+      latest?.setActiveRoomId(roomOne.id);
+    });
+    await flushEffects();
+
+    // Give up waiting and go back to room two, which answers immediately.
+    React.act(() => {
+      latest?.setActiveRoomId(roomTwo.id);
+    });
+    await flushEffects();
+    expect(latest?.messages).toEqual([roomTwoMessage]);
+
+    // Room one's page finally lands. It must not touch the open thread.
+    await React.act(async () => {
+      resolveRoomOne?.({
+        data: [roomOneMessage],
+        meta: { nextCursor: "cursor-one", hasMore: true },
+      });
+      await Promise.resolve();
+    });
+
+    expect(latest?.activeRoomId).toBe(roomTwo.id);
+    expect(latest?.messages).toEqual([roomTwoMessage]);
+  });
 });
