@@ -71,6 +71,19 @@ export class ConnectionsService {
       throw new DomainException(ErrorCode.NOT_FOUND, "Recipient not found.", 404);
     }
 
+    // Before either branch below, because the re-send path updates rather than
+    // creates. `notifications.notify` already drops the alert for a blocked
+    // pair, which made this look handled — but the Connection row was still
+    // written, so the request (and its 300-character `message`) landed in the
+    // recipient's invitations list with nothing to announce it.
+    if (await this.safety.isBlockedEither(requesterId, body.receiverId)) {
+      throw new DomainException(
+        ErrorCode.BLOCKED,
+        "Connecting is blocked between these users.",
+        403,
+      );
+    }
+
     const existing = await this.findExistingBetween(requesterId, body.receiverId);
     if (existing) {
       // Allow re-send only if the prior row is WITHDRAWN or DECLINED.
@@ -212,7 +225,7 @@ export class ConnectionsService {
     viewerId: string,
     filter: "ACCEPTED" | "INCOMING" | "OUTGOING",
   ): Promise<ConnectionListItem[]> {
-    const where =
+    const base =
       filter === "ACCEPTED"
         ? {
             status: "ACCEPTED" as const,
@@ -223,7 +236,7 @@ export class ConnectionsService {
           : { status: "PENDING" as const, requesterId: viewerId };
 
     const rows = (await this.prisma.connection.findMany({
-      where,
+      where: { ...base, ...(await this.blockExclusion(viewerId)) },
       orderBy: [{ createdAt: "desc" }],
       include: {
         requester: {
@@ -329,21 +342,47 @@ export class ConnectionsService {
   }
 
   async counts(viewerId: string) {
+    // Same exclusion as `listMine`, or the invitations badge counts a request
+    // the list refuses to show and never clears.
+    const exclusion = await this.blockExclusion(viewerId);
     const [accepted, incoming, outgoing] = await Promise.all([
       this.prisma.connection.count({
         where: {
           status: "ACCEPTED",
           OR: [{ requesterId: viewerId }, { receiverId: viewerId }],
+          ...exclusion,
         },
       }),
       this.prisma.connection.count({
-        where: { status: "PENDING", receiverId: viewerId },
+        where: { status: "PENDING", receiverId: viewerId, ...exclusion },
       }),
       this.prisma.connection.count({
-        where: { status: "PENDING", requesterId: viewerId },
+        where: { status: "PENDING", requesterId: viewerId, ...exclusion },
       }),
     ]);
     return { accepted, incoming, outgoing };
+  }
+
+  /**
+   * Drops rows joining the viewer to anyone blocked in either direction.
+   *
+   * A block usually arrives *because* of the request already in the list, so
+   * gating `send` alone would leave that row on screen forever. Excluding both
+   * columns is safe for every filter — nobody can block themselves, so the
+   * viewer's own id is never in this set. Empty object when nothing is
+   * blocked, so the common query keeps its original shape.
+   */
+  private async blockExclusion(viewerId: string): Promise<{
+    AND?: Array<{ requesterId?: { notIn: string[] }; receiverId?: { notIn: string[] } }>;
+  }> {
+    const excludedUserIds = await this.safety.getBlockedEitherIds(viewerId);
+    if (excludedUserIds.length === 0) return {};
+    return {
+      AND: [
+        { requesterId: { notIn: excludedUserIds } },
+        { receiverId: { notIn: excludedUserIds } },
+      ],
+    };
   }
 
   async findExistingBetween(a: string, b: string) {
