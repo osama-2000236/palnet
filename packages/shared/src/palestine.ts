@@ -1,8 +1,15 @@
 // Palestine location + education source of truth.
 // Canonical list per docs/localization-palestine.md §Palestinian Context.
 // ponytail: plain constants, no DB table/FK — pickers write the canonical Arabic
-// city string into the existing free-text columns. Add a `governorate` column
-// only if governorate-level filtering is ever needed.
+// city string into the existing free-text columns.
+//
+// The old ceiling here read "add a `governorate` column only if
+// governorate-level filtering is ever needed". It is needed — craft hiring is
+// hyper-local (MATCHING.md §3) — and it shipped without the column: the jobs
+// facet expands a governorate key into the city names it holds and filters on
+// those (`jobs.service.ts` list). A column is still the answer if the planner
+// ever needs an index on it, or if a city can belong to a governorate this
+// list does not know.
 
 import { foldArabic } from "./arabic-fold";
 
@@ -124,9 +131,8 @@ export function normalizeCity(input: string): string {
 }
 
 // ── Governorate + region ───────────────────────────────────────────────────
-// This closes the header's "add a governorate column only if governorate-level
-// filtering is ever needed": craft hiring is hyper-local, so it is needed. Still
-// derived rather than stored — see governorateOfCity below.
+// Derived rather than stored — see governorateOfCity below, and the header for
+// what closing that ceiling cost.
 
 /**
  * Region matters because travel between them is not possible, so a job in the

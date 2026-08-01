@@ -37,6 +37,7 @@ const JobsPage = cursorPage(JobSchema);
 
 const EMPTY_FILTERS: JobFiltersState = {
   q: "",
+  governorate: "",
   city: "",
   type: "",
   locationMode: "",
@@ -49,6 +50,7 @@ function buildQs(filters: JobFiltersState, after: string | null): string {
   const qs = new URLSearchParams({ limit: "20" });
   if (after) qs.set("after", after);
   if (filters.q) qs.set("q", filters.q);
+  if (filters.governorate) qs.set("governorate", filters.governorate);
   if (filters.city) qs.set("city", filters.city);
   if (filters.type) qs.set("type", filters.type);
   if (filters.locationMode) qs.set("locationMode", filters.locationMode);

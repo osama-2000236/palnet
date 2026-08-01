@@ -1,4 +1,4 @@
-import { JobLocationMode, JobType, PS_INDUSTRIES } from "@baydar/shared";
+import { JobLocationMode, JobType, PS_GOVERNORATES, PS_INDUSTRIES } from "@baydar/shared";
 import { Button, Chip, Sheet, nativeTokens, useThemeTokens } from "@baydar/ui-native";
 import { useTranslation } from "react-i18next";
 import { Text, View } from "react-native";
@@ -9,6 +9,7 @@ import { AlertsSection } from "./AlertsSection";
 
 export type Filters = {
   q: string;
+  governorate: string;
   city: string;
   type: JobType | "";
   locationMode: JobLocationMode | "";
@@ -20,6 +21,7 @@ export type Filters = {
 
 export const EMPTY_FILTERS: Filters = {
   q: "",
+  governorate: "",
   city: "",
   type: "",
   locationMode: "",
@@ -43,6 +45,7 @@ export function buildQs(filters: Filters, after: string | null): string {
   const qs = new URLSearchParams({ limit: "20" });
   if (after) qs.set("after", after);
   if (filters.q) qs.set("q", filters.q);
+  if (filters.governorate) qs.set("governorate", filters.governorate);
   if (filters.city) qs.set("city", filters.city);
   if (filters.type) qs.set("type", filters.type);
   if (filters.locationMode) qs.set("locationMode", filters.locationMode);
@@ -54,6 +57,7 @@ export function buildQs(filters: Filters, after: string | null): string {
 export function activeFilterCount(f: Filters): number {
   let n = 0;
   if (f.q) n += 1;
+  if (f.governorate) n += 1;
   if (f.city) n += 1;
   if (f.type) n += 1;
   if (f.locationMode) n += 1;
@@ -81,6 +85,23 @@ export function FilterSheet({
 
   return (
     <Sheet open={open} onClose={onClose} title={t("jobs.filters")}>
+      <Field label={t("jobs.governorate")}>
+        {/* Governorate before city: craft hiring is governorate-sized, and the
+            key travels on the wire while the label follows the locale.
+            Web twin: JobFilters.tsx governorate select. */}
+        <View style={{ flexDirection: "row", flexWrap: "wrap", gap: nativeTokens.space[2] }}>
+          {PS_GOVERNORATES.map((gov) => (
+            <Chip
+              key={gov.key}
+              selected={filters.governorate === gov.key}
+              accessibilityLabel={isArabic ? gov.ar : gov.en}
+              onPress={() => set("governorate", filters.governorate === gov.key ? "" : gov.key)}
+            >
+              {isArabic ? gov.ar : gov.en}
+            </Chip>
+          ))}
+        </View>
+      </Field>
       <Field label={t("jobs.city")}>
         <CityField allowEmpty value={filters.city} onChange={(v) => set("city", v)} />
       </Field>

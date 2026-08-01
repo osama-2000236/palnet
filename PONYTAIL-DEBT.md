@@ -74,8 +74,10 @@ silently.
 
 - `packages/shared/src/palestine.ts:3` — cities as plain constants; pickers write the
   canonical Arabic string into existing free-text columns. **ceiling:** no DB table, no FK,
-  no referential integrity. **upgrade:** add a `governorate` column only if
-  governorate-level filtering is ever needed. **(ceiling reported hit — see notes)**
+  no referential integrity. **upgrade:** the old "add a `governorate` column only if
+  governorate-level filtering is ever needed" trigger **fired and was closed without the
+  column** — the jobs facet expands a governorate key into its city names. The remaining
+  trigger is an index need, or a city this list does not know.
 - `packages/shared/src/palestine.ts:160` — `governorateOfCity()` derives on read. **ceiling:**
   nothing indexable. **upgrade:** add `Profile.governorate` only if the query planner needs
   an index on it.
@@ -124,9 +126,12 @@ silently.
 
 - **`search.service.ts:336` is a gate, not a preference.** The phase 5 composer is what
   creates the null-`companyId` job this marker says cannot exist. Close it in phase 4.
-- **`palestine.ts:3` ceiling is reported hit** (`docs/NEXT-SESSION-PROMPT.md` §B5: craft
-  hiring is hyper-local). Half-closed already — `governorateOfCity()` and
-  `servesAtClientSite` exist, but no `apps/api` caller ranks by governorate; the only
-  consumers are `CityField` on both platforms plus the specs. Still open.
+- **`palestine.ts:3` ceiling is closed** (`docs/NEXT-SESSION-PROMPT.md` §B5: craft hiring is
+  hyper-local). The jobs list now takes a `governorate` facet that expands the key into the
+  city names it holds — derived, no column, no migration. People and company search still
+  filter by city only. What is still _not_ done is
+  same-governorate-first **ranking**: reordering by proximity breaks the `createdAt`/`id`
+  cursor's stable total order, which is the trap `FEED-RANKING.md` §5 names, so that waits
+  for the slate model.
 - `docs/NEXT-SESSION-PROMPT.md:37` says "20 markers across 17 files". Stale — it is 26 across
   21 files as of this scan.

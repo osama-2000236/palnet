@@ -5,6 +5,7 @@ import {
   type CursorPageMeta,
   ErrorCode,
   type Job as JobDto,
+  PS_GOVERNORATES,
   type PublicJob as PublicJobDto,
   takePage,
 } from "@baydar/shared";
@@ -13,48 +14,7 @@ import { Injectable } from "@nestjs/common";
 import { DomainException } from "../../common/domain-exception";
 import { PrismaService } from "../prisma/prisma.service";
 
-interface JobRow {
-  id: string;
-  companyId: string | null;
-  postedById: string;
-  occupationKey: string | null;
-  minStanding: number | null;
-  requiresLicence: boolean;
-  licenceBodyKey: string | null;
-  payBasis: JobDto["payBasis"];
-  mustSkills: string[];
-  startsAt: Date | null;
-  durationDays: number | null;
-  title: string;
-  description: string;
-  type: JobDto["type"];
-  locationMode: JobDto["locationMode"];
-  city: string | null;
-  country: string;
-  salaryMin: number | null;
-  salaryMax: number | null;
-  salaryCurrency: string | null;
-  skillsRequired: string[];
-  isActive: boolean;
-  expiresAt: Date | null;
-  createdAt: Date;
-  company: {
-    id: string;
-    slug: string;
-    name: string;
-    logoUrl: string | null;
-  } | null;
-  postedBy: {
-    profile: {
-      handle: string;
-      firstName: string;
-      lastName: string;
-      avatarUrl: string | null;
-    } | null;
-  };
-  applications: { id: string }[];
-  bookmarks: { id: string }[];
-}
+import { toJobDto, type JobRow } from "./job-dto";
 
 const jobInclude = (viewerId: string) =>
   ({
@@ -91,8 +51,21 @@ export class JobsService {
       locationMode?: JobDto["locationMode"] | null;
       companyId?: string | null;
       industry?: string | null;
+      governorate?: string | null;
     },
   ): Promise<{ data: JobDto[]; meta: CursorPageMeta }> {
+    // Governorate facet, derived from PS_GOVERNORATES rather than a stored
+    // column: CreateJobBody normalizes `city` to the canonical name, so the
+    // governorate is just an IN over the city names it contains. A diaspora or
+    // free-text city matches nothing here rather than matching the wrong
+    // governorate — the degradation rule palestine.ts states.
+    const governorateCities = filters.governorate
+      ? (PS_GOVERNORATES.find((g) => g.key === filters.governorate)?.cities ?? []).flatMap((c) => [
+          c.ar,
+          c.en,
+        ])
+      : null;
+
     // Folded substring prefilter: baydar_fold (SQL twin of shared foldArabic)
     // makes احمد match أحمد etc.; ILIKE covers Latin case. Substring semantics
     // kept on purpose — this is the jobs page filter-as-you-type box, not the
@@ -123,6 +96,9 @@ export class JobsService {
         ...(filters.companyId ? { companyId: filters.companyId } : {}),
         ...(qIds ? { id: { in: qIds } } : {}),
         ...(filters.city ? { city: { contains: filters.city, mode: "insensitive" } } : {}),
+        // AND, not another `city` key — a second one would silently overwrite
+        // the contains filter above when both facets are set.
+        ...(governorateCities ? { AND: [{ city: { in: governorateCities } }] } : {}),
         ...(filters.type ? { type: filters.type } : {}),
         ...(filters.locationMode ? { locationMode: filters.locationMode } : {}),
         // Sector facet over the company's free-text industry. Filter chips and
@@ -254,46 +230,4 @@ function isUniqueViolation(error: unknown): boolean {
   return (
     typeof error === "object" && error !== null && (error as { code?: unknown }).code === "P2002"
   );
-}
-
-function toJobDto(row: JobRow): JobDto {
-  return {
-    id: row.id,
-    companyId: row.companyId,
-    postedById: row.postedById,
-    occupationKey: row.occupationKey,
-    minStanding: row.minStanding,
-    requiresLicence: row.requiresLicence,
-    licenceBodyKey: row.licenceBodyKey,
-    payBasis: row.payBasis,
-    mustSkills: row.mustSkills,
-    startsAt: row.startsAt ? row.startsAt.toISOString() : null,
-    durationDays: row.durationDays,
-    title: row.title,
-    description: row.description,
-    type: row.type,
-    locationMode: row.locationMode,
-    city: row.city,
-    country: row.country,
-    salaryMin: row.salaryMin,
-    salaryMax: row.salaryMax,
-    salaryCurrency: row.salaryCurrency,
-    skillsRequired: row.skillsRequired,
-    isActive: row.isActive,
-    expiresAt: row.expiresAt ? row.expiresAt.toISOString() : null,
-    createdAt: row.createdAt.toISOString(),
-    company: row.company,
-    // A job always has a poster; a profile-less user cannot reach the composer,
-    // so the empty fallback is defensive rather than expected.
-    poster: {
-      handle: row.postedBy.profile?.handle ?? "",
-      firstName: row.postedBy.profile?.firstName ?? "",
-      lastName: row.postedBy.profile?.lastName ?? "",
-      avatarUrl: row.postedBy.profile?.avatarUrl ?? null,
-    },
-    viewer: {
-      hasApplied: row.applications.length > 0,
-      bookmarkId: row.bookmarks[0]?.id ?? null,
-    },
-  };
 }

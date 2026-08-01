@@ -1,6 +1,6 @@
 "use client";
 
-import { JobLocationMode, JobType, PS_INDUSTRIES } from "@baydar/shared";
+import { JobLocationMode, JobType, PS_GOVERNORATES, PS_INDUSTRIES } from "@baydar/shared";
 import { Chip, SearchField, Surface } from "@baydar/ui-web";
 import { useLocale, useTranslations } from "next-intl";
 
@@ -8,6 +8,7 @@ import { CityField } from "@/components/CityField";
 
 export type JobFiltersState = {
   q: string;
+  governorate: string;
   city: string;
   type: JobType | "";
   locationMode: JobLocationMode | "";
@@ -46,6 +47,27 @@ export function JobFilters({
           containerClassName="w-full"
           aria-label={t("search")}
         />
+      </div>
+
+      <div className="mb-3">
+        <label htmlFor="jobs-governorate" className="text-ink-muted mb-1 block text-xs">
+          {t("governorate")}
+        </label>
+        {/* Wider than the city box on purpose: craft hiring is governorate-sized.
+            Keys on the wire, localized labels in the UI. */}
+        <select
+          id="jobs-governorate"
+          value={filters.governorate}
+          onChange={(e) => onChange({ ...filters, governorate: e.target.value })}
+          className="border-line-hard bg-surface text-ink hover:border-line-hard focus-visible:border-brand-600 focus-visible:outline-hidden h-9 w-full rounded-md border px-3 text-sm focus-visible:[box-shadow:var(--focus-ring)]"
+        >
+          <option value="">{t("any")}</option>
+          {PS_GOVERNORATES.map((gov) => (
+            <option key={gov.key} value={gov.key}>
+              {isArabic ? gov.ar : gov.en}
+            </option>
+          ))}
+        </select>
       </div>
 
       <div className="mb-3">

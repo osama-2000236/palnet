@@ -96,6 +96,36 @@ describe("JobsService", () => {
         industry: { contains: "منظمات أهلية وغير حكومية", mode: "insensitive" },
       });
     });
+
+    it("expands a governorate into the cities it holds", async () => {
+      prisma.job.findMany.mockResolvedValue([]);
+
+      await service.list("user_1", null, 20, { governorate: "bethlehem" });
+
+      const where = prisma.job.findMany.mock.calls[0]![0].where;
+      // Both scripts, because a legacy row may hold the English name.
+      expect(where.AND).toEqual([
+        { city: { in: ["بيت لحم", "Bethlehem", "بيت جالا", "Beit Jala"] } },
+      ]);
+    });
+
+    it("keeps the city filter alongside the governorate instead of overwriting it", async () => {
+      prisma.job.findMany.mockResolvedValue([]);
+
+      await service.list("user_1", null, 20, { governorate: "gaza", city: "غزة" });
+
+      const where = prisma.job.findMany.mock.calls[0]![0].where;
+      expect(where.city).toEqual({ contains: "غزة", mode: "insensitive" });
+      expect(where.AND).toEqual([{ city: { in: ["غزة", "Gaza"] } }]);
+    });
+
+    it("ignores the governorate facet when it is absent", async () => {
+      prisma.job.findMany.mockResolvedValue([]);
+
+      await service.list("user_1", null, 20, {});
+
+      expect(prisma.job.findMany.mock.calls[0]![0].where.AND).toBeUndefined();
+    });
   });
 
   describe("apply", () => {

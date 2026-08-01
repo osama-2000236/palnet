@@ -8,6 +8,7 @@ import {
   type JobAlert as JobAlertDto,
   JobLocationMode,
   JobType,
+  PS_GOVERNORATES,
   type PublicJob,
 } from "@baydar/shared";
 import {
@@ -43,6 +44,12 @@ const JobListQuery = CursorPageQuery.extend({
   locationMode: z.nativeEnum(JobLocationMode).optional(),
   companyId: z.string().cuid().optional(),
   industry: z.string().max(120).optional(),
+  // Validated against the key list, so a typo 400s instead of quietly
+  // returning every job in the country.
+  governorate: z
+    .string()
+    .refine((key) => PS_GOVERNORATES.some((g) => g.key === key), "Unknown governorate.")
+    .optional(),
 });
 type JobListQuery = z.infer<typeof JobListQuery>;
 
@@ -68,6 +75,7 @@ export class JobsController {
       locationMode: query.locationMode ?? null,
       companyId: query.companyId ?? null,
       industry: query.industry ?? null,
+      governorate: query.governorate ?? null,
     });
   }
 
