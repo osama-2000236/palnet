@@ -41,11 +41,14 @@ function buildPrisma(): PrismaStub {
 describe("ConnectionsService", () => {
   let service: ConnectionsService;
   let prisma: PrismaStub;
-  let safety: { getBlockedEitherIds: jest.Mock };
+  let safety: { getBlockedEitherIds: jest.Mock; isBlockedEither: jest.Mock };
 
   beforeEach(async () => {
     prisma = buildPrisma();
-    safety = { getBlockedEitherIds: jest.fn().mockResolvedValue([]) };
+    safety = {
+      getBlockedEitherIds: jest.fn().mockResolvedValue([]),
+      isBlockedEither: jest.fn().mockResolvedValue(false),
+    };
     const moduleRef = await Test.createTestingModule({
       providers: [
         ConnectionsService,
@@ -101,6 +104,92 @@ describe("ConnectionsService", () => {
       await expect(call).rejects.toMatchObject({
         code: ErrorCode.CONFLICT,
       });
+    });
+
+    // Every other surface — feed, search, comments, messaging, notifications,
+    // and this service's own `suggestions` — refuses to put two blocked users
+    // in front of each other. `send` did not, so a blocked user could still
+    // deliver a 300-character `message` into the recipient's invitations list.
+    it("refuses to send to someone the sender has blocked", async () => {
+      prisma.user.findUnique.mockResolvedValue({ id: "u_receiver" });
+      safety.isBlockedEither.mockResolvedValue(true);
+
+      const call = service.send("u_sender", { receiverId: "u_receiver", message: "hi" });
+      await expect(call).rejects.toMatchObject({ code: ErrorCode.BLOCKED });
+      expect(prisma.connection.create).not.toHaveBeenCalled();
+    });
+
+    it("refuses to send to someone who blocked the sender", async () => {
+      prisma.user.findUnique.mockResolvedValue({ id: "u_blocker" });
+      safety.isBlockedEither.mockResolvedValue(true);
+
+      const call = service.send("u_blocked", { receiverId: "u_blocker", message: "let me in" });
+      await expect(call).rejects.toMatchObject({ code: ErrorCode.BLOCKED });
+      expect(prisma.connection.create).not.toHaveBeenCalled();
+    });
+
+    // Re-send takes the `update` branch, not `create` — it has to be gated too.
+    it("refuses to revive a WITHDRAWN row across a block", async () => {
+      prisma.user.findUnique.mockResolvedValue({ id: "u_receiver" });
+      prisma.connection.findFirst.mockResolvedValue({ id: "c_1", status: "WITHDRAWN" });
+      safety.isBlockedEither.mockResolvedValue(true);
+
+      const call = service.send("u_sender", { receiverId: "u_receiver" });
+      await expect(call).rejects.toMatchObject({ code: ErrorCode.BLOCKED });
+      expect(prisma.connection.update).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("listMine", () => {
+    // A block usually arrives *because* of the request already sitting in the
+    // list. Gating only the write leaves that row visible forever.
+    it("hides connections with users blocked in either direction", async () => {
+      safety.getBlockedEitherIds.mockResolvedValue(["u_blocked"]);
+      prisma.connection.findMany.mockResolvedValue([]);
+
+      await service.listMine("u_me", "INCOMING");
+
+      expect(prisma.connection.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            status: "PENDING",
+            receiverId: "u_me",
+            AND: [
+              { requesterId: { notIn: ["u_blocked"] } },
+              { receiverId: { notIn: ["u_blocked"] } },
+            ],
+          }),
+        }),
+      );
+    });
+
+    it("adds no exclusion clause when nothing is blocked", async () => {
+      safety.getBlockedEitherIds.mockResolvedValue([]);
+      prisma.connection.findMany.mockResolvedValue([]);
+
+      await service.listMine("u_me", "ACCEPTED");
+
+      const where = prisma.connection.findMany.mock.calls[0]![0].where as Record<string, unknown>;
+      expect(where.AND).toBeUndefined();
+    });
+  });
+
+  describe("counts", () => {
+    // The badge and the list have to agree, or the invitations count points at
+    // a row `listMine` refuses to render and the badge never clears.
+    it("applies the same block exclusion the list does", async () => {
+      safety.getBlockedEitherIds.mockResolvedValue(["u_blocked"]);
+      prisma.connection.count.mockResolvedValue(0);
+
+      await service.counts("u_me");
+
+      for (const call of prisma.connection.count.mock.calls) {
+        expect(call[0].where.AND).toEqual([
+          { requesterId: { notIn: ["u_blocked"] } },
+          { receiverId: { notIn: ["u_blocked"] } },
+        ]);
+      }
+      expect(prisma.connection.count).toHaveBeenCalledTimes(3);
     });
   });
 
