@@ -143,6 +143,7 @@
       "INTERNAL": "حدث خطأ غير متوقع.",
       "ACCOUNT_DELETED_PENDING_RESTORE": "هذا الحساب قيد الحذف. استعده قبل تسجيل الدخول.",
       "ACCOUNT_DELETED": "تم حذف هذا الحساب.",
+      "ACCOUNT_SUSPENDED": "تم إيقاف هذا الحساب.",
       "AUTH_TOKEN_EXPIRED": "انتهت صلاحية هذا الرابط. اطلب رابطًا جديدًا.",
       "AUTH_TOKEN_INVALID": "هذا الرابط غير صالح أو استُخدم من قبل."
     },

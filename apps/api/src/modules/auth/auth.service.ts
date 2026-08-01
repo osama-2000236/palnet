@@ -239,11 +239,32 @@ export class AuthService {
     });
   }
 
+  /**
+   * The one place a session is minted — login, register, refresh and account
+   * restore all land here, so it is the one place the suspension flag has to
+   * be read.
+   *
+   * `isActive: false` is what a moderator SUSPEND writes. Nothing on the auth
+   * path read it: only "people you may know" filtered on it, so a suspended
+   * account disappeared from one list and otherwise carried on signing in,
+   * posting, messaging and applying. Refusing here also ends a live session at
+   * the next refresh instead of waiting for the refresh token to expire.
+   */
   async issueSession(
-    user: { id: string; email: string; role: AuthUser["role"]; locale: string },
+    user: {
+      id: string;
+      email: string;
+      role: AuthUser["role"];
+      locale: string;
+      isActive: boolean;
+    },
     deviceId: string,
     meta: SessionMeta = {},
   ): Promise<AuthSession> {
+    if (!user.isActive) {
+      throw new DomainException(ErrorCode.ACCOUNT_SUSPENDED, "Account has been suspended.", 403);
+    }
+
     const tokens = signTokens(this.config, user);
 
     // Persist refresh token hash.

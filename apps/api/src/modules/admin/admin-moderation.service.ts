@@ -103,6 +103,13 @@ export class AdminModerationService {
           where: { id: report.targetUserId },
           data: { isActive: false },
         });
+        // Setting the flag alone would leave every open session alive until its
+        // refresh token expired. Revoking here caps the suspension at one
+        // access-token TTL: `issueSession` refuses the refresh that follows.
+        await tx.refreshToken.updateMany({
+          where: { userId: report.targetUserId, revokedAt: null },
+          data: { revokedAt: new Date() },
+        });
       }
       if (input.action === "HARD_DELETE" && report.targetPostId) {
         await tx.post.update({

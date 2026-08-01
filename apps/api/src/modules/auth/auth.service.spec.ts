@@ -85,6 +85,7 @@ describe("AuthService", () => {
         email: "a@b.co",
         role: "USER",
         locale: "ar-PS",
+        isActive: true,
       });
       prisma.refreshToken.create.mockResolvedValue({});
 
@@ -206,6 +207,50 @@ describe("AuthService", () => {
         status: 403,
       });
     });
+
+    // `isActive: false` is what the moderation SUSPEND action writes. Nothing
+    // read it on the auth path, so a suspended account could sign straight
+    // back in and keep posting.
+    it("rejects a suspended account with ACCOUNT_SUSPENDED", async () => {
+      const passwordHash = await bcrypt.hash("correct-pw", 4);
+      prisma.user.findUnique.mockResolvedValue({
+        id: "user_1",
+        email: "a@b.co",
+        role: "USER",
+        locale: "ar-PS",
+        passwordHash,
+        deletedAt: null,
+        isActive: false,
+      });
+
+      const call = service.login({
+        email: "a@b.co",
+        password: "correct-pw",
+        deviceId: "device-1",
+      });
+
+      await expect(call).rejects.toMatchObject({
+        code: ErrorCode.ACCOUNT_SUSPENDED,
+        status: 403,
+      });
+    });
+
+    it("still admits an active account", async () => {
+      const passwordHash = await bcrypt.hash("correct-pw", 4);
+      prisma.user.findUnique.mockResolvedValue({
+        id: "user_1",
+        email: "a@b.co",
+        role: "USER",
+        locale: "ar-PS",
+        passwordHash,
+        deletedAt: null,
+        isActive: true,
+      });
+
+      await expect(
+        service.login({ email: "a@b.co", password: "correct-pw", deviceId: "device-1" }),
+      ).resolves.toMatchObject({ user: { id: "user_1" } });
+    });
   });
 
   describe("me", () => {
@@ -298,6 +343,7 @@ describe("AuthService", () => {
       email: "a@b.co",
       role: "USER" as const,
       locale: "ar-PS",
+      isActive: true,
     };
 
     it("atomically revokes the presented token and issues a new session", async () => {
