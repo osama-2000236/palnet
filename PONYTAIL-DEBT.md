@@ -21,8 +21,8 @@ silently.
 - `apps/api/src/modules/billing/billing.service.ts:222` — UTC-day idempotency key plus the
   active-plan guard, instead of a DB constraint. **ceiling:** leans on nothing transitioning
   a subscription out of `ACTIVE`; two simultaneous requests still create two subscription
-  rows against one debit. **upgrade:** partial unique index on `Subscription (userId,
-  planId) WHERE status IN ('TRIALING','ACTIVE','INCOMPLETE')`.
+  rows against one debit. **upgrade:** a partial unique index on `Subscription` over
+  `(userId, planId)` where status is `TRIALING`, `ACTIVE`, or `INCOMPLETE`.
 - `apps/api/src/modules/billing/hyperpay.client.ts:65` — fail-closed webhook signature
   verification. **ceiling:** a missing secret rejects every webhook. **upgrade:** none named.
   `no-trigger`
@@ -87,7 +87,7 @@ silently.
   **upgrade:** none named. `no-trigger`
 - `packages/shared/src/react/safety.ts:18` — a fourth structurally identical copy of the
   report-target union. **ceiling:** `ui-web` and `ui-native` each export it as
-  `ReportTarget`. **upgrade:** converge the name during the ui-* lockstep pass.
+  `ReportTarget`. **upgrade:** converge the name during the ui-\* lockstep pass.
 - `packages/shared/src/schemas/message.ts:18` — https-only on the write path; reads are
   deliberately left untightened, because one stored `http://` row would fail the page parse
   and blank a whole thread. **ceiling:** no host allowlist. **upgrade:** allowlist if R2
@@ -105,7 +105,7 @@ silently.
   **ceiling:** ranks marginally worse, keeps the ability to say why a post was shown.
   **upgrade:** revisit only if explainability stops being a product requirement.
 
-## packages/ui-*
+## packages/ui-\*
 
 - `packages/ui-web/src/Input.tsx:49` — `sm` stays 28px tall. **ceiling:** under the 40px web
   minimum; clears WCAG 2.5.8 AA on area because the field is 200px+ wide, and the
