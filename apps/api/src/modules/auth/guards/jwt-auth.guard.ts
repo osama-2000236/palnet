@@ -3,7 +3,6 @@ import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from
 import { ConfigService } from "@nestjs/config";
 import { Reflector } from "@nestjs/core";
 import type { Request } from "express";
-import * as jwt from "jsonwebtoken";
 
 import type { Env } from "../../../config/env";
 import { AuthTokensService } from "../auth-tokens.service";
@@ -11,13 +10,7 @@ import type { AuthUser } from "../decorators/current-user.decorator";
 import { IS_OPTIONAL_AUTH_KEY } from "../decorators/optional-auth.decorator";
 import { IS_PUBLIC_KEY } from "../decorators/public.decorator";
 import { LastSeenTracker } from "../last-seen.tracker";
-
-interface AccessTokenPayload {
-  sub: string;
-  email: string;
-  role: AuthUser["role"];
-  locale: string;
-}
+import { bearerToken, verifyAccessToken } from "../session-tokens";
 
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
@@ -41,9 +34,7 @@ export class JwtAuthGuard implements CanActivate {
     ]);
 
     const req = ctx.switchToHttp().getRequest<Request & { user?: AuthUser }>();
-    const header = req.headers.authorization ?? "";
-    const match = /^Bearer\s+(.+)$/.exec(header);
-    const token = match?.[1];
+    const token = bearerToken(req.headers.authorization);
 
     if (token) {
       return this.activateBearer(req, token, isOptional);
@@ -68,24 +59,20 @@ export class JwtAuthGuard implements CanActivate {
     token: string,
     isOptional: boolean | undefined,
   ): boolean {
-    try {
-      const secret = this.config.getOrThrow<string>("JWT_ACCESS_SECRET");
-      const payload = jwt.verify(token, secret, {
-        algorithms: ["HS256"],
-      }) as unknown as AccessTokenPayload;
-
-      req.user = {
-        id: payload.sub,
-        email: payload.email,
-        role: payload.role,
-        locale: payload.locale,
-      };
-      this.lastSeen.touch(payload.sub);
-      return true;
-    } catch {
+    const payload = verifyAccessToken(this.config, token);
+    if (!payload) {
       if (isOptional) return true;
       throw unauthorized("Invalid or expired token.");
     }
+
+    req.user = {
+      id: payload.sub,
+      email: payload.email,
+      role: payload.role,
+      locale: payload.locale,
+    };
+    this.lastSeen.touch(payload.sub);
+    return true;
   }
 }
 

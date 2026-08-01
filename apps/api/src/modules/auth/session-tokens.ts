@@ -11,7 +11,7 @@ import type { Env } from "../../config/env";
 
 import type { AuthUser } from "./decorators/current-user.decorator";
 
-interface AccessTokenPayload {
+export interface AccessTokenPayload {
   sub: string;
   email: string;
   role: AuthUser["role"];
@@ -28,6 +28,31 @@ interface TokenSubject {
 /** The one hash for every opaque token we store. Re-exported by auth-tokens.service. */
 export function hashToken(token: string): string {
   return crypto.createHash("sha256").update(token).digest("hex");
+}
+
+/**
+ * Verify an access token, or `null` if it is missing, malformed, expired, or
+ * signed with anything but HS256.
+ *
+ * Two guards need this — JwtAuthGuard to authenticate, BaydarThrottlerGuard to
+ * decide whose rate-limit budget a request spends — and the algorithm allowlist
+ * is the kind of thing that must not drift between two copies.
+ */
+export function verifyAccessToken(
+  config: ConfigService<Env, true>,
+  token: string,
+): AccessTokenPayload | null {
+  try {
+    const secret = config.getOrThrow<string>("JWT_ACCESS_SECRET");
+    return jwt.verify(token, secret, { algorithms: ["HS256"] }) as unknown as AccessTokenPayload;
+  } catch {
+    return null;
+  }
+}
+
+/** `Authorization: Bearer <token>` → the token, or undefined. */
+export function bearerToken(header: string | undefined): string | undefined {
+  return /^Bearer\s+(.+)$/.exec(header ?? "")?.[1];
 }
 
 export function signTokens(config: ConfigService<Env, true>, user: TokenSubject): AuthTokens {
