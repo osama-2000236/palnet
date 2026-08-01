@@ -1,12 +1,21 @@
-import { createHash } from "node:crypto";
-
 import { ErrorCode } from "@baydar/shared";
 import { Injectable, type ExecutionContext } from "@nestjs/common";
-import { ThrottlerGuard, type ThrottlerLimitDetail } from "@nestjs/throttler";
+import { ConfigService } from "@nestjs/config";
+import { Reflector } from "@nestjs/core";
+import {
+  InjectThrottlerOptions,
+  InjectThrottlerStorage,
+  ThrottlerGuard,
+  type ThrottlerLimitDetail,
+  type ThrottlerModuleOptions,
+  type ThrottlerStorage,
+} from "@nestjs/throttler";
 import type { Request } from "express";
 
 import { DomainException } from "../../common/domain-exception";
+import type { Env } from "../../config/env";
 import type { AuthUser } from "../auth/decorators/current-user.decorator";
+import { bearerToken, verifyAccessToken } from "../auth/session-tokens";
 
 import { RATE_LIMIT_KEY, type RateLimitClass } from "./rate-limit.constants";
 
@@ -17,7 +26,9 @@ import { RATE_LIMIT_KEY, type RateLimitClass } from "./rate-limit.constants";
  *
  *   • Identity-first tracking. Throttler keys on `req.ip`, so one office NAT
  *     or one carrier gateway would throttle every user behind it as a single
- *     caller. An authenticated request keys on the user id instead.
+ *     caller — the common case on Palestinian carrier networks. A request
+ *     carrying a *verified* access token keys on the user id instead, so a
+ *     quota also survives the token rotating on refresh.
  *   • Shared buckets. `@RateLimit("search")` spends ONE budget across all four
  *     search handlers. Throttler's default key includes the handler name,
  *     which would hand the same caller four separate 60/min budgets.
@@ -26,18 +37,33 @@ import { RATE_LIMIT_KEY, type RateLimitClass } from "./rate-limit.constants";
  */
 @Injectable()
 export class BaydarThrottlerGuard extends ThrottlerGuard {
+  // `ThrottlerModuleOptions` and `ThrottlerStorage` are interfaces, so
+  // `design:paramtypes` emits `Object` for them and Nest cannot resolve them
+  // by type. The base class tags them with these two decorators; a subclass
+  // declaring its own constructor has to repeat them.
+  constructor(
+    @InjectThrottlerOptions() options: ThrottlerModuleOptions,
+    @InjectThrottlerStorage() storageService: ThrottlerStorage,
+    reflector: Reflector,
+    private readonly config: ConfigService<Env, true>,
+  ) {
+    super(options, storageService, reflector);
+  }
+
   protected override async getTracker(req: Record<string, unknown>): Promise<string> {
     const request = req as unknown as Request & { user?: AuthUser };
     if (request.user?.id) return `user:${request.user.id}`;
 
-    // Pre-`JwtAuthGuard` routes (refresh, logout) carry the identity in the
-    // header but never populate `req.user`. Hash it — the raw token must not
-    // become a storage key.
-    const authorization =
-      typeof request.headers.authorization === "string" ? request.headers.authorization : "";
-    if (authorization) {
-      return `auth:${createHash("sha256").update(authorization).digest("hex")}`;
-    }
+    // This guard is a global APP_GUARD and so runs *before* the global
+    // JwtAuthGuard: `req.user` is not populated yet on any route, and never at
+    // all on `@Public()` ones. So the subject is re-derived here from a
+    // *verified* token. Verified is the whole point — keying on the raw
+    // Authorization header (hashed or not) let any caller mint a fresh bucket
+    // per request by varying a header nobody had checked, which handed
+    // /auth/login an unlimited brute-force budget.
+    const token = bearerToken(request.headers.authorization);
+    const subject = token ? verifyAccessToken(this.config, token)?.sub : undefined;
+    if (subject) return `user:${subject}`;
 
     return `ip:${request.ip ?? request.socket?.remoteAddress ?? "unknown"}`;
   }

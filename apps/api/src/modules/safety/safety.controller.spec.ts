@@ -4,6 +4,7 @@ import {
   type INestApplication,
   UnauthorizedException,
 } from "@nestjs/common";
+import { ConfigModule } from "@nestjs/config";
 import { APP_GUARD } from "@nestjs/core";
 import { Test } from "@nestjs/testing";
 import { ThrottlerModule } from "@nestjs/throttler";
@@ -31,7 +32,17 @@ async function createApp(options: {
   authenticated?: boolean;
 }): Promise<INestApplication> {
   const builder = Test.createTestingModule({
-    imports: [ThrottlerModule.forRoot([{ name: "default", ttl: 60_000, limit: 1_000 }])],
+    imports: [
+      // The throttler guard reads JWT_ACCESS_SECRET to key a bucket on the
+      // caller's user id rather than a header they choose. `app.module.ts`
+      // makes ConfigModule global; an isolated test module has to say so.
+      ConfigModule.forRoot({
+        isGlobal: true,
+        ignoreEnvFile: true,
+        load: [() => ({ JWT_ACCESS_SECRET: "test-access-secret-at-least-32-chars" })],
+      }),
+      ThrottlerModule.forRoot([{ name: "default", ttl: 60_000, limit: 1_000 }]),
+    ],
     controllers: [SafetyController],
     providers: [
       { provide: SafetyService, useValue: options.safety },
