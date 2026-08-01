@@ -18,7 +18,13 @@ design-out
 docs
 open-design
 palnet
-scripts
+# `scripts/*`, not `scripts`: gitignore semantics never descend into an
+# excluded directory, so a bare `scripts` makes the negation below dead and the
+# build fails again with MODULE_NOT_FOUND.
+# @baydar/ui-tokens' build runs `node ../../scripts/build-tokens.mjs` to emit
+# tokens.css. Everything else in scripts/ is a CI gate Vercel never runs.
+scripts/*
+!scripts/build-tokens.mjs
 tools
 
 apps/*
