@@ -172,6 +172,10 @@ export class AccountService {
           email: string;
           role: "USER" | "COMPANY_ADMIN" | "MODERATOR" | "ADMIN";
           locale: string;
+          // Restoring a soft-deleted account must not also un-suspend it —
+          // `issueSession` refuses when this is false. The cast above is why
+          // the compiler could not see the field was missing.
+          isActive: boolean;
         }>
       )({
         where: { id: user.id },

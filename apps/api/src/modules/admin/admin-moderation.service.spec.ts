@@ -12,6 +12,7 @@ interface TxStub {
   post: { update: jest.Mock };
   user: { update: jest.Mock; delete: jest.Mock };
   report: { updateMany: jest.Mock };
+  refreshToken: { updateMany: jest.Mock };
 }
 
 type PrismaStub = {
@@ -26,6 +27,7 @@ function buildTx(): TxStub {
     post: { update: jest.fn() },
     user: { update: jest.fn(), delete: jest.fn() },
     report: { updateMany: jest.fn().mockResolvedValue({ count: 1 }) },
+    refreshToken: { updateMany: jest.fn().mockResolvedValue({ count: 0 }) },
   };
 }
 
@@ -145,6 +147,12 @@ describe("AdminModerationService", () => {
         data: { isActive: false },
       });
       expect(tx.user.delete).not.toHaveBeenCalled();
+      // The flag alone left every open session alive until its refresh token
+      // expired, so the suspension only started at the next sign-in.
+      expect(tx.refreshToken.updateMany).toHaveBeenCalledWith({
+        where: { userId: "u_bad", revokedAt: null },
+        data: { revokedAt: expect.any(Date) },
+      });
     });
 
     it("HARD_DELETE removes the target user", async () => {
