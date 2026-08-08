@@ -13,6 +13,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } fro
 import { useBandwidth } from "@baydar/shared/react";
 
 import { BandwidthChipHost } from "@/components/BandwidthChipHost";
+import { OfflineBanner } from "@/components/OfflineBanner";
 import { apiFetch, apiFetchPage, getValidAccessToken, signOut } from "@/lib/api";
 import { clearSession, readSession } from "@/lib/session";
 import { openStream } from "@/lib/sse";
@@ -262,6 +263,7 @@ export default function AppLayout({ children }: { children: ReactNode }): JSX.El
     >
       {/* Unkeyed RSC `children` beside a sibling trips React 19's dev key warning. */}
       <div>
+        <OfflineBanner />
         <ConnectivityBanner degraded={notificationsConnectionDropped} />
         {children}
       </div>

@@ -1325,6 +1325,11 @@
     "loadImage": "Load image",
     "loadImageUnknownSize": "Load image",
     "imageSize": "{size} KB",
-    "videoUnavailableSlow": "Video is unavailable on a slow connection"
+    "videoUnavailableSlow": "Video is unavailable on a slow connection",
+    "lastUpdated": "Last updated: {when}",
+    "offline": {
+      "title": "You are offline",
+      "body": "Live updates are paused and will resume when the connection returns."
+    }
   }
 }

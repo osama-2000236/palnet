@@ -1,4 +1,9 @@
-import type { OutboxEntry, OutboxStorage } from "@baydar/shared";
+import type {
+  OfflineCacheEntry,
+  OfflineCacheStorage,
+  OutboxEntry,
+  OutboxStorage,
+} from "@baydar/shared";
 import { File, Paths } from "expo-file-system";
 
 /**
@@ -19,8 +24,49 @@ import { File, Paths } from "expo-file-system";
  */
 
 const FILE_NAME = "outbox.v1.json";
+const CACHE_FILE_NAME = "offline-cache.v1.json";
 
 const queueFile = (): File => new File(Paths.document, FILE_NAME);
+const cacheFile = (): File => new File(Paths.document, CACHE_FILE_NAME);
+
+/** Read a JSON array, treating anything unreadable as empty. */
+async function readArray<T>(file: File): Promise<T[]> {
+  try {
+    if (!file.exists) return [];
+    const parsed: unknown = JSON.parse(await file.text());
+    return Array.isArray(parsed) ? (parsed as T[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+/** Write a JSON array, treating a refusal as "not persisted", never a throw. */
+function writeArray(file: File, value: unknown): void {
+  try {
+    if (!file.exists) file.create({ intermediates: true, overwrite: true });
+    file.write(JSON.stringify(value));
+  } catch {
+    // A queue that cannot persist still sends; a cache that cannot persist is
+    // a slower product, not a broken one.
+  }
+}
+
+/**
+ * The offline read cache.
+ *
+ * Its own file rather than a second key in the queue's: the queue is written
+ * on every send and the cache on every screen, and one file means every cache
+ * write rewrites the queue too.
+ */
+export function createNativeOfflineCacheStorage(): OfflineCacheStorage {
+  return {
+    read: () => readArray<OfflineCacheEntry>(cacheFile()),
+    write: (entries) => {
+      writeArray(cacheFile(), entries);
+      return Promise.resolve();
+    },
+  };
+}
 
 export function createNativeOutboxStorage(): OutboxStorage {
   return {

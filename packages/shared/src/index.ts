@@ -12,6 +12,7 @@ export * from "./place";
 export * from "./user-agent";
 export * from "./palestine";
 export * from "./occupations";
+export * from "./offline-cache";
 export * from "./outbox";
 export * from "./outbox-request";
 export * from "./profile-completion";

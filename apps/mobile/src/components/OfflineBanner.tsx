@@ -22,8 +22,8 @@ export function OfflineBanner(): JSX.Element | null {
       accessibilityRole="alert"
       style={[styles.banner, { top: insets.top + nativeTokens.space[2] }]}
     >
-      <Text style={styles.title}>{t("system.offline.title")}</Text>
-      <Text style={styles.body}>{t("system.offline.body")}</Text>
+      <Text style={styles.title}>{t("connection.offline.title")}</Text>
+      <Text style={styles.body}>{t("connection.offline.body")}</Text>
     </Surface>
   );
 }

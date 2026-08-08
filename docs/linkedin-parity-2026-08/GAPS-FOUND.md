@@ -229,3 +229,41 @@ exists to help.
 
 **Sites:** `packages/shared/src/schemas/media.ts` (`MULTIPART_PART_BYTES`),
 `packages/shared/src/resumable-upload.ts`.
+
+---
+
+## GAP-07 — a service worker would have been half an implementation
+
+**Phase:** P1
+**Needed:** how offline reads are stored on web.
+**Should have been decided by:** §15.5, which specifies "a service worker with
+a stale-while-revalidate cache" on web and `expo-sqlite` on mobile.
+
+**What the spec missed.** Those are two implementations of one idea, on a
+workstream whose own rule is one implementation with two storage adapters — the
+same rule the outbox two sections earlier is written to. A service worker
+caches responses on web and does nothing for mobile, so mobile needs the
+read-through cache anyway, and then the two platforms have different definitions
+of what is cached, when it expires, and what the 40 MB ceiling counts.
+
+**Options:**
+
+1. Both as specified: a service worker on web, a separate cache on mobile.
+2. One read-through cache in `@baydar/shared`, over the two storage adapters
+   the outbox already has.
+3. A service worker on web only, and no offline reads on mobile.
+
+**Chosen: 2.** The eviction policy, the ceiling, the key set and the staleness
+timestamp are then written once and asserted once. Option 3 abandons the
+platform where most of this market reads.
+
+**What this does not do, and should be said plainly.** A service worker also
+caches the app shell, so web can cold-start with no network at all. This cache
+holds data, not HTML and JavaScript — a member who opens baydar.ps offline from
+a closed tab still gets nothing. Adding a shell cache later is additive and does
+not change any of the above; it is deliberately not bundled in here, because a
+service worker that caches JavaScript chunks is its own release-and-rollback
+problem and belongs in a change that can be reverted on its own.
+
+**Sites:** `packages/shared/src/offline-cache.ts`, and the
+`createWeb…`/`createNative…` adapters beside each app's outbox storage.

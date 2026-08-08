@@ -1,6 +1,11 @@
 "use client";
 
-import type { OutboxEntry, OutboxStorage } from "@baydar/shared";
+import type {
+  OfflineCacheEntry,
+  OfflineCacheStorage,
+  OutboxEntry,
+  OutboxStorage,
+} from "@baydar/shared";
 
 /**
  * The browser half of the outbox: where the queue lives.
@@ -23,6 +28,8 @@ const DB_NAME = "baydar";
 const DB_VERSION = 1;
 const STORE = "outbox";
 const RECORD_KEY = "queue";
+/** The offline read cache shares the store; it is the same durability need. */
+const CACHE_RECORD_KEY = "offline-cache";
 
 function openDatabase(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
@@ -61,6 +68,35 @@ const NULL_STORAGE: OutboxStorage = {
   read: () => Promise.resolve([]),
   write: () => Promise.resolve(),
 };
+
+/**
+ * The offline read cache, in the same object store.
+ *
+ * Same shape, same degradation, one database. A second IndexedDB just to hold
+ * a second array would double the open/upgrade paths for no benefit.
+ */
+export function createWebOfflineCacheStorage(): OfflineCacheStorage {
+  if (typeof indexedDB === "undefined")
+    return { read: () => Promise.resolve([]), write: () => Promise.resolve() };
+
+  return {
+    async read(): Promise<OfflineCacheEntry[]> {
+      try {
+        const stored = await transact("readonly", (store) => store.get(CACHE_RECORD_KEY));
+        return Array.isArray(stored) ? (stored as OfflineCacheEntry[]) : [];
+      } catch {
+        return [];
+      }
+    },
+    async write(entries: OfflineCacheEntry[]): Promise<void> {
+      try {
+        await transact("readwrite", (store) => store.put(entries, CACHE_RECORD_KEY));
+      } catch {
+        // No cache is a slower product, not a broken one.
+      }
+    },
+  };
+}
 
 export function createWebOutboxStorage(): OutboxStorage {
   if (typeof indexedDB === "undefined") return NULL_STORAGE;

@@ -172,6 +172,14 @@ function makeFeedStyles(c: NativeTheme["color"]) {
     footerLoading: {
       paddingVertical: nativeTokens.space[4],
     },
+    // «آخر تحديث» over a page that came from the cache.
+    staleNote: {
+      fontFamily: nativeTokens.type.family.sans,
+      fontSize: nativeTokens.type.scale.small.size,
+      color: c.inkMuted,
+      paddingHorizontal: nativeTokens.space[4],
+      paddingBottom: nativeTokens.space[2],
+    },
   });
 }
 

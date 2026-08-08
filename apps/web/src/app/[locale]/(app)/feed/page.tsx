@@ -2,7 +2,7 @@
 
 import { Suspense, useCallback, useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useRouter, useSearchParams } from "next/navigation";
 import { z } from "zod";
 
@@ -10,7 +10,10 @@ import { apiFetch, apiFetchPage } from "@/lib/api";
 import { getAccessToken } from "@/lib/session";
 import {
   cursorPage,
+  formatRelativeTime,
   getBandwidthPolicy,
+  offlineCacheKeys,
+  readThrough,
   Job as JobSchema,
   PersonSuggestion as PersonSuggestionSchema,
   Post as PostSchema,
@@ -27,13 +30,14 @@ import {
 } from "@baydar/ui-web";
 import { Composer } from "@/components/Composer";
 import { OutboxTrayHost } from "@/components/OutboxTrayHost";
+import { offlineCache } from "@/lib/offline-cache";
 import { FeedErrorState } from "./_components/FeedErrorState";
+import { fetchFeedPage } from "./_components/fetchFeedPage";
 import { PostCard } from "@/components/PostCard";
 import { RightRail } from "../components/RightRail";
 import { OnboardingDoneCard } from "./OnboardingDoneCard";
 import { ProfileCompletenessCard } from "./ProfileCompletenessCard";
 
-const PostsPage = cursorPage(PostSchema);
 const JobsPage = cursorPage(JobSchema);
 const Suggestions = z.array(PersonSuggestionSchema);
 
@@ -61,6 +65,8 @@ export default function FeedPageRoute(): JSX.Element {
 
 function FeedInner(): JSX.Element {
   const t = useTranslations("feed");
+  const tConnection = useTranslations("connection");
+  const locale = useLocale();
   const router = useRouter();
   const params = useSearchParams();
   const [posts, setPosts] = useState<HitState>(emptyHits);
@@ -97,10 +103,16 @@ function FeedInner(): JSX.Element {
     gcTime: 60 * 1000, // 1 minute
   });
 
+  // Non-null only when the page came from the cache. Rendered as «آخر تحديث»,
+  // because stale data presented as live is worse than no data — a member acts
+  // on it.
+  const [staleSince, setStaleSince] = useState<number | null>(null);
+
   useEffect(() => {
     if (!query.data) return;
-    const page = query.data;
+    const { body: page, stale, storedAt } = query.data;
     setError(null);
+    setStaleSince(stale ? storedAt : null);
     setPosts((prev) => ({
       ...prev,
       posts: requestAfter ? [...prev.posts, ...page.data] : page.data,
@@ -177,6 +189,13 @@ function FeedInner(): JSX.Element {
           <div className="mb-4">
             <OutboxTrayHost />
           </div>
+          {staleSince ? (
+            <p className="text-ink-muted text-small mb-4">
+              {tConnection("lastUpdated", {
+                when: formatRelativeTime(new Date(staleSince).toISOString(), locale),
+              })}
+            </p>
+          ) : null}
           <div className="mb-4">
             <Composer
               me={me}
@@ -271,14 +290,4 @@ function FeedInner(): JSX.Element {
       </Suspense>
     </main>
   );
-}
-
-async function fetchFeedPage(after: string | null) {
-  const token = getAccessToken() ?? undefined;
-  // Page size follows the mode: five posts on 2G, ten otherwise. A member on
-  // a slow connection waits for less before anything is on screen.
-  const qs = new URLSearchParams({ limit: String(getBandwidthPolicy().pageSize) });
-  if (after) qs.set("after", after);
-  const path = `/feed?${qs.toString()}`;
-  return apiFetchPage(path, PostsPage, { token });
 }

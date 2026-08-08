@@ -1325,6 +1325,11 @@
     "loadImage": "تحميل الصورة",
     "loadImageUnknownSize": "تحميل الصورة",
     "imageSize": "{size} ك.ب",
-    "videoUnavailableSlow": "الفيديو غير متاح على الاتصال البطيء"
+    "videoUnavailableSlow": "الفيديو غير متاح على الاتصال البطيء",
+    "lastUpdated": "آخر تحديث: {when}",
+    "offline": {
+      "title": "أنت غير متصل الآن",
+      "body": "سنوقف التحديثات المباشرة مؤقتًا ونستأنفها عند عودة الاتصال."
+    }
   }
 }

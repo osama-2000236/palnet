@@ -1,6 +1,9 @@
 import {
   cursorPage,
+  formatRelativeTime,
   getBandwidthPolicy,
+  offlineCacheKeys,
+  readThrough,
   Post as PostSchema,
   Profile as ProfileSchema,
   type Post,
@@ -17,11 +20,12 @@ import { router, useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { z } from "zod";
 import { useTranslation } from "react-i18next";
-import { FlatList, RefreshControl, View } from "react-native";
+import { FlatList, RefreshControl, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { PostRow } from "@/components/rows/PostRow";
 import { apiFetch, apiFetchPage } from "@/lib/api";
+import { offlineCache } from "@/lib/offline-cache";
 import { track } from "@/lib/analytics";
 import { getAccessToken, readSession } from "@/lib/session";
 
@@ -34,12 +38,15 @@ const UnreadCountEnvelope = z.object({ count: z.number().int().nonnegative() });
 
 export default function FeedScreen(): JSX.Element {
   const c = useThemeTokens().color;
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const feedStyles = useFeedStyles();
   const [posts, setPosts] = useState<Post[]>([]);
   const [cursor, setCursor] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(false);
+  // Non-null only when the page came from the cache. Stale data presented as
+  // live is worse than no data — a member acts on it.
+  const [staleSince, setStaleSince] = useState<number | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [unread, setUnread] = useState<number>(0);
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -77,9 +84,17 @@ export default function FeedScreen(): JSX.Element {
         // Page size follows the mode: five posts on 2G, ten otherwise.
         const qs = new URLSearchParams({ limit: String(getBandwidthPolicy().pageSize) });
         if (after) qs.set("after", after);
-        const page = await apiFetchPage(`/feed?${qs.toString()}`, FeedPage, {
-          token,
-        });
+        // Stale-while-revalidate: on a dead 2G link the member sees the last
+        // page their phone held, with «آخر تحديث» over it, rather than an
+        // error over data they already have.
+        const {
+          body: page,
+          stale,
+          storedAt,
+        } = await readThrough(offlineCache, offlineCacheKeys.feed, () =>
+          apiFetchPage(`/feed?${qs.toString()}`, FeedPage, { token }),
+        );
+        setStaleSince(stale ? storedAt : null);
         setPosts((prev) => (after ? [...prev, ...page.data] : page.data));
         setCursor(page.meta.nextCursor);
         setHasMore(page.meta.hasMore);
@@ -137,6 +152,13 @@ export default function FeedScreen(): JSX.Element {
               {/* Above the composer: a member who lost a post is here to find
                   it, not to write another one. */}
               <OutboxTrayHost />
+              {staleSince ? (
+                <Text style={feedStyles.staleNote}>
+                  {t("connection.lastUpdated", {
+                    when: formatRelativeTime(new Date(staleSince).toISOString(), i18n.language),
+                  })}
+                </Text>
+              ) : null}
               <ComposerEntry
                 user={
                   profile
