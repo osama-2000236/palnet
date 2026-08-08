@@ -52,10 +52,10 @@ export const tokens = {
       success: "#3b7a3b",
       successSoft: "rgba(59, 122, 59, 0.10)",
       successBorder: "rgba(59, 122, 59, 0.22)",
-      // A6: was #b07a1a — 3.33:1 against its own 10% tint. Now 4.50.
-      warning: "#926516",
-      warningSoft: "rgba(146, 101, 22, 0.10)",
-      warningBorder: "rgba(146, 101, 22, 0.25)",
+      // Was #926516: 4.50 on its tint over white, 3.87 over `sunken`. HANDOFF §semantics.
+      warning: "#7e5713",
+      warningSoft: "rgba(126, 87, 19, 0.10)",
+      warningBorder: "rgba(126, 87, 19, 0.25)",
       danger: "#a83232",
       dangerSoft: "rgba(168, 50, 50, 0.08)",
       dangerBorder: "rgba(168, 50, 50, 0.22)",
