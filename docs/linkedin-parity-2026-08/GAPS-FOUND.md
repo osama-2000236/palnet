@@ -267,3 +267,49 @@ problem and belongs in a change that can be reverted on its own.
 
 **Sites:** `packages/shared/src/offline-cache.ts`, and the
 `createWeb…`/`createNative…` adapters beside each app's outbox storage.
+
+---
+
+## GAP-08 — the follow graph's uniqueness does not hold as specified
+
+**Phase:** P2
+**Needed:** the primary key of `FollowerCount` and the unique constraint on
+`Follow`.
+**Should have been decided by:** §6.2 and `spec/schema.delta.prisma`, which
+give `FollowerCount` a composite `@@id` over four columns — three of them
+nullable — and `Follow` an `@@unique` over five, three of them nullable.
+
+**What the spec missed.** Two things, and they are the same thing twice.
+
+`FollowerCount`'s primary key does not compile: Prisma rejects an `@@id` that
+references optional fields, which is the error the migration fails on before it
+reaches the database.
+
+`Follow`'s uniqueness is worse, because it compiles and does not work. Postgres
+treats NULLs in a unique index as distinct, so `(me, USER, u2, NULL, NULL)`
+inserts twice — and `FollowerCount` counts both. A double-follow that no code
+path can undo is exactly the drift a denormalised counter cannot survive.
+
+**Options:**
+
+1. Sentinel `''` in the three columns instead of NULL, keeping the shape.
+2. One canonical `targetKey` — `USER:<id>` / `COMPANY:<id>` / `TOPIC:<key>` —
+   as the unique key on `Follow` and the primary key on `FollowerCount`.
+3. `NULLS NOT DISTINCT` on the unique index (Postgres 15+).
+
+**Chosen: 2.** A sentinel makes the CHECK constraint and every query read
+around it forever. Option 3 fixes `Follow` and leaves `FollowerCount`
+uncompilable, and it is a Postgres-15 behaviour worth not depending on for
+something this load-bearing. The key is derived by `followTargetKey()` in
+`@baydar/shared`, so the client, the API and the migration spell it the same
+way — a second spelling is a second follow.
+
+The typed columns stay for foreign-key integrity and joins; the key is what
+uniqueness and counting run on.
+
+**Also added, unspecified:** `CHECK ("count" >= 0)` on `FollowerCount`. A
+counter that can go negative is a counter nobody trusts, and the nightly
+reconciliation repairs drift rather than preventing it.
+
+**Sites:** `packages/shared/src/schemas/follow.ts`,
+`packages/db/prisma/migrations/202608090002_add_follow_graph/migration.sql`.

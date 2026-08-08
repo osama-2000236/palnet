@@ -274,6 +274,16 @@ enum RatingContext {
   EMPLOYER_RATES_CANDIDATE
 }
 
+// The asymmetric edge. Baydar had exactly one — Connection, mutual, requiring
+// acceptance — which caps the diaspora's participation at the size of their
+// existing address book. 8.82 million people abroad mostly do not know each
+// other and never will; a follow costs the person being followed nothing.
+enum FollowTargetType {
+  USER
+  COMPANY
+  TOPIC
+}
+
 enum BookmarkType {
   POST
   JOB
@@ -339,6 +349,16 @@ model User {
   feedSlates              FeedSlate[]
   topicMutes              TopicMute[]
   idempotencyRecords      IdempotencyRecord[]
+  follows                 Follow[]                 @relation("FollowFollower")
+  followers               Follow[]                 @relation("FollowTargetUser")
+  feedMutes               FeedMute[]               @relation("FeedMuteUser")
+  feedMutedBy             FeedMute[]               @relation("FeedMuteMuted")
+  restrictionsMade        RestrictedUser[]         @relation("RestrictOwner")
+  restrictedBy            RestrictedUser[]         @relation("RestrictTarget")
+  secondDegree            SecondDegree[]           @relation("SecondDegreeUser")
+  secondDegreeOf          SecondDegree[]           @relation("SecondDegreePeer")
+  suggestionDismissals    SuggestionDismissal[]    @relation("DismissalUser")
+  dismissedBy             SuggestionDismissal[]    @relation("DismissalTarget")
 
   @@index([email])
   @@index([role])
@@ -375,6 +395,113 @@ model IdempotencyRecord {
 
   @@unique([userId, key])
   @@index([expiresAt])
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// The graph
+// ──────────────────────────────────────────────────────────────────────────
+
+// One row per follow. Exactly one target column is set; the migration adds a
+// CHECK for it, because Prisma cannot express "one of three" and a row with
+// two targets is counted twice by FollowerCount forever.
+model Follow {
+  id              String           @id @default(cuid())
+  follower        User             @relation("FollowFollower", fields: [followerId], references: [id], onDelete: Cascade)
+  followerId      String
+  targetType      FollowTargetType
+  targetUser      User?            @relation("FollowTargetUser", fields: [targetUserId], references: [id], onDelete: Cascade)
+  targetUserId    String?
+  targetCompany   Company?         @relation(fields: [targetCompanyId], references: [id], onDelete: Cascade)
+  targetCompanyId String?
+  targetTopicKey  String?
+  /// "USER:<id>" | "COMPANY:<id>" | "TOPIC:<key>". Derived by followTargetKey()
+  /// in @baydar/shared so both sides spell it the same way.
+  ///
+  /// Uniqueness cannot be expressed over the three nullable columns: Postgres
+  /// treats NULLs in a unique index as distinct, so (me, USER, u2, NULL, NULL)
+  /// would happily insert twice and FollowerCount would count both.
+  targetKey       String
+  createdAt       DateTime         @default(now())
+
+  @@unique([followerId, targetKey])
+  @@index([targetUserId])
+  @@index([targetCompanyId])
+  @@index([targetTopicKey])
+  @@index([followerId, targetType])
+}
+
+/// Denormalised, because a COUNT(*) on Follow per profile card is the query
+/// that kills the feed at 100k rows. Incremented with UPDATE … SET count =
+/// count + 1 inside the same transaction as the Follow write — never
+/// read-modify-write, which loses a follow under concurrency.
+model FollowerCount {
+  /// The same key Follow carries. One column rather than the four the design
+  /// sketched: Prisma cannot build a primary key from nullable fields, and a
+  /// counter needs a key it can upsert on atomically.
+  targetKey  String           @id
+  targetType FollowTargetType
+  count      Int              @default(0)
+  updatedAt  DateTime         @updatedAt
+
+  @@index([targetType])
+}
+
+/// "Stop showing me this person's posts, but stay connected." Distinct from
+/// BlockedUser, which is mutual invisibility, and from unfollowing, which this
+/// does not touch — the connection and the follow both survive.
+model FeedMute {
+  user      User     @relation("FeedMuteUser", fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  muted     User     @relation("FeedMuteMuted", fields: [mutedId], references: [id], onDelete: Cascade)
+  mutedId   String
+  createdAt DateTime @default(now())
+
+  @@id([userId, mutedId])
+  @@index([mutedId])
+}
+
+/// They can see me; they cannot message me or comment on my posts. The safety
+/// primitive between "nothing" and "block", for the case where blocking is
+/// itself a signal the other person would notice.
+model RestrictedUser {
+  user         User     @relation("RestrictOwner", fields: [userId], references: [id], onDelete: Cascade)
+  userId       String
+  restricted   User     @relation("RestrictTarget", fields: [restrictedId], references: [id], onDelete: Cascade)
+  restrictedId String
+  createdAt    DateTime @default(now())
+
+  @@id([userId, restrictedId])
+  @@index([restrictedId])
+}
+
+/// Materialised second-degree adjacency, refreshed nightly. Computing degree
+/// live is a two-hop join per card, which at feed scale is not affordable.
+/// Only degree 2 is stored — degree 3 renders as "3rd+" without proof, which
+/// is honest enough and costs nothing.
+model SecondDegree {
+  user        User     @relation("SecondDegreeUser", fields: [userId], references: [id], onDelete: Cascade)
+  userId      String
+  peer        User     @relation("SecondDegreePeer", fields: [peerId], references: [id], onDelete: Cascade)
+  peerId      String
+  /// Shared first-degree connections. Drives «٤ معارف مشتركين».
+  mutuals     Int
+  refreshedAt DateTime @default(now())
+
+  @@id([userId, peerId])
+  @@index([userId, mutuals])
+}
+
+/// "Not this person." Suggestions that ignore a dismissal are worse than no
+/// suggestions: they teach the member that the control does nothing.
+model SuggestionDismissal {
+  user        User     @relation("DismissalUser", fields: [userId], references: [id], onDelete: Cascade)
+  userId      String
+  dismissed   User     @relation("DismissalTarget", fields: [dismissedId], references: [id], onDelete: Cascade)
+  dismissedId String
+  createdAt   DateTime @default(now())
+
+  @@id([userId, dismissedId])
+  @@index([createdAt])
 }
 
 model RefreshToken {
@@ -803,6 +930,7 @@ model Company {
   credits       EmployerCredit[]
   workProofs    WorkProof[]
   licences      Licence[]
+  followers     Follow[]
 
   @@index([name])
   @@index([kind])
