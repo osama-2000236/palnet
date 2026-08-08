@@ -45,14 +45,10 @@ export type {
   OutboxTrayProps,
   OutboxTrayState,
 } from "./OutboxTray";
+export { PostMedia } from "./PostMedia";
+export type { PostMediaItem, PostMediaLabels, PostMediaProps } from "./PostMedia";
 export { PostCard } from "./PostCard";
-export type {
-  PostCardProps,
-  PostCardLabels,
-  PostCardAuthor,
-  PostCardMedia,
-  PostCardCounts,
-} from "./PostCard";
+export type { PostCardProps, PostCardLabels, PostCardAuthor, PostCardCounts } from "./PostCard";
 export { PostCardSkeleton } from "./PostCardSkeleton";
 export { ReactionGlyph } from "./ReactionGlyph";
 export type { ReactionGlyphProps } from "./ReactionGlyph";

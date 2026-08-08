@@ -10,7 +10,7 @@
 //
 // The union is declared here rather than imported from @baydar/shared on
 // purpose: ui-web depends only on ui-tokens, clsx and tailwind-merge, and stays
-// framework- and domain-neutral (see PostCardMedia's local `kind` union for the
+// framework- and domain-neutral (see PostMediaItem's local `kind` union for the
 // same call). The host maps the API enum onto this.
 //
 // No emoji. CLAUDE.md: "Emoji in product chrome. User-generated content only."

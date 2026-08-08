@@ -1321,6 +1321,10 @@
         "APPLICATION": "طلب توظيف",
         "WORK_PROOF_CONFIRM": "تأكيد عمل"
       }
-    }
+    },
+    "loadImage": "تحميل الصورة",
+    "loadImageUnknownSize": "تحميل الصورة",
+    "imageSize": "{size} ك.ب",
+    "videoUnavailableSlow": "الفيديو غير متاح على الاتصال البطيء"
   }
 }

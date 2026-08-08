@@ -16,8 +16,6 @@
 import { useState, type ReactNode } from "react";
 
 import { Avatar, type AvatarUser } from "./Avatar";
-import { cx } from "./cx";
-import { Icon } from "./Icon";
 import { Menu, type MenuItemSpec } from "./Menu";
 import { PostCardAction } from "./PostCardAction";
 import { PostCardStats } from "./PostCardStats";
@@ -27,12 +25,6 @@ import { Surface } from "./Surface";
 
 export interface PostCardAuthor extends AvatarUser {
   headline?: string | null;
-}
-
-export interface PostCardMedia {
-  id?: string | null;
-  url: string;
-  kind: "IMAGE" | "VIDEO";
 }
 
 export interface PostCardCounts {
@@ -70,7 +62,16 @@ export interface PostCardProps {
   id: string;
   author: PostCardAuthor;
   body: string;
-  media?: PostCardMedia[];
+  /**
+   * The post's images, as a slot.
+   *
+   * A slot rather than a `media` array, which is what native's PostCard has
+   * always taken: the grid needs to know the bandwidth mode to decide whether
+   * to load anything, and a kit component may not read a store. Hosts pass
+   * `<PostMedia>`. Converging on native's shape removes the second media API
+   * web used to have rather than adding a third.
+   */
+  mediaSlot?: ReactNode;
   /** Pre-formatted timestamp (host decides locale + relative vs absolute). */
   timestamp: string;
   counts: PostCardCounts;
@@ -120,7 +121,7 @@ export function PostCard({
   id: _id,
   author,
   body,
-  media = [],
+  mediaSlot,
   timestamp,
   counts,
   reaction,
@@ -221,22 +222,7 @@ export function PostCard({
         </div>
       ) : null}
 
-      {/* Media */}
-      {media.length > 0 ? (
-        <ul className={cx("grid gap-0.5", media.length === 1 ? "grid-cols-1" : "grid-cols-2")}>
-          {media.map((m, i) => (
-            <li key={m.id ?? m.url ?? i} className="relative">
-              {m.kind === "IMAGE" ? (
-                <img src={m.url} alt="" className="max-h-[420px] w-full object-cover" />
-              ) : (
-                <div className="bg-surface-subtle text-ink-muted flex aspect-video w-full items-center justify-center">
-                  <Icon name="video" size={32} />
-                </div>
-              )}
-            </li>
-          ))}
-        </ul>
-      ) : null}
+      {mediaSlot ?? null}
 
       <PostCardStats counts={counts} labels={labels} formatCount={formatCount} />
 

@@ -25,6 +25,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { Comments } from "@/components/Comments";
+import { PostCardMedia } from "@/components/PostCardMedia";
 import { apiCall, apiFetch } from "@/lib/api";
 import { useReport } from "@/lib/api/safety";
 import { getAccessToken, readSession } from "@/lib/session";
@@ -43,6 +44,7 @@ export function PostCard({
   const t = useTranslations("post");
   const tCommon = useTranslations("common");
   const tSafety = useTranslations("safety");
+
   const { showToast } = useToast();
   const locale = useLocale();
   const router = useRouter();
@@ -181,11 +183,7 @@ export function PostCard({
           headline: post.author.headline,
         }}
         body={post.body}
-        media={post.media.map((m) => ({
-          id: m.id ?? m.url,
-          url: m.url,
-          kind: m.kind === "IMAGE" ? "IMAGE" : "VIDEO",
-        }))}
+        mediaSlot={<PostCardMedia media={post.media} />}
         timestamp={formatRelativeTime(post.createdAt, locale)}
         counts={post.counts}
         reaction={post.viewer.reaction as ReactionKind | null}

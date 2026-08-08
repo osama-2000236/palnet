@@ -18,7 +18,7 @@ import { memo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { CommentsList } from "@/components/CommentsList";
-import { PostMedia } from "@/components/rows/PostMedia";
+import { PostRowMedia } from "@/components/rows/PostRowMedia";
 import { PostRowSheets } from "@/components/rows/PostRowSheets";
 import { apiCall, apiFetch } from "@/lib/api";
 import { successHaptic, tapHaptic } from "@/lib/haptics";
@@ -217,7 +217,7 @@ export const PostRow = memo(function PostRow({ post, onChange }: PostRowProps): 
         authorHeadline={post.author.headline}
         timestamp={formatRelativeTime(post.createdAt, i18n.language)}
         body={post.body}
-        media={<PostMedia media={post.media} />}
+        media={<PostRowMedia media={post.media} />}
         reactionCount={
           post.counts.reactions > 0 ? formatNumber(post.counts.reactions, i18n.language) : undefined
         }
