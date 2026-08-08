@@ -4,6 +4,7 @@
 // pushable hidden routes so primary navigation stays focused and touch-safe.
 
 import { WsNotificationEvent, formatNumber } from "@baydar/shared";
+import { useBandwidth } from "@baydar/shared/react";
 import { nativeTokens, useThemeTokens } from "@baydar/ui-native";
 import { Tabs, router, usePathname } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -38,6 +39,7 @@ const UnreadCountEnvelope = z.object({ count: z.number().int().nonnegative() });
 
 export default function AppTabsLayout(): JSX.Element {
   const { t, i18n } = useTranslation();
+  const { mode } = useBandwidth();
   const pathname = usePathname();
   const insets = useSafeAreaInsets();
   const tk = useThemeTokens();
@@ -159,7 +161,9 @@ export default function AppTabsLayout(): JSX.Element {
       unsubscribeRef.current?.();
       unsubscribeRef.current = undefined;
     };
-  }, [gateState, isConnected, pathname, refreshBadge, verifyGate]);
+    // `mode`: re-subscribing is what switches this between an EventSource and
+    // a two-minute poll when the connection changes.
+  }, [gateState, isConnected, pathname, refreshBadge, verifyGate, mode]);
 
   if (gateState === "checking") {
     return (

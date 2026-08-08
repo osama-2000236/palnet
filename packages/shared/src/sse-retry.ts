@@ -39,6 +39,8 @@ import type { StreamTokenScope } from "./schemas/auth";
  */
 declare function setTimeout(handler: () => void, timeoutMs: number): TimerHandle;
 declare function clearTimeout(handle: TimerHandle): void;
+declare function setInterval(handler: () => void, intervalMs: number): TimerHandle;
+declare function clearInterval(handle: TimerHandle): void;
 /** A number in browsers, a `Timeout` object in Node. Never inspected here. */
 type TimerHandle = unknown;
 
@@ -95,6 +97,20 @@ export interface StreamLoopOptions {
   /** Open a platform event source for a freshly minted token. */
   openSource(token: string, handlers: StreamSourceHandlers): StreamSource;
   handlers: StreamHandlers;
+  /**
+   * Poll on this interval instead of opening a stream, or `null` to stream.
+   *
+   * A held-open connection is not free on 2G: it keeps the radio warm, it
+   * re-mints a single-use token on every drop, and drops are what 2G does. So
+   * on `light` the client polls every two minutes and opens no EventSource at
+   * all — `BANDWIDTH_POLICY.light.pollIntervalMs` is where the number lives.
+   *
+   * Each tick is reported through `onOpen`, because that is already exactly
+   * what a caller's `onOpen` does: re-read the truth, since events that fired
+   * while nothing was listening are gone either way. No caller needs a second
+   * code path for polling, which is the point.
+   */
+  pollIntervalMs?: number | null;
 }
 
 /**
@@ -104,7 +120,23 @@ export interface StreamLoopOptions {
  * scheduled.
  */
 export function openStreamLoop(options: StreamLoopOptions): () => void {
-  const { mintToken, openSource, handlers } = options;
+  const { mintToken, openSource, handlers, pollIntervalMs } = options;
+
+  // Poll mode: no token is minted and no source is opened, so none of the
+  // reconnect machinery below runs. Deliberately the first thing this function
+  // does — a stream that is merely closed quickly has already cost the radio.
+  if (pollIntervalMs !== null && pollIntervalMs !== undefined) {
+    let stopped = false;
+    const tick = (): void => {
+      if (!stopped) handlers.onOpen?.();
+    };
+    tick();
+    const interval = setInterval(tick, pollIntervalMs);
+    return (): void => {
+      stopped = true;
+      clearInterval(interval);
+    };
+  }
 
   let closed = false;
   let source: StreamSource | null = null;

@@ -10,6 +10,7 @@ import { apiFetch, apiFetchPage } from "@/lib/api";
 import { getAccessToken } from "@/lib/session";
 import {
   cursorPage,
+  getBandwidthPolicy,
   Job as JobSchema,
   PersonSuggestion as PersonSuggestionSchema,
   Post as PostSchema,
@@ -267,7 +268,9 @@ function FeedInner(): JSX.Element {
 
 async function fetchFeedPage(after: string | null) {
   const token = getAccessToken() ?? undefined;
-  const qs = new URLSearchParams({ limit: "20" });
+  // Page size follows the mode: five posts on 2G, ten otherwise. A member on
+  // a slow connection waits for less before anything is on screen.
+  const qs = new URLSearchParams({ limit: String(getBandwidthPolicy().pageSize) });
   if (after) qs.set("after", after);
   const path = `/feed?${qs.toString()}`;
   return apiFetchPage(path, PostsPage, { token });

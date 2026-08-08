@@ -10,6 +10,8 @@ import { AppShell, type AppShellRoute } from "@baydar/ui-web";
 import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 
+import { useBandwidth } from "@baydar/shared/react";
+
 import { BandwidthChipHost } from "@/components/BandwidthChipHost";
 import { apiFetch, apiFetchPage, getValidAccessToken, signOut } from "@/lib/api";
 import { clearSession, readSession } from "@/lib/session";
@@ -24,6 +26,9 @@ export default function AppLayout({ children }: { children: ReactNode }): JSX.El
   const labels = useAppShellLabels();
   const formatCount = useCountFormatter();
 
+  // Re-subscribing on a mode change is what switches the streams between an
+  // EventSource and a two-minute poll: the effects below depend on it.
+  const { mode } = useBandwidth();
   const [token, setToken] = useState<string | null>(null);
   const [me, setMe] = useState<Profile | null>(null);
   const [notificationsUnread, setNotificationsUnread] = useState(0);
@@ -68,18 +73,28 @@ export default function AppLayout({ children }: { children: ReactNode }): JSX.El
     };
   }, [token]);
 
-  // Notifications unread — initial + live via SSE.
+  // Notifications unread — initial + live via SSE, or a poll on `light`.
   useEffect(() => {
     if (!token) return;
-    void apiFetch("/notifications/unread-count", UnreadCount, { token })
-      .then((out) => setNotificationsUnread(out.count))
-      .catch(() => {});
     setNotificationsConnectionDropped(false);
+    const refetchUnread = (): void => {
+      void apiFetch("/notifications/unread-count", UnreadCount, { token })
+        .then((out) => setNotificationsUnread(out.count))
+        .catch(() => {});
+    };
     // The banner now tracks a connection that genuinely comes back:
     // `openStream` re-mints a stream token per attempt, so a drop clears the
     // moment it reconnects instead of staying red until the next navigation.
     return openStream("notifications", {
-      onOpen: () => setNotificationsConnectionDropped(false),
+      // Refetch on every open, which the messaging stream below already does
+      // and this one did not: events fired while nothing was listening are
+      // gone, so the badge is only trustworthy after a fresh read. On `light`
+      // there is no stream and every poll tick arrives here, which is the
+      // whole of the polling path.
+      onOpen: () => {
+        setNotificationsConnectionDropped(false);
+        refetchUnread();
+      },
       onDrop: () => setNotificationsConnectionDropped(true),
       onFailed: () => setNotificationsConnectionDropped(true),
       onEvent: (data) => {
@@ -98,7 +113,7 @@ export default function AppLayout({ children }: { children: ReactNode }): JSX.El
         }
       },
     });
-  }, [token]);
+  }, [token, mode]);
 
   // Messages unread — sum of per-room counts. Refetch on any chat event to
   // keep the badge honest; the rooms list is small.
@@ -140,7 +155,7 @@ export default function AppLayout({ children }: { children: ReactNode }): JSX.El
       unsubscribe();
       if (refetchTimer.current) clearTimeout(refetchTimer.current);
     };
-  }, [token, refetchRooms]);
+  }, [token, refetchRooms, mode]);
 
   // Keep badge fresh when the user navigates around (covers reads made from
   // the messages page itself).

@@ -43,7 +43,12 @@ export interface BandwidthPolicy {
   autoLoadImages: boolean;
   /** Video is never autoplayed anywhere; on light it is not playable at all. */
   allowVideo: boolean;
-  /** Items per page for the feed and every other infinite list. */
+  /**
+   * Feed page size. Only the feed: the other lists' sizes are fixed by the
+   * budget table (20 jobs, 20 rooms, 30 messages, 20 notifications, 20 hits),
+   * and a five-message thread page would cost more round trips than it saves
+   * bytes.
+   */
   pageSize: 5 | 10;
   /** Whether to fetch the next page before the member asks for it. */
   prefetch: boolean;

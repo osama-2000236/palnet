@@ -113,6 +113,20 @@ export function useRoomMessages({ token, viewerId }: UseRoomMessagesInput): UseR
     });
   }, [activeRoomId, loadMessages, token]);
 
+  const refreshStreamState = useCallback((): void => {
+    if (!token) return;
+    void loadRooms(token).catch(() => {});
+    if (!activeRoomId) return;
+    void loadMessages(activeRoomId, null)
+      .then(() =>
+        apiCall(`/messaging/rooms/${activeRoomId}/read`, {
+          method: "POST",
+          token,
+        }).catch(() => {}),
+      )
+      .catch(() => {});
+  }, [activeRoomId, loadMessages, loadRooms, token]);
+
   useRoomMessagesEvents({
     token,
     viewerId,
@@ -121,6 +135,7 @@ export function useRoomMessages({ token, viewerId }: UseRoomMessagesInput): UseR
     setMessages,
     setRooms,
     setTypingUserByRoom,
+    onOpen: refreshStreamState,
     setError,
     translate: (message) => t(message),
   });

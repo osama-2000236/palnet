@@ -1,6 +1,7 @@
 "use client";
 
 import { WsChatEvent, type WsChatEvent as WsChatEventType } from "@baydar/shared";
+import { useBandwidth } from "@baydar/shared/react";
 import { useEffect } from "react";
 
 import { openStream } from "@/lib/sse";
@@ -8,10 +9,18 @@ import { openStream } from "@/lib/sse";
 export interface UseMessagesStreamInput {
   token: string | null;
   onEvent(event: WsChatEventType): void;
+  onOpen(): void;
   onError(message: "connectionLost" | "connectionFailed"): void;
 }
 
-export function useMessagesStream({ token, onEvent, onError }: UseMessagesStreamInput): void {
+export function useMessagesStream({
+  token,
+  onEvent,
+  onOpen,
+  onError,
+}: UseMessagesStreamInput): void {
+  const { mode } = useBandwidth();
+
   useEffect(() => {
     if (!token) return undefined;
 
@@ -28,8 +37,9 @@ export function useMessagesStream({ token, onEvent, onError }: UseMessagesStream
           // ignore malformed events
         }
       },
+      onOpen,
       onDrop: () => onError("connectionLost"),
       onFailed: () => onError("connectionFailed"),
     });
-  }, [token, onEvent, onError]);
+  }, [token, onEvent, onOpen, onError, mode]);
 }

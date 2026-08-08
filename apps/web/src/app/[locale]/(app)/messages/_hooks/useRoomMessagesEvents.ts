@@ -28,6 +28,7 @@ interface UseRoomMessagesEventsInput {
   setMessages: Dispatch<SetStateAction<Message[]>>;
   setRooms: Dispatch<SetStateAction<ChatRoom[]>>;
   setTypingUserByRoom: Dispatch<SetStateAction<TypingByRoom>>;
+  onOpen(): void;
   setError(message: string | null): void;
   translate(message: "connectionLost" | "connectionFailed"): string;
 }
@@ -40,6 +41,7 @@ export function useRoomMessagesEvents({
   setMessages,
   setRooms,
   setTypingUserByRoom,
+  onOpen,
   setError,
   translate,
 }: UseRoomMessagesEventsInput): void {
@@ -104,6 +106,7 @@ export function useRoomMessagesEvents({
   useMessagesStream({
     token,
     onEvent: handleEvent,
+    onOpen,
     onError: (message) => setError(translate(message)),
   });
 

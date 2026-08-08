@@ -1,4 +1,5 @@
 import {
+  getBandwidthPolicy,
   openStreamLoop,
   StreamTokenResponse,
   STREAM_PATHS,
@@ -70,6 +71,9 @@ export function subscribeSse<T extends z.ZodTypeAny>({
   onFailed,
 }: SubscribeArgs<T>): () => void {
   return openStreamLoop({
+    // Read at subscribe time. Callers re-subscribe when the mode changes,
+    // because their effects depend on it.
+    pollIntervalMs: getBandwidthPolicy().pollIntervalMs,
     mintToken: async () => {
       const accessToken = await getValidAccessToken();
       if (!accessToken) return null;

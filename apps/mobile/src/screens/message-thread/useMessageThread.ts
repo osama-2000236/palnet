@@ -10,6 +10,7 @@ import {
 } from "@baydar/shared";
 import { router } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useBandwidth } from "@baydar/shared/react";
 import { useTranslation } from "react-i18next";
 import { FlatList } from "react-native";
 
@@ -21,12 +22,14 @@ import { readSession } from "@/lib/session";
 import { subscribeSse } from "@/lib/sse";
 import { useNetworkStore } from "@/store/network";
 import { applyThreadEvent, createOptimisticMessage } from "./messageThreadEvents";
+import { useMessageActions } from "./useMessageActions";
 import { useThreadDerived } from "./useThreadDerived";
 import { useTypingIndicator } from "./useTypingIndicator";
 import { MessagesPageEnvelope } from "./utils";
 
 export function useMessageThread(roomId: string | undefined) {
   const { t } = useTranslation();
+  const { mode } = useBandwidth();
   const [viewerId, setViewerId] = useState<string | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [room, setRoom] = useState<ChatRoom | null>(null);
@@ -39,13 +42,12 @@ export function useMessageThread(roomId: string | undefined) {
   const [sending, setSending] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [actionMessage, setActionMessage] = useState<Message | null>(null);
   const [reportMessage, setReportMessage] = useState<Message | null>(null);
-  const [editingBody, setEditingBody] = useState("");
   const listRef = useRef<FlatList<Message> | null>(null);
   const didInitialScrollRef = useRef(false);
   const isConnected = useNetworkStore((state) => state.isConnected);
   const { setTyping, postTypingThrottled, typingActive } = useTypingIndicator(roomId, token);
+  const actions = useMessageActions({ token, t, setMessages, setError });
 
   useEffect(() => {
     void (async () => {
@@ -105,7 +107,9 @@ export function useMessageThread(roomId: string | undefined) {
         opened = true;
       },
     });
-  }, [token, roomId, refresh, isConnected, viewerId, setTyping]);
+    // `mode`: re-subscribing switches this between an EventSource and a
+    // two-minute poll when the connection changes.
+  }, [token, roomId, refresh, isConnected, viewerId, setTyping, mode]);
 
   const refreshThread = useCallback(async (): Promise<void> => {
     setRefreshing(true);
@@ -198,37 +202,6 @@ export function useMessageThread(roomId: string | undefined) {
     [messages, sendBody],
   );
 
-  const saveEdit = useCallback(async (): Promise<void> => {
-    if (!token || !actionMessage) return;
-    try {
-      const saved = await apiFetch(`/messaging/messages/${actionMessage.id}`, MessageSchema, {
-        method: "PATCH",
-        token,
-        body: { body: editingBody.trim() },
-      });
-      setMessages((prev) => upsertMessage(prev, saved));
-      closeActions();
-      successHaptic();
-    } catch (caught) {
-      setError(apiErrorMessage(t, caught));
-    }
-  }, [actionMessage, editingBody, token, t]);
-
-  const deleteSelected = useCallback(async (): Promise<void> => {
-    if (!token || !actionMessage) return;
-    try {
-      const deleted = await apiFetch(`/messaging/messages/${actionMessage.id}`, MessageSchema, {
-        method: "DELETE",
-        token,
-      });
-      setMessages((prev) => upsertMessage(prev, deleted));
-      closeActions();
-      successHaptic();
-    } catch (caught) {
-      setError(apiErrorMessage(t, caught));
-    }
-  }, [actionMessage, token, t]);
-
   const derived = useThreadDerived({ room, viewerId, messages });
 
   const scrollToUnread = useCallback(
@@ -253,18 +226,9 @@ export function useMessageThread(roomId: string | undefined) {
     requestAnimationFrame(() => scrollToUnread(false));
   }, [messages.length, scrollToUnread]);
 
-  function openMessageActions(message: Message): void {
-    setActionMessage(message);
-    setEditingBody(message.body);
-  }
-
-  function closeActions(): void {
-    setActionMessage(null);
-    setEditingBody("");
-  }
-
   return {
     ...derived,
+    ...actions,
     listRef,
     viewerId,
     room,
@@ -276,22 +240,15 @@ export function useMessageThread(roomId: string | undefined) {
     sending,
     refreshing,
     error,
-    actionMessage,
     reportMessage,
-    editingBody,
     typingActive,
     setDraft: onDraftChange,
     setError,
     setReportMessage,
-    setEditingBody,
     refreshThread,
     loadOlder,
     submit,
     retryFailed,
-    saveEdit,
-    deleteSelected,
     scrollToUnread,
-    openMessageActions,
-    closeActions,
   };
 }

@@ -1,11 +1,13 @@
 "use client";
 
 import {
+  BandwidthMode,
   cursorPage,
   Notification as NotificationSchema,
   WsNotificationEvent,
   type Notification,
 } from "@baydar/shared";
+import { useBandwidth } from "@baydar/shared/react";
 import { EmptyState, Surface, useToast } from "@baydar/ui-web";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -25,6 +27,7 @@ const NotificationsPage = cursorPage(NotificationSchema);
 
 export default function NotificationsPageRoute(): JSX.Element {
   const t = useTranslations("notifications");
+  const { mode } = useBandwidth();
   const { showToast } = useToast();
   const router = useRouter();
   const dismissNotification = useDismissNotification();
@@ -94,7 +97,10 @@ export default function NotificationsPageRoute(): JSX.Element {
   useEffect(() => {
     if (!token) return;
     const unsubscribe = openStream("notifications", {
-      onOpen: () => setSseLive(true),
+      onOpen: () => {
+        setSseLive(mode !== BandwidthMode.LIGHT);
+        void load(null, token);
+      },
       onDrop: () => setSseLive(false),
       onFailed: () => setSseLive(false),
       onEvent: (data) => {
@@ -133,7 +139,7 @@ export default function NotificationsPageRoute(): JSX.Element {
       unsubscribe();
       setSseLive(false);
     };
-  }, [token]);
+  }, [load, mode, token]);
 
   const dismissItem = useCallback(
     (item: Notification): void => {

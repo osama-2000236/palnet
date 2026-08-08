@@ -128,6 +128,27 @@ it("stops retrying once unsubscribed", async () => {
   expect(FakeSource.instances).toHaveLength(1);
 });
 
+it("polls on light mode without minting a token or opening a source", async () => {
+  const onOpen = jest.fn();
+  const close = openStreamLoop({
+    mintToken: () => mintToken(),
+    openSource: (token, handlers) => new FakeSource(token, handlers),
+    handlers: { onEvent: jest.fn(), onOpen },
+    pollIntervalMs: 120_000,
+  });
+
+  expect(onOpen).toHaveBeenCalledTimes(1);
+  expect(mintToken).not.toHaveBeenCalled();
+  expect(FakeSource.instances).toHaveLength(0);
+
+  await jest.advanceTimersByTimeAsync(120_000);
+  expect(onOpen).toHaveBeenCalledTimes(2);
+
+  close();
+  await jest.advanceTimersByTimeAsync(120_000);
+  expect(onOpen).toHaveBeenCalledTimes(2);
+});
+
 it("does not reconnect when the session itself is gone", async () => {
   mintToken.mockResolvedValue(null);
   const onFailed = jest.fn();
@@ -236,4 +257,74 @@ it("ignores a late error from a source that has already been replaced", async ()
   expect(FakeSource.instances).toHaveLength(2);
   expect(FakeSource.instances[1]!.closed).toBe(false);
   close();
+});
+
+describe("poll mode — what a 2G connection gets instead of a stream", () => {
+  it("opens no EventSource and mints no token", async () => {
+    // The whole point. A held-open connection keeps the radio warm and
+    // re-mints a single-use token on every drop, and dropping is what 2G does.
+    const onOpen = jest.fn();
+    const close = openStreamLoop({
+      pollIntervalMs: 120_000,
+      mintToken: () => mintToken(),
+      openSource: (token, sourceHandlers) => new FakeSource(token, sourceHandlers),
+      handlers: { onEvent: jest.fn(), onOpen },
+    });
+    await flush();
+
+    expect(FakeSource.instances).toHaveLength(0);
+    expect(mintToken).not.toHaveBeenCalled();
+    close();
+  });
+
+  it("reports the first tick immediately, then every interval", async () => {
+    const onOpen = jest.fn();
+    const close = openStreamLoop({
+      pollIntervalMs: 120_000,
+      mintToken: () => mintToken(),
+      openSource: (token, sourceHandlers) => new FakeSource(token, sourceHandlers),
+      handlers: { onEvent: jest.fn(), onOpen },
+    });
+
+    // Immediately, or the badge is stale for two minutes after every mount.
+    expect(onOpen).toHaveBeenCalledTimes(1);
+
+    await jest.advanceTimersByTimeAsync(119_000);
+    expect(onOpen).toHaveBeenCalledTimes(1);
+
+    await jest.advanceTimersByTimeAsync(1_000);
+    expect(onOpen).toHaveBeenCalledTimes(2);
+
+    await jest.advanceTimersByTimeAsync(240_000);
+    expect(onOpen).toHaveBeenCalledTimes(4);
+    close();
+  });
+
+  it("stops ticking once unsubscribed", async () => {
+    const onOpen = jest.fn();
+    const close = openStreamLoop({
+      pollIntervalMs: 120_000,
+      mintToken: () => mintToken(),
+      openSource: (token, sourceHandlers) => new FakeSource(token, sourceHandlers),
+      handlers: { onEvent: jest.fn(), onOpen },
+    });
+    close();
+
+    await jest.advanceTimersByTimeAsync(600_000);
+
+    expect(onOpen).toHaveBeenCalledTimes(1);
+  });
+
+  it("still streams when the interval is null", async () => {
+    const close = openStreamLoop({
+      pollIntervalMs: null,
+      mintToken: () => mintToken(),
+      openSource: (token, sourceHandlers) => new FakeSource(token, sourceHandlers),
+      handlers: { onEvent: jest.fn() },
+    });
+    await flush();
+
+    expect(FakeSource.instances).toHaveLength(1);
+    close();
+  });
 });

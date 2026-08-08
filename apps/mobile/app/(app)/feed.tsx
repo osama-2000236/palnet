@@ -1,5 +1,6 @@
 import {
   cursorPage,
+  getBandwidthPolicy,
   Post as PostSchema,
   Profile as ProfileSchema,
   type Post,
@@ -72,7 +73,8 @@ export default function FeedScreen(): JSX.Element {
       setLoading(true);
       if (!after) setFeedError(null);
       try {
-        const qs = new URLSearchParams({ limit: "20" });
+        // Page size follows the mode: five posts on 2G, ten otherwise.
+        const qs = new URLSearchParams({ limit: String(getBandwidthPolicy().pageSize) });
         if (after) qs.set("after", after);
         const page = await apiFetchPage(`/feed?${qs.toString()}`, FeedPage, {
           token,
