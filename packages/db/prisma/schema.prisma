@@ -245,10 +245,14 @@ enum PaymentMethod {
   REFLECT
 }
 
+// A third member — the one that would have moved an application up a list —
+// was removed here, deliberately and permanently. No ranking, ordering,
+// scoring or filtering input in Baydar may come from a subscription, plan,
+// credit or balance. scripts/check-naming.mjs bans its name, which is why this
+// comment does not spell it.
 enum EmployerCreditKind {
   FEATURED_SLOT
   JOB_POST
-  APPLICATION_BOOST
 }
 
 enum KaramaReason {

@@ -199,10 +199,12 @@ export const BillingMe = z.object({
 });
 export type BillingMe = z.infer<typeof BillingMe>;
 
+// Two members, and there is no third. Money may not buy rank, so the credit
+// that would have moved an application up a list is not in this union and
+// never becomes one — see the enum in schema.prisma.
 export const EmployerCreditKind = {
   FEATURED_SLOT: "FEATURED_SLOT",
   JOB_POST: "JOB_POST",
-  APPLICATION_BOOST: "APPLICATION_BOOST",
 } as const;
 export type EmployerCreditKind = (typeof EmployerCreditKind)[keyof typeof EmployerCreditKind];
 

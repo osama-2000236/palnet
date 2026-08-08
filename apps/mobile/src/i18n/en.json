@@ -1148,8 +1148,7 @@
       "expires": "Expires {{date}}",
       "creditKinds": {
         "FEATURED_SLOT": "Featured job slot",
-        "JOB_POST": "Extra job post",
-        "APPLICATION_BOOST": "Application boost"
+        "JOB_POST": "Extra job post"
       },
       "choosePlan": "Upgrade your plan",
       "perMonth": "{{price}} / month",

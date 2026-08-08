@@ -1268,8 +1268,7 @@
       "expires": "ينتهي في {date}",
       "creditKinds": {
         "FEATURED_SLOT": "موضع وظيفة مميّز",
-        "JOB_POST": "نشر وظيفة إضافية",
-        "APPLICATION_BOOST": "تعزيز طلب"
+        "JOB_POST": "نشر وظيفة إضافية"
       },
       "choosePlan": "رقِّ باقتك",
       "perMonth": "{price} / شهريًا",

@@ -44,6 +44,34 @@ test("leaves the canonical vocabulary alone", () => {
   }
 });
 
+test("flags the three names that would sell rank", () => {
+  for (const line of [
+    "  APPLICATION_BOOST",
+    "  kind: EmployerCreditKind.APPLICATION_BOOST,",
+    "  const applicationBoost = credits.find(...)",
+    "  BOOST_APPLICATION: 100,",
+    "  reward.boostApplication(userId)",
+    "  FEATURED_PROFILE_7D",
+    "  const featuredProfile = true;",
+  ]) {
+    assert.ok(bannedNames(line).length > 0, `should flag: ${line}`);
+  }
+});
+
+test("the two historical KaramaReason members still read", () => {
+  // Rows written before the rewards were withdrawn must stay renderable, so
+  // the REDEEM_-prefixed members are not the banned names. `_` is a word
+  // character, so \b does this carve-out for free — assert it, because a
+  // future edit to the pattern would break ledger rendering silently.
+  for (const line of [
+    "  REDEEM_BOOST_APPLICATION: -100,",
+    "  REDEEM_FEATURED_PROFILE: -1000,",
+    '  "REDEEM_BOOST_APPLICATION": "تعزيز طلب",',
+  ]) {
+    assert.deepEqual(bannedNames(line), [], `should not flag: ${line}`);
+  }
+});
+
 test("bans a licence claim inside the namespaces this platform owns", () => {
   assert.ok(bannedCopy("occupations.standing.default.4.masc", "معلّم معتمد").length > 0);
   assert.ok(bannedCopy("matching.applicant.flag", "مرخّص").length > 0);

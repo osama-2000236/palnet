@@ -48,6 +48,31 @@ const BANNED_IDENTIFIERS = [
     re: /\bcertifiedCraftsman\b|\bverifiedCraftsman\b/,
     use: "Standing, and never the word certified",
   },
+
+  // Rule 1 — money may never buy rank. These three named the features that
+  // would have sold it. APPLICATION_BOOST was a live enum member with no writer
+  // and no reader; the other two were rewards that debited points and granted
+  // nothing, and were withdrawn. All three are permanently unbuildable, so the
+  // names are banned rather than left lying around for someone to implement.
+  //
+  // A LEADING `\b` and no trailing one, for two different reasons. Leading,
+  // because `_` is a word character and so the pattern cannot match inside
+  // REDEEM_BOOST_APPLICATION or REDEEM_FEATURED_PROFILE — the two KaramaReason
+  // members that stay so historical ledger rows still render. No trailing,
+  // because that is the same prefix-match rule the identifiers above use, and
+  // FEATURED_PROFILE_7D was the real reward's real name.
+  {
+    re: /\bAPPLICATION_BOOST|\bapplicationBoost/,
+    use: "nothing — an application boost is money buying rank (Rule 1)",
+  },
+  {
+    re: /\bBOOST_APPLICATION|\bboostApplication/,
+    use: "nothing — withdrawn reward, unbuildable under Rule 1",
+  },
+  {
+    re: /\bFEATURED_PROFILE|\bfeaturedProfile/,
+    use: "nothing — withdrawn reward, unbuildable under Rule 1",
+  },
 ];
 
 /**
@@ -87,6 +112,11 @@ const LEDGER = [
   {
     file: "scripts/__tests__/check-naming.test.mjs",
     reason: "breaks this gate on purpose; its fixtures are the banned names",
+  },
+  {
+    file: "packages/shared/src/schemas/karama.ts",
+    reason:
+      "names the two withdrawn rewards in order to record why they are gone; the enum members it keeps are the historical ledger, not a plan",
   },
 ];
 
