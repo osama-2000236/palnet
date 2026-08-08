@@ -29,6 +29,7 @@ import {
   AllowIncompleteProfile,
   RequireCompleteProfile,
 } from "../../common/require-complete-profile.decorator";
+import { Idempotent } from "../../common/idempotency.interceptor";
 import { ZodValidationPipe } from "../../common/zod-pipe";
 import { CurrentUser, type AuthUser } from "../auth/decorators/current-user.decorator";
 import { Public } from "../auth/decorators/public.decorator";
@@ -110,6 +111,7 @@ export class JobsController {
   }
 
   @Post(":id/apply")
+  @Idempotent()
   async apply(
     @CurrentUser() user: AuthUser,
     @Param("id") id: string,

@@ -338,9 +338,43 @@ model User {
   interestWeights         InterestWeight[]
   feedSlates              FeedSlate[]
   topicMutes              TopicMute[]
+  idempotencyRecords      IdempotencyRecord[]
 
   @@index([email])
   @@index([role])
+}
+
+// Replay protection for the writes a client may retry.
+//
+// A member on 2G sends a post, the request times out at 40 seconds, the outbox
+// retries, and without this the post exists twice. `Message` already solves it
+// with @@unique([roomId, authorId, clientMessageId]); this generalises the same
+// idea to every write that has no natural uniqueness.
+//
+// It stores the original response rather than just the key, so a replay returns
+// the identical body and status. Returning 409 would be technically correct and
+// useless: the client asked "did my post save?" and a conflict does not answer
+// it, while the saved post does.
+//
+// `expiresAt` is 48 hours out — long enough to cover an outbox that has been
+// queued through an outage, short enough that this table does not become an
+// archive of every write in the product.
+model IdempotencyRecord {
+  id           String   @id @default(cuid())
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId       String
+  key          String
+  /// The route the key was first used on. A key replayed against a different
+  /// route is a client bug, and answering it with another route's response
+  /// would be a data leak rather than a retry.
+  route        String
+  statusCode   Int
+  responseBody Json
+  createdAt    DateTime @default(now())
+  expiresAt    DateTime
+
+  @@unique([userId, key])
+  @@index([expiresAt])
 }
 
 model RefreshToken {

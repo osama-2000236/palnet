@@ -10,6 +10,10 @@ type PrismaStub = {
     findMany: jest.Mock;
     deleteMany: jest.Mock;
   };
+  idempotencyRecord: {
+    count: jest.Mock;
+    deleteMany: jest.Mock;
+  };
 };
 
 function buildPrisma(): PrismaStub {
@@ -17,6 +21,12 @@ function buildPrisma(): PrismaStub {
     user: {
       findMany: jest.fn(),
       deleteMany: jest.fn(),
+    },
+    // Swept by the same run: a 48-hour TTL table does not deserve a cron of
+    // its own, and one nobody provisions is worse than none.
+    idempotencyRecord: {
+      count: jest.fn().mockResolvedValue(0),
+      deleteMany: jest.fn().mockResolvedValue({ count: 0 }),
     },
   };
 }
@@ -91,5 +101,52 @@ describe("AccountRetentionService", () => {
     expect(result.dryRun).toBe(true);
     expect(result.deletedCount).toBe(0);
     expect(prisma.user.deleteMany).not.toHaveBeenCalled();
+  });
+});
+
+describe("expired idempotency records", () => {
+  let service: AccountRetentionService;
+  let prisma: PrismaStub;
+
+  beforeEach(async () => {
+    prisma = buildPrisma();
+    prisma.user.findMany.mockResolvedValue([]);
+    const moduleRef = await Test.createTestingModule({
+      providers: [AccountRetentionService, { provide: PrismaService, useValue: prisma }],
+    }).compile();
+    service = moduleRef.get(AccountRetentionService);
+  });
+
+  it("are swept, and reported", async () => {
+    prisma.idempotencyRecord.deleteMany.mockResolvedValue({ count: 7 });
+    const now = new Date("2026-08-09T03:00:00.000Z");
+
+    const result = await service.runRetention({ now });
+
+    expect(prisma.idempotencyRecord.deleteMany).toHaveBeenCalledWith({
+      where: { expiresAt: { lte: now } },
+    });
+    expect(result.idempotencyRecordsSwept).toBe(7);
+  });
+
+  it("are counted but kept on a dry run", async () => {
+    prisma.idempotencyRecord.count.mockResolvedValue(3);
+
+    const result = await service.runRetention({ dryRun: true });
+
+    expect(prisma.idempotencyRecord.deleteMany).not.toHaveBeenCalled();
+    expect(result.idempotencyRecordsSwept).toBe(3);
+  });
+
+  // A soft-deleted user's records go with the user via ON DELETE CASCADE, so
+  // the sweep is about space rather than correctness — it must not gate the
+  // account work it shares a run with.
+  it("are swept even when no account is due for deletion", async () => {
+    prisma.idempotencyRecord.deleteMany.mockResolvedValue({ count: 2 });
+
+    const result = await service.runRetention({});
+
+    expect(result.deletedCount).toBe(0);
+    expect(result.idempotencyRecordsSwept).toBe(2);
   });
 });

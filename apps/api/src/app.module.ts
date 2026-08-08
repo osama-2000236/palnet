@@ -1,10 +1,11 @@
 import { Module } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
-import { APP_FILTER, APP_GUARD } from "@nestjs/core";
+import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from "@nestjs/core";
 import { ThrottlerModule } from "@nestjs/throttler";
 import { LoggerModule } from "nestjs-pino";
 
 import { AllExceptionsFilter } from "./common/exception.filter";
+import { IdempotencyInterceptor } from "./common/idempotency.interceptor";
 import { loadEnv } from "./config/env";
 import { AccountModule } from "./modules/account/account.module";
 import { AdminInternalModule } from "./modules/admin/admin-internal.module";
@@ -90,6 +91,9 @@ const defaultThrottleLimit =
   ],
   providers: [
     { provide: APP_GUARD, useClass: BaydarThrottlerGuard },
+    // Global, but inert unless a handler carries @Idempotent() AND the client
+    // sent a key — one registration instead of remembering it per module.
+    { provide: APP_INTERCEPTOR, useClass: IdempotencyInterceptor },
     { provide: APP_FILTER, useClass: AllExceptionsFilter },
   ],
 })

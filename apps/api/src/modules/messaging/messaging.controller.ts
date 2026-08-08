@@ -24,6 +24,7 @@ import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 import { Observable } from "rxjs";
 
 import { RequireCompleteProfile } from "../../common/require-complete-profile.decorator";
+import { Idempotent } from "../../common/idempotency.interceptor";
 import { ZodValidationPipe } from "../../common/zod-pipe";
 import { CurrentUser, type AuthUser } from "../auth/decorators/current-user.decorator";
 import { RateLimit } from "../rate-limit/rate-limit.decorator";
@@ -90,6 +91,11 @@ export class MessagingController {
 
   @Post("rooms/:id/messages")
   @RateLimit("messagingSend")
+  // Belt and braces: `Message` already carries
+  // @@unique([roomId, authorId, clientMessageId]), which is the stronger
+  // guarantee because it survives past the 48-hour record TTL. The header
+  // covers a client that queued a send without one.
+  @Idempotent()
   async sendMessage(
     @CurrentUser() user: AuthUser,
     @Param("id") id: string,
