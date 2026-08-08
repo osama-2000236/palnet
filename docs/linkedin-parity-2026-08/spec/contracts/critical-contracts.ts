@@ -360,8 +360,24 @@ export const MODE_RULES = {
     /** SSE degrades to polling. Reconnect storms on 2G are a real cost. */
     ssePollSeconds: 120,
   },
-  normal: { imageAutoLoad: true, imageWidth: 640, maxAvatarPx: 96, video: true, feedPageSize: 10, prefetch: false, ssePollSeconds: null },
-  full: { imageAutoLoad: true, imageWidth: 1080, maxAvatarPx: 96, video: true, feedPageSize: 10, prefetch: true, ssePollSeconds: null },
+  normal: {
+    imageAutoLoad: true,
+    imageWidth: 640,
+    maxAvatarPx: 96,
+    video: true,
+    feedPageSize: 10,
+    prefetch: false,
+    ssePollSeconds: null,
+  },
+  full: {
+    imageAutoLoad: true,
+    imageWidth: 1080,
+    maxAvatarPx: 96,
+    video: true,
+    feedPageSize: 10,
+    prefetch: true,
+    ssePollSeconds: null,
+  },
 } as const;
 
 /** Gzipped JSON, media excluded. Asserted in

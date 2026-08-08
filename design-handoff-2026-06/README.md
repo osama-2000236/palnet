@@ -13,7 +13,7 @@ external requests, fonts, scripts, or backend dependency.
 - Web routes: `apps/web/src/app/[locale]`
 - Mobile routes: `apps/mobile/app`
 - Prior visual source: `docs/_archive/prototype-2025/Baydar Prototype.html`
-  (the `design-handoff-2026-05/05-prototype/` copy of it was deleted as a duplicate)
+  (the `docs/_archive/design-handoff-2026-05/05-prototype/` copy of it was deleted as a duplicate)
 
 Do not copy the HTML artifact into production. It explains the system; the repo
 tokens and shared atoms implement it.
@@ -49,9 +49,9 @@ Design Pass 1 (empty states, surface hierarchy, onboarding) is fully
 implemented in code. The pain inventory, problems list, and design ask were
 re-verified against `main` after Sprints 22–26:
 
-- `design-handoff-2026-05/08-pain.md` — v3 re-verification (most v2 items resolved).
-- `design-handoff-2026-05/08-problems.md` — resolved/open split with code evidence.
-- `design-handoff-2026-05/10-ask.md` — **Pass 2 ask, awaiting lead approval**: monetization surfaces review, admin operator UX, motion vocabulary doc.
+- `docs/_archive/design-handoff-2026-05/08-pain.md` — v3 re-verification (most v2 items resolved).
+- `docs/_archive/design-handoff-2026-05/08-problems.md` — resolved/open split with code evidence.
+- `docs/_archive/design-handoff-2026-05/10-ask.md` — **Pass 2 ask, awaiting lead approval**: monetization surfaces review, admin operator UX, motion vocabulary doc.
 
 The `03-components/` and `04-screens/` code snapshots were removed in the
 2026-07 audit — they had drifted behind premium/saved/company surfaces; the

@@ -962,12 +962,7 @@
   },
   "bannedValues": {
     "$comment": "Substrings that must not appear in ANY catalog value. check-naming.mjs gains an i18n-value scan for these. Each is banned by OCCUPATIONS.md §0 as user-facing copy about a person.",
-    "substrings": [
-      "معتمد",
-      "مرخّص",
-      "خبير",
-      "محترف"
-    ],
+    "substrings": ["معتمد", "مرخّص", "خبير", "محترف"],
     "scoped": {
       "موثّق": "verification.*  — identity verification only, never a licence, never a standing"
     }

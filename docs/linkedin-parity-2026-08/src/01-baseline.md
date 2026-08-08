@@ -6,53 +6,53 @@ Everything in this section was read out of the repository on 8 August 2026, not 
 
 ## 1.1 Shape
 
-| Measure | Value |
-| --- | --- |
-| Tracked files | 976 |
-| TypeScript (`.ts`) | 375 |
-| React (`.tsx`) | 340 |
-| Markdown docs | 73 |
-| SQL migrations | 23 |
-| Prisma schema | 1,240 lines, 44 models, 29 enums |
-| Pinned API routes | 137 (`apps/api/src/modules/api-route-coverage.spec.ts`) |
-| Routes reachable without a session | 17, each individually justified in that spec |
-| Web routes | 44 route directories under `apps/web/src/app/[locale]` |
-| Mobile routes | 41 files under `apps/mobile/app` |
-| `ui-web` source files | 53 |
-| `ui-native` source files | 46 |
-| i18n keys | web 979 × 2 languages, mobile 867 × 2 languages |
-| i18n namespaces | web 32, mobile 29 |
-| Design tokens | 299 lines in `packages/ui-tokens/src/index.ts`, generated to CSS + native |
-| Bespoke CI gates | 7 (`lint:tokens`, `check:i18n`, `check:ui-lockstep`, `check:naming`, `check:native-versions`, `check:release-placeholders`, `check:security-headers`) |
+| Measure                            | Value                                                                                                                                                 |
+| ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Tracked files                      | 976                                                                                                                                                   |
+| TypeScript (`.ts`)                 | 375                                                                                                                                                   |
+| React (`.tsx`)                     | 340                                                                                                                                                   |
+| Markdown docs                      | 73                                                                                                                                                    |
+| SQL migrations                     | 23                                                                                                                                                    |
+| Prisma schema                      | 1,240 lines, 44 models, 29 enums                                                                                                                      |
+| Pinned API routes                  | 137 (`apps/api/src/modules/api-route-coverage.spec.ts`)                                                                                               |
+| Routes reachable without a session | 17, each individually justified in that spec                                                                                                          |
+| Web routes                         | 44 route directories under `apps/web/src/app/[locale]`                                                                                                |
+| Mobile routes                      | 41 files under `apps/mobile/app`                                                                                                                      |
+| `ui-web` source files              | 53                                                                                                                                                    |
+| `ui-native` source files           | 46                                                                                                                                                    |
+| i18n keys                          | web 979 × 2 languages, mobile 867 × 2 languages                                                                                                       |
+| i18n namespaces                    | web 32, mobile 29                                                                                                                                     |
+| Design tokens                      | 299 lines in `packages/ui-tokens/src/index.ts`, generated to CSS + native                                                                             |
+| Bespoke CI gates                   | 7 (`lint:tokens`, `check:i18n`, `check:ui-lockstep`, `check:naming`, `check:native-versions`, `check:release-placeholders`, `check:security-headers`) |
 
 ## 1.2 Stack, as actually locked
 
 `project-spec.md` and `docs/HANDOFF.md` disagree on version numbers; `HANDOFF.md` is newer and matches the lockfile. The real, current stack:
 
-| Layer | Version in `main` |
-| --- | --- |
-| Node | 24 |
-| Package manager | pnpm 9.12.0 |
-| Monorepo | Turborepo 2.x |
-| Web | Next.js 16 (Turbopack), React 19, Tailwind 4, `next-intl` 4 |
-| Mobile | Expo SDK 54, React Native 0.81, React 19, Expo Router, RN StyleSheet |
-| API | NestJS 11, REST + Swagger at `/api/docs`, SSE for realtime |
-| Database | PostgreSQL 16, Prisma 6 |
-| Contracts | Zod 4 in `@baydar/shared` |
-| Lint | ESLint 9 flat config |
-| Auth | Self-managed JWT access/refresh, bcrypt cost 12 |
-| Media | Cloudflare R2 signed uploads, blurhash |
-| Mail | Resend |
-| Cache / limits | Redis (`@nestjs/throttler` via `BaydarThrottlerGuard`) |
+| Layer           | Version in `main`                                                    |
+| --------------- | -------------------------------------------------------------------- |
+| Node            | 24                                                                   |
+| Package manager | pnpm 9.12.0                                                          |
+| Monorepo        | Turborepo 2.x                                                        |
+| Web             | Next.js 16 (Turbopack), React 19, Tailwind 4, `next-intl` 4          |
+| Mobile          | Expo SDK 54, React Native 0.81, React 19, Expo Router, RN StyleSheet |
+| API             | NestJS 11, REST + Swagger at `/api/docs`, SSE for realtime           |
+| Database        | PostgreSQL 16, Prisma 6                                              |
+| Contracts       | Zod 4 in `@baydar/shared`                                            |
+| Lint            | ESLint 9 flat config                                                 |
+| Auth            | Self-managed JWT access/refresh, bcrypt cost 12                      |
+| Media           | Cloudflare R2 signed uploads, blurhash                               |
+| Mail            | Resend                                                               |
+| Cache / limits  | Redis (`@nestjs/throttler` via `BaydarThrottlerGuard`)               |
 
 **Blocked upstream, verified against the packages** — do not attempt these:
 
-| Upgrade | Blocker |
-| --- | --- |
-| Jest 30 | `jest-expo@57` still depends on the Jest 29 toolchain |
-| ESLint 10 | `eslint-plugin-import` caps at 9 |
-| Prisma 7 | Rejects `datasource.url` in schema; needs `prisma.config.ts` + a driver adapter, which is its own PR with a staging soak |
-| Expo 54 → 57 | Needs physical-device smoke evidence, which nobody has gathered |
+| Upgrade      | Blocker                                                                                                                  |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------ |
+| Jest 30      | `jest-expo@57` still depends on the Jest 29 toolchain                                                                    |
+| ESLint 10    | `eslint-plugin-import` caps at 9                                                                                         |
+| Prisma 7     | Rejects `datasource.url` in schema; needs `prisma.config.ts` + a driver adapter, which is its own PR with a staging soak |
+| Expo 54 → 57 | Needs physical-device smoke evidence, which nobody has gathered                                                          |
 
 ## 1.3 The data model, by domain
 
@@ -84,17 +84,17 @@ Everything in this section was read out of the repository on 8 August 2026, not 
 
 `docs/HANDOFF.md` states that nine models "are created by the migration and read or written by nothing." A reference count across every `.ts` and `.tsx` file outside `node_modules` refines that:
 
-| Model | Files referencing the identifier | Reality |
-| --- | --- | --- |
-| `OccupationClaim` | 0 | Truly dead. No writer, no reader. |
-| `Vouch` | 0 | Truly dead. |
-| `FeedSlate` | 0 | Truly dead. |
-| `TopicMute` | 0 | Truly dead. |
-| `PostTopic` | 1 | Schema only. No engine. |
-| `InterestWeight` | 1 | Schema only. No engine. |
-| `WorkProof` | 2 | Type-level references only. No engine. |
-| `Licence` | 5 | Type + copy references. No verification flow. |
-| `Standing` | 8 | Most-referenced of the nine; still no writer. |
+| Model             | Files referencing the identifier | Reality                                       |
+| ----------------- | -------------------------------- | --------------------------------------------- |
+| `OccupationClaim` | 0                                | Truly dead. No writer, no reader.             |
+| `Vouch`           | 0                                | Truly dead.                                   |
+| `FeedSlate`       | 0                                | Truly dead.                                   |
+| `TopicMute`       | 0                                | Truly dead.                                   |
+| `PostTopic`       | 1                                | Schema only. No engine.                       |
+| `InterestWeight`  | 1                                | Schema only. No engine.                       |
+| `WorkProof`       | 2                                | Type-level references only. No engine.        |
+| `Licence`         | 5                                | Type + copy references. No verification flow. |
+| `Standing`        | 8                                | Most-referenced of the nine; still no writer. |
 
 **Consequence for this plan:** the occupation/standing/matching/ranking layer is a fully-argued design with a committed schema and zero behaviour. It is not scaffolding to work around — it is the single largest ready-to-build asset in the repo, and §8 (feed engine), §10 (hiring), and §5 (identity) each consume part of it. Building these engines is the highest-leverage work available, because the hard design arguments are already settled and written down.
 
@@ -106,7 +106,7 @@ The repo has done real market work already. Do not re-do it, and do not regress 
 - **`packages/shared/src/minimum-wage.ts`** — Council of Ministers Resolution No. 4 of 2021: 1,880 ILS monthly, 85 ILS daily, 10.5 ILS hourly. Implemented as a pure function over job fields with no stored column, precisely so an amendment to the resolution cannot leave stale flags on old rows. This is the correct pattern and §13 extends it rather than replacing it.
 - **`packages/shared/src/arabic-fold.ts`** — Arabic normalisation for search and matching.
 - **`ReportReason.FEE_REQUEST` / `GHOST_JOB` / `ID_REQUEST`** — the three report reasons that a generic social network does not have, added because "asked me for money" is the dominant local job scam and a worker needs a name for it.
-- **`RejectionReason`** — required on every `REJECTED` transition, with the schema comment: *"silence is the dominant complaint in a market with far more applicants than openings, and it is the cheapest one to fix."* This is a genuinely better design than LinkedIn's, which lets applications rot silently. Keep it and extend it.
+- **`RejectionReason`** — required on every `REJECTED` transition, with the schema comment: _"silence is the dominant complaint in a market with far more applicants than openings, and it is the cheapest one to fix."_ This is a genuinely better design than LinkedIn's, which lets applications rot silently. Keep it and extend it.
 - **`JobType`** — includes `SEASONAL`, `DAY_LABOR`, `PIECE_WORK`, `APPRENTICESHIP`, which no international jobs board models properly.
 - **`PayBasis`** — `MONTHLY | DAILY | HOURLY | PER_JOB | PER_PIECE | COMMISSION`.
 - **`CompanyKind`** — `EMPLOYER | FIRM | SHOP | WORKSHOP | FOOD | FARM | SOLO`.
@@ -130,19 +130,19 @@ The route-coverage spec is a genuinely good piece of engineering: it enumerates 
 
 ### 1.4.1 Known API defects this plan must fix
 
-| Defect | Evidence | Fixed in |
-| --- | --- | --- |
-| `search.service.ts` INNER JOINs `Company`, so a null-`companyId` job is invisible to job search | `HANDOFF.md` "Owed, and easy to lose"; the `ponytail:` comment at the JOIN | §17 |
-| `jobs.service.ts` orders by `createdAt`; `search.service.ts` by `updatedAt`. No relevance ranking anywhere | `HANDOFF.md` gap #1 | §17 |
-| `payBasis` has i18n copy in all four catalogs, a column, and no writer and no display. `formatSalaryRange()` takes no basis, so a `DAY_LABOR` job's "150 ILS" would read as monthly | `HANDOFF.md`; four call sites named | §10 |
-| `feed.service.ts` is a pure reverse-chronological connection query. `FeedSlate`, `InterestWeight`, `PostTopic`, `TopicMute` are unused | `feed.service.ts:29–55` | §8 |
-| Two-sided ratings: complete backend, zero UI, and no anti-gaming rules decided | `HANDOFF.md` gap #3 | §16 |
-| Company team management: complete backend with RBAC, zero UI. Every employer is a one-person account | `HANDOFF.md` gap #4 | §10 |
-| Mobile register screen enforces `acceptTerms` with no link to any of the four `/legal/*` pages, which are web-only. Plausible app-store rejection | `HANDOFF.md` gap #5 | §18 |
-| No mobile CV export; no mobile route for a shared job link `/j/[id]` | `HANDOFF.md` gaps #6, #7 | §5, §10 |
-| 30 i18n keys flagged `unreconciled`; platform-only surface at 163 web / 100 mobile | `HANDOFF.md` gap #9 | §19 |
-| Wallet payment methods (`JAWWALPAY`, `PALPAY`, `REFLECT`) exist as enum members and env keys, with a `WALLET_METHODS` set in `billing.service.ts` — but **no provider adapter exists for any of the three** | `apps/api/src/modules/billing/wallets.ts:24–26` declares only labels and env-key names | §13 |
-| `Plan.currency` and `Invoice.currency` default to `"USD"` in a market whose statutory wage is denominated in ILS | `schema.prisma` `Plan`, `Invoice` | §13 |
+| Defect                                                                                                                                                                                                      | Evidence                                                                               | Fixed in |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- | -------- |
+| `search.service.ts` INNER JOINs `Company`, so a null-`companyId` job is invisible to job search                                                                                                             | `HANDOFF.md` "Owed, and easy to lose"; the `ponytail:` comment at the JOIN             | §17      |
+| `jobs.service.ts` orders by `createdAt`; `search.service.ts` by `updatedAt`. No relevance ranking anywhere                                                                                                  | `HANDOFF.md` gap #1                                                                    | §17      |
+| `payBasis` has i18n copy in all four catalogs, a column, and no writer and no display. `formatSalaryRange()` takes no basis, so a `DAY_LABOR` job's "150 ILS" would read as monthly                         | `HANDOFF.md`; four call sites named                                                    | §10      |
+| `feed.service.ts` is a pure reverse-chronological connection query. `FeedSlate`, `InterestWeight`, `PostTopic`, `TopicMute` are unused                                                                      | `feed.service.ts:29–55`                                                                | §8       |
+| Two-sided ratings: complete backend, zero UI, and no anti-gaming rules decided                                                                                                                              | `HANDOFF.md` gap #3                                                                    | §16      |
+| Company team management: complete backend with RBAC, zero UI. Every employer is a one-person account                                                                                                        | `HANDOFF.md` gap #4                                                                    | §10      |
+| Mobile register screen enforces `acceptTerms` with no link to any of the four `/legal/*` pages, which are web-only. Plausible app-store rejection                                                           | `HANDOFF.md` gap #5                                                                    | §18      |
+| No mobile CV export; no mobile route for a shared job link `/j/[id]`                                                                                                                                        | `HANDOFF.md` gaps #6, #7                                                               | §5, §10  |
+| 30 i18n keys flagged `unreconciled`; platform-only surface at 163 web / 100 mobile                                                                                                                          | `HANDOFF.md` gap #9                                                                    | §19      |
+| Wallet payment methods (`JAWWALPAY`, `PALPAY`, `REFLECT`) exist as enum members and env keys, with a `WALLET_METHODS` set in `billing.service.ts` — but **no provider adapter exists for any of the three** | `apps/api/src/modules/billing/wallets.ts:24–26` declares only labels and env-key names | §13      |
+| `Plan.currency` and `Invoice.currency` default to `"USD"` in a market whose statutory wage is denominated in ILS                                                                                            | `schema.prisma` `Plan`, `Invoice`                                                      | §13      |
 
 ## 1.5 The design system
 
@@ -160,7 +160,7 @@ The route-coverage spec is a genuinely good piece of engineering: it enumerates 
 
 **Parity:** `check:ui-lockstep` reported 3 known drift entries for three sprints and now reports **0**. Every remaining one-platform component carries a written reason. Any new component this plan adds to `ui-web` must ship its `ui-native` twin in the same commit with identical prop and variant names.
 
-**Semantic colour defect, inherited:** audit A6 tuned each light semantic to ~4.5:1 against its own translucent tint **over white only**. Measured against the warm surfaces that actually exist: `success` falls to 3.92:1 on `sunken`, `info` to 4.25:1. Only `danger` holds everywhere. `warning` was fixed (`#926516` → `#7e5713`). §B.1 of the design redesign spec fixes `success` and `info` the same way, because the new surfaces this plan adds *will* place them on `muted` and `sunken`.
+**Semantic colour defect, inherited:** audit A6 tuned each light semantic to ~4.5:1 against its own translucent tint **over white only**. Measured against the warm surfaces that actually exist: `success` falls to 3.92:1 on `sunken`, `info` to 4.25:1. Only `danger` holds everywhere. `warning` was fixed (`#926516` → `#7e5713`). §B.1 of the design redesign spec fixes `success` and `info` the same way, because the new surfaces this plan adds _will_ place them on `muted` and `sunken`.
 
 ## 1.6 Launch blockers already on record
 

@@ -8,7 +8,7 @@
 2. ~~Dark mode undecided~~ — **resolved**: warm-dark theme shipped (`ab981a0`); semantic light/dark token contract on web + mobile (`ThemeProvider`, `useThemeTokens`).
 3. ~~Empty-state illustrations missing~~ — **resolved**: `EmptyState` + `Illustration` (harvest motif, tint/size scale) in `@baydar/ui-web` and `@baydar/ui-native`; consumed by 15 web routes.
 4. ~~Profile cover gradient unspecified~~ — **resolved**: `--cover-gradient` token (`tokens.css:174`, Olive Depth 135deg) — the single allowed decorative gradient per `DESIGN.md §13`.
-5. ~~Surface variants under-utilized~~ — **resolved** by the Open Design pass; all routes scored ≥8/10 in `docs/design/open-design-screen-critique.md`.
+5. ~~Surface variants under-utilized~~ — **resolved** by the Open Design pass; all routes scored ≥8/10 in `docs/_archive/design-2026-05/open-design-screen-critique.md`.
 6. ~~Mobile `Tabs` primitive not started~~ — **resolved via parity decision**: native uses `SegmentedControl` + Expo Router bottom tabs; web has `Tabs.tsx`.
 7. ~~Web `Sheet` primitive not started~~ — **partially resolved**: native `Sheet.tsx` shipped; web covers the role with `Dialog`/`Popover`/`Menu`. Revisit only if a real web use-case appears.
 8. **Logo** — mark exists: `packages/ui-tokens/assets/logo-mark.svg` (wheat head on olive circle), canonical source for web/native Icon, Expo app icon, splash, favicons. `BRAND.md` §logo text is stale ("replace when designed") — doc fix, plus optional brand-polish review in a future pass.
@@ -32,4 +32,4 @@
 
 - `08-pain.md` — v3 re-verification + v2 history.
 - `10-ask.md` — Pass 2 ask built from the open items above.
-- `docs/design/open-design-screen-critique.md` — per-route scores (2026-05-21; pre-premium/saved/company).
+- `docs/_archive/design-2026-05/open-design-screen-critique.md` — per-route scores (2026-05-21; pre-premium/saved/company).

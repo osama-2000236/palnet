@@ -247,13 +247,13 @@ New namespaces: `article`, `poll`, `newsletter`, `drafts`, `stats`. Extended: `c
 
 **Stage 1 — topic tagging on write.** Deterministic, no ML. On `POST /posts`, `topics.service.ts` writes `PostTopic` rows from five sources, matching `TopicSource`:
 
-| Source | Rule |
-| --- | --- |
-| `AUTHOR_OCCUPATION` | One row per `OccupationClaim` the author holds, `topicKey = "occ:" + occupationKey` |
-| `HASHTAG` | Every `#tag` in the body, folded, `topicKey = "tag:" + foldedTag`. Max 10. |
-| `COMPANY` | Every company mention, `topicKey = "co:" + companyId` |
-| `TEXT_MATCH` | Folded body matched against `PS_OCCUPATIONS` labels; a hit writes `topicKey = "occ:" + key`. Max 3, highest match length first. |
-| `GOVERNORATE` | The author's `governorateOfCity(profile.location)`, `topicKey = "gov:" + governorateKey` |
+| Source              | Rule                                                                                                                            |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `AUTHOR_OCCUPATION` | One row per `OccupationClaim` the author holds, `topicKey = "occ:" + occupationKey`                                             |
+| `HASHTAG`           | Every `#tag` in the body, folded, `topicKey = "tag:" + foldedTag`. Max 10.                                                      |
+| `COMPANY`           | Every company mention, `topicKey = "co:" + companyId`                                                                           |
+| `TEXT_MATCH`        | Folded body matched against `PS_OCCUPATIONS` labels; a hit writes `topicKey = "occ:" + key`. Max 3, highest match length first. |
+| `GOVERNORATE`       | The author's `governorateOfCity(profile.location)`, `topicKey = "gov:" + governorateKey`                                        |
 
 Ceiling of **18 topics per post**. Above it, keep in the source order above (occupation, hashtag, company, text, governorate) and drop the tail.
 
@@ -296,15 +296,15 @@ score(p, v) =
 
 ## 8.3 API
 
-| Method | Path | Notes |
-| --- | --- | --- |
-| GET | `/feed` **(changed)** | `?sort=ranked\|recent&offset=` — `recent` bypasses ranking entirely and is the honest escape hatch |
-| POST | `/feed/refresh` | Force a new slate; rate-limited to 1 per 5 minutes |
-| POST | `/topic-mutes` · DELETE `/topic-mutes/:topicKey` | |
-| GET | `/topic-mutes` | |
-| GET | `/feed/explain/:postId` | The reason payload for one post |
-| POST | `/admin/internal/interest-decay/run` | Nightly; decays weights that have not been touched in 30 days and deletes those below 0.01 |
-| POST | `/admin/internal/feed-slates/prune` | Hourly; deletes expired slates |
+| Method | Path                                             | Notes                                                                                              |
+| ------ | ------------------------------------------------ | -------------------------------------------------------------------------------------------------- |
+| GET    | `/feed` **(changed)**                            | `?sort=ranked\|recent&offset=` — `recent` bypasses ranking entirely and is the honest escape hatch |
+| POST   | `/feed/refresh`                                  | Force a new slate; rate-limited to 1 per 5 minutes                                                 |
+| POST   | `/topic-mutes` · DELETE `/topic-mutes/:topicKey` |                                                                                                    |
+| GET    | `/topic-mutes`                                   |                                                                                                    |
+| GET    | `/feed/explain/:postId`                          | The reason payload for one post                                                                    |
+| POST   | `/admin/internal/interest-decay/run`             | Nightly; decays weights that have not been touched in 30 days and deletes those below 0.01         |
+| POST   | `/admin/internal/feed-slates/prune`              | Hourly; deletes expired slates                                                                     |
 
 ## 8.4 Web and mobile
 

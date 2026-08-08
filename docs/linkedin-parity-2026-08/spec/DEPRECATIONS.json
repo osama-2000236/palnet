@@ -9,8 +9,14 @@
     "",
     "Releases are named after the phase that introduces the deprecation, so",
     "'P3' means 'the release that closes phase 3'. removeInRelease is always",
-    "at least two phases later."
+    "at least two phases later.",
+    "",
+    "currentRelease is what makes the ledger enforceable: an entry binds only",
+    "once the phase that deprecates it has landed. Bump it as each phase closes.",
+    "Without it the gate would fail at P0 on symbols that are still correct,",
+    "which is how a gate gets switched off."
   ],
+  "currentRelease": "P0",
   "deprecations": [
     {
       "symbol": "Profile.pronouns",
@@ -29,9 +35,7 @@
       "replacement": "Company.verificationState",
       "deprecatedInRelease": "P6",
       "removeInRelease": "P8",
-      "allowedReadSites": [
-        "apps/api/src/modules/companies/companies.service.ts"
-      ],
+      "allowedReadSites": ["apps/api/src/modules/companies/companies.service.ts"],
       "removalMigration": "drop_company_verified"
     },
     {
@@ -41,9 +45,7 @@
       "replacement": "JobRequirement",
       "deprecatedInRelease": "P6",
       "removeInRelease": "P10",
-      "allowedReadSites": [
-        "apps/api/src/modules/search/search.service.ts"
-      ],
+      "allowedReadSites": ["apps/api/src/modules/search/search.service.ts"],
       "removalMigration": "drop_job_skills_required",
       "preRemovalCheck": "SELECT count(*) FROM \"Job\" WHERE cardinality(\"skillsRequired\") > 0 AND \"createdAt\" > now() - interval '90 days'; must be 0"
     },
@@ -65,9 +67,7 @@
       "replacement": "SavedSearch",
       "deprecatedInRelease": "P5",
       "removeInRelease": "P7",
-      "allowedReadSites": [
-        "apps/api/src/modules/jobs/job-alerts.controller.ts"
-      ],
+      "allowedReadSites": ["apps/api/src/modules/jobs/job-alerts.controller.ts"],
       "removalMigration": "drop_job_alert",
       "dataMigration": "migrate_job_alerts_to_saved_searches"
     },
@@ -114,7 +114,7 @@
       "replacement": null,
       "deprecatedInRelease": "P0",
       "removeInRelease": "P0",
-      "allowedReadSites": [],
+      "allowedReadSites": ["scripts/check-naming.mjs", "scripts/__tests__/check-naming.test.mjs"],
       "removalMigration": "drop_application_boost_credit_kind",
       "bannedAfterRemoval": ["APPLICATION_BOOST"]
     },

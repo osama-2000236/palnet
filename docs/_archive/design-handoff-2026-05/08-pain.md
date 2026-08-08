@@ -5,7 +5,7 @@
 ## Resolved since v2 (verified in code, 2026-07-02)
 
 - **Empty states everywhere:** `EmptyState` (illustration + title + body + CTA, harvest motif) is consumed by 15 web routes — feed, network, notifications, messages (inbox/room/list), search, jobs, saved, activity, settings/blocked, moderation, billing, app error. Native twin exists. v2 items "notifications empty", "network body empty", and the `DESIGN.md §12` gap are closed.
-- **Surface hierarchy:** `docs/design/SCREENS.md` is a real per-screen recipe matrix (no longer a stub); every route was scored ≥8/10 in `docs/design/open-design-screen-critique.md` (2026-05-21).
+- **Surface hierarchy:** `docs/design/SCREENS.md` is a real per-screen recipe matrix (no longer a stub); every route was scored ≥8/10 in `docs/_archive/design-2026-05/open-design-screen-critique.md` (2026-05-21).
 - **Onboarding:** progress component shipped (`OnboardingProgress`, web + native); bare-shell decision documented.
 - **Dark mode:** warm-dark theme shipped (`ab981a0`); light/dark semantic token contract live on web + mobile.
 - **Feed hero / composer `?` avatar:** snapshot-era auth-fixture artifacts; profile fallbacks render via shared atoms now.

@@ -4,7 +4,7 @@
 
 ## 6.1 What the market forces
 
-§2.1: the diaspora is 8.82 million people who mostly do not know each other and will never mutually connect at scale. A purely symmetric graph caps their participation at the size of their existing address book. §2.2: with 280,000 unemployed in the West Bank, a connection request from a stranger is low-signal noise for an employer, but a *follow* costs the employer nothing.
+§2.1: the diaspora is 8.82 million people who mostly do not know each other and will never mutually connect at scale. A purely symmetric graph caps their participation at the size of their existing address book. §2.2: with 280,000 unemployed in the West Bank, a connection request from a stranger is low-signal noise for an employer, but a _follow_ costs the employer nothing.
 
 **The core diagnosis:** Baydar today has exactly one edge type — `Connection`, mutual, requiring acceptance. LinkedIn has three (connect, follow, follow-company) plus a topic subscription. Adding the asymmetric edge is the single highest-leverage graph change available, and every downstream workstream — feed (§8), content distribution (§7), groups (§9), newsletters (§7.5) — depends on it.
 
@@ -103,23 +103,23 @@ model SecondDegree {
 
 ## 6.4 API
 
-| Method | Path | Notes |
-| --- | --- | --- |
-| POST | `/follows` | Body: `{ targetType, targetUserId? \| targetCompanyId? \| targetTopicKey? }` |
-| DELETE | `/follows` | Same body shape; idempotent |
-| GET | `/follows/me` | `?targetType=`, cursor-paged |
-| GET | `/follows/followers` | Who follows me, cursor-paged |
-| GET | `/profiles/:handle/followers` | Public count + paged list, respects `diasporaVisible` and privacy |
-| POST | `/feed-mutes` / DELETE `/feed-mutes/:userId` | |
-| GET | `/feed-mutes` | |
-| POST | `/restrictions` / DELETE `/restrictions/:userId` | |
-| GET | `/restrictions` | |
-| GET | `/connections/degree/:userId` | Single lookup for a profile page |
-| GET | `/discovery/people` | Replaces `/connections/suggestions`; keeps the old path as an alias for one release |
-| GET | `/discovery/alumni` | `?universityKey=&graduationYearFrom=&to=` |
-| GET | `/discovery/diaspora` | `?originGovernorate=&residenceCountry=&occupationKey=` |
-| GET | `/discovery/nearby` | `?governorateKey=` — occupation peers in the same governorate |
-| POST | `/admin/internal/second-degree/refresh` | `InternalTokenGuard`; the nightly cron |
+| Method | Path                                             | Notes                                                                               |
+| ------ | ------------------------------------------------ | ----------------------------------------------------------------------------------- |
+| POST   | `/follows`                                       | Body: `{ targetType, targetUserId? \| targetCompanyId? \| targetTopicKey? }`        |
+| DELETE | `/follows`                                       | Same body shape; idempotent                                                         |
+| GET    | `/follows/me`                                    | `?targetType=`, cursor-paged                                                        |
+| GET    | `/follows/followers`                             | Who follows me, cursor-paged                                                        |
+| GET    | `/profiles/:handle/followers`                    | Public count + paged list, respects `diasporaVisible` and privacy                   |
+| POST   | `/feed-mutes` / DELETE `/feed-mutes/:userId`     |                                                                                     |
+| GET    | `/feed-mutes`                                    |                                                                                     |
+| POST   | `/restrictions` / DELETE `/restrictions/:userId` |                                                                                     |
+| GET    | `/restrictions`                                  |                                                                                     |
+| GET    | `/connections/degree/:userId`                    | Single lookup for a profile page                                                    |
+| GET    | `/discovery/people`                              | Replaces `/connections/suggestions`; keeps the old path as an alias for one release |
+| GET    | `/discovery/alumni`                              | `?universityKey=&graduationYearFrom=&to=`                                           |
+| GET    | `/discovery/diaspora`                            | `?originGovernorate=&residenceCountry=&occupationKey=`                              |
+| GET    | `/discovery/nearby`                              | `?governorateKey=` — occupation peers in the same governorate                       |
+| POST   | `/admin/internal/second-degree/refresh`          | `InternalTokenGuard`; the nightly cron                                              |
 
 ## 6.5 The suggestion engine — exact rules
 

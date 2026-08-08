@@ -35,7 +35,12 @@ export const PS_UNIVERSITIES_V2 = [
     en: "An-Najah National University",
     domain: "najah.edu",
   },
-  { key: "iug", ar: "الجامعة الإسلامية بغزة", en: "Islamic University of Gaza", domain: "iugaza.edu.ps" },
+  {
+    key: "iug",
+    ar: "الجامعة الإسلامية بغزة",
+    en: "Islamic University of Gaza",
+    domain: "iugaza.edu.ps",
+  },
   { key: "al-quds", ar: "جامعة القدس", en: "Al-Quds University", domain: "alquds.edu" },
   { key: "bethlehem", ar: "جامعة بيت لحم", en: "Bethlehem University", domain: "bethlehem.edu" },
   { key: "hebron", ar: "جامعة الخليل", en: "Hebron University", domain: "hebron.edu" },
@@ -45,7 +50,12 @@ export const PS_UNIVERSITIES_V2 = [
     en: "Palestine Polytechnic University",
     domain: "ppu.edu",
   },
-  { key: "aaup", ar: "الجامعة العربية الأمريكية", en: "Arab American University", domain: "aaup.edu" },
+  {
+    key: "aaup",
+    ar: "الجامعة العربية الأمريكية",
+    en: "Arab American University",
+    domain: "aaup.edu",
+  },
   {
     key: "al-azhar-gaza",
     ar: "جامعة الأزهر - غزة",

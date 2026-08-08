@@ -13,7 +13,6 @@ node_modules
 **/coverage
 **/test-results
 **/*.tsbuildinfo
-design-handoff-2026-05
 design-out
 docs
 open-design

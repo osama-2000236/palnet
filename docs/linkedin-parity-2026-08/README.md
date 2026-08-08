@@ -9,13 +9,13 @@ This directory is the complete, gap-free specification for the build, plus the m
 
 ## Start here
 
-| Order | File | What it is |
-| --- | --- | --- |
-| 1 | **`PROMPT.md`** | The paste-ready execution prompt for Claude Code (Opus 5). Read this first if you are about to build. |
-| 2 | **`BAYDAR-LINKEDIN-PARITY-MASTER-SPEC.docx`** | The plan. 22 sections, ~31,700 words, 45 tables. Front to back. |
-| 3 | **`BAYDAR-DESIGN-REDESIGN-SPEC.docx`** | The web + mobile redesign: tokens, the sixth surface variant, 62 component pairs, screen recompositions, RTL and a11y. |
-| 4 | **`market-facts.xlsx`** | Every figure used anywhere in the spec, with source, URL and the product decision it forces. Six sheets. |
-| 5 | **`spec/`** | The machine-readable contracts. Read these instead of re-deriving them. |
+| Order | File                                          | What it is                                                                                                             |
+| ----- | --------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| 1     | **`PROMPT.md`**                               | The paste-ready execution prompt for Claude Code (Opus 5). Read this first if you are about to build.                  |
+| 2     | **`BAYDAR-LINKEDIN-PARITY-MASTER-SPEC.docx`** | The plan. 22 sections, ~31,700 words, 45 tables. Front to back.                                                        |
+| 3     | **`BAYDAR-DESIGN-REDESIGN-SPEC.docx`**        | The web + mobile redesign: tokens, the sixth surface variant, 62 component pairs, screen recompositions, RTL and a11y. |
+| 4     | **`market-facts.xlsx`**                       | Every figure used anywhere in the spec, with source, URL and the product decision it forces. Six sheets.               |
+| 5     | **`spec/`**                                   | The machine-readable contracts. Read these instead of re-deriving them.                                                |
 
 `src/` holds the markdown the two `.docx` files were built from. Edit the markdown and rebuild; do not edit the `.docx` directly.
 
@@ -23,42 +23,42 @@ This directory is the complete, gap-free specification for the build, plus the m
 
 ## `spec/` — read these instead of re-deriving them
 
-| File | Contents |
-| --- | --- |
-| `schema.delta.prisma` | 41 new models, 17 new enums, 9 changed models, 4 changed enums — organised by phase, in migration order, with backfills and the invariants that apply to every block. |
+| File                              | Contents                                                                                                                                                                                                                                               |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `schema.delta.prisma`             | 41 new models, 17 new enums, 9 changed models, 4 changed enums — organised by phase, in migration order, with backfills and the invariants that apply to every block.                                                                                  |
 | `contracts/critical-contracts.ts` | Every constant, threshold, weight and formula where a guess would break the design: money exponents, the evidence score, the standing ladder, the match scorer, the feed score, payload budgets, the outbox, the safety thresholds, the pricing table. |
-| `FILE-MANIFEST.json` | 188 new API routes + 16 changed, each with guard, phase, public flag and note. Plus the 13 new rate-limit buckets. |
-| `openapi-additions.yaml` | The same 188 operations as an OpenAPI 3.1 skeleton, for diffing what you built against what was specified. Not a source of truth — the decorators are. |
-| `i18n-keys.manifest.json` | 22 new namespaces, 1,406 new keys per catalog, the 34 gendered strings, the 5 protected keys, the 4 banned values. |
-| `design-tokens.delta.ts` | The complete token delta and nothing more — the semantic contrast repair, `evidence`, `promotion`, `connectionClass`, `measure`, three `z` insertions, `motion`, and the `promoted` surface variant. |
-| `DEPRECATIONS.json` | The two-release removal ledger, the permanently-banned symbols, and the list of things a future audit will propose deleting and must not. |
-| `palestine-governorates.delta.ts` | 16 governorates and 93 cities. The shipped table has 13 and 14. |
-| `palestine-universities.delta.ts` | 22 institutions with email domains (required by `EDU_EMAIL` verification), plus `PS_ISSUERS` and `PS_CAUSE_KEYS`. |
+| `FILE-MANIFEST.json`              | 188 new API routes + 16 changed, each with guard, phase, public flag and note. Plus the 13 new rate-limit buckets.                                                                                                                                     |
+| `openapi-additions.yaml`          | The same 188 operations as an OpenAPI 3.1 skeleton, for diffing what you built against what was specified. Not a source of truth — the decorators are.                                                                                                 |
+| `i18n-keys.manifest.json`         | 22 new namespaces, 1,406 new keys per catalog, the 34 gendered strings, the 5 protected keys, the 4 banned values.                                                                                                                                     |
+| `design-tokens.delta.ts`          | The complete token delta and nothing more — the semantic contrast repair, `evidence`, `promotion`, `connectionClass`, `measure`, three `z` insertions, `motion`, and the `promoted` surface variant.                                                   |
+| `DEPRECATIONS.json`               | The two-release removal ledger, the permanently-banned symbols, and the list of things a future audit will propose deleting and must not.                                                                                                              |
+| `palestine-governorates.delta.ts` | 16 governorates and 93 cities. The shipped table has 13 and 14.                                                                                                                                                                                        |
+| `palestine-universities.delta.ts` | 22 institutions with email domains (required by `EDU_EMAIL` verification), plus `PS_ISSUERS` and `PS_CAUSE_KEYS`.                                                                                                                                      |
 
 ---
 
 ## What the scan found
 
-| | |
-| --- | --- |
-| Tracked files | 976 |
-| Prisma schema | 1,240 lines · 44 models · 29 enums |
-| Pinned API routes | 137 (17 public) |
-| i18n keys | web 979 × 2 languages · mobile 867 × 2 |
-| Bespoke CI gates | 7 |
-| Design-system drift | **0** |
+|                     |                                        |
+| ------------------- | -------------------------------------- |
+| Tracked files       | 976                                    |
+| Prisma schema       | 1,240 lines · 44 models · 29 enums     |
+| Pinned API routes   | 137 (17 public)                        |
+| i18n keys           | web 979 × 2 languages · mobile 867 × 2 |
+| Bespoke CI gates    | 7                                      |
+| Design-system drift | **0**                                  |
 
 **The headline finding.** Of LinkedIn's 138 classified capabilities, **33 are already in this repo's schema, enum set or API with no engine or no UI** — nearly a quarter of the surface, sitting as committed intent with no behaviour behind it. Nine Prisma models have zero writers. `NotificationType.POST_MENTION` exists with no mention model. `TopicSource.HASHTAG` exists with no extractor. `Application.matchSnapshot` exists with no scorer. Three wallet payment methods exist as enum members and env keys with no adapter.
 
 The fastest route to a LinkedIn-class product here is not to add features. It is to finish the ones the schema already promises, and only then extend. The phase order in §20 does exactly that: **FIX before ADD, everywhere it is possible.**
 
-| Verdict | Count | Share |
-| --- | --- | --- |
-| HAVE — shipped and adequate | 26 | 19% |
-| FIX — exists but defective or unreachable | 33 | 24% |
-| ADD — does not exist | 51 | 37% |
-| ADAPT — right capability, wrong shape for this market | 12 | 9% |
-| REJECT — deliberately not built, with a written reason | 16 | 12% |
+| Verdict                                                | Count | Share |
+| ------------------------------------------------------ | ----- | ----- |
+| HAVE — shipped and adequate                            | 26    | 19%   |
+| FIX — exists but defective or unreachable              | 33    | 24%   |
+| ADD — does not exist                                   | 51    | 37%   |
+| ADAPT — right capability, wrong shape for this market  | 12    | 9%    |
+| REJECT — deliberately not built, with a written reason | 16    | 12%   |
 
 ---
 
@@ -87,17 +87,17 @@ Neither is a phasing decision. Both are enforced mechanically by a new CI gate.
 
 ## Build scale
 
-| Artefact | Before | Added | After |
-| --- | --- | --- | --- |
-| Prisma models | 44 | 41 | 85 |
-| Prisma enums | 29 | 17 | 46 |
-| Pinned API routes | 137 | 188 | 325 |
-| Public API routes | 17 | 12 | 29 |
-| i18n keys per catalog | 979 | 1,406 | 2,385 |
-| Design-system component pairs | — | 62 | — |
-| Governorates | 13 | 3 | 16 |
-| Cities | 14 | 79 | 93 |
-| CI gates | 7 | 2 | 9 |
+| Artefact                      | Before | Added | After |
+| ----------------------------- | ------ | ----- | ----- |
+| Prisma models                 | 44     | 41    | 85    |
+| Prisma enums                  | 29     | 17    | 46    |
+| Pinned API routes             | 137    | 188   | 325   |
+| Public API routes             | 17     | 12    | 29    |
+| i18n keys per catalog         | 979    | 1,406 | 2,385 |
+| Design-system component pairs | —      | 62    | —     |
+| Governorates                  | 13     | 3     | 16    |
+| Cities                        | 14     | 79    | 93    |
+| CI gates                      | 7      | 2     | 9     |
 
 Phased into **eleven shippable increments** (§20). Each leaves `main` green and is useful to a real user alone. Stopping after P6 yields a complete, safe hiring platform; stopping after P3 yields a materially better professional network than today.
 

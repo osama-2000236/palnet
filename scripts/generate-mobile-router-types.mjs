@@ -4,7 +4,8 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const require = createRequire(import.meta.url);
-const requireContext = require("expo-router/build/testing-library/require-context-ponyfill").default;
+const requireContext =
+  require("expo-router/build/testing-library/require-context-ponyfill").default;
 const { EXPO_ROUTER_CTX_IGNORE } = require("expo-router/_ctx-shared");
 const { getTypedRoutesDeclarationFile } = require("expo-router/build/typed-routes/generate");
 

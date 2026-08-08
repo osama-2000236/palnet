@@ -125,7 +125,10 @@ const root = [
   ],
   [
     "Illustration backdrop tints — map to existing surface tokens",
-    Object.entries(tokens.illustration.tint).map(([k, v]) => [`--illus-tint-${k}`, refOrLiteral(v)]),
+    Object.entries(tokens.illustration.tint).map(([k, v]) => [
+      `--illus-tint-${k}`,
+      refOrLiteral(v),
+    ]),
   ],
   ["Named breakpoints. Right rail is xl-only.", scalePairs(tokens.breakpoint, "--bp-", "px")],
 ];
@@ -176,10 +179,7 @@ function motionPairs() {
 }
 
 // Dark redeclares only what changes; everything else inherits :root.
-const darkColors = [
-  ...colorPairs(dark.color),
-  ["--switch-thumb", dark.color.control.switchThumb],
-];
+const darkColors = [...colorPairs(dark.color), ["--switch-thumb", dark.color.control.switchThumb]];
 const lightByName = new Map(lightColors);
 const darkAvatar = tokens.avatar.palette.flatMap((light, i) => {
   const over = dark.avatar.palette[i];

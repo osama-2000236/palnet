@@ -8,58 +8,58 @@ The purpose of this section is not to be interesting. It is to be **load-bearing
 
 ## 2.1 The population is mostly not in Palestine
 
-| Fact | Value | Source |
-| --- | --- | --- |
-| Palestinians worldwide, end 2025 | 15.49 million | PCBS |
-| Resident in the State of Palestine | 5.56 million | PCBS |
-| In the 1948 territories | 1.86 million | PCBS |
-| Diaspora | ~8.82 million (6.82m in Arab countries) | PCBS |
-| Annual remittances | US$3.5–4 billion | Palestinian economic press / MAS |
+| Fact                               | Value                                   | Source                           |
+| ---------------------------------- | --------------------------------------- | -------------------------------- |
+| Palestinians worldwide, end 2025   | 15.49 million                           | PCBS                             |
+| Resident in the State of Palestine | 5.56 million                            | PCBS                             |
+| In the 1948 territories            | 1.86 million                            | PCBS                             |
+| Diaspora                           | ~8.82 million (6.82m in Arab countries) | PCBS                             |
+| Annual remittances                 | US$3.5–4 billion                        | Palestinian economic press / MAS |
 
 **What this forces.** The diaspora is **1.6× the size of the home market** and carries almost all of its hard currency. A professional network that treats Palestine as the market and the diaspora as an afterthought has its economics upside down. Concretely:
 
 - **DERIVED:** The paying user is disproportionately abroad. Pricing, currency and payment rails must be split by residence, not by nationality (§13).
-- **DERIVED:** The diaspora's product need is *not* job-seeking. It is (a) hiring Palestinians remotely, (b) mentoring, (c) finding a lawyer/accountant/contractor back home, (d) staying professionally connected to the country. Four different surfaces, none of which is the feed.
+- **DERIVED:** The diaspora's product need is _not_ job-seeking. It is (a) hiring Palestinians remotely, (b) mentoring, (c) finding a lawyer/accountant/contractor back home, (d) staying professionally connected to the country. Four different surfaces, none of which is the feed.
 - **DERIVED:** `Profile.country` currently defaults to `"PS"` with no diaspora modelling at all. §5 adds `Profile.residenceCountry`, `Profile.originGovernorate` and `Profile.diasporaVisibility`, because "Palestinian engineer in Berlin who wants to hire in Nablus" is a first-class user, not an edge case.
 
 ## 2.2 The labour market is applicant-heavy and employer-poor
 
-| Fact | Value | Source |
-| --- | --- | --- |
-| West Bank unemployment, Q4 2025 | 27.5% | PCBS LFS Q4-2025 |
-| West Bank unemployment, Q3 2025 | 28.5% | PCBS LFS Q3-2025 |
-| Unemployed persons, West Bank, Q4 2025 | ~280,000 | PCBS |
-| Employed persons, West Bank, Q4 2025 | ~736,000 | PCBS |
-| Youth graduate unemployment (19–29, diploma+), Q1 2026 | 41.3% | PCBS LFS Q1-2026 |
-| — males | 31.7% | PCBS |
-| — females | 49.2% | PCBS |
-| Male labour force participation, Q4 2025 | 71.5% | PCBS |
-| Female labour force participation, Q4 2025 | 18.6% | PCBS |
+| Fact                                                   | Value    | Source           |
+| ------------------------------------------------------ | -------- | ---------------- |
+| West Bank unemployment, Q4 2025                        | 27.5%    | PCBS LFS Q4-2025 |
+| West Bank unemployment, Q3 2025                        | 28.5%    | PCBS LFS Q3-2025 |
+| Unemployed persons, West Bank, Q4 2025                 | ~280,000 | PCBS             |
+| Employed persons, West Bank, Q4 2025                   | ~736,000 | PCBS             |
+| Youth graduate unemployment (19–29, diploma+), Q1 2026 | 41.3%    | PCBS LFS Q1-2026 |
+| — males                                                | 31.7%    | PCBS             |
+| — females                                              | 49.2%    | PCBS             |
+| Male labour force participation, Q4 2025               | 71.5%    | PCBS             |
+| Female labour force participation, Q4 2025             | 18.6%    | PCBS             |
 
-**What this forces.** LinkedIn's consumer business model is *"pay us and you will get seen by more employers."* In a market where nearly half of female graduates are unemployed, that model is **extractive and it will not convert**. It sells hope to people who cannot afford it, and it degrades the product for everyone who does not pay.
+**What this forces.** LinkedIn's consumer business model is _"pay us and you will get seen by more employers."_ In a market where nearly half of female graduates are unemployed, that model is **extractive and it will not convert**. It sells hope to people who cannot afford it, and it degrades the product for everyone who does not pay.
 
-- **DECIDED:** Baydar never sells applicant visibility. No "boost your application", no "featured profile", no paid ranking of a person in front of an employer. This is not a phase-1 deferral, it is a permanent product rule, and it is why `HANDOFF.md` gap #1 (two Karama rewards that debited points and granted nothing) was correctly closed by *withdrawal* rather than implementation. §12 makes it a lint-enforced rule: **no ranking function may take a payment, subscription, credit or Karama balance as an input.**
+- **DECIDED:** Baydar never sells applicant visibility. No "boost your application", no "featured profile", no paid ranking of a person in front of an employer. This is not a phase-1 deferral, it is a permanent product rule, and it is why `HANDOFF.md` gap #1 (two Karama rewards that debited points and granted nothing) was correctly closed by _withdrawal_ rather than implementation. §12 makes it a lint-enforced rule: **no ranking function may take a payment, subscription, credit or Karama balance as an input.**
 - **DERIVED:** Revenue therefore comes from the employer side, the diaspora, and institutions — never from the unemployed. §13 prices accordingly.
 - **DERIVED:** With ~280,000 unemployed in the West Bank alone against a thin employer base, the scarce resource is the **employer's attention**, not the candidate's. Every hiring feature must be optimised for employer throughput: structured applications, ranked shortlists, one-tap rejection with a reason. `MATCHING.md` already argues exactly this; §10 builds it.
 - **DERIVED:** The 49.2% female graduate unemployment rate against 18.6% female participation means the product's largest addressable untapped segment is educated women who are not currently in the labour force. §12 and §16 specify the safety, privacy and remote-work surfaces that determine whether they join. This is a market-size argument, not a diversity gesture.
 
 ## 2.3 Connectivity is the binding technical constraint
 
-| Fact | Value | Source |
-| --- | --- | --- |
-| Palestinians without internet access, 2025 | 39% | TS2 / sector reporting |
-| Gaza towers offline, 2025 | 64% | sector reporting |
-| Gaza mobile data generation | **2G** | Operator reporting |
-| West Bank 4G | Approved Jan 2026 (Jawwal + Ooredoo + Ericsson management agreements); rollout stated as up to six months | JPost / operator reporting |
-| 5G spectrum available to Palestinian operators | **None** | Al-Shabaka / operator reporting |
-| Active mobile subscriptions | ~4.4 million | Sector reporting |
-| Jawwal subscribers | ~3.0 million | Operator |
-| Ooredoo subscribers | ~1.5 million | Operator |
-| Spectrum authority | Israel retains final authority over frequency allocation and equipment imports | Oslo Accords / Al-Shabaka |
+| Fact                                           | Value                                                                                                     | Source                          |
+| ---------------------------------------------- | --------------------------------------------------------------------------------------------------------- | ------------------------------- |
+| Palestinians without internet access, 2025     | 39%                                                                                                       | TS2 / sector reporting          |
+| Gaza towers offline, 2025                      | 64%                                                                                                       | sector reporting                |
+| Gaza mobile data generation                    | **2G**                                                                                                    | Operator reporting              |
+| West Bank 4G                                   | Approved Jan 2026 (Jawwal + Ooredoo + Ericsson management agreements); rollout stated as up to six months | JPost / operator reporting      |
+| 5G spectrum available to Palestinian operators | **None**                                                                                                  | Al-Shabaka / operator reporting |
+| Active mobile subscriptions                    | ~4.4 million                                                                                              | Sector reporting                |
+| Jawwal subscribers                             | ~3.0 million                                                                                              | Operator                        |
+| Ooredoo subscribers                            | ~1.5 million                                                                                              | Operator                        |
+| Spectrum authority                             | Israel retains final authority over frequency allocation and equipment imports                            | Oslo Accords / Al-Shabaka       |
 
 **What this forces.** This is the single most consequential set of facts in the document, and it is the one an international product team would get wrong.
 
-- **DERIVED:** A 2G connection delivers roughly 20–40 kbit/s of usable throughput. A LinkedIn feed page weighs several megabytes. **On a Gaza 2G connection, a LinkedIn-shaped feed never finishes loading.** §15 therefore specifies hard, tested response-size budgets: feed page ≤ 24 KB gzipped JSON for 10 posts, no image auto-load below an effective-connection-type of `3g`, and a text-only mode that is the *default* when `navigator.connection.effectiveType` is `slow-2g` or `2g`, or when the RN `NetInfo` `cellularGeneration` is `2g`.
+- **DERIVED:** A 2G connection delivers roughly 20–40 kbit/s of usable throughput. A LinkedIn feed page weighs several megabytes. **On a Gaza 2G connection, a LinkedIn-shaped feed never finishes loading.** §15 therefore specifies hard, tested response-size budgets: feed page ≤ 24 KB gzipped JSON for 10 posts, no image auto-load below an effective-connection-type of `3g`, and a text-only mode that is the _default_ when `navigator.connection.effectiveType` is `slow-2g` or `2g`, or when the RN `NetInfo` `cellularGeneration` is `2g`.
 - **DERIVED:** Offline is not a nicety. §15 specifies a durable outbox for the four actions a user cannot afford to lose — posting, sending a message, submitting a job application, and confirming a `WorkProof` — with idempotency keys so a replayed action cannot double-submit. `Message.clientMessageId` already establishes this pattern with a `@@unique([roomId, authorId, clientMessageId])`; §15 generalises it.
 - **DERIVED:** SSE is the realtime transport and `CLAUDE.md` says it stays. On 2G, SSE reconnect storms are a real risk. §15 specifies the backoff schedule and the "degrade to polling at 120s" rule, extending the existing `packages/shared/src/sse-retry.ts`.
 - **DERIVED:** No hosted video in phase 1 of Learning (§12). A 10-minute 480p lesson is ~50 MB; on 2G that is roughly five hours. Text and audio only, with audio capped at 32 kbit/s mono Opus.
@@ -67,14 +67,14 @@ The purpose of this section is not to be interesting. It is to be **load-bearing
 
 ## 2.4 Money does not move the way LinkedIn assumes
 
-| Fact | Value | Source |
-| --- | --- | --- |
-| Jawwal Pay | First company to obtain a final PMA licence; licensed May 2020; founded Feb 2018 | Jawwal Pay / PMA |
-| PalPay ("محفظتي" / Mahfazati) | PMA-licensed e-wallet; subsidiary of Bank of Palestine | PalPay / BoP |
-| Both operate in Gaza | Yes — UNDP formalised partnerships with both for Gaza digital financial solutions | UNDP PAPP |
-| Currency in circulation | ILS (de facto), JOD (West Bank commerce and property), USD (ICT, diaspora, NGOs) | PMA |
-| Statutory minimum wage | 1,880 ILS/month · 85 ILS/day · 10.5 ILS/hour (CoM Resolution No. 4 of 2021, in force since 2022) | Palestinian Cabinet / ILO |
-| Apple ID country list | **Palestine is not offered.** Gaza residents typically select Egypt, West Bank residents Jordan | Apple support community |
+| Fact                          | Value                                                                                            | Source                    |
+| ----------------------------- | ------------------------------------------------------------------------------------------------ | ------------------------- |
+| Jawwal Pay                    | First company to obtain a final PMA licence; licensed May 2020; founded Feb 2018                 | Jawwal Pay / PMA          |
+| PalPay ("محفظتي" / Mahfazati) | PMA-licensed e-wallet; subsidiary of Bank of Palestine                                           | PalPay / BoP              |
+| Both operate in Gaza          | Yes — UNDP formalised partnerships with both for Gaza digital financial solutions                | UNDP PAPP                 |
+| Currency in circulation       | ILS (de facto), JOD (West Bank commerce and property), USD (ICT, diaspora, NGOs)                 | PMA                       |
+| Statutory minimum wage        | 1,880 ILS/month · 85 ILS/day · 10.5 ILS/hour (CoM Resolution No. 4 of 2021, in force since 2022) | Palestinian Cabinet / ILO |
+| Apple ID country list         | **Palestine is not offered.** Gaza residents typically select Egypt, West Bank residents Jordan  | Apple support community   |
 
 **What this forces.** Three hard consequences.
 
@@ -86,16 +86,16 @@ The purpose of this section is not to be interesting. It is to be **load-bearing
 
 ## 2.5 There is a real, export-oriented professional economy
 
-| Fact | Value | Source |
-| --- | --- | --- |
-| ICT companies | 500+ | PITA |
-| ICT employees | ~13,500 | PITA |
-| Freelancers | 10,000+ | PITA |
-| ICT share of GDP | 5–7% | PITA |
-| ICT annual value added | > US$500 million | PITA |
-| Exports as share of IT/BPS activity | 56% | PITA |
-| ICT service exports, 2024 | ~US$91 million | World Bank |
-| PITA members prioritising AI integration | > 25% | PITA |
+| Fact                                     | Value            | Source     |
+| ---------------------------------------- | ---------------- | ---------- |
+| ICT companies                            | 500+             | PITA       |
+| ICT employees                            | ~13,500          | PITA       |
+| Freelancers                              | 10,000+          | PITA       |
+| ICT share of GDP                         | 5–7%             | PITA       |
+| ICT annual value added                   | > US$500 million | PITA       |
+| Exports as share of IT/BPS activity      | 56%              | PITA       |
+| ICT service exports, 2024                | ~US$91 million   | World Bank |
+| PITA members prioritising AI integration | > 25%            | PITA       |
 
 **What this forces.**
 
@@ -106,12 +106,12 @@ The purpose of this section is not to be interesting. It is to be **load-bearing
 
 Verified in `docs/design/OCCUPATIONS.md` §1b against the bodies' own sites:
 
-| Body | Site | Authority |
-| --- | --- | --- |
-| مجلس مهنة تدقيق الحسابات | `bopa.ps` | Created under art. 3 of قانون مزاولة مهنة تدقيق الحسابات رقم (9) لسنة 2004; its لجنة الترخيص issues the practice licence |
-| جمعية مدققي الحسابات القانونيين الفلسطينية (PACPA) | `pacpa.ps` | 350+ members, split مزاولين / غير مزاولين |
-| نقابة المحامين الفلسطينيين | `pbaps.ps` | Portal serves المحامين المزاولين والمتدربين |
-| نقابة المهندسين | `paleng.org` | Engineering practice |
+| Body                                               | Site         | Authority                                                                                                                |
+| -------------------------------------------------- | ------------ | ------------------------------------------------------------------------------------------------------------------------ |
+| مجلس مهنة تدقيق الحسابات                           | `bopa.ps`    | Created under art. 3 of قانون مزاولة مهنة تدقيق الحسابات رقم (9) لسنة 2004; its لجنة الترخيص issues the practice licence |
+| جمعية مدققي الحسابات القانونيين الفلسطينية (PACPA) | `pacpa.ps`   | 350+ members, split مزاولين / غير مزاولين                                                                                |
+| نقابة المحامين الفلسطينيين                         | `pbaps.ps`   | Portal serves المحامين المزاولين والمتدربين                                                                              |
+| نقابة المهندسين                                    | `paleng.org` | Engineering practice                                                                                                     |
 
 **What this forces.** LinkedIn's answer to credibility is a self-reported "Licenses & certifications" list that nobody checks, plus a verification badge tied to a government ID vendor. Neither maps here.
 

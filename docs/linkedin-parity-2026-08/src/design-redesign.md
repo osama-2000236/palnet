@@ -23,14 +23,14 @@
 
 Audit A6 tuned every light semantic to ~4.5:1 against its own translucent tint **over white only**. Measured against the warm surfaces that actually exist:
 
-| Token | on `white` | on `muted` | on `subtle` | on `sunken` |
-| --- | --- | --- | --- | --- |
-| `warning` | 4.51 | 4.28 | 4.09 | 3.87 |
-| `success` | 4.57 | 4.34 | 4.14 | **3.92** |
-| `info` | 4.97 | 4.74 | 4.53 | **4.25** |
-| `danger` | 5.87 | 5.56 | 5.31 | 4.98 |
+| Token     | on `white` | on `muted` | on `subtle` | on `sunken` |
+| --------- | ---------- | ---------- | ----------- | ----------- |
+| `warning` | 4.51       | 4.28       | 4.09        | 3.87        |
+| `success` | 4.57       | 4.34       | 4.14        | **3.92**    |
+| `info`    | 4.97       | 4.74       | 4.53        | **4.25**    |
+| `danger`  | 5.87       | 5.56       | 5.31        | 4.98        |
 
-`warning` was already fixed (`#926516` → `#7e5713`, worst surface 4.61) because `e2e/a11y.spec.ts` failed job detail on it. `success` and `info` were left alone because *"no current surface puts them on `muted`/`sunken` inside a scanned route."*
+`warning` was already fixed (`#926516` → `#7e5713`, worst surface 4.61) because `e2e/a11y.spec.ts` failed job detail on it. `success` and `info` were left alone because _"no current surface puts them on `muted`/`sunken` inside a scanned route."_
 
 **That stops being true in this build.** The evidence strip (§C.2) puts `success` on `hero`; the pipeline board (§C.5) puts both on `sunken`; the never-pay banner puts `warning` on `muted` in three more places.
 
@@ -104,8 +104,8 @@ motion: {
 
 `DESIGN.md` §5.6 defines five variants and warns against flattening everything into `card`. This build needs one more, and exactly one.
 
-| Variant | Visual | When |
-| --- | --- | --- |
+| Variant    | Visual                                                                                                                           | When                                                                                                  |
+| ---------- | -------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
 | `promoted` | `promotion.tint` background, 1px `promotion.border`, radius `lg`, **no shadow**, a persistent `micro` label in `promotion.label` | The single promoted slot in a feed slate; the single promoted job above search results. Nowhere else. |
 
 **Why a variant rather than a modifier on `card`.** A promoted item must be structurally distinguishable, not stylistically similar-but-different. Making it a variant means `Surface` is the only place the distinction lives, a component cannot accidentally half-apply it, and the ad-disclosure requirement is a type-level fact rather than a CSS convention. The absent shadow is deliberate: shadow reads as elevation, and a promotion should read as adjacent, not above.
@@ -126,17 +126,17 @@ The product roughly doubles in surface area. Navigation is where that either sta
 
 Everything new hangs off one of the six, or off search:
 
-| New area | Reached from |
-| --- | --- |
-| Groups, Events | الشبكة → tabs |
-| Followers, Following, Alumni, Diaspora | الشبكة → tabs |
-| Applications, Saved searches, Documents | الوظائف → tabs |
-| Employer/pipeline/team/promotions | أنا → profile menu → «مساحة التوظيف» |
-| Services, Inquiries | الوظائف → tab «خدمات» |
-| Learning | أنا → profile menu, and a feed rail card |
-| Evidence, Verification, Recommendations, Views | أنا → profile |
-| Billing, Plus | أنا → profile menu |
-| Drafts, Content stats, Newsletters | الرئيسية → composer overflow, and أنا |
+| New area                                       | Reached from                             |
+| ---------------------------------------------- | ---------------------------------------- |
+| Groups, Events                                 | الشبكة → tabs                            |
+| Followers, Following, Alumni, Diaspora         | الشبكة → tabs                            |
+| Applications, Saved searches, Documents        | الوظائف → tabs                           |
+| Employer/pipeline/team/promotions              | أنا → profile menu → «مساحة التوظيف»     |
+| Services, Inquiries                            | الوظائف → tab «خدمات»                    |
+| Learning                                       | أنا → profile menu, and a feed rail card |
+| Evidence, Verification, Recommendations, Views | أنا → profile                            |
+| Billing, Plus                                  | أنا → profile menu                       |
+| Drafts, Content stats, Newsletters             | الرئيسية → composer overflow, and أنا    |
 
 **Mobile — five tabs, unchanged.** الرئيسية · الشبكة · الوظائف · الرسائل · أنا. Notifications moves into the header bell on every tab, which is where it already effectively lives. The sixth tab is not available and asking for it is the wrong question — the answer is a better أنا screen.
 
@@ -231,7 +231,7 @@ Every one ships in **both** kits, same commit, identical prop and variant names,
 
 **Groups & events (8):** `GroupCard` · `GroupHeader` · `MemberRow` · `RuleList` · `EventCard` · `EventHeader` · `RsvpControl` · `DateTimeRangeRow`
 
-**Hiring (15):** `JobCard` *(rewrite)* · `FitMeter` · `MatchBreakdown` · `RequirementRow` · `ScreeningForm` · `ApplicantRow` · `StageChip` · `RejectionReasonPicker` · `InterviewSlotCard` · `ReferralRequestSheet` · `SalaryInsightCard` · `DocumentPicker` · `NeverPayBanner` · `EmployerVerifiedChip` · `CommuteChip`
+**Hiring (15):** `JobCard` _(rewrite)_ · `FitMeter` · `MatchBreakdown` · `RequirementRow` · `ScreeningForm` · `ApplicantRow` · `StageChip` · `RejectionReasonPicker` · `InterviewSlotCard` · `ReferralRequestSheet` · `SalaryInsightCard` · `DocumentPicker` · `NeverPayBanner` · `EmployerVerifiedChip` · `CommuteChip`
 
 **Services (5):** `ServiceCard` · `ServiceHeader` · `PricingRow` · `InquiryForm` · `InquiryCard`
 
@@ -247,12 +247,12 @@ Every one ships in **both** kits, same commit, identical prop and variant names,
 
 ### Documented one-platform exceptions
 
-| Component | Platform | Reason |
-| --- | --- | --- |
-| `PipelineBoard` | web only | §C.5 — a board at 390px is unreadable; `PipelineList` is the native twin with the same row component and action vocabulary |
-| `PipelineList` | native only | The twin of the above |
-| `FacetRail` | web only | Sticky rail; native uses `FacetSheet` |
-| `FacetSheet` | native only | The twin of the above |
+| Component       | Platform     | Reason                                                                                                                                   |
+| --------------- | ------------ | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `PipelineBoard` | web only     | §C.5 — a board at 390px is unreadable; `PipelineList` is the native twin with the same row component and action vocabulary               |
+| `PipelineList`  | native only  | The twin of the above                                                                                                                    |
+| `FacetRail`     | web only     | Sticky rail; native uses `FacetSheet`                                                                                                    |
+| `FacetSheet`    | native only  | The twin of the above                                                                                                                    |
 | `VoiceRecorder` | native first | Web ships in the same phase using `MediaRecorder`; **not** an exception, just an ordering note — both must exist before the phase closes |
 
 Every exception above must be added to `check:ui-lockstep`'s ledger **with its reason**, and the ledger must not grow beyond these four entries. It currently reads zero; ending this build at four, each justified, is the target.
@@ -291,7 +291,7 @@ Every exception above must be added to `check:ui-lockstep`'s ledger **with its r
 From `docs/design/RTL.md`, restated as the specific traps this build will hit:
 
 - **Never** `left` / `right` / `margin-left` / `padding-right`. Always `inline-start` / `inline-end` and the logical properties.
-- **Icons that indicate direction must mirror**: back chevrons, "next lesson", pipeline stage arrows, the carousel controls in `DocumentCarousel`. Icons that indicate a *thing* must not: play, pause, download, the waveform.
+- **Icons that indicate direction must mirror**: back chevrons, "next lesson", pipeline stage arrows, the carousel controls in `DocumentCarousel`. Icons that indicate a _thing_ must not: play, pause, download, the waveform.
 - **Numbers, currency and dates** stay LTR inside RTL text. `format.ts` already handles this; new surfaces must use it and must not concatenate manually.
 - **The waveform in `VoiceBubble` reads start-to-end**, which in RTL is right-to-left. Audio time still flows forward. **DECIDED:** the waveform mirrors with the layout and the play head moves start→end, because the bubble is a text-flow object, not a timeline widget.
 - **`PipelineBoard`'s columns** order start→end, so stage 1 is rightmost in Arabic. Horizontal scroll direction inverts accordingly.
@@ -302,16 +302,16 @@ From `docs/design/RTL.md`, restated as the specific traps this build will hit:
 
 ## H. Verification
 
-| Check | Command / method | Gate |
-| --- | --- | --- |
-| Tokens are the only source of values | `pnpm lint:tokens` | CI |
-| Generated CSS matches the source | `pnpm check:tokens` | CI |
-| Web ↔ native pairing | `pnpm check:ui-lockstep` — ledger ≤ 4 entries, each with a reason | CI |
-| Design QA rules (incl. the 300-LOC file cap) | `pnpm qa:design` | CI |
-| RTL selectors | `packages/config/__tests__/rtl-rules.test.mjs` | CI |
-| a11y on every route | `apps/web/e2e/a11y.spec.ts` | CI |
-| Contrast against real surfaces | The new composited-background helper in the a11y spec | CI |
-| Device evidence, Arabic RTL, 390px | `pnpm --filter @baydar/mobile e2e:device-up` then capture | Manual, per phase |
-| 2G rendering | The throttled Playwright profile | CI |
+| Check                                        | Command / method                                                  | Gate              |
+| -------------------------------------------- | ----------------------------------------------------------------- | ----------------- |
+| Tokens are the only source of values         | `pnpm lint:tokens`                                                | CI                |
+| Generated CSS matches the source             | `pnpm check:tokens`                                               | CI                |
+| Web ↔ native pairing                         | `pnpm check:ui-lockstep` — ledger ≤ 4 entries, each with a reason | CI                |
+| Design QA rules (incl. the 300-LOC file cap) | `pnpm qa:design`                                                  | CI                |
+| RTL selectors                                | `packages/config/__tests__/rtl-rules.test.mjs`                    | CI                |
+| a11y on every route                          | `apps/web/e2e/a11y.spec.ts`                                       | CI                |
+| Contrast against real surfaces               | The new composited-background helper in the a11y spec             | CI                |
+| Device evidence, Arabic RTL, 390px           | `pnpm --filter @baydar/mobile e2e:device-up` then capture         | Manual, per phase |
+| 2G rendering                                 | The throttled Playwright profile                                  | CI                |
 
 **Evidence required before the redesign phase closes:** a captured screenshot of every new screen at 390px in Arabic RTL, light, on the device harness — not the emulator default, and not eyeballed. `HANDOFF.md` records that the `Tabs` underline evidence was sampled from PNG pixel values rather than judged by eye, and that is the standard this build inherits.

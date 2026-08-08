@@ -274,29 +274,29 @@ model Skill {
 
 Migrations must be ordered so no step leaves `main` unbootable.
 
-| # | Migration | Notes |
-| --- | --- | --- |
-| 1 | `add_verification_and_otp` | New tables only. No FK to changed columns. Safe. |
-| 2 | `add_profile_sections` | `Certificate`, `ProfileLanguage`, `VolunteerRole`, `Honor`, `Publication`, `ProfileTranslation`. New tables only. |
-| 3 | `add_recommendation` | New table + two enums. |
-| 4 | `add_profile_diaspora_and_break` | Adds nullable columns to `Profile`. `residenceCountry` gets `DEFAULT 'PS'` and a backfill `UPDATE "Profile" SET "residenceCountry" = "country"`. |
-| 5 | `add_address_gender` | Adds `addressGender`; **does not drop `pronouns`** — see §19.3 for the two-release removal. |
-| 6 | `add_profile_view_daily` | New table. |
-| 7 | `canonicalise_skills` | Adds `Skill.canonicalId`, `Skill.foldedName`; backfill computes `foldedName` with the same folding as `arabic-fold.ts`; a data script clusters exact `foldedName` matches and points aliases at the lowest-`createdAt` member. **`ProfileSkill.endorsements` are summed onto the canonical row and alias rows keep their own counts for rollback.** |
-| 8 | `add_evidence_score` | Adds `Profile.evidenceScore` with a backfill of 0; the recompute job fills it. |
+| #   | Migration                        | Notes                                                                                                                                                                                                                                                                                                                                               |
+| --- | -------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | `add_verification_and_otp`       | New tables only. No FK to changed columns. Safe.                                                                                                                                                                                                                                                                                                    |
+| 2   | `add_profile_sections`           | `Certificate`, `ProfileLanguage`, `VolunteerRole`, `Honor`, `Publication`, `ProfileTranslation`. New tables only.                                                                                                                                                                                                                                   |
+| 3   | `add_recommendation`             | New table + two enums.                                                                                                                                                                                                                                                                                                                              |
+| 4   | `add_profile_diaspora_and_break` | Adds nullable columns to `Profile`. `residenceCountry` gets `DEFAULT 'PS'` and a backfill `UPDATE "Profile" SET "residenceCountry" = "country"`.                                                                                                                                                                                                    |
+| 5   | `add_address_gender`             | Adds `addressGender`; **does not drop `pronouns`** — see §19.3 for the two-release removal.                                                                                                                                                                                                                                                         |
+| 6   | `add_profile_view_daily`         | New table.                                                                                                                                                                                                                                                                                                                                          |
+| 7   | `canonicalise_skills`            | Adds `Skill.canonicalId`, `Skill.foldedName`; backfill computes `foldedName` with the same folding as `arabic-fold.ts`; a data script clusters exact `foldedName` matches and points aliases at the lowest-`createdAt` member. **`ProfileSkill.endorsements` are summed onto the canonical row and alias rows keep their own counts for rollback.** |
+| 8   | `add_evidence_score`             | Adds `Profile.evidenceScore` with a backfill of 0; the recompute job fills it.                                                                                                                                                                                                                                                                      |
 
 ## 5.3 Contracts
 
 New modules in `packages/shared/src/schemas/`:
 
-| File | Exports |
-| --- | --- |
-| `certificate.ts` | `CertificateSchema`, `CreateCertificateBody`, `UpdateCertificateBody`, `Certificate` |
-| `recommendation.ts` | `RecommendationSchema`, `RequestRecommendationBody`, `WriteRecommendationBody`, `RespondRecommendationBody`, `RecommendationSummary` |
-| `verification.ts` | `VerificationSchema`, `StartVerificationBody`, `ConfirmVerificationBody`, `VerificationBadge` |
-| `profile-sections.ts` | `ProfileLanguageSchema`, `VolunteerRoleSchema`, `HonorSchema`, `PublicationSchema` + their create/update bodies |
-| `profile-translation.ts` | `ProfileTranslationSchema`, `UpsertProfileTranslationBody` |
-| `evidence.ts` | `EvidenceSummary`, `WorkProofSchema`, `CreateWorkProofBody`, `ConfirmWorkProofBody`, `StandingSchema`, `VouchSchema`, `OccupationClaimSchema` |
+| File                     | Exports                                                                                                                                       |
+| ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `certificate.ts`         | `CertificateSchema`, `CreateCertificateBody`, `UpdateCertificateBody`, `Certificate`                                                          |
+| `recommendation.ts`      | `RecommendationSchema`, `RequestRecommendationBody`, `WriteRecommendationBody`, `RespondRecommendationBody`, `RecommendationSummary`          |
+| `verification.ts`        | `VerificationSchema`, `StartVerificationBody`, `ConfirmVerificationBody`, `VerificationBadge`                                                 |
+| `profile-sections.ts`    | `ProfileLanguageSchema`, `VolunteerRoleSchema`, `HonorSchema`, `PublicationSchema` + their create/update bodies                               |
+| `profile-translation.ts` | `ProfileTranslationSchema`, `UpsertProfileTranslationBody`                                                                                    |
+| `evidence.ts`            | `EvidenceSummary`, `WorkProofSchema`, `CreateWorkProofBody`, `ConfirmWorkProofBody`, `StandingSchema`, `VouchSchema`, `OccupationClaimSchema` |
 
 **DECIDED — `EvidenceSummary` is the one DTO every person-card renders.** It is the answer to "why should I believe this person", computed once server-side and cached on `Profile.evidenceScore`:
 
@@ -304,11 +304,19 @@ New modules in `packages/shared/src/schemas/`:
 export const EvidenceSummary = z.object({
   confirmedWorkProofs: z.number().int().min(0),
   distinctCounterparties: z.number().int().min(0),
-  standing: z.object({ occupationKey: z.string(), value: z.number().int().min(1).max(4) }).nullable(),
-  licence: z.object({ bodyKey: z.string(), status: z.enum(["DECLARED","VERIFIED","EXPIRED"]), practice: z.enum(["TRAINEE","PRACTISING","NON_PRACTISING"]) }).nullable(),
+  standing: z
+    .object({ occupationKey: z.string(), value: z.number().int().min(1).max(4) })
+    .nullable(),
+  licence: z
+    .object({
+      bodyKey: z.string(),
+      status: z.enum(["DECLARED", "VERIFIED", "EXPIRED"]),
+      practice: z.enum(["TRAINEE", "PRACTISING", "NON_PRACTISING"]),
+    })
+    .nullable(),
   recommendations: z.number().int().min(0),
-  verifications: z.array(z.enum(["PHONE","WORK_EMAIL","EDU_EMAIL","PROFESSIONAL_BODY"])),
-  ratingAvg: z.number().min(1).max(5).nullable(),   // null below MIN_RATINGS_FOR_AVERAGE (§16.5)
+  verifications: z.array(z.enum(["PHONE", "WORK_EMAIL", "EDU_EMAIL", "PROFESSIONAL_BODY"])),
+  ratingAvg: z.number().min(1).max(5).nullable(), // null below MIN_RATINGS_FOR_AVERAGE (§16.5)
   ratingCount: z.number().int().min(0),
 });
 ```
@@ -332,56 +340,56 @@ Recomputed on: `WorkProof` → `CONFIRMED`, `Standing` write, `Licence` status c
 
 All under `/api/v1`. Every route below must be added to `EXPECTED_ROUTES` in `api-route-coverage.spec.ts`. None is `@Public()`.
 
-| Method | Path | Guard | Rate bucket | Notes |
-| --- | --- | --- | --- | --- |
-| POST | `/profiles/me/certificates` | JWT | `profile-write` | |
-| PUT | `/profiles/me/certificates/:id` | JWT + owner | `profile-write` | |
-| DELETE | `/profiles/me/certificates/:id` | JWT + owner | `profile-write` | |
-| POST | `/profiles/me/languages` | JWT | `profile-write` | Upsert by `languageKey` |
-| DELETE | `/profiles/me/languages/:languageKey` | JWT | `profile-write` | |
-| POST | `/profiles/me/volunteer` | JWT | `profile-write` | + PUT/DELETE `/:id` |
-| POST | `/profiles/me/honors` | JWT | `profile-write` | + PUT/DELETE `/:id` |
-| POST | `/profiles/me/publications` | JWT | `profile-write` | + PUT/DELETE `/:id` |
-| PUT | `/profiles/me/translations/:locale` | JWT | `profile-write` | |
-| DELETE | `/profiles/me/translations/:locale` | JWT | `profile-write` | |
-| GET | `/profiles/me/views` | JWT | `read` | Aggregate only, k=5 |
-| POST | `/recommendations/requests` | JWT | `recommendation` | Ask someone to write one |
-| POST | `/recommendations` | JWT | `recommendation` | Write one unprompted |
-| POST | `/recommendations/:id/respond` | JWT + author | `recommendation` | PUBLISH or DECLINE |
-| POST | `/recommendations/:id/withdraw` | JWT + author | `recommendation` | |
-| PATCH | `/recommendations/:id/visibility` | JWT + subject | `profile-write` | Subject may hide, never edit |
-| GET | `/recommendations/:handle` | JWT | `read` | Published + not hidden |
-| POST | `/verifications/phone/start` | JWT | `otp-start` | 3/hour/user, 5/day/phone |
-| POST | `/verifications/phone/confirm` | JWT | `otp-confirm` | 5 attempts then the OTP row is burned |
-| POST | `/verifications/email-domain/start` | JWT | `otp-start` | Chooses `WORK_EMAIL` or `EDU_EMAIL` by domain match |
-| POST | `/verifications/email-domain/confirm` | JWT | `otp-confirm` | |
-| POST | `/verifications/body/request` | JWT | `verification-request` | Enters a manual review queue |
-| GET | `/verifications/me` | JWT | `read` | |
-| POST | `/profiles/me/claims` | JWT | `profile-write` | `OccupationClaim` upsert |
-| DELETE | `/profiles/me/claims/:occupationKey` | JWT | `profile-write` | |
-| POST | `/work-proofs` | JWT | `work-proof` | Worker requests confirmation |
-| POST | `/work-proofs/:id/confirm` | JWT **or** OTP | `work-proof` | On-platform counterparty uses JWT; off-platform uses `PhoneOtp` |
-| POST | `/work-proofs/:id/decline` | JWT | `work-proof` | |
-| POST | `/work-proofs/:id/dispute` | JWT | `work-proof` | |
-| GET | `/work-proofs/me` | JWT | `read` | Both directions, `?role=worker\|client` |
-| GET | `/profiles/:handle/evidence` | JWT | `read` | `EvidenceSummary` |
-| POST | `/vouches` | JWT | `vouch` | Standing ≥ 3 in the same occupation required |
-| DELETE | `/vouches/:id` | JWT + voucher | `vouch` | |
-| POST | `/licences` | JWT | `profile-write` | Creates `DECLARED` |
-| POST | `/licences/:id/verify-request` | JWT | `verification-request` | Manual queue |
-| DELETE | `/licences/:id` | JWT + owner | `profile-write` | |
-| GET | `/cv/:handle.pdf` | JWT | `export` | Server-rendered PDF — replaces the print hack, gives mobile a twin |
+| Method | Path                                  | Guard          | Rate bucket            | Notes                                                              |
+| ------ | ------------------------------------- | -------------- | ---------------------- | ------------------------------------------------------------------ |
+| POST   | `/profiles/me/certificates`           | JWT            | `profile-write`        |                                                                    |
+| PUT    | `/profiles/me/certificates/:id`       | JWT + owner    | `profile-write`        |                                                                    |
+| DELETE | `/profiles/me/certificates/:id`       | JWT + owner    | `profile-write`        |                                                                    |
+| POST   | `/profiles/me/languages`              | JWT            | `profile-write`        | Upsert by `languageKey`                                            |
+| DELETE | `/profiles/me/languages/:languageKey` | JWT            | `profile-write`        |                                                                    |
+| POST   | `/profiles/me/volunteer`              | JWT            | `profile-write`        | + PUT/DELETE `/:id`                                                |
+| POST   | `/profiles/me/honors`                 | JWT            | `profile-write`        | + PUT/DELETE `/:id`                                                |
+| POST   | `/profiles/me/publications`           | JWT            | `profile-write`        | + PUT/DELETE `/:id`                                                |
+| PUT    | `/profiles/me/translations/:locale`   | JWT            | `profile-write`        |                                                                    |
+| DELETE | `/profiles/me/translations/:locale`   | JWT            | `profile-write`        |                                                                    |
+| GET    | `/profiles/me/views`                  | JWT            | `read`                 | Aggregate only, k=5                                                |
+| POST   | `/recommendations/requests`           | JWT            | `recommendation`       | Ask someone to write one                                           |
+| POST   | `/recommendations`                    | JWT            | `recommendation`       | Write one unprompted                                               |
+| POST   | `/recommendations/:id/respond`        | JWT + author   | `recommendation`       | PUBLISH or DECLINE                                                 |
+| POST   | `/recommendations/:id/withdraw`       | JWT + author   | `recommendation`       |                                                                    |
+| PATCH  | `/recommendations/:id/visibility`     | JWT + subject  | `profile-write`        | Subject may hide, never edit                                       |
+| GET    | `/recommendations/:handle`            | JWT            | `read`                 | Published + not hidden                                             |
+| POST   | `/verifications/phone/start`          | JWT            | `otp-start`            | 3/hour/user, 5/day/phone                                           |
+| POST   | `/verifications/phone/confirm`        | JWT            | `otp-confirm`          | 5 attempts then the OTP row is burned                              |
+| POST   | `/verifications/email-domain/start`   | JWT            | `otp-start`            | Chooses `WORK_EMAIL` or `EDU_EMAIL` by domain match                |
+| POST   | `/verifications/email-domain/confirm` | JWT            | `otp-confirm`          |                                                                    |
+| POST   | `/verifications/body/request`         | JWT            | `verification-request` | Enters a manual review queue                                       |
+| GET    | `/verifications/me`                   | JWT            | `read`                 |                                                                    |
+| POST   | `/profiles/me/claims`                 | JWT            | `profile-write`        | `OccupationClaim` upsert                                           |
+| DELETE | `/profiles/me/claims/:occupationKey`  | JWT            | `profile-write`        |                                                                    |
+| POST   | `/work-proofs`                        | JWT            | `work-proof`           | Worker requests confirmation                                       |
+| POST   | `/work-proofs/:id/confirm`            | JWT **or** OTP | `work-proof`           | On-platform counterparty uses JWT; off-platform uses `PhoneOtp`    |
+| POST   | `/work-proofs/:id/decline`            | JWT            | `work-proof`           |                                                                    |
+| POST   | `/work-proofs/:id/dispute`            | JWT            | `work-proof`           |                                                                    |
+| GET    | `/work-proofs/me`                     | JWT            | `read`                 | Both directions, `?role=worker\|client`                            |
+| GET    | `/profiles/:handle/evidence`          | JWT            | `read`                 | `EvidenceSummary`                                                  |
+| POST   | `/vouches`                            | JWT            | `vouch`                | Standing ≥ 3 in the same occupation required                       |
+| DELETE | `/vouches/:id`                        | JWT + voucher  | `vouch`                |                                                                    |
+| POST   | `/licences`                           | JWT            | `profile-write`        | Creates `DECLARED`                                                 |
+| POST   | `/licences/:id/verify-request`        | JWT            | `verification-request` | Manual queue                                                       |
+| DELETE | `/licences/:id`                       | JWT + owner    | `profile-write`        |                                                                    |
+| GET    | `/cv/:handle.pdf`                     | JWT            | `export`               | Server-rendered PDF — replaces the print hack, gives mobile a twin |
 
 ### 5.4.1 The `Standing` engine — the exact rules
 
 `OCCUPATIONS.md` §2b decides the ladder is 1–4, `CRAFT` track only, never decaying, unpurchasable. It does not state the advancement thresholds. **DECIDED, and this is the whole rule set:**
 
-| To reach | Requires |
-| --- | --- |
-| **1** — مساعد | An `OccupationClaim` on a `CRAFT`-track occupation. Automatic on claim. Renders as «مهنة معلنة» until any evidence exists. |
-| **2** — فني | 3 `CONFIRMED` `WorkProof` rows on that `occupationKey`, from **≥ 2 distinct counterparties**. |
-| **3** — فني ماهر | 10 `CONFIRMED` `WorkProof` rows on that `occupationKey`, from **≥ 5 distinct counterparties**, spanning **≥ 180 days** between the earliest and latest `confirmedAt`. |
-| **4** — معلّم *(label resolves per family; see below)* | 25 `CONFIRMED` `WorkProof` rows, **≥ 12 distinct counterparties**, **≥ 540 days** span, **and** either two `Vouch` rows from distinct value-4 holders in the same occupation, or one `Recommendation` from a `PROFESSIONAL_BODY`-verified account. |
+| To reach                                               | Requires                                                                                                                                                                                                                                           |
+| ------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **1** — مساعد                                          | An `OccupationClaim` on a `CRAFT`-track occupation. Automatic on claim. Renders as «مهنة معلنة» until any evidence exists.                                                                                                                         |
+| **2** — فني                                            | 3 `CONFIRMED` `WorkProof` rows on that `occupationKey`, from **≥ 2 distinct counterparties**.                                                                                                                                                      |
+| **3** — فني ماهر                                       | 10 `CONFIRMED` `WorkProof` rows on that `occupationKey`, from **≥ 5 distinct counterparties**, spanning **≥ 180 days** between the earliest and latest `confirmedAt`.                                                                              |
+| **4** — معلّم _(label resolves per family; see below)_ | 25 `CONFIRMED` `WorkProof` rows, **≥ 12 distinct counterparties**, **≥ 540 days** span, **and** either two `Vouch` rows from distinct value-4 holders in the same occupation, or one `Recommendation` from a `PROFESSIONAL_BODY`-verified account. |
 
 **Label resolution.** `OCCUPATIONS.md` §2b is explicit that one vocabulary cannot fit every trade — a painter's rung 3 is دهّان ماهر, an electrician's is فني تمديدات كهربائية. Labels resolve from `standingLabelKey(occupationKey, value)` in `packages/shared/src/occupations.ts`, which already exists, into i18n keys `occupations.standing.<familyKey>.<value>`. **The word معلّم is banned as a rung label** — `OCCUPATIONS.md` §1 found 52 occurrences in the Jordanian classification and every one is a teaching title. Rung 4 per family uses the family's own senior form; where none exists, the fallback is `<occupation> + متقدّم`, which matches the nursing ladder's own senior modifier.
 
@@ -411,28 +419,28 @@ All under `/api/v1`. Every route below must be added to `EXPECTED_ROUTES` in `ap
 
 New and changed routes under `apps/web/src/app/[locale]/(app)`:
 
-| Route | Purpose | Surfaces |
-| --- | --- | --- |
-| `me/edit/certificates` | Certificate list + form | `flat` container, `row` items |
-| `me/edit/languages` | Language + proficiency | `flat` + `row` |
-| `me/edit/volunteer` | Volunteer roles | `flat` + `row` |
-| `me/edit/honors` | Honors | `flat` + `row` |
-| `me/edit/publications` | Publications | `flat` + `row` |
-| `me/edit/translation` | The English profile | `card` |
-| `me/edit/break` | Career break | `card` |
-| `me/evidence` | My evidence: proofs, standing, licence, vouches | `hero` header + `flat` sections |
-| `me/verification` | Verification hub, four methods | `hero` + four `row` items with state |
-| `me/views` | Aggregate profile views | `card` + chart |
-| `me/recommendations` | Received / given / requests | `Tabs` + `flat` list |
-| `work-proofs` | Confirmation inbox — things awaiting **my** confirmation | `flat` + `row`, empty state `harvest` |
-| `in/[handle]` **(changed)** | Adds evidence block, recommendations, certificates, languages, volunteer, honors, publications, career break | see design spec §C.2 |
-| `cv/[handle]` **(changed)** | Server-rendered PDF endpoint replaces the print-dialog hack | — |
+| Route                       | Purpose                                                                                                      | Surfaces                              |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------ | ------------------------------------- |
+| `me/edit/certificates`      | Certificate list + form                                                                                      | `flat` container, `row` items         |
+| `me/edit/languages`         | Language + proficiency                                                                                       | `flat` + `row`                        |
+| `me/edit/volunteer`         | Volunteer roles                                                                                              | `flat` + `row`                        |
+| `me/edit/honors`            | Honors                                                                                                       | `flat` + `row`                        |
+| `me/edit/publications`      | Publications                                                                                                 | `flat` + `row`                        |
+| `me/edit/translation`       | The English profile                                                                                          | `card`                                |
+| `me/edit/break`             | Career break                                                                                                 | `card`                                |
+| `me/evidence`               | My evidence: proofs, standing, licence, vouches                                                              | `hero` header + `flat` sections       |
+| `me/verification`           | Verification hub, four methods                                                                               | `hero` + four `row` items with state  |
+| `me/views`                  | Aggregate profile views                                                                                      | `card` + chart                        |
+| `me/recommendations`        | Received / given / requests                                                                                  | `Tabs` + `flat` list                  |
+| `work-proofs`               | Confirmation inbox — things awaiting **my** confirmation                                                     | `flat` + `row`, empty state `harvest` |
+| `in/[handle]` **(changed)** | Adds evidence block, recommendations, certificates, languages, volunteer, honors, publications, career break | see design spec §C.2                  |
+| `cv/[handle]` **(changed)** | Server-rendered PDF endpoint replaces the print-dialog hack                                                  | —                                     |
 
 **The profile page order — DECIDED.** LinkedIn's order is history-first. Baydar's is evidence-first, because §5.1. Top to bottom on `/in/[handle]`:
 
 1. `ProfileHeader` (hero) — avatar, name, headline, occupation claims, governorate, `openToWork`/`acceptingWork`/`hiring` state, one commit action.
 2. **Evidence strip** — standing, licence, confirmed-proof count, verification badges. This is above the fold and it is the differentiating surface.
-3. Featured work samples (`Post.isWorkSample`) — a horizontal `ScrollView`/rail, images first because for a craft the photo *is* the CV.
+3. Featured work samples (`Post.isWorkSample`) — a horizontal `ScrollView`/rail, images first because for a craft the photo _is_ the CV.
 4. About.
 5. Experience — labelled «خبرة معلنة» per the spine, so it visibly contrasts with confirmed evidence.
 6. Recommendations.
@@ -476,19 +484,19 @@ Approximately **312 new keys per catalog**, all four catalogs (`apps/web/message
 
 ## 5.9 Tests and gates
 
-| Test | Location | Asserts |
-| --- | --- | --- |
-| Standing thresholds | `apps/api/src/modules/evidence/standing.service.spec.ts` | All four rungs, each boundary from both sides, distinct-counterparty rule, span rule, self-confirmation rejection |
-| Standing idempotency | same | `HIRED → REJECTED → HIRED` advances once; the off-platform partial unique index blocks a replayed phone confirmation |
-| Vouch capacity | `vouch.service.spec.ts` | 5-active cap, 180-day suspension on an upheld dispute, active vouches flagged not revoked |
-| Evidence score | `packages/shared/src/evidence-score.spec.ts` | Pure function, every term at 0 and at saturation, total clamps at 100 |
-| Ranking purity | `scripts/__tests__/check-ranking-purity.test.mjs` | The gate fails on a file that imports `Subscription` into a ranker |
-| OTP | `phone-otp.service.spec.ts` | Hash-only storage, TTL, attempt burn, replay rejection |
-| Verification eligibility | `verification.service.spec.ts` | Domain routing to `EDU_EMAIL`/`WORK_EMAIL`, `DOMAIN_NOT_ELIGIBLE` details payload |
-| Badge copy | `packages/shared/src/schemas/verification.spec.ts` + i18n gate | No catalog value contains معتمد / مرخّص / خبير / محترف; `موثّق` appears only under `verification.*` |
-| Skill canonicalisation | `migrations/__tests__/canonicalise-skills.test.mjs` | Endorsement sums preserved; rollback restores per-alias counts |
-| Palestine data | `packages/shared/src/palestine.spec.ts` (extend) | 16 governorates, 93 cities, every city resolves to a governorate, `proximityScore` unchanged for all pre-existing pairs |
-| CV PDF | `apps/api/src/modules/cv/cv.controller.spec.ts` + `apps/web/e2e/cv.spec.ts` | Arabic shaping, RTL order, both platforms hit the same endpoint |
-| a11y | `apps/web/e2e/a11y.spec.ts` (extend) | Every new route scanned; the evidence strip's semantic tints checked against `muted` and `sunken`, not white |
+| Test                     | Location                                                                    | Asserts                                                                                                                 |
+| ------------------------ | --------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| Standing thresholds      | `apps/api/src/modules/evidence/standing.service.spec.ts`                    | All four rungs, each boundary from both sides, distinct-counterparty rule, span rule, self-confirmation rejection       |
+| Standing idempotency     | same                                                                        | `HIRED → REJECTED → HIRED` advances once; the off-platform partial unique index blocks a replayed phone confirmation    |
+| Vouch capacity           | `vouch.service.spec.ts`                                                     | 5-active cap, 180-day suspension on an upheld dispute, active vouches flagged not revoked                               |
+| Evidence score           | `packages/shared/src/evidence-score.spec.ts`                                | Pure function, every term at 0 and at saturation, total clamps at 100                                                   |
+| Ranking purity           | `scripts/__tests__/check-ranking-purity.test.mjs`                           | The gate fails on a file that imports `Subscription` into a ranker                                                      |
+| OTP                      | `phone-otp.service.spec.ts`                                                 | Hash-only storage, TTL, attempt burn, replay rejection                                                                  |
+| Verification eligibility | `verification.service.spec.ts`                                              | Domain routing to `EDU_EMAIL`/`WORK_EMAIL`, `DOMAIN_NOT_ELIGIBLE` details payload                                       |
+| Badge copy               | `packages/shared/src/schemas/verification.spec.ts` + i18n gate              | No catalog value contains معتمد / مرخّص / خبير / محترف; `موثّق` appears only under `verification.*`                     |
+| Skill canonicalisation   | `migrations/__tests__/canonicalise-skills.test.mjs`                         | Endorsement sums preserved; rollback restores per-alias counts                                                          |
+| Palestine data           | `packages/shared/src/palestine.spec.ts` (extend)                            | 16 governorates, 93 cities, every city resolves to a governorate, `proximityScore` unchanged for all pre-existing pairs |
+| CV PDF                   | `apps/api/src/modules/cv/cv.controller.spec.ts` + `apps/web/e2e/cv.spec.ts` | Arabic shaping, RTL order, both platforms hit the same endpoint                                                         |
+| a11y                     | `apps/web/e2e/a11y.spec.ts` (extend)                                        | Every new route scanned; the evidence strip's semantic tints checked against `muted` and `sunken`, not white            |
 
 **Gates that must pass before WS-01 is done:** `pnpm lint:tokens` · `pnpm check:tokens` · `pnpm format:check` · `pnpm lint` · `pnpm type-check` · `pnpm test` · `pnpm check:i18n` · `pnpm check:ui-lockstep` · `pnpm check:naming` · `pnpm test:gates` · `pnpm --filter @baydar/db generate`.

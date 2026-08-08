@@ -246,7 +246,7 @@ Primary owners:
 
 Scope:
 
-- Update `design-handoff-2026-05/` so it reflects the current code after Sprints 22-26.
+- Update `docs/_archive/design-handoff-2026-05/` so it reflects the current code after Sprints 22-26.
 - Include new company profile, saved, monetization, and admin surfaces in the bundle if they shipped.
 - Complete mobile screenshots that were previously marked as human gaps.
 - Refresh `08-pain.md`, `08-problems.md`, and `10-ask.md`.
