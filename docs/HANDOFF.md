@@ -1,9 +1,52 @@
 # HANDOFF — live status
 
 The one status document. Rewritten in place, not appended to — if you want history, use
-`git log`, `gh pr list --state all`, and `CHANGELOG.md`. Last verified against `main` on 2026-07-30.
+`git log`, `gh pr list --state all`, and `CHANGELOG.md`. Last verified against `main` on 2026-08-08.
 
 Read order: `CLAUDE.md` → `project-spec.md` → `DESIGN.md` → `BRAND.md` → this file.
+
+## LinkedIn-parity build — in progress
+
+The specification lives in [`docs/linkedin-parity-2026-08/`](linkedin-parity-2026-08/README.md):
+eleven phases, each individually shippable, taking Baydar from a working
+professional network to a LinkedIn-class platform for this market. Start at that
+directory's `PROMPT.md`.
+
+Two rules it adds are permanent, not phasing decisions, and both are now
+enforced by a gate rather than by review:
+
+- **Money may never buy rank.** No ranking, ordering, scoring or filtering
+  function may read a subscription, plan, invoice, credit or Karama balance.
+  `pnpm check:ranking-purity`.
+- **Baydar never moves money between members.** Members pay Baydar. No escrow,
+  no wallet-to-wallet, no member invoicing, no cart.
+
+| Phase           | State       |
+| --------------- | ----------- |
+| P0 Ground truth | **done**    |
+| P1–P11          | not started |
+
+**P0 delivered:** all 16 governorates and 93 cities (the table had 13 and 14, so
+Salfit, Tubas and North Gaza could not be selected at all and every job
+mis-ranked for them); university EDU_EMAIL domains; the employer credit that
+would have sold rank removed with its migration; two new gates
+(`check:ranking-purity`, `check:deprecations`) in the lint job with tests that
+break them; the stale stack tables in `project-spec.md`, `README.md`,
+`AGENTS.md` and `CLAUDE.md` corrected against the manifests; `DESIGN.md` §7.3
+and `docs/design/PARITY.md` recounted from the barrels; five superseded doc
+trees archived. `pnpm check:i18n` was already reporting zero dead keys.
+
+Deviations from the spec are in that directory's `GAPS-FOUND.md`; failed gates
+would be in `BLOCKERS.md`, which is empty.
+
+### Still open: the Pass 2 design ask
+
+`docs/_archive/design-handoff-2026-05/10-ask.md` asks for a lead decision on
+monetization-surface review, admin operator UX, and a motion vocabulary doc. It
+was archived on 2026-08-08 along with the rest of that tree, and **archiving a
+question does not answer it** — engineering still does not implement Pass 2
+output before lead approval. Tracked here because `docs/_archive/` is where
+people look for closed things.
 
 ## Fresh clone
 
@@ -218,7 +261,9 @@ Recorded so neither gets re-litigated or re-added:
   `generateKey` is for, and `media.controller.spec.ts` is the test that fails without it.
 - **`tokens.css` is generated for real now.** It carried a "DO NOT EDIT BY HAND — regenerate with
   `pnpm tokens:build`" header over 323 lines of hand-synced hex while `tokens:build` was `tsc`.
-  `packages/ui-tokens/scripts/build-tokens.mjs` emits it; `pnpm check:tokens` fails CI on drift.
+  `scripts/build-tokens.mjs` **at the repo root** emits it — this line said
+  `packages/ui-tokens/scripts/build-tokens.mjs`, which has never existed;
+  `pnpm check:tokens` fails CI on drift.
   Add tokens in `index.ts`, run `pnpm tokens:build`, commit the regenerated CSS.
   `tokens.native.ts` is still hand-authored — RN shadows, the tighter mobile type scale and
   PostScript font names are not derivable — but it references `tokens` for every value it used to

@@ -2,11 +2,11 @@
 
 ## Stack
 
-Turborepo · pnpm · Next.js 15 App Router · Expo SDK 51
+Turborepo 2 · pnpm 9.12.0 · Next.js 16 App Router (Turbopack) · Expo SDK 54 · NestJS 11 · Prisma 6
 
 - UI tokens: packages/ui-tokens (tokens.css + tailwind-preset.ts)
 - Web atoms: packages/ui-web (@baydar/ui-web barrel via index.ts)
-- Web app: apps/web (Next.js 15, locale-aware App Router)
+- Web app: apps/web (Next.js 16, locale-aware App Router)
 - Mobile app: apps/mobile (Expo, parity with web minus admin/legal)
 
 ## Critical conventions

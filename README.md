@@ -15,12 +15,12 @@ Baydar is an Arabic-first, RTL-native professional network for Palestine first. 
 
 | Layer            | Current choice                                                                            |
 | ---------------- | ----------------------------------------------------------------------------------------- |
-| Monorepo         | Turborepo + pnpm 9 workspaces                                                             |
-| Web              | Next.js 15 App Router, React 19, Tailwind, `next-intl`, `@baydar/ui-web`                  |
+| Monorepo         | Turborepo 2 + pnpm 9.12.0 workspaces                                                      |
+| Web              | Next.js 16 App Router (Turbopack), React 19, Tailwind 4, `next-intl` 4, `@baydar/ui-web`  |
 | Mobile           | Expo SDK 54, React Native 0.81, React 19, Expo Router, RN StyleSheet, `@baydar/ui-native` |
-| API              | NestJS 10 modular monolith, REST, Swagger, SSE for live events                            |
-| Database         | PostgreSQL 16 via Prisma 5 in `@baydar/db`                                                |
-| Shared contracts | Zod schemas and formatters in `@baydar/shared`                                            |
+| API              | NestJS 11 modular monolith, REST, Swagger, SSE for live events                            |
+| Database         | PostgreSQL 16 via Prisma 6 in `@baydar/db`                                                |
+| Shared contracts | Zod 4 schemas and formatters in `@baydar/shared`                                          |
 | Auth             | Self-managed JWT access/refresh tokens with bcrypt                                        |
 | Media            | Cloudflare R2 signed uploads, blurhash placeholder support                                |
 | Notifications    | In-app notifications, SSE streams, Expo push device registration                          |

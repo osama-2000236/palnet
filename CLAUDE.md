@@ -32,7 +32,7 @@ You are resuming development of **Baydar** (بيدر) — an Arabic-first profes
 ## Workflow expectations
 
 - **Before building a screen**, open the prototype section for it and lift the exact layout, spacing, and component composition. Do not reinvent.
-- **Before adding a dependency**, check if the monorepo already solves it. We use: Next.js 15 App Router, Prisma, Tailwind, shared `@baydar/ui-*` primitives, React Native + Expo, Zod, TanStack Query, and self-managed JWT auth.
+- **Before adding a dependency**, check if the monorepo already solves it. We use: Next.js 16 App Router, Prisma 6, Tailwind 4, shared `@baydar/ui-*` primitives, React Native + Expo, Zod, TanStack Query, and self-managed JWT auth.
 - **Commit discipline**: one component = one PR. Never bundle "added Avatar + fixed auth + tweaked feed" in a single commit.
 - **Accessibility is not optional**: every interactive element needs a label, keyboard support, visible focus ring, and a 44pt (mobile) / 40px (web) hit target.
 

@@ -30,9 +30,14 @@ is the whole point of the file; "Partial" was not a status, it was a shrug.
 
 ## Counted, not estimated
 
-**28 exports are shared.** The lists below are generated from the two barrel
-files (`packages/ui-web/src/index.ts`, `packages/ui-native/src/index.ts`), not
-from memory.
+**38 of 51 exports are shared**, counted from the two barrel files
+(`packages/ui-web/src/index.ts`, `packages/ui-native/src/index.ts`) on
+2026-08-08, not from memory. Both barrels export 51 names; 13 are web-only and
+13 native-only, and every one of those 26 has a reason below.
+
+Recount before quoting this number. It read 28 for three sprints while the kits
+grew, which made "how far apart are we" unanswerable from the page whose job
+that is.
 
 ## Platform-only by design
 
@@ -46,7 +51,7 @@ from memory.
 | `Sheet`                                         | native   | Same. Genuinely drag-dismissable as of A4.9.                                                                                                                                                                                                                                                          |
 | `ReportDialog` / `ReportSheet`                  | split    | Same content, correct container per platform. Prop vocabulary matches.                                                                                                                                                                                                                                |
 | `AppHeader`                                     | native   | Web's chrome is `AppShell`'s sticky header. Mobile screens each own a header because there is no persistent top bar.                                                                                                                                                                                  |
-| `RecordCard` / `RecordCardSkeleton`             | native   | The mobile list idiom. Web uses `Surface variant="row"` inside a `flat` container — the composition PR #89 settled on.                                                                                                                                                                                |
+| `RoomRow`                                       | web      | Native renders a conversation through `RecordCard`, which is its list idiom. Listed as a shared component with undiffed props until the 2026-08-08 recount; it is not in the native barrel and never was.                                                                                             |
 | `ComposerEntry`                                 | native   | The collapsed composer. Web's `Composer` has a collapsed state built in; mobile needs a separate entry point because composing is a pushed route.                                                                                                                                                     |
 | `ThemeProvider` / `useTheme` / `useThemeTokens` | native   | Web re-themes through CSS variables under `.dark`, so there is nothing for a provider to do.                                                                                                                                                                                                          |
 | `useReducedMotion`                              | native   | Web reads `prefers-reduced-motion` in CSS. Added 2026-07-26 (A4.4).                                                                                                                                                                                                                                   |
@@ -58,11 +63,10 @@ from memory.
 
 | Gap                                | Detail                                                                                                                                                                                                                                                                                                                                                                  |
 | ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `Textarea`, both platforms         | `Input.tsx:10` documents "for multi-line, use `<Textarea>`". It exists in neither barrel; consumers hand-roll a `<textarea>`.                                                                                                                                                                                                                                           |
-| `ProfileHeader`, native            | Web-only. Mobile builds the profile header inline on the screen.                                                                                                                                                                                                                                                                                                        |
+| `ProfileHeader`, native            | Web-only. Mobile builds the profile header inline on the screen. The last component-level gap on this page.                                                                                                                                                                                                                                                             |
 | `Tab` counts, native               | **Closed 2026-07-30.** Native's `Tab` takes `count` and native's `Tabs` takes `formatCount`, same contract as web's, and both `/network` strips now render the three connection counts `GET /connections/counts` had been serving to nobody. Zero draws nothing on both. Mobile `/in/[handle]` showing four tabs to web's five is unrelated and still open — see below. |
 | `Checkbox` `indeterminate`, native | **Not a gap — settled 2026-07-29.** Web needs it for `/moderation`'s select-all; mobile ships no admin surface and no multi-select list, so native would carry a prop no screen can pass. Add it with the first native screen that selects many rows.                                                                                                                   |
-| `RoomRow` prop shape               | Exists on both, but the shapes have not been diffed since either side last changed. Verify before treating as shared.                                                                                                                                                                                                                                                   |
+| `Textarea` prop shape              | **Shipped on both, 2026-08-08 recount.** It was listed here as existing in neither barrel; it exists in both. The shapes have not been diffed since either side last changed — verify before treating as shared.                                                                                                                                                        |
 
 ## Shipped in both barrels, mounted by nothing
 

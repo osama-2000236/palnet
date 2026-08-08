@@ -12,23 +12,39 @@
 
 ## Locked Stack
 
-| Layer            | Choice                                                                      |
-| ---------------- | --------------------------------------------------------------------------- |
-| Node             | >=20                                                                        |
-| Package manager  | pnpm 9                                                                      |
-| Monorepo         | Turborepo                                                                   |
-| Web              | Next.js 15 App Router, React 19, Tailwind CSS, `next-intl`                  |
-| Mobile           | Expo SDK 54, React Native 0.81, React 19, Expo Router, RN StyleSheet        |
-| API              | NestJS 10 modular monolith                                                  |
-| API protocol     | REST + Swagger; live events via SSE                                         |
-| Database         | PostgreSQL 16, Prisma 5                                                     |
-| Shared contracts | Zod schemas in `@baydar/shared`                                             |
-| Auth             | Self-managed JWT access/refresh tokens, bcrypt passwords                    |
-| Media            | Cloudflare R2 signed upload URLs, blurhash placeholders                     |
-| Push             | Expo push device tokens and best-effort Expo fanout                         |
-| State/data       | TanStack Query, Zustand where local client state is needed                  |
-| UI               | `@baydar/ui-web`, `@baydar/ui-native`, `@baydar/ui-tokens`                  |
-| Testing          | Jest, React Testing Library, Playwright, token lint, mobile recovery checks |
+Versions below are read from the manifests, not from memory. Re-read them
+before quoting them: this table said Next.js 15, NestJS 10 and Prisma 5 for
+three months after the code had moved on, and a stale stack table is how
+somebody writes against an API that no longer exists.
+
+| Layer            | Choice                                                                         |
+| ---------------- | ------------------------------------------------------------------------------ |
+| Node             | `>=22` in engines; CI and the build pin **24**                                 |
+| Package manager  | pnpm 9.12.0 (pinned in `packageManager`)                                       |
+| Monorepo         | Turborepo 2.x                                                                  |
+| Web              | Next.js 16 App Router (Turbopack), React 19.1, Tailwind CSS 4, `next-intl` 4   |
+| Mobile           | Expo SDK 54, React Native 0.81, React 19.1, Expo Router, RN StyleSheet         |
+| API              | NestJS 11 modular monolith                                                     |
+| API protocol     | REST + Swagger; live events via SSE                                            |
+| Database         | PostgreSQL 16, Prisma 6                                                        |
+| Shared contracts | Zod 4 schemas in `@baydar/shared`                                              |
+| Lint             | ESLint 9, flat config                                                          |
+| Auth             | Self-managed JWT access/refresh tokens, bcrypt passwords (cost 12)             |
+| Media            | Cloudflare R2 signed upload URLs, blurhash placeholders                        |
+| Push             | Expo push device tokens and best-effort Expo fanout                            |
+| State/data       | TanStack Query, Zustand where local client state is needed                     |
+| Cache / limits   | Redis, via `BaydarThrottlerGuard` over `@nestjs/throttler`                     |
+| UI               | `@baydar/ui-web`, `@baydar/ui-native`, `@baydar/ui-tokens`                     |
+| Testing          | Jest 29, React Testing Library, Playwright, token lint, mobile recovery checks |
+
+**Blocked upstream — verified against the packages, do not attempt:**
+
+| Upgrade      | Blocker                                                                                                                 |
+| ------------ | ----------------------------------------------------------------------------------------------------------------------- |
+| Jest 30      | `jest-expo@57` still depends on the Jest 29 toolchain                                                                   |
+| ESLint 10    | `eslint-plugin-import` caps at 9                                                                                        |
+| Prisma 7     | Rejects `datasource.url` in schema; needs `prisma.config.ts` + a driver adapter and a staging soak, which is its own PR |
+| Expo 54 → 57 | Needs physical-device smoke evidence, which nobody has gathered                                                         |
 
 Do not reintroduce GraphQL, Kafka, Neptune, EKS, OpenSearch, microservices, dark mode, Tailwind blue, or a themed UI kit without explicit approval.
 
@@ -117,7 +133,7 @@ For feature work:
 Use this header for future coding prompts:
 
 ```text
-You are contributing to Baydar, an Arabic-first RTL professional network in a Turborepo with Next.js 15 web, Expo SDK 54 mobile, NestJS REST API, Prisma/Postgres, and shared @baydar packages. Read project-spec.md, DESIGN.md, BRAND.md, docs/design/RTL.md, and docs/HANDOFF.md first. Do not introduce new dependencies, UI styles, public API shapes, or architectural patterns unless the request explicitly asks for them. Tokens and i18n are mandatory.
+You are contributing to Baydar, an Arabic-first RTL professional network in a Turborepo with Next.js 16 web, Expo SDK 54 mobile, NestJS 11 REST API, Prisma 6/Postgres, and shared @baydar packages. Read project-spec.md, DESIGN.md, BRAND.md, docs/design/RTL.md, and docs/HANDOFF.md first. Do not introduce new dependencies, UI styles, public API shapes, or architectural patterns unless the request explicitly asks for them. Tokens and i18n are mandatory.
 ```
 
 ## Deferred Until Explicitly Approved

@@ -206,15 +206,26 @@ Truth: what exists in `packages/ui-web/src/` and `packages/ui-native/src/` today
 
 ### 7.3 Organisms
 
-| Component       | Web            | Native              | Spec                                                       |
-| --------------- | -------------- | ------------------- | ---------------------------------------------------------- |
-| `AppShell`      | ✅             | 🟡 (app-local tabs) | [docs/components/AppShell.md](docs/components/AppShell.md) |
-| `Composer`      | ✅             | 🟡 (app-local)      | [docs/components/Composer.md](docs/components/Composer.md) |
-| `Tabs` / `Tab`  | ✅             | ⏳                  | [docs/components/Tabs.md](docs/components/Tabs.md)         |
-| `Sheet`         | ⏳             | ✅                  | [docs/components/Sheet.md](docs/components/Sheet.md)       |
-| `ProfileHeader` | 🟡 (app-local) | 🟡 (app-local)      | — promote when stable                                      |
-| `Thread`        | 🟡 (app-local) | 🟡 (app-local)      | — promote when stable                                      |
-| `RightRail`     | 🟡 (app-local) | n/a                 | web-only by definition                                     |
+Read from the two barrels on 2026-08-08, not from memory. This table said
+`Tabs` was still owed on native for two sprints after native's `Tab` shipped
+`count` and `formatCount`, and a stale parity table is exactly how the next
+person reintroduces the drift the lockstep gate exists to prevent.
+
+| Component       | Web            | Native                | Spec                                                       |
+| --------------- | -------------- | --------------------- | ---------------------------------------------------------- |
+| `AppShell`      | ✅             | ✅                    | [docs/components/AppShell.md](docs/components/AppShell.md) |
+| `Tabs` / `Tab`  | ✅             | ✅                    | [docs/components/Tabs.md](docs/components/Tabs.md)         |
+| `Composer`      | ✅             | ✅ as `ComposerEntry` | [docs/components/Composer.md](docs/components/Composer.md) |
+| `Dialog`        | ✅             | ✅ as `Sheet`         | [docs/components/Sheet.md](docs/components/Sheet.md)       |
+| `Menu`          | ✅             | ✅ as `ActionSheet`   | — platform idiom, same `items` vocabulary                  |
+| `ProfileHeader` | ✅             | 🟡 (app-local)        | — the one real component gap left                          |
+| `Thread`        | 🟡 (app-local) | 🟡 (app-local)        | — promote when stable                                      |
+| `RightRail`     | 🟡 (app-local) | n/a                   | web-only by definition                                     |
+
+**Reading the middle four rows.** A different name is not drift when it is the
+platform's own idiom for the same job: a centred modal is not a mobile pattern
+and a bottom sheet is not a desktop one. What must match is the prop and
+variant vocabulary, and `check:ui-lockstep` holds each pair to a written reason.
 
 **Parity gap policy:** every web component should have a native twin in `@baydar/ui-native` with the same prop names. App-local mobile implementations are tolerated as a step on the way to the shared kit, but cross-platform consistency means a shared component is the goal. Tracking matrix lives in [docs/design/PARITY.md](docs/design/PARITY.md).
 
