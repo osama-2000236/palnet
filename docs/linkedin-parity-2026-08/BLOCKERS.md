@@ -9,7 +9,8 @@ worked around.
 
 ---
 
-_None. No gate has failed outside the phase that introduced it._
+No gate has failed. The one entry below is evidence that could not be gathered
+here, not a gate that went red.
 
 Owner-input items are not blockers and are not listed here — every one of them
 has a designed fallback, ships behind its env var, and is tracked in the master

@@ -21,11 +21,12 @@ enforced by a gate rather than by review:
 - **Baydar never moves money between members.** Members pay Baydar. No escrow,
   no wallet-to-wallet, no member invoicing, no cart.
 
-| Phase                       | State           |
-| --------------------------- | --------------- |
-| P0 Ground truth             | **done**        |
-| P1 Low-bandwidth foundation | **in progress** |
-| P2–P11                      | not started     |
+| Phase                       | State       |
+| --------------------------- | ----------- |
+| P0 Ground truth             | **done**    |
+| P1 Low-bandwidth foundation | **done**    |
+| P2 The graph                | in progress |
+| P3–P11                      | not started |
 
 **P0 delivered:** all 16 governorates and 93 cities (the table had 13 and 14, so
 Salfit, Tubas and North Gaza could not be selected at all and every job
@@ -37,21 +38,22 @@ break them; the stale stack tables in `project-spec.md`, `README.md`,
 and `docs/design/PARITY.md` recounted from the barrels; five superseded doc
 trees archived. `pnpm check:i18n` was already reporting zero dead keys.
 
-**P1 so far:** connection-class detection on both platforms feeding one shared
-policy table; the `X-Baydar-Connection` hint; the visible خفيف / عادي / كامل
-chip in both kits; feed page size driven by the mode; SSE degrading to a
+**P1 delivered:** connection-class detection on both platforms feeding one
+shared policy table; the `X-Baydar-Connection` hint; the visible خفيف / عادي /
+كامل chip in both kits; feed page size driven by the mode; SSE degrading to a
 two-minute poll on `light` and opening no EventSource at all; all seven payload
 budgets as gates; `IdempotencyRecord` with a replay that returns the original
-response; the shared outbox with its two storage adapters, its tray, and the
-composer routing a lost post into it; and server-side image variants gated
-behind `CLOUDFLARE_IMAGES_TRANSFORM_URL` with tap-to-load on `light`.
+response and status; the shared outbox with two storage adapters, its «لم
+تُرسل» tray, and the composer routing a lost post into it; server-side image
+variants behind `CLOUDFLARE_IMAGES_TRANSFORM_URL` with tap-to-load on `light`;
+resumable uploads over R2 multipart; the offline read cache with «آخر تحديث»
+and web's first offline banner; and the 2G journey spec.
 
-**P1 still owed:** resumable uploads (R2 multipart, 256 KB parts, resumed from
-the outbox), offline reads (a service worker on web, the same set in a file on
-mobile, 40 MB ceiling, "آخر تحديث" on both), and the 2G Playwright profile that
-measures the three journeys at 30 kbit/s.
+**The one thing P1 owes:** `apps/web/e2e/two-g.spec.ts` is written and not yet
+run — Playwright needs the seeded QA stack and this worktree shares that
+database. `BLOCKERS.md` has the command and what to do if the budgets fail.
 
-Deviations from the spec are in that directory's `GAPS-FOUND.md` — five so
+Deviations from the spec are in that directory's `GAPS-FOUND.md` — seven so
 far, and **GAP-03 is the one to read**: the feed page measures ~2 KB gzipped
 against a 24 KB budget, so neither payload optimisation §15.2 asked for was
 worth building. Failed gates would be in `BLOCKERS.md`, which is empty.
