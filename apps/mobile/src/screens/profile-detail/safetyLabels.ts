@@ -1,5 +1,9 @@
-import { ReportReason } from "@baydar/shared";
-import type { BlockButtonLabels, ReportSheetLabels } from "@baydar/ui-native";
+// Block-button labels only. The report bundle used to be duplicated here as
+// `reportSheetLabels`; it is `useReportLabels` in @/lib/report-labels, which is
+// the single copy its own header claims. Adding three report reasons is what
+// surfaced the second one.
+
+import type { BlockButtonLabels } from "@baydar/ui-native";
 import type { TFunction } from "i18next";
 
 export function blockButtonLabels(t: TFunction, isBlocked: boolean): BlockButtonLabels {
@@ -20,23 +24,4 @@ export function blockButtonLabels(t: TFunction, isBlocked: boolean): BlockButton
         confirmCta: t("safety.block.confirm.cta"),
         cancel: t("common.cancel"),
       };
-}
-
-export function reportSheetLabels(t: TFunction): ReportSheetLabels {
-  return {
-    title: t("safety.report.title"),
-    detailsLabel: t("safety.report.details_label"),
-    cancel: t("common.cancel"),
-    submit: t("safety.report.submit"),
-    close: t("safety.report.close"),
-    reasons: {
-      [ReportReason.SPAM]: t("safety.report.reason.spam"),
-      [ReportReason.HARASSMENT]: t("safety.report.reason.harassment"),
-      [ReportReason.HATE]: t("safety.report.reason.hate"),
-      [ReportReason.MISINFORMATION]: t("safety.report.reason.misinformation"),
-      [ReportReason.NUDITY]: t("safety.report.reason.nudity"),
-      [ReportReason.VIOLENCE]: t("safety.report.reason.violence"),
-      [ReportReason.OTHER]: t("safety.report.reason.other"),
-    },
-  };
 }

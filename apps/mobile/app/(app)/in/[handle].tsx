@@ -21,7 +21,8 @@ import {
   ProfileTabContent,
   type ProfileTab,
 } from "@/screens/profile-detail/ProfileTabContent";
-import { blockButtonLabels, reportSheetLabels } from "@/screens/profile-detail/safetyLabels";
+import { useReportLabels } from "@/lib/report-labels";
+import { blockButtonLabels } from "@/screens/profile-detail/safetyLabels";
 import { useProfileStyles } from "@/screens/profile-detail/styles";
 
 export default function ProfileScreen(): JSX.Element {
@@ -77,6 +78,10 @@ export default function ProfileScreen(): JSX.Element {
     }
   }
 
+  // Above the early returns: `useReportLabels` is a hook, unlike the plain
+  // `reportSheetLabels(t)` it replaced.
+  const reportLabels = useReportLabels();
+
   if (loading) {
     return (
       <SafeAreaView style={profileStyles.screen}>
@@ -97,7 +102,6 @@ export default function ProfileScreen(): JSX.Element {
   const conn = loadedProfile.viewer?.connection;
   const isBlocked = conn?.status === "BLOCKED";
   const blockLabels = blockButtonLabels(t, isBlocked);
-  const reportLabels = reportSheetLabels(t);
 
   async function messageUser(): Promise<void> {
     const token = await getAccessToken();

@@ -12,6 +12,7 @@ import { useTranslation } from "react-i18next";
 import { KeyboardAvoidingView, Platform, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { NeverPayBanner } from "@/components/NeverPayBanner";
 import { MessageThreadComposer } from "@/screens/message-thread/MessageThreadComposer";
 import { MessageThreadList } from "@/screens/message-thread/MessageThreadList";
 import { MessageThreadSheets } from "@/screens/message-thread/MessageThreadSheets";
@@ -72,6 +73,10 @@ export default function MessageThreadScreen(): JSX.Element {
             }
           />
         </View>
+
+        {/* Above the list, not inside it: a payment demand arrives mid-thread,
+            and a warning that scrolls away is not there when it does. */}
+        {other ? <NeverPayBanner reportUserId={other.userId} /> : null}
 
         <UnreadJumpBanner
           count={thread.unreadCount}

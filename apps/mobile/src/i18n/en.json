@@ -314,8 +314,15 @@
         "misinformation": "Misinformation",
         "nudity": "Nudity or sexual content",
         "violence": "Violence or threat",
+        "fee_request": "Asked me for money",
+        "ghost_job": "The job does not exist",
+        "id_request": "Asked for my ID",
         "other": "Something else"
       }
+    },
+    "neverPay": {
+      "body": "An employer will never ask you for money for a job. Report any payment request.",
+      "report": "Report a payment request"
     },
     "block": {
       "button": "Block",

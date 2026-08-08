@@ -197,6 +197,12 @@ enum ReportReason {
   MISINFORMATION
   NUDITY
   VIOLENCE
+  // Hiring fraud. The first six are a social-network's set and none of them is
+  // "asked me for money" — the dominant local job scam, and the one thing a
+  // worker most needs a name for.
+  FEE_REQUEST
+  GHOST_JOB
+  ID_REQUEST
   OTHER
 }
 

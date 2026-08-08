@@ -27,6 +27,7 @@ import { useTranslation } from "react-i18next";
 import { ScrollView, Share, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { NeverPayBanner } from "@/components/NeverPayBanner";
 import { DetailScreenSkeleton } from "@/components/ScreenSkeleton";
 import { apiCall, apiFetch } from "@/lib/api";
 import { apiErrorMessage } from "@/lib/api-errors";
@@ -265,6 +266,7 @@ export default function JobDetailScreen(): JSX.Element {
           </View>
         </Surface>
 
+        <NeverPayBanner />
         <JobOutcome job={job} />
 
         {applyOpen && !job.viewer.hasApplied ? (

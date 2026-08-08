@@ -17,6 +17,9 @@ const reasons = {
   MISINFORMATION: "Misinformation",
   NUDITY: "Nudity",
   VIOLENCE: "Violence",
+  FEE_REQUEST: "Asked me for money",
+  GHOST_JOB: "The job does not exist",
+  ID_REQUEST: "Asked for my ID",
   OTHER: "Other",
 };
 
@@ -263,6 +266,78 @@ describe("safety primitives", () => {
       details: "abusive reply",
     });
     unmount();
+  });
+
+  // The never-pay banner opens this dialog already knowing what is being
+  // reported, so the user never hunts for the right radio.
+  it("preselects the reason it was opened with", () => {
+    const onSubmit = jest.fn();
+    const target = { kind: "user", id: "user_1" };
+
+    const { container, unmount } = renderClient(
+      React.createElement(ReportDialog, {
+        open: true,
+        onOpenChange: jest.fn(),
+        target,
+        onSubmit,
+        labels: reportLabels,
+        initialReason: "FEE_REQUEST",
+      }),
+    );
+
+    click(getButton(container, "Submit"));
+
+    expect(onSubmit).toHaveBeenCalledWith({
+      target,
+      reason: "FEE_REQUEST",
+      details: undefined,
+    });
+    unmount();
+  });
+
+  // Two call sites keep this mounted with `open={false}` rather than
+  // unmounting it, so without a reset a reopened dialog carried the previous
+  // reason and the previous details text into the next report.
+  it("resets reason and details when reopened", () => {
+    const onSubmit = jest.fn();
+    const target = { kind: "user", id: "user_1" };
+    const props = {
+      onOpenChange: jest.fn(),
+      target,
+      onSubmit,
+      labels: reportLabels,
+      initialReason: "FEE_REQUEST",
+    };
+
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    const root = createRoot(container);
+    React.act(() => {
+      root.render(React.createElement(ReportDialog, { ...props, open: true }));
+    });
+
+    click(document.body.querySelector('input[value="HARASSMENT"]'));
+    inputText(document.body.querySelector("textarea"), "stale text");
+
+    React.act(() => {
+      root.render(React.createElement(ReportDialog, { ...props, open: false }));
+    });
+    React.act(() => {
+      root.render(React.createElement(ReportDialog, { ...props, open: true }));
+    });
+
+    click(getButton(container, "Submit"));
+
+    expect(onSubmit).toHaveBeenCalledWith({
+      target,
+      reason: "FEE_REQUEST",
+      details: undefined,
+    });
+
+    React.act(() => {
+      root.unmount();
+    });
+    container.remove();
   });
 
   it("cancels a report without submitting", () => {

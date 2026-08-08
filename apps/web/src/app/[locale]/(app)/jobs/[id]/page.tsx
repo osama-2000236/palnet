@@ -26,6 +26,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 
+import { NeverPayBanner } from "@/components/NeverPayBanner";
 import { apiCall, apiFetch, getValidAccessToken } from "@/lib/api";
 import { getErrorCode, toErrorMessage } from "@/lib/error-message";
 import { ApplyDialog } from "./_components/ApplyDialog";
@@ -234,6 +235,8 @@ export default function JobDetailPage(): JSX.Element {
           <ShareJobButtons jobId={job.id} title={`${job.title} — ${jobSource(job).name}`} />
         </div>
       </Surface>
+
+      <NeverPayBanner className="text-small" />
 
       {/* The applicant's own outcome. There is no application-history screen,
           so this page is where someone comes back to find out what happened —

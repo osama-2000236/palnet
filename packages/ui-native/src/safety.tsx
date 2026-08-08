@@ -8,6 +8,9 @@ import { Sheet } from "./Sheet";
 import { Surface } from "./Surface";
 import { useThemeTokens } from "./ThemeProvider";
 
+// Restated rather than imported: ui-native is framework- and app-neutral and
+// does not depend on @baydar/shared. `useReportLabels` types its bundle off
+// this union, so a value added there and missed here fails type-check at the app.
 export type ReportReason =
   | "SPAM"
   | "HARASSMENT"
@@ -15,6 +18,9 @@ export type ReportReason =
   | "MISINFORMATION"
   | "NUDITY"
   | "VIOLENCE"
+  | "FEE_REQUEST"
+  | "GHOST_JOB"
+  | "ID_REQUEST"
   | "OTHER";
 
 export interface BlockedUserDTO {
@@ -48,9 +54,21 @@ export interface ReportSheetProps {
   onSubmit(input: { target: ReportTarget; reason: ReportReason; details?: string }): void;
   labels: ReportSheetLabels;
   submitting?: boolean;
+  /**
+   * Reason selected when the sheet opens. Lets a surface that already knows
+   * what is being reported — the never-pay banner's one-tap path — skip the
+   * step where the user finds the right radio.
+   */
+  initialReason?: ReportReason;
 }
 
+// Hiring fraud sits at the top: it is the report this product exists to make
+// easy, and a reason nobody scrolls to is a reason nobody files. OTHER stays
+// last so the escape hatch is not the first thing offered.
 const REASONS = [
+  "FEE_REQUEST",
+  "GHOST_JOB",
+  "ID_REQUEST",
   "SPAM",
   "HARASSMENT",
   "HATE",
@@ -67,9 +85,23 @@ export function ReportSheet({
   onSubmit,
   labels,
   submitting = false,
+  initialReason = "FEE_REQUEST",
 }: ReportSheetProps): JSX.Element {
-  const [reason, setReason] = useState<ReportReason>("SPAM");
+  const [reason, setReason] = useState<ReportReason>(initialReason);
   const [details, setDetails] = useState("");
+
+  // Reset on open, adjusted during render rather than in an effect (the repo
+  // lints `react-hooks/set-state-in-effect`). Call sites that keep this mounted
+  // with `open={false}` would otherwise reopen holding the last reason and the
+  // last details text.
+  const [wasOpen, setWasOpen] = useState(open);
+  if (open !== wasOpen) {
+    setWasOpen(open);
+    if (open) {
+      setReason(initialReason);
+      setDetails("");
+    }
+  }
   const c = useThemeTokens().color;
   const styles = useMemo(() => makeSafetyStyles(c), [c]);
 

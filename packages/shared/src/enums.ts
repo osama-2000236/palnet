@@ -217,6 +217,12 @@ export const ReportReason = {
   MISINFORMATION: "MISINFORMATION",
   NUDITY: "NUDITY",
   VIOLENCE: "VIOLENCE",
+  // Hiring fraud. The six above are a social network's set and none of them is
+  // "asked me for money" — the dominant local job scam, and the one thing a
+  // worker most needs a name for.
+  FEE_REQUEST: "FEE_REQUEST",
+  GHOST_JOB: "GHOST_JOB",
+  ID_REQUEST: "ID_REQUEST",
   OTHER: "OTHER",
 } as const;
 export type ReportReason = (typeof ReportReason)[keyof typeof ReportReason];

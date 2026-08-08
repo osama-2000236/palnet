@@ -17,7 +17,7 @@ import {
   jobSource,
   jobSourceInitial,
 } from "@baydar/shared";
-import { Badge } from "@baydar/ui-web";
+import { Badge, Banner } from "@baydar/ui-web";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -66,11 +66,12 @@ export default async function PublicJobPage(props: {
 }): Promise<JSX.Element> {
   const { locale, id } = await props.params;
   setRequestLocale(locale);
-  const [job, t, tJobs, tLanding] = await Promise.all([
+  const [job, t, tJobs, tLanding, tSafety] = await Promise.all([
     fetchPublicJob(id),
     getTranslations("publicJob"),
     getTranslations("jobs"),
     getTranslations("landing"),
+    getTranslations("safety"),
   ]);
   if (!job) notFound();
 
@@ -152,6 +153,13 @@ export default async function PublicJobPage(props: {
             </div>
           </div>
 
+          {/* Notice only, not the reportable variant: this page is anonymous —
+              there is no session to file a report with. `NeverPayBanner` is a
+              client component wired to the report mutation, so it needs the
+              query provider the public tree does not mount. */}
+          <div className="mt-4">
+            <Banner kind="warning">{tSafety("neverPay.body")}</Banner>
+          </div>
 
           {job.isActive ? (
             <div className="mt-5 flex flex-wrap items-center gap-3">
