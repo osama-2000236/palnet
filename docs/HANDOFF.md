@@ -38,17 +38,20 @@ and `docs/design/PARITY.md` recounted from the barrels; five superseded doc
 trees archived. `pnpm check:i18n` was already reporting zero dead keys.
 
 **P1 so far:** connection-class detection on both platforms feeding one shared
-policy table (image variant, avatar variant, page size, prefetch, SSE), the
-`X-Baydar-Connection` hint, the visible خفيف / عادي / كامل chip in both kits,
-and the `GET /feed` payload-budget gate.
+policy table; the `X-Baydar-Connection` hint; the visible خفيف / عادي / كامل
+chip in both kits; feed page size driven by the mode; SSE degrading to a
+two-minute poll on `light` and opening no EventSource at all; all seven payload
+budgets as gates; `IdempotencyRecord` with a replay that returns the original
+response; the shared outbox with its two storage adapters, its tray, and the
+composer routing a lost post into it; and server-side image variants gated
+behind `CLOUDFLARE_IMAGES_TRANSFORM_URL` with tap-to-load on `light`.
 
-**P1 still owed:** page size driven by the mode, SSE degrading to a 120-second
-poll on `light`, image variants with the ceiling enforced in `Avatar` and the
-media components rather than at call sites, resumable uploads, the shared
-outbox with its two storage adapters, `IdempotencyRecord`, offline reads, the
-2G Playwright profile, and the six payload budgets other than the feed's.
+**P1 still owed:** resumable uploads (R2 multipart, 256 KB parts, resumed from
+the outbox), offline reads (a service worker on web, the same set in a file on
+mobile, 40 MB ceiling, "آخر تحديث" on both), and the 2G Playwright profile that
+measures the three journeys at 30 kbit/s.
 
-Deviations from the spec are in that directory's `GAPS-FOUND.md` — three so
+Deviations from the spec are in that directory's `GAPS-FOUND.md` — five so
 far, and **GAP-03 is the one to read**: the feed page measures ~2 KB gzipped
 against a 24 KB budget, so neither payload optimisation §15.2 asked for was
 worth building. Failed gates would be in `BLOCKERS.md`, which is empty.
