@@ -21,10 +21,11 @@ enforced by a gate rather than by review:
 - **Baydar never moves money between members.** Members pay Baydar. No escrow,
   no wallet-to-wallet, no member invoicing, no cart.
 
-| Phase           | State       |
-| --------------- | ----------- |
-| P0 Ground truth | **done**    |
-| P1–P11          | not started |
+| Phase                       | State           |
+| --------------------------- | --------------- |
+| P0 Ground truth             | **done**        |
+| P1 Low-bandwidth foundation | **in progress** |
+| P2–P11                      | not started     |
 
 **P0 delivered:** all 16 governorates and 93 cities (the table had 13 and 14, so
 Salfit, Tubas and North Gaza could not be selected at all and every job
@@ -36,8 +37,21 @@ break them; the stale stack tables in `project-spec.md`, `README.md`,
 and `docs/design/PARITY.md` recounted from the barrels; five superseded doc
 trees archived. `pnpm check:i18n` was already reporting zero dead keys.
 
-Deviations from the spec are in that directory's `GAPS-FOUND.md`; failed gates
-would be in `BLOCKERS.md`, which is empty.
+**P1 so far:** connection-class detection on both platforms feeding one shared
+policy table (image variant, avatar variant, page size, prefetch, SSE), the
+`X-Baydar-Connection` hint, the visible خفيف / عادي / كامل chip in both kits,
+and the `GET /feed` payload-budget gate.
+
+**P1 still owed:** page size driven by the mode, SSE degrading to a 120-second
+poll on `light`, image variants with the ceiling enforced in `Avatar` and the
+media components rather than at call sites, resumable uploads, the shared
+outbox with its two storage adapters, `IdempotencyRecord`, offline reads, the
+2G Playwright profile, and the six payload budgets other than the feed's.
+
+Deviations from the spec are in that directory's `GAPS-FOUND.md` — three so
+far, and **GAP-03 is the one to read**: the feed page measures ~2 KB gzipped
+against a 24 KB budget, so neither payload optimisation §15.2 asked for was
+worth building. Failed gates would be in `BLOCKERS.md`, which is empty.
 
 ### Still open: the Pass 2 design ask
 
