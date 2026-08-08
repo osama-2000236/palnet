@@ -244,3 +244,35 @@ describe("request shaping", () => {
     expect(calls[1]!.url).toBe("https://api.test/api/v1/thing");
   });
 });
+
+describe("adapter headers", () => {
+  it("sends a static header record on every request", async () => {
+    const { client, calls } = harness({ headers: { "X-Client": "web" } });
+    await client.apiCall("/one");
+    await client.apiCall("/two");
+    expect(calls.map((c) => c.headers["X-Client"])).toEqual(["web", "web"]);
+  });
+
+  // The reason `headers` may be a function at all. A member who starts on wifi
+  // and walks onto 2G must stop asking for 1080px images on the next request,
+  // not at the next cold start — a static object is captured once, and the
+  // connection hint would be stale for the rest of the session.
+  it("re-resolves a header function per request", async () => {
+    let connection = "fast";
+    const { client, calls } = harness({
+      headers: () => ({ "X-Baydar-Connection": connection }),
+    });
+
+    await client.apiCall("/one");
+    connection = "slow";
+    await client.apiCall("/two");
+
+    expect(calls.map((c) => c.headers["X-Baydar-Connection"])).toEqual(["fast", "slow"]);
+  });
+
+  it("lets a per-call header win over the adapter's", async () => {
+    const { client, calls } = harness({ headers: () => ({ "X-Baydar-Connection": "fast" }) });
+    await client.apiCall("/one", { headers: { "X-Baydar-Connection": "slow" } });
+    expect(calls[0]!.headers["X-Baydar-Connection"]).toBe("slow");
+  });
+});

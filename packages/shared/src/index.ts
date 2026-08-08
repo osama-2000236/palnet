@@ -1,4 +1,6 @@
 export * from "./arabic-fold";
+export * from "./bandwidth";
+export * from "./connection-class";
 export * from "./enums";
 export * from "./pagination";
 export * from "./errors";

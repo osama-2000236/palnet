@@ -19,6 +19,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { LoadingIntro } from "@/components/LoadingIntro";
 import { OfflineBanner } from "@/components/OfflineBanner";
 import { initAnalytics } from "@/lib/analytics";
+import { startBandwidthDetection } from "@/lib/bandwidth";
 import { routeFromUrl } from "@/lib/linking";
 import { initObservability, wrapApp } from "@/lib/observability";
 import { installNotificationHandlers } from "@/lib/push";
@@ -96,6 +97,12 @@ function RootLayout(): JSX.Element | null {
   }, []);
 
   useEffect(() => installNotificationHandlers(), []);
+
+  // Separate from the offline listener below on purpose: that one answers "can
+  // I reach the network", this one answers "how much may I spend on it", and
+  // collapsing them would mean a 2G member and a wifi member get the same
+  // payloads for as long as both are technically online.
+  useEffect(() => startBandwidthDetection(), []);
 
   useEffect(() => {
     void NetInfo.fetch().then((state) => {

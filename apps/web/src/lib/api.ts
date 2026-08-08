@@ -1,4 +1,4 @@
-import { createApiClient, type ApiFetchOptions } from "@baydar/shared";
+import { connectionHeaders, createApiClient, type ApiFetchOptions } from "@baydar/shared";
 
 import {
   clearSession,
@@ -77,6 +77,9 @@ export const apiClient = createApiClient({
   getToken: currentToken,
   refresh,
   hasSession: () => readSession() !== null,
+  // Resolved per request, not captured: a member who walks from wifi onto 2G
+  // must stop being sent 1080px images on the next request, not the next load.
+  headers: connectionHeaders,
   init: { credentials: "include" },
 });
 

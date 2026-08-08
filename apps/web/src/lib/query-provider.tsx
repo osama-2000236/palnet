@@ -1,7 +1,9 @@
 "use client";
 
 import { isServer, QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { type ReactNode } from "react";
+import { useEffect, type ReactNode } from "react";
+
+import { startBandwidthDetection } from "./bandwidth";
 
 // Standard Next.js App Router pattern:
 //   * On the server, every request gets a fresh client so cached data
@@ -36,5 +38,11 @@ function getQueryClient(): QueryClient {
 
 export function QueryProvider({ children }: { children: ReactNode }): JSX.Element {
   const client = getQueryClient();
+
+  // Here rather than in a layout because this provider is already the one
+  // client boundary every authenticated and public page passes through, and
+  // the connection hint has to be current before the first query fires.
+  useEffect(() => startBandwidthDetection(), []);
+
   return <QueryClientProvider client={client}>{children}</QueryClientProvider>;
 }

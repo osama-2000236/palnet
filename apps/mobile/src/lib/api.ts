@@ -2,6 +2,7 @@ import {
   ApiRequestError,
   AuthSession,
   CLIENT_ERROR_CODE,
+  connectionHeaders,
   createApiClient,
   type ApiFetchOptions,
 } from "@baydar/shared";
@@ -62,7 +63,10 @@ export const apiClient = createApiClient({
   getToken: getAccessToken,
   refresh,
   hasSession: async () => (await readSession()) !== null,
-  headers: MOBILE_HEADERS,
+  // Resolved per request, not captured: NetInfo reports a radio switch mid
+  // session, and a stale hint would keep asking the API for 1080px images on
+  // the 2G the member just dropped onto.
+  headers: () => ({ ...MOBILE_HEADERS, ...connectionHeaders() }),
   rewriteGetPath: bustCache,
 });
 

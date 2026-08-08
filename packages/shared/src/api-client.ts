@@ -101,8 +101,13 @@ export interface ApiClientAdapter {
    * refreshing on the 401.
    */
   hasSession?(): boolean | Promise<boolean>;
-  /** Headers added to every request. */
-  headers?: Record<string, string>;
+  /**
+   * Headers added to every request. A function is resolved per request, which
+   * `X-Baydar-Connection` needs: a static object is captured once at client
+   * construction, so a member who walked from wifi onto 2G would keep telling
+   * the API to send them 1080px images for the rest of the session.
+   */
+  headers?: Record<string, string> | (() => Record<string, string>);
   /** Extra `fetch` init on every request (web needs `credentials: "include"`). */
   init?: HttpRequestInit;
   /** Rewrite a GET path — mobile busts an OkHttp cache here. */
@@ -186,7 +191,9 @@ export function createApiClient(adapter: ApiClientAdapter): ApiClient {
         ? adapter.rewriteGetPath(path)
         : path;
 
-    const headers: Record<string, string> = { ...adapter.headers, ...opts.headers };
+    const adapterHeaders =
+      typeof adapter.headers === "function" ? adapter.headers() : adapter.headers;
+    const headers: Record<string, string> = { ...adapterHeaders, ...opts.headers };
     if (opts.body !== undefined) headers["Content-Type"] = "application/json";
     if (token) headers.Authorization = `Bearer ${token}`;
 
