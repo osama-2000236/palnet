@@ -1,0 +1,2739 @@
+# spec/openapi-additions.yaml
+#
+# The 188 new routes and 16 changed ones, as an OpenAPI 3.1 skeleton.
+#
+# This is NOT a hand-maintained artefact and it is NOT the source of truth.
+# The API is NestJS + @nestjs/swagger, so the real document is generated from
+# the decorators at /api/docs. This file exists for ONE purpose: to let you
+# diff what you built against what was specified, per phase, without reading
+# prose. When they disagree, the master spec section named in `x-spec` wins.
+#
+# Response schemas are deliberately omitted. They come from the Zod contracts
+# in @baydar/shared via nestjs-zod, and duplicating them here would create a
+# second source of truth that drifts — which is the exact failure mode this
+# repo's five bespoke gates exist to prevent.
+#
+# Every path below must also appear in EXPECTED_ROUTES in
+# apps/api/src/modules/api-route-coverage.spec.ts. Paths marked
+# x-public: true must ALSO appear in EXPECTED_PUBLIC_ROUTES with a comment.
+
+openapi: 3.1.0
+info:
+  title: Baydar API — LinkedIn-parity additions
+  version: "2026.08-parity"
+  description: >-
+    Additions to the existing 137-route surface. Base path /api/v1.
+servers:
+  - url: https://api.baydar.ps/api/v1
+    description: production
+
+tags:
+  - name: WS-01
+    description: Identity, evidence and the trust spine
+  - name: WS-02
+    description: "The graph: follow, degree, discovery"
+  - name: WS-03
+    description: "Content: mentions, polls, articles, newsletters"
+  - name: WS-04
+    description: The ranked feed engine
+  - name: WS-05
+    description: Groups and events
+  - name: WS-06
+    description: Hiring end to end
+  - name: WS-07
+    description: Services and the freelance economy
+  - name: WS-08
+    description: Learning
+  - name: WS-09
+    description: Payments, pricing and monetisation
+  - name: WS-10
+    description: Messaging
+  - name: WS-12
+    description: Trust, safety and the scam economy
+  - name: WS-13
+    description: Search and relevance
+  - name: WS-14
+    description: Notifications, digests and SMS
+
+security:
+  - bearerAuth: []
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    internalToken:
+      type: apiKey
+      in: header
+      name: x-internal-token
+      description: INTERNAL_CRON_TOKEN. Enforced by InternalTokenGuard.
+    providerSignature:
+      type: apiKey
+      in: header
+      name: x-provider-signature
+      description: >-
+        Wallet callback signature. Verified against the provider's webhook
+        secret before the body is parsed. A callback route cannot carry a
+        session, which is why it is public.
+  responses:
+    DomainError:
+      description: >-
+        Baydar DomainException envelope. Every error carries a named code and
+        an actionable details payload — an error the user cannot act on is a bug.
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [code, message]
+            properties:
+              code: { type: string, example: DOMAIN_NOT_ELIGIBLE }
+              message: { type: string }
+              details: { type: object, additionalProperties: true }
+    RateLimited:
+      description: RATE_LIMITED. Bucket named in x-rate-bucket.
+
+paths:
+  /profiles/me/certificates:
+    post:
+      tags: [WS-01]
+      summary: "/profiles/me/certificates"
+      operationId: WS01_post_profiles_me_certificates
+      x-phase: P3
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /profiles/me/certificates/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string }
+    put:
+      tags: [WS-01]
+      summary: "/profiles/me/certificates/:id"
+      operationId: WS01_put_profiles_me_certificates__id
+      x-phase: P3
+      x-guard: jwt+owner
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+    delete:
+      tags: [WS-01]
+      summary: "/profiles/me/certificates/:id"
+      operationId: WS01_delete_profiles_me_certificates__id
+      x-phase: P3
+      x-guard: jwt+owner
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /profiles/me/languages:
+    post:
+      tags: [WS-01]
+      summary: "upsert by languageKey"
+      operationId: WS01_post_profiles_me_languages
+      x-phase: P3
+      x-guard: jwt
+      description: "upsert by languageKey"
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /profiles/me/languages/{languageKey}:
+    parameters:
+      - name: languageKey
+        in: path
+        required: true
+        schema: { type: string }
+    delete:
+      tags: [WS-01]
+      summary: "/profiles/me/languages/:languageKey"
+      operationId: WS01_delete_profiles_me_languages__languageKey
+      x-phase: P3
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /profiles/me/volunteer:
+    post:
+      tags: [WS-01]
+      summary: "/profiles/me/volunteer"
+      operationId: WS01_post_profiles_me_volunteer
+      x-phase: P3
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /profiles/me/volunteer/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string }
+    put:
+      tags: [WS-01]
+      summary: "/profiles/me/volunteer/:id"
+      operationId: WS01_put_profiles_me_volunteer__id
+      x-phase: P3
+      x-guard: jwt+owner
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+    delete:
+      tags: [WS-01]
+      summary: "/profiles/me/volunteer/:id"
+      operationId: WS01_delete_profiles_me_volunteer__id
+      x-phase: P3
+      x-guard: jwt+owner
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /profiles/me/honors:
+    post:
+      tags: [WS-01]
+      summary: "/profiles/me/honors"
+      operationId: WS01_post_profiles_me_honors
+      x-phase: P3
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /profiles/me/honors/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string }
+    put:
+      tags: [WS-01]
+      summary: "/profiles/me/honors/:id"
+      operationId: WS01_put_profiles_me_honors__id
+      x-phase: P3
+      x-guard: jwt+owner
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+    delete:
+      tags: [WS-01]
+      summary: "/profiles/me/honors/:id"
+      operationId: WS01_delete_profiles_me_honors__id
+      x-phase: P3
+      x-guard: jwt+owner
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /profiles/me/publications:
+    post:
+      tags: [WS-01]
+      summary: "/profiles/me/publications"
+      operationId: WS01_post_profiles_me_publications
+      x-phase: P3
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /profiles/me/publications/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string }
+    put:
+      tags: [WS-01]
+      summary: "/profiles/me/publications/:id"
+      operationId: WS01_put_profiles_me_publications__id
+      x-phase: P3
+      x-guard: jwt+owner
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+    delete:
+      tags: [WS-01]
+      summary: "/profiles/me/publications/:id"
+      operationId: WS01_delete_profiles_me_publications__id
+      x-phase: P3
+      x-guard: jwt+owner
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /profiles/me/translations/{locale}:
+    parameters:
+      - name: locale
+        in: path
+        required: true
+        schema: { type: string }
+    put:
+      tags: [WS-01]
+      summary: "/profiles/me/translations/:locale"
+      operationId: WS01_put_profiles_me_translations__locale
+      x-phase: P3
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+    delete:
+      tags: [WS-01]
+      summary: "/profiles/me/translations/:locale"
+      operationId: WS01_delete_profiles_me_translations__locale
+      x-phase: P3
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /profiles/me/views:
+    get:
+      tags: [WS-01]
+      summary: "aggregate only, k=5"
+      operationId: WS01_get_profiles_me_views
+      x-phase: P3
+      x-guard: jwt
+      description: "aggregate only, k=5"
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /recommendations/requests:
+    post:
+      tags: [WS-01]
+      summary: "/recommendations/requests"
+      operationId: WS01_post_recommendations_requests
+      x-phase: P3
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /recommendations:
+    post:
+      tags: [WS-01]
+      summary: "/recommendations"
+      operationId: WS01_post_recommendations
+      x-phase: P3
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /recommendations/{id}/respond:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string }
+    post:
+      tags: [WS-01]
+      summary: "/recommendations/:id/respond"
+      operationId: WS01_post_recommendations__id_respond
+      x-phase: P3
+      x-guard: jwt+author
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /recommendations/{id}/withdraw:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string }
+    post:
+      tags: [WS-01]
+      summary: "/recommendations/:id/withdraw"
+      operationId: WS01_post_recommendations__id_withdraw
+      x-phase: P3
+      x-guard: jwt+author
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /recommendations/{id}/visibility:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string }
+    patch:
+      tags: [WS-01]
+      summary: "subject may hide, never edit"
+      operationId: WS01_patch_recommendations__id_visibility
+      x-phase: P3
+      x-guard: jwt+subject
+      description: "subject may hide, never edit"
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /recommendations/{handle}:
+    parameters:
+      - name: handle
+        in: path
+        required: true
+        schema: { type: string }
+    get:
+      tags: [WS-01]
+      summary: "/recommendations/:handle"
+      operationId: WS01_get_recommendations__handle
+      x-phase: P3
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /verifications/phone/start:
+    post:
+      tags: [WS-01]
+      summary: "3/hour/user, 5/day/phone"
+      operationId: WS01_post_verifications_phone_start
+      x-phase: P3
+      x-guard: jwt
+      description: "3/hour/user, 5/day/phone"
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /verifications/phone/confirm:
+    post:
+      tags: [WS-01]
+      summary: "5 attempts then the OTP row burns"
+      operationId: WS01_post_verifications_phone_confirm
+      x-phase: P3
+      x-guard: jwt
+      description: "5 attempts then the OTP row burns"
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /verifications/email-domain/start:
+    post:
+      tags: [WS-01]
+      summary: "routes to WORK_EMAIL or EDU_EMAIL by domain"
+      operationId: WS01_post_verifications_email_domain_start
+      x-phase: P3
+      x-guard: jwt
+      description: "routes to WORK_EMAIL or EDU_EMAIL by domain"
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /verifications/email-domain/confirm:
+    post:
+      tags: [WS-01]
+      summary: "/verifications/email-domain/confirm"
+      operationId: WS01_post_verifications_email_domain_confirm
+      x-phase: P3
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /verifications/body/request:
+    post:
+      tags: [WS-01]
+      summary: "manual review queue"
+      operationId: WS01_post_verifications_body_request
+      x-phase: P3
+      x-guard: jwt
+      description: "manual review queue"
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /verifications/me:
+    get:
+      tags: [WS-01]
+      summary: "/verifications/me"
+      operationId: WS01_get_verifications_me
+      x-phase: P3
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /profiles/me/claims:
+    post:
+      tags: [WS-01]
+      summary: "/profiles/me/claims"
+      operationId: WS01_post_profiles_me_claims
+      x-phase: P3
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /profiles/me/claims/{occupationKey}:
+    parameters:
+      - name: occupationKey
+        in: path
+        required: true
+        schema: { type: string }
+    delete:
+      tags: [WS-01]
+      summary: "/profiles/me/claims/:occupationKey"
+      operationId: WS01_delete_profiles_me_claims__occupationKey
+      x-phase: P3
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /work-proofs:
+    post:
+      tags: [WS-01]
+      summary: "/work-proofs"
+      operationId: WS01_post_work_proofs
+      x-phase: P3
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /work-proofs/{id}/confirm:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string }
+    post:
+      tags: [WS-01]
+      summary: "off-platform path uses PhoneOtp"
+      operationId: WS01_post_work_proofs__id_confirm
+      x-phase: P3
+      x-guard: jwt|otp
+      description: "off-platform path uses PhoneOtp"
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /work-proofs/{id}/decline:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string }
+    post:
+      tags: [WS-01]
+      summary: "/work-proofs/:id/decline"
+      operationId: WS01_post_work_proofs__id_decline
+      x-phase: P3
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /work-proofs/{id}/dispute:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string }
+    post:
+      tags: [WS-01]
+      summary: "/work-proofs/:id/dispute"
+      operationId: WS01_post_work_proofs__id_dispute
+      x-phase: P3
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /work-proofs/me:
+    get:
+      tags: [WS-01]
+      summary: "?role=worker|client"
+      operationId: WS01_get_work_proofs_me
+      x-phase: P3
+      x-guard: jwt
+      description: "?role=worker|client"
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /profiles/{handle}/evidence:
+    parameters:
+      - name: handle
+        in: path
+        required: true
+        schema: { type: string }
+    get:
+      tags: [WS-01]
+      summary: "EvidenceSummary"
+      operationId: WS01_get_profiles__handle_evidence
+      x-phase: P3
+      x-guard: jwt
+      description: "EvidenceSummary"
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /vouches:
+    post:
+      tags: [WS-01]
+      summary: "Standing >= 3 in the same occupation required"
+      operationId: WS01_post_vouches
+      x-phase: P3
+      x-guard: jwt
+      description: "Standing >= 3 in the same occupation required"
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /vouches/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string }
+    delete:
+      tags: [WS-01]
+      summary: "/vouches/:id"
+      operationId: WS01_delete_vouches__id
+      x-phase: P3
+      x-guard: jwt+voucher
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /licences:
+    post:
+      tags: [WS-01]
+      summary: "creates DECLARED"
+      operationId: WS01_post_licences
+      x-phase: P3
+      x-guard: jwt
+      description: "creates DECLARED"
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /licences/{id}/verify-request:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string }
+    post:
+      tags: [WS-01]
+      summary: "/licences/:id/verify-request"
+      operationId: WS01_post_licences__id_verify_request
+      x-phase: P3
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /licences/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string }
+    delete:
+      tags: [WS-01]
+      summary: "/licences/:id"
+      operationId: WS01_delete_licences__id
+      x-phase: P3
+      x-guard: jwt+owner
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /cv/{handle.pdf}:
+    parameters:
+      - name: handle.pdf
+        in: path
+        required: true
+        schema: { type: string }
+    get:
+      tags: [WS-01]
+      summary: "server-rendered; replaces the print hack"
+      operationId: WS01_get_cv__handle_pdf
+      x-phase: P3
+      x-guard: jwt
+      description: "server-rendered; replaces the print hack"
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /follows:
+    post:
+      tags: [WS-02]
+      summary: "/follows"
+      operationId: WS02_post_follows
+      x-phase: P2
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+    delete:
+      tags: [WS-02]
+      summary: "idempotent"
+      operationId: WS02_delete_follows
+      x-phase: P2
+      x-guard: jwt
+      description: "idempotent"
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /follows/me:
+    get:
+      tags: [WS-02]
+      summary: "?targetType="
+      operationId: WS02_get_follows_me
+      x-phase: P2
+      x-guard: jwt
+      description: "?targetType="
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /follows/followers:
+    get:
+      tags: [WS-02]
+      summary: "/follows/followers"
+      operationId: WS02_get_follows_followers
+      x-phase: P2
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /profiles/{handle}/followers:
+    parameters:
+      - name: handle
+        in: path
+        required: true
+        schema: { type: string }
+    get:
+      tags: [WS-02]
+      summary: "respects diasporaVisible"
+      operationId: WS02_get_profiles__handle_followers
+      x-phase: P2
+      x-guard: jwt
+      description: "respects diasporaVisible"
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /feed-mutes:
+    post:
+      tags: [WS-02]
+      summary: "/feed-mutes"
+      operationId: WS02_post_feed_mutes
+      x-phase: P2
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+    get:
+      tags: [WS-02]
+      summary: "/feed-mutes"
+      operationId: WS02_get_feed_mutes
+      x-phase: P2
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /feed-mutes/{userId}:
+    parameters:
+      - name: userId
+        in: path
+        required: true
+        schema: { type: string }
+    delete:
+      tags: [WS-02]
+      summary: "/feed-mutes/:userId"
+      operationId: WS02_delete_feed_mutes__userId
+      x-phase: P2
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /restrictions:
+    post:
+      tags: [WS-02]
+      summary: "/restrictions"
+      operationId: WS02_post_restrictions
+      x-phase: P2
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+    get:
+      tags: [WS-02]
+      summary: "/restrictions"
+      operationId: WS02_get_restrictions
+      x-phase: P2
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /restrictions/{userId}:
+    parameters:
+      - name: userId
+        in: path
+        required: true
+        schema: { type: string }
+    delete:
+      tags: [WS-02]
+      summary: "/restrictions/:userId"
+      operationId: WS02_delete_restrictions__userId
+      x-phase: P2
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /connections/degree/{userId}:
+    parameters:
+      - name: userId
+        in: path
+        required: true
+        schema: { type: string }
+    get:
+      tags: [WS-02]
+      summary: "/connections/degree/:userId"
+      operationId: WS02_get_connections_degree__userId
+      x-phase: P2
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /discovery/people:
+    get:
+      tags: [WS-02]
+      summary: "replaces /connections/suggestions"
+      operationId: WS02_get_discovery_people
+      x-phase: P2
+      x-guard: jwt
+      description: "replaces /connections/suggestions"
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /discovery/alumni:
+    get:
+      tags: [WS-02]
+      summary: "/discovery/alumni"
+      operationId: WS02_get_discovery_alumni
+      x-phase: P2
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /discovery/diaspora:
+    get:
+      tags: [WS-02]
+      summary: "/discovery/diaspora"
+      operationId: WS02_get_discovery_diaspora
+      x-phase: P2
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /discovery/nearby:
+    get:
+      tags: [WS-02]
+      summary: "/discovery/nearby"
+      operationId: WS02_get_discovery_nearby
+      x-phase: P2
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /discovery/dismiss:
+    post:
+      tags: [WS-02]
+      summary: "90-day TTL"
+      operationId: WS02_post_discovery_dismiss
+      x-phase: P2
+      x-guard: jwt
+      description: "90-day TTL"
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /admin/internal/second-degree/refresh:
+    post:
+      tags: [WS-02]
+      summary: "nightly cron"
+      operationId: WS02_post_admin_internal_second_degree_refresh
+      x-phase: P2
+      x-guard: internal-token
+      x-public: true
+      security: [{ internalToken: [] }]
+      description: "nightly cron"
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /posts/drafts:
+    get:
+      tags: [WS-03]
+      summary: "/posts/drafts"
+      operationId: WS03_get_posts_drafts
+      x-phase: P4
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /posts/{id}/publish:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string }
+    post:
+      tags: [WS-03]
+      summary: "/posts/:id/publish"
+      operationId: WS03_post_posts__id_publish
+      x-phase: P4
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /posts/{id}/schedule:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string }
+    post:
+      tags: [WS-03]
+      summary: "/posts/:id/schedule"
+      operationId: WS03_post_posts__id_schedule
+      x-phase: P4
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /polls/{pollId}/vote:
+    parameters:
+      - name: pollId
+        in: path
+        required: true
+        schema: { type: string }
+    post:
+      tags: [WS-03]
+      summary: "one vote per user, immutable until closesAt"
+      operationId: WS03_post_polls__pollId_vote
+      x-phase: P4
+      x-guard: jwt
+      description: "one vote per user, immutable until closesAt"
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /polls/{pollId}/results:
+    parameters:
+      - name: pollId
+        in: path
+        required: true
+        schema: { type: string }
+    get:
+      tags: [WS-03]
+      summary: "hidden until the viewer votes or the poll closes"
+      operationId: WS03_get_polls__pollId_results
+      x-phase: P4
+      x-guard: jwt
+      description: "hidden until the viewer votes or the poll closes"
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /articles/{slug}:
+    parameters:
+      - name: slug
+        in: path
+        required: true
+        schema: { type: string }
+    get:
+      tags: [WS-03]
+      summary: "/articles/:slug"
+      operationId: WS03_get_articles__slug
+      x-phase: P4
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /newsletters:
+    post:
+      tags: [WS-03]
+      summary: "/newsletters"
+      operationId: WS03_post_newsletters
+      x-phase: P4
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /newsletters/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string }
+    patch:
+      tags: [WS-03]
+      summary: "/newsletters/:id"
+      operationId: WS03_patch_newsletters__id
+      x-phase: P4
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /newsletters/{slug}:
+    parameters:
+      - name: slug
+        in: path
+        required: true
+        schema: { type: string }
+    get:
+      tags: [WS-03]
+      summary: "/newsletters/:slug"
+      operationId: WS03_get_newsletters__slug
+      x-phase: P4
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /newsletters/{id}/subscribe:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string }
+    post:
+      tags: [WS-03]
+      summary: "/newsletters/:id/subscribe"
+      operationId: WS03_post_newsletters__id_subscribe
+      x-phase: P4
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+    delete:
+      tags: [WS-03]
+      summary: "/newsletters/:id/subscribe"
+      operationId: WS03_delete_newsletters__id_subscribe
+      x-phase: P4
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /newsletters/me:
+    get:
+      tags: [WS-03]
+      summary: "/newsletters/me"
+      operationId: WS03_get_newsletters_me
+      x-phase: P4
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /posts/{id}/stats:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string }
+    get:
+      tags: [WS-03]
+      summary: "author only"
+      operationId: WS03_get_posts__id_stats
+      x-phase: P4
+      x-guard: jwt
+      description: "author only"
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /posts/{id}/signals:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string }
+    post:
+      tags: [WS-03]
+      summary: "max 50 per call"
+      operationId: WS03_post_posts__id_signals
+      x-phase: P4
+      x-guard: jwt
+      description: "max 50 per call"
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /mentions/typeahead:
+    get:
+      tags: [WS-03]
+      summary: "?q= people + companies, folded"
+      operationId: WS03_get_mentions_typeahead
+      x-phase: P4
+      x-guard: jwt
+      description: "?q= people + companies, folded"
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /admin/internal/scheduled-posts/publish:
+    post:
+      tags: [WS-03]
+      summary: "cron, every 5 minutes"
+      operationId: WS03_post_admin_internal_scheduled_posts_publish
+      x-phase: P4
+      x-guard: internal-token
+      x-public: true
+      security: [{ internalToken: [] }]
+      description: "cron, every 5 minutes"
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /feed/refresh:
+    post:
+      tags: [WS-04]
+      summary: "rate-limited 1 per 5 minutes"
+      operationId: WS04_post_feed_refresh
+      x-phase: P5
+      x-guard: jwt
+      description: "rate-limited 1 per 5 minutes"
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /topic-mutes:
+    post:
+      tags: [WS-04]
+      summary: "/topic-mutes"
+      operationId: WS04_post_topic_mutes
+      x-phase: P5
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+    get:
+      tags: [WS-04]
+      summary: "/topic-mutes"
+      operationId: WS04_get_topic_mutes
+      x-phase: P5
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /topic-mutes/{topicKey}:
+    parameters:
+      - name: topicKey
+        in: path
+        required: true
+        schema: { type: string }
+    delete:
+      tags: [WS-04]
+      summary: "/topic-mutes/:topicKey"
+      operationId: WS04_delete_topic_mutes__topicKey
+      x-phase: P5
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /feed/explain/{postId}:
+    parameters:
+      - name: postId
+        in: path
+        required: true
+        schema: { type: string }
+    get:
+      tags: [WS-04]
+      summary: "viewer's own reason only"
+      operationId: WS04_get_feed_explain__postId
+      x-phase: P5
+      x-guard: jwt
+      description: "viewer's own reason only"
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /admin/internal/interest-decay/run:
+    post:
+      tags: [WS-04]
+      summary: "cron"
+      operationId: WS04_post_admin_internal_interest_decay_run
+      x-phase: P5
+      x-guard: internal-token
+      x-public: true
+      security: [{ internalToken: [] }]
+      description: "cron"
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /admin/internal/feed-slates/prune:
+    post:
+      tags: [WS-04]
+      summary: "cron"
+      operationId: WS04_post_admin_internal_feed_slates_prune
+      x-phase: P5
+      x-guard: internal-token
+      x-public: true
+      security: [{ internalToken: [] }]
+      description: "cron"
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /groups:
+    post:
+      tags: [WS-05]
+      summary: "/groups"
+      operationId: WS05_post_groups
+      x-phase: P7
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+    get:
+      tags: [WS-05]
+      summary: "/groups"
+      operationId: WS05_get_groups
+      x-phase: P7
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /groups/{slug}:
+    parameters:
+      - name: slug
+        in: path
+        required: true
+        schema: { type: string }
+    get:
+      tags: [WS-05]
+      summary: "/groups/:slug"
+      operationId: WS05_get_groups__slug
+      x-phase: P7
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+    patch:
+      tags: [WS-05]
+      summary: "/groups/:slug"
+      operationId: WS05_patch_groups__slug
+      x-phase: P7
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /groups/{slug}/join:
+    parameters:
+      - name: slug
+        in: path
+        required: true
+        schema: { type: string }
+    post:
+      tags: [WS-05]
+      summary: "/groups/:slug/join"
+      operationId: WS05_post_groups__slug_join
+      x-phase: P7
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /groups/{slug}/leave:
+    parameters:
+      - name: slug
+        in: path
+        required: true
+        schema: { type: string }
+    post:
+      tags: [WS-05]
+      summary: "/groups/:slug/leave"
+      operationId: WS05_post_groups__slug_leave
+      x-phase: P7
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /groups/{slug}/members:
+    parameters:
+      - name: slug
+        in: path
+        required: true
+        schema: { type: string }
+    get:
+      tags: [WS-05]
+      summary: "/groups/:slug/members"
+      operationId: WS05_get_groups__slug_members
+      x-phase: P7
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /groups/{slug}/members/{userId}:
+    parameters:
+      - name: slug
+        in: path
+        required: true
+        schema: { type: string }
+      - name: userId
+        in: path
+        required: true
+        schema: { type: string }
+    patch:
+      tags: [WS-05]
+      summary: "role/state"
+      operationId: WS05_patch_groups__slug_members__userId
+      x-phase: P7
+      x-guard: jwt
+      description: "role/state"
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /groups/{slug}/rules:
+    parameters:
+      - name: slug
+        in: path
+        required: true
+        schema: { type: string }
+    post:
+      tags: [WS-05]
+      summary: "/groups/:slug/rules"
+      operationId: WS05_post_groups__slug_rules
+      x-phase: P7
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /groups/{slug}/rules/{id}:
+    parameters:
+      - name: slug
+        in: path
+        required: true
+        schema: { type: string }
+      - name: id
+        in: path
+        required: true
+        schema: { type: string }
+    delete:
+      tags: [WS-05]
+      summary: "/groups/:slug/rules/:id"
+      operationId: WS05_delete_groups__slug_rules__id
+      x-phase: P7
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /groups/me:
+    get:
+      tags: [WS-05]
+      summary: "/groups/me"
+      operationId: WS05_get_groups_me
+      x-phase: P7
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /groups/discover:
+    get:
+      tags: [WS-05]
+      summary: "/groups/discover"
+      operationId: WS05_get_groups_discover
+      x-phase: P7
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /groups/{slug}/posts:
+    parameters:
+      - name: slug
+        in: path
+        required: true
+        schema: { type: string }
+    get:
+      tags: [WS-05]
+      summary: "/groups/:slug/posts"
+      operationId: WS05_get_groups__slug_posts
+      x-phase: P7
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /events:
+    post:
+      tags: [WS-05]
+      summary: "/events"
+      operationId: WS05_post_events
+      x-phase: P7
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+    get:
+      tags: [WS-05]
+      summary: "/events"
+      operationId: WS05_get_events
+      x-phase: P7
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /events/{slug}:
+    parameters:
+      - name: slug
+        in: path
+        required: true
+        schema: { type: string }
+    get:
+      tags: [WS-05]
+      summary: "joinUrl ONLY when the caller is GOING"
+      operationId: WS05_get_events__slug
+      x-phase: P7
+      x-guard: jwt
+      description: "joinUrl ONLY when the caller is GOING"
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+    patch:
+      tags: [WS-05]
+      summary: "/events/:slug"
+      operationId: WS05_patch_events__slug
+      x-phase: P7
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /events/{slug}/rsvp:
+    parameters:
+      - name: slug
+        in: path
+        required: true
+        schema: { type: string }
+    post:
+      tags: [WS-05]
+      summary: "/events/:slug/rsvp"
+      operationId: WS05_post_events__slug_rsvp
+      x-phase: P7
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /events/me:
+    get:
+      tags: [WS-05]
+      summary: "/events/me"
+      operationId: WS05_get_events_me
+      x-phase: P7
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /events/discover:
+    get:
+      tags: [WS-05]
+      summary: "/events/discover"
+      operationId: WS05_get_events_discover
+      x-phase: P7
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /admin/internal/events/close:
+    post:
+      tags: [WS-05]
+      summary: "cron: PUBLISHED -> ENDED"
+      operationId: WS05_post_admin_internal_events_close
+      x-phase: P7
+      x-guard: internal-token
+      x-public: true
+      security: [{ internalToken: [] }]
+      description: "cron: PUBLISHED -> ENDED"
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /applications/me:
+    get:
+      tags: [WS-06]
+      summary: "/applications/me"
+      operationId: WS06_get_applications_me
+      x-phase: P6
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /applications/me/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string }
+    get:
+      tags: [WS-06]
+      summary: "/applications/me/:id"
+      operationId: WS06_get_applications_me__id
+      x-phase: P6
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /applications/{id}/withdraw:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string }
+    post:
+      tags: [WS-06]
+      summary: "/applications/:id/withdraw"
+      operationId: WS06_post_applications__id_withdraw
+      x-phase: P6
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /jobs/{id}/referrers:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string }
+    get:
+      tags: [WS-06]
+      summary: "/jobs/:id/referrers"
+      operationId: WS06_get_jobs__id_referrers
+      x-phase: P6
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /referrals:
+    post:
+      tags: [WS-06]
+      summary: "/referrals"
+      operationId: WS06_post_referrals
+      x-phase: P6
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /referrals/{id}/respond:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string }
+    post:
+      tags: [WS-06]
+      summary: "/referrals/:id/respond"
+      operationId: WS06_post_referrals__id_respond
+      x-phase: P6
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /documents/me:
+    get:
+      tags: [WS-06]
+      summary: "/documents/me"
+      operationId: WS06_get_documents_me
+      x-phase: P6
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /documents:
+    post:
+      tags: [WS-06]
+      summary: "/documents"
+      operationId: WS06_post_documents
+      x-phase: P6
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /documents/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string }
+    delete:
+      tags: [WS-06]
+      summary: "/documents/:id"
+      operationId: WS06_delete_documents__id
+      x-phase: P6
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /documents/{id}/default:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string }
+    patch:
+      tags: [WS-06]
+      summary: "/documents/:id/default"
+      operationId: WS06_patch_documents__id_default
+      x-phase: P6
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /jobs/{id}/salary-insight:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string }
+    get:
+      tags: [WS-06]
+      summary: "k=7 or null"
+      operationId: WS06_get_jobs__id_salary_insight
+      x-phase: P6
+      x-guard: jwt
+      description: "k=7 or null"
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /insights/wages:
+    get:
+      tags: [WS-06]
+      summary: "feature-flagged; owner-input #10"
+      operationId: WS06_get_insights_wages
+      x-phase: P6
+      x-guard: jwt
+      description: "feature-flagged; owner-input #10"
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /jobs/individual:
+    post:
+      tags: [WS-06]
+      summary: "the company-less composer"
+      operationId: WS06_post_jobs_individual
+      x-phase: P6
+      x-guard: jwt
+      description: "the company-less composer"
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /companies/{companyId}/jobs/{jobId}/applicants/{applicationId}/notes:
+    parameters:
+      - name: companyId
+        in: path
+        required: true
+        schema: { type: string }
+      - name: jobId
+        in: path
+        required: true
+        schema: { type: string }
+      - name: applicationId
+        in: path
+        required: true
+        schema: { type: string }
+    post:
+      tags: [WS-06]
+      summary: "/companies/:companyId/jobs/:jobId/applicants/:applicationId/notes"
+      operationId: WS06_post_companies__companyId_jobs__jobId_applicants__applicationId_n
+      x-phase: P6
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /companies/{companyId}/jobs/{jobId}/applicants/{applicationId}/interviews:
+    parameters:
+      - name: companyId
+        in: path
+        required: true
+        schema: { type: string }
+      - name: jobId
+        in: path
+        required: true
+        schema: { type: string }
+      - name: applicationId
+        in: path
+        required: true
+        schema: { type: string }
+    post:
+      tags: [WS-06]
+      summary: "/companies/:companyId/jobs/:jobId/applicants/:applicationId/interviews"
+      operationId: WS06_post_companies__companyId_jobs__jobId_applicants__applicationId_i
+      x-phase: P6
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /interviews/{id}/respond:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string }
+    post:
+      tags: [WS-06]
+      summary: "/interviews/:id/respond"
+      operationId: WS06_post_interviews__id_respond
+      x-phase: P6
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /companies/{companyId}/pipeline:
+    parameters:
+      - name: companyId
+        in: path
+        required: true
+        schema: { type: string }
+    get:
+      tags: [WS-06]
+      summary: "/companies/:companyId/pipeline"
+      operationId: WS06_get_companies__companyId_pipeline
+      x-phase: P6
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /companies/{companyId}/pipeline/stages:
+    parameters:
+      - name: companyId
+        in: path
+        required: true
+        schema: { type: string }
+    post:
+      tags: [WS-06]
+      summary: "/companies/:companyId/pipeline/stages"
+      operationId: WS06_post_companies__companyId_pipeline_stages
+      x-phase: P6
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /companies/{companyId}/pipeline/stages/{id}:
+    parameters:
+      - name: companyId
+        in: path
+        required: true
+        schema: { type: string }
+      - name: id
+        in: path
+        required: true
+        schema: { type: string }
+    patch:
+      tags: [WS-06]
+      summary: "/companies/:companyId/pipeline/stages/:id"
+      operationId: WS06_patch_companies__companyId_pipeline_stages__id
+      x-phase: P6
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /companies/{companyId}/talent-pool:
+    parameters:
+      - name: companyId
+        in: path
+        required: true
+        schema: { type: string }
+    get:
+      tags: [WS-06]
+      summary: "/companies/:companyId/talent-pool"
+      operationId: WS06_get_companies__companyId_talent_pool
+      x-phase: P6
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /companies/{companyId}/verification:
+    parameters:
+      - name: companyId
+        in: path
+        required: true
+        schema: { type: string }
+    post:
+      tags: [WS-06]
+      summary: "/companies/:companyId/verification"
+      operationId: WS06_post_companies__companyId_verification
+      x-phase: P6
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+    get:
+      tags: [WS-06]
+      summary: "/companies/:companyId/verification"
+      operationId: WS06_get_companies__companyId_verification
+      x-phase: P6
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /admin/moderation/employer-verifications/{id}/decide:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string }
+    post:
+      tags: [WS-06]
+      summary: "/admin/moderation/employer-verifications/:id/decide"
+      operationId: WS06_post_admin_moderation_employer_verifications__id_decide
+      x-phase: P6
+      x-guard: jwt+moderator
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /services:
+    post:
+      tags: [WS-07]
+      summary: "/services"
+      operationId: WS07_post_services
+      x-phase: P8
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /services/{slug}:
+    parameters:
+      - name: slug
+        in: path
+        required: true
+        schema: { type: string }
+    patch:
+      tags: [WS-07]
+      summary: "/services/:slug"
+      operationId: WS07_patch_services__slug
+      x-phase: P8
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+    delete:
+      tags: [WS-07]
+      summary: "/services/:slug"
+      operationId: WS07_delete_services__slug
+      x-phase: P8
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+    get:
+      tags: [WS-07]
+      summary: "/services/:slug"
+      operationId: WS07_get_services__slug
+      x-phase: P8
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /services/me:
+    get:
+      tags: [WS-07]
+      summary: "/services/me"
+      operationId: WS07_get_services_me
+      x-phase: P8
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /services/search:
+    get:
+      tags: [WS-07]
+      summary: "/services/search"
+      operationId: WS07_get_services_search
+      x-phase: P8
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /services/{slug}/inquiries:
+    parameters:
+      - name: slug
+        in: path
+        required: true
+        schema: { type: string }
+    post:
+      tags: [WS-07]
+      summary: "/services/:slug/inquiries"
+      operationId: WS07_post_services__slug_inquiries
+      x-phase: P8
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /inquiries/me:
+    get:
+      tags: [WS-07]
+      summary: "?role=client|provider"
+      operationId: WS07_get_inquiries_me
+      x-phase: P8
+      x-guard: jwt
+      description: "?role=client|provider"
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /inquiries/{id}/respond:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string }
+    post:
+      tags: [WS-07]
+      summary: "/inquiries/:id/respond"
+      operationId: WS07_post_inquiries__id_respond
+      x-phase: P8
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /inquiries/{id}/close:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string }
+    post:
+      tags: [WS-07]
+      summary: "/inquiries/:id/close"
+      operationId: WS07_post_inquiries__id_close
+      x-phase: P8
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /inquiries/{id}/work-proof:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string }
+    post:
+      tags: [WS-07]
+      summary: "the loop that feeds the evidence spine"
+      operationId: WS07_post_inquiries__id_work_proof
+      x-phase: P8
+      x-guard: jwt
+      description: "the loop that feeds the evidence spine"
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /admin/internal/inquiries/expire:
+    post:
+      tags: [WS-07]
+      summary: "cron, 14-day expiry"
+      operationId: WS07_post_admin_internal_inquiries_expire
+      x-phase: P8
+      x-guard: internal-token
+      x-public: true
+      security: [{ internalToken: [] }]
+      description: "cron, 14-day expiry"
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /learning/paths:
+    get:
+      tags: [WS-08]
+      summary: "/learning/paths"
+      operationId: WS08_get_learning_paths
+      x-phase: P9
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /learning/paths/{slug}:
+    parameters:
+      - name: slug
+        in: path
+        required: true
+        schema: { type: string }
+    get:
+      tags: [WS-08]
+      summary: "/learning/paths/:slug"
+      operationId: WS08_get_learning_paths__slug
+      x-phase: P9
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /learning/paths/{slug}/enroll:
+    parameters:
+      - name: slug
+        in: path
+        required: true
+        schema: { type: string }
+    post:
+      tags: [WS-08]
+      summary: "/learning/paths/:slug/enroll"
+      operationId: WS08_post_learning_paths__slug_enroll
+      x-phase: P9
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /learning/lessons/{id}/complete:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string }
+    post:
+      tags: [WS-08]
+      summary: "/learning/lessons/:id/complete"
+      operationId: WS08_post_learning_lessons__id_complete
+      x-phase: P9
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /learning/me:
+    get:
+      tags: [WS-08]
+      summary: "/learning/me"
+      operationId: WS08_get_learning_me
+      x-phase: P9
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /learning/paths/{slug}/download:
+    parameters:
+      - name: slug
+        in: path
+        required: true
+        schema: { type: string }
+    get:
+      tags: [WS-08]
+      summary: "single JSON bundle for the offline cache"
+      operationId: WS08_get_learning_paths__slug_download
+      x-phase: P9
+      x-guard: jwt
+      description: "single JSON bundle for the offline cache"
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /admin/learning/paths:
+    post:
+      tags: [WS-08]
+      summary: "/admin/learning/paths"
+      operationId: WS08_post_admin_learning_paths
+      x-phase: P9
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /admin/learning/paths/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string }
+    patch:
+      tags: [WS-08]
+      summary: "/admin/learning/paths/:id"
+      operationId: WS08_patch_admin_learning_paths__id
+      x-phase: P9
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /admin/learning/paths/{id}/lessons:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string }
+    post:
+      tags: [WS-08]
+      summary: "/admin/learning/paths/:id/lessons"
+      operationId: WS08_post_admin_learning_paths__id_lessons
+      x-phase: P9
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /admin/learning/lessons/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string }
+    patch:
+      tags: [WS-08]
+      summary: "/admin/learning/lessons/:id"
+      operationId: WS08_patch_admin_learning_lessons__id
+      x-phase: P9
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+    delete:
+      tags: [WS-08]
+      summary: "/admin/learning/lessons/:id"
+      operationId: WS08_delete_admin_learning_lessons__id
+      x-phase: P9
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /billing/invoices/{id}/cash-reference:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string }
+    post:
+      tags: [WS-09]
+      summary: "agent-network payment"
+      operationId: WS09_post_billing_invoices__id_cash_reference
+      x-phase: P10
+      x-guard: jwt
+      description: "agent-network payment"
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /promotions:
+    post:
+      tags: [WS-09]
+      summary: "/promotions"
+      operationId: WS09_post_promotions
+      x-phase: P10
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /promotions/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string }
+    patch:
+      tags: [WS-09]
+      summary: "/promotions/:id"
+      operationId: WS09_patch_promotions__id
+      x-phase: P10
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /promotions/me:
+    get:
+      tags: [WS-09]
+      summary: "/promotions/me"
+      operationId: WS09_get_promotions_me
+      x-phase: P10
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /promotions/{id}/stats:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string }
+    get:
+      tags: [WS-09]
+      summary: "/promotions/:id/stats"
+      operationId: WS09_get_promotions__id_stats
+      x-phase: P10
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /promotions/{id}/pause:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string }
+    post:
+      tags: [WS-09]
+      summary: "/promotions/:id/pause"
+      operationId: WS09_post_promotions__id_pause
+      x-phase: P10
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /billing/webhooks/jawwalpay:
+    post:
+      tags: [WS-09]
+      summary: "MUST be added to EXPECTED_PUBLIC_ROUTES with a comment: signature-verified by the provider, so it cannot carry a session"
+      operationId: WS09_post_billing_webhooks_jawwalpay
+      x-phase: P10
+      x-guard: signature
+      x-public: true
+      security: [{ providerSignature: [] }]
+      description: "MUST be added to EXPECTED_PUBLIC_ROUTES with a comment: signature-verified by the provider, so it cannot carry a session"
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /billing/webhooks/palpay:
+    post:
+      tags: [WS-09]
+      summary: "MUST be added to EXPECTED_PUBLIC_ROUTES with a comment: signature-verified by the provider, so it cannot carry a session"
+      operationId: WS09_post_billing_webhooks_palpay
+      x-phase: P10
+      x-guard: signature
+      x-public: true
+      security: [{ providerSignature: [] }]
+      description: "MUST be added to EXPECTED_PUBLIC_ROUTES with a comment: signature-verified by the provider, so it cannot carry a session"
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /billing/webhooks/reflect:
+    post:
+      tags: [WS-09]
+      summary: "MUST be added to EXPECTED_PUBLIC_ROUTES with a comment: signature-verified by the provider, so it cannot carry a session"
+      operationId: WS09_post_billing_webhooks_reflect
+      x-phase: P10
+      x-guard: signature
+      x-public: true
+      security: [{ providerSignature: [] }]
+      description: "MUST be added to EXPECTED_PUBLIC_ROUTES with a comment: signature-verified by the provider, so it cannot carry a session"
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /admin/internal/billing/reconcile:
+    post:
+      tags: [WS-09]
+      summary: "every 10 min; 2G loses callbacks"
+      operationId: WS09_post_admin_internal_billing_reconcile
+      x-phase: P10
+      x-guard: internal-token
+      x-public: true
+      security: [{ internalToken: [] }]
+      description: "every 10 min; 2G loses callbacks"
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /messaging/requests:
+    get:
+      tags: [WS-10]
+      summary: "/messaging/requests"
+      operationId: WS10_get_messaging_requests
+      x-phase: P4
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /messaging/requests/{id}/respond:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string }
+    post:
+      tags: [WS-10]
+      summary: "/messaging/requests/:id/respond"
+      operationId: WS10_post_messaging_requests__id_respond
+      x-phase: P4
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /messaging/rooms/{id}/participants:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string }
+    post:
+      tags: [WS-10]
+      summary: "/messaging/rooms/:id/participants"
+      operationId: WS10_post_messaging_rooms__id_participants
+      x-phase: P4
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /messaging/rooms/{id}/participants/{userId}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string }
+      - name: userId
+        in: path
+        required: true
+        schema: { type: string }
+    delete:
+      tags: [WS-10]
+      summary: "/messaging/rooms/:id/participants/:userId"
+      operationId: WS10_delete_messaging_rooms__id_participants__userId
+      x-phase: P4
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /messaging/rooms/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string }
+    patch:
+      tags: [WS-10]
+      summary: "title"
+      operationId: WS10_patch_messaging_rooms__id
+      x-phase: P4
+      x-guard: jwt
+      description: "title"
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /outreach:
+    post:
+      tags: [WS-10]
+      summary: "/outreach"
+      operationId: WS10_post_outreach
+      x-phase: P4
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /outreach/me:
+    get:
+      tags: [WS-10]
+      summary: "/outreach/me"
+      operationId: WS10_get_outreach_me
+      x-phase: P4
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /outreach/quota:
+    get:
+      tags: [WS-10]
+      summary: "/outreach/quota"
+      operationId: WS10_get_outreach_quota
+      x-phase: P4
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /me/away-message:
+    put:
+      tags: [WS-10]
+      summary: "/me/away-message"
+      operationId: WS10_put_me_away_message
+      x-phase: P4
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+    delete:
+      tags: [WS-10]
+      summary: "/me/away-message"
+      operationId: WS10_delete_me_away_message
+      x-phase: P4
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /search:
+    get:
+      tags: [WS-13]
+      summary: "/search"
+      operationId: WS13_get_search
+      x-phase: P5
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /search/services:
+    get:
+      tags: [WS-13]
+      summary: "/search/services"
+      operationId: WS13_get_search_services
+      x-phase: P5
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /search/groups:
+    get:
+      tags: [WS-13]
+      summary: "/search/groups"
+      operationId: WS13_get_search_groups
+      x-phase: P5
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /search/events:
+    get:
+      tags: [WS-13]
+      summary: "/search/events"
+      operationId: WS13_get_search_events
+      x-phase: P5
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /search/learning:
+    get:
+      tags: [WS-13]
+      summary: "/search/learning"
+      operationId: WS13_get_search_learning
+      x-phase: P5
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /saved-searches:
+    get:
+      tags: [WS-13]
+      summary: "/saved-searches"
+      operationId: WS13_get_saved_searches
+      x-phase: P5
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+    post:
+      tags: [WS-13]
+      summary: "/saved-searches"
+      operationId: WS13_post_saved_searches
+      x-phase: P5
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /saved-searches/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string }
+    patch:
+      tags: [WS-13]
+      summary: "/saved-searches/:id"
+      operationId: WS13_patch_saved_searches__id
+      x-phase: P5
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+    delete:
+      tags: [WS-13]
+      summary: "/saved-searches/:id"
+      operationId: WS13_delete_saved_searches__id
+      x-phase: P5
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /admin/internal/saved-search-alerts/run:
+    post:
+      tags: [WS-13]
+      summary: "cron"
+      operationId: WS13_post_admin_internal_saved_search_alerts_run
+      x-phase: P5
+      x-guard: internal-token
+      x-public: true
+      security: [{ internalToken: [] }]
+      description: "cron"
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /appeals:
+    post:
+      tags: [WS-12]
+      summary: "/appeals"
+      operationId: WS12_post_appeals
+      x-phase: P6
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /appeals/me:
+    get:
+      tags: [WS-12]
+      summary: "/appeals/me"
+      operationId: WS12_get_appeals_me
+      x-phase: P6
+      x-guard: jwt
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /admin/moderation/appeals:
+    get:
+      tags: [WS-12]
+      summary: "/admin/moderation/appeals"
+      operationId: WS12_get_admin_moderation_appeals
+      x-phase: P6
+      x-guard: jwt+moderator
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /admin/moderation/appeals/{id}/decide:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string }
+    post:
+      tags: [WS-12]
+      summary: "reviewer must differ from the original actor"
+      operationId: WS12_post_admin_moderation_appeals__id_decide
+      x-phase: P6
+      x-guard: jwt+moderator
+      description: "reviewer must differ from the original actor"
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /admin/moderation/scam-flags:
+    get:
+      tags: [WS-12]
+      summary: "/admin/moderation/scam-flags"
+      operationId: WS12_get_admin_moderation_scam_flags
+      x-phase: P6
+      x-guard: jwt+moderator
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /admin/moderation/scam-flags/{id}/decide:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string }
+    post:
+      tags: [WS-12]
+      summary: "/admin/moderation/scam-flags/:id/decide"
+      operationId: WS12_post_admin_moderation_scam_flags__id_decide
+      x-phase: P6
+      x-guard: jwt+moderator
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /admin/internal/digest/weekly:
+    post:
+      tags: [WS-14]
+      summary: "Saturday 09:00 Asia/Hebron"
+      operationId: WS14_post_admin_internal_digest_weekly
+      x-phase: P7
+      x-guard: internal-token
+      x-public: true
+      security: [{ internalToken: [] }]
+      description: "Saturday 09:00 Asia/Hebron"
+      responses:
+        "200": { description: OK }
+        "400": { $ref: "#/components/responses/DomainError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+
+# ── CHANGED ROUTES ─────────────────────────────────────────────────────────
+# Existing paths whose request or response shape changes. Listed as comments
+# rather than path entries so this file never looks like it redefines them.
+#
+#  GET    /feed
+#         phase P1,P5 · WS-04/WS-11
+#         ?sort=ranked|recent&offset= ; slate-based paging replaces the cursor; authors-map response shape
+#  POST   /posts
+#         phase P4 · WS-03
+#         accepts kind, visibility, commentPolicy, status, scheduledFor, poll, article; server-side mention parse
+#  PATCH  /posts/:id
+#         phase P4 · WS-03
+#         sets editedAt; visibility may only NARROW after publish
+#  POST   /messaging/rooms/:id/messages
+#         phase P4,P6 · WS-10/WS-12
+#         accepts kind, voiceUrl, voiceSeconds, voiceWaveform; runs the scam scanner for non-1st-degree
+#  GET    /jobs
+#         phase P6 · WS-06
+#         facets: occupationKey, governorateKey, reachability, locationMode, payBasis, payMin, verifiedOnly, postedWithin
+#  GET    /jobs/:id
+#         phase P6 · WS-06
+#         adds fitScore, reachabilityBand, company insights, salary insight
+#  POST   /jobs/:id/apply
+#         phase P6 · WS-06
+#         structured body: screening answers, expectedPay, availableFrom, attachedProofIds, portfolioPostIds, documentId; writes matchSnapshot
+#  PATCH  /companies/:companyId/jobs/:jobId/applicants/:applicationId
+#         phase P6 · WS-06
+#         stage moves; RejectionReason REQUIRED on every REJECTED transition; writes ApplicationStageEvent
+#  GET    /companies/:companyId/jobs/:jobId/applicants
+#         phase P6 · WS-06
+#         ranked by matchScore, faceted, paged
+#  GET    /search/jobs
+#         phase P5 · WS-13
+#         INNER JOIN Company -> LEFT JOIN (the defect that hides every company-less job); tsvector relevance
+#  GET    /search/people
+#         phase P5 · WS-13
+#         structured facets replace keyword-only; tsvector + trigram
+#  GET    /billing/catalog
+#         phase P10 · WS-09
+#         ILS-first, platform-aware (no prices in the iOS build), wallet availability
+#  POST   /billing/checkout-session
+#         phase P10 · WS-09
+#         accepts method; returns the discriminated initiate() result
+#  GET    /messaging/rooms
+#         phase P4 · WS-10
+#         three tabs: primary | requests | archived
+#  GET    /notifications
+#         phase P7 · WS-14
+#         rollups: count + actorIds[]
+#  GET    /profiles/:handle
+#         phase P2,P3 · WS-01/WS-02
+#         adds EvidenceSummary, degree, mutualCount, followState, sections, translation
+
+# ── RATE-LIMIT BUCKETS ─────────────────────────────────────────────────────
+# @RateLimit("bucket") means ONE shared budget across every handler carrying
+# that bucket — that is what BaydarThrottlerGuard.generateKey is for.
+#
+#  profile-write          60/hour/user
+#  recommendation         20/day/user
+#  otp-start              3/hour/user AND 5/day/phone
+#  otp-confirm            10/hour/user
+#  verification-request   5/day/user
+#  work-proof             30/day/user
+#  vouch                  5/day/user
+#  export                 10/day/user
+#  signals                200/hour/user
+#  outreach               entitlement-gated, not rate-limited
+#  promotion-write        30/hour/company
+#  search                 120/hour/user
+#  inquiry                20/day/user

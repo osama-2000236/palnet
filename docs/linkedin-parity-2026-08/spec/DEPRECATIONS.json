@@ -1,0 +1,198 @@
+{
+  "$comment": [
+    "Ledger consumed by scripts/check-deprecations.mjs (new; added in P0).",
+    "The gate fails when: (a) a symbol is read outside allowedReadSites, or",
+    "(b) a symbol has passed removeInRelease and still exists in the tree.",
+    "This is the same known-exception-ledger pattern the repo's other five",
+    "gates already use. It exists because a two-release migration that nobody",
+    "chases becomes a permanent one, and then the schema has two of everything.",
+    "",
+    "Releases are named after the phase that introduces the deprecation, so",
+    "'P3' means 'the release that closes phase 3'. removeInRelease is always",
+    "at least two phases later."
+  ],
+  "deprecations": [
+    {
+      "symbol": "Profile.pronouns",
+      "kind": "prisma-column",
+      "reason": "Free-text with zero consumers in either client. Replaced by Profile.addressGender, which Arabic grammar actually requires for second-person agreement. Master spec §19.3.",
+      "replacement": "Profile.addressGender",
+      "deprecatedInRelease": "P3",
+      "removeInRelease": "P5",
+      "allowedReadSites": [],
+      "removalMigration": "drop_profile_pronouns"
+    },
+    {
+      "symbol": "Company.verified",
+      "kind": "prisma-column",
+      "reason": "A boolean cannot express PENDING, REJECTED or SUSPENDED, and the employer-verification gate (§10.4) needs all four. Dual-written during P6.",
+      "replacement": "Company.verificationState",
+      "deprecatedInRelease": "P6",
+      "removeInRelease": "P8",
+      "allowedReadSites": [
+        "apps/api/src/modules/companies/companies.service.ts"
+      ],
+      "removalMigration": "drop_company_verified"
+    },
+    {
+      "symbol": "Job.skillsRequired",
+      "kind": "prisma-column",
+      "reason": "Superseded by JobRequirement(kind=SKILL) for matching. The schema comment already says it 'stays only for the long tail'; keep it until the long tail is measured at zero.",
+      "replacement": "JobRequirement",
+      "deprecatedInRelease": "P6",
+      "removeInRelease": "P10",
+      "allowedReadSites": [
+        "apps/api/src/modules/search/search.service.ts"
+      ],
+      "removalMigration": "drop_job_skills_required",
+      "preRemovalCheck": "SELECT count(*) FROM \"Job\" WHERE cardinality(\"skillsRequired\") > 0 AND \"createdAt\" > now() - interval '90 days'; must be 0"
+    },
+    {
+      "symbol": "Job.screeningQuestions",
+      "kind": "prisma-column",
+      "reason": "Untyped Json with no renderer. Replaced by typed ScreeningQuestion rows. Existing rows may contain data, so it is migrated, not dropped.",
+      "replacement": "ScreeningQuestion",
+      "deprecatedInRelease": "P6",
+      "removeInRelease": "P8",
+      "allowedReadSites": [],
+      "removalMigration": "drop_job_screening_questions_json",
+      "dataMigration": "migrate_screening_json_to_rows"
+    },
+    {
+      "symbol": "JobAlert",
+      "kind": "prisma-model",
+      "reason": "Two saved-search systems is exactly the drift the repo's gates exist to prevent. Folded into SavedSearch(kind=JOB, alertEnabled=true). Free-text `industry` values that do not match a PS_INDUSTRIES key are preserved verbatim in queryJson.industryFreeText so no member silently loses an alert.",
+      "replacement": "SavedSearch",
+      "deprecatedInRelease": "P5",
+      "removeInRelease": "P7",
+      "allowedReadSites": [
+        "apps/api/src/modules/jobs/job-alerts.controller.ts"
+      ],
+      "removalMigration": "drop_job_alert",
+      "dataMigration": "migrate_job_alerts_to_saved_searches"
+    },
+    {
+      "symbol": "GET /jobs/alerts",
+      "kind": "api-route",
+      "reason": "Alias writing to SavedSearch during the migration window.",
+      "replacement": "GET /saved-searches?kind=JOB",
+      "deprecatedInRelease": "P5",
+      "removeInRelease": "P7",
+      "allowedReadSites": []
+    },
+    {
+      "symbol": "POST /jobs/alerts",
+      "kind": "api-route",
+      "reason": "Alias writing to SavedSearch during the migration window.",
+      "replacement": "POST /saved-searches",
+      "deprecatedInRelease": "P5",
+      "removeInRelease": "P7",
+      "allowedReadSites": []
+    },
+    {
+      "symbol": "DELETE /jobs/alerts/:id",
+      "kind": "api-route",
+      "reason": "Alias writing to SavedSearch during the migration window.",
+      "replacement": "DELETE /saved-searches/:id",
+      "deprecatedInRelease": "P5",
+      "removeInRelease": "P7",
+      "allowedReadSites": []
+    },
+    {
+      "symbol": "GET /connections/suggestions",
+      "kind": "api-route",
+      "reason": "Replaced by GET /discovery/people, which carries a SuggestionReason. Kept as an alias for one release so a stale client build does not 404.",
+      "replacement": "GET /discovery/people",
+      "deprecatedInRelease": "P2",
+      "removeInRelease": "P4",
+      "allowedReadSites": []
+    },
+    {
+      "symbol": "EmployerCreditKind.APPLICATION_BOOST",
+      "kind": "prisma-enum-member",
+      "reason": "No writer, no reader, no rows — and permanently unbuildable under Rule 1 (§4.2), because an application boost is money buying rank. Removed outright rather than deprecated.",
+      "replacement": null,
+      "deprecatedInRelease": "P0",
+      "removeInRelease": "P0",
+      "allowedReadSites": [],
+      "removalMigration": "drop_application_boost_credit_kind",
+      "bannedAfterRemoval": ["APPLICATION_BOOST"]
+    },
+    {
+      "symbol": "apps/web/src/app/[locale]/cv/page.tsx @media print",
+      "kind": "source-block",
+      "reason": "The browser print dialog was the PDF exporter and has no mobile equivalent, which is why mobile has no CV export at all (HANDOFF gap #6). Replaced by a server-rendered GET /cv/:handle.pdf so there is ONE renderer and one RTL-shaping implementation.",
+      "replacement": "GET /cv/:handle.pdf",
+      "deprecatedInRelease": "P3",
+      "removeInRelease": "P3",
+      "allowedReadSites": []
+    },
+    {
+      "symbol": "design-handoff-2026-05/",
+      "kind": "doc-tree",
+      "reason": "Superseded by design-handoff-2026-06/, which CLAUDE.md names as the current entry point. ARCHIVED, not deleted — it carries the reasoning for decisions still in force.",
+      "replacement": "docs/_archive/design-handoff-2026-05/",
+      "deprecatedInRelease": "P0",
+      "removeInRelease": "P0",
+      "allowedReadSites": []
+    },
+    {
+      "symbol": "docs/design/handoff-plan.md",
+      "kind": "doc",
+      "reason": "Point-in-time planning artefact superseded by PARITY.md and SCREENS.md.",
+      "replacement": "docs/_archive/design-2026-05/handoff-plan.md",
+      "deprecatedInRelease": "P0",
+      "removeInRelease": "P0",
+      "allowedReadSites": []
+    },
+    {
+      "symbol": "docs/design/open-design-audit.md",
+      "kind": "doc",
+      "reason": "Point-in-time audit, closed.",
+      "replacement": "docs/_archive/design-2026-05/open-design-audit.md",
+      "deprecatedInRelease": "P0",
+      "removeInRelease": "P0",
+      "allowedReadSites": []
+    },
+    {
+      "symbol": "docs/design/open-design-implementation-prompt.md",
+      "kind": "doc",
+      "reason": "Point-in-time prompt, executed.",
+      "replacement": "docs/_archive/design-2026-05/open-design-implementation-prompt.md",
+      "deprecatedInRelease": "P0",
+      "removeInRelease": "P0",
+      "allowedReadSites": []
+    },
+    {
+      "symbol": "docs/design/open-design-screen-critique.md",
+      "kind": "doc",
+      "reason": "Point-in-time critique, addressed.",
+      "replacement": "docs/_archive/design-2026-05/open-design-screen-critique.md",
+      "deprecatedInRelease": "P0",
+      "removeInRelease": "P0",
+      "allowedReadSites": []
+    }
+  ],
+  "permanentlyBanned": {
+    "$comment": "Symbols that must never return. check-naming.mjs enforces these as banned tokens; each carries the reason so a future reader does not 'fix' the apparent gap.",
+    "APPLICATION_BOOST": "Money buying rank. Rule 1, master spec §4.2.",
+    "BOOST_APPLICATION": "Withdrawn reward (HANDOFF gap #1). Debited points, granted nothing. Unbuildable under Rule 1.",
+    "FEATURED_PROFILE": "Withdrawn reward (HANDOFF gap #1). Unbuildable under Rule 1.",
+    "certification": "Abstract noun that invites a fourth synonym for Standing. The concrete model `Certificate` is allowed; the abstract noun is not. OCCUPATIONS.md §0 as amended by master spec §4.1.",
+    "gig": "Not the register. Use ServiceListing.",
+    "sponsored": "As a code identifier. The model is Promotion; the DTO flag is `promoted`.",
+    "community": "`network` already means the connections tab. Use Group.",
+    "WorkRecord": "OCCUPATIONS.md §0 original ban. Use WorkProof.",
+    "JobProof": "OCCUPATIONS.md §0 original ban. Use WorkProof."
+  },
+  "notDeprecated": {
+    "$comment": "Listed because a future audit will propose each of these, and the reasoning should not have to be rediscovered. Master spec §19.6.",
+    "RefreshToken / EmailVerificationToken / PasswordResetToken / SseStreamToken / ProfileSkill / ChatRoomMember": "Token or join tables, correctly server-side. Zero client references is the expected state.",
+    "react-native-reanimated / react-native-worklets / expo-linking / @react-navigation/native": "Zero imports, all declared peers of expo-router or @react-navigation/bottom-tabs. Removing them breaks the build.",
+    "OccupationClaim / WorkProof / Standing / Vouch / Licence / PostTopic / InterestWeight / FeedSlate / TopicMute": "The nine engineless models. Phases 3, 5 and 6 build every one. This plan IS the plan HANDOFF.md said they needed.",
+    "ChatRoom.isGroup / ChatRoom.title": "No UI today; full UI in P4.",
+    "UserRating": "Full backend, no UI. P6 finally decides the anti-gaming rules (§16.5) that were blocking it.",
+    "KaramaLedger / karamaBalance / decay cron": "Reframed as an activity ledger, not a currency. §19.2 explains why deleting it would be the tidy move and the wrong one.",
+    "KaramaReason.REDEEM_BOOST_APPLICATION / REDEEM_FEATURED_PROFILE": "Enum members retained so historical ledger rows still read. Permanently unimplementable."
+  }
+}

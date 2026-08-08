@@ -1,0 +1,1536 @@
+{
+  "$comment": [
+    "Machine-readable route manifest for the LinkedIn-parity build.",
+    "",
+    "HARD RULE: every route below must be added to EXPECTED_ROUTES in",
+    "apps/api/src/modules/api-route-coverage.spec.ts IN THE SAME COMMIT that adds",
+    "the controller. Routes marked public:true must ALSO be added to",
+    "EXPECTED_PUBLIC_ROUTES, each with a comment saying why it is public.",
+    "",
+    "That spec enumerates controllers off disk by reflection, so a new @Public()",
+    "controller cannot hide from it. Failing it is the intended behaviour, not an",
+    "obstacle: the unauthenticated surface should take a deliberate edit in a diff",
+    "a reviewer can see.",
+    "",
+    "Baseline: 137 pinned routes, 17 of them public."
+  ],
+  "baseline": {
+    "pinnedRoutes": 137,
+    "publicRoutes": 17
+  },
+  "newRoutes": [
+    {
+      "method": "POST",
+      "path": "/profiles/me/certificates",
+      "workstream": "WS-01",
+      "phase": "P3",
+      "guard": "jwt"
+    },
+    {
+      "method": "PUT",
+      "path": "/profiles/me/certificates/:id",
+      "workstream": "WS-01",
+      "phase": "P3",
+      "guard": "jwt+owner"
+    },
+    {
+      "method": "DELETE",
+      "path": "/profiles/me/certificates/:id",
+      "workstream": "WS-01",
+      "phase": "P3",
+      "guard": "jwt+owner"
+    },
+    {
+      "method": "POST",
+      "path": "/profiles/me/languages",
+      "workstream": "WS-01",
+      "phase": "P3",
+      "guard": "jwt",
+      "note": "upsert by languageKey"
+    },
+    {
+      "method": "DELETE",
+      "path": "/profiles/me/languages/:languageKey",
+      "workstream": "WS-01",
+      "phase": "P3",
+      "guard": "jwt"
+    },
+    {
+      "method": "POST",
+      "path": "/profiles/me/volunteer",
+      "workstream": "WS-01",
+      "phase": "P3",
+      "guard": "jwt"
+    },
+    {
+      "method": "PUT",
+      "path": "/profiles/me/volunteer/:id",
+      "workstream": "WS-01",
+      "phase": "P3",
+      "guard": "jwt+owner"
+    },
+    {
+      "method": "DELETE",
+      "path": "/profiles/me/volunteer/:id",
+      "workstream": "WS-01",
+      "phase": "P3",
+      "guard": "jwt+owner"
+    },
+    {
+      "method": "POST",
+      "path": "/profiles/me/honors",
+      "workstream": "WS-01",
+      "phase": "P3",
+      "guard": "jwt"
+    },
+    {
+      "method": "PUT",
+      "path": "/profiles/me/honors/:id",
+      "workstream": "WS-01",
+      "phase": "P3",
+      "guard": "jwt+owner"
+    },
+    {
+      "method": "DELETE",
+      "path": "/profiles/me/honors/:id",
+      "workstream": "WS-01",
+      "phase": "P3",
+      "guard": "jwt+owner"
+    },
+    {
+      "method": "POST",
+      "path": "/profiles/me/publications",
+      "workstream": "WS-01",
+      "phase": "P3",
+      "guard": "jwt"
+    },
+    {
+      "method": "PUT",
+      "path": "/profiles/me/publications/:id",
+      "workstream": "WS-01",
+      "phase": "P3",
+      "guard": "jwt+owner"
+    },
+    {
+      "method": "DELETE",
+      "path": "/profiles/me/publications/:id",
+      "workstream": "WS-01",
+      "phase": "P3",
+      "guard": "jwt+owner"
+    },
+    {
+      "method": "PUT",
+      "path": "/profiles/me/translations/:locale",
+      "workstream": "WS-01",
+      "phase": "P3",
+      "guard": "jwt"
+    },
+    {
+      "method": "DELETE",
+      "path": "/profiles/me/translations/:locale",
+      "workstream": "WS-01",
+      "phase": "P3",
+      "guard": "jwt"
+    },
+    {
+      "method": "GET",
+      "path": "/profiles/me/views",
+      "workstream": "WS-01",
+      "phase": "P3",
+      "guard": "jwt",
+      "note": "aggregate only, k=5"
+    },
+    {
+      "method": "POST",
+      "path": "/recommendations/requests",
+      "workstream": "WS-01",
+      "phase": "P3",
+      "guard": "jwt"
+    },
+    {
+      "method": "POST",
+      "path": "/recommendations",
+      "workstream": "WS-01",
+      "phase": "P3",
+      "guard": "jwt"
+    },
+    {
+      "method": "POST",
+      "path": "/recommendations/:id/respond",
+      "workstream": "WS-01",
+      "phase": "P3",
+      "guard": "jwt+author"
+    },
+    {
+      "method": "POST",
+      "path": "/recommendations/:id/withdraw",
+      "workstream": "WS-01",
+      "phase": "P3",
+      "guard": "jwt+author"
+    },
+    {
+      "method": "PATCH",
+      "path": "/recommendations/:id/visibility",
+      "workstream": "WS-01",
+      "phase": "P3",
+      "guard": "jwt+subject",
+      "note": "subject may hide, never edit"
+    },
+    {
+      "method": "GET",
+      "path": "/recommendations/:handle",
+      "workstream": "WS-01",
+      "phase": "P3",
+      "guard": "jwt"
+    },
+    {
+      "method": "POST",
+      "path": "/verifications/phone/start",
+      "workstream": "WS-01",
+      "phase": "P3",
+      "guard": "jwt",
+      "note": "3/hour/user, 5/day/phone"
+    },
+    {
+      "method": "POST",
+      "path": "/verifications/phone/confirm",
+      "workstream": "WS-01",
+      "phase": "P3",
+      "guard": "jwt",
+      "note": "5 attempts then the OTP row burns"
+    },
+    {
+      "method": "POST",
+      "path": "/verifications/email-domain/start",
+      "workstream": "WS-01",
+      "phase": "P3",
+      "guard": "jwt",
+      "note": "routes to WORK_EMAIL or EDU_EMAIL by domain"
+    },
+    {
+      "method": "POST",
+      "path": "/verifications/email-domain/confirm",
+      "workstream": "WS-01",
+      "phase": "P3",
+      "guard": "jwt"
+    },
+    {
+      "method": "POST",
+      "path": "/verifications/body/request",
+      "workstream": "WS-01",
+      "phase": "P3",
+      "guard": "jwt",
+      "note": "manual review queue"
+    },
+    {
+      "method": "GET",
+      "path": "/verifications/me",
+      "workstream": "WS-01",
+      "phase": "P3",
+      "guard": "jwt"
+    },
+    {
+      "method": "POST",
+      "path": "/profiles/me/claims",
+      "workstream": "WS-01",
+      "phase": "P3",
+      "guard": "jwt"
+    },
+    {
+      "method": "DELETE",
+      "path": "/profiles/me/claims/:occupationKey",
+      "workstream": "WS-01",
+      "phase": "P3",
+      "guard": "jwt"
+    },
+    {
+      "method": "POST",
+      "path": "/work-proofs",
+      "workstream": "WS-01",
+      "phase": "P3",
+      "guard": "jwt"
+    },
+    {
+      "method": "POST",
+      "path": "/work-proofs/:id/confirm",
+      "workstream": "WS-01",
+      "phase": "P3",
+      "guard": "jwt|otp",
+      "note": "off-platform path uses PhoneOtp"
+    },
+    {
+      "method": "POST",
+      "path": "/work-proofs/:id/decline",
+      "workstream": "WS-01",
+      "phase": "P3",
+      "guard": "jwt"
+    },
+    {
+      "method": "POST",
+      "path": "/work-proofs/:id/dispute",
+      "workstream": "WS-01",
+      "phase": "P3",
+      "guard": "jwt"
+    },
+    {
+      "method": "GET",
+      "path": "/work-proofs/me",
+      "workstream": "WS-01",
+      "phase": "P3",
+      "guard": "jwt",
+      "note": "?role=worker|client"
+    },
+    {
+      "method": "GET",
+      "path": "/profiles/:handle/evidence",
+      "workstream": "WS-01",
+      "phase": "P3",
+      "guard": "jwt",
+      "note": "EvidenceSummary"
+    },
+    {
+      "method": "POST",
+      "path": "/vouches",
+      "workstream": "WS-01",
+      "phase": "P3",
+      "guard": "jwt",
+      "note": "Standing >= 3 in the same occupation required"
+    },
+    {
+      "method": "DELETE",
+      "path": "/vouches/:id",
+      "workstream": "WS-01",
+      "phase": "P3",
+      "guard": "jwt+voucher"
+    },
+    {
+      "method": "POST",
+      "path": "/licences",
+      "workstream": "WS-01",
+      "phase": "P3",
+      "guard": "jwt",
+      "note": "creates DECLARED"
+    },
+    {
+      "method": "POST",
+      "path": "/licences/:id/verify-request",
+      "workstream": "WS-01",
+      "phase": "P3",
+      "guard": "jwt"
+    },
+    {
+      "method": "DELETE",
+      "path": "/licences/:id",
+      "workstream": "WS-01",
+      "phase": "P3",
+      "guard": "jwt+owner"
+    },
+    {
+      "method": "GET",
+      "path": "/cv/:handle.pdf",
+      "workstream": "WS-01",
+      "phase": "P3",
+      "guard": "jwt",
+      "note": "server-rendered; replaces the print hack"
+    },
+    {
+      "method": "POST",
+      "path": "/follows",
+      "workstream": "WS-02",
+      "phase": "P2",
+      "guard": "jwt"
+    },
+    {
+      "method": "DELETE",
+      "path": "/follows",
+      "workstream": "WS-02",
+      "phase": "P2",
+      "guard": "jwt",
+      "note": "idempotent"
+    },
+    {
+      "method": "GET",
+      "path": "/follows/me",
+      "workstream": "WS-02",
+      "phase": "P2",
+      "guard": "jwt",
+      "note": "?targetType="
+    },
+    {
+      "method": "GET",
+      "path": "/follows/followers",
+      "workstream": "WS-02",
+      "phase": "P2",
+      "guard": "jwt"
+    },
+    {
+      "method": "GET",
+      "path": "/profiles/:handle/followers",
+      "workstream": "WS-02",
+      "phase": "P2",
+      "guard": "jwt",
+      "note": "respects diasporaVisible"
+    },
+    {
+      "method": "POST",
+      "path": "/feed-mutes",
+      "workstream": "WS-02",
+      "phase": "P2",
+      "guard": "jwt"
+    },
+    {
+      "method": "DELETE",
+      "path": "/feed-mutes/:userId",
+      "workstream": "WS-02",
+      "phase": "P2",
+      "guard": "jwt"
+    },
+    {
+      "method": "GET",
+      "path": "/feed-mutes",
+      "workstream": "WS-02",
+      "phase": "P2",
+      "guard": "jwt"
+    },
+    {
+      "method": "POST",
+      "path": "/restrictions",
+      "workstream": "WS-02",
+      "phase": "P2",
+      "guard": "jwt"
+    },
+    {
+      "method": "DELETE",
+      "path": "/restrictions/:userId",
+      "workstream": "WS-02",
+      "phase": "P2",
+      "guard": "jwt"
+    },
+    {
+      "method": "GET",
+      "path": "/restrictions",
+      "workstream": "WS-02",
+      "phase": "P2",
+      "guard": "jwt"
+    },
+    {
+      "method": "GET",
+      "path": "/connections/degree/:userId",
+      "workstream": "WS-02",
+      "phase": "P2",
+      "guard": "jwt"
+    },
+    {
+      "method": "GET",
+      "path": "/discovery/people",
+      "workstream": "WS-02",
+      "phase": "P2",
+      "guard": "jwt",
+      "note": "replaces /connections/suggestions"
+    },
+    {
+      "method": "GET",
+      "path": "/discovery/alumni",
+      "workstream": "WS-02",
+      "phase": "P2",
+      "guard": "jwt"
+    },
+    {
+      "method": "GET",
+      "path": "/discovery/diaspora",
+      "workstream": "WS-02",
+      "phase": "P2",
+      "guard": "jwt"
+    },
+    {
+      "method": "GET",
+      "path": "/discovery/nearby",
+      "workstream": "WS-02",
+      "phase": "P2",
+      "guard": "jwt"
+    },
+    {
+      "method": "POST",
+      "path": "/discovery/dismiss",
+      "workstream": "WS-02",
+      "phase": "P2",
+      "guard": "jwt",
+      "note": "90-day TTL"
+    },
+    {
+      "method": "POST",
+      "path": "/admin/internal/second-degree/refresh",
+      "workstream": "WS-02",
+      "phase": "P2",
+      "guard": "internal-token",
+      "public": true,
+      "note": "nightly cron"
+    },
+    {
+      "method": "GET",
+      "path": "/posts/drafts",
+      "workstream": "WS-03",
+      "phase": "P4",
+      "guard": "jwt"
+    },
+    {
+      "method": "POST",
+      "path": "/posts/:id/publish",
+      "workstream": "WS-03",
+      "phase": "P4",
+      "guard": "jwt"
+    },
+    {
+      "method": "POST",
+      "path": "/posts/:id/schedule",
+      "workstream": "WS-03",
+      "phase": "P4",
+      "guard": "jwt"
+    },
+    {
+      "method": "POST",
+      "path": "/polls/:pollId/vote",
+      "workstream": "WS-03",
+      "phase": "P4",
+      "guard": "jwt",
+      "note": "one vote per user, immutable until closesAt"
+    },
+    {
+      "method": "GET",
+      "path": "/polls/:pollId/results",
+      "workstream": "WS-03",
+      "phase": "P4",
+      "guard": "jwt",
+      "note": "hidden until the viewer votes or the poll closes"
+    },
+    {
+      "method": "GET",
+      "path": "/articles/:slug",
+      "workstream": "WS-03",
+      "phase": "P4",
+      "guard": "jwt"
+    },
+    {
+      "method": "POST",
+      "path": "/newsletters",
+      "workstream": "WS-03",
+      "phase": "P4",
+      "guard": "jwt"
+    },
+    {
+      "method": "PATCH",
+      "path": "/newsletters/:id",
+      "workstream": "WS-03",
+      "phase": "P4",
+      "guard": "jwt"
+    },
+    {
+      "method": "GET",
+      "path": "/newsletters/:slug",
+      "workstream": "WS-03",
+      "phase": "P4",
+      "guard": "jwt"
+    },
+    {
+      "method": "POST",
+      "path": "/newsletters/:id/subscribe",
+      "workstream": "WS-03",
+      "phase": "P4",
+      "guard": "jwt"
+    },
+    {
+      "method": "DELETE",
+      "path": "/newsletters/:id/subscribe",
+      "workstream": "WS-03",
+      "phase": "P4",
+      "guard": "jwt"
+    },
+    {
+      "method": "GET",
+      "path": "/newsletters/me",
+      "workstream": "WS-03",
+      "phase": "P4",
+      "guard": "jwt"
+    },
+    {
+      "method": "GET",
+      "path": "/posts/:id/stats",
+      "workstream": "WS-03",
+      "phase": "P4",
+      "guard": "jwt",
+      "note": "author only"
+    },
+    {
+      "method": "POST",
+      "path": "/posts/:id/signals",
+      "workstream": "WS-03",
+      "phase": "P4",
+      "guard": "jwt",
+      "note": "max 50 per call"
+    },
+    {
+      "method": "GET",
+      "path": "/mentions/typeahead",
+      "workstream": "WS-03",
+      "phase": "P4",
+      "guard": "jwt",
+      "note": "?q= people + companies, folded"
+    },
+    {
+      "method": "POST",
+      "path": "/admin/internal/scheduled-posts/publish",
+      "workstream": "WS-03",
+      "phase": "P4",
+      "guard": "internal-token",
+      "public": true,
+      "note": "cron, every 5 minutes"
+    },
+    {
+      "method": "POST",
+      "path": "/feed/refresh",
+      "workstream": "WS-04",
+      "phase": "P5",
+      "guard": "jwt",
+      "note": "rate-limited 1 per 5 minutes"
+    },
+    {
+      "method": "POST",
+      "path": "/topic-mutes",
+      "workstream": "WS-04",
+      "phase": "P5",
+      "guard": "jwt"
+    },
+    {
+      "method": "DELETE",
+      "path": "/topic-mutes/:topicKey",
+      "workstream": "WS-04",
+      "phase": "P5",
+      "guard": "jwt"
+    },
+    {
+      "method": "GET",
+      "path": "/topic-mutes",
+      "workstream": "WS-04",
+      "phase": "P5",
+      "guard": "jwt"
+    },
+    {
+      "method": "GET",
+      "path": "/feed/explain/:postId",
+      "workstream": "WS-04",
+      "phase": "P5",
+      "guard": "jwt",
+      "note": "viewer's own reason only"
+    },
+    {
+      "method": "POST",
+      "path": "/admin/internal/interest-decay/run",
+      "workstream": "WS-04",
+      "phase": "P5",
+      "guard": "internal-token",
+      "public": true,
+      "note": "cron"
+    },
+    {
+      "method": "POST",
+      "path": "/admin/internal/feed-slates/prune",
+      "workstream": "WS-04",
+      "phase": "P5",
+      "guard": "internal-token",
+      "public": true,
+      "note": "cron"
+    },
+    {
+      "method": "POST",
+      "path": "/groups",
+      "workstream": "WS-05",
+      "phase": "P7",
+      "guard": "jwt"
+    },
+    {
+      "method": "GET",
+      "path": "/groups",
+      "workstream": "WS-05",
+      "phase": "P7",
+      "guard": "jwt"
+    },
+    {
+      "method": "GET",
+      "path": "/groups/:slug",
+      "workstream": "WS-05",
+      "phase": "P7",
+      "guard": "jwt"
+    },
+    {
+      "method": "PATCH",
+      "path": "/groups/:slug",
+      "workstream": "WS-05",
+      "phase": "P7",
+      "guard": "jwt"
+    },
+    {
+      "method": "POST",
+      "path": "/groups/:slug/join",
+      "workstream": "WS-05",
+      "phase": "P7",
+      "guard": "jwt"
+    },
+    {
+      "method": "POST",
+      "path": "/groups/:slug/leave",
+      "workstream": "WS-05",
+      "phase": "P7",
+      "guard": "jwt"
+    },
+    {
+      "method": "GET",
+      "path": "/groups/:slug/members",
+      "workstream": "WS-05",
+      "phase": "P7",
+      "guard": "jwt"
+    },
+    {
+      "method": "PATCH",
+      "path": "/groups/:slug/members/:userId",
+      "workstream": "WS-05",
+      "phase": "P7",
+      "guard": "jwt",
+      "note": "role/state"
+    },
+    {
+      "method": "POST",
+      "path": "/groups/:slug/rules",
+      "workstream": "WS-05",
+      "phase": "P7",
+      "guard": "jwt"
+    },
+    {
+      "method": "DELETE",
+      "path": "/groups/:slug/rules/:id",
+      "workstream": "WS-05",
+      "phase": "P7",
+      "guard": "jwt"
+    },
+    {
+      "method": "GET",
+      "path": "/groups/me",
+      "workstream": "WS-05",
+      "phase": "P7",
+      "guard": "jwt"
+    },
+    {
+      "method": "GET",
+      "path": "/groups/discover",
+      "workstream": "WS-05",
+      "phase": "P7",
+      "guard": "jwt"
+    },
+    {
+      "method": "GET",
+      "path": "/groups/:slug/posts",
+      "workstream": "WS-05",
+      "phase": "P7",
+      "guard": "jwt"
+    },
+    {
+      "method": "POST",
+      "path": "/events",
+      "workstream": "WS-05",
+      "phase": "P7",
+      "guard": "jwt"
+    },
+    {
+      "method": "GET",
+      "path": "/events",
+      "workstream": "WS-05",
+      "phase": "P7",
+      "guard": "jwt"
+    },
+    {
+      "method": "GET",
+      "path": "/events/:slug",
+      "workstream": "WS-05",
+      "phase": "P7",
+      "guard": "jwt",
+      "note": "joinUrl ONLY when the caller is GOING"
+    },
+    {
+      "method": "PATCH",
+      "path": "/events/:slug",
+      "workstream": "WS-05",
+      "phase": "P7",
+      "guard": "jwt"
+    },
+    {
+      "method": "POST",
+      "path": "/events/:slug/rsvp",
+      "workstream": "WS-05",
+      "phase": "P7",
+      "guard": "jwt"
+    },
+    {
+      "method": "GET",
+      "path": "/events/me",
+      "workstream": "WS-05",
+      "phase": "P7",
+      "guard": "jwt"
+    },
+    {
+      "method": "GET",
+      "path": "/events/discover",
+      "workstream": "WS-05",
+      "phase": "P7",
+      "guard": "jwt"
+    },
+    {
+      "method": "POST",
+      "path": "/admin/internal/events/close",
+      "workstream": "WS-05",
+      "phase": "P7",
+      "guard": "internal-token",
+      "public": true,
+      "note": "cron: PUBLISHED -> ENDED"
+    },
+    {
+      "method": "GET",
+      "path": "/applications/me",
+      "workstream": "WS-06",
+      "phase": "P6",
+      "guard": "jwt"
+    },
+    {
+      "method": "GET",
+      "path": "/applications/me/:id",
+      "workstream": "WS-06",
+      "phase": "P6",
+      "guard": "jwt"
+    },
+    {
+      "method": "POST",
+      "path": "/applications/:id/withdraw",
+      "workstream": "WS-06",
+      "phase": "P6",
+      "guard": "jwt"
+    },
+    {
+      "method": "GET",
+      "path": "/jobs/:id/referrers",
+      "workstream": "WS-06",
+      "phase": "P6",
+      "guard": "jwt"
+    },
+    {
+      "method": "POST",
+      "path": "/referrals",
+      "workstream": "WS-06",
+      "phase": "P6",
+      "guard": "jwt"
+    },
+    {
+      "method": "POST",
+      "path": "/referrals/:id/respond",
+      "workstream": "WS-06",
+      "phase": "P6",
+      "guard": "jwt"
+    },
+    {
+      "method": "GET",
+      "path": "/documents/me",
+      "workstream": "WS-06",
+      "phase": "P6",
+      "guard": "jwt"
+    },
+    {
+      "method": "POST",
+      "path": "/documents",
+      "workstream": "WS-06",
+      "phase": "P6",
+      "guard": "jwt"
+    },
+    {
+      "method": "DELETE",
+      "path": "/documents/:id",
+      "workstream": "WS-06",
+      "phase": "P6",
+      "guard": "jwt"
+    },
+    {
+      "method": "PATCH",
+      "path": "/documents/:id/default",
+      "workstream": "WS-06",
+      "phase": "P6",
+      "guard": "jwt"
+    },
+    {
+      "method": "GET",
+      "path": "/jobs/:id/salary-insight",
+      "workstream": "WS-06",
+      "phase": "P6",
+      "guard": "jwt",
+      "note": "k=7 or null"
+    },
+    {
+      "method": "GET",
+      "path": "/insights/wages",
+      "workstream": "WS-06",
+      "phase": "P6",
+      "guard": "jwt",
+      "note": "feature-flagged; owner-input #10"
+    },
+    {
+      "method": "POST",
+      "path": "/jobs/individual",
+      "workstream": "WS-06",
+      "phase": "P6",
+      "guard": "jwt",
+      "note": "the company-less composer"
+    },
+    {
+      "method": "POST",
+      "path": "/companies/:companyId/jobs/:jobId/applicants/:applicationId/notes",
+      "workstream": "WS-06",
+      "phase": "P6",
+      "guard": "jwt"
+    },
+    {
+      "method": "POST",
+      "path": "/companies/:companyId/jobs/:jobId/applicants/:applicationId/interviews",
+      "workstream": "WS-06",
+      "phase": "P6",
+      "guard": "jwt"
+    },
+    {
+      "method": "POST",
+      "path": "/interviews/:id/respond",
+      "workstream": "WS-06",
+      "phase": "P6",
+      "guard": "jwt"
+    },
+    {
+      "method": "GET",
+      "path": "/companies/:companyId/pipeline",
+      "workstream": "WS-06",
+      "phase": "P6",
+      "guard": "jwt"
+    },
+    {
+      "method": "POST",
+      "path": "/companies/:companyId/pipeline/stages",
+      "workstream": "WS-06",
+      "phase": "P6",
+      "guard": "jwt"
+    },
+    {
+      "method": "PATCH",
+      "path": "/companies/:companyId/pipeline/stages/:id",
+      "workstream": "WS-06",
+      "phase": "P6",
+      "guard": "jwt"
+    },
+    {
+      "method": "GET",
+      "path": "/companies/:companyId/talent-pool",
+      "workstream": "WS-06",
+      "phase": "P6",
+      "guard": "jwt"
+    },
+    {
+      "method": "POST",
+      "path": "/companies/:companyId/verification",
+      "workstream": "WS-06",
+      "phase": "P6",
+      "guard": "jwt"
+    },
+    {
+      "method": "GET",
+      "path": "/companies/:companyId/verification",
+      "workstream": "WS-06",
+      "phase": "P6",
+      "guard": "jwt"
+    },
+    {
+      "method": "POST",
+      "path": "/admin/moderation/employer-verifications/:id/decide",
+      "workstream": "WS-06",
+      "phase": "P6",
+      "guard": "jwt+moderator"
+    },
+    {
+      "method": "POST",
+      "path": "/services",
+      "workstream": "WS-07",
+      "phase": "P8",
+      "guard": "jwt"
+    },
+    {
+      "method": "PATCH",
+      "path": "/services/:slug",
+      "workstream": "WS-07",
+      "phase": "P8",
+      "guard": "jwt"
+    },
+    {
+      "method": "DELETE",
+      "path": "/services/:slug",
+      "workstream": "WS-07",
+      "phase": "P8",
+      "guard": "jwt"
+    },
+    {
+      "method": "GET",
+      "path": "/services/:slug",
+      "workstream": "WS-07",
+      "phase": "P8",
+      "guard": "jwt"
+    },
+    {
+      "method": "GET",
+      "path": "/services/me",
+      "workstream": "WS-07",
+      "phase": "P8",
+      "guard": "jwt"
+    },
+    {
+      "method": "GET",
+      "path": "/services/search",
+      "workstream": "WS-07",
+      "phase": "P8",
+      "guard": "jwt"
+    },
+    {
+      "method": "POST",
+      "path": "/services/:slug/inquiries",
+      "workstream": "WS-07",
+      "phase": "P8",
+      "guard": "jwt"
+    },
+    {
+      "method": "GET",
+      "path": "/inquiries/me",
+      "workstream": "WS-07",
+      "phase": "P8",
+      "guard": "jwt",
+      "note": "?role=client|provider"
+    },
+    {
+      "method": "POST",
+      "path": "/inquiries/:id/respond",
+      "workstream": "WS-07",
+      "phase": "P8",
+      "guard": "jwt"
+    },
+    {
+      "method": "POST",
+      "path": "/inquiries/:id/close",
+      "workstream": "WS-07",
+      "phase": "P8",
+      "guard": "jwt"
+    },
+    {
+      "method": "POST",
+      "path": "/inquiries/:id/work-proof",
+      "workstream": "WS-07",
+      "phase": "P8",
+      "guard": "jwt",
+      "note": "the loop that feeds the evidence spine"
+    },
+    {
+      "method": "POST",
+      "path": "/admin/internal/inquiries/expire",
+      "workstream": "WS-07",
+      "phase": "P8",
+      "guard": "internal-token",
+      "public": true,
+      "note": "cron, 14-day expiry"
+    },
+    {
+      "method": "GET",
+      "path": "/learning/paths",
+      "workstream": "WS-08",
+      "phase": "P9",
+      "guard": "jwt"
+    },
+    {
+      "method": "GET",
+      "path": "/learning/paths/:slug",
+      "workstream": "WS-08",
+      "phase": "P9",
+      "guard": "jwt"
+    },
+    {
+      "method": "POST",
+      "path": "/learning/paths/:slug/enroll",
+      "workstream": "WS-08",
+      "phase": "P9",
+      "guard": "jwt"
+    },
+    {
+      "method": "POST",
+      "path": "/learning/lessons/:id/complete",
+      "workstream": "WS-08",
+      "phase": "P9",
+      "guard": "jwt"
+    },
+    {
+      "method": "GET",
+      "path": "/learning/me",
+      "workstream": "WS-08",
+      "phase": "P9",
+      "guard": "jwt"
+    },
+    {
+      "method": "GET",
+      "path": "/learning/paths/:slug/download",
+      "workstream": "WS-08",
+      "phase": "P9",
+      "guard": "jwt",
+      "note": "single JSON bundle for the offline cache"
+    },
+    {
+      "method": "POST",
+      "path": "/admin/learning/paths",
+      "workstream": "WS-08",
+      "phase": "P9",
+      "guard": "jwt"
+    },
+    {
+      "method": "PATCH",
+      "path": "/admin/learning/paths/:id",
+      "workstream": "WS-08",
+      "phase": "P9",
+      "guard": "jwt"
+    },
+    {
+      "method": "POST",
+      "path": "/admin/learning/paths/:id/lessons",
+      "workstream": "WS-08",
+      "phase": "P9",
+      "guard": "jwt"
+    },
+    {
+      "method": "PATCH",
+      "path": "/admin/learning/lessons/:id",
+      "workstream": "WS-08",
+      "phase": "P9",
+      "guard": "jwt"
+    },
+    {
+      "method": "DELETE",
+      "path": "/admin/learning/lessons/:id",
+      "workstream": "WS-08",
+      "phase": "P9",
+      "guard": "jwt"
+    },
+    {
+      "method": "POST",
+      "path": "/billing/invoices/:id/cash-reference",
+      "workstream": "WS-09",
+      "phase": "P10",
+      "guard": "jwt",
+      "note": "agent-network payment"
+    },
+    {
+      "method": "POST",
+      "path": "/promotions",
+      "workstream": "WS-09",
+      "phase": "P10",
+      "guard": "jwt"
+    },
+    {
+      "method": "PATCH",
+      "path": "/promotions/:id",
+      "workstream": "WS-09",
+      "phase": "P10",
+      "guard": "jwt"
+    },
+    {
+      "method": "GET",
+      "path": "/promotions/me",
+      "workstream": "WS-09",
+      "phase": "P10",
+      "guard": "jwt"
+    },
+    {
+      "method": "GET",
+      "path": "/promotions/:id/stats",
+      "workstream": "WS-09",
+      "phase": "P10",
+      "guard": "jwt"
+    },
+    {
+      "method": "POST",
+      "path": "/promotions/:id/pause",
+      "workstream": "WS-09",
+      "phase": "P10",
+      "guard": "jwt"
+    },
+    {
+      "method": "POST",
+      "path": "/billing/webhooks/jawwalpay",
+      "workstream": "WS-09",
+      "phase": "P10",
+      "guard": "signature",
+      "public": true,
+      "note": "MUST be added to EXPECTED_PUBLIC_ROUTES with a comment: signature-verified by the provider, so it cannot carry a session"
+    },
+    {
+      "method": "POST",
+      "path": "/billing/webhooks/palpay",
+      "workstream": "WS-09",
+      "phase": "P10",
+      "guard": "signature",
+      "public": true,
+      "note": "MUST be added to EXPECTED_PUBLIC_ROUTES with a comment: signature-verified by the provider, so it cannot carry a session"
+    },
+    {
+      "method": "POST",
+      "path": "/billing/webhooks/reflect",
+      "workstream": "WS-09",
+      "phase": "P10",
+      "guard": "signature",
+      "public": true,
+      "note": "MUST be added to EXPECTED_PUBLIC_ROUTES with a comment: signature-verified by the provider, so it cannot carry a session"
+    },
+    {
+      "method": "POST",
+      "path": "/admin/internal/billing/reconcile",
+      "workstream": "WS-09",
+      "phase": "P10",
+      "guard": "internal-token",
+      "public": true,
+      "note": "every 10 min; 2G loses callbacks"
+    },
+    {
+      "method": "GET",
+      "path": "/messaging/requests",
+      "workstream": "WS-10",
+      "phase": "P4",
+      "guard": "jwt"
+    },
+    {
+      "method": "POST",
+      "path": "/messaging/requests/:id/respond",
+      "workstream": "WS-10",
+      "phase": "P4",
+      "guard": "jwt"
+    },
+    {
+      "method": "POST",
+      "path": "/messaging/rooms/:id/participants",
+      "workstream": "WS-10",
+      "phase": "P4",
+      "guard": "jwt"
+    },
+    {
+      "method": "DELETE",
+      "path": "/messaging/rooms/:id/participants/:userId",
+      "workstream": "WS-10",
+      "phase": "P4",
+      "guard": "jwt"
+    },
+    {
+      "method": "PATCH",
+      "path": "/messaging/rooms/:id",
+      "workstream": "WS-10",
+      "phase": "P4",
+      "guard": "jwt",
+      "note": "title"
+    },
+    {
+      "method": "POST",
+      "path": "/outreach",
+      "workstream": "WS-10",
+      "phase": "P4",
+      "guard": "jwt"
+    },
+    {
+      "method": "GET",
+      "path": "/outreach/me",
+      "workstream": "WS-10",
+      "phase": "P4",
+      "guard": "jwt"
+    },
+    {
+      "method": "GET",
+      "path": "/outreach/quota",
+      "workstream": "WS-10",
+      "phase": "P4",
+      "guard": "jwt"
+    },
+    {
+      "method": "PUT",
+      "path": "/me/away-message",
+      "workstream": "WS-10",
+      "phase": "P4",
+      "guard": "jwt"
+    },
+    {
+      "method": "DELETE",
+      "path": "/me/away-message",
+      "workstream": "WS-10",
+      "phase": "P4",
+      "guard": "jwt"
+    },
+    {
+      "method": "GET",
+      "path": "/search",
+      "workstream": "WS-13",
+      "phase": "P5",
+      "guard": "jwt"
+    },
+    {
+      "method": "GET",
+      "path": "/search/services",
+      "workstream": "WS-13",
+      "phase": "P5",
+      "guard": "jwt"
+    },
+    {
+      "method": "GET",
+      "path": "/search/groups",
+      "workstream": "WS-13",
+      "phase": "P5",
+      "guard": "jwt"
+    },
+    {
+      "method": "GET",
+      "path": "/search/events",
+      "workstream": "WS-13",
+      "phase": "P5",
+      "guard": "jwt"
+    },
+    {
+      "method": "GET",
+      "path": "/search/learning",
+      "workstream": "WS-13",
+      "phase": "P5",
+      "guard": "jwt"
+    },
+    {
+      "method": "GET",
+      "path": "/saved-searches",
+      "workstream": "WS-13",
+      "phase": "P5",
+      "guard": "jwt"
+    },
+    {
+      "method": "POST",
+      "path": "/saved-searches",
+      "workstream": "WS-13",
+      "phase": "P5",
+      "guard": "jwt"
+    },
+    {
+      "method": "PATCH",
+      "path": "/saved-searches/:id",
+      "workstream": "WS-13",
+      "phase": "P5",
+      "guard": "jwt"
+    },
+    {
+      "method": "DELETE",
+      "path": "/saved-searches/:id",
+      "workstream": "WS-13",
+      "phase": "P5",
+      "guard": "jwt"
+    },
+    {
+      "method": "POST",
+      "path": "/admin/internal/saved-search-alerts/run",
+      "workstream": "WS-13",
+      "phase": "P5",
+      "guard": "internal-token",
+      "public": true,
+      "note": "cron"
+    },
+    {
+      "method": "POST",
+      "path": "/appeals",
+      "workstream": "WS-12",
+      "phase": "P6",
+      "guard": "jwt"
+    },
+    {
+      "method": "GET",
+      "path": "/appeals/me",
+      "workstream": "WS-12",
+      "phase": "P6",
+      "guard": "jwt"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/moderation/appeals",
+      "workstream": "WS-12",
+      "phase": "P6",
+      "guard": "jwt+moderator"
+    },
+    {
+      "method": "POST",
+      "path": "/admin/moderation/appeals/:id/decide",
+      "workstream": "WS-12",
+      "phase": "P6",
+      "guard": "jwt+moderator",
+      "note": "reviewer must differ from the original actor"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/moderation/scam-flags",
+      "workstream": "WS-12",
+      "phase": "P6",
+      "guard": "jwt+moderator"
+    },
+    {
+      "method": "POST",
+      "path": "/admin/moderation/scam-flags/:id/decide",
+      "workstream": "WS-12",
+      "phase": "P6",
+      "guard": "jwt+moderator"
+    },
+    {
+      "method": "POST",
+      "path": "/admin/internal/digest/weekly",
+      "workstream": "WS-14",
+      "phase": "P7",
+      "guard": "internal-token",
+      "public": true,
+      "note": "Saturday 09:00 Asia/Hebron"
+    }
+  ],
+  "changedRoutes": [
+    {
+      "method": "GET",
+      "path": "/feed",
+      "change": "?sort=ranked|recent&offset= ; slate-based paging replaces the cursor; authors-map response shape",
+      "ws": "WS-04/WS-11",
+      "phase": "P1,P5"
+    },
+    {
+      "method": "POST",
+      "path": "/posts",
+      "change": "accepts kind, visibility, commentPolicy, status, scheduledFor, poll, article; server-side mention parse",
+      "ws": "WS-03",
+      "phase": "P4"
+    },
+    {
+      "method": "PATCH",
+      "path": "/posts/:id",
+      "change": "sets editedAt; visibility may only NARROW after publish",
+      "ws": "WS-03",
+      "phase": "P4"
+    },
+    {
+      "method": "POST",
+      "path": "/messaging/rooms/:id/messages",
+      "change": "accepts kind, voiceUrl, voiceSeconds, voiceWaveform; runs the scam scanner for non-1st-degree",
+      "ws": "WS-10/WS-12",
+      "phase": "P4,P6"
+    },
+    {
+      "method": "GET",
+      "path": "/jobs",
+      "change": "facets: occupationKey, governorateKey, reachability, locationMode, payBasis, payMin, verifiedOnly, postedWithin",
+      "ws": "WS-06",
+      "phase": "P6"
+    },
+    {
+      "method": "GET",
+      "path": "/jobs/:id",
+      "change": "adds fitScore, reachabilityBand, company insights, salary insight",
+      "ws": "WS-06",
+      "phase": "P6"
+    },
+    {
+      "method": "POST",
+      "path": "/jobs/:id/apply",
+      "change": "structured body: screening answers, expectedPay, availableFrom, attachedProofIds, portfolioPostIds, documentId; writes matchSnapshot",
+      "ws": "WS-06",
+      "phase": "P6"
+    },
+    {
+      "method": "PATCH",
+      "path": "/companies/:companyId/jobs/:jobId/applicants/:applicationId",
+      "change": "stage moves; RejectionReason REQUIRED on every REJECTED transition; writes ApplicationStageEvent",
+      "ws": "WS-06",
+      "phase": "P6"
+    },
+    {
+      "method": "GET",
+      "path": "/companies/:companyId/jobs/:jobId/applicants",
+      "change": "ranked by matchScore, faceted, paged",
+      "ws": "WS-06",
+      "phase": "P6"
+    },
+    {
+      "method": "GET",
+      "path": "/search/jobs",
+      "change": "INNER JOIN Company -> LEFT JOIN (the defect that hides every company-less job); tsvector relevance",
+      "ws": "WS-13",
+      "phase": "P5"
+    },
+    {
+      "method": "GET",
+      "path": "/search/people",
+      "change": "structured facets replace keyword-only; tsvector + trigram",
+      "ws": "WS-13",
+      "phase": "P5"
+    },
+    {
+      "method": "GET",
+      "path": "/billing/catalog",
+      "change": "ILS-first, platform-aware (no prices in the iOS build), wallet availability",
+      "ws": "WS-09",
+      "phase": "P10"
+    },
+    {
+      "method": "POST",
+      "path": "/billing/checkout-session",
+      "change": "accepts method; returns the discriminated initiate() result",
+      "ws": "WS-09",
+      "phase": "P10"
+    },
+    {
+      "method": "GET",
+      "path": "/messaging/rooms",
+      "change": "three tabs: primary | requests | archived",
+      "ws": "WS-10",
+      "phase": "P4"
+    },
+    {
+      "method": "GET",
+      "path": "/notifications",
+      "change": "rollups: count + actorIds[]",
+      "ws": "WS-14",
+      "phase": "P7"
+    },
+    {
+      "method": "GET",
+      "path": "/profiles/:handle",
+      "change": "adds EvidenceSummary, degree, mutualCount, followState, sections, translation",
+      "ws": "WS-01/WS-02",
+      "phase": "P2,P3"
+    }
+  ],
+  "totals": {
+    "new": 188,
+    "newPublic": 12,
+    "changed": 16,
+    "pinnedAfter": 325,
+    "publicAfter": 29
+  },
+  "rateLimitBuckets": {
+    "$comment": "@RateLimit(\"bucket\") means ONE shared budget across every handler carrying that bucket — that is what BaydarThrottlerGuard.generateKey is for. New buckets this build introduces:",
+    "profile-write": "60/hour/user",
+    "recommendation": "20/day/user",
+    "otp-start": "3/hour/user AND 5/day/phone",
+    "otp-confirm": "10/hour/user",
+    "verification-request": "5/day/user",
+    "work-proof": "30/day/user",
+    "vouch": "5/day/user",
+    "export": "10/day/user",
+    "signals": "200/hour/user",
+    "outreach": "entitlement-gated, not rate-limited",
+    "promotion-write": "30/hour/company",
+    "search": "120/hour/user",
+    "inquiry": "20/day/user"
+  }
+}

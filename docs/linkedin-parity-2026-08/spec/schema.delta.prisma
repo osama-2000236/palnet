@@ -1,0 +1,1355 @@
+// spec/schema.delta.prisma
+//
+// The complete Prisma delta for the LinkedIn-parity build, in migration order.
+// This file is NOT a valid standalone schema — it is the set of additions and
+// changes to be merged into packages/db/prisma/schema.prisma.
+//
+// HOW TO USE
+//   Work phase by phase (master spec §20.2). For each phase, merge that
+//   phase's block into schema.prisma, run `pnpm --filter @baydar/db db:migrate`
+//   with the migration name given in the block header, and commit the
+//   migration in the same PR as the schema change. Never merge two phases'
+//   blocks into one migration.
+//
+// INVARIANTS THAT APPLY TO EVERY BLOCK
+//   * Every new model gets @@index on every FK it is queried by. A missing
+//     index here is a sequential scan on a table that only grows.
+//   * Every enum member added to an EXISTING enum is appended, never inserted
+//     — Postgres enum ordering is positional and an insert rewrites the type.
+//   * No column is dropped in the same migration that adds its replacement.
+//     Two-release rule, master spec §19.
+//   * Money is always an integer in the currency's MINOR unit. ILS exponent 2,
+//     JOD exponent 3, USD exponent 2. See packages/shared/src/money.ts.
+//
+// Total: 41 new models, 17 new enums, 9 changed models, 4 changed enums.
+
+// ═══════════════════════════════════════════════════════════════════════════
+// PHASE 1 — WS-11 low-bandwidth foundation
+// migration: add_idempotency
+// ═══════════════════════════════════════════════════════════════════════════
+
+// Replay protection for the four durable outbox actions. Stores the original
+// response so a replay returns the identical body and status rather than a
+// 409 the client cannot act on.
+model IdempotencyRecord {
+  id           String   @id @default(cuid())
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId       String
+  key          String
+  route        String
+  statusCode   Int
+  responseBody Json
+  createdAt    DateTime @default(now())
+  expiresAt    DateTime
+
+  @@unique([userId, key])
+  @@index([expiresAt])
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// PHASE 2 — WS-02 the graph
+// migration: add_follow_graph
+// ═══════════════════════════════════════════════════════════════════════════
+
+enum FollowTargetType {
+  USER
+  COMPANY
+  TOPIC
+}
+
+model Follow {
+  id              String           @id @default(cuid())
+  follower        User             @relation("FollowFollower", fields: [followerId], references: [id], onDelete: Cascade)
+  followerId      String
+  targetType      FollowTargetType
+  targetUser      User?            @relation("FollowTargetUser", fields: [targetUserId], references: [id], onDelete: Cascade)
+  targetUserId    String?
+  targetCompany   Company?         @relation(fields: [targetCompanyId], references: [id], onDelete: Cascade)
+  targetCompanyId String?
+  targetTopicKey  String?
+  createdAt       DateTime         @default(now())
+
+  // Raw SQL in the migration adds:
+  //   ALTER TABLE "Follow" ADD CONSTRAINT "Follow_exactly_one_target"
+  //   CHECK (num_nonnulls("targetUserId","targetCompanyId","targetTopicKey") = 1);
+  @@unique([followerId, targetType, targetUserId, targetCompanyId, targetTopicKey])
+  @@index([targetUserId])
+  @@index([targetCompanyId])
+  @@index([targetTopicKey])
+  @@index([followerId, targetType])
+}
+
+model FollowerCount {
+  targetType      FollowTargetType
+  targetUserId    String?
+  targetCompanyId String?
+  targetTopicKey  String?
+  count           Int              @default(0)
+  updatedAt       DateTime         @updatedAt
+
+  @@id([targetType, targetUserId, targetCompanyId, targetTopicKey])
+}
+
+model FeedMute {
+  user      User     @relation("FeedMuteUser", fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  muted     User     @relation("FeedMuteMuted", fields: [mutedId], references: [id], onDelete: Cascade)
+  mutedId   String
+  createdAt DateTime @default(now())
+
+  @@id([userId, mutedId])
+  @@index([mutedId])
+}
+
+model RestrictedUser {
+  user         User     @relation("RestrictOwner", fields: [userId], references: [id], onDelete: Cascade)
+  userId       String
+  restricted   User     @relation("RestrictTarget", fields: [restrictedId], references: [id], onDelete: Cascade)
+  restrictedId String
+  createdAt    DateTime @default(now())
+
+  @@id([userId, restrictedId])
+  @@index([restrictedId])
+}
+
+model SecondDegree {
+  user        User     @relation("SecondDegreeUser", fields: [userId], references: [id], onDelete: Cascade)
+  userId      String
+  peer        User     @relation("SecondDegreePeer", fields: [peerId], references: [id], onDelete: Cascade)
+  peerId      String
+  mutuals     Int
+  refreshedAt DateTime @default(now())
+
+  @@id([userId, peerId])
+  @@index([userId, mutuals])
+}
+
+model SuggestionDismissal {
+  user        User     @relation("DismissalUser", fields: [userId], references: [id], onDelete: Cascade)
+  userId      String
+  dismissed   User     @relation("DismissalTarget", fields: [dismissedId], references: [id], onDelete: Cascade)
+  dismissedId String
+  createdAt   DateTime @default(now())
+
+  @@id([userId, dismissedId])
+  @@index([createdAt])
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// PHASE 3 — WS-01 identity and evidence
+// migrations, in order:
+//   add_verification_and_otp
+//   add_profile_sections
+//   add_recommendation
+//   add_profile_diaspora_and_break
+//   add_address_gender
+//   add_profile_view_daily
+//   canonicalise_skills
+//   add_evidence_score
+// ═══════════════════════════════════════════════════════════════════════════
+
+enum LanguageLevel {
+  BASIC
+  CONVERSATIONAL
+  PROFESSIONAL
+  NATIVE
+}
+
+enum RecommendationRelation {
+  MANAGED_DIRECTLY
+  REPORTED_TO_ME
+  SAME_TEAM
+  DIFFERENT_TEAM
+  CLIENT_OF
+  SUPPLIER_TO
+  TAUGHT
+  STUDIED_UNDER
+}
+
+enum RecommendationStatus {
+  PENDING
+  PUBLISHED
+  DECLINED
+  WITHDRAWN
+}
+
+enum VerificationMethod {
+  PHONE
+  WORK_EMAIL
+  EDU_EMAIL
+  PROFESSIONAL_BODY
+}
+
+enum VerificationStatus {
+  PENDING
+  VERIFIED
+  FAILED
+  REVOKED
+  EXPIRED
+}
+
+enum OtpPurpose {
+  PHONE_VERIFY
+  WORK_PROOF_CONFIRM
+  ACCOUNT_RECOVERY
+}
+
+// Arabic requires grammatical gender agreement in second-person verbs and
+// predicate adjectives. This is a RENDERING INPUT, not an identity statement,
+// and it replaces the never-consumed free-text `pronouns` column.
+enum AddressGender {
+  FEMININE
+  MASCULINE
+  NEUTRAL_PLURAL
+}
+
+enum CareerBreakReason {
+  CAREER_BREAK_STUDY
+  CAREER_BREAK_CARE
+  CAREER_BREAK_HEALTH
+  CAREER_BREAK_DISPLACEMENT
+  CAREER_BREAK_DETENTION
+  CAREER_BREAK_TRAVEL
+  CAREER_BREAK_OTHER
+}
+
+model Certificate {
+  id            String    @id @default(cuid())
+  profile       Profile   @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  profileId     String
+  name          String
+  issuerName    String
+  issuerKey     String?
+  credentialId  String?
+  credentialUrl String?
+  issuedAt      DateTime?
+  expiresAt     DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([profileId])
+  @@index([issuerKey])
+}
+
+model ProfileLanguage {
+  profile     Profile       @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  profileId   String
+  languageKey String
+  proficiency LanguageLevel
+
+  @@id([profileId, languageKey])
+}
+
+model VolunteerRole {
+  id           String    @id @default(cuid())
+  profile      Profile   @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  profileId    String
+  role         String
+  organisation String
+  causeKey     String?
+  startDate    DateTime
+  endDate      DateTime?
+  description  String?   @db.Text
+  createdAt    DateTime  @default(now())
+
+  @@index([profileId])
+}
+
+model Honor {
+  id          String    @id @default(cuid())
+  profile     Profile   @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  profileId   String
+  title       String
+  issuerName  String
+  awardedAt   DateTime?
+  description String?   @db.Text
+  createdAt   DateTime  @default(now())
+
+  @@index([profileId])
+}
+
+model Publication {
+  id          String    @id @default(cuid())
+  profile     Profile   @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  profileId   String
+  title       String
+  venue       String?
+  url         String?
+  publishedAt DateTime?
+  createdAt   DateTime  @default(now())
+
+  @@index([profileId])
+}
+
+model Recommendation {
+  id              String                 @id @default(cuid())
+  author          User                   @relation("RecommendationAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  authorId        String
+  subject         User                   @relation("RecommendationSubject", fields: [subjectId], references: [id], onDelete: Cascade)
+  subjectId       String
+  relationship    RecommendationRelation
+  occupationKey   String?
+  body            String                 @db.Text
+  status          RecommendationStatus   @default(PENDING)
+  requestedAt     DateTime?
+  respondedAt     DateTime?
+  hiddenBySubject Boolean                @default(false)
+  createdAt       DateTime               @default(now())
+  updatedAt       DateTime               @updatedAt
+
+  @@unique([authorId, subjectId, occupationKey])
+  @@index([subjectId, status, hiddenBySubject])
+  @@index([authorId])
+}
+
+model Verification {
+  id            String             @id @default(cuid())
+  user          User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId        String
+  method        VerificationMethod
+  status        VerificationStatus @default(PENDING)
+  evidenceRef   String
+  verifiedAt    DateTime?
+  expiresAt     DateTime?
+  attempts      Int                @default(0)
+  lastAttemptAt DateTime?
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+
+  @@unique([userId, method])
+  @@index([status, expiresAt])
+}
+
+model PhoneOtp {
+  id         String     @id @default(cuid())
+  phoneE164  String
+  codeHash   String
+  purpose    OtpPurpose
+  refId      String?
+  expiresAt  DateTime
+  consumedAt DateTime?
+  attempts   Int        @default(0)
+  createdAt  DateTime   @default(now())
+
+  @@index([phoneE164, purpose, expiresAt])
+  @@index([expiresAt])
+}
+
+model ProfileTranslation {
+  profile   Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  profileId String
+  locale    String
+  firstName String
+  lastName  String
+  headline  String?
+  about     String?  @db.Text
+  updatedAt DateTime @updatedAt
+
+  @@id([profileId, locale])
+}
+
+model ProfileViewDaily {
+  profile       Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  profileId     String
+  day           DateTime @db.Date
+  views         Int      @default(0)
+  byOccupation  Json?
+  byGovernorate Json?
+
+  @@id([profileId, day])
+  @@index([day])
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// PHASE 4 — WS-03 content, WS-10 messaging
+// migrations: add_post_kinds_and_mentions, add_poll, add_article_newsletter,
+//             add_post_stats, add_messaging_requests_and_voice
+// ═══════════════════════════════════════════════════════════════════════════
+
+enum PostKind {
+  TEXT
+  POLL
+  ARTICLE
+  NEWSLETTER_ISSUE
+  WORK_SAMPLE
+}
+
+enum PostVisibility {
+  PUBLIC
+  CONNECTIONS
+  FOLLOWERS
+  GROUP
+}
+
+enum CommentPolicy {
+  ANYONE
+  CONNECTIONS
+  NOBODY
+}
+
+enum PostStatus {
+  DRAFT
+  SCHEDULED
+  PUBLISHED
+}
+
+enum MentionTargetType {
+  USER
+  COMPANY
+}
+
+model PostMention {
+  post            Post              @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId          String
+  targetType      MentionTargetType
+  targetUserId    String?
+  targetCompanyId String?
+  offsetStart     Int
+  offsetEnd       Int
+
+  @@id([postId, offsetStart])
+  @@index([targetUserId])
+  @@index([targetCompanyId])
+}
+
+model CommentMention {
+  comment         Comment           @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  commentId       String
+  targetType      MentionTargetType
+  targetUserId    String?
+  targetCompanyId String?
+  offsetStart     Int
+  offsetEnd       Int
+
+  @@id([commentId, offsetStart])
+  @@index([targetUserId])
+}
+
+model Poll {
+  id       String       @id @default(cuid())
+  post     Post         @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId   String       @unique
+  question String
+  closesAt DateTime
+  options  PollOption[]
+  votes    PollVote[]
+}
+
+model PollOption {
+  id      String     @id @default(cuid())
+  poll    Poll       @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  pollId  String
+  label   String
+  ordinal Int
+  votes   Int        @default(0)
+  pollVotes PollVote[]
+
+  @@unique([pollId, ordinal])
+}
+
+model PollVote {
+  poll      Poll       @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  pollId    String
+  option    PollOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
+  optionId  String
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  createdAt DateTime   @default(now())
+
+  @@id([pollId, userId])
+  @@index([optionId])
+}
+
+model Article {
+  id           String      @id @default(cuid())
+  post         Post        @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId       String      @unique
+  title        String
+  subtitle     String?
+  slug         String      @unique
+  coverUrl     String?
+  bodyMarkdown String      @db.Text
+  readMinutes  Int
+  newsletter   Newsletter? @relation(fields: [newsletterId], references: [id], onDelete: SetNull)
+  newsletterId String?
+
+  @@index([newsletterId])
+}
+
+model Newsletter {
+  id            String                   @id @default(cuid())
+  owner         User                     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  ownerId       String
+  title         String
+  slug          String                   @unique
+  about         String?                  @db.Text
+  coverUrl      String?
+  cadenceKey    String
+  createdAt     DateTime                 @default(now())
+  issues        Article[]
+  subscriptions NewsletterSubscription[]
+
+  @@index([ownerId])
+}
+
+model NewsletterSubscription {
+  newsletter   Newsletter @relation(fields: [newsletterId], references: [id], onDelete: Cascade)
+  newsletterId String
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId       String
+  byEmail      Boolean    @default(true)
+  byPush       Boolean    @default(false)
+  createdAt    DateTime   @default(now())
+
+  @@id([newsletterId, userId])
+  @@index([userId])
+}
+
+model PostStats {
+  post          Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId        String   @id
+  impressions   Int      @default(0)
+  uniqueViewers Int      @default(0)
+  hllSketch     Bytes?
+  expands       Int      @default(0)
+  linkClicks    Int      @default(0)
+  updatedAt     DateTime @updatedAt
+}
+
+enum MessageKind {
+  TEXT
+  MEDIA
+  VOICE
+  SYSTEM
+}
+
+enum RoomKind {
+  DIRECT
+  GROUP
+  HIRING
+  INQUIRY
+}
+
+enum RequestState {
+  PENDING
+  ACCEPTED
+  DECLINED
+}
+
+enum OutreachState {
+  SENT
+  ACCEPTED
+  DECLINED
+  EXPIRED
+}
+
+model MessageRequest {
+  id          String       @id @default(cuid())
+  room        ChatRoom     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  roomId      String       @unique
+  requester   User         @relation("RequestRequester", fields: [requesterId], references: [id], onDelete: Cascade)
+  requesterId String
+  recipient   User         @relation("RequestRecipient", fields: [recipientId], references: [id], onDelete: Cascade)
+  recipientId String
+  state       RequestState @default(PENDING)
+  createdAt   DateTime     @default(now())
+  respondedAt DateTime?
+
+  @@index([recipientId, state])
+}
+
+model Outreach {
+  id          String        @id @default(cuid())
+  company     Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  companyId   String
+  sender      User          @relation("OutreachSender", fields: [senderId], references: [id], onDelete: Cascade)
+  senderId    String
+  recipient   User          @relation("OutreachRecipient", fields: [recipientId], references: [id], onDelete: Cascade)
+  recipientId String
+  jobId       String?
+  room        ChatRoom?     @relation(fields: [roomId], references: [id], onDelete: SetNull)
+  roomId      String?
+  state       OutreachState @default(SENT)
+  createdAt   DateTime      @default(now())
+  expiresAt   DateTime
+
+  @@unique([companyId, recipientId, jobId])
+  @@index([companyId, createdAt])
+  @@index([recipientId, state])
+}
+
+model AwayMessage {
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     String    @id
+  body       String    @db.Text
+  activeFrom DateTime?
+  activeTo   DateTime?
+  updatedAt  DateTime  @updatedAt
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// PHASE 5 — WS-13 search
+// migration: add_saved_search  (+ a raw-SQL migration for baydar_fold,
+//            tsvector generated columns and GIN/trigram indexes)
+// ═══════════════════════════════════════════════════════════════════════════
+
+enum SavedSearchKind {
+  JOB
+  PEOPLE
+  SERVICE
+  GROUP
+  EVENT
+}
+
+model SavedSearch {
+  id           String          @id @default(cuid())
+  user         User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId       String
+  kind         SavedSearchKind
+  label        String
+  queryJson    Json
+  alertEnabled Boolean         @default(false)
+  lastRunAt    DateTime?
+  createdAt    DateTime        @default(now())
+
+  @@index([userId, kind])
+  @@index([alertEnabled, lastRunAt])
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// PHASE 6 — WS-06 hiring, WS-12 safety
+// migrations: add_job_requirements, add_screening, add_pipeline,
+//             add_interviews_and_referrals, add_member_documents,
+//             add_employer_verification, add_wage_observations,
+//             add_rating_antigaming, add_appeals
+// ═══════════════════════════════════════════════════════════════════════════
+
+enum RequirementKind {
+  OCCUPATION
+  SKILL
+  LICENCE
+  STANDING
+  EXPERIENCE_YEARS
+  LANGUAGE
+  EDUCATION
+  LOCATION
+  AVAILABILITY
+}
+
+enum ScreeningKind {
+  BOOLEAN
+  SINGLE_CHOICE
+  MULTI_CHOICE
+  NUMBER
+  SHORT_TEXT
+}
+
+enum PipelineStageKind {
+  NEW
+  REVIEWING
+  SHORTLIST
+  INTERVIEW
+  OFFER
+  HIRED
+  REJECTED
+}
+
+enum InterviewMode {
+  IN_PERSON
+  PHONE
+  VIDEO
+}
+
+enum InterviewState {
+  PROPOSED
+  CONFIRMED
+  DECLINED
+  RESCHEDULED
+  COMPLETED
+  NO_SHOW
+}
+
+enum ReferralState {
+  REQUESTED
+  SENT
+  DECLINED
+}
+
+enum EmployerVerificationState {
+  UNVERIFIED
+  PENDING
+  VERIFIED
+  REJECTED
+  SUSPENDED
+}
+
+enum AppealState {
+  OPEN
+  UPHELD
+  OVERTURNED
+}
+
+model JobRequirement {
+  id          String           @id @default(cuid())
+  job         Job              @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  jobId       String
+  kind        RequirementKind
+  level       RequirementLevel
+  stringValue String?
+  intValue    Int?
+  weight      Int              @default(1)
+  ordinal     Int
+
+  @@unique([jobId, ordinal])
+  @@index([jobId, kind])
+}
+
+model ScreeningQuestion {
+  id           String            @id @default(cuid())
+  job          Job               @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  jobId        String
+  kind         ScreeningKind
+  prompt       String
+  required     Boolean           @default(true)
+  choices      String[]
+  expectedBool Boolean?
+  minNumber    Int?
+  ordinal      Int
+  answers      ScreeningAnswer[]
+
+  @@unique([jobId, ordinal])
+}
+
+model ScreeningAnswer {
+  id            String            @id @default(cuid())
+  application   Application       @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  applicationId String
+  question      ScreeningQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  questionId    String
+  boolValue     Boolean?
+  numberValue   Int?
+  textValue     String?           @db.Text
+  choiceValues  String[]
+
+  @@unique([applicationId, questionId])
+}
+
+model PipelineStage {
+  id        String                  @id @default(cuid())
+  company   Company                 @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  companyId String
+  kind      PipelineStageKind
+  nameAr    String
+  nameEn    String
+  ordinal   Int
+  events    ApplicationStageEvent[]
+
+  @@unique([companyId, ordinal])
+}
+
+model ApplicationStageEvent {
+  id            String             @id @default(cuid())
+  application   Application        @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  applicationId String
+  stage         PipelineStage?     @relation(fields: [stageId], references: [id], onDelete: SetNull)
+  stageId       String?
+  fromStatus    ApplicationStatus?
+  toStatus      ApplicationStatus
+  actorId       String
+  note          String?            @db.Text
+  createdAt     DateTime           @default(now())
+
+  @@index([applicationId, createdAt])
+}
+
+model CandidateNote {
+  id            String      @id @default(cuid())
+  application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  applicationId String
+  author        User        @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  authorId      String
+  body          String      @db.Text
+  createdAt     DateTime    @default(now())
+
+  @@index([applicationId, createdAt])
+}
+
+model InterviewSlot {
+  id            String         @id @default(cuid())
+  application   Application    @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  applicationId String
+  mode          InterviewMode
+  startsAt      DateTime
+  durationMin   Int
+  location      String?
+  joinUrl       String?
+  state         InterviewState @default(PROPOSED)
+  proposedById  String
+  respondedAt   DateTime?
+  createdAt     DateTime       @default(now())
+
+  @@index([applicationId, startsAt])
+}
+
+model Referral {
+  id          String        @id @default(cuid())
+  job         Job           @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  jobId       String
+  seeker      User          @relation("ReferralSeeker", fields: [seekerId], references: [id], onDelete: Cascade)
+  seekerId    String
+  referrer    User          @relation("ReferralReferrer", fields: [referrerId], references: [id], onDelete: Cascade)
+  referrerId  String
+  state       ReferralState @default(REQUESTED)
+  note        String?       @db.Text
+  createdAt   DateTime      @default(now())
+  respondedAt DateTime?
+
+  @@unique([jobId, seekerId, referrerId])
+  @@index([referrerId, state])
+}
+
+model MemberDocument {
+  id        String   @id @default(cuid())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  label     String
+  url       String
+  mimeType  String
+  sizeBytes Int
+  isDefault Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+// Anonymised wage aggregate. Deliberately carries NO joinable identifier —
+// not a job id, not a user id — so the table cannot be reversed onto a person
+// or an employer. k-anonymity at read (k = 7) is the second control.
+model WageObservation {
+  id             String   @id @default(cuid())
+  occupationKey  String
+  governorateKey String
+  payBasis       PayBasis
+  currency       String
+  amount         Int
+  sourceKind     String
+  observedAt     DateTime @default(now())
+
+  @@index([occupationKey, governorateKey, payBasis, observedAt])
+}
+
+model Appeal {
+  id                 String      @id @default(cuid())
+  subjectUserId      String
+  moderationActionId String?
+  body               String      @db.Text
+  state              AppealState @default(OPEN)
+  reviewedById       String?
+  reviewedAt         DateTime?
+  decision           String?     @db.Text
+  createdAt          DateTime    @default(now())
+
+  @@index([state, createdAt])
+  @@index([subjectUserId])
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// PHASE 7 — WS-05 groups and events
+// migrations: add_groups, add_events
+// ═══════════════════════════════════════════════════════════════════════════
+
+enum GroupKind {
+  GOVERNORATE
+  BODY
+  ALUMNI
+  FAMILY
+  MEMBER_CREATED
+}
+
+enum GroupPrivacy {
+  PUBLIC
+  PRIVATE
+}
+
+enum GroupJoinPolicy {
+  OPEN
+  REQUEST
+  INVITE_ONLY
+}
+
+enum GroupRole {
+  OWNER
+  MODERATOR
+  MEMBER
+}
+
+enum GroupMemberState {
+  ACTIVE
+  PENDING
+  BANNED
+  LEFT
+}
+
+enum EventMode {
+  ONLINE
+  IN_PERSON
+  HYBRID
+}
+
+enum EventStatus {
+  DRAFT
+  PUBLISHED
+  CANCELLED
+  ENDED
+}
+
+enum RsvpState {
+  GOING
+  INTERESTED
+  NOT_GOING
+}
+
+model Group {
+  id                 String          @id @default(cuid())
+  slug               String          @unique
+  kind               GroupKind
+  privacy            GroupPrivacy    @default(PUBLIC)
+  joinPolicy         GroupJoinPolicy @default(OPEN)
+  nameAr             String
+  nameEn             String
+  about              String?         @db.Text
+  coverUrl           String?
+  governorateKey     String?
+  bodyKey            String?
+  universityKey      String?
+  familyKey          String?
+  genderSegregated   Boolean         @default(false)
+  memberCount        Int             @default(0)
+  postCount          Int             @default(0)
+  createdById        String?
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+
+  members GroupMember[]
+  events  Event[]
+  rules   GroupRule[]
+
+  @@index([kind, privacy])
+  @@index([governorateKey])
+  @@index([bodyKey])
+  @@index([universityKey])
+  @@index([familyKey])
+}
+
+model GroupMember {
+  group    Group            @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  groupId  String
+  user     User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId   String
+  role     GroupRole        @default(MEMBER)
+  state    GroupMemberState @default(ACTIVE)
+  joinedAt DateTime         @default(now())
+
+  @@id([groupId, userId])
+  @@index([userId, state])
+  @@index([groupId, role])
+}
+
+model GroupRule {
+  id      String @id @default(cuid())
+  group   Group  @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  groupId String
+  ordinal Int
+  text    String @db.Text
+
+  @@unique([groupId, ordinal])
+}
+
+model Event {
+  id             String      @id @default(cuid())
+  group          Group?      @relation(fields: [groupId], references: [id], onDelete: SetNull)
+  groupId        String?
+  host           User        @relation(fields: [hostId], references: [id], onDelete: Cascade)
+  hostId         String
+  company        Company?    @relation(fields: [companyId], references: [id], onDelete: SetNull)
+  companyId      String?
+  slug           String      @unique
+  title          String
+  about          String?     @db.Text
+  mode           EventMode
+  governorateKey String?
+  venue          String?
+  joinUrl        String?
+  startsAt       DateTime
+  endsAt         DateTime
+  timezone       String      @default("Asia/Hebron")
+  capacity       Int?
+  status         EventStatus @default(DRAFT)
+  coverUrl       String?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  attendees EventAttendee[]
+
+  @@index([status, startsAt])
+  @@index([governorateKey, startsAt])
+  @@index([groupId, startsAt])
+}
+
+model EventAttendee {
+  event      Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  eventId    String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     String
+  state      RsvpState
+  attendedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@id([eventId, userId])
+  @@index([userId, state])
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// PHASE 8 — WS-07 services
+// migration: add_services
+// ═══════════════════════════════════════════════════════════════════════════
+
+enum ServicePricingModel {
+  FIXED
+  HOURLY
+  DAILY
+  PER_UNIT
+  QUOTE_ONLY
+}
+
+enum InquiryState {
+  OPEN
+  RESPONDED
+  ACCEPTED
+  DECLINED
+  CLOSED
+  EXPIRED
+}
+
+model ServiceListing {
+  id                 String              @id @default(cuid())
+  provider           User                @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  providerId         String
+  company            Company?            @relation(fields: [companyId], references: [id], onDelete: SetNull)
+  companyId          String?
+  occupationKey      String
+  slug               String              @unique
+  titleAr            String
+  titleEn            String?
+  description        String              @db.Text
+  pricingModel       ServicePricingModel
+  priceMin           Int?
+  priceMax           Int?
+  currency           String              @default("ILS")
+  unitLabelKey       String?
+  servesAtClientSite Boolean             @default(false)
+  hasWorkshop        Boolean             @default(false)
+  remoteCapable      Boolean             @default(false)
+  governorateKeys    String[]
+  turnaroundDays     Int?
+  samplePostIds      String[]
+  isActive           Boolean             @default(true)
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+
+  inquiries ServiceInquiry[]
+
+  @@index([occupationKey, isActive])
+  @@index([providerId])
+  @@index([remoteCapable, isActive])
+}
+
+model ServiceInquiry {
+  id             String         @id @default(cuid())
+  listing        ServiceListing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  listingId      String
+  client         User           @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  clientId       String
+  summary        String         @db.Text
+  governorateKey String?
+  neededBy       DateTime?
+  budgetMin      Int?
+  budgetMax      Int?
+  currency       String         @default("ILS")
+  attachmentUrls String[]
+  state          InquiryState   @default(OPEN)
+  roomId         String?
+  workProofId    String?
+  respondedAt    DateTime?
+  expiresAt      DateTime
+  createdAt      DateTime       @default(now())
+
+  @@index([listingId, state])
+  @@index([clientId, state])
+  @@index([state, expiresAt])
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// PHASE 9 — WS-08 learning
+// migration: add_learning
+// ═══════════════════════════════════════════════════════════════════════════
+
+enum LessonFormat {
+  TEXT
+  AUDIO
+  TEXT_AUDIO
+}
+
+enum PathLevel {
+  FOUNDATION
+  INTERMEDIATE
+  ADVANCED
+}
+
+enum EnrollmentState {
+  ACTIVE
+  COMPLETED
+  ABANDONED
+}
+
+model Path {
+  id                String    @id @default(cuid())
+  slug              String    @unique
+  titleAr           String
+  titleEn           String?
+  about             String    @db.Text
+  level             PathLevel
+  occupationKeys    String[]
+  familyKeys        String[]
+  coverUrl          String?
+  estimatedMin      Int
+  issuesCertificate Boolean   @default(false)
+  certificateName   String?
+  sponsorCompanyId  String?
+  isPublished       Boolean   @default(false)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  lessons     Lesson[]
+  enrollments Enrollment[]
+
+  @@index([isPublished, level])
+}
+
+model Lesson {
+  id           String           @id @default(cuid())
+  path         Path             @relation(fields: [pathId], references: [id], onDelete: Cascade)
+  pathId       String
+  ordinal      Int
+  titleAr      String
+  format       LessonFormat
+  bodyMarkdown String?          @db.Text
+  audioUrl     String?
+  audioSeconds Int?
+  estimatedMin Int
+  progress     LessonProgress[]
+
+  @@unique([pathId, ordinal])
+}
+
+model Enrollment {
+  path        Path            @relation(fields: [pathId], references: [id], onDelete: Cascade)
+  pathId      String
+  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String
+  state       EnrollmentState @default(ACTIVE)
+  startedAt   DateTime        @default(now())
+  completedAt DateTime?
+
+  @@id([pathId, userId])
+  @@index([userId, state])
+}
+
+model LessonProgress {
+  lesson      Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  lessonId    String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String
+  completedAt DateTime @default(now())
+
+  @@id([lessonId, userId])
+  @@index([userId])
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// PHASE 10 — WS-09 monetisation
+// migration: add_promotions_and_fx
+// ═══════════════════════════════════════════════════════════════════════════
+
+enum PromotionKind {
+  JOB
+  POST
+}
+
+enum PromotionStatus {
+  DRAFT
+  ACTIVE
+  PAUSED
+  ENDED
+}
+
+model Promotion {
+  id              String          @id @default(cuid())
+  kind            PromotionKind
+  company         Company?        @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  companyId       String?
+  createdById     String
+  jobId           String?
+  postId          String?
+  governorateKeys String[]
+  occupationKeys  String[]
+  budgetMinor     Int
+  spentMinor      Int             @default(0)
+  currency        String          @default("ILS")
+  startsAt        DateTime
+  endsAt          DateTime
+  status          PromotionStatus @default(DRAFT)
+  impressions     Int             @default(0)
+  clicks          Int             @default(0)
+  createdAt       DateTime        @default(now())
+
+  @@index([status, startsAt, endsAt])
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// CHANGED MODELS — apply the added fields in the phase noted on each block.
+// Nothing here drops a column; see spec/DEPRECATIONS.json for removals.
+// ═══════════════════════════════════════════════════════════════════════════
+
+// --- User (P2, P3, P4) -----------------------------------------------------
+// + phoneVerifiedAt        DateTime?
+// + vouchSuspendedUntil    DateTime?
+// + relations: follows, followerOf, feedMutes, restrictions, secondDegree,
+//   verifications, recommendationsWritten/Received, pollVotes, newsletters,
+//   newsletterSubscriptions, messageRequests(x2), outreach(x2), awayMessage,
+//   savedSearches, documents, referrals(x2), candidateNotes, groupMemberships,
+//   hostedEvents, eventRsvps, serviceListings, serviceInquiries, enrollments,
+//   lessonProgress, idempotencyRecords, suggestionDismissals(x2)
+
+// --- Profile (P3) ----------------------------------------------------------
+// + residenceCountry   String   @default("PS")
+// + originGovernorate  String?
+// + diasporaVisible    Boolean  @default(true)
+// + addressGender      AddressGender?
+// + careerBreakFrom    DateTime?
+// + careerBreakTo      DateTime?
+// + careerBreakReason  CareerBreakReason?
+// + evidenceScore      Int      @default(0)
+// + relations: certificates, languages, volunteerRoles, honors, publications,
+//   translations, viewDays
+// NOTE: `pronouns` is NOT dropped here. Two-release rule, §19.3.
+// BACKFILL: UPDATE "Profile" SET "residenceCountry" = "country";
+
+// --- Skill (P3) ------------------------------------------------------------
+// + canonicalId String?
+// + canonical   Skill?  @relation("SkillCanonical", fields: [canonicalId], references: [id], onDelete: SetNull)
+// + aliases     Skill[] @relation("SkillCanonical")
+// + foldedName  String
+// + @@index([foldedName]) @@index([canonicalId])
+// BACKFILL: compute foldedName with the SAME folding as arabic-fold.ts, cluster
+// exact matches, point aliases at the lowest-createdAt member, SUM endorsements
+// onto the canonical row while retaining per-alias counts for rollback.
+
+// --- Post (P4) -------------------------------------------------------------
+// + kind          PostKind       @default(TEXT)
+// + visibility    PostVisibility @default(CONNECTIONS)
+// + commentPolicy CommentPolicy  @default(ANYONE)
+// + status        PostStatus     @default(PUBLISHED)
+// + scheduledFor  DateTime?
+// + publishedAt   DateTime?
+// + groupId       String?
+// + editedAt      DateTime?
+// + relations: mentions, poll, article, stats
+// + @@index([status, scheduledFor]) @@index([groupId, publishedAt])
+// + @@index([authorId, publishedAt]) @@index([publishedAt])
+// BACKFILL: UPDATE "Post" SET "publishedAt" = "createdAt", "status" = 'PUBLISHED';
+// THEN switch every feed/profile query from createdAt to publishedAt IN THE
+// SAME PHASE. A half-migration puts scheduled posts in the feed at composition
+// time. Drop the two createdAt indexes ONE RELEASE LATER, not now.
+
+// --- Comment (P4) ----------------------------------------------------------
+// + relations: mentions (CommentMention[])
+
+// --- ChatRoom (P4) ---------------------------------------------------------
+// + kind       RoomKind @default(DIRECT)
+// + jobId      String?
+// + inquiryId  String?
+// + relations: request (MessageRequest?), outreach (Outreach[])
+
+// --- Message (P4) ----------------------------------------------------------
+// + kind          MessageKind @default(TEXT)
+// + voiceUrl      String?
+// + voiceSeconds  Int?
+// + voiceWaveform Int[]
+// + flaggedReason String?
+
+// --- Company (P2, P6, P7, P8, P10) ----------------------------------------
+// + verificationState  EmployerVerificationState @default(UNVERIFIED)
+// + verifiedAt         DateTime?
+// + registrationNumber String?
+// + verificationDocUrl String?
+// + verificationNote   String?  @db.Text
+// + relations: followers (via FollowerCount), pipelineStages, events,
+//   serviceListings, promotions, outreach
+// BACKFILL: verificationState = CASE WHEN verified THEN 'VERIFIED' ELSE 'UNVERIFIED' END
+// NOTE: `verified` is NOT dropped here. Two-release rule, §19.4.
+
+// --- Job (P6, P10) ---------------------------------------------------------
+// + commuteNote         String?
+// + reachabilityBand    String?
+// + applicationDeadline DateTime?
+// + openings            Int      @default(1)
+// + promoted            Boolean  @default(false)
+// + promotionId         String?
+// + relations: requirements, screeningQuestionRows, referrals
+// NOTE: `skillsRequired` and `screeningQuestions Json` are NOT dropped. See
+// spec/DEPRECATIONS.json — both are migrated then removed two releases later.
+
+// --- Application (P6) ------------------------------------------------------
+// + documentId String?
+// + referralId String?
+// + stageId    String?
+// + relations: screeningAnswerRows, stageEvents, notes, interviews
+// NOTE: expectedPay, expectedPayBasis, availableFrom, attachedProofIds,
+// portfolioPostIds and matchSnapshot ALREADY EXIST and finally get writers.
+
+// --- WorkProof (P3) --------------------------------------------------------
+// + clientPhoneHash String?
+// + raw SQL: CREATE UNIQUE INDEX "WorkProof_offplatform_unique"
+//   ON "WorkProof"("workerId","occupationKey","clientPhoneHash")
+//   WHERE "applicationId" IS NULL;
+
+// --- UserRating (P6) -------------------------------------------------------
+// + revealedAt DateTime?
+// + voidedAt   DateTime?
+// + @@index([rateeId, context, revealedAt, voidedAt])
+
+// --- Notification (P7) -----------------------------------------------------
+// + count     Int      @default(1)
+// + actorIds  String[]
+
+// --- Invoice (P10) ---------------------------------------------------------
+// + fxRate Decimal? @db.Decimal(18, 8)
+// + fxBase String?
+// CHANGED DEFAULT: currency String @default("ILS")   // was "USD"
+
+// --- Plan (P10) ------------------------------------------------------------
+// CHANGED DEFAULT: currency String @default("ILS")   // was "USD"
+
+// ═══════════════════════════════════════════════════════════════════════════
+// CHANGED ENUMS — append only. Never insert into an existing Postgres enum.
+// ═══════════════════════════════════════════════════════════════════════════
+
+// NotificationType += COMMENT_MENTION, FOLLOWED, RECOMMENDATION_REQUESTED,
+//   RECOMMENDATION_PUBLISHED, VERIFICATION_RESULT, GROUP_JOIN_APPROVED,
+//   EVENT_REMINDER, INQUIRY_RECEIVED, INTERVIEW_PROPOSED, REFERRAL_REQUESTED,
+//   NEWSLETTER_ISSUE, APPEAL_DECIDED
+// ReportReason        += HARASSMENT_SEXUAL
+// PlanCode            += EMPLOYER_DIASPORA, INSTITUTION_LEARNING
+// SignalKind          — unchanged; all eight members finally get writers
+// EmployerCreditKind  -= APPLICATION_BOOST   (no rows exist; see §19.1)
