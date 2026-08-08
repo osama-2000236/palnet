@@ -630,6 +630,8 @@
     "location": "Location",
     "apply": "Apply",
     "appliedBadge": "Applied",
+    "belowMinimumBadge": "Below minimum",
+    "belowMinimumSr": "The advertised pay is below the Palestinian minimum wage",
     "save": "Save",
     "saved": "Saved",
     "applyTitle": "Apply to {{title}}",
@@ -954,6 +956,13 @@
       "salaryMin": "Salary min",
       "salaryMax": "Salary max",
       "salaryCurrency": "Currency",
+      "belowMinimum": {
+        "title": "Pay below the minimum wage",
+        "MONTHLY": "The minimum wage in Palestine is {{amount}} per month.",
+        "DAILY": "The minimum wage in Palestine is {{amount}} per day.",
+        "HOURLY": "The minimum wage in Palestine is {{amount}} per hour.",
+        "note": "You can still post. The listing will carry a notice that the pay is below the minimum."
+      },
       "submit": "Publish",
       "submitting": "Publishing…"
     },

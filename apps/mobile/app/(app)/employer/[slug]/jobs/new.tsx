@@ -2,7 +2,16 @@
 // Same field contract and POST /companies/:id/jobs body; enum labels reuse
 // the jobs.typeLabels / jobs.locationLabels strings the jobs filters use.
 
-import { Company, EmployerJob, JobLocationMode, JobType } from "@baydar/shared";
+import {
+  belowMinimumWage,
+  Company,
+  EmployerJob,
+  formatMinimumWage,
+  JobLocationMode,
+  JobType,
+  minimumWageFloor,
+  PayBasis,
+} from "@baydar/shared";
 import {
   Alert,
   AppHeader,
@@ -48,7 +57,7 @@ const EMPTY: FormState = {
 
 export default function NewJobScreen(): JSX.Element {
   const styles = useStyles();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const router = useRouter();
   const { slug } = useLocalSearchParams<{ slug: string }>();
 
@@ -70,6 +79,20 @@ export default function NewJobScreen(): JSX.Element {
   }, [slug, t]);
 
   const valid = form.title.trim().length >= 3 && form.description.trim().length >= 30;
+
+  // The form has no pay-basis control yet, so every job it creates takes
+  // CreateJobBody's MONTHLY default. Phase 2 (MATCHING.md §2) adds the control
+  // and this reads `form.payBasis` instead.
+  const payBasis = PayBasis.MONTHLY;
+  // Warned, never blocked — same reasoning as the web twin.
+  const belowMinimum = belowMinimumWage({
+    type: form.type,
+    payBasis,
+    salaryMin: form.salaryMin ? Number(form.salaryMin) : null,
+    salaryMax: form.salaryMax ? Number(form.salaryMax) : null,
+    salaryCurrency: form.salaryCurrency || "ILS",
+  });
+  const floor = minimumWageFloor(form.type, payBasis);
 
   const onSubmit = async (): Promise<void> => {
     if (!companyId || !valid || submitting) return;
@@ -179,6 +202,15 @@ export default function NewJobScreen(): JSX.Element {
                 accessibilityLabel={t("employer.newJob.salaryCurrency")}
               />
             </View>
+            {belowMinimum && floor !== null ? (
+              <Alert
+                kind="warning"
+                title={t("employer.newJob.belowMinimum.title")}
+                body={`${t(`employer.newJob.belowMinimum.${payBasis}`, {
+                  amount: formatMinimumWage(floor, i18n.language),
+                })} ${t("employer.newJob.belowMinimum.note")}`}
+              />
+            ) : null}
             {error ? (
               <Alert body={error} cta={t("common.retry")} onAction={() => void onSubmit()} />
             ) : null}

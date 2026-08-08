@@ -11,11 +11,13 @@
 
 import {
   PublicJob as PublicJobSchema,
+  belowMinimumWage,
   formatSalaryRange,
   type PublicJob,
   jobSource,
   jobSourceInitial,
 } from "@baydar/shared";
+import { Badge } from "@baydar/ui-web";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -137,8 +139,19 @@ export default async function PublicJobPage(props: {
               {salary ? (
                 <p className="text-brand-700 mt-1 text-sm font-semibold">{salary}</p>
               ) : null}
+              {/* Statutory floor, Council of Ministers Resolution No. 4 of 2021.
+                  This is the page that lands in a WhatsApp group, so it is the
+                  one where the seeker most needs the number qualified. */}
+              {belowMinimumWage(job) ? (
+                <p className="mt-1">
+                  <Badge tone="warning" srLabel={tJobs("belowMinimumSr")}>
+                    {tJobs("belowMinimumBadge")}
+                  </Badge>
+                </p>
+              ) : null}
             </div>
           </div>
+
 
           {job.isActive ? (
             <div className="mt-5 flex flex-wrap items-center gap-3">

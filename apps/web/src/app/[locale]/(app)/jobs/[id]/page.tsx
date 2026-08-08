@@ -9,6 +9,7 @@
 //     The endpoint is idempotent, so retrying after a network error is safe.
 
 import {
+  belowMinimumWage,
   Bookmark,
   BookmarkType,
   formatSalaryRange,
@@ -17,7 +18,7 @@ import {
   jobSource,
   jobSourceInitial,
 } from "@baydar/shared";
-import { Button, Icon, Surface } from "@baydar/ui-web";
+import { Badge, Button, Icon, Surface } from "@baydar/ui-web";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
@@ -193,6 +194,14 @@ export default function JobDetailPage(): JSX.Element {
             </Link>
             <p className="text-ink-muted mt-1 text-xs">{metaParts.join(" · ")}</p>
             {salary ? <p className="text-ink mt-1 text-sm font-semibold">{salary}</p> : null}
+            {/* Statutory floor, Council of Ministers Resolution No. 4 of 2021. */}
+            {belowMinimumWage(job) ? (
+              <p className="mt-1">
+                <Badge tone="warning" srLabel={t("belowMinimumSr")}>
+                  {t("belowMinimumBadge")}
+                </Badge>
+              </p>
+            ) : null}
           </div>
           <div className="flex shrink-0 flex-col items-end gap-2">
             <Button
