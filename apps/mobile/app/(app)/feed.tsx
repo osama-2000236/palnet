@@ -25,6 +25,7 @@ import { apiFetch, apiFetchPage } from "@/lib/api";
 import { track } from "@/lib/analytics";
 import { getAccessToken, readSession } from "@/lib/session";
 
+import { OutboxTrayHost } from "@/components/OutboxTrayHost";
 import { FeedTopBar, JobsEntry, ProfileSummary } from "@/screens/feed/FeedParts";
 import { useFeedStyles } from "@/screens/feed/styles";
 
@@ -133,6 +134,9 @@ export default function FeedScreen(): JSX.Element {
           keyExtractor={(p) => p.id}
           ListHeaderComponent={
             <>
+              {/* Above the composer: a member who lost a post is here to find
+                  it, not to write another one. */}
+              <OutboxTrayHost />
               <ComposerEntry
                 user={
                   profile

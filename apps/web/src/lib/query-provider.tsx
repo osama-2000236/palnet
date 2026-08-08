@@ -4,6 +4,7 @@ import { isServer, QueryClient, QueryClientProvider } from "@tanstack/react-quer
 import { useEffect, type ReactNode } from "react";
 
 import { startBandwidthDetection } from "./bandwidth";
+import { startOutboxDrain } from "./outbox";
 
 // Standard Next.js App Router pattern:
 //   * On the server, every request gets a fresh client so cached data
@@ -43,6 +44,7 @@ export function QueryProvider({ children }: { children: ReactNode }): JSX.Elemen
   // client boundary every authenticated and public page passes through, and
   // the connection hint has to be current before the first query fires.
   useEffect(() => startBandwidthDetection(), []);
+  useEffect(() => startOutboxDrain(), []);
 
   return <QueryClientProvider client={client}>{children}</QueryClientProvider>;
 }

@@ -26,6 +26,8 @@ import {
   Surface,
 } from "@baydar/ui-web";
 import { Composer } from "@/components/Composer";
+import { OutboxTrayHost } from "@/components/OutboxTrayHost";
+import { FeedErrorState } from "./_components/FeedErrorState";
 import { PostCard } from "@/components/PostCard";
 import { RightRail } from "../components/RightRail";
 import { OnboardingDoneCard } from "./OnboardingDoneCard";
@@ -170,6 +172,11 @@ function FeedInner(): JSX.Element {
           <h1 className="text-ink mb-4 text-3xl font-bold">{t("title")}</h1>
           <OnboardingDoneCard forceVisible={onboarded} onDismiss={clearOnboardingQuery} />
           {me ? <ProfileCompletenessCard profile={me} /> : null}
+          {/* Above the composer: a member who lost a post is here to find it,
+              not to write another one. */}
+          <div className="mb-4">
+            <OutboxTrayHost />
+          </div>
           <div className="mb-4">
             <Composer
               me={me}
@@ -274,26 +281,4 @@ async function fetchFeedPage(after: string | null) {
   if (after) qs.set("after", after);
   const path = `/feed?${qs.toString()}`;
   return apiFetchPage(path, PostsPage, { token });
-}
-
-function FeedErrorState({
-  title,
-  body,
-  retryLabel,
-  onRetry,
-  loading,
-}: {
-  title: string;
-  body: string;
-  retryLabel: string;
-  onRetry: () => void;
-  loading: boolean;
-}): JSX.Element {
-  return (
-    <Surface variant="tinted" padding="6" className="flex flex-col items-start gap-2">
-      <h2 className="text-ink text-sm font-semibold">{title}</h2>
-      <p className="text-ink-muted text-sm">{body}</p>
-      <RetryChip onRetry={onRetry} label={retryLabel} loading={loading} />
-    </Surface>
-  );
 }

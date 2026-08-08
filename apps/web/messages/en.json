@@ -1309,6 +1309,18 @@
       "light": "Data mode: light. Images load on request and pages are shorter. Tap to switch.",
       "normal": "Data mode: normal. Medium-sized images. Tap to switch.",
       "full": "Data mode: full. Highest-quality images. Tap to switch."
+    },
+    "outbox": {
+      "title": "Not sent",
+      "queued": "Sending…",
+      "retry": "Try again",
+      "discard": "Discard",
+      "kinds": {
+        "POST": "Post",
+        "MESSAGE": "Message",
+        "APPLICATION": "Job application",
+        "WORK_PROOF_CONFIRM": "Work confirmation"
+      }
     }
   }
 }

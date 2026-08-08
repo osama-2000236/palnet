@@ -79,6 +79,13 @@ export { RecordCard } from "./RecordCard";
 export type { RecordCardProps } from "./RecordCard";
 export { ComposerEntry } from "./ComposerEntry";
 export type { ComposerEntryProps } from "./ComposerEntry";
+export { OutboxTray } from "./OutboxTray";
+export type {
+  OutboxTrayEntry,
+  OutboxTrayLabels,
+  OutboxTrayProps,
+  OutboxTrayState,
+} from "./OutboxTray";
 export { PostCard } from "./PostCard";
 export type { PostCardAction, PostCardProps } from "./PostCard";
 export { ReactionGlyph } from "./ReactionGlyph";

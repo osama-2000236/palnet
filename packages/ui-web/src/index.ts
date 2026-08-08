@@ -38,6 +38,13 @@ export type { AppShellProps, AppShellRoute, AppShellLabels } from "./AppShell";
 // ── Composition ──────────────────────────────────────────────────────
 export { Composer } from "./Composer";
 export type { ComposerProps, ComposerLabels, ComposerMedia } from "./Composer";
+export { OutboxTray } from "./OutboxTray";
+export type {
+  OutboxTrayEntry,
+  OutboxTrayLabels,
+  OutboxTrayProps,
+  OutboxTrayState,
+} from "./OutboxTray";
 export { PostCard } from "./PostCard";
 export type {
   PostCardProps,

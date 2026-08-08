@@ -4,12 +4,21 @@
 // network concerns: profile fetch (for the avatar), media upload, post
 // creation. The shared component owns the UI, state machine, and i18n.
 
-import { CreatePostBody, MediaKind, type MediaRef, Post, Profile } from "@baydar/shared";
+import {
+  CreatePostBody,
+  isPermanentRejection,
+  MediaKind,
+  type MediaRef,
+  OutboxKind,
+  Post,
+  Profile,
+} from "@baydar/shared";
 import { Composer as ComposerShell, type ComposerMedia } from "@baydar/ui-web";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 
 import { apiFetch, ApiRequestError } from "@/lib/api";
+import { outbox } from "@/lib/outbox";
 import { getAccessToken } from "@/lib/session";
 import { uploadFile } from "@/lib/uploads";
 
@@ -27,10 +36,15 @@ export function Composer({
   const t = useTranslations("composer");
   const tAuth = useTranslations("auth");
   const tCommon = useTranslations("common");
+  const tConnection = useTranslations("connection");
 
   const [media, setMedia] = useState<ComposerMedia[]>([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Not an error: the post is queued and will go out on its own. Saying
+  // "something went wrong" for a post that is safely stored would teach members
+  // to write it again, which is how one post becomes two.
+  const [queued, setQueued] = useState(false);
 
   // Clear the error when the user begins a new action.
   useEffect(() => {
@@ -85,6 +99,7 @@ export function Composer({
     const token = getAccessToken();
     if (!token) return;
     setBusy(true);
+    setQueued(false);
     try {
       const post = await apiFetch("/posts", Post, {
         method: "POST",
@@ -94,14 +109,24 @@ export function Composer({
       onPosted(post);
       setMedia([]);
     } catch (err) {
-      if (err instanceof ApiRequestError) {
-        const key = `errors.${err.code}`;
-        try {
-          setError(tAuth(key as Parameters<typeof tAuth>[0]));
-        } catch {
-          setError(tCommon("genericError"));
-        }
-      } else {
+      // A post the network lost is not the same as a post the server refused.
+      // The first goes to the outbox and is retried for the next 48 hours; the
+      // second is the member's to fix, and queueing it would only mean seven
+      // more failures on a 2G connection before the same message arrives.
+      if (
+        !(err instanceof ApiRequestError) ||
+        err.status === 0 ||
+        !isPermanentRejection(err.status)
+      ) {
+        await outbox.enqueue(OutboxKind.POST, parsed.data);
+        setMedia([]);
+        setQueued(true);
+        return;
+      }
+      const key = `errors.${err.code}`;
+      try {
+        setError(tAuth(key as Parameters<typeof tAuth>[0]));
+      } catch {
         setError(tCommon("genericError"));
       }
     } finally {
@@ -137,7 +162,7 @@ export function Composer({
       }}
       media={media}
       busy={busy}
-      error={error}
+      error={error ?? (queued ? tConnection("outbox.queued") : null)}
       onSubmit={onSubmit}
       onPickMedia={onPickMedia}
       onRemoveMedia={onRemoveMedia}

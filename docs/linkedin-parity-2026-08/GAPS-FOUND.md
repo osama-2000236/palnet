@@ -125,3 +125,66 @@ The other six endpoints in §15.2's table are recorded at the top of that spec
 and are owed; each lands with the phase that reshapes its DTO.
 
 **Sites:** `apps/api/src/modules/feed/payload-budget.spec.ts`.
+
+---
+
+## GAP-04 — the outbox tray has no key for what a row is
+
+**Phase:** P1
+**Needed:** how a failed row names the thing that failed.
+**Should have been decided by:** `spec/i18n-keys.manifest.json`, which
+enumerates 25 keys for the `connection` namespace including `outbox.title`,
+`outbox.retry` and `outbox.discard`, but nothing for the four kinds.
+
+**What the spec missed.** A row reading only «لم تُرسل» asks the member to
+guess what they lost. The tray needs a word for each of `POST`, `MESSAGE`,
+`APPLICATION` and `WORK_PROOF_CONFIRM`.
+
+**Options:**
+
+1. Reuse an existing namespace's nouns (`composer.title`, `messaging.title`…).
+2. Add `connection.outbox.kinds.*`, four keys, alongside the manifest's set.
+3. Show the raw enum member.
+
+**Chosen: 2.** Option 1 borrows strings written for other surfaces and couples
+this tray to their register — «إنشاء منشور» is a button, not a label for a row.
+Option 3 shows a member the word `WORK_PROOF_CONFIRM`.
+
+Three of the manifest's keys were **not** added: `outbox.sending`,
+`outbox.failed` and `outbox.empty`. The tray shows failed rows and a count of
+pending ones, and renders nothing at all when there is nothing to decide — so
+those three would be dead keys, which `pnpm check:i18n` correctly refuses.
+
+**Sites:** the `connection.outbox` block in all four catalogs.
+
+---
+
+## GAP-05 — mobile has no SQLite, and does not need one
+
+**Phase:** P1
+**Needed:** the mobile outbox's storage.
+**Should have been decided by:** §15.4, which specifies `expo-sqlite`.
+
+**What the spec missed.** `expo-sqlite` is not a dependency of this app, and
+the thing being stored is a list of tens of small objects that is rewritten
+whole on every change. There is nothing to query.
+
+**Options:**
+
+1. Add `expo-sqlite` as specified.
+2. One JSON file via `expo-file-system`, which is already a dependency.
+3. `expo-secure-store`, which the app already uses for preferences.
+
+**Chosen: 2.** Option 1 adds a dependency, a schema and a migration path to
+store one array — and `CLAUDE.md` says to check whether the monorepo already
+solves it first. Option 3 is the wrong tool twice over: SecureStore is for
+secrets, is size-limited, and a queue is neither.
+
+The file goes in the document directory rather than the cache, because the
+system reclaims the cache under storage pressure and a queue of unsent posts
+must not be reclaimable. The write is not atomic — `File` has no rename — so a
+kill mid-write loses the queue; a corrupted file reads as empty rather than
+throwing into the composer, and the member can see and re-send. Add SQLite
+when the queue needs to be queried rather than read.
+
+**Sites:** `apps/mobile/src/lib/outbox-storage.ts`.

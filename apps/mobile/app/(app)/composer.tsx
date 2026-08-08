@@ -1,7 +1,9 @@
 import {
   CreatePostBody,
   formatNumber,
+  isPermanentRejection,
   MediaKind,
+  OutboxKind,
   Post,
   Profile as ProfileSchema,
   type MediaRef,
@@ -16,6 +18,7 @@ import {
   nativeTokens,
   type AvatarUser,
   useThemeTokens,
+  useToast,
 } from "@baydar/ui-native";
 import { Image } from "expo-image";
 import * as ImagePicker from "expo-image-picker";
@@ -25,7 +28,8 @@ import { useTranslation } from "react-i18next";
 import { KeyboardAvoidingView, Platform, Pressable, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { apiFetch } from "@/lib/api";
+import { ApiRequestError, apiFetch } from "@/lib/api";
+import { outbox } from "@/lib/outbox";
 import { apiErrorMessage } from "@/lib/api-errors";
 import { track } from "@/lib/analytics";
 import { successHaptic, tapHaptic } from "@/lib/haptics";
@@ -41,6 +45,7 @@ export default function ComposerScreen(): JSX.Element {
   const c = useThemeTokens().color;
   const styles = useStyles();
   const { t, i18n } = useTranslation();
+  const { showToast } = useToast();
   const [body, setBody] = useState("");
   const [media, setMedia] = useState<MediaRef[]>([]);
   const [busy, setBusy] = useState(false);
@@ -152,6 +157,22 @@ export default function ComposerScreen(): JSX.Element {
       setMedia([]);
       router.replace("/(app)/feed");
     } catch (caught) {
+      // A post the network lost is not the same as a post the server refused.
+      // The first goes to the outbox and is retried for the next 48 hours; the
+      // second is the member's to fix, and queueing it would only mean seven
+      // more failures on 2G before the same message arrives.
+      const permanent =
+        caught instanceof ApiRequestError &&
+        caught.status > 0 &&
+        isPermanentRejection(caught.status);
+      if (!permanent) {
+        await outbox.enqueue(OutboxKind.POST, parsed.data);
+        setBody("");
+        setMedia([]);
+        showToast({ message: t("connection.outbox.queued"), kind: "info" });
+        router.replace("/(app)/feed");
+        return;
+      }
       setError(apiErrorMessage(t, caught));
     } finally {
       setBusy(false);

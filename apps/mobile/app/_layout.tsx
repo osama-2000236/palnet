@@ -21,6 +21,7 @@ import { LoadingIntro } from "@/components/LoadingIntro";
 import { OfflineBanner } from "@/components/OfflineBanner";
 import { initAnalytics } from "@/lib/analytics";
 import { startBandwidthDetection } from "@/lib/bandwidth";
+import { startOutboxDrain } from "@/lib/outbox";
 import { routeFromUrl } from "@/lib/linking";
 import { initObservability, wrapApp } from "@/lib/observability";
 import { installNotificationHandlers } from "@/lib/push";
@@ -104,6 +105,7 @@ function RootLayout(): JSX.Element | null {
   // collapsing them would mean a 2G member and a wifi member get the same
   // payloads for as long as both are technically online.
   useEffect(() => startBandwidthDetection(), []);
+  useEffect(() => startOutboxDrain(), []);
 
   useEffect(() => {
     void NetInfo.fetch().then((state) => {
