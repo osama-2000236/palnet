@@ -12,8 +12,9 @@
  *   GET /notifications (20)                 9 KB   2.4 s
  *   GET /search/* (20 hits)                12 KB   3.2 s
  *
- * This file gates `GET /feed`. The other six are owed and are listed above so
- * the table has one home; each lands with the phase that reshapes its DTO.
+ * This file gates `GET /feed`. The other six are in
+ * `apps/api/src/common/payload-budget.spec.ts`; the table is repeated there so
+ * neither file has to be read to understand the other.
  *
  * Lives beside the endpoint it measures, in `apps/api`, because
  * `packages/shared` compiles against `lib: ["ES2022"]` and no Node types —
