@@ -14,6 +14,7 @@ import {
   Alert,
   AppHeader,
   Button,
+  Chip,
   Icon,
   Surface,
   nativeTokens,
@@ -36,6 +37,8 @@ import { getAccessToken } from "@/lib/session";
 
 import { ApplyCard } from "@/screens/jobs/ApplyCard";
 import { useStyles } from "@/screens/jobs/detailStyles";
+import { JobOutcome } from "@/screens/jobs/JobOutcome";
+import { JobDescription, JobSkills } from "@/screens/jobs/JobSections";
 
 export default function JobDetailScreen(): JSX.Element {
   const c = useThemeTokens().color;
@@ -262,6 +265,8 @@ export default function JobDetailScreen(): JSX.Element {
           </View>
         </Surface>
 
+        <JobOutcome job={job} />
+
         {applyOpen && !job.viewer.hasApplied ? (
           <ApplyCard
             title={job.title}
@@ -275,23 +280,8 @@ export default function JobDetailScreen(): JSX.Element {
           />
         ) : null}
 
-        <Surface variant="card" padding="6">
-          <Text style={styles.section}>{t("jobs.description")}</Text>
-          <Text style={styles.body}>{job.description}</Text>
-        </Surface>
-
-        {job.skillsRequired.length > 0 ? (
-          <Surface variant="card" padding="6">
-            <Text style={styles.section}>{t("jobs.skills")}</Text>
-            <View style={{ flexDirection: "row", flexWrap: "wrap", gap: nativeTokens.space[1] }}>
-              {job.skillsRequired.map((s) => (
-                <View key={s} style={styles.chip}>
-                  <Text style={styles.chipText}>{s}</Text>
-                </View>
-              ))}
-            </View>
-          </Surface>
-        ) : null}
+        <JobDescription job={job} />
+        <JobSkills job={job} />
       </ScrollView>
     </SafeAreaView>
   );

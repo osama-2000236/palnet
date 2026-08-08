@@ -630,6 +630,7 @@
     "apply": "قدّم طلبك",
     "appliedBadge": "تم التقديم",
     "belowMinimumBadge": "أقل من الحد الأدنى",
+    "rejectedTitle": "لم يتم اختيارك لهذه الوظيفة",
     "belowMinimumSr": "الأجر المعلن أقل من الحد الأدنى للأجور في فلسطين",
     "save": "حفظ",
     "saved": "محفوظ",
@@ -1075,6 +1076,25 @@
       "emptyFiltered": "لا يوجد متقدمون بهذه الحالة.",
       "emptyFilteredCta": "عرض كل المتقدمين",
       "shareJob": "انسخ رابط الوظيفة"
+    },
+    "reject": {
+      "title": "سبب الرفض",
+      "body": "سيظهر السبب للمتقدّم.",
+      "legend": "اختر السبب",
+      "confirm": "رفض الطلب",
+      "noteLabel": "توضيح",
+      "notePlaceholder": "اكتب سببًا مختصرًا",
+      "noteHelper": "يظهر للمتقدّم.",
+      "rejectedFor": "سبب الرفض:"
+    },
+    "rejectionReasons": {
+      "POSITION_FILLED": "تم شغل الوظيفة",
+      "EXPERIENCE_INSUFFICIENT": "الخبرة غير كافية",
+      "SKILLS_MISMATCH": "المهارات المطلوبة مختلفة",
+      "LOCATION": "الموقع أو المسافة",
+      "QUALIFICATION_MISSING": "مؤهل أو رخصة مطلوبة غير متوفرة",
+      "APPLIED_AFTER_CLOSING": "التقديم بعد إغلاق الوظيفة",
+      "OTHER": "سبب آخر"
     },
     "newJob": {
       "title": "وظيفة جديدة",

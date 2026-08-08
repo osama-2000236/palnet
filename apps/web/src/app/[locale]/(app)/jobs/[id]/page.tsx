@@ -17,8 +17,9 @@ import {
   type Job,
   jobSource,
   jobSourceInitial,
+  rejectionSummary,
 } from "@baydar/shared";
-import { Badge, Button, Icon, Surface } from "@baydar/ui-web";
+import { Alert, Badge, Button, Icon, Surface } from "@baydar/ui-web";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
@@ -33,6 +34,7 @@ import { ShareJobButtons } from "./_components/ShareJobButtons";
 
 export default function JobDetailPage(): JSX.Element {
   const t = useTranslations("jobs");
+  const tReasons = useTranslations("employer.rejectionReasons");
   const tErr = useTranslations("errors");
   const locale = useLocale();
   const params = useParams<{ id: string }>();
@@ -232,6 +234,19 @@ export default function JobDetailPage(): JSX.Element {
           <ShareJobButtons jobId={job.id} title={`${job.title} — ${jobSource(job).name}`} />
         </div>
       </Surface>
+
+      {/* The applicant's own outcome. There is no application-history screen,
+          so this page is where someone comes back to find out what happened —
+          and a rejection with no reason is the complaint the reason exists to
+          answer. */}
+      {job.viewer.rejectionReason ? (
+        <Alert
+          className="mt-4"
+          kind="info"
+          title={t("rejectedTitle")}
+          body={rejectionSummary(tReasons(job.viewer.rejectionReason), job.viewer.rejectionNote)}
+        />
+      ) : null}
 
       <Surface variant="card" padding="6" className="mt-4">
         <h2 className="text-ink mb-2 text-sm font-semibold">{t("description")}</h2>

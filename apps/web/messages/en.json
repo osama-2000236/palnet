@@ -630,6 +630,7 @@
     "apply": "Apply",
     "appliedBadge": "Applied",
     "belowMinimumBadge": "Below minimum",
+    "rejectedTitle": "You were not selected for this role",
     "belowMinimumSr": "The advertised pay is below the Palestinian minimum wage",
     "save": "Save",
     "saved": "Saved",
@@ -1075,6 +1076,25 @@
       "emptyFiltered": "No applicants have this status.",
       "emptyFilteredCta": "Show all applicants",
       "shareJob": "Copy job link"
+    },
+    "reject": {
+      "title": "Reason for rejection",
+      "body": "The applicant will see this reason.",
+      "legend": "Choose a reason",
+      "confirm": "Reject application",
+      "noteLabel": "Details",
+      "notePlaceholder": "Write a short reason",
+      "noteHelper": "Shown to the applicant.",
+      "rejectedFor": "Reason for rejection:"
+    },
+    "rejectionReasons": {
+      "POSITION_FILLED": "Position filled",
+      "EXPERIENCE_INSUFFICIENT": "Experience not sufficient",
+      "SKILLS_MISMATCH": "Different skills needed",
+      "LOCATION": "Location or commute",
+      "QUALIFICATION_MISSING": "Required qualification or licence missing",
+      "APPLIED_AFTER_CLOSING": "Applied after closing",
+      "OTHER": "Other"
     },
     "newJob": {
       "title": "New job",

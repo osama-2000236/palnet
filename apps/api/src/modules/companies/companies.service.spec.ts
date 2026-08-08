@@ -101,6 +101,8 @@ function applicantRow(overrides: Partial<Record<string, unknown>> = {}) {
     jobId: "j_1",
     applicantId: "u_app",
     status: "SUBMITTED" as ApplicationStatus,
+    rejectionReason: null,
+    rejectionNote: null,
     resumeUrl: null,
     coverLetter: null,
     createdAt: new Date(),
@@ -444,6 +446,47 @@ describe("CompaniesService", () => {
       expect(prisma.application.update).not.toHaveBeenCalled();
       expect(notifications.notify).not.toHaveBeenCalled();
       expect(karama.awardOnce).not.toHaveBeenCalled();
+    });
+
+    // The reason is part of what the applicant is told, so an employer
+    // correcting it is a real edit. Comparing status alone silently dropped it.
+    it("is not a no-op when only the rejection reason changed", async () => {
+      prisma.application.findFirst.mockResolvedValue(
+        applicantRow({ status: "REJECTED", rejectionReason: "POSITION_FILLED" }),
+      );
+      prisma.application.update.mockResolvedValue(
+        applicantRow({ status: "REJECTED", rejectionReason: "SKILLS_MISMATCH" }),
+      );
+
+      await service.updateApplicantStatus("co_1", "j_1", "app_1", "u_actor", {
+        status: "REJECTED",
+        rejectionReason: "SKILLS_MISMATCH",
+      });
+
+      expect(prisma.application.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: { status: "REJECTED", rejectionReason: "SKILLS_MISMATCH", rejectionNote: null },
+        }),
+      );
+    });
+
+    // An un-rejected applicant must not keep a reason for a rejection that no
+    // longer exists — the seeker reads it off the job page.
+    it("clears the reason on any transition away from REJECTED", async () => {
+      prisma.application.findFirst.mockResolvedValue(
+        applicantRow({ status: "REJECTED", rejectionReason: "OTHER", rejectionNote: "قديم" }),
+      );
+      prisma.application.update.mockResolvedValue(applicantRow({ status: "SHORTLISTED" }));
+
+      await service.updateApplicantStatus("co_1", "j_1", "app_1", "u_actor", {
+        status: "SHORTLISTED",
+      });
+
+      expect(prisma.application.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: { status: "SHORTLISTED", rejectionReason: null, rejectionNote: null },
+        }),
+      );
     });
   });
 });

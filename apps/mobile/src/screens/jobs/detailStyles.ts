@@ -95,16 +95,11 @@ export function makeStyles(c: NativeTheme["color"]) {
       fontWeight: "700" as const,
       fontFamily: nativeTokens.type.family.sans,
     },
-    chip: {
-      paddingHorizontal: nativeTokens.space[2],
-      paddingVertical: nativeTokens.space[1],
-      borderRadius: nativeTokens.radius.full,
-      backgroundColor: c.surfaceSubtle,
-    },
-    chipText: {
-      color: c.ink,
-      fontSize: nativeTokens.type.scale.caption.size,
-      fontFamily: nativeTokens.type.family.sans,
+    // The chip itself is the kit's `Chip`; this only lays the row out.
+    skillsRow: {
+      flexDirection: "row" as const,
+      flexWrap: "wrap" as const,
+      gap: nativeTokens.space[1],
     },
   };
 }

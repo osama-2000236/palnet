@@ -177,6 +177,19 @@ enum ApplicationStatus {
   WITHDRAWN
 }
 
+// Why an application was rejected. Required on every REJECTED transition —
+// silence is the dominant complaint in a market with far more applicants than
+// openings, and it is the cheapest one to fix.
+enum RejectionReason {
+  POSITION_FILLED
+  EXPERIENCE_INSUFFICIENT
+  SKILLS_MISMATCH
+  LOCATION
+  QUALIFICATION_MISSING
+  APPLIED_AFTER_CLOSING
+  OTHER
+}
+
 enum ReportReason {
   SPAM
   HARASSMENT
@@ -849,6 +862,10 @@ model Application {
   // later profile edit or a weight change cannot rewrite a past decision.
   matchSnapshot    Json?
   status           ApplicationStatus @default(SUBMITTED)
+  // Set together, cleared together, and only ever on REJECTED. The note is the
+  // free text OTHER needs to mean anything to the applicant.
+  rejectionReason  RejectionReason?
+  rejectionNote    String?
   createdAt        DateTime          @default(now())
   updatedAt        DateTime          @updatedAt
 

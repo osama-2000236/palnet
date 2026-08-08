@@ -191,6 +191,25 @@ export const ApplicationStatus = {
 } as const;
 export type ApplicationStatus = (typeof ApplicationStatus)[keyof typeof ApplicationStatus];
 
+/**
+ * Why an application was rejected. Required on every REJECTED transition — in a
+ * market with far more applicants than openings, silence is the dominant
+ * complaint and the cheapest one to fix.
+ */
+export const RejectionReason = {
+  POSITION_FILLED: "POSITION_FILLED",
+  EXPERIENCE_INSUFFICIENT: "EXPERIENCE_INSUFFICIENT",
+  SKILLS_MISMATCH: "SKILLS_MISMATCH",
+  LOCATION: "LOCATION",
+  QUALIFICATION_MISSING: "QUALIFICATION_MISSING",
+  APPLIED_AFTER_CLOSING: "APPLIED_AFTER_CLOSING",
+  OTHER: "OTHER",
+} as const;
+export type RejectionReason = (typeof RejectionReason)[keyof typeof RejectionReason];
+
+/** Free text is what makes OTHER mean anything, so it is required with it. */
+export const REJECTION_NOTE_MAX = 500;
+
 export const ReportReason = {
   SPAM: "SPAM",
   HARASSMENT: "HARASSMENT",
