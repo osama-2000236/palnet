@@ -29,6 +29,7 @@ export function AppShell({
   onOpenSettings,
   onSignOut,
   children,
+  headerSlot,
 }: AppShellProps): JSX.Element {
   const searchInputRef = useRef<HTMLInputElement | null>(null);
   const navRef = useRef<HTMLElement | null>(null);
@@ -98,6 +99,8 @@ export function AppShell({
             }}
             containerClassName="flex-1 sm:max-w-[320px]"
           />
+
+          {headerSlot ? <div className="hidden shrink-0 sm:block">{headerSlot}</div> : null}
 
           <AppShellNav
             navRef={navRef}

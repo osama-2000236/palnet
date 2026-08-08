@@ -1158,5 +1158,17 @@
       "selected": "Selected",
       "billingLink": "Billing"
     }
+  },
+  "connection": {
+    "mode": {
+      "light": "Light",
+      "normal": "Normal",
+      "full": "Full"
+    },
+    "modeHelp": {
+      "light": "Data mode: light. Images load on request and pages are shorter. Tap to switch.",
+      "normal": "Data mode: normal. Medium-sized images. Tap to switch.",
+      "full": "Data mode: full. Highest-quality images. Tap to switch."
+    }
   }
 }

@@ -15,6 +15,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { ThemeProvider, ToastProvider } from "@baydar/ui-native";
 import { useTranslation } from "react-i18next";
 
+import { BandwidthChipHost } from "@/components/BandwidthChipHost";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { LoadingIntro } from "@/components/LoadingIntro";
 import { OfflineBanner } from "@/components/OfflineBanner";
@@ -136,6 +137,7 @@ function RootLayout(): JSX.Element | null {
               </ErrorBoundary>
             </ToastProvider>
           </QueryProvider>
+          <BandwidthChipHost />
           <OfflineBanner />
         </SafeAreaProvider>
       </ThemeProvider>

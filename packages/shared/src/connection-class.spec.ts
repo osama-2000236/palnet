@@ -7,6 +7,7 @@ import {
   connectionClassFromNetInfo,
   kilobytes,
   modeForConnection,
+  nextBandwidthMode,
   policyFor,
 } from "./connection-class";
 
@@ -129,5 +130,22 @@ describe("kilobytes", () => {
     expect(kilobytes(1024)).toBe(1);
     expect(kilobytes(1025)).toBe(2);
     expect(kilobytes(2765)).toBe(3);
+  });
+});
+
+describe("the tap cycle", () => {
+  it("goes light → normal → full → light", () => {
+    expect(nextBandwidthMode(BandwidthMode.LIGHT)).toBe(BandwidthMode.NORMAL);
+    expect(nextBandwidthMode(BandwidthMode.NORMAL)).toBe(BandwidthMode.FULL);
+    expect(nextBandwidthMode(BandwidthMode.FULL)).toBe(BandwidthMode.LIGHT);
+  });
+
+  // Three taps return you to where you started, on both platforms, because
+  // there is one implementation. A per-kit copy is how "tap again" comes to
+  // mean something different on a phone.
+  it("returns to the starting mode after one full cycle", () => {
+    let mode: BandwidthMode = BandwidthMode.NORMAL;
+    for (let i = 0; i < 3; i += 1) mode = nextBandwidthMode(mode);
+    expect(mode).toBe(BandwidthMode.NORMAL);
   });
 });

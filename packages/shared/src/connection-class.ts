@@ -105,6 +105,19 @@ export function modeForConnection(connection: ConnectionClass): BandwidthMode {
 
 export const policyFor = (mode: BandwidthMode): BandwidthPolicy => BANDWIDTH_POLICY[mode];
 
+const MODE_CYCLE: BandwidthMode[] = [BandwidthMode.LIGHT, BandwidthMode.NORMAL, BandwidthMode.FULL];
+
+/**
+ * The next mode when the chip is tapped.
+ *
+ * Here rather than in the two kits because it is a decision, and a decision
+ * duplicated in `ui-web` and `ui-native` is a decision that will eventually
+ * differ — "tap again" must not mean something else on a phone.
+ */
+export function nextBandwidthMode(mode: BandwidthMode): BandwidthMode {
+  return MODE_CYCLE[(MODE_CYCLE.indexOf(mode) + 1) % MODE_CYCLE.length]!;
+}
+
 /**
  * Web: `navigator.connection.effectiveType`.
  *

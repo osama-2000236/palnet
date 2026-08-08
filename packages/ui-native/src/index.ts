@@ -25,6 +25,8 @@ export { Button } from "./Button";
 export type { ButtonProps, ButtonVariant, ButtonSize } from "./Button";
 export { Checkbox } from "./Checkbox";
 export type { CheckboxProps } from "./Checkbox";
+export { BandwidthChip } from "./BandwidthChip";
+export type { BandwidthChipMode, BandwidthChipProps } from "./BandwidthChip";
 export { Chip } from "./Chip";
 export type { ChipProps, ChipSize } from "./Chip";
 export { Input } from "./Input";

@@ -91,6 +91,12 @@ export interface AppShellProps {
   onViewProfile?(): void;
 
   /** Route group to highlight "my profile" when on /me or /in/{myHandle}. */
+  /**
+   * Rendered in the header, before the nav. The kit stays framework-neutral
+   * and store-free; the app decides what belongs in its chrome. Same prop as
+   * the web twin.
+   */
+  headerSlot?: ReactNode;
   children: ReactNode;
 }
 
@@ -103,6 +109,7 @@ export function AppShell({
   onSearchPress,
   onViewProfile,
   children,
+  headerSlot,
 }: AppShellProps): ReactElement {
   const c = useThemeTokens().color;
   if (bare) {
@@ -125,6 +132,8 @@ export function AppShell({
             <Text style={[styles.logoText, { color: c.ink }]}>{labels.logoAlt}</Text>
           )}
         </TouchableOpacity>
+
+        {headerSlot}
 
         {/* Search pill — a button that hands off to the host's search screen. */}
         <TouchableOpacity

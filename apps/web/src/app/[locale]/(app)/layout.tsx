@@ -10,6 +10,7 @@ import { AppShell, type AppShellRoute } from "@baydar/ui-web";
 import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 
+import { BandwidthChipHost } from "@/components/BandwidthChipHost";
 import { apiFetch, apiFetchPage, getValidAccessToken, signOut } from "@/lib/api";
 import { clearSession, readSession } from "@/lib/session";
 import { openStream } from "@/lib/sse";
@@ -235,6 +236,7 @@ export default function AppLayout({ children }: { children: ReactNode }): JSX.El
       notificationsUnread={notificationsUnread}
       notificationsConnectionDropped={notificationsConnectionDropped}
       formatCount={formatCount}
+      headerSlot={<BandwidthChipHost />}
       searchValue={searchValue}
       onSearchChange={onSearchChange}
       onSearchSubmit={onSearchSubmit}

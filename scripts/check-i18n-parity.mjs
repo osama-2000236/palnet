@@ -136,8 +136,13 @@ const DYNAMIC_NAMESPACES = {
     "settings.notifications",
     "settings.privacy",
     "landing",
+    // BandwidthChipHost reads `modeHelp.${mode}` — one sentence per mode,
+    // spoken by a screen reader and shown as the chip's tooltip.
+    "connection.modeHelp",
   ],
   mobile: [
+    // See the web entry: same component, same template key.
+    "connection.modeHelp",
     "api",
     "auth",
     "errors",

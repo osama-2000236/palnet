@@ -31,6 +31,12 @@ export interface AppShellLabels {
 
 export interface AppShellProps {
   bare?: boolean;
+  /**
+   * Rendered in the header, before the nav. The kit stays framework-neutral
+   * and store-free; the app decides what belongs in its chrome. Today that is
+   * the bandwidth-mode chip.
+   */
+  headerSlot?: ReactNode;
   currentRoute: AppShellRoute | null;
   me: AvatarUser | null;
   meHeadline?: string | null;
