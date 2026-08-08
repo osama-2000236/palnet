@@ -19,6 +19,7 @@ import { JobsController } from "./jobs/jobs.controller";
 import { JobsService } from "./jobs/jobs.service";
 import { MediaScanService } from "./media/media-scan.service";
 import { MediaController } from "./media/media.controller";
+import { MediaMultipartService } from "./media/media-multipart.service";
 import { MediaService } from "./media/media.service";
 import { MessagingBus } from "./messaging/messaging.bus";
 import { MessagingController } from "./messaging/messaging.controller";
@@ -261,6 +262,7 @@ describe("API controller contract", () => {
       controllers: [MediaController],
       providers: [
         { provide: MediaService, useValue: media },
+        { provide: MediaMultipartService, useValue: {} },
         { provide: MediaScanService, useValue: { scanObject: jest.fn() } },
       ],
     });

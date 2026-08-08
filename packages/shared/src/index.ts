@@ -15,6 +15,7 @@ export * from "./occupations";
 export * from "./outbox";
 export * from "./outbox-request";
 export * from "./profile-completion";
+export * from "./resumable-upload";
 export * from "./api-client";
 export * from "./sse-retry";
 export * from "./schemas/auth";

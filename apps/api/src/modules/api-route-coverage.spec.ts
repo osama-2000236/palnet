@@ -110,6 +110,11 @@ const EXPECTED_ROUTES = [
   "GET /karama/balance",
   "POST /karama/redeem",
   "POST /media/presign",
+  // Resumable uploads. A drop on 2G costs the part in flight, not the file.
+  "POST /media/multipart",
+  "POST /media/multipart/:uploadId/part",
+  "POST /media/multipart/:uploadId/complete",
+  "DELETE /media/multipart/:uploadId",
   "POST /media/confirm",
   "GET /messaging/rooms",
   "POST /messaging/rooms",

@@ -4,9 +4,9 @@ import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import {
   ErrorCode,
+  type MediaPurpose,
   type PresignUploadBody,
   type PresignedUpload,
-  type MediaPurpose,
 } from "@baydar/shared";
 import { Injectable, Logger } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
@@ -32,7 +32,7 @@ const MIME_RULES: Record<string, { kind: string; maxBytes: number; extension: st
   "video/mp4": { kind: "VIDEO", maxBytes: 100 * 1024 * 1024, extension: ".mp4" },
 };
 
-const PRESIGN_TTL_SECONDS = 60 * 5; // 5 minutes
+export const PRESIGN_TTL_SECONDS = 60 * 5; // 5 minutes
 const BLURHASH_SIZE = 4;
 
 @Injectable()
@@ -65,14 +65,14 @@ export class MediaService {
     }
   }
 
-  async presign(userId: string, body: PresignUploadBody): Promise<PresignedUpload> {
-    if (!this.client || !this.bucket || !this.publicBase) {
-      throw new DomainException(
-        ErrorCode.INTERNAL,
-        "Media storage is not configured. Set R2_* env vars.",
-        503,
-      );
-    }
+  /**
+   * Every rule an upload has to pass, plus the key it gets.
+   *
+   * Shared by the single-PUT and multipart paths so a resumable upload cannot
+   * become the way around the MIME allow-list or the size cap.
+   */
+  validateAndKey(userId: string, body: PresignUploadBody): { key: string; mimeType: string } {
+    this.requireClient();
 
     const mimeType = body.mimeType.toLowerCase();
     const rule = MIME_RULES[mimeType];
@@ -99,16 +99,21 @@ export class MediaService {
     }
 
     const ext = extensionFor(body.filename, rule.extension);
-    const key = `${body.purpose.toLowerCase()}/${userId}/${randomUUID()}${ext}`;
+    return { key: `${body.purpose.toLowerCase()}/${userId}/${randomUUID()}${ext}`, mimeType };
+  }
+
+  async presign(userId: string, body: PresignUploadBody): Promise<PresignedUpload> {
+    const client = this.requireClient();
+    const { key, mimeType } = this.validateAndKey(userId, body);
 
     const command = new PutObjectCommand({
-      Bucket: this.bucket,
+      Bucket: this.bucket!,
       Key: key,
       ContentType: mimeType,
       ContentLength: body.sizeBytes,
     });
 
-    const uploadUrl = await getSignedUrl(this.client, command, {
+    const uploadUrl = await getSignedUrl(client, command, {
       expiresIn: PRESIGN_TTL_SECONDS,
     });
 
@@ -120,6 +125,47 @@ export class MediaService {
       expiresAt: new Date(Date.now() + PRESIGN_TTL_SECONDS * 1000).toISOString(),
       blurhash: mimeType.startsWith("image/") ? blurhashFor(key) : null,
     };
+  }
+
+  /** The configured client, or a 503 saying which env vars are missing. */
+  storageClient(): S3Client {
+    return this.requireClient();
+  }
+
+  bucketName(): string {
+    this.requireClient();
+    return this.bucket!;
+  }
+
+  publicBaseUrl(): string {
+    this.requireClient();
+    return this.publicBase!;
+  }
+
+  private requireClient(): S3Client {
+    if (!this.client || !this.bucket || !this.publicBase) {
+      throw new DomainException(
+        ErrorCode.INTERNAL,
+        "Media storage is not configured. Set R2_* env vars.",
+        503,
+      );
+    }
+    return this.client;
+  }
+
+  /**
+   * A key is only ever the caller's own.
+   *
+   * Keys are `purpose/userId/uuid.ext`, so this is a prefix check rather than
+   * a lookup. Without it, a member who learned another member's key could sign
+   * a part against it and overwrite their upload — the key travels in the
+   * request body, so it is attacker-controlled.
+   */
+  private assertOwnKey(userId: string, key: string): void {
+    const segments = key.split("/");
+    if (segments.length < 3 || segments[1] !== userId) {
+      throw new DomainException(ErrorCode.AUTH_FORBIDDEN, "That upload is not yours.", 403);
+    }
   }
 }
 
@@ -139,7 +185,7 @@ function extensionFor(filename: string | undefined, fallback: string): string {
   return fallback;
 }
 
-function blurhashFor(seed: string): string {
+export function blurhashFor(seed: string): string {
   const pixels = new Uint8ClampedArray(BLURHASH_SIZE * BLURHASH_SIZE * 4);
   let hash = 0;
   for (let i = 0; i < seed.length; i += 1) {

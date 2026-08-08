@@ -75,3 +75,59 @@ export const MediaScanResult = z.object({
   scanners: z.record(z.string(), MediaScannerResult),
 });
 export type MediaScanResult = z.infer<typeof MediaScanResult>;
+
+// ── Resumable (multipart) upload ───────────────────────────────────────────
+//
+// A 2 MB photo on 2G is about nine minutes. A drop at minute eight loses all
+// of it, and on a connection that drops routinely that is not an edge case.
+//
+// R2 follows S3's multipart semantics, which means every part except the last
+// must be at least 5 MiB. §15.6 asks for 256 KB parts; R2 rejects a complete
+// built from those with EntityTooSmall, so the part size below is the smallest
+// one that exists. See GAP-06: this makes video genuinely resumable and leaves
+// a 2 MB photo as a single part.
+export const MULTIPART_PART_BYTES = 5 * 1024 * 1024;
+
+/** Below this an upload is one PUT — multipart would add two round trips. */
+export const MULTIPART_MIN_BYTES = MULTIPART_PART_BYTES;
+
+export const StartMultipartUploadBody = PresignUploadBody;
+export type StartMultipartUploadBody = z.infer<typeof StartMultipartUploadBody>;
+
+export const MultipartUpload = z.object({
+  uploadId: z.string(),
+  key: z.string(),
+  /** Public URL once every part is committed. */
+  publicUrl: z.string().url(),
+  /** Bytes per part; the last part may be smaller. */
+  partBytes: z.number().int().positive(),
+  partCount: z.number().int().positive(),
+  blurhash: z.string().min(6).nullable(),
+});
+export type MultipartUpload = z.infer<typeof MultipartUpload>;
+
+export const SignMultipartPartBody = z.object({
+  key: z.string().min(1).max(400),
+  /** 1-based, as S3 numbers them. */
+  partNumber: z.number().int().min(1).max(10_000),
+});
+export type SignMultipartPartBody = z.infer<typeof SignMultipartPartBody>;
+
+export const SignedMultipartPart = z.object({
+  uploadUrl: z.string().url(),
+  partNumber: z.number().int().min(1),
+  expiresAt: z.string().datetime(),
+});
+export type SignedMultipartPart = z.infer<typeof SignedMultipartPart>;
+
+export const CompleteMultipartUploadBody = z.object({
+  key: z.string().min(1).max(400),
+  parts: z
+    .array(z.object({ partNumber: z.number().int().min(1), etag: z.string().min(1).max(200) }))
+    .min(1)
+    .max(10_000),
+});
+export type CompleteMultipartUploadBody = z.infer<typeof CompleteMultipartUploadBody>;
+
+export const CompletedUpload = z.object({ publicUrl: z.string().url() });
+export type CompletedUpload = z.infer<typeof CompletedUpload>;

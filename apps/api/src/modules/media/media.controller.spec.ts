@@ -10,6 +10,7 @@ import request from "supertest";
 import type { AuthUser } from "../auth/decorators/current-user.decorator";
 import { BaydarThrottlerGuard } from "../rate-limit/rate-limit.guard";
 
+import { MediaMultipartService } from "./media-multipart.service";
 import { MediaScanService } from "./media-scan.service";
 import { MediaController } from "./media.controller";
 import { MediaService } from "./media.service";
@@ -39,6 +40,15 @@ describe("MediaController rate limits", () => {
       ],
       controllers: [MediaController],
       providers: [
+        {
+          provide: MediaMultipartService,
+          useValue: {
+            startMultipart: jest.fn(),
+            signMultipartPart: jest.fn(),
+            completeMultipart: jest.fn(),
+            abortMultipart: jest.fn(),
+          },
+        },
         { provide: MediaService, useValue: media },
         {
           provide: MediaScanService,

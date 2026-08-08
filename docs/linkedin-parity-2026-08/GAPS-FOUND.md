@@ -188,3 +188,44 @@ throwing into the composer, and the member can see and re-send. Add SQLite
 when the queue needs to be queried rather than read.
 
 **Sites:** `apps/mobile/src/lib/outbox-storage.ts`.
+
+---
+
+## GAP-06 — 256 KB parts do not exist on R2
+
+**Phase:** P1
+**Needed:** the part size for resumable uploads.
+**Should have been decided by:** §15.6, which specifies "R2 multipart with
+256 KB parts".
+
+**What the spec missed.** R2 implements S3's multipart semantics, and S3
+requires every part except the last to be at least 5 MiB. A
+`CompleteMultipartUpload` built from 256 KB parts is rejected with
+`EntityTooSmall` — the upload is not slow, it is impossible.
+
+**Options:**
+
+1. 5 MiB parts, the smallest R2 accepts.
+2. Chunk to a Baydar endpoint that buffers and assembles, then writes one
+   object to R2.
+3. Keep the single PUT and accept that a drop costs the whole file.
+
+**Chosen: 1.** It makes the case that actually hurts resumable — the 20 MB,
+60-second video cap from §7 is four parts at 30 kbit/s, roughly ninety minutes,
+and a drop now costs one part instead of all four. Option 2 is a real feature
+with its own storage, its own cleanup and its own abuse surface, and it puts
+every uploaded byte through the API server, which §15's whole premise avoids.
+Option 3 is the status quo this phase exists to fix.
+
+**What this does not fix, and should be said plainly.** A 2 MB photo is below
+one part, so it stays a single PUT and a drop still costs all nine minutes of
+it. That is the case §15.6's own example names. Fixing it needs option 2 and a
+decision about running member bytes through the API — worth taking, but not
+worth smuggling in under "resumable uploads".
+
+`shouldUseMultipart()` is the switch: below one part the plain PUT wins,
+because multipart costs three extra round trips on the very connection this
+exists to help.
+
+**Sites:** `packages/shared/src/schemas/media.ts` (`MULTIPART_PART_BYTES`),
+`packages/shared/src/resumable-upload.ts`.
