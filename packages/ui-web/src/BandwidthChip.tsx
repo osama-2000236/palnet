@@ -48,7 +48,7 @@ export function BandwidthChip({
   className,
 }: BandwidthChipProps): JSX.Element {
   return (
-    <Chip size={size} className={className} title={label} onClick={onClick}>
+    <Chip size={size} className={className} title={label} ariaLabel={label} onClick={onClick}>
       {labels[mode]}
     </Chip>
   );

@@ -44,6 +44,15 @@ export interface ChipProps {
   className?: string;
   /** Override the title (tooltip) — defaults to the text content for truncation. */
   title?: string;
+  /**
+   * The spoken name, when the visible label is not the whole story.
+   *
+   * Native's Chip has always taken `accessibilityLabel`; web had only `title`,
+   * which is a tooltip and reaches no screen reader on a `<button>`. A chip
+   * reading «خفيف» told an assistive-technology user nothing about what it
+   * was — it could be a filter, a plan name or a font size.
+   */
+  ariaLabel?: string;
 }
 
 const SIZE_CLASSES: Record<ChipSize, string> = {
@@ -68,6 +77,7 @@ export function Chip({
   disabled = false,
   className,
   title,
+  ariaLabel,
 }: ChipProps): JSX.Element {
   const interactive = Boolean(onClick) && !disabled;
 
@@ -158,6 +168,7 @@ export function Chip({
       <button
         type="button"
         role="switch"
+        aria-label={ariaLabel}
         aria-checked={active}
         aria-disabled={disabled || undefined}
         onClick={onClick}
@@ -174,5 +185,9 @@ export function Chip({
     );
   }
 
-  return <span className={baseClasses}>{inner}</span>;
+  return (
+    <span className={baseClasses} aria-label={ariaLabel}>
+      {inner}
+    </span>
+  );
 }
