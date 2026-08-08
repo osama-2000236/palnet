@@ -27,6 +27,10 @@ const EnvSchema = z.object({
   R2_PUBLIC_URL: z.string().url().optional(),
   CLAMAV_SCAN_URL: z.string().url().optional(),
   CLOUDFLARE_IMAGES_SCAN_URL: z.string().url().optional(),
+  // Cloudflare Images resize endpoint — the sibling of the scan URL above.
+  // OWNER-INPUT: unset until somebody provisions it, and the designed fallback
+  // is the original upload, so the product works and simply spends more bytes.
+  CLOUDFLARE_IMAGES_TRANSFORM_URL: z.string().url().optional(),
   // Mail — Resend in production, console in dev/test.
   RESEND_API_KEY: z.string().min(1).optional(),
   MAIL_FROM: z.string().min(3).optional(),

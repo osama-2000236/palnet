@@ -1,10 +1,17 @@
-import { takePage, type CursorPageMeta, type Post as PostDto } from "@baydar/shared";
+import {
+  ConnectionClass,
+  takePage,
+  type CursorPageMeta,
+  type Post as PostDto,
+} from "@baydar/shared";
 import { Injectable } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
 
 import {
   attachReactionBreakdown,
   postInclude,
   toPostDto,
+  withImageVariants,
   type PostWithIncludes,
 } from "../posts/posts.mapper";
 import { PrismaService } from "../prisma/prisma.service";
@@ -15,12 +22,14 @@ export class FeedService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly safety: SafetyService,
+    private readonly config: ConfigService,
   ) {}
 
   async getFeed(
     viewerId: string,
     cursor: string | null,
     limit: number,
+    connection: ConnectionClass = ConnectionClass.MODERATE,
   ): Promise<{ data: PostDto[]; meta: CursorPageMeta }> {
     const excludedUserIds = await this.safety.getBlockedEitherIds(viewerId);
 
@@ -58,6 +67,12 @@ export class FeedService {
     const { rows: page, meta } = takePage(rows, limit);
     // One grouped query for the whole page, not one per post.
     const enriched = await attachReactionBreakdown(this.prisma, page, excludedUserIds);
-    return { data: enriched.map((p) => toPostDto(p as unknown as PostWithIncludes)), meta };
+    // Last step before the wire: the images a 2G member gets are the small
+    // ones, decided here rather than by whichever client is asking.
+    const transformBase = this.config.get<string | undefined>("CLOUDFLARE_IMAGES_TRANSFORM_URL");
+    const data = enriched.map((p) =>
+      withImageVariants(toPostDto(p as unknown as PostWithIncludes), connection, transformBase),
+    );
+    return { data, meta };
   }
 }

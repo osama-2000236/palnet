@@ -1,4 +1,9 @@
-import type { Post as PostDto } from "@baydar/shared";
+import {
+  avatarUrlFor,
+  postImageUrlFor,
+  type ConnectionClass,
+  type Post as PostDto,
+} from "@baydar/shared";
 
 // Prisma post with includes we count on everywhere.
 export interface PostWithIncludes {
@@ -76,6 +81,35 @@ export async function attachReactionBreakdown<T extends { id: string }>(
     byPost.set(row.postId, bucket);
   }
   return posts.map((post) => ({ ...post, reactionBreakdown: byPost.get(post.id) ?? {} }));
+}
+
+/**
+ * Rewrite the images in one post for the connection that asked for it.
+ *
+ * Applied here, at the last step before the wire, so no call site can hand a
+ * member on 2G a 1080px URL — §15.3 puts this decision on the server precisely
+ * so the two clients need no bandwidth store and no way to opt back up.
+ *
+ * Video is left alone: it is never autoplayed, the client draws a poster and a
+ * play affordance, and there is no transcoding pipeline to make variants of.
+ */
+export function withImageVariants(
+  post: PostDto,
+  connection: ConnectionClass,
+  transformBase: string | null | undefined,
+): PostDto {
+  return {
+    ...post,
+    media: post.media.map((m) =>
+      m.kind === "IMAGE"
+        ? { ...m, url: postImageUrlFor(m.url, connection, transformBase) ?? m.url }
+        : m,
+    ),
+    author: {
+      ...post.author,
+      avatarUrl: avatarUrlFor(post.author.avatarUrl, connection, transformBase),
+    },
+  };
 }
 
 export function toPostDto(post: PostWithIncludes): PostDto {

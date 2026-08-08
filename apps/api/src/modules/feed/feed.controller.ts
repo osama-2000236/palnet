@@ -1,9 +1,15 @@
-import { CursorPageQuery, type CursorPageMeta, type Post as PostDto } from "@baydar/shared";
+import {
+  CursorPageQuery,
+  type ConnectionClass,
+  type CursorPageMeta,
+  type Post as PostDto,
+} from "@baydar/shared";
 import { Controller, Get, Query } from "@nestjs/common";
 import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 
 import { RequireCompleteProfile } from "../../common/require-complete-profile.decorator";
 import { ZodValidationPipe } from "../../common/zod-pipe";
+import { Connection } from "../auth/decorators/connection-class.decorator";
 import { CurrentUser, type AuthUser } from "../auth/decorators/current-user.decorator";
 
 import { FeedService } from "./feed.service";
@@ -20,7 +26,8 @@ export class FeedController {
     @CurrentUser() user: AuthUser,
     @Query(new ZodValidationPipe(CursorPageQuery))
     query: CursorPageQuery,
+    @Connection() connection: ConnectionClass,
   ): Promise<{ data: PostDto[]; meta: CursorPageMeta }> {
-    return this.feed.getFeed(user.id, query.after ?? null, query.limit);
+    return this.feed.getFeed(user.id, query.after ?? null, query.limit, connection);
   }
 }
