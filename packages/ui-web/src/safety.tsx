@@ -57,7 +57,9 @@ export interface ReportDialogProps {
   /**
    * Reason selected when the dialog opens. Lets a surface that already knows
    * what is being reported — the never-pay banner's one-tap path — skip the
-   * step where the user finds the right radio.
+   * step where the user finds the right radio. Defaults to SPAM, the neutral
+   * catch-all: reporting a post or a comment must not open pre-accusing the
+   * author of demanding money.
    */
   initialReason?: ReportReason;
 }
@@ -85,7 +87,7 @@ export function ReportDialog({
   onSubmit,
   labels,
   submitting = false,
-  initialReason = "FEE_REQUEST",
+  initialReason = "SPAM",
 }: ReportDialogProps): JSX.Element | null {
   const formId = useId();
   const detailsId = useId();

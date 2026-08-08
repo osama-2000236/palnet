@@ -952,7 +952,7 @@
       "confirm": "رفض الطلب",
       "noteLabel": "توضيح",
       "notePlaceholder": "اكتب سببًا مختصرًا",
-      "noteHelper": "يظهر للمتقدّم.",
+      "noteHelper": "مطلوب. يظهر للمتقدّم.",
       "rejectedFor": "سبب الرفض:"
     },
     "rejectionReasons": {

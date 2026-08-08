@@ -13,7 +13,7 @@
 import { JobType, PayBasis } from "./enums";
 import { formatCurrency } from "./format";
 
-export const MINIMUM_WAGE_ILS: Partial<Record<PayBasis, number>> = {
+const MINIMUM_WAGE_ILS: Partial<Record<PayBasis, number>> = {
   [PayBasis.MONTHLY]: 1880,
   [PayBasis.DAILY]: 85,
   [PayBasis.HOURLY]: 10.5,
@@ -35,7 +35,7 @@ export function minimumWageFloor(type: JobType, payBasis: PayBasis): number | nu
   return floor;
 }
 
-export interface MinimumWageCheck {
+interface MinimumWageCheck {
   type: JobType;
   payBasis: PayBasis;
   salaryMin?: number | null;

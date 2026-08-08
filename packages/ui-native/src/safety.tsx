@@ -85,7 +85,7 @@ export function ReportSheet({
   onSubmit,
   labels,
   submitting = false,
-  initialReason = "FEE_REQUEST",
+  initialReason = "SPAM",
 }: ReportSheetProps): JSX.Element {
   const [reason, setReason] = useState<ReportReason>(initialReason);
   const [details, setDetails] = useState("");

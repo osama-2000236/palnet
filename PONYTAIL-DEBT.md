@@ -85,6 +85,11 @@ silently.
   **upgrade:** none named. `no-trigger`
 - `packages/shared/src/occupations-data.ts:13` — same call, data half. **ceiling:** same.
   **upgrade:** none named. `no-trigger`
+- `packages/shared/src/minimum-wage.ts:57` — the statutory-floor check runs on ILS only.
+  **ceiling:** a JOD/USD/EUR job is never flagged, however low it is, because converting
+  needs the PMA reference rate and the FX service is server-side while this renders on the
+  client from the job DTO. **upgrade:** convert at write time in `companies.service` and put
+  the result on the DTO, if non-ILS postings ever matter.
 - `packages/shared/src/react/safety.ts:18` — a fourth structurally identical copy of the
   report-target union. **ceiling:** `ui-web` and `ui-native` each export it as
   `ReportTarget`. **upgrade:** converge the name during the ui-\* lockstep pass.

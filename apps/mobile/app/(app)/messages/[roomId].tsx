@@ -75,8 +75,11 @@ export default function MessageThreadScreen(): JSX.Element {
         </View>
 
         {/* Above the list, not inside it: a payment demand arrives mid-thread,
-            and a warning that scrolls away is not there when it does. */}
-        {other ? <NeverPayBanner reportUserId={other.userId} /> : null}
+            and a warning that scrolls away is not there when it does.
+            Unconditional — a group room has no single counterpart to report,
+            but the promise still holds there, so it degrades to notice-only
+            rather than disappearing. */}
+        <NeverPayBanner reportUserId={other?.userId} />
 
         <UnreadJumpBanner
           count={thread.unreadCount}

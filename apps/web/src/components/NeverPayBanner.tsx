@@ -18,11 +18,9 @@ import { useReportLabels } from "@/lib/report-labels";
 
 export function NeverPayBanner({
   reportUserId,
-  className,
 }: {
   /** Who a payment demand would be coming from. Omit for a notice-only banner. */
   reportUserId?: string;
-  className?: string;
 }): JSX.Element {
   const t = useTranslations("safety");
   const labels = useReportLabels();
@@ -30,15 +28,20 @@ export function NeverPayBanner({
   const [open, setOpen] = useState(false);
 
   return (
-    <>
+    <div>
+      {/* The action sits outside the Banner, matching the native twin. Native's
+          Banner wraps its children in a <Text>, and a Pressable inside a Text
+          is broken on Android — so the button cannot live inside there, and web
+          matching that keeps the two the same shape. It also keeps an
+          interactive control out of a `role="status"` live region. */}
       <Banner kind="warning" live="polite">
-        <span className={className}>{t("neverPay.body")}</span>
-        {reportUserId ? (
-          <Button variant="ghost" size="sm" onClick={() => setOpen(true)}>
-            {t("neverPay.report")}
-          </Button>
-        ) : null}
+        {t("neverPay.body")}
       </Banner>
+      {reportUserId ? (
+        <Button variant="ghost" size="sm" onClick={() => setOpen(true)}>
+          {t("neverPay.report")}
+        </Button>
+      ) : null}
       {reportUserId && open ? (
         <ReportDialog
           open
@@ -52,6 +55,6 @@ export function NeverPayBanner({
           onSubmit={(input) => report.mutate(input, { onSuccess: () => setOpen(false) })}
         />
       ) : null}
-    </>
+    </div>
   );
 }

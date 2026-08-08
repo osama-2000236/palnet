@@ -268,6 +268,29 @@ describe("safety primitives", () => {
     unmount();
   });
 
+  // Hiring fraud is listed first, but it must not be the default: a post or a
+  // comment report opening pre-accusing the author of demanding money is worse
+  // than no preselection at all.
+  it("defaults to SPAM when no reason is given", () => {
+    const onSubmit = jest.fn();
+    const target = { kind: "post", id: "post_1" };
+
+    const { container, unmount } = renderClient(
+      React.createElement(ReportDialog, {
+        open: true,
+        onOpenChange: jest.fn(),
+        target,
+        onSubmit,
+        labels: reportLabels,
+      }),
+    );
+
+    click(getButton(container, "Submit"));
+
+    expect(onSubmit).toHaveBeenCalledWith({ target, reason: "SPAM", details: undefined });
+    unmount();
+  });
+
   // The never-pay banner opens this dialog already knowing what is being
   // reported, so the user never hunts for the right radio.
   it("preselects the reason it was opened with", () => {

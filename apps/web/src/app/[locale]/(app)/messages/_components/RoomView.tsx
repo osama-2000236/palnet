@@ -169,8 +169,11 @@ export function RoomView({
       </header>
 
       {/* Outside the scroll container on purpose: a payment demand arrives
-          mid-thread, and a warning that scrolls away is not there when it does. */}
-      {otherMember ? <NeverPayBanner reportUserId={otherMember.userId} /> : null}
+          mid-thread, and a warning that scrolls away is not there when it does.
+          Unconditional — a group room has no single counterpart to report, but
+          the promise still holds there, so it degrades to notice-only rather
+          than disappearing. */}
+      <NeverPayBanner reportUserId={otherMember?.userId} />
 
       <div
         ref={threadRef}

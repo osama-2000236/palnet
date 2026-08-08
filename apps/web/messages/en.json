@@ -1091,7 +1091,7 @@
       "confirm": "Reject application",
       "noteLabel": "Details",
       "notePlaceholder": "Write a short reason",
-      "noteHelper": "Shown to the applicant.",
+      "noteHelper": "Required. Shown to the applicant.",
       "rejectedFor": "Reason for rejection:"
     },
     "rejectionReasons": {

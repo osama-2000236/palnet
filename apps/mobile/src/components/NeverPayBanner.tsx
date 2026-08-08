@@ -28,6 +28,9 @@ export function NeverPayBanner({
 
   return (
     <View>
+      {/* The action sits outside the Banner: its children render inside a
+          <Text>, and a Pressable nested in a Text is broken on Android. The web
+          twin matches this shape rather than the other way round. */}
       <Banner kind="warning">{t("safety.neverPay.body")}</Banner>
       {reportUserId ? (
         <Button variant="ghost" size="sm" onPress={() => setOpen(true)}>

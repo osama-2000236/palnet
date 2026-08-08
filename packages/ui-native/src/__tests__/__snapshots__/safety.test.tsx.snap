@@ -510,7 +510,7 @@ exports[`safety primitives renders ReportSheet content 1`] = `
             accessibilityState={
               {
                 "busy": undefined,
-                "checked": true,
+                "checked": false,
                 "disabled": undefined,
                 "expanded": undefined,
                 "selected": undefined,
@@ -549,10 +549,7 @@ exports[`safety primitives renders ReportSheet content 1`] = `
                   "paddingHorizontal": 12,
                   "paddingVertical": 8,
                 },
-                {
-                  "backgroundColor": "#f4f6ef",
-                  "borderColor": "#ccd6a8",
-                },
+                null,
                 null,
               ]
             }
@@ -567,10 +564,7 @@ exports[`safety primitives renders ReportSheet content 1`] = `
                     "height": 16,
                     "width": 16,
                   },
-                  {
-                    "backgroundColor": "#526030",
-                    "borderColor": "#526030",
-                  },
+                  null,
                 ]
               }
             />
@@ -584,10 +578,7 @@ exports[`safety primitives renders ReportSheet content 1`] = `
                     "fontSize": 15,
                     "textAlign": "auto",
                   },
-                  {
-                    "color": "#3f4a26",
-                    "fontWeight": "700",
-                  },
+                  null,
                 ]
               }
             >
@@ -762,7 +753,7 @@ exports[`safety primitives renders ReportSheet content 1`] = `
             accessibilityState={
               {
                 "busy": undefined,
-                "checked": false,
+                "checked": true,
                 "disabled": undefined,
                 "expanded": undefined,
                 "selected": undefined,
@@ -801,7 +792,10 @@ exports[`safety primitives renders ReportSheet content 1`] = `
                   "paddingHorizontal": 12,
                   "paddingVertical": 8,
                 },
-                null,
+                {
+                  "backgroundColor": "#f4f6ef",
+                  "borderColor": "#ccd6a8",
+                },
                 null,
               ]
             }
@@ -816,7 +810,10 @@ exports[`safety primitives renders ReportSheet content 1`] = `
                     "height": 16,
                     "width": 16,
                   },
-                  null,
+                  {
+                    "backgroundColor": "#526030",
+                    "borderColor": "#526030",
+                  },
                 ]
               }
             />
@@ -830,7 +827,10 @@ exports[`safety primitives renders ReportSheet content 1`] = `
                     "fontSize": 15,
                     "textAlign": "auto",
                   },
-                  null,
+                  {
+                    "color": "#3f4a26",
+                    "fontWeight": "700",
+                  },
                 ]
               }
             >

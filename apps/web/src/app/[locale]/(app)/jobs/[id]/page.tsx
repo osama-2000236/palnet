@@ -236,7 +236,7 @@ export default function JobDetailPage(): JSX.Element {
         </div>
       </Surface>
 
-      <NeverPayBanner className="text-small" />
+      <NeverPayBanner />
 
       {/* The applicant's own outcome. There is no application-history screen,
           so this page is where someone comes back to find out what happened —
