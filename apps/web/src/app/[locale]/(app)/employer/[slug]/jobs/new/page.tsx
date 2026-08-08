@@ -1,7 +1,16 @@
 "use client";
 
-import { Company, EmployerJob, JobLocationMode, JobType } from "@baydar/shared";
-import { Surface } from "@baydar/ui-web";
+import {
+  belowMinimumWage,
+  Company,
+  EmployerJob,
+  formatMinimumWage,
+  JobLocationMode,
+  JobType,
+  minimumWageFloor,
+  PayBasis,
+} from "@baydar/shared";
+import { Alert, Surface } from "@baydar/ui-web";
 import { useParams, useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
@@ -50,6 +59,23 @@ export default function NewJobPage(): JSX.Element {
   const [form, setForm] = useState<FormState>(EMPTY);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+
+  // The form has no pay-basis control yet, so every job it creates takes
+  // CreateJobBody's MONTHLY default. Phase 2 (MATCHING.md §2) adds the control
+  // and this reads `form.payBasis` instead.
+  const payBasis = PayBasis.MONTHLY;
+  const wageCheck = {
+    type: form.type,
+    payBasis,
+    salaryMin: form.salaryMin ? Number(form.salaryMin) : null,
+    salaryMax: form.salaryMax ? Number(form.salaryMax) : null,
+    salaryCurrency: form.salaryCurrency || "ILS",
+  };
+  // Warned, never blocked. Below-minimum informal work is a large share of the
+  // work that actually exists here; refusing the listing removes the listing,
+  // not the job, and sends the worker to a channel that tells them nothing.
+  const belowMinimum = belowMinimumWage(wageCheck);
+  const floor = minimumWageFloor(form.type, payBasis);
 
   useEffect(() => {
     const s = readSession();
@@ -195,6 +221,15 @@ export default function NewJobPage(): JSX.Element {
               />
             </Field>
           </div>
+          {belowMinimum && floor !== null ? (
+            <Alert
+              kind="warning"
+              title={t("belowMinimum.title")}
+              body={`${t(`belowMinimum.${payBasis}`, {
+                amount: formatMinimumWage(floor, locale),
+              })} ${t("belowMinimum.note")}`}
+            />
+          ) : null}
           <Field label={t("expiresAt")}>
             <input
               type="date"

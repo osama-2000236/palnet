@@ -1,6 +1,13 @@
 import { z } from "zod";
 
-import { ApplicationStatus, JobLocationMode, JobType, PayBasis } from "../enums";
+import {
+  ApplicationStatus,
+  JobLocationMode,
+  JobType,
+  PayBasis,
+  REJECTION_NOTE_MAX,
+  RejectionReason,
+} from "../enums";
 import { hasStanding, STANDING_MAX, STANDING_MIN } from "../occupations";
 import { normalizeCity } from "../palestine";
 
@@ -109,6 +116,12 @@ export const Job = z.object({
   viewer: z.object({
     hasApplied: z.boolean(),
     bookmarkId: z.string().cuid().nullable(),
+    // The applicant's own outcome, on the page they come back to. There is no
+    // application-history screen yet, so without this the rejection reason
+    // would live only in a notification the applicant scrolls past once.
+    applicationStatus: z.nativeEnum(ApplicationStatus).nullable(),
+    rejectionReason: z.nativeEnum(RejectionReason).nullable(),
+    rejectionNote: z.string().nullable(),
   }),
 });
 export type Job = z.infer<typeof Job>;
@@ -164,9 +177,26 @@ export const ApplyToJobBody = z.object({
 });
 export type ApplyToJobBody = z.infer<typeof ApplyToJobBody>;
 
-export const UpdateApplicationStatusBody = z.object({
-  status: z.nativeEnum(ApplicationStatus),
-});
+/**
+ * Rejecting requires saying why — enforced here rather than in the two forms,
+ * so no client can produce a reasonless rejection. The reason is cleared by the
+ * service on any other transition, so it can never outlive the rejection it
+ * explains (an un-rejected applicant must not keep a stale reason).
+ */
+export const UpdateApplicationStatusBody = z
+  .object({
+    status: z.nativeEnum(ApplicationStatus),
+    rejectionReason: z.nativeEnum(RejectionReason).optional(),
+    rejectionNote: z.string().trim().min(1).max(REJECTION_NOTE_MAX).optional(),
+  })
+  .refine((v) => v.status !== ApplicationStatus.REJECTED || !!v.rejectionReason, {
+    message: "REJECTION_REASON_REQUIRED",
+    path: ["rejectionReason"],
+  })
+  .refine((v) => v.rejectionReason !== RejectionReason.OTHER || !!v.rejectionNote, {
+    message: "REJECTION_NOTE_REQUIRED",
+    path: ["rejectionNote"],
+  });
 export type UpdateApplicationStatusBody = z.infer<typeof UpdateApplicationStatusBody>;
 
 export const EmployerJob = z.object({
@@ -190,6 +220,8 @@ export const EmployerApplicant = z.object({
   jobId: z.string().cuid(),
   applicantId: z.string().cuid(),
   status: z.nativeEnum(ApplicationStatus),
+  rejectionReason: z.nativeEnum(RejectionReason).nullable(),
+  rejectionNote: z.string().nullable(),
   resumeUrl: z.string().url().nullable(),
   coverLetter: z.string().nullable(),
   createdAt: z.string().datetime(),
@@ -241,6 +273,15 @@ export function jobSource(job: Pick<Job, "company" | "poster">): JobSource {
     href: `/in/${handle}`,
     isCompany: false,
   };
+}
+
+/**
+ * How a rejection reads to the person who was rejected: the reason, and the
+ * employer's note when there is one. Shared because four screens across two
+ * platforms were about to repeat the same join.
+ */
+export function rejectionSummary(reasonLabel: string, note: string | null | undefined): string {
+  return note ? `${reasonLabel} — ${note}` : reasonLabel;
 }
 
 /** First character for an avatar fallback, or "?" when there is nothing to use. */

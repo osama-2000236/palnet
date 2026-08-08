@@ -6,6 +6,8 @@ import {
   Company,
   cursorPage,
   EmployerApplicant,
+  rejectionSummary,
+  type RejectionReason,
 } from "@baydar/shared";
 import { EmptyState, Surface } from "@baydar/ui-web";
 import Image from "next/image";
@@ -16,11 +18,14 @@ import { useCallback, useEffect, useState } from "react";
 import { apiFetch, apiFetchPage } from "@/lib/api";
 import { toErrorMessage } from "@/lib/error-message";
 import { readSession } from "@/lib/session";
+import { RejectDialog } from "./_components/RejectDialog";
 
 const ApplicantsPageSchema = cursorPage(EmployerApplicant);
 
 export default function EmployerApplicantsPage(): JSX.Element {
   const t = useTranslations("employer.applicants");
+  const tReasons = useTranslations("employer.rejectionReasons");
+  const tReject = useTranslations("employer.reject");
   const tCommon = useTranslations("common");
   const tErr = useTranslations("errors");
   const router = useRouter();
@@ -35,6 +40,8 @@ export default function EmployerApplicantsPage(): JSX.Element {
   const [filter, setFilter] = useState<ApplicationStatus | "">("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [rejecting, setRejecting] = useState<string | null>(null);
+  const [rejectBusy, setRejectBusy] = useState(false);
 
   useEffect(() => {
     const s = readSession();
@@ -85,18 +92,43 @@ export default function EmployerApplicantsPage(): JSX.Element {
     void load(companyId, token, filter);
   }, [token, companyId, filter, load]);
 
-  const changeStatus = async (applicationId: string, status: ApplicationStatus): Promise<void> => {
+  const changeStatus = async (
+    applicationId: string,
+    status: ApplicationStatus,
+    rejection?: { rejectionReason: RejectionReason; rejectionNote?: string },
+  ): Promise<void> => {
     if (!token || !companyId) return;
     try {
       const updated = await apiFetch(
         `/companies/${companyId}/jobs/${jobId}/applicants/${applicationId}`,
         EmployerApplicant,
-        { method: "PATCH", body: { status }, token },
+        { method: "PATCH", body: { status, ...rejection }, token },
       );
       setItems((arr) => arr.map((a) => (a.id === updated.id ? updated : a)));
     } catch (e) {
       setError(toErrorMessage(e, tErr));
     }
+  };
+
+  // REJECTED cannot be sent straight from the dropdown — the API requires a
+  // reason with it, so the selection opens the dialog and the dialog sends.
+  const onSelectStatus = (applicationId: string, status: ApplicationStatus): void => {
+    if (status === ApplicationStatus.REJECTED) {
+      setRejecting(applicationId);
+      return;
+    }
+    void changeStatus(applicationId, status);
+  };
+
+  const confirmReject = async (reason: RejectionReason, note?: string): Promise<void> => {
+    if (!rejecting) return;
+    setRejectBusy(true);
+    await changeStatus(rejecting, ApplicationStatus.REJECTED, {
+      rejectionReason: reason,
+      ...(note ? { rejectionNote: note } : {}),
+    });
+    setRejectBusy(false);
+    setRejecting(null);
   };
 
   return (
@@ -186,7 +218,7 @@ export default function EmployerApplicantsPage(): JSX.Element {
                 <div className="flex flex-col items-end gap-2">
                   <select
                     value={a.status}
-                    onChange={(e) => void changeStatus(a.id, e.target.value as ApplicationStatus)}
+                    onChange={(e) => onSelectStatus(a.id, e.target.value as ApplicationStatus)}
                     className="border-line-hard bg-surface text-ink rounded-md border px-2 py-1 text-xs"
                   >
                     {(Object.values(ApplicationStatus) as ApplicationStatus[]).map((s) => (
@@ -197,6 +229,12 @@ export default function EmployerApplicantsPage(): JSX.Element {
                   </select>
                 </div>
               </div>
+              {a.rejectionReason ? (
+                <p className="text-ink-muted mt-2 text-xs">
+                  {tReject("rejectedFor")}{" "}
+                  {rejectionSummary(tReasons(a.rejectionReason), a.rejectionNote)}
+                </p>
+              ) : null}
               {a.coverLetter ? (
                 <p className="text-ink mt-3 whitespace-pre-line text-sm">{a.coverLetter}</p>
               ) : null}
@@ -204,6 +242,13 @@ export default function EmployerApplicantsPage(): JSX.Element {
           </li>
         ))}
       </ul>
+
+      <RejectDialog
+        open={rejecting !== null}
+        busy={rejectBusy}
+        onClose={() => setRejecting(null)}
+        onConfirm={(reason, note) => void confirmReject(reason, note)}
+      />
     </main>
   );
 }

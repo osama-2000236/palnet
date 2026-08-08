@@ -28,6 +28,9 @@ export function useReportLabels(): ReportDialogLabels {
       [ReportReason.MISINFORMATION]: t("report.reason.misinformation"),
       [ReportReason.NUDITY]: t("report.reason.nudity"),
       [ReportReason.VIOLENCE]: t("report.reason.violence"),
+      [ReportReason.FEE_REQUEST]: t("report.reason.fee_request"),
+      [ReportReason.GHOST_JOB]: t("report.reason.ghost_job"),
+      [ReportReason.ID_REQUEST]: t("report.reason.id_request"),
       [ReportReason.OTHER]: t("report.reason.other"),
     },
   };

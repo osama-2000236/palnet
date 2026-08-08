@@ -291,8 +291,15 @@
         "misinformation": "معلومات مضللة",
         "nudity": "محتوى عارٍ أو جنسي",
         "violence": "عنف أو تهديد",
+        "fee_request": "طلب مني مبلغًا ماليًا",
+        "ghost_job": "وظيفة غير موجودة",
+        "id_request": "طلب صورة الهوية",
         "other": "سبب آخر"
       }
+    },
+    "neverPay": {
+      "body": "لن يطلب منك صاحب العمل أي مبلغ مالي مقابل وظيفة. أبلغ عن أي طلب دفع.",
+      "report": "أبلغ عن طلب دفع"
     },
     "block": {
       "button": "حظر",
@@ -629,6 +636,9 @@
     "any": "الكل",
     "apply": "قدّم طلبك",
     "appliedBadge": "تم التقديم",
+    "belowMinimumBadge": "أقل من الحد الأدنى",
+    "rejectedTitle": "لم يتم اختيارك لهذه الوظيفة",
+    "belowMinimumSr": "الأجر المعلن أقل من الحد الأدنى للأجور في فلسطين",
     "save": "حفظ",
     "saved": "محفوظ",
     "applyTitle": "التقديم على {title}",
@@ -1074,6 +1084,25 @@
       "emptyFilteredCta": "عرض كل المتقدمين",
       "shareJob": "انسخ رابط الوظيفة"
     },
+    "reject": {
+      "title": "سبب الرفض",
+      "body": "سيظهر السبب للمتقدّم.",
+      "legend": "اختر السبب",
+      "confirm": "رفض الطلب",
+      "noteLabel": "توضيح",
+      "notePlaceholder": "اكتب سببًا مختصرًا",
+      "noteHelper": "مطلوب. يظهر للمتقدّم.",
+      "rejectedFor": "سبب الرفض:"
+    },
+    "rejectionReasons": {
+      "POSITION_FILLED": "تم شغل الوظيفة",
+      "EXPERIENCE_INSUFFICIENT": "الخبرة غير كافية",
+      "SKILLS_MISMATCH": "المهارات المطلوبة مختلفة",
+      "LOCATION": "الموقع أو المسافة",
+      "QUALIFICATION_MISSING": "مؤهل أو رخصة مطلوبة غير متوفرة",
+      "APPLIED_AFTER_CLOSING": "التقديم بعد إغلاق الوظيفة",
+      "OTHER": "سبب آخر"
+    },
     "newJob": {
       "title": "وظيفة جديدة",
       "fieldTitle": "عنوان الوظيفة",
@@ -1084,6 +1113,13 @@
       "salaryMin": "الحد الأدنى للراتب",
       "salaryMax": "الحد الأعلى للراتب",
       "salaryCurrency": "العملة",
+      "belowMinimum": {
+        "title": "أجر أقل من الحد الأدنى",
+        "MONTHLY": "الحد الأدنى للأجور في فلسطين {amount} شهرياً.",
+        "DAILY": "الحد الأدنى للأجور في فلسطين {amount} يومياً.",
+        "HOURLY": "الحد الأدنى للأجور في فلسطين {amount} للساعة.",
+        "note": "يمكنك النشر، وسيظهر على الإعلان تنويه بأن الأجر أقل من الحد الأدنى."
+      },
       "expiresAt": "تنتهي في",
       "submit": "انشر",
       "submitting": "جارٍ النشر…"

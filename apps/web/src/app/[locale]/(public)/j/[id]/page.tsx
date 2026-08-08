@@ -11,11 +11,13 @@
 
 import {
   PublicJob as PublicJobSchema,
+  belowMinimumWage,
   formatSalaryRange,
   type PublicJob,
   jobSource,
   jobSourceInitial,
 } from "@baydar/shared";
+import { Badge, Banner } from "@baydar/ui-web";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -64,11 +66,12 @@ export default async function PublicJobPage(props: {
 }): Promise<JSX.Element> {
   const { locale, id } = await props.params;
   setRequestLocale(locale);
-  const [job, t, tJobs, tLanding] = await Promise.all([
+  const [job, t, tJobs, tLanding, tSafety] = await Promise.all([
     fetchPublicJob(id),
     getTranslations("publicJob"),
     getTranslations("jobs"),
     getTranslations("landing"),
+    getTranslations("safety"),
   ]);
   if (!job) notFound();
 
@@ -137,7 +140,25 @@ export default async function PublicJobPage(props: {
               {salary ? (
                 <p className="text-brand-700 mt-1 text-sm font-semibold">{salary}</p>
               ) : null}
+              {/* Statutory floor, Council of Ministers Resolution No. 4 of 2021.
+                  This is the page that lands in a WhatsApp group, so it is the
+                  one where the seeker most needs the number qualified. */}
+              {belowMinimumWage(job) ? (
+                <p className="mt-1">
+                  <Badge tone="warning" srLabel={tJobs("belowMinimumSr")}>
+                    {tJobs("belowMinimumBadge")}
+                  </Badge>
+                </p>
+              ) : null}
             </div>
+          </div>
+
+          {/* Notice only, not the reportable variant: this page is anonymous —
+              there is no session to file a report with. `NeverPayBanner` is a
+              client component wired to the report mutation, so it needs the
+              query provider the public tree does not mount. */}
+          <div className="mt-4">
+            <Banner kind="warning">{tSafety("neverPay.body")}</Banner>
           </div>
 
           {job.isActive ? (

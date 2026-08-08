@@ -9,6 +9,7 @@
 //     The endpoint is idempotent, so retrying after a network error is safe.
 
 import {
+  belowMinimumWage,
   Bookmark,
   BookmarkType,
   formatSalaryRange,
@@ -16,14 +17,16 @@ import {
   type Job,
   jobSource,
   jobSourceInitial,
+  rejectionSummary,
 } from "@baydar/shared";
-import { Button, Icon, Surface } from "@baydar/ui-web";
+import { Alert, Badge, Button, Icon, Surface } from "@baydar/ui-web";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 
+import { NeverPayBanner } from "@/components/NeverPayBanner";
 import { apiCall, apiFetch, getValidAccessToken } from "@/lib/api";
 import { getErrorCode, toErrorMessage } from "@/lib/error-message";
 import { ApplyDialog } from "./_components/ApplyDialog";
@@ -32,6 +35,7 @@ import { ShareJobButtons } from "./_components/ShareJobButtons";
 
 export default function JobDetailPage(): JSX.Element {
   const t = useTranslations("jobs");
+  const tReasons = useTranslations("employer.rejectionReasons");
   const tErr = useTranslations("errors");
   const locale = useLocale();
   const params = useParams<{ id: string }>();
@@ -193,6 +197,14 @@ export default function JobDetailPage(): JSX.Element {
             </Link>
             <p className="text-ink-muted mt-1 text-xs">{metaParts.join(" · ")}</p>
             {salary ? <p className="text-ink mt-1 text-sm font-semibold">{salary}</p> : null}
+            {/* Statutory floor, Council of Ministers Resolution No. 4 of 2021. */}
+            {belowMinimumWage(job) ? (
+              <p className="mt-1">
+                <Badge tone="warning" srLabel={t("belowMinimumSr")}>
+                  {t("belowMinimumBadge")}
+                </Badge>
+              </p>
+            ) : null}
           </div>
           <div className="flex shrink-0 flex-col items-end gap-2">
             <Button
@@ -223,6 +235,21 @@ export default function JobDetailPage(): JSX.Element {
           <ShareJobButtons jobId={job.id} title={`${job.title} — ${jobSource(job).name}`} />
         </div>
       </Surface>
+
+      <NeverPayBanner />
+
+      {/* The applicant's own outcome. There is no application-history screen,
+          so this page is where someone comes back to find out what happened —
+          and a rejection with no reason is the complaint the reason exists to
+          answer. */}
+      {job.viewer.rejectionReason ? (
+        <Alert
+          className="mt-4"
+          kind="info"
+          title={t("rejectedTitle")}
+          body={rejectionSummary(tReasons(job.viewer.rejectionReason), job.viewer.rejectionNote)}
+        />
+      ) : null}
 
       <Surface variant="card" padding="6" className="mt-4">
         <h2 className="text-ink mb-2 text-sm font-semibold">{t("description")}</h2>

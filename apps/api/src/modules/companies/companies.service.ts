@@ -11,6 +11,7 @@ import {
   type EmployerJob,
   ErrorCode,
   hasStanding,
+  type RejectionReason,
   type UpdateApplicationStatusBody,
   type UpdateCompanyBody,
   type UpdateCompanyMemberBody,
@@ -511,13 +512,26 @@ export class CompaniesService {
     });
     if (!existing) throw new DomainException(ErrorCode.NOT_FOUND, "Application not found.", 404);
 
-    if (existing.status === body.status) {
+    // Only ever set on REJECTED: an employer who un-rejects someone must not
+    // leave them holding a reason for a rejection that no longer exists.
+    const rejected = body.status === ApplicationStatus.REJECTED;
+    const rejectionReason = rejected ? (body.rejectionReason ?? null) : null;
+    const rejectionNote = rejected ? (body.rejectionNote ?? null) : null;
+
+    // Reason included in the guard, not just status: correcting the reason on
+    // an already-rejected application is a real edit, and comparing status
+    // alone would silently drop it.
+    if (
+      existing.status === body.status &&
+      existing.rejectionReason === rejectionReason &&
+      existing.rejectionNote === rejectionNote
+    ) {
       return toApplicantDto(existing);
     }
 
     const updated = await this.prisma.application.update({
       where: { id: applicationId },
-      data: { status: body.status },
+      data: { status: body.status, rejectionReason, rejectionNote },
       include: {
         applicant: {
           select: {
@@ -544,7 +558,7 @@ export class CompaniesService {
       recipientId: existing.applicantId,
       actorId,
       jobId,
-      data: { applicationId, status: body.status },
+      data: { applicationId, status: body.status, rejectionReason },
     });
 
     // Reward the candidate for a verified hire. Plan calls for a 30-day
@@ -707,6 +721,8 @@ function toApplicantDto(row: {
   jobId: string;
   applicantId: string;
   status: ApplicationStatus;
+  rejectionReason: RejectionReason | null;
+  rejectionNote: string | null;
   resumeUrl: string | null;
   coverLetter: string | null;
   createdAt: Date;
@@ -730,6 +746,8 @@ function toApplicantDto(row: {
     jobId: row.jobId,
     applicantId: row.applicantId,
     status: row.status,
+    rejectionReason: row.rejectionReason,
+    rejectionNote: row.rejectionNote,
     resumeUrl: row.resumeUrl,
     coverLetter: row.coverLetter,
     createdAt: row.createdAt.toISOString(),

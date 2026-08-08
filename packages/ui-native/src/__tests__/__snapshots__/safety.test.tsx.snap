@@ -505,6 +505,249 @@ exports[`safety primitives renders ReportSheet content 1`] = `
           }
         >
           <View
+            accessibilityLabel="Asked me for money"
+            accessibilityRole="radio"
+            accessibilityState={
+              {
+                "busy": undefined,
+                "checked": false,
+                "disabled": undefined,
+                "expanded": undefined,
+                "selected": undefined,
+              }
+            }
+            accessibilityValue={
+              {
+                "max": undefined,
+                "min": undefined,
+                "now": undefined,
+                "text": undefined,
+              }
+            }
+            accessible={true}
+            collapsable={false}
+            focusable={true}
+            onBlur={[Function]}
+            onClick={[Function]}
+            onFocus={[Function]}
+            onResponderGrant={[Function]}
+            onResponderMove={[Function]}
+            onResponderRelease={[Function]}
+            onResponderTerminate={[Function]}
+            onResponderTerminationRequest={[Function]}
+            onStartShouldSetResponder={[Function]}
+            style={
+              [
+                {
+                  "alignItems": "center",
+                  "borderColor": "rgba(26, 26, 23, 0.08)",
+                  "borderRadius": 10,
+                  "borderWidth": 1,
+                  "flexDirection": "row",
+                  "gap": 8,
+                  "minHeight": 44,
+                  "paddingHorizontal": 12,
+                  "paddingVertical": 8,
+                },
+                null,
+                null,
+              ]
+            }
+          >
+            <View
+              style={
+                [
+                  {
+                    "borderColor": "rgba(26, 26, 23, 0.16)",
+                    "borderRadius": 9999,
+                    "borderWidth": 1,
+                    "height": 16,
+                    "width": 16,
+                  },
+                  null,
+                ]
+              }
+            />
+            <Text
+              style={
+                [
+                  {
+                    "color": "#1a1a17",
+                    "flex": 1,
+                    "fontFamily": "IBMPlexSansArabic",
+                    "fontSize": 15,
+                    "textAlign": "auto",
+                  },
+                  null,
+                ]
+              }
+            >
+              Asked me for money
+            </Text>
+          </View>
+          <View
+            accessibilityLabel="The job does not exist"
+            accessibilityRole="radio"
+            accessibilityState={
+              {
+                "busy": undefined,
+                "checked": false,
+                "disabled": undefined,
+                "expanded": undefined,
+                "selected": undefined,
+              }
+            }
+            accessibilityValue={
+              {
+                "max": undefined,
+                "min": undefined,
+                "now": undefined,
+                "text": undefined,
+              }
+            }
+            accessible={true}
+            collapsable={false}
+            focusable={true}
+            onBlur={[Function]}
+            onClick={[Function]}
+            onFocus={[Function]}
+            onResponderGrant={[Function]}
+            onResponderMove={[Function]}
+            onResponderRelease={[Function]}
+            onResponderTerminate={[Function]}
+            onResponderTerminationRequest={[Function]}
+            onStartShouldSetResponder={[Function]}
+            style={
+              [
+                {
+                  "alignItems": "center",
+                  "borderColor": "rgba(26, 26, 23, 0.08)",
+                  "borderRadius": 10,
+                  "borderWidth": 1,
+                  "flexDirection": "row",
+                  "gap": 8,
+                  "minHeight": 44,
+                  "paddingHorizontal": 12,
+                  "paddingVertical": 8,
+                },
+                null,
+                null,
+              ]
+            }
+          >
+            <View
+              style={
+                [
+                  {
+                    "borderColor": "rgba(26, 26, 23, 0.16)",
+                    "borderRadius": 9999,
+                    "borderWidth": 1,
+                    "height": 16,
+                    "width": 16,
+                  },
+                  null,
+                ]
+              }
+            />
+            <Text
+              style={
+                [
+                  {
+                    "color": "#1a1a17",
+                    "flex": 1,
+                    "fontFamily": "IBMPlexSansArabic",
+                    "fontSize": 15,
+                    "textAlign": "auto",
+                  },
+                  null,
+                ]
+              }
+            >
+              The job does not exist
+            </Text>
+          </View>
+          <View
+            accessibilityLabel="Asked for my ID"
+            accessibilityRole="radio"
+            accessibilityState={
+              {
+                "busy": undefined,
+                "checked": false,
+                "disabled": undefined,
+                "expanded": undefined,
+                "selected": undefined,
+              }
+            }
+            accessibilityValue={
+              {
+                "max": undefined,
+                "min": undefined,
+                "now": undefined,
+                "text": undefined,
+              }
+            }
+            accessible={true}
+            collapsable={false}
+            focusable={true}
+            onBlur={[Function]}
+            onClick={[Function]}
+            onFocus={[Function]}
+            onResponderGrant={[Function]}
+            onResponderMove={[Function]}
+            onResponderRelease={[Function]}
+            onResponderTerminate={[Function]}
+            onResponderTerminationRequest={[Function]}
+            onStartShouldSetResponder={[Function]}
+            style={
+              [
+                {
+                  "alignItems": "center",
+                  "borderColor": "rgba(26, 26, 23, 0.08)",
+                  "borderRadius": 10,
+                  "borderWidth": 1,
+                  "flexDirection": "row",
+                  "gap": 8,
+                  "minHeight": 44,
+                  "paddingHorizontal": 12,
+                  "paddingVertical": 8,
+                },
+                null,
+                null,
+              ]
+            }
+          >
+            <View
+              style={
+                [
+                  {
+                    "borderColor": "rgba(26, 26, 23, 0.16)",
+                    "borderRadius": 9999,
+                    "borderWidth": 1,
+                    "height": 16,
+                    "width": 16,
+                  },
+                  null,
+                ]
+              }
+            />
+            <Text
+              style={
+                [
+                  {
+                    "color": "#1a1a17",
+                    "flex": 1,
+                    "fontFamily": "IBMPlexSansArabic",
+                    "fontSize": 15,
+                    "textAlign": "auto",
+                  },
+                  null,
+                ]
+              }
+            >
+              Asked for my ID
+            </Text>
+          </View>
+          <View
             accessibilityLabel="Spam"
             accessibilityRole="radio"
             accessibilityState={

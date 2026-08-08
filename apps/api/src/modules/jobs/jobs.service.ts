@@ -13,49 +13,6 @@ import { Injectable } from "@nestjs/common";
 import { DomainException } from "../../common/domain-exception";
 import { PrismaService } from "../prisma/prisma.service";
 
-interface JobRow {
-  id: string;
-  companyId: string | null;
-  postedById: string;
-  occupationKey: string | null;
-  minStanding: number | null;
-  requiresLicence: boolean;
-  licenceBodyKey: string | null;
-  payBasis: JobDto["payBasis"];
-  mustSkills: string[];
-  startsAt: Date | null;
-  durationDays: number | null;
-  title: string;
-  description: string;
-  type: JobDto["type"];
-  locationMode: JobDto["locationMode"];
-  city: string | null;
-  country: string;
-  salaryMin: number | null;
-  salaryMax: number | null;
-  salaryCurrency: string | null;
-  skillsRequired: string[];
-  isActive: boolean;
-  expiresAt: Date | null;
-  createdAt: Date;
-  company: {
-    id: string;
-    slug: string;
-    name: string;
-    logoUrl: string | null;
-  } | null;
-  postedBy: {
-    profile: {
-      handle: string;
-      firstName: string;
-      lastName: string;
-      avatarUrl: string | null;
-    } | null;
-  };
-  applications: { id: string }[];
-  bookmarks: { id: string }[];
-}
-
 const jobInclude = (viewerId: string) =>
   ({
     company: { select: { id: true, slug: true, name: true, logoUrl: true } },
@@ -66,7 +23,9 @@ const jobInclude = (viewerId: string) =>
     },
     applications: {
       where: { applicantId: viewerId },
-      select: { id: true },
+      // Same row that already answered `hasApplied` — the outcome is three more
+      // columns on a query that was running anyway, not a second lookup.
+      select: { id: true, status: true, rejectionReason: true, rejectionNote: true },
       take: 1,
     },
     bookmarks: {
@@ -75,6 +34,12 @@ const jobInclude = (viewerId: string) =>
       take: 1,
     },
   }) as const;
+
+// Derived, not restated. This was 45 lines of hand-copied Prisma columns that
+// had to be edited in lockstep with the include above — and the two
+// `as unknown as JobRow` casts below meant a miss type-checked cleanly and
+// failed at runtime.
+type JobRow = Prisma.JobGetPayload<{ include: ReturnType<typeof jobInclude> }>;
 
 @Injectable()
 export class JobsService {
@@ -294,6 +259,9 @@ function toJobDto(row: JobRow): JobDto {
     viewer: {
       hasApplied: row.applications.length > 0,
       bookmarkId: row.bookmarks[0]?.id ?? null,
+      applicationStatus: row.applications[0]?.status ?? null,
+      rejectionReason: row.applications[0]?.rejectionReason ?? null,
+      rejectionNote: row.applications[0]?.rejectionNote ?? null,
     },
   };
 }

@@ -228,6 +228,30 @@ Not removable despite having zero imports: `react-native-reanimated`, `react-nat
 `expo-linking`, `@react-navigation/native`. All are declared peers of `expo-router` or
 `@react-navigation/bottom-tabs`.
 
+## Semantic colours: A6 measured them against white only
+
+Audit A6 tuned each light semantic to ~4.5:1 **against its own translucent tint over
+`#ffffff`**. The tint is translucent, so the real ratio depends on what is underneath, and
+every warm surface in the system is darker than white. Measured:
+
+| token   | white | muted | subtle | sunken |
+| ------- | ----- | ----- | ------ | ------ |
+| warning | 4.51  | 4.28  | 4.09   | 3.87   |
+| success | 4.57  | 4.34  | 4.14   | 3.92   |
+| info    | 4.97  | 4.74  | 4.53   | 4.25   |
+| danger  | 5.87  | 5.56  | 5.31   | 4.98   |
+
+`danger` is the only one that holds everywhere. **`warning` is fixed** — `#926516` → `#7e5713`,
+same hue at 86% lightness, worst surface now 4.61 — because the never-pay banner put it on a
+muted page background and `e2e/a11y.spec.ts` failed job detail on it in CI. That test is the
+only reason any of this was found: nothing else in the product had yet placed a warning tint on
+a non-white surface inside a scanned route.
+
+**`success` and `info` are still wrong** and were left alone deliberately — no current surface
+puts them on `muted`/`sunken` inside a scanned route, so fixing them is a design change with no
+failing test behind it, and it would move visual snapshots on pages this branch never touched.
+The fix is mechanical when someone wants it: same hue, scale to ~86%, re-run `pnpm tokens:build`.
+
 ## Hard borders
 
 `CLAUDE.md` is law: tokens only, RTL-safe logical CSS, Arabic-first, web↔mobile lockstep,

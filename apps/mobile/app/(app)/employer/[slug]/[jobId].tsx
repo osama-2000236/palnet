@@ -1,4 +1,11 @@
-import { ApplicationStatus, Company, cursorPage, EmployerApplicant } from "@baydar/shared";
+import {
+  ApplicationStatus,
+  Company,
+  cursorPage,
+  EmployerApplicant,
+  rejectionSummary,
+  type RejectionReason,
+} from "@baydar/shared";
 import {
   Alert,
   AppHeader,
@@ -16,6 +23,7 @@ import { useTranslation } from "react-i18next";
 import { FlatList, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { RejectSheet } from "@/components/RejectSheet";
 import { apiFetch, apiFetchPage } from "@/lib/api";
 import { apiErrorMessage } from "@/lib/api-errors";
 
@@ -37,6 +45,8 @@ export default function ApplicantsInboxScreen(): JSX.Element {
   const [items, setItems] = useState<EmployerApplicant[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [rejecting, setRejecting] = useState<string | null>(null);
+  const [rejectBusy, setRejectBusy] = useState(false);
 
   useEffect(() => {
     if (!slug) return;
@@ -71,13 +81,17 @@ export default function ApplicantsInboxScreen(): JSX.Element {
   }, [load]);
 
   const changeStatus = useCallback(
-    async (applicationId: string, status: ApplicationStatus): Promise<void> => {
+    async (
+      applicationId: string,
+      status: ApplicationStatus,
+      rejection?: { rejectionReason: RejectionReason; rejectionNote?: string },
+    ): Promise<void> => {
       if (!companyId || !jobId) return;
       try {
         const updated = await apiFetch(
           `/companies/${companyId}/jobs/${jobId}/applicants/${applicationId}`,
           EmployerApplicant,
-          { method: "PATCH", body: { status } },
+          { method: "PATCH", body: { status, ...rejection } },
         );
         setItems((arr) => arr.map((a) => (a.id === updated.id ? updated : a)));
       } catch (e) {
@@ -85,6 +99,33 @@ export default function ApplicantsInboxScreen(): JSX.Element {
       }
     },
     [companyId, jobId, t],
+  );
+
+  // REJECTED cannot be sent straight from the chip — the API requires a reason
+  // with it, so the tap opens the sheet and the sheet sends.
+  const onSelectStatus = useCallback(
+    (applicationId: string, status: ApplicationStatus): void => {
+      if (status === ApplicationStatus.REJECTED) {
+        setRejecting(applicationId);
+        return;
+      }
+      void changeStatus(applicationId, status);
+    },
+    [changeStatus],
+  );
+
+  const confirmReject = useCallback(
+    async (reason: RejectionReason, note?: string): Promise<void> => {
+      if (!rejecting) return;
+      setRejectBusy(true);
+      await changeStatus(rejecting, ApplicationStatus.REJECTED, {
+        rejectionReason: reason,
+        ...(note ? { rejectionNote: note } : {}),
+      });
+      setRejectBusy(false);
+      setRejecting(null);
+    },
+    [rejecting, changeStatus],
   );
 
   return (
@@ -131,7 +172,7 @@ export default function ApplicantsInboxScreen(): JSX.Element {
                 {STATUSES.map((s) => (
                   <Chip
                     key={s}
-                    onPress={() => void changeStatus(item.id, s)}
+                    onPress={() => onSelectStatus(item.id, s)}
                     selected={item.status === s}
                     size="sm"
                     accessibilityLabel={t(`employer.status.${s}`)}
@@ -140,10 +181,25 @@ export default function ApplicantsInboxScreen(): JSX.Element {
                   </Chip>
                 ))}
               </View>
+              {item.rejectionReason ? (
+                <Text selectable style={styles.rejectionReason}>
+                  {t("employer.reject.rejectedFor")}{" "}
+                  {rejectionSummary(
+                    t(`employer.rejectionReasons.${item.rejectionReason}`),
+                    item.rejectionNote,
+                  )}
+                </Text>
+              ) : null}
             </Surface>
           )}
         />
       </View>
+      <RejectSheet
+        open={rejecting !== null}
+        busy={rejectBusy}
+        onClose={() => setRejecting(null)}
+        onConfirm={(reason, note) => void confirmReject(reason, note)}
+      />
     </SafeAreaView>
   );
 }
@@ -189,6 +245,13 @@ function makeStyles(c: NativeTheme["color"]) {
       flexWrap: "wrap",
       gap: nativeTokens.space[2],
       marginTop: nativeTokens.space[1],
+    },
+    rejectionReason: {
+      color: c.inkMuted,
+      fontFamily: nativeTokens.type.family.sans,
+      fontSize: nativeTokens.type.scale.caption.size,
+      lineHeight: nativeTokens.type.scale.caption.line,
+      textAlign: "auto",
     },
   });
 }

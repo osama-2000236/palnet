@@ -291,8 +291,15 @@
         "misinformation": "Misinformation",
         "nudity": "Nudity or sexual content",
         "violence": "Violence or threat",
+        "fee_request": "Asked me for money",
+        "ghost_job": "The job does not exist",
+        "id_request": "Asked for my ID",
         "other": "Something else"
       }
+    },
+    "neverPay": {
+      "body": "An employer will never ask you for money for a job. Report any payment request.",
+      "report": "Report a payment request"
     },
     "block": {
       "button": "Block",
@@ -629,6 +636,9 @@
     "any": "Any",
     "apply": "Apply",
     "appliedBadge": "Applied",
+    "belowMinimumBadge": "Below minimum",
+    "rejectedTitle": "You were not selected for this role",
+    "belowMinimumSr": "The advertised pay is below the Palestinian minimum wage",
     "save": "Save",
     "saved": "Saved",
     "applyTitle": "Apply to {title}",
@@ -1074,6 +1084,25 @@
       "emptyFilteredCta": "Show all applicants",
       "shareJob": "Copy job link"
     },
+    "reject": {
+      "title": "Reason for rejection",
+      "body": "The applicant will see this reason.",
+      "legend": "Choose a reason",
+      "confirm": "Reject application",
+      "noteLabel": "Details",
+      "notePlaceholder": "Write a short reason",
+      "noteHelper": "Required. Shown to the applicant.",
+      "rejectedFor": "Reason for rejection:"
+    },
+    "rejectionReasons": {
+      "POSITION_FILLED": "Position filled",
+      "EXPERIENCE_INSUFFICIENT": "Experience not sufficient",
+      "SKILLS_MISMATCH": "Different skills needed",
+      "LOCATION": "Location or commute",
+      "QUALIFICATION_MISSING": "Required qualification or licence missing",
+      "APPLIED_AFTER_CLOSING": "Applied after closing",
+      "OTHER": "Other"
+    },
     "newJob": {
       "title": "New job",
       "fieldTitle": "Job title",
@@ -1084,6 +1113,13 @@
       "salaryMin": "Salary min",
       "salaryMax": "Salary max",
       "salaryCurrency": "Currency",
+      "belowMinimum": {
+        "title": "Pay below the minimum wage",
+        "MONTHLY": "The minimum wage in Palestine is {amount} per month.",
+        "DAILY": "The minimum wage in Palestine is {amount} per day.",
+        "HOURLY": "The minimum wage in Palestine is {amount} per hour.",
+        "note": "You can still post. The listing will carry a notice that the pay is below the minimum."
+      },
       "expiresAt": "Expires on",
       "submit": "Publish",
       "submitting": "Publishing…"

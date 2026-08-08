@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useTranslations } from "next-intl";
 import type { MutableRefObject } from "react";
 
+import { NeverPayBanner } from "@/components/NeverPayBanner";
 import { useReport } from "@/lib/api/safety";
 
 import { shortDate } from "../_utils";
@@ -166,6 +167,13 @@ export function RoomView({
           </span>
         )}
       </header>
+
+      {/* Outside the scroll container on purpose: a payment demand arrives
+          mid-thread, and a warning that scrolls away is not there when it does.
+          Unconditional — a group room has no single counterpart to report, but
+          the promise still holds there, so it degrades to notice-only rather
+          than disappearing. */}
+      <NeverPayBanner reportUserId={otherMember?.userId} />
 
       <div
         ref={threadRef}

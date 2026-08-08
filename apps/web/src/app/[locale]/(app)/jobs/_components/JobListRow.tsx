@@ -1,6 +1,12 @@
 "use client";
 
-import { formatRelativeTime, type Job, jobSource, jobSourceInitial } from "@baydar/shared";
+import {
+  belowMinimumWage,
+  formatRelativeTime,
+  type Job,
+  jobSource,
+  jobSourceInitial,
+} from "@baydar/shared";
 import { Badge, Chip, Icon, RecordCardSkeleton, Surface, cx } from "@baydar/ui-web";
 import Image from "next/image";
 import Link from "next/link";
@@ -56,6 +62,16 @@ export function JobListRow({
                 </>
               ) : null}
             </p>
+            {/* Statutory floor, Council of Ministers Resolution No. 4 of 2021.
+                Sits on the salary line rather than with the applied badge: it
+                qualifies the number, and beside it is where it is read. */}
+            {belowMinimumWage(job) ? (
+              <p className="mt-1">
+                <Badge tone="warning" srLabel={t("belowMinimumSr")}>
+                  {t("belowMinimumBadge")}
+                </Badge>
+              </p>
+            ) : null}
             {/* Recency is the first thing anyone scans a jobs list for, and it
                 was the one fact the row never showed — `createdAt` has always
                 been on the DTO. */}
