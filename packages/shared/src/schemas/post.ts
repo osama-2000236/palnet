@@ -27,6 +27,17 @@ export const UpdatePostBody = z.object({
 });
 export type UpdatePostBody = z.infer<typeof UpdatePostBody>;
 
+/** The person who wrote a post, as every post DTO carries them. */
+export const PostAuthor = z.object({
+  id: z.string().cuid(),
+  handle: z.string(),
+  firstName: z.string(),
+  lastName: z.string(),
+  headline: z.string().nullable(),
+  avatarUrl: z.string().url().nullable(),
+});
+export type PostAuthor = z.infer<typeof PostAuthor>;
+
 export const Post = z.object({
   id: z.string().cuid(),
   authorId: z.string().cuid(),
@@ -55,13 +66,6 @@ export const Post = z.object({
     reposted: z.boolean(),
     bookmarkId: z.string().cuid().nullable(),
   }),
-  author: z.object({
-    id: z.string().cuid(),
-    handle: z.string(),
-    firstName: z.string(),
-    lastName: z.string(),
-    headline: z.string().nullable(),
-    avatarUrl: z.string().url().nullable(),
-  }),
+  author: PostAuthor,
 });
 export type Post = z.infer<typeof Post>;

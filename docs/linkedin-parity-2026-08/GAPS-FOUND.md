@@ -73,3 +73,55 @@ accumulates exceptions until it stops meaning anything. The three Rule 1 names
 P0, because their replacement is genuinely nothing.
 
 **Sites:** `scripts/check-naming.mjs`.
+
+---
+
+## GAP-03 — the two payload optimisations do not pay for themselves
+
+**Phase:** P1
+**Needed:** whether to ship the `authors` map and `?fields=` selection, which
+§15.2 names as required to reach the budgets.
+**Should have been decided by:** §15.2, which states the budgets in gzipped
+bytes and then justifies both changes with an uncompressed saving.
+
+**What the spec missed.** The budget table is explicitly gzipped, and the
+40% figure for the authors map is not. Both were built and then measured,
+gzipped, on a ten-post fixture with real Arabic bodies:
+
+| Distinct authors in the page | `authors` map | Author repeated | Difference |
+| ---------------------------- | ------------- | --------------- | ---------- |
+| 1                            | 1,870 B       | 1,910 B         | −2.1%      |
+| 5                            | 1,953 B       | 1,969 B         | −0.8%      |
+| 10                           | 2,039 B       | 2,020 B         | **+0.9%**  |
+
+DEFLATE deduplicates a repeated JSON object about as well as a hand-built map
+does. On a page where nobody repeats, the map costs slightly more than it
+saves. The predicted 40% is real — on the uncompressed body, which is not what
+crosses a 2G link.
+
+The second finding is larger: **a ten-post feed page is ~2 KB gzipped against a
+24 KB budget.** There is twelve times the headroom the workstream assumed.
+
+**Options:**
+
+1. Ship both as specified.
+2. Ship neither, and gate the budget so the decision is revisited by
+   measurement rather than by argument.
+3. Ship the authors map only, on the grounds it was already written.
+
+**Chosen: 2.** The map bought roughly one percent and charged a wire format, a
+hydration step, and a new failure mode — a post whose author is missing from
+the map — for it. Field selection with a server-side allowlist per resource is
+a mechanism that must be maintained on every DTO change forever, and with 22 KB
+of headroom there is nothing to select away. Option 3 is the worst of the
+three: it keeps the cost of a decision after its benefit has been disproved.
+
+What ships instead is the gate: `apps/api/src/modules/feed/payload-budget.spec.ts`
+asserts the 24 KB budget and a 4 KB working ceiling, so the phases that add
+fields to the post DTO find out immediately. **When that file goes red, build
+field selection** — the measurement, not this document, is what should decide.
+
+The other six endpoints in §15.2's table are recorded at the top of that spec
+and are owed; each lands with the phase that reshapes its DTO.
+
+**Sites:** `apps/api/src/modules/feed/payload-budget.spec.ts`.
