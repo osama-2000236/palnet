@@ -21,12 +21,12 @@ enforced by a gate rather than by review:
 - **Baydar never moves money between members.** Members pay Baydar. No escrow,
   no wallet-to-wallet, no member invoicing, no cart.
 
-| Phase                       | State       |
-| --------------------------- | ----------- |
-| P0 Ground truth             | **done**    |
-| P1 Low-bandwidth foundation | **done**    |
-| P2 The graph                | in progress |
-| P3–P11                      | not started |
+| Phase                       | State                    |
+| --------------------------- | ------------------------ |
+| P0 Ground truth             | **done**                 |
+| P1 Low-bandwidth foundation | **done**                 |
+| P2 The graph                | **done bar two screens** |
+| P3–P11                      | not started              |
 
 **P0 delivered:** all 16 governorates and 93 cities (the table had 13 and 14, so
 Salfit, Tubas and North Gaza could not be selected at all and every job
@@ -49,12 +49,26 @@ variants behind `CLOUDFLARE_IMAGES_TRANSFORM_URL` with tap-to-load on `light`;
 resumable uploads over R2 multipart; the offline read cache with «آخر تحديث»
 and web's first offline banner; and the 2G journey spec.
 
+**P2 delivered:** the asymmetric edge and its counters; mute and restrict, the
+two primitives short of a block; degree and mutuals, first-degree live and
+second from a nightly table; a suggestion engine that returns a reason with
+every candidate and returns nobody it cannot explain; alumni, diaspora and
+nearby endpoints; `FollowButton`, `DegreeChip`, `MutualsRow` and
+`SuggestionCard` in both kits; and five network tabs on both platforms.
+
+**What P2 owes:** the `network/alumni` and `network/diaspora` screens. Their
+endpoints work and are pinned; what is missing is a route to reach them from,
+and the diaspora filter should wait for P3's `originGovernorate` rather than be
+written against a derived city and then rewritten. In `BLOCKERS.md`.
+
 **The one thing P1 owes:** `apps/web/e2e/two-g.spec.ts` is written and not yet
 run — Playwright needs the seeded QA stack and this worktree shares that
 database. `BLOCKERS.md` has the command and what to do if the budgets fail.
 
-Deviations from the spec are in that directory's `GAPS-FOUND.md` — seven so
-far, and **GAP-03 is the one to read**: the feed page measures ~2 KB gzipped
+Deviations from the spec are in that directory's `GAPS-FOUND.md` — eight so
+far. **GAP-03 and GAP-08 are the two to read**: the first is why neither
+payload optimisation was built, the second is a follow-graph uniqueness
+constraint that compiles and does not work: the feed page measures ~2 KB gzipped
 against a 24 KB budget, so neither payload optimisation §15.2 asked for was
 worth building. Failed gates would be in `BLOCKERS.md`, which is empty.
 
