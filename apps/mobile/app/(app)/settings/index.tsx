@@ -9,6 +9,7 @@ type SettingsHref =
   | "/settings/notifications"
   | "/settings/appearance"
   | "/settings/privacy"
+  | "/settings/verification"
   | "/settings/security"
   | "/settings/blocked";
 
@@ -41,6 +42,11 @@ export default function SettingsLandingScreen(): JSX.Element {
       href: "/settings/privacy",
       label: t("settings.items.privacy"),
       desc: t("settings.items.privacyDesc"),
+    },
+    {
+      href: "/settings/verification",
+      label: t("settings.items.verification"),
+      desc: t("settings.items.verificationDesc"),
     },
     {
       href: "/settings/security",

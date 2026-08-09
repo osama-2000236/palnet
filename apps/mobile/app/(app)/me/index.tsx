@@ -14,6 +14,7 @@ import { getAccessToken } from "@/lib/session";
 
 import { Section } from "@/screens/me/Section";
 import { ProfileQuickLinks } from "@/screens/me/ProfileQuickLinks";
+import { useCvExport } from "@/screens/me/useCvExport";
 import { useStyles } from "@/screens/me/styles";
 
 type ProfileTab = "about" | "exp" | "edu" | "skills";
@@ -28,6 +29,7 @@ const TABS: { key: ProfileTab; i18n: string }[] = [
 export default function MeScreen(): JSX.Element {
   const styles = useStyles();
   const { t } = useTranslation();
+  const cv = useCvExport();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -139,6 +141,19 @@ export default function MeScreen(): JSX.Element {
               onPress={() => router.push(`/(app)/in/${profile.handle}`)}
             >
               {t("profile.publicView")}
+            </Button>
+            {/* Closes HANDOFF gap #6. Web has had a CV export since it shipped
+                and used the browser's print dialog as the exporter; a phone has
+                no print dialog, so the server assembles the document and this
+                hands it to the OS share sheet. */}
+            <Button
+              variant="ghost"
+              size="md"
+              loading={cv.exporting}
+              accessibilityLabel={t("cv.export")}
+              onPress={() => cv.run(profile.handle)}
+            >
+              {t("cv.export")}
             </Button>
           </View>
         </Surface>

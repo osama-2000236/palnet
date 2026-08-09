@@ -4,6 +4,19 @@ import type { Href } from "expo-router";
 // without the app land on the public web page (and app holders deep-link back).
 export const WEB_ORIGIN = "https://baydar.ps";
 
+/**
+ * The web URL for a legal document.
+ *
+ * Mobile enforced `acceptTerms` while giving the user no way to read either
+ * document — plausibly an app-store rejection rather than a UX nit. The pages
+ * already existed on the web at /{locale}/legal/*, so the fix is a link, not a
+ * second copy of the documents inside the bundle where they would drift.
+ */
+export function legalUrl(document: "tos" | "privacy", locale: string): string {
+  const path = locale.startsWith("en") ? "en" : "ar-PS";
+  return `${WEB_ORIGIN}/${path}/legal/${document}`;
+}
+
 export function routeFromUrl(url: string): Href | null {
   let parsed: URL;
   try {

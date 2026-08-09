@@ -732,7 +732,9 @@
       "security": "Security",
       "securityDesc": "Review password, sessions, and two-factor status.",
       "appearance": "Appearance",
-      "appearanceDesc": "Choose your theme and reading language."
+      "appearanceDesc": "Choose your theme and reading language.",
+      "verification": "Verification",
+      "verificationDesc": "Confirm your phone, work or university email, or professional body."
     },
     "notifications": {
       "title": "Notifications",
@@ -1238,5 +1240,66 @@
     },
     "followers": "Followers",
     "following": "Following"
+  },
+  "verification": {
+    "title": "Verification",
+    "subtitle": "Four checks, each proving one specific thing.",
+    "notice": "Baydar has no single “verified” mark. Every badge says exactly what was checked, and nothing more.",
+    "statePending": "Under review",
+    "stateNone": "Not yet",
+    "methods": {
+      "PHONE": {
+        "title": "Phone number",
+        "proves": "Proves you receive messages at this number.",
+        "badge": "Phone confirmed",
+        "badgeSpoken": "Phone number confirmed"
+      },
+      "WORK_EMAIL": {
+        "title": "Work email",
+        "proves": "Proves you receive mail at the employer's domain — not that they endorse you.",
+        "badge": "Work email confirmed",
+        "badgeSpoken": "Work email confirmed"
+      },
+      "EDU_EMAIL": {
+        "title": "University email",
+        "proves": "Proves you receive mail at an institution we know.",
+        "badge": "University email confirmed",
+        "badgeSpoken": "University email confirmed"
+      },
+      "PROFESSIONAL_BODY": {
+        "title": "Professional body",
+        "proves": "A person checks it against the register. It takes time, which is why it means something.",
+        "badge": "Professional body",
+        "badgeSpoken": "Professional body membership confirmed"
+      }
+    },
+    "phone": {
+      "title": "Confirm your phone number",
+      "help": "A six-digit code arrives by SMS. It is valid for ten minutes.",
+      "label": "Phone number",
+      "placeholder": "0599123456",
+      "invalid": "That is not a valid Palestinian number.",
+      "send": "Send the code",
+      "sent": "Code sent.",
+      "sentTo": "We sent the code to the number ending {tail}.",
+      "codeLabel": "Code",
+      "attempts": "You have {value} attempts before the code is cancelled.",
+      "confirm": "Confirm",
+      "confirmed": "Phone number confirmed.",
+      "codeWrong": "That code is wrong or has expired."
+    },
+    "email": {
+      "title": "Work or university email",
+      "help": "The domain decides which badge this becomes. The link is valid for 24 hours.",
+      "label": "Email address",
+      "placeholder": "name@company.ps",
+      "send": "Send the link",
+      "sent": "Link sent. Open it from that mailbox."
+    }
+  },
+  "cv": {
+    "export": "Export CV",
+    "error": "Could not prepare the CV.",
+    "sharingUnavailable": "Sharing is not available on this device."
   }
 }

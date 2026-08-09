@@ -1,7 +1,7 @@
 # HANDOFF — live status
 
 The one status document. Rewritten in place, not appended to — if you want history, use
-`git log`, `gh pr list --state all`, and `CHANGELOG.md`. Last verified against `main` on 2026-08-08.
+`git log`, `gh pr list --state all`, and `CHANGELOG.md`. Last verified against `main` on 2026-08-09.
 
 Read order: `CLAUDE.md` → `project-spec.md` → `DESIGN.md` → `BRAND.md` → this file.
 
@@ -26,7 +26,8 @@ enforced by a gate rather than by review:
 | P0 Ground truth             | **done**                 |
 | P1 Low-bandwidth foundation | **done**                 |
 | P2 The graph                | **done bar two screens** |
-| P3–P11                      | not started              |
+| P3 Identity & evidence      | **done**                 |
+| P4–P11                      | not started              |
 
 **P0 delivered:** all 16 governorates and 93 cities (the table had 13 and 14, so
 Salfit, Tubas and North Gaza could not be selected at all and every job
@@ -61,12 +62,38 @@ endpoints work and are pinned; what is missing is a route to reach them from,
 and the diaspora filter should wait for P3's `originGovernorate` rather than be
 written against a derived city and then rewritten. In `BLOCKERS.md`.
 
+**P3 delivered:** the evidence loop — a worker files what they did, a
+counterparty confirms it, and nothing on the craft track moves without that.
+The off-platform path (a client with a phone and no account) is worth the same
+as the in-app one, which matters because most work in this market is done for
+somebody who is not on Baydar; what is stored is the SHA-256 of the number.
+Four verification methods, none of them a blue tick — every badge names what it
+checked. The craft ladder's thresholds, which `OCCUPATIONS.md` had left
+unwritten, as a pure function with a monotonicity test that makes "never
+decays" a property. An evidence score whose input schema is closed and asserted,
+so a purchasable term fails a unit test before `check:ranking-purity` sees it.
+Seven profile sections nobody had a home for — certificates, languages,
+volunteering, honours, publications, an English translation the member writes
+themselves, and a named career break, because displacement and detention are not
+edge cases here and an unexplained two-year gap reads as unemployability to
+every reader who has not lived here. Profile views as aggregate counters
+k-anonymised at 5, with no per-view rows to leak. Four kit pairs
+(`VerificationBadge`, `StandingChip`, `EvidenceMeter`, `RecommendationCard`),
+a verification screen on both platforms, and HANDOFF gaps #5 and #6 closed.
+
+**What P3 owes:** an SMS provider. `SMS_GATEWAY_URL`/`_TOKEN` are required in
+production and unset, so the API will refuse to boot rather than log "sent" for
+a code nobody received. That is a commercial decision, not a code one, and it is
+in `BLOCKERS.md`.
+
 **The one thing P1 owes:** `apps/web/e2e/two-g.spec.ts` is written and not yet
 run — Playwright needs the seeded QA stack and this worktree shares that
 database. `BLOCKERS.md` has the command and what to do if the budgets fail.
 
-Deviations from the spec are in that directory's `GAPS-FOUND.md` — eight so
-far. **GAP-03 and GAP-08 are the two to read**: the first is why neither
+Deviations from the spec are in that directory's `GAPS-FOUND.md` — ten so
+far. **GAP-03, GAP-08 and GAP-09 are the three to read** (GAP-10 is GAP-08's
+bug found a second time, in `Recommendation`, which is the argument for reading
+GAP-08 carefully): the first is why neither
 payload optimisation was built, the second is a follow-graph uniqueness
 constraint that compiles and does not work: the feed page measures ~2 KB gzipped
 against a 24 KB budget, so neither payload optimisation §15.2 asked for was
@@ -121,8 +148,8 @@ Ordered by damage, not by effort.
 | 2   | **Sign-out never revoked the session.** Fixed: one `signOut()` per platform revokes this device before dropping the local session, called from the two user-initiated sign-out sites. The remaining `clearSession()` calls are the already-dead-session paths, where a revoke is a guaranteed 401. Best-effort — a failed revoke still signs out locally.                                                                                                                                                                                                                                                                                  | **closed 2026-07-30**  | `apps/web/src/lib/api.ts` + `apps/mobile/src/lib/api.ts` `signOut()`; covered both directions in `api-refresh.test.ts` and mobile `api.test.ts` |
 | 3   | **Two-sided ratings: complete backend, zero UI.** `UserRating` model, `CANDIDATE_RATES_EMPLOYER`/`EMPLOYER_RATES_CANDIDATE`, 1–5 + comment, scoped to a job, plus a purpose-built `/summary` endpoint. 0 client files mention it.                                                                                                                                                                                                                                                                                                                                                                                                          | **open — not started** | `schema.prisma:875-891`; `packages/shared/src/schemas/rating.ts:3-7`; `ratings.controller.ts`                                                   |
 | 4   | **Company team management: complete backend with RBAC, zero UI.** OWNER/ADMIN/EDITOR guards on four endpoints. Consequence: every employer is a one-person account — a recruiter and a hiring manager cannot share a job.                                                                                                                                                                                                                                                                                                                                                                                                                  | **open — not started** | `company-members.controller.ts:40-70`; `schema.prisma:642-653`                                                                                  |
-| 5   | **Mobile makes users accept terms they cannot read.** `acceptTerms` is enforced; the screen contains zero links to the documents. Web has two (#114). All four `/legal/*` pages are web-only. Plausible app-store rejection, not a UX nit.                                                                                                                                                                                                                                                                                                                                                                                                 | **open — compliance**  | `apps/mobile/app/(auth)/register.tsx:42`; 0 matches for `legal\|tos\|privacy` in that file                                                      |
-| 6   | **No mobile CV export.** Web renders a print-optimised résumé with correct RTL shaping and uses the print dialog as the PDF exporter. No mobile twin.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      | **open — not started** | `apps/web/src/app/[locale]/cv/page.tsx`                                                                                                         |
+| 5   | **Mobile made users accept terms they could not read.** Closed: the register screen carries the same two links web has had since #114, opening the existing `/{locale}/legal/*` pages in the system browser. Linked rather than bundled — two copies of a legal document drift, and the one in the app bundle is the one that goes stale. Both links use web's exact labels, so `check:i18n` sees one string rather than a new divergence.                                                                                                                                                                                                 | **closed 2026-08-09**  | `apps/mobile/app/(auth)/register.tsx`; `legalUrl()` in `apps/mobile/src/lib/linking.ts`                                                         |
+| 6   | **No mobile CV export.** Closed, and the web half changed too. The document is assembled on the server now (`GET /cv/:handle`, own handle only) rather than in the client, so there is one definition of what a Baydar CV contains. Mobile fetches it and hands it to the OS share sheet. It is still not PDF bytes: see GAP-09 — a server-side PDF needs a Chromium per render or a library that spells Arabic backwards, and the platform text engine is the thing that shapes it correctly.                                                                                                                                             | **closed 2026-08-09**  | `apps/api/src/modules/cv/`; `apps/mobile/src/lib/cv.ts`; `docs/linkedin-parity-2026-08/GAPS-FOUND.md` GAP-09                                    |
 | 7   | **No mobile view for a shared job link.** `/j/[id]` is the public unauthenticated job page on web; mobile has no route, so a job shared into WhatsApp has nowhere to land on a phone.                                                                                                                                                                                                                                                                                                                                                                                                                                                      | **open — not started** | `GET /jobs/public/:id`; 0 mobile files reference `jobs/public`                                                                                  |
 | 8   | **`GET /connections/counts` was unreachable.** Wired into the `/network` tab strip on both platforms, which needed the native `Tab` to grow web's `count` + `formatCount` — that closes the last real row in `PARITY.md`'s component gap table. Web's `/network` was also the one page still shadowing the kit with a local `FilterTab`; it uses `Tabs` now. Counts refresh after accept/decline/withdraw/remove, because each moves a row between two tabs.                                                                                                                                                                               | **closed 2026-07-30**  | `ConnectionCounts` in `packages/shared/src/schemas/connection.ts`; both `/network` screens                                                      |
 | 9   | **Copy still diverges.** 30 keys flagged `unreconciled` — the same screen phrased differently on each platform. Separately the gate now reports platform-only surface at its ceiling: **web 163 keys, mobile 100** (worst namespace: `employer`, 30 web-only vs 15 mobile-only).                                                                                                                                                                                                                                                                                                                                                           | **open — ledgered**    | `scripts/check-i18n-parity.mjs:35-79`; `pnpm check:i18n`                                                                                        |

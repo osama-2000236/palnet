@@ -65,3 +65,36 @@ or the filter will be rewritten a fortnight later.
 
 **Not a blocker for P3.** Nothing in identity and evidence depends on these two
 screens, and P3 is what makes the diaspora filter honest.
+
+---
+
+## P3 · SMS has no provider, so phone verification cannot run in production
+
+**What.** `SMS_GATEWAY_URL` and `SMS_GATEWAY_TOKEN` are now required in
+production, and no value exists for either. Without them the API refuses to
+boot — deliberately, the same rule `MailModule` already follows: the alternative
+is a production that logs "sent" for a code nobody received, and a member
+staring at a form that will never accept anything.
+
+**Why it is a blocker rather than a bug.** A gateway is a commercial
+relationship. The operators that reliably deliver to +970 and +972 numbers are
+regional, and picking one is an owner decision with a contract behind it. The
+code takes a generic bearer-token POST precisely so the choice is an environment
+change rather than a deploy.
+
+**What works meanwhile.** Everything except delivery. In dev and test the code
+prints to the log, the whole flow is exercisable end to end, and `otp.service.spec.ts`
+covers the five walls that make a six-digit secret safe.
+
+**Blast radius if it ships unset:** the API does not boot. That is the intended
+failure — loud, immediate, and before any member sees it.
+
+---
+
+## P3 · the CV is HTML, not PDF
+
+Recorded in full as GAP-09. Short version: the server assembles the document and
+the platform renderer makes the PDF, because a server-side PDF needs either a
+Chromium per render on the API host or a library that spells Arabic backwards.
+`expo-print` would close the last gap on mobile in about five lines; it is a
+native module and needs a dev-client rebuild, which is owner-gated.

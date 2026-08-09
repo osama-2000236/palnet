@@ -1,10 +1,10 @@
-import { Button, Checkbox, Surface, nativeTokens } from "@baydar/ui-native";
+import { Button, Checkbox, Surface, nativeTokens, useThemeTokens } from "@baydar/ui-native";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { router } from "expo-router";
 import { useState } from "react";
 import { Controller, useForm, type Resolver } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import { View } from "react-native";
+import { Linking, Pressable, StyleSheet, Text, View } from "react-native";
 import { z } from "zod";
 
 import {
@@ -14,6 +14,7 @@ import {
   AuthTextField,
 } from "@/components/auth/AuthScaffold";
 import { ApiRequestError, registerAction } from "@/lib/auth-actions";
+import { legalUrl } from "@/lib/linking";
 import { useNetworkStore } from "@/store/network";
 
 interface RegisterFormValues {
@@ -44,6 +45,9 @@ const registerSchema = z.object({
 
 export default function RegisterScreen(): JSX.Element {
   const { i18n, t } = useTranslation();
+  // Resolved at render, never at module scope: a StyleSheet.create colour is
+  // frozen to the light palette and would stay dark-on-dark (lint:tokens r.4).
+  const c = useThemeTokens().color;
   const [error, setError] = useState<string | null>(null);
   const isConnected = useNetworkStore((state) => state.isConnected);
 
@@ -214,6 +218,30 @@ export default function RegisterScreen(): JSX.Element {
           errorMessage={errors.acceptTerms?.message ? t(errors.acceptTerms.message) : undefined}
           testID="register-accept-terms"
         />
+        {/* The consent was enforced and the documents were unreachable — web has
+            had both links since #114, mobile had none, which is an app-store
+            problem rather than a UX nit. Linking out rather than bundling a
+            second copy: two copies of a legal document drift. */}
+        <View style={styles.legalRow}>
+          <Pressable
+            accessibilityRole="link"
+            accessibilityLabel={t("auth.termsLink")}
+            hitSlop={8}
+            style={styles.legalHit}
+            onPress={() => void Linking.openURL(legalUrl("tos", i18n.language))}
+          >
+            <Text style={[styles.legalLink, { color: c.brand700 }]}>{t("auth.termsLink")}</Text>
+          </Pressable>
+          <Pressable
+            accessibilityRole="link"
+            accessibilityLabel={t("auth.privacyLink")}
+            hitSlop={8}
+            style={styles.legalHit}
+            onPress={() => void Linking.openURL(legalUrl("privacy", i18n.language))}
+          >
+            <Text style={[styles.legalLink, { color: c.brand700 }]}>{t("auth.privacyLink")}</Text>
+          </Pressable>
+        </View>
       </Surface>
 
       {error ? <AuthError message={error} /> : null}
@@ -232,3 +260,21 @@ export default function RegisterScreen(): JSX.Element {
     </AuthScaffold>
   );
 }
+
+const styles = StyleSheet.create({
+  legalRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: nativeTokens.space[4],
+    marginTop: nativeTokens.space[2],
+  },
+  // 44pt minimum hit target — MOBILE.md, non-negotiable.
+  legalHit: { minHeight: 44, justifyContent: "center" },
+  legalLink: {
+    fontFamily: nativeTokens.type.family.sans,
+    fontSize: nativeTokens.type.scale.small.size,
+    fontWeight: "600",
+    textDecorationLine: "underline",
+    textAlign: "auto",
+  },
+});

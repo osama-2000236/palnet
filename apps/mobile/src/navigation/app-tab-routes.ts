@@ -25,6 +25,7 @@ export const HIDDEN_APP_TAB_ROUTES = [
   "settings/notifications",
   "settings/privacy",
   "settings/security",
+  "settings/verification",
 ] as const;
 
 export const HIDDEN_FULL_SCREEN_APP_TAB_ROUTES = ["onboarding", "messages/[roomId]"] as const;

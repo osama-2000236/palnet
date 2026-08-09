@@ -313,3 +313,71 @@ reconciliation repairs drift rather than preventing it.
 
 **Sites:** `packages/shared/src/schemas/follow.ts`,
 `packages/db/prisma/migrations/202608090002_add_follow_graph/migration.sql`.
+
+---
+
+## GAP-09 — the CV PDF is not a PDF
+
+**Phase:** P3 (WS-01).
+**Needed:** `GET /cv/:handle.pdf`, "server-rendered; replaces the print hack",
+with the DoD requiring evidence of correct Arabic shaping.
+**Shipped:** `GET /cv/:handle`, returning a self-contained, print-sized HTML
+document.
+
+**Why the extension changed.** Producing PDF bytes on the server has exactly two
+implementations, and both are worse than what shipped.
+
+A PDF library — pdfkit, PDFKit-alikes, jsPDF — draws glyphs at coordinates. None
+of them shapes Arabic: no bidi reordering, no contextual forms, no ligatures. The
+output is a CV where every Arabic word is spelled backwards in isolated letter
+forms. That is not a degraded CV, it is an unusable one, and it would be sent to
+employers before anybody noticed.
+
+A headless browser — Puppeteer, Playwright — shapes it correctly, and costs a
+Chromium process per render on the box that also serves the API, plus ~400 MB of
+browser binaries in the deploy image. For a route ten members an hour will use.
+
+The third option is the one taken: the server assembles the document — one query,
+one layout, one source of truth for what a Baydar CV contains — and the platform
+that already has a correct Arabic text engine turns it into a PDF. On web that is
+`window.print()`, unchanged. On mobile it is the OS share sheet, which is what
+closes HANDOFF gap #6: the member mails the file, sends it on WhatsApp, or opens
+it in a browser and prints to PDF. The shaping is done by the same engine that
+renders the rest of their phone.
+
+**What it would take to ship real PDF bytes on mobile:** `expo-print`'s
+`printToFileAsync({ html })`, about five lines, fed this exact document. It is a
+native module, so it needs a dev-client rebuild — owner-gated on this setup, and
+recorded in `BLOCKERS.md` rather than pretended around.
+
+**Also changed:** the route is authenticated and returns only the caller's own
+CV. The spec's `x-guard: jwt` allowed any signed-in member to render anybody's.
+A CV is the most complete document Baydar holds about one person — every job,
+every date, every school, in one file — and an endpoint that renders any of them
+on demand is a scraper's favourite.
+
+**Sites:** `apps/api/src/modules/cv/`, `apps/mobile/src/lib/cv.ts`.
+
+---
+
+## GAP-10 — `Recommendation`'s uniqueness had GAP-08's bug
+
+**Phase:** P3 (WS-01).
+**Needed:** one testimonial per (author, subject, occupation).
+**Spec'd:** `@@unique([authorId, subjectId, occupationKey])` with
+`occupationKey String?`.
+
+Same trap as the follow graph, found the same way — Prisma refused the
+`whereUnique` and the refusal was the tell. Postgres treats NULLs as distinct, so
+every general testimonial (no occupation) would have been unique against every
+other one: one author could publish unlimited testimonials about the same person,
+and the constraint would have looked like it was working.
+
+**Chosen:** `occupationKey String @default("")`, NOT NULL. `""` means "about them
+generally" — a value, not an absence — and the DTO maps it to `null` on the wire
+so the client never has to know. The same fix as GAP-08's `targetKey`, for the
+same reason.
+
+**Sites:** `packages/db/prisma/schema.prisma`,
+`packages/db/prisma/migrations/202608090005_add_recommendation/migration.sql`,
+`apps/api/src/modules/recommendations/recommendations.mapper.ts`.

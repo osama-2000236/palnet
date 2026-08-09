@@ -1,3 +1,5 @@
+import { tokens } from "@baydar/ui-tokens";
+
 // The CV document itself: one self-contained HTML file, print-sized.
 //
 // Self-contained is the requirement, not a preference. The platform renderers
@@ -128,30 +130,46 @@ function chipSection(title: string, items: string[]): string {
 
 // Logical properties throughout, so one stylesheet prints correctly in both
 // directions. `dir` on <html> is the only thing that changes between locales.
+//
+// Colours are interpolated from the token bundle rather than written as hex.
+// The document has to be self-contained -- the platform PDF renderers do not
+// wait for an external stylesheet -- so `var(--ink)` is not available here, but
+// "self-contained" means inlining the token VALUE, not inventing a new one.
+//
+// The light palette on purpose: a CV is printed on white paper, and the dark
+// theme's ink would come out as a pale grey nobody can read.
 const STYLE = `
   @page { size: A4; margin: 18mm 16mm; }
   * { box-sizing: border-box; }
   body {
     margin: 0;
-    font-family: "Noto Naskh Arabic", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    font-family: ${tokens.type.family.body};
     font-size: 11pt;
-    line-height: 1.55;
-    color: #1c1917;
+    line-height: ${tokens.type.scale.body.line};
+    color: ${tokens.color.ink.DEFAULT};
   }
-  header { border-block-end: 2px solid #57534e; padding-block-end: 10px; margin-block-end: 18px; }
+  header {
+    border-block-end: 2px solid ${tokens.color.ink.muted};
+    padding-block-end: 10px;
+    margin-block-end: 18px;
+  }
   h1 { font-size: 20pt; margin: 0 0 4px; }
-  .headline { margin: 0; font-size: 12pt; color: #44403c; }
-  .meta { margin: 6px 0 0; font-size: 10pt; color: #57534e; }
-  h2 { font-size: 12pt; margin: 18px 0 8px; text-transform: none; letter-spacing: 0.2px; }
-  section { break-inside: auto; }
+  .headline { margin: 0; font-size: 12pt; color: ${tokens.color.ink.muted}; }
+  .meta { margin: 6px 0 0; font-size: 10pt; color: ${tokens.color.ink.muted}; }
+  h2 { font-size: 12pt; margin: 18px 0 8px; }
   .entry { margin-block-end: 12px; break-inside: avoid; }
   .entry h3 { font-size: 11.5pt; margin: 0; }
-  .org { margin: 0; color: #44403c; }
-  .period { margin: 0; font-size: 10pt; color: #78716c; }
+  .org { margin: 0; color: ${tokens.color.ink.muted}; }
+  .period { margin: 0; font-size: 10pt; color: ${tokens.color.ink.subtle}; }
   .desc { margin: 4px 0 0; }
   ul.plain { margin: 0; padding-inline-start: 18px; }
   ul.chips { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
-  ul.chips li { border: 1px solid #d6d3d1; border-radius: 4px; padding: 2px 8px; font-size: 10pt; }
+  ul.chips li {
+    border: 1px solid ${tokens.color.line.hard};
+    border-radius: ${tokens.radius.sm}px;
+    padding: 2px 8px;
+    font-size: 10pt;
+  }
   .break { margin: 0; }
 `;
 

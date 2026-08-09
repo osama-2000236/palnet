@@ -193,6 +193,11 @@ const profile: Profile = {
     "بالتعاقد المباشر. لدي شهادة مهنية من مركز تدريب وزارة العمل ورخصة قيادة.",
   location: "نابلس",
   country: "PS",
+  residenceCountry: "PS",
+  originGovernorate: "nablus",
+  diasporaVisible: true,
+  addressGender: "MASCULINE",
+  evidenceScore: 62,
   avatarUrl: `https://cdn.baydar.ps/a/${id("user", 1)}/96.webp`,
   coverUrl: `https://cdn.baydar.ps/cover/${id("user", 1)}/1080.webp`,
   website: null,
@@ -225,6 +230,57 @@ const profile: Profile = {
     slug: `skill-${i}`,
     endorsements: i,
   })),
+  // The sections WS-01 added. A tradesman with eleven years of work has all of
+  // these filled in, which is exactly the profile the budget has to survive —
+  // an empty one would prove nothing.
+  certificates: Array.from({ length: 3 }, (_, i) => ({
+    id: id("cert", i),
+    name: "شهادة مهنية في التمديدات الكهربائية",
+    issuerName: "مركز تدريب وزارة العمل — نابلس",
+    issuerKey: null,
+    credentialId: `MOL-${1000 + i}`,
+    credentialUrl: null,
+    issuedAt: "2018-05-01T00:00:00.000Z",
+    expiresAt: null,
+  })),
+  languages: [
+    { languageKey: "ar", proficiency: "NATIVE" as const },
+    { languageKey: "en", proficiency: "CONVERSATIONAL" as const },
+    { languageKey: "he", proficiency: "BASIC" as const },
+  ],
+  volunteerRoles: Array.from({ length: 2 }, (_, i) => ({
+    id: id("volr", i),
+    role: "متطوع في فريق الطوارئ",
+    organisation: "لجان الإغاثة الطبية",
+    causeKey: "RELIEF" as const,
+    startDate: "2021-01-01T00:00:00.000Z",
+    endDate: null,
+    description: null,
+  })),
+  honors: [
+    {
+      id: id("honr", 0),
+      title: "أفضل حرفي في المحافظة",
+      issuerName: "غرفة تجارة وصناعة نابلس",
+      awardedAt: "2022-11-01T00:00:00.000Z",
+      description: null,
+    },
+  ],
+  publications: [],
+  translations: [
+    {
+      locale: "en" as const,
+      firstName: "Abdulrahman",
+      lastName: "Abu Sitta",
+      headline: "Building electrician — Nablus",
+      about: null,
+    },
+  ],
+  careerBreak: {
+    from: "2023-10-01T00:00:00.000Z",
+    to: "2024-04-01T00:00:00.000Z",
+    reason: "CAREER_BREAK_DISPLACEMENT" as const,
+  },
   viewer: { isSelf: false, connection: null },
 };
 

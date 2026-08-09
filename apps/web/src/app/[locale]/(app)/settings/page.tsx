@@ -30,6 +30,11 @@ export default function SettingsLandingPage(): JSX.Element {
       desc: t("items.privacyDesc"),
     },
     {
+      href: `/${locale}/settings/verification`,
+      label: t("items.verification"),
+      desc: t("items.verificationDesc"),
+    },
+    {
       href: `/${locale}/settings/security`,
       label: t("items.security"),
       desc: t("items.securityDesc"),

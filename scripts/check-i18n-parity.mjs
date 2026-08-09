@@ -87,7 +87,6 @@ const PLATFORM_ONLY_NAMESPACES = {
     admin: "mobile ships no admin surface — no moderation, no billing console",
     publicJob: "the public /j/[id] SEO route; mobile has no unauthenticated job page",
     chrome: "AppShell's persistent chrome. Mobile screens each own an AppHeader",
-    cv: "the CV builder is web-only — no mobile screen references cv.*",
   },
   mobile: {
     api: "native map from API error codes to copy; web's equivalent is `errors`",
@@ -99,6 +98,11 @@ const PLATFORM_ONLY_NAMESPACES = {
   },
   both: {
     landing: "web is acquisition, mobile is the post-install intro — see DIVERGENCES",
+    // One deliverable, two surfaces. Web lays the résumé out in React and the
+    // print dialog IS its PDF exporter; a phone has no print dialog, so mobile
+    // fetches the server-assembled document and hands it to the share sheet.
+    // The two screens legitimately need different words.
+    cv: "web prints a React résumé; mobile shares the server-assembled document",
   },
 };
 
@@ -147,6 +151,12 @@ const DYNAMIC_NAMESPACES = {
     "discovery.mutuals",
     "discovery.degree",
     "discovery.empty",
+    // The verification screen reads `verification.methods.${method}.*` — four
+    // methods x four strings, and the method comes from the enum rather than
+    // from the call site. Only the sub-namespace is exempt: the flows around it
+    // (verification.phone.*, verification.email.*) are read by name and stay
+    // checkable.
+    "verification.methods",
   ],
   mobile: [
     // See the web entry: same component, same template keys.
@@ -155,6 +165,8 @@ const DYNAMIC_NAMESPACES = {
     "discovery.mutuals",
     "discovery.degree",
     "discovery.empty",
+    // See the web entry: same four methods, same template keys.
+    "verification.methods",
     "api",
     "auth",
     "errors",
