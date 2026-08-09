@@ -59,6 +59,14 @@ const EnvSchema = z.object({
   PALPAY_API_KEY: z.string().optional(),
   REFLECT_MERCHANT_ID: z.string().optional(),
   REFLECT_API_KEY: z.string().optional(),
+  // SMS — one-time codes for phone verification and off-platform work proofs.
+  // Generic HTTP gateway rather than a named vendor: the operators that reach
+  // Palestinian numbers reliably are regional, several are aggregators behind
+  // the same shape of POST, and hardcoding one would make switching a code
+  // change. Unset in dev/test, where codes go to the log.
+  SMS_GATEWAY_URL: z.string().url().optional(),
+  SMS_GATEWAY_TOKEN: z.string().min(1).optional(),
+  SMS_SENDER_ID: z.string().min(1).optional(),
   // Observability.
   SENTRY_DSN: z.string().url().optional(),
   SENTRY_RELEASE: z.string().min(7).optional(),
@@ -83,6 +91,8 @@ const REQUIRED_IN_PRODUCTION = [
   "BANK_TRANSFER_BENEFICIARY",
   "CLAMAV_SCAN_URL",
   "CLOUDFLARE_IMAGES_SCAN_URL",
+  "SMS_GATEWAY_URL",
+  "SMS_GATEWAY_TOKEN",
   "SENTRY_DSN",
   "SENTRY_RELEASE",
 ] as const satisfies readonly (keyof Env)[];

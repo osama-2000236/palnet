@@ -53,6 +53,10 @@ test("scans the files that decide order, and not the ones that do not", () => {
     "apps/api/src/modules/jobs/job-alerts.service.ts",
     "apps/api/src/modules/matching/matching.service.ts",
     "packages/shared/src/ranking/feed-score.ts",
+    // Named for what they measure rather than the surface they order, so the
+    // name patterns miss them. They order people, which is the higher stake.
+    "packages/shared/src/evidence-score.ts",
+    "packages/shared/src/standing.ts",
   ]) {
     assert.ok(isRanker(rel), `should scan: ${rel}`);
   }
@@ -65,6 +69,8 @@ test("scans the files that decide order, and not the ones that do not", () => {
     "apps/api/src/modules/feed/feed.controller.ts",
     "apps/api/src/modules/feed/feed.service.spec.ts",
     "packages/shared/src/ranking/feed-score.spec.ts",
+    "packages/shared/src/evidence-score.spec.ts",
+    "packages/shared/src/standing.spec.ts",
   ]) {
     assert.ok(!isRanker(rel), `should not scan: ${rel}`);
   }

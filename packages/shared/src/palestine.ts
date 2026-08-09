@@ -11,11 +11,13 @@
 import { foldArabic } from "./arabic-fold";
 import { GAZA_GOVERNORATE_KEYS, PS_GOVERNORATES } from "./palestine-governorates";
 import type { PsCity, PsGovernorate } from "./palestine-governorates";
+import { PS_UNIVERSITIES } from "./palestine-universities";
+import type { PsUniversity } from "./palestine-universities";
 
 export { PS_GOVERNORATES };
 export type { PsCity, PsGovernorate };
-export { PS_UNIVERSITIES } from "./palestine-universities";
-export type { PsUniversity } from "./palestine-universities";
+export { PS_UNIVERSITIES };
+export type { PsUniversity };
 
 export const PS_CITIES: readonly PsCity[] = PS_GOVERNORATES.flatMap((g) => g.cities);
 
@@ -104,6 +106,33 @@ export function governorateOfCity(city: string | null | undefined): string | nul
     GOVERNORATE_BY_FOLDED_CITY.get(foldArabic(cleaned)) ??
     GOVERNORATE_BY_FOLDED_CITY.get(cleaned.toLowerCase()) ??
     null
+  );
+}
+
+/**
+ * The institution that owns an email address, or null.
+ *
+ * Matched on a dot boundary, never as a substring: `notnajah.edu` must not pass
+ * as `najah.edu`, and `najah.edu.attacker.com` must not either. Subdomains do
+ * count -- `students.najah.edu` is the same institution, and refusing it would
+ * reject most real student addresses.
+ *
+ * Returns null for an institution whose `domain` is null. That is a legitimate
+ * state, not a gap: that member verifies by phone or work email instead.
+ */
+export function universityForEmail(email: string): PsUniversity | null {
+  const at = email.lastIndexOf("@");
+  if (at < 0) return null;
+  const host = email
+    .slice(at + 1)
+    .trim()
+    .toLowerCase()
+    .replace(/\.$/, "");
+  if (!host) return null;
+  return (
+    PS_UNIVERSITIES.find(
+      (u) => u.domain !== null && (host === u.domain || host.endsWith(`.${u.domain}`)),
+    ) ?? null
   );
 }
 

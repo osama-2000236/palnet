@@ -1,6 +1,6 @@
 import { tokens } from "@baydar/ui-tokens";
 
-export type MailTemplate = "verify-email" | "password-reset";
+export type MailTemplate = "verify-email" | "password-reset" | "verify-domain";
 export type MailLocale = "ar-PS" | "en";
 
 export interface MailData {
@@ -40,6 +40,26 @@ const COPY: Record<
       heading: "Welcome to Baydar",
       body: "Confirm your email to finish setting up your account. This link expires in 24 hours.",
       cta: "Verify email",
+      fallback: "If the button does not work, copy and paste this link into your browser:",
+    },
+  },
+  // Proving control of a work or university mailbox. Deliberately says what the
+  // check does and does not mean: this confirms the member reads mail at that
+  // domain, not that the employer endorses them, and the copy must not let a
+  // reader believe otherwise.
+  "verify-domain": {
+    "ar-PS": {
+      subject: "أكّد بريد العمل أو الجامعة في بيدر",
+      heading: "تأكيد النطاق",
+      body: "طلب أحدهم تأكيد ملكية هذا البريد لربطه بحساب في بيدر. الرابط صالح 24 ساعة. هذا يؤكّد أنك تستقبل البريد على هذا النطاق فقط، ولا يعني أن جهة العمل صادقت على الحساب. إذا لم تطلب ذلك تجاهل هذه الرسالة.",
+      cta: "تأكيد النطاق",
+      fallback: "إذا لم يعمل الزر، انسخ الرابط التالي والصقه في المتصفح:",
+    },
+    en: {
+      subject: "Confirm your work or university email on Baydar",
+      heading: "Confirm this domain",
+      body: "Someone asked to link this mailbox to a Baydar account. This link expires in 24 hours. It confirms only that you receive mail at this domain — it does not mean the organisation endorses the account. If you did not request this, ignore this message.",
+      cta: "Confirm domain",
       fallback: "If the button does not work, copy and paste this link into your browser:",
     },
   },

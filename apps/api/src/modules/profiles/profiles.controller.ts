@@ -4,11 +4,24 @@ import {
   EndorseSkillResult,
   ExperienceBody,
   OnboardProfileBody,
+  ProfileViewsQuery,
   UpdateProfileBody,
   type EndorseSkillResult as EndorseSkillResultDto,
   type Profile as ProfileDto,
+  type ProfileViewSummary,
 } from "@baydar/shared";
-import { Body, Controller, Delete, Get, Header, Param, Patch, Post, Put } from "@nestjs/common";
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Header,
+  Param,
+  Patch,
+  Post,
+  Put,
+  Query,
+} from "@nestjs/common";
 import { ApiBearerAuth, ApiOkResponse, ApiTags } from "@nestjs/swagger";
 
 import { ZodValidationPipe } from "../../common/zod-pipe";
@@ -16,12 +29,16 @@ import { CurrentUser, type AuthUser } from "../auth/decorators/current-user.deco
 import { OptionalAuth } from "../auth/decorators/optional-auth.decorator";
 import { OptionalUser } from "../auth/decorators/optional-user.decorator";
 
+import { ProfileViewsService } from "./profile-views.service";
 import { ProfilesService } from "./profiles.service";
 
 @ApiTags("profiles")
 @Controller("profiles")
 export class ProfilesController {
-  constructor(private readonly profiles: ProfilesService) {}
+  constructor(
+    private readonly profiles: ProfilesService,
+    private readonly views: ProfileViewsService,
+  ) {}
 
   @Post("onboard")
   @ApiBearerAuth()
@@ -150,6 +167,23 @@ export class ProfilesController {
     return { data: EndorseSkillResult.parse(data) };
   }
 
+  /**
+   * Who looked, in aggregate and never by name.
+   *
+   * Declared before `:handle` so `me/views` is not swallowed by the wildcard --
+   * Nest matches routes in declaration order, and a member with the handle
+   * "me" would otherwise be the only person who could reach their own stats.
+   */
+  @Get("me/views")
+  @ApiBearerAuth()
+  @Header("Cache-Control", "private, no-store")
+  async myViews(
+    @CurrentUser() user: AuthUser,
+    @Query(new ZodValidationPipe(ProfileViewsQuery)) query: ProfileViewsQuery,
+  ): Promise<{ data: ProfileViewSummary }> {
+    return { data: await this.views.summaryFor(user.id, query) };
+  }
+
   // Public: anyone can view a profile, but the DTO can attach viewer state when
   // a token is supplied, so shared caches must not store it.
   @OptionalAuth()
@@ -160,6 +194,13 @@ export class ProfilesController {
     @OptionalUser() viewer: AuthUser | null,
   ): Promise<{ data: ProfileDto }> {
     const data = await this.profiles.getByHandle(handle, viewer?.id);
+    // Counted after the read and never awaited: a slow counter must not make a
+    // profile slow to open, and a failed count is not worth failing a read for.
+    if (viewer) {
+      void this.views
+        .record({ profileId: data.id, userId: data.userId }, viewer.id)
+        .catch(() => undefined);
+    }
     return { data };
   }
 }

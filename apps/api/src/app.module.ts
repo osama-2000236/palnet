@@ -15,6 +15,8 @@ import { BookmarksModule } from "./modules/bookmarks/bookmarks.module";
 import { CommentsModule } from "./modules/comments/comments.module";
 import { CompaniesModule } from "./modules/companies/companies.module";
 import { ConnectionsModule } from "./modules/connections/connections.module";
+import { CvModule } from "./modules/cv/cv.module";
+import { EvidenceModule } from "./modules/evidence/evidence.module";
 import { FeedModule } from "./modules/feed/feed.module";
 import { FollowsModule } from "./modules/follows/follows.module";
 import { DiscoveryModule } from "./modules/discovery/discovery.module";
@@ -28,6 +30,7 @@ import { NotificationsModule } from "./modules/notifications/notifications.modul
 import { PostsModule } from "./modules/posts/posts.module";
 import { PrismaModule } from "./modules/prisma/prisma.module";
 import { ProfilesModule } from "./modules/profiles/profiles.module";
+import { RecommendationsModule } from "./modules/recommendations/recommendations.module";
 import { BaydarThrottlerGuard } from "./modules/rate-limit/rate-limit.guard";
 import { RedisThrottlerStorage } from "./modules/rate-limit/redis-throttler.storage";
 import { RatingsModule } from "./modules/ratings/ratings.module";
@@ -37,6 +40,8 @@ import { RedisModule } from "./modules/redis/redis.module";
 import { RepostsModule } from "./modules/reposts/reposts.module";
 import { SafetyModule } from "./modules/safety/safety.module";
 import { SearchModule } from "./modules/search/search.module";
+import { SmsModule } from "./modules/sms/sms.module";
+import { VerificationsModule } from "./modules/verifications/verifications.module";
 
 const env = loadEnv();
 const defaultThrottleLimit =
@@ -93,6 +98,11 @@ const defaultThrottleLimit =
     KaramaModule,
     RatingsModule,
     AccountModule,
+    SmsModule,
+    VerificationsModule,
+    EvidenceModule,
+    RecommendationsModule,
+    CvModule,
     AdminInternalModule,
   ],
   providers: [

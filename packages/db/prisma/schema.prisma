@@ -274,6 +274,83 @@ enum RatingContext {
   EMPLOYER_RATES_CANDIDATE
 }
 
+// Self-reported, and labelled as such. A test would be a product Baydar does
+// not run, and an unlabelled self-report is the kind of small lie that makes a
+// whole profile untrustworthy.
+enum LanguageLevel {
+  BASIC
+  CONVERSATIONAL
+  PROFESSIONAL
+  NATIVE
+}
+
+// How the author knew the subject. Required, because "worked with" covers a
+// manager and a supplier and those are not the same testimonial.
+enum RecommendationRelation {
+  MANAGED_DIRECTLY
+  REPORTED_TO_ME
+  SAME_TEAM
+  DIFFERENT_TEAM
+  CLIENT_OF
+  SUPPLIER_TO
+  TAUGHT
+  STUDIED_UNDER
+}
+
+enum RecommendationStatus {
+  PENDING
+  PUBLISHED
+  DECLINED
+  WITHDRAWN
+}
+
+// The four identity checks that exist in this market. LinkedIn's CLEAR and
+// NFC-passport paths do not: neither operates here, and a product that asks
+// for a document it cannot verify is asking for a photograph of an ID.
+enum VerificationMethod {
+  PHONE
+  WORK_EMAIL
+  EDU_EMAIL
+  PROFESSIONAL_BODY
+}
+
+enum VerificationStatus {
+  PENDING
+  VERIFIED
+  FAILED
+  REVOKED
+  EXPIRED
+}
+
+enum OtpPurpose {
+  PHONE_VERIFY
+  WORK_PROOF_CONFIRM
+  ACCOUNT_RECOVERY
+}
+
+// Arabic requires grammatical gender agreement in verbs and adjectives
+// addressed to the reader. This is a rendering input, not a pronoun: a
+// second-person imperative addressed to a woman is a different word, and
+// getting it wrong in every string is what a native speaker notices first.
+enum AddressGender {
+  FEMININE
+  MASCULINE
+  NEUTRAL_PLURAL
+}
+
+// Why the gap. DISPLACEMENT and DETENTION are not optional here — a gap this
+// market produces must not read as unemployability, and the only way to stop
+// that is to let it be named.
+enum CareerBreakReason {
+  CAREER_BREAK_STUDY
+  CAREER_BREAK_CARE
+  CAREER_BREAK_HEALTH
+  CAREER_BREAK_DISPLACEMENT
+  CAREER_BREAK_DETENTION
+  CAREER_BREAK_TRAVEL
+  CAREER_BREAK_OTHER
+}
+
 // The asymmetric edge. Baydar had exactly one — Connection, mutual, requiring
 // acceptance — which caps the diaspora's participation at the size of their
 // existing address book. 8.82 million people abroad mostly do not know each
@@ -304,6 +381,15 @@ model User {
   isActive                Boolean   @default(true)
   lastSeenAt              DateTime?
   karamaBalance           Int       @default(0)
+  /// Set once a PHONE verification succeeds. Denormalised from Verification so
+  /// the common check -- "can this account be trusted with an off-platform work
+  /// proof" -- is one column rather than a join.
+  phoneVerifiedAt         DateTime?
+  /// An upheld dispute against somebody this member vouched for drops their
+  /// vouch capacity to zero until this date. Suspension, not revocation: the
+  /// existing vouches stay, because revoking them would punish the vouchees
+  /// rather than the voucher.
+  vouchSuspendedUntil     DateTime?
   createdAt               DateTime  @default(now())
   updatedAt               DateTime  @updatedAt
   deletedAt               DateTime?
@@ -359,6 +445,9 @@ model User {
   secondDegreeOf          SecondDegree[]           @relation("SecondDegreePeer")
   suggestionDismissals    SuggestionDismissal[]    @relation("DismissalUser")
   dismissedBy             SuggestionDismissal[]    @relation("DismissalTarget")
+  verifications           Verification[]
+  recommendationsWritten  Recommendation[]         @relation("RecommendationAuthor")
+  recommendationsReceived Recommendation[]         @relation("RecommendationSubject")
 
   @@index([email])
   @@index([role])
@@ -596,13 +685,236 @@ model Profile {
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
 
-  experiences Experience[]
-  educations  Education[]
-  skills      ProfileSkill[]
-  claims      OccupationClaim[]
+  /// Where this member IS. `country` carried both meanings; origin is a
+  /// separate, optional fact now, because 8.82 million Palestinians abroad
+  /// against 5.56 million at home makes "where from" and "where now" two
+  /// different questions.
+  residenceCountry  String   @default("PS")
+  /// PS_GOVERNORATES key. The one thing the diaspora reliably shares.
+  originGovernorate String?
+  diasporaVisible   Boolean  @default(true)
+
+  /// Replaces `pronouns`, which had no consumer. Arabic verb and adjective
+  /// agreement needs this; NULL renders neutral-plural, which is what the
+  /// catalogs already assume and the safe default when nobody has said.
+  addressGender AddressGender?
+
+  /// A conflict-driven gap must not read as unemployability, and the only way
+  /// to stop that is to let it be named.
+  careerBreakFrom   DateTime?
+  careerBreakTo     DateTime?
+  careerBreakReason CareerBreakReason?
+
+  /// Cached, recomputed on write, never on read. Avoids a five-table fan-out
+  /// per person card. Used only to order a candidate list an employer already
+  /// opened -- never the feed, never public search, and no paid input touches
+  /// it (Rule 1).
+  evidenceScore Int @default(0)
+
+  experiences    Experience[]
+  educations     Education[]
+  skills         ProfileSkill[]
+  claims         OccupationClaim[]
+  certificates   Certificate[]
+  languages      ProfileLanguage[]
+  volunteerRoles VolunteerRole[]
+  honors         Honor[]
+  publications   Publication[]
+  translations   ProfileTranslation[]
+  viewDays       ProfileViewDaily[]
   // FTS: add Postgres GIN index on (firstName || lastName || headline || about) via raw SQL migration.
 
   @@index([handle])
+  @@index([originGovernorate])
+  @@index([residenceCountry])
+}
+
+// --------------------------------------------------------------------------
+// Profile sections
+// --------------------------------------------------------------------------
+
+/// A non-statutory training credential. Renders as a certificate and never as
+/// a licence: that claims something Baydar has not verified, and a licence
+/// claim is a legal exposure rather than a wording preference.
+model Certificate {
+  id            String    @id @default(cuid())
+  profile       Profile   @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  profileId     String
+  name          String
+  issuerName    String
+  /// PS_ISSUERS key when the issuer is one we know how to spell consistently.
+  issuerKey     String?
+  credentialId  String?
+  credentialUrl String?
+  issuedAt      DateTime?
+  expiresAt     DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([profileId])
+  @@index([issuerKey])
+}
+
+model ProfileLanguage {
+  profile     Profile       @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  profileId   String
+  /// BCP-47 primary subtag: ar, en, he, fr, tr, de, es.
+  languageKey String
+  proficiency LanguageLevel
+
+  @@id([profileId, languageKey])
+}
+
+model VolunteerRole {
+  id           String    @id @default(cuid())
+  profile      Profile   @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  profileId    String
+  role         String
+  organisation String
+  /// PS_CAUSE_KEYS. Six only: these describe work somebody did, which is a
+  /// different thing from "causes you care about".
+  causeKey     String?
+  startDate    DateTime
+  endDate      DateTime?
+  description  String?   @db.Text
+  createdAt    DateTime  @default(now())
+
+  @@index([profileId])
+}
+
+model Honor {
+  id          String    @id @default(cuid())
+  profile     Profile   @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  profileId   String
+  title       String
+  issuerName  String
+  awardedAt   DateTime?
+  description String?   @db.Text
+  createdAt   DateTime  @default(now())
+
+  @@index([profileId])
+}
+
+model Publication {
+  id          String    @id @default(cuid())
+  profile     Profile   @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  profileId   String
+  title       String
+  venue       String?
+  url         String?
+  publishedAt DateTime?
+  createdAt   DateTime  @default(now())
+
+  @@index([profileId])
+}
+
+/// The profile in a second language. The diaspora needs an English one; the
+/// local market needs Arabic. The member writes both -- a machine-translated
+/// headline in a hiring context is worse than none.
+model ProfileTranslation {
+  profile   Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  profileId String
+  /// "en" only, for now.
+  locale    String
+  firstName String
+  lastName  String
+  headline  String?
+  about     String?  @db.Text
+  updatedAt DateTime @updatedAt
+
+  @@id([profileId, locale])
+}
+
+/// Aggregate view counters, not per-view rows.
+///
+/// A view table at this scale is a privacy liability and an index-bloat
+/// problem, and named viewers are never sold here. The breakdowns are
+/// k-anonymised at read time (k = 5), so a member with three viewers learns
+/// nothing about which three.
+model ProfileViewDaily {
+  profile       Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  profileId     String
+  day           DateTime @db.Date
+  views         Int      @default(0)
+  byOccupation  Json?
+  byGovernorate Json?
+
+  @@id([profileId, day])
+  @@index([day])
+}
+
+/// A written testimonial.
+///
+/// Distinct from a Vouch, which sponsors somebody onto the craft ladder and
+/// costs the voucher capacity if a dispute is upheld, and from an endorsement,
+/// which is a counter. One per (author, subject, occupation): a second
+/// testimonial from the same person about the same work is not more evidence.
+model Recommendation {
+  id              String                 @id @default(cuid())
+  author          User                   @relation("RecommendationAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  authorId        String
+  subject         User                   @relation("RecommendationSubject", fields: [subjectId], references: [id], onDelete: Cascade)
+  subjectId       String
+  relationship    RecommendationRelation
+  /// "" means "about them generally", not "unknown".
+  ///
+  /// NOT nullable, and that is load-bearing: this column is part of the unique
+  /// below, and Postgres treats NULLs as distinct -- a nullable version would
+  /// compile, look right, and let one author publish unlimited general
+  /// testimonials about the same person. Same trap as the follow graph's
+  /// targetKey.
+  occupationKey   String                 @default("")
+  body            String                 @db.Text
+  status          RecommendationStatus   @default(PENDING)
+  requestedAt     DateTime?
+  respondedAt     DateTime?
+  /// The subject may hide a published recommendation. They may never edit it --
+  /// a testimonial the subject can rewrite is not a testimonial.
+  hiddenBySubject Boolean                @default(false)
+  createdAt       DateTime               @default(now())
+  updatedAt       DateTime               @updatedAt
+
+  @@unique([authorId, subjectId, occupationKey])
+  @@index([subjectId, status, hiddenBySubject])
+  @@index([authorId])
+}
+
+/// One row per (user, method).
+model Verification {
+  id            String             @id @default(cuid())
+  user          User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId        String
+  method        VerificationMethod
+  status        VerificationStatus @default(PENDING)
+  /// What was verified: the phone number, the email domain, the body key.
+  evidenceRef   String
+  verifiedAt    DateTime?
+  expiresAt     DateTime?
+  attempts      Int                @default(0)
+  lastAttemptAt DateTime?
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+
+  @@unique([userId, method])
+  @@index([status, expiresAt])
+}
+
+/// Short-lived one-time codes. Hash only -- the code is never stored, because
+/// a leaked table of live OTPs is a leaked table of accounts.
+model PhoneOtp {
+  id         String     @id @default(cuid())
+  phoneE164  String
+  codeHash   String
+  purpose    OtpPurpose
+  /// WorkProof id when purpose = WORK_PROOF_CONFIRM.
+  refId      String?
+  expiresAt  DateTime
+  consumedAt DateTime?
+  attempts   Int        @default(0)
+  createdAt  DateTime   @default(now())
+
+  @@index([phoneE164, purpose, expiresAt])
+  @@index([expiresAt])
 }
 
 model Experience {
@@ -641,12 +953,29 @@ model Education {
   @@index([profileId])
 }
 
+/// A skill, and the cluster it belongs to.
+///
+/// Free text fragments: "JS", "Javascript", and jafaskribt in Arabic are one
+/// skill typed three ways, and endorsements scatter across the fragments so
+/// nobody has a number that means anything. `foldedName` is `arabicFold(name)`
+/// and is what clusters them; `canonicalId` points an alias at the member of
+/// its cluster that existed first.
 model Skill {
-  id        String         @id @default(cuid())
-  name      String         @unique
-  slug      String         @unique
-  createdAt DateTime       @default(now())
-  profiles  ProfileSkill[]
+  id          String         @id @default(cuid())
+  name        String         @unique
+  slug        String         @unique
+  /// arabicFold(name). Not unique: the whole point is that several rows share
+  /// one, and the canonical row is the oldest of them.
+  foldedName  String         @default("")
+  /// Null on a canonical row. Set on an alias, pointing at its canonical.
+  canonicalId String?
+  canonical   Skill?         @relation("SkillCanonical", fields: [canonicalId], references: [id], onDelete: SetNull)
+  aliases     Skill[]        @relation("SkillCanonical")
+  createdAt   DateTime       @default(now())
+  profiles    ProfileSkill[]
+
+  @@index([foldedName])
+  @@index([canonicalId])
 }
 
 model ProfileSkill {
@@ -1261,6 +1590,11 @@ model WorkProof {
   clientUserId     String?
   clientCompany    Company?        @relation(fields: [clientCompanyId], references: [id], onDelete: SetNull)
   clientCompanyId  String?
+  /// SHA-256 of the E.164 number, for a client who is not on Baydar. The number
+  /// itself is never stored: a table of phone numbers belonging to people who
+  /// never signed up is somebody else's data, and it only exists here to route
+  /// one OTP and to stop the same client being counted twice.
+  clientPhoneHash  String?
   occupationKey    String
   job              Job?            @relation(fields: [jobId], references: [id], onDelete: SetNull)
   jobId            String?

@@ -53,6 +53,16 @@ export { MutualsRow } from "./MutualsRow";
 export type { MutualsRowProps } from "./MutualsRow";
 export { SuggestionCard } from "./SuggestionCard";
 export type { SuggestionCardLabels, SuggestionCardProps } from "./SuggestionCard";
+
+// WS-01 — identity and evidence. Four pairs, native twins in the same commit.
+export { VerificationBadge } from "./VerificationBadge";
+export type { VerificationBadgeProps, VerificationMethodName } from "./VerificationBadge";
+export { StandingChip } from "./StandingChip";
+export type { StandingChipProps, StandingValue } from "./StandingChip";
+export { EvidenceMeter } from "./EvidenceMeter";
+export type { EvidenceMeterProps, EvidenceTerm } from "./EvidenceMeter";
+export { RecommendationCard } from "./RecommendationCard";
+export type { RecommendationCardLabels, RecommendationCardProps } from "./RecommendationCard";
 export { PostMedia } from "./PostMedia";
 export type { PostMediaItem, PostMediaLabels, PostMediaProps } from "./PostMedia";
 export { PostCard } from "./PostCard";

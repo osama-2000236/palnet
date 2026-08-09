@@ -187,6 +187,64 @@ const EXPECTED_ROUTES = [
   "DELETE /posts/:id/reposts",
   "POST /reports",
   "POST /blocks",
+  // ── WS-01: identity, evidence, and the rest of a professional life (P3) ──
+  // Profile sections. Every one is `me`-scoped: there is no route here that
+  // takes somebody else's profile id.
+  "POST /profiles/me/certificates",
+  "PUT /profiles/me/certificates/:id",
+  "DELETE /profiles/me/certificates/:id",
+  "POST /profiles/me/languages",
+  "DELETE /profiles/me/languages/:languageKey",
+  "POST /profiles/me/volunteer",
+  "PUT /profiles/me/volunteer/:id",
+  "DELETE /profiles/me/volunteer/:id",
+  "POST /profiles/me/honors",
+  "PUT /profiles/me/honors/:id",
+  "DELETE /profiles/me/honors/:id",
+  "POST /profiles/me/publications",
+  "PUT /profiles/me/publications/:id",
+  "DELETE /profiles/me/publications/:id",
+  "PUT /profiles/me/translations/:locale",
+  "DELETE /profiles/me/translations/:locale",
+  "PUT /profiles/me/career-break",
+  "DELETE /profiles/me/career-break",
+  // Aggregate only, k-anonymised at 5. There is deliberately no route that
+  // returns a named viewer.
+  "GET /profiles/me/views",
+  // Verification. Four methods, none of them a blue tick.
+  "GET /verifications/me",
+  "POST /verifications/phone/start",
+  "POST /verifications/phone/confirm",
+  "POST /verifications/email-domain/start",
+  "POST /verifications/email-domain/confirm",
+  "POST /verifications/body/request",
+  // Recommendations. Note what is absent: no route lets a SUBJECT edit a
+  // testimonial's body, only hide it.
+  "POST /recommendations",
+  "POST /recommendations/requests",
+  "GET /recommendations/requests",
+  "POST /recommendations/:id/respond",
+  "POST /recommendations/:id/withdraw",
+  "PATCH /recommendations/:id/visibility",
+  "GET /recommendations/:handle",
+  // Occupation claims, work proofs, vouches, licences.
+  "POST /profiles/me/claims",
+  "DELETE /profiles/me/claims/:occupationKey",
+  "POST /work-proofs",
+  "GET /work-proofs/me",
+  "POST /work-proofs/:id/confirm",
+  "POST /work-proofs/:id/decline",
+  // DISPUTE, never DELETE: a confirmed proof is a record, and either party
+  // being able to erase it is the whole failure mode.
+  "POST /work-proofs/:id/dispute",
+  "GET /profiles/:handle/evidence",
+  "POST /vouches",
+  "DELETE /vouches/:id",
+  "POST /licences",
+  "POST /licences/:id/verify-request",
+  "DELETE /licences/:id",
+  // The CV document. HTML rather than PDF bytes -- see GAP-09.
+  "GET /cv/:handle",
   "DELETE /blocks/:blockedUserId",
   "GET /blocks",
   "GET /search/people",

@@ -1,7 +1,17 @@
 import { z } from "zod";
 
 import { JobLocationMode } from "../enums";
+import { AddressGender } from "../identity-enums";
 import { normalizeCity } from "../palestine";
+import {
+  CareerBreak,
+  Certificate,
+  Honor,
+  ProfileLanguage,
+  ProfileTranslation,
+  Publication,
+  VolunteerRole,
+} from "./profile-sections";
 
 // Handle: /in/<handle> — lowercase ascii, digits, dash; 3-30 chars; unique.
 export const Handle = z
@@ -75,25 +85,65 @@ export const Profile = z.object({
     .transform((v) => normalizeCity(v))
     .nullish(),
   country: z.string().length(2).default("PS"),
+  // Where this member IS, as opposed to where they are from. `country` carried
+  // both meanings and could not carry both: 8.82 million Palestinians abroad
+  // against 5.56 million at home makes those two different questions, and the
+  // whole diaspora surface depends on being able to ask each one separately.
+  //
+  // `country` is not dropped in this release. Two-release rule -- DEPRECATIONS
+  // .json holds the removal, and until then both are written.
+  residenceCountry: z.string().length(2).default("PS"),
+  /** A PS_GOVERNORATES key. The one thing the diaspora reliably shares. */
+  originGovernorate: z.string().max(80).nullish(),
+  diasporaVisible: z.boolean().default(true),
   avatarUrl: z.string().url().nullish(),
   coverUrl: z.string().url().nullish(),
   website: z.string().url().nullish(),
   pronouns: z.string().max(40).nullish(),
+  /**
+   * How to address this member in Arabic. A rendering input, not a pronoun:
+   * a second-person imperative addressed to a woman is a different word, and
+   * getting it wrong in every string is what a native speaker notices first.
+   */
+  addressGender: z.nativeEnum(AddressGender).nullish(),
   openToWork: z.boolean(),
   hiring: z.boolean(),
+  /** Cached; recomputed on write, never on read. Orders a candidate list an
+   *  employer already opened, and nothing else. */
+  evidenceScore: z.number().int().min(0).max(100).default(0),
+  careerBreak: CareerBreak.nullish(),
   experiences: z.array(Experience).default([]),
   educations: z.array(Education).default([]),
   skills: z.array(Skill).default([]),
+  certificates: z.array(Certificate).default([]),
+  languages: z.array(ProfileLanguage).default([]),
+  volunteerRoles: z.array(VolunteerRole).default([]),
+  honors: z.array(Honor).default([]),
+  publications: z.array(Publication).default([]),
+  translations: z.array(ProfileTranslation).default([]),
   viewer: ViewerProfileState.optional(),
 });
 export type Profile = z.infer<typeof Profile>;
 
+// The sections have their own routes: a PUT of the whole profile that carried
+// twenty certificates would make every edit a race with itself, and on 2G it
+// would make every edit a 40KB upload.
+//
+// `evidenceScore` is omitted because it is computed. A client that could set it
+// could buy it, and Rule 1 is not enforced by asking nicely.
 export const UpdateProfileBody = Profile.omit({
   id: true,
   userId: true,
+  evidenceScore: true,
   experiences: true,
   educations: true,
   skills: true,
+  certificates: true,
+  languages: true,
+  volunteerRoles: true,
+  honors: true,
+  publications: true,
+  translations: true,
 }).partial();
 export type UpdateProfileBody = z.infer<typeof UpdateProfileBody>;
 

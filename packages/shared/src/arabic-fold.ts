@@ -17,3 +17,20 @@ export function foldArabic(input: string): string {
     .replace(/ى/g, "ي")
     .replace(/ة/g, "ه");
 }
+
+// The skill-clustering key.
+//
+// "JS", "Javascript", "javascript" and «جافاسكربت» are one skill typed four
+// ways, and endorsement counts scatter across the fragments until nobody's
+// number means anything. This is the key several Skill rows share; the oldest
+// row in a cluster is its canonical, and the rest point at it.
+//
+// Latin case matters here in a way it does not in search: "JavaScript" and
+// "javascript" are the same skill, so the lowercase is on top of the fold.
+//
+// MUST stay equivalent to the SQL in migration 202608090009, which is
+// literally `lower(btrim(regexp_replace(baydar_fold(name), '\s+', ' ', 'g')))`.
+// arabic-fold.spec.ts pins the two against each other.
+export function foldSkillName(name: string): string {
+  return foldArabic(name).toLowerCase().trim().replace(/\s+/g, " ");
+}

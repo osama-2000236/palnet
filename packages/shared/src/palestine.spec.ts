@@ -7,6 +7,7 @@ import {
   normalizeCity,
   proximityScore,
   regionOfGovernorate,
+  universityForEmail,
 } from "./palestine";
 
 describe("PS_INDUSTRIES", () => {
@@ -105,5 +106,32 @@ describe("normalizeCity", () => {
   it("passes unknown (diaspora) cities through trimmed", () => {
     expect(normalizeCity("  Berlin  ")).toBe("Berlin");
     expect(normalizeCity("")).toBe("");
+  });
+});
+
+describe("universityForEmail", () => {
+  it("matches an institution's own domain", () => {
+    expect(universityForEmail("sara@birzeit.edu")?.key).toBe("birzeit");
+  });
+
+  it("matches a subdomain, because that is where student mail actually lives", () => {
+    expect(universityForEmail("sara@students.birzeit.edu")?.key).toBe("birzeit");
+  });
+
+  it("refuses a substring or a suffix somebody else controls", () => {
+    // The two ways a naive `includes` check hands out an EDU_EMAIL badge to
+    // anybody who can register a domain.
+    expect(universityForEmail("attacker@notbirzeit.edu")).toBeNull();
+    expect(universityForEmail("attacker@birzeit.edu.example.com")).toBeNull();
+  });
+
+  it("is case- and trailing-dot-insensitive", () => {
+    expect(universityForEmail("Sara@BIRZEIT.EDU.")?.key).toBe("birzeit");
+  });
+
+  it("returns null for anything that is not one of ours", () => {
+    expect(universityForEmail("sara@gmail.com")).toBeNull();
+    expect(universityForEmail("not-an-email")).toBeNull();
+    expect(universityForEmail("sara@")).toBeNull();
   });
 });

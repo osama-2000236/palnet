@@ -68,6 +68,18 @@ const BANNED = [
 const RANKER_FILE = /^(?:feed|search|jobs?|matching|ranking)[\w.-]*\.service\.ts$/;
 const RANKER_DIR = "packages/shared/src/ranking";
 
+/**
+ * Scorers that order people rather than posts, and so are not named for a
+ * surface. The evidence score orders a candidate list; a standing orders a
+ * craft directory. Both are exactly the place somebody would reach for a
+ * subscription tier, and neither would be caught by the name patterns above.
+ */
+const RANKER_FILES = new Set([
+  "packages/shared/src/evidence-score.ts",
+  "packages/shared/src/standing.ts",
+  "apps/api/src/modules/evidence/standing.service.ts",
+]);
+
 const SOURCE_DIRS = ["apps", "packages"];
 const SKIP_DIRS = new Set([
   "node_modules",
@@ -106,6 +118,7 @@ const relPath = (file) => relative(ROOT, file).split(sep).join("/");
 
 /** True when this path is a ranker and therefore subject to Rule 1. */
 export function isRanker(rel) {
+  if (RANKER_FILES.has(rel)) return true;
   if (rel.startsWith(`${RANKER_DIR}/`)) return /\.tsx?$/.test(rel) && !/\.spec\.tsx?$/.test(rel);
   return RANKER_FILE.test(rel.split("/").pop() ?? "");
 }

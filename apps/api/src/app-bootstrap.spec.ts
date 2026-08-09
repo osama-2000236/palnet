@@ -20,6 +20,8 @@ describe("app bootstrap env validation", () => {
     RESEND_API_KEY: "resend-key",
     SENTRY_DSN: "https://public@example.com/1",
     SENTRY_RELEASE: "abcdef1",
+    SMS_GATEWAY_TOKEN: "sms-token",
+    SMS_GATEWAY_URL: "https://sms.example.com/send",
   };
   const originalEnv = process.env;
 
