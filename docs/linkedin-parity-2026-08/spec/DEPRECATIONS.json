@@ -16,7 +16,7 @@
     "Without it the gate would fail at P0 on symbols that are still correct,",
     "which is how a gate gets switched off."
   ],
-  "currentRelease": "P0",
+  "currentRelease": "P2",
   "deprecations": [
     {
       "symbol": "Profile.pronouns",

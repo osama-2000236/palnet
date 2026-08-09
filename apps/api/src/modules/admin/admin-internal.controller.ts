@@ -15,6 +15,7 @@ import {
   AccountRetentionService,
   type RetentionReport,
 } from "../account/account-retention.service";
+import { SecondDegreeService, type SecondDegreeReport } from "../discovery/second-degree.service";
 import { Public } from "../auth/decorators/public.decorator";
 import { BillingService } from "../billing/billing.service";
 import { KaramaService, type KaramaDecayReport } from "../karama/karama.service";
@@ -36,6 +37,7 @@ export class AdminInternalController {
     private readonly karama: KaramaService,
     private readonly billing: BillingService,
     private readonly mediaScan: MediaScanService,
+    private readonly secondDegree: SecondDegreeService,
   ) {}
 
   @Post("account-retention/run")
@@ -44,6 +46,20 @@ export class AdminInternalController {
     @Body(new ZodValidationPipe(InternalDryRunBody)) body: InternalDryRunBody,
   ): Promise<RetentionReport> {
     return this.retention.runRetention({ dryRun: body.dryRun });
+  }
+
+  /**
+   * Rebuild the second-degree table. Nightly.
+   *
+   * Whole-table replace rather than incremental: a member who disconnected has
+   * to disappear, and there is no delete event to hang that on.
+   */
+  @Post("second-degree/refresh")
+  @HttpCode(HttpStatus.OK)
+  async refreshSecondDegree(
+    @Body(new ZodValidationPipe(InternalDryRunBody)) body: InternalDryRunBody,
+  ): Promise<SecondDegreeReport> {
+    return this.secondDegree.refresh({ dryRun: body.dryRun });
   }
 
   @Post("karama-decay/run")

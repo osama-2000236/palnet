@@ -130,6 +130,17 @@ export function occupationByKey(key: string): PsOccupation | undefined {
   return OCCUPATION_BY_KEY.get(key);
 }
 
+/**
+ * The family an occupation belongs to, or null when the key is unknown.
+ *
+ * "Same field" is the second-strongest suggestion signal after shared
+ * connections, and comparing occupation keys directly is too narrow: a
+ * كهربائي مباني and a كهربائي سيارات are peers, and their keys are not equal.
+ */
+export function occupationFamilyOf(occupationKey: string): string | null {
+  return OCCUPATION_BY_KEY.get(occupationKey)?.family ?? null;
+}
+
 /** The track that governs an occupation's progression, or undefined if unknown. */
 export function trackOf(occupationKey: string): Track | undefined {
   const occ = OCCUPATION_BY_KEY.get(occupationKey);

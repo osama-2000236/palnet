@@ -109,6 +109,32 @@ const EXPECTED_ROUTES = [
   "POST /jobs/:id/apply",
   "GET /karama/balance",
   "POST /karama/redeem",
+  // The asymmetric edge. A follow costs the person followed nothing, which is
+  // why the diaspora can use it and a connection request they cannot.
+  "POST /follows",
+  "DELETE /follows",
+  "GET /follows/me",
+  "GET /follows/followers",
+  "GET /follows/counts",
+  // Less than a block, and not the same as each other: a mute is invisible and
+  // only touches the feed; a restriction is for when blocking is itself a
+  // signal the other person would notice.
+  "POST /feed-mutes",
+  "DELETE /feed-mutes/:userId",
+  "GET /feed-mutes",
+  "POST /restrictions",
+  "DELETE /restrictions/:userId",
+  "GET /restrictions",
+  "GET /connections/degree/:userId",
+  // Replaces GET /connections/suggestions, which returned people ordered by
+  // profile freshness with no reason attached. The old path stays an alias for
+  // one release — DEPRECATIONS.json.
+  "GET /discovery/people",
+  "DELETE /discovery/people/:userId",
+  "GET /discovery/alumni",
+  "GET /discovery/diaspora",
+  "GET /discovery/nearby",
+  "POST /admin/internal/second-degree/refresh",
   "POST /media/presign",
   // Resumable uploads. A drop on 2G costs the part in flight, not the file.
   "POST /media/multipart",
@@ -182,6 +208,7 @@ const EXPECTED_PUBLIC_ROUTES = [
   // `@UseGuards(InternalTokenGuard)`, covered in internal-token.guard.spec.ts.
   "POST /admin/internal/account-retention/run",
   "POST /admin/internal/karama-decay/run",
+  "POST /admin/internal/second-degree/refresh",
   "POST /admin/internal/billing/invoices/:invoiceId/action",
   "POST /admin/internal/media/scan",
   // Credential surfaces. Each is rate-limited at the route.

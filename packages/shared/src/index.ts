@@ -23,6 +23,7 @@ export * from "./schemas/auth";
 export * from "./schemas/profile";
 export * from "./schemas/connection";
 export * from "./schemas/follow";
+export * from "./schemas/discovery";
 export * from "./schemas/post";
 export * from "./schemas/interaction";
 export * from "./schemas/message";

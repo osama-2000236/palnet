@@ -141,3 +141,43 @@ export const UNKNOWN_GRAPH_STATE: PersonGraphState = {
   mutualCount: 0,
   followState: { following: false, followsYou: false },
 };
+
+// ── List rows ──────────────────────────────────────────────────────────────
+
+export const FollowPerson = z.object({
+  userId: z.string().cuid(),
+  handle: z.string(),
+  firstName: z.string(),
+  lastName: z.string(),
+  headline: z.string().nullable(),
+  avatarUrl: z.string().url().nullable(),
+});
+export type FollowPerson = z.infer<typeof FollowPerson>;
+
+/**
+ * One row of a follow list.
+ *
+ * Exactly one of `user` / `company` / `topicKey` is set, mirroring the edge —
+ * a row shaped like the table is a row nobody has to reconcile.
+ */
+export const FollowRow = z.object({
+  id: z.string().cuid(),
+  targetType: z.nativeEnum(FollowTargetType),
+  createdAt: z.string().datetime(),
+  user: FollowPerson.nullable(),
+  company: z
+    .object({
+      id: z.string().cuid(),
+      slug: z.string(),
+      name: z.string(),
+      logoUrl: z.string().url().nullable(),
+    })
+    .nullable(),
+  topicKey: z.string().nullable(),
+});
+export type FollowRow = z.infer<typeof FollowRow>;
+
+export const FollowListQuery = z.object({
+  targetType: z.nativeEnum(FollowTargetType).optional(),
+});
+export type FollowListQuery = z.infer<typeof FollowListQuery>;

@@ -8,6 +8,7 @@ import { AdminInternalController } from "../modules/admin/admin-internal.control
 import { BillingService } from "../modules/billing/billing.service";
 import { KaramaService } from "../modules/karama/karama.service";
 import { MediaScanService } from "../modules/media/media-scan.service";
+import { SecondDegreeService } from "../modules/discovery/second-degree.service";
 
 // `admin/internal` carries `@Public()`, so the global JWT guard lets every
 // request through by design — cron and CI call these with a shared token, not a
@@ -35,6 +36,7 @@ async function createApp(token: string | undefined): Promise<INestApplication> {
       { provide: KaramaService, useValue: { runMonthlyDecay: jest.fn() } },
       { provide: BillingService, useValue: noop },
       { provide: MediaScanService, useValue: noop },
+      { provide: SecondDegreeService, useValue: { refresh: jest.fn() } },
     ],
   }).compile();
 

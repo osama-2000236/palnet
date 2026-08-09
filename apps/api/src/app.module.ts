@@ -16,6 +16,9 @@ import { CommentsModule } from "./modules/comments/comments.module";
 import { CompaniesModule } from "./modules/companies/companies.module";
 import { ConnectionsModule } from "./modules/connections/connections.module";
 import { FeedModule } from "./modules/feed/feed.module";
+import { FollowsModule } from "./modules/follows/follows.module";
+import { DiscoveryModule } from "./modules/discovery/discovery.module";
+import { GraphModule } from "./modules/graph/graph.module";
 import { HealthModule } from "./modules/health/health.module";
 import { JobsModule } from "./modules/jobs/jobs.module";
 import { KaramaModule } from "./modules/karama/karama.module";
@@ -72,6 +75,9 @@ const defaultThrottleLimit =
     ProfilesModule,
     PostsModule,
     FeedModule,
+    FollowsModule,
+    GraphModule,
+    DiscoveryModule,
     ReactionsModule,
     CommentsModule,
     RepostsModule,

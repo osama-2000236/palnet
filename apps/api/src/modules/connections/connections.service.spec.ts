@@ -20,6 +20,9 @@ type PrismaStub = {
     findMany: jest.Mock;
     count: jest.Mock;
   };
+  follow: { createMany: jest.Mock; deleteMany: jest.Mock };
+  followerCount: { upsert: jest.Mock; updateMany: jest.Mock };
+  $transaction: jest.Mock;
 };
 
 function buildPrisma(): PrismaStub {
@@ -35,6 +38,17 @@ function buildPrisma(): PrismaStub {
       findMany: jest.fn(),
       count: jest.fn(),
     },
+    // A connection is two follows, written in the same transaction, so the
+    // stub has to be able to run one.
+    follow: {
+      createMany: jest.fn().mockResolvedValue({ count: 1 }),
+      deleteMany: jest.fn().mockResolvedValue({ count: 1 }),
+    },
+    followerCount: {
+      upsert: jest.fn().mockResolvedValue({}),
+      updateMany: jest.fn().mockResolvedValue({ count: 1 }),
+    },
+    $transaction: jest.fn(),
   };
 }
 
@@ -45,6 +59,9 @@ describe("ConnectionsService", () => {
 
   beforeEach(async () => {
     prisma = buildPrisma();
+    prisma.$transaction.mockImplementation((fn: (tx: PrismaStub) => Promise<unknown>) =>
+      fn(prisma),
+    );
     safety = {
       getBlockedEitherIds: jest.fn().mockResolvedValue([]),
       isBlockedEither: jest.fn().mockResolvedValue(false),

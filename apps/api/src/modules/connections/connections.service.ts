@@ -10,6 +10,7 @@ import { Injectable } from "@nestjs/common";
 
 import { DomainException } from "../../common/domain-exception";
 import { NotificationsService } from "../notifications/notifications.service";
+import { addMutualFollows, removeMutualFollows } from "./connection-follows";
 import { PrismaService } from "../prisma/prisma.service";
 import { SafetyService } from "../safety/safety.service";
 
@@ -152,12 +153,22 @@ export class ConnectionsService {
     if (row.status !== "PENDING") {
       throw new DomainException(ErrorCode.CONFLICT, "Connection is not pending.", 409);
     }
-    const updated = await this.prisma.connection.update({
-      where: { id: connectionId },
-      data: {
-        status: body.action === "ACCEPT" ? "ACCEPTED" : "DECLINED",
-        respondedAt: new Date(),
-      },
+    // A connection implies a follow in both directions, and the two writes
+    // must agree: a member who accepted and then saw nothing in their feed
+    // would have no way to tell what went wrong. One transaction, so neither
+    // half can happen alone.
+    const updated = await this.prisma.$transaction(async (tx) => {
+      const next = await tx.connection.update({
+        where: { id: connectionId },
+        data: {
+          status: body.action === "ACCEPT" ? "ACCEPTED" : "DECLINED",
+          respondedAt: new Date(),
+        },
+      });
+      if (body.action === "ACCEPT") {
+        await addMutualFollows(tx, row.requesterId, row.receiverId);
+      }
+      return next;
     });
     if (body.action === "ACCEPT") {
       void this.notifications.notify({
@@ -214,7 +225,14 @@ export class ConnectionsService {
         409,
       );
     }
-    await this.prisma.connection.delete({ where: { id: connectionId } });
+    // Disconnecting removes both follows; unfollowing does NOT disconnect.
+    // The asymmetry is the point — "I no longer want your posts" and "we are
+    // no longer connected" are different statements, and only one of them is
+    // visible to the other person.
+    await this.prisma.$transaction(async (tx) => {
+      await tx.connection.delete({ where: { id: connectionId } });
+      await removeMutualFollows(tx, row.requesterId, row.receiverId);
+    });
   }
 
   // ────────────────────────────────────────────────────────────────────
