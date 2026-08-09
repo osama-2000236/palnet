@@ -1331,5 +1331,56 @@
       "title": "You are offline",
       "body": "Live updates are paused and will resume when the connection returns."
     }
+  },
+  "discovery": {
+    "tabs": {
+      "suggestions": "Suggestions",
+      "followers": "Followers"
+    },
+    "follow": {
+      "follow": "Follow",
+      "following": "Following",
+      "followBack": "Follow back",
+      "unfollow": "Unfollow"
+    },
+    "degree": {
+      "1st": "1st degree",
+      "2nd": "2nd degree",
+      "3rd+": "3rd+ degree"
+    },
+    "degreeLabel": "{degree} connection",
+    "mutuals": {
+      "zero": "No mutual connections",
+      "one": "1 mutual connection",
+      "two": "2 mutual connections",
+      "few": "{value} mutual connections",
+      "many": "{value} mutual connections",
+      "other": "{value} mutual connections"
+    },
+    "dismiss": "Do not suggest this person",
+    "reason": {
+      "SHARED_CONNECTIONS": {
+        "zero": "No mutual connections",
+        "one": "1 mutual connection",
+        "two": "2 mutual connections",
+        "few": "{value} mutual connections",
+        "many": "{value} mutual connections",
+        "other": "{value} mutual connections"
+      },
+      "SAME_FAMILY": "Works in the same field",
+      "ALUMNI": "{name} alumni",
+      "NEARBY": "In {name}",
+      "COWORKER": "You worked at the same place",
+      "SAME_ORIGIN": "Also from {name}",
+      "FOLLOWS_YOU": "Follows you",
+      "ESTABLISHED": "Has a confirmed work record"
+    },
+    "empty": {
+      "suggestions": "No suggestions yet. Complete your profile and add your occupation so we can find your peers.",
+      "followers": "Nobody follows you yet.",
+      "following": "You do not follow anyone yet."
+    },
+    "followers": "Followers",
+    "following": "Following"
   }
 }

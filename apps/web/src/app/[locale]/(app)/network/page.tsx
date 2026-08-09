@@ -24,17 +24,22 @@ import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 import { z } from "zod";
 
+import { FollowersPanel } from "./_components/FollowersPanel";
+import { SuggestionsPanel } from "./_components/SuggestionsPanel";
 import { apiFetch, getValidAccessToken } from "@/lib/api";
 import { readSession } from "@/lib/session";
 import { useCountFormatter } from "../useAppShellLabels";
 
 const ListEnvelope = z.array(ConnectionListItemSchema);
-type Filter = "ACCEPTED" | "INCOMING" | "OUTGOING";
+type Filter = "ACCEPTED" | "INCOMING" | "OUTGOING" | "SUGGESTIONS" | "FOLLOWERS";
+/** The three that list connections. The other two render their own panel. */
+type ConnectionFilter = Extract<Filter, "ACCEPTED" | "INCOMING" | "OUTGOING">;
 const Raw = z.object({}).passthrough();
 
 export default function NetworkRoute(): JSX.Element {
   const router = useRouter();
   const t = useTranslations("network");
+  const tDiscovery = useTranslations("discovery");
   const formatCount = useCountFormatter();
   const [filter, setFilter] = useState<Filter>("ACCEPTED");
   const [items, setItems] = useState<ConnectionListItem[]>([]);
@@ -138,9 +143,17 @@ export default function NetworkRoute(): JSX.Element {
         <Tab value="OUTGOING" count={counts?.outgoing}>
           {t("sent")}
         </Tab>
+        {/* The asymmetric half of the graph. Kept alongside "sent" rather than
+            replacing it: withdrawing an outgoing request is a real thing to
+            need, and the spec's four tabs do not include it. */}
+        <Tab value="SUGGESTIONS">{tDiscovery("tabs.suggestions")}</Tab>
+        <Tab value="FOLLOWERS">{tDiscovery("tabs.followers")}</Tab>
       </Tabs>
 
-      {loading ? (
+      {filter === "SUGGESTIONS" ? <SuggestionsPanel /> : null}
+      {filter === "FOLLOWERS" ? <FollowersPanel /> : null}
+
+      {filter === "SUGGESTIONS" || filter === "FOLLOWERS" ? null : loading ? (
         <Surface variant="flat" padding="0" aria-busy="true">
           <ul aria-label={t("title")}>
             <ConnectionRowSkeleton />
@@ -236,7 +249,10 @@ const EMPTY_STATE_COPY = {
     title: "emptyOutgoingTitle",
     body: "emptyOutgoingBody",
   },
-} as const satisfies Record<Filter, { title: string; body: string }>;
+  // `ConnectionFilter`, not `Filter`: the suggestions and followers tabs own
+  // their own empty states, because "no invitations" and "no suggestions" are
+  // different sentences with different advice.
+} as const satisfies Record<ConnectionFilter, { title: string; body: string }>;
 
 function ConnectionRowSkeleton(): JSX.Element {
   return (

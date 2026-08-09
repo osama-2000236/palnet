@@ -6,6 +6,11 @@ import { View } from "react-native";
 
 import { useStyles } from "./styles";
 
+/**
+ * The connection tabs. "SUGGESTIONS" is a sibling tab that renders its own
+ * panel rather than a connection list, so it is deliberately not in this
+ * union — a row cannot be rendered for it.
+ */
 export type NetworkFilter = "ACCEPTED" | "INCOMING" | "OUTGOING";
 
 export function ConnectionRow({

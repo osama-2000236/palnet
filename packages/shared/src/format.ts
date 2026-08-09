@@ -172,7 +172,15 @@ const EN_NAMED_PAST: Partial<Record<string, string>> = {
   "year:1": "last year",
 };
 
-function pluralCategory(amount: number, locale: string): Intl.LDMLPluralRule {
+/**
+ * Which plural form a number takes. Exported for the graph's «معارف مشتركين».
+ *
+ * Arabic has six categories and Baydar has two i18n dialects — ICU on web,
+ * i18next suffixes on mobile — and neither can express the other, so a plural
+ * authored in one is a key the other platform lacks. Choosing the category
+ * here lets both catalogs carry the same six keys under the same names.
+ */
+export function pluralCategory(amount: number, locale: string): Intl.LDMLPluralRule {
   if (typeof Intl.PluralRules !== "function") return amount === 1 ? "one" : "other";
   return new Intl.PluralRules(resolveLocale(locale)).select(amount);
 }

@@ -27,6 +27,22 @@ import { successHaptic, tapHaptic } from "@/lib/haptics";
 import { getAccessToken, readSession } from "@/lib/session";
 
 import { ConnectionRow, type NetworkFilter } from "@/screens/network/ConnectionRow";
+
+/** The tab strip's own union. */
+type NetworkTab = NetworkFilter | "SUGGESTIONS" | "FOLLOWERS";
+
+/**
+ * The connection list only exists for the three connection tabs.
+ *
+ * Narrowing here rather than widening `load` keeps the suggestions tab from
+ * ever issuing a connection query — a wasted round trip on a connection that
+ * cannot afford one.
+ */
+const connectionFilter = (tab: NetworkTab): NetworkFilter | null =>
+  tab === "SUGGESTIONS" || tab === "FOLLOWERS" ? null : tab;
+import { ConnectionList } from "@/screens/network/ConnectionList";
+import { FollowersPanel } from "@/screens/network/FollowersPanel";
+import { SuggestionsPanel } from "@/screens/network/SuggestionsPanel";
 import { useStyles } from "@/screens/network/styles";
 
 const ListEnvelope = z.array(ConnectionListItemSchema);
@@ -36,13 +52,18 @@ export default function NetworkScreen(): JSX.Element {
   const c = useThemeTokens().color;
   const styles = useStyles();
   const { t, i18n } = useTranslation();
-  const [filter, setFilter] = useState<NetworkFilter>("ACCEPTED");
+  // A superset of NetworkFilter: the suggestions tab renders its own panel
+  // rather than a connection list, so no row can be built for it and the row
+  // component's union deliberately excludes it.
+  const [filter, setFilter] = useState<NetworkTab>("ACCEPTED");
   const [items, setItems] = useState<ConnectionListItem[]>([]);
   const [counts, setCounts] = useState<ConnectionCountsDto | null>(null);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pendingIds, setPendingIds] = useState<Set<string>>(() => new Set());
+  const listed = connectionFilter(filter);
+
   const filterItems = useMemo(
     () => [
       {
@@ -62,6 +83,22 @@ export default function NetworkScreen(): JSX.Element {
         label: t("network.sent"),
         count: counts?.outgoing,
         testID: "network-filter-outgoing",
+      },
+      // The asymmetric half. Alongside "sent" rather than replacing it:
+      // withdrawing an outgoing request is a real thing to need, and the
+      // spec's four tabs do not include it. The strip is a ScrollView, so a
+      // fifth tab has nowhere to wrap to.
+      {
+        key: "SUGGESTIONS" as const,
+        label: t("discovery.tabs.suggestions"),
+        count: undefined,
+        testID: "network-filter-suggestions",
+      },
+      {
+        key: "FOLLOWERS" as const,
+        label: t("discovery.tabs.followers"),
+        count: undefined,
+        testID: "network-filter-followers",
       },
     ],
     [t, counts],
@@ -95,7 +132,8 @@ export default function NetworkScreen(): JSX.Element {
   const refresh = useCallback(async (): Promise<void> => {
     setRefreshing(true);
     try {
-      await load(filter);
+      const listed = connectionFilter(filter);
+      if (listed) await load(listed);
     } finally {
       setRefreshing(false);
     }
@@ -108,7 +146,8 @@ export default function NetworkScreen(): JSX.Element {
         router.replace("/(auth)/login");
         return;
       }
-      await load(filter);
+      const listed = connectionFilter(filter);
+      if (listed) await load(listed);
     })();
   }, [filter, load]);
 
@@ -200,7 +239,7 @@ export default function NetworkScreen(): JSX.Element {
 
         <Tabs
           value={filter}
-          onChange={(key) => setFilter(key as NetworkFilter)}
+          onChange={(key) => setFilter(key as NetworkTab)}
           formatCount={(value) => formatNumber(value, i18n.language)}
           style={styles.tabs}
           testID="network-filter-tabs"
@@ -217,53 +256,32 @@ export default function NetworkScreen(): JSX.Element {
             body={error}
             cta={t("common.retry")}
             busy={loading}
-            onAction={() => void load(filter)}
+            onAction={() => {
+              const listed = connectionFilter(filter);
+              if (listed) void load(listed);
+            }}
             style={styles.inlineError}
           />
         ) : null}
 
-        <FlatList
-          data={items}
-          keyExtractor={(c) => c.connectionId}
-          contentContainerStyle={styles.listContent}
-          ItemSeparatorComponent={() => <View style={styles.separator} />}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={() => void refresh()}
-              tintColor={c.brand600}
-              colors={[c.brand600]}
-            />
-          }
-          ListEmptyComponent={
-            loading ? (
-              <View style={styles.skeletonStack}>
-                <RecordCardSkeleton variant="row" />
-                <RecordCardSkeleton variant="row" />
-                <RecordCardSkeleton variant="row" />
-              </View>
-            ) : error ? (
-              <Alert
-                body={error}
-                cta={t("common.retry")}
-                busy={loading}
-                onAction={() => void load(filter)}
-              />
-            ) : (
-              <EmptyState motif="network" title={t("network.empty")} />
-            )
-          }
-          renderItem={({ item }) => (
-            <ConnectionRow
-              item={item}
-              filter={filter}
-              onRespond={respond}
-              onWithdraw={withdraw}
-              onRemove={remove}
-              pending={pendingIds.has(item.connectionId)}
-            />
-          )}
-        />
+        {filter === "SUGGESTIONS" ? <SuggestionsPanel /> : null}
+        {filter === "FOLLOWERS" ? <FollowersPanel /> : null}
+
+        {listed ? (
+          <ConnectionList
+            filter={listed}
+            items={items}
+            loading={loading}
+            error={error}
+            refreshing={refreshing}
+            pendingIds={pendingIds}
+            onRefresh={() => void refresh()}
+            onRetry={() => void load(listed)}
+            onRespond={respond}
+            onWithdraw={withdraw}
+            onRemove={remove}
+          />
+        ) : null}
       </View>
     </SafeAreaView>
   );

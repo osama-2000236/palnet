@@ -42,3 +42,26 @@ not, so a run at 7.9 seconds is the warning before the failing one.
 **Not a blocker for anything else.** Nothing in P1 depends on it; it is the
 evidence-verified half of the phase, and it is written down here rather than
 quietly skipped.
+
+---
+
+## P2 · the alumni and diaspora screens are not built
+
+**What.** `GET /discovery/alumni` and `GET /discovery/diaspora` exist, are
+pinned in the route-coverage spec, and return the same decorated person shape
+the suggestions list uses. §6.6 also asks for `network/alumni` and
+`network/diaspora` routes on both platforms, and those are not built.
+
+**Why it is written here rather than quietly skipped.** The endpoints are
+reachable and correct; what is missing is a screen to reach them from. That is
+a smaller gap than it looks — the panels are the same list component the
+followers tab already uses, with a filter above it — but it is a gap, and the
+phase is not closed while it is open.
+
+**One thing to decide first.** `diaspora` filters origin by deriving the
+governorate from the stored city, because `Profile.originGovernorate` is a P3
+column and does not exist yet. The screen is worth building after P3 lands it,
+or the filter will be rewritten a fortnight later.
+
+**Not a blocker for P3.** Nothing in identity and evidence depends on these two
+screens, and P3 is what makes the diaspora filter honest.

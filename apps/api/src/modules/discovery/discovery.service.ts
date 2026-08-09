@@ -16,11 +16,19 @@ import {
 import { Injectable } from "@nestjs/common";
 
 import { PrismaService } from "../prisma/prisma.service";
+import {
+  CANDIDATE_SELECT,
+  occupationKeyOf,
+  personOf,
+  reasonKeyFor,
+  normalise,
+  type CandidateRow,
+  type ViewerContext,
+} from "./discovery-candidates";
+import { DiscoveryExclusions } from "./discovery-exclusions";
 import { GraphService } from "../graph/graph.service";
 import { SafetyService } from "../safety/safety.service";
 
-/** How long a dismissal keeps somebody out of the list. */
-const DISMISSAL_TTL_DAYS = 90;
 const CANDIDATE_POOL = 200;
 const RESULT_SIZE = 20;
 
@@ -35,16 +43,20 @@ const RESULT_SIZE = 20;
  */
 @Injectable()
 export class DiscoveryService {
+  private readonly exclusions: DiscoveryExclusions;
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly safety: SafetyService,
     private readonly graph: GraphService,
-  ) {}
+  ) {
+    this.exclusions = new DiscoveryExclusions(prisma, safety);
+  }
 
   async peopleYouMayKnow(viewerId: string): Promise<PeopleSuggestion[]> {
     const [viewer, excluded] = await Promise.all([
       this.viewerContext(viewerId),
-      this.excludedIds(viewerId),
+      this.exclusions.forViewer(viewerId),
     ]);
 
     const candidates = await this.prisma.profile.findMany({
@@ -114,7 +126,7 @@ export class DiscoveryService {
   }
 
   async alumni(viewerId: string, query: AlumniQuery): Promise<DiscoveryPerson[]> {
-    const excluded = await this.excludedIds(viewerId, { includeConnections: false });
+    const excluded = await this.exclusions.forViewer(viewerId, { includeConnections: false });
     const rows = await this.prisma.profile.findMany({
       where: {
         userId: { notIn: [...excluded] },
@@ -151,7 +163,7 @@ export class DiscoveryService {
    * reliably share.
    */
   async diaspora(viewerId: string, query: DiasporaQuery): Promise<DiscoveryPerson[]> {
-    const excluded = await this.excludedIds(viewerId, { includeConnections: false });
+    const excluded = await this.exclusions.forViewer(viewerId, { includeConnections: false });
     const rows = await this.prisma.profile.findMany({
       where: {
         userId: { notIn: [...excluded] },
@@ -176,7 +188,7 @@ export class DiscoveryService {
 
   /** Occupation peers in one governorate. Craft hiring is hyper-local. */
   async nearby(viewerId: string, query: NearbyQuery): Promise<DiscoveryPerson[]> {
-    const excluded = await this.excludedIds(viewerId, { includeConnections: false });
+    const excluded = await this.exclusions.forViewer(viewerId, { includeConnections: false });
     const rows = await this.prisma.profile.findMany({
       where: { userId: { notIn: [...excluded] }, user: { isActive: true, deletedAt: null } },
       take: CANDIDATE_POOL,
@@ -257,54 +269,6 @@ export class DiscoveryService {
     };
   }
 
-  /**
-   * Everyone who must not appear.
-   *
-   * Blocked either way, restricted either way, already connected or requested,
-   * dismissed within the TTL, and the viewer. A suggestion list that ignores a
-   * dismissal is worse than no list: it teaches the member that the control
-   * does nothing.
-   */
-  private async excludedIds(
-    viewerId: string,
-    options: { includeConnections?: boolean } = {},
-  ): Promise<Set<string>> {
-    const includeConnections = options.includeConnections ?? true;
-    const dismissedAfter = new Date(Date.now() - DISMISSAL_TTL_DAYS * 24 * 60 * 60 * 1000);
-
-    const [connections, blocked, restrictions, restrictedBy, dismissals] = await Promise.all([
-      includeConnections
-        ? this.prisma.connection.findMany({
-            where: { OR: [{ requesterId: viewerId }, { receiverId: viewerId }] },
-            select: { requesterId: true, receiverId: true },
-          })
-        : Promise.resolve([]),
-      this.safety.getBlockedEitherIds(viewerId),
-      this.prisma.restrictedUser.findMany({
-        where: { userId: viewerId },
-        select: { restrictedId: true },
-      }),
-      this.prisma.restrictedUser.findMany({
-        where: { restrictedId: viewerId },
-        select: { userId: true },
-      }),
-      this.prisma.suggestionDismissal.findMany({
-        where: { userId: viewerId, createdAt: { gte: dismissedAfter } },
-        select: { dismissedId: true },
-      }),
-    ]);
-
-    const excluded = new Set<string>([viewerId, ...blocked]);
-    for (const row of connections) {
-      excluded.add(row.requesterId);
-      excluded.add(row.receiverId);
-    }
-    for (const row of restrictions) excluded.add(row.restrictedId);
-    for (const row of restrictedBy) excluded.add(row.userId);
-    for (const row of dismissals) excluded.add(row.dismissedId);
-    return excluded;
-  }
-
   private async followsFrom(viewerId: string, ids: string[]): Promise<Set<string>> {
     const rows = await this.prisma.follow.findMany({
       where: {
@@ -328,77 +292,4 @@ export class DiscoveryService {
     });
     return new Set(rows.map((row) => row.followerId));
   }
-}
-
-interface ViewerContext {
-  location: string | null;
-  governorate: string | null;
-  occupationFamily: string | null;
-  schools: Set<string>;
-  companies: Set<string>;
-}
-
-const CANDIDATE_SELECT = {
-  userId: true,
-  handle: true,
-  firstName: true,
-  lastName: true,
-  headline: true,
-  avatarUrl: true,
-  location: true,
-  user: { select: { createdAt: true } },
-  educations: { select: { school: true } },
-  experiences: { select: { companyName: true } },
-  // The occupation lives on OccupationClaim, not on Profile. Primary first,
-  // because a member with three claims has one they lead with.
-  claims: {
-    where: { isPrimary: true },
-    take: 1,
-    select: { occupationKey: true },
-  },
-} as const;
-
-type CandidateRow = {
-  userId: string;
-  handle: string;
-  firstName: string;
-  lastName: string;
-  headline: string | null;
-  avatarUrl: string | null;
-  location: string | null;
-  user: { createdAt: Date };
-  educations: Array<{ school: string }>;
-  experiences: Array<{ companyName: string }>;
-  claims: Array<{ occupationKey: string }>;
-};
-
-const personOf = (row: CandidateRow) => ({
-  userId: row.userId,
-  handle: row.handle,
-  firstName: row.firstName,
-  lastName: row.lastName,
-  headline: row.headline,
-  avatarUrl: row.avatarUrl,
-});
-
-/** The occupation a member leads with, or null when they have claimed none. */
-const occupationKeyOf = (row: CandidateRow): string | null => row.claims[0]?.occupationKey ?? null;
-
-/** Case- and whitespace-insensitive, because members type these by hand. */
-const normalise = (value: string): string => value.trim().toLowerCase().replace(/\s+/g, " ");
-
-/** What the reason line names, when it names something. */
-function reasonKeyFor(
-  reason: PeopleSuggestion["reason"],
-  candidate: CandidateRow,
-  viewer: ViewerContext,
-): string | null {
-  if (reason === "SAME_FAMILY") return occupationKeyOf(candidate);
-  if (reason === "ALUMNI") {
-    return (
-      candidate.educations.find((e) => viewer.schools.has(normalise(e.school)))?.school ?? null
-    );
-  }
-  if (reason === "NEARBY" || reason === "SAME_ORIGIN") return governorateOfCity(candidate.location);
-  return null;
 }

@@ -86,6 +86,14 @@ export type {
   OutboxTrayProps,
   OutboxTrayState,
 } from "./OutboxTray";
+export { DegreeChip } from "./DegreeChip";
+export type { Degree, DegreeChipProps } from "./DegreeChip";
+export { FollowButton, variantFor } from "./FollowButton";
+export type { FollowButtonLabels, FollowButtonProps, FollowButtonState } from "./FollowButton";
+export { MutualsRow } from "./MutualsRow";
+export type { MutualsRowProps } from "./MutualsRow";
+export { SuggestionCard } from "./SuggestionCard";
+export type { SuggestionCardLabels, SuggestionCardProps } from "./SuggestionCard";
 export { PostMedia } from "./PostMedia";
 export type { PostMediaItem, PostMediaLabels, PostMediaProps } from "./PostMedia";
 export { PostCard } from "./PostCard";

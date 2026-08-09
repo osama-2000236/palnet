@@ -139,10 +139,22 @@ const DYNAMIC_NAMESPACES = {
     // BandwidthChipHost reads `modeHelp.${mode}` — one sentence per mode,
     // spoken by a screen reader and shown as the chip's tooltip.
     "connection.modeHelp",
+    // The suggestion card reads `reason.${term}` and `mutuals.${category}`,
+    // and the degree chip `degree.${badge}`. Arabic has six plural categories
+    // and the category is chosen in code (see `pluralCategory`), so the six
+    // keys are read by template rather than by name.
+    "discovery.reason",
+    "discovery.mutuals",
+    "discovery.degree",
+    "discovery.empty",
   ],
   mobile: [
-    // See the web entry: same component, same template key.
+    // See the web entry: same component, same template keys.
     "connection.modeHelp",
+    "discovery.reason",
+    "discovery.mutuals",
+    "discovery.degree",
+    "discovery.empty",
     "api",
     "auth",
     "errors",
