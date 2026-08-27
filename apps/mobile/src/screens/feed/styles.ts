@@ -34,10 +34,19 @@ function makeFeedStyles(c: NativeTheme["color"]) {
       position: "absolute",
       top: -nativeTokens.space[1],
       end: -nativeTokens.space[1],
-      minWidth: nativeTokens.space[5],
-      height: nativeTokens.space[5],
+      // 24, not 20: React Native draws `borderWidth` inside the box, so the
+      // ring below would otherwise eat the 16.8px line box of a 12px caption.
+      minWidth: nativeTokens.space[6],
+      height: nativeTokens.space[6],
       borderRadius: nativeTokens.radius.full,
       backgroundColor: c.accent700,
+      // The badge sits on `iconButtonActive`, which fills the bell with
+      // `accent600` — measured 1.33:1 against the badge's `accent700`, where
+      // WCAG 1.4.11 wants 3:1 for a component boundary. The count text was
+      // never the problem (7.70:1); the badge's *shape* was invisible. Same
+      // surface ring the native Avatar puts around its presence dot.
+      borderWidth: 2,
+      borderColor: c.surface,
       alignItems: "center",
       justifyContent: "center",
       paddingHorizontal: nativeTokens.space[1],
