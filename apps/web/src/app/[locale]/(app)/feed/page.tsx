@@ -9,6 +9,7 @@ import { z } from "zod";
 import { apiFetch, apiFetchPage } from "@/lib/api";
 import { getAccessToken } from "@/lib/session";
 import {
+  ConnectionCounts,
   cursorPage,
   Job as JobSchema,
   PersonSuggestion as PersonSuggestionSchema,
@@ -21,6 +22,7 @@ import { Composer } from "@/components/Composer";
 import { PostCard } from "@/components/PostCard";
 import { RightRail } from "../components/RightRail";
 import { FeedErrorState } from "./FeedErrorState";
+import { FeedLeftRail } from "./FeedLeftRail";
 import { OnboardingDoneCard } from "./OnboardingDoneCard";
 import { ProfileCompletenessCard } from "./ProfileCompletenessCard";
 
@@ -78,6 +80,19 @@ function FeedInner(): JSX.Element {
     staleTime: 5 * 60 * 1000,
   });
   const me = meQuery.data ?? null;
+
+  // Feeds the left rail's one stat row. Same non-blocking contract as `me`:
+  // the rail renders without it and the row appears when it lands.
+  const countsQuery = useQuery({
+    queryKey: ["connections", "counts"],
+    queryFn: async () => {
+      const token = getAccessToken() ?? undefined;
+      return apiFetch("/connections/counts", ConnectionCounts, { token });
+    },
+    retry: false,
+    staleTime: 5 * 60 * 1000,
+  });
+  const connectionCount = countsQuery.data?.accepted ?? null;
 
   const query = useQuery({
     queryKey: ["feed", requestAfter],
@@ -156,10 +171,15 @@ function FeedInner(): JSX.Element {
   }
 
   return (
-    <main className="flex min-h-[calc(100vh-4rem)] w-full items-start justify-center gap-8 px-6 py-8">
-      {/* Left: Feed */}
+    // The 3-column grid from DESIGN.md §10.1, and the same one `(app)/loading.tsx`
+    // has always rendered. This page used to answer that skeleton with a centred
+    // flex and no left rail at all, so every load relaid the page out once the
+    // content arrived.
+    <main className="mx-auto grid min-h-[calc(100vh-4rem)] w-full max-w-[1128px] grid-cols-1 items-start gap-6 px-4 py-6 lg:grid-cols-[225px_minmax(0,1fr)] lg:px-6 xl:grid-cols-[225px_minmax(0,1fr)_300px]">
+      <FeedLeftRail profile={me} connections={connectionCount} />
+
       <Suspense fallback={null}>
-        <div className="w-full max-w-[520px] flex-1">
+        <div className="flex min-w-0 flex-col">
           <h1 className="text-ink mb-4 text-3xl font-bold">{t("title")}</h1>
           <OnboardingDoneCard forceVisible={onboarded} onDismiss={clearOnboardingQuery} />
           {me ? <ProfileCompletenessCard profile={me} /> : null}
