@@ -88,6 +88,9 @@ const PLATFORM_ONLY_NAMESPACES = {
     publicJob: "the public /j/[id] SEO route; mobile has no unauthenticated job page",
     chrome: "AppShell's persistent chrome. Mobile screens each own an AppHeader",
     cv: "the CV builder is web-only — no mobile screen references cv.*",
+    "feed.rail":
+      "the feed's right rail is web-only by definition (DESIGN.md component " +
+      "parity table) — it is `xl:` chrome with no phone equivalent",
   },
   mobile: {
     api: "native map from API error codes to copy; web's equivalent is `errors`",
@@ -110,7 +113,7 @@ const PLATFORM_ONLY_NAMESPACES = {
  * recorded. Both directions matter — 163 keys of web surface that mobile does
  * not have, and 100 the other way.
  */
-const MAX_PLATFORM_ONLY_KEYS = { web: 163, mobile: 100 };
+const MAX_PLATFORM_ONLY_KEYS = { web: 153, mobile: 99 };
 
 /**
  * Namespaces whose keys are reached through a template literal or a translator

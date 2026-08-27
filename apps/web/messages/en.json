@@ -232,8 +232,10 @@
       "jobs": "Suggested jobs",
       "jobsEmpty": "Browse open roles →",
       "jobsFailed": "Could not load jobs.",
-      "connect": "Connect"
-    }
+      "connect": "Connect",
+      "pymkEmpty": "Find people to connect with →"
+    },
+    "emptyCta": "Find people"
   },
   "composer": {
     "placeholder": "Start a post…",

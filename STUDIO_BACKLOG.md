@@ -1,0 +1,53 @@
+# STUDIO_BACKLOG
+
+Running ledger for the studio loop. One line per finding, with the evidence that
+produced it. **Findings here are measured, not eyeballed** — a screenshot starts
+an investigation, a measurement closes it. Two entries below are recorded as
+_not_ bugs precisely because the measurement disagreed with the screenshot.
+
+Last pass: 2026-08-27, iteration 1. Surfaces audited: web `/feed` (`empty` state,
+ar-PS + en, light + dark, mobile 390px + desktop 1440px). Mobile app: source and
+unit level only — no emulator was booted this pass (see P2-3).
+
+---
+
+## P0 — critical
+
+_None open._
+
+| #    | Finding                                                                                                                                                                                                                                                                                                                                                                                                                     | Status                                                                                             |
+| ---- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| P0-1 | **The screenshot harness could not photograph any non-default state.** `apps/web/e2e/shots.mjs` intercepted `**/api/v1/**` for `empty`/`long` and called `route.fetch()` on the two `@Sse("stream")` endpoints. An SSE response never closes, so the callback outlived the page and the run died — every `--state=empty` and `--state=long` invocation, on every route. The states existed and had never been photographed. | **fixed** — pass streams through by pathname (they carry `?token=`, so `url.endsWith` misses them) |
+
+## P1 — AAA design
+
+| #    | Finding                                                                                                                                                                                                                                                                                                                                                                                                    | Status                                                                                                                                                                      |
+| ---- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| P1-1 | **The right rail had no width, so it resized with its own contents.** Measured 169px empty vs 323px loaded — and `DESIGN.md` §10.1 specifies `225px \| 1fr \| 300px`, so it had never been either. The loading skeleton already implemented the 300px track, so every feed load shifted the rail as content arrived.                                                                                       | **fixed** — `w-[300px] shrink-0`; measured 300px after                                                                                                                      |
+| P1-2 | **Two Arabic words rendered as one.** At the collapsed 169px width the rail header's `justify-between` had nothing left to distribute: `أشخاص قد تعرفهم` and `عرض الكل` met at a ~1px gap and read as `تعرفهمعرض`. Its sibling card escaped only because its title is shorter — the same markup, copy-pasted, so one copy looked fine and hid the other.                                                   | **fixed** — one `RailHeader` with `gap-2` + truncating title                                                                                                                |
+| P1-3 | **The feed's empty state named two actions and offered neither.** Body reads "publish your first post, **or connect with people**". The composer sits directly above, so posting was reachable; discovery was not — and the rail that suggests people is `xl:`-only, so on a phone there was no path to another human from this screen at all. `EmptyState` has supported `cta`/`onAction` the whole time. | **fixed** — "Find people" → `/network`, verified navigating on both viewports                                                                                               |
+| P1-4 | **The suggestions card answered its own empty state with `—`.** A bare em dash, one Surface above a jobs card that answers its empty state with a real link.                                                                                                                                                                                                                                               | **fixed** — links to `/network`, mirroring the jobs card                                                                                                                    |
+| P1-5 | **Web and mobile showed different feed empty states.** Mobile rendered a lone title ("Start by publishing your first post.") with no body and no action, under a different key path (`feed.empty` as a string vs web's `feed.noResults` + `feed.empty.feed`), so the parity gate counted both sides as platform-only and neither as drift.                                                                 | **fixed** — mobile now mirrors web's key paths, title, body and action                                                                                                      |
+| P1-6 | **The feed page never implemented the 3-column grid it loads into.** `loading.tsx` renders `xl:grid-cols-[225px_minmax(0,1fr)_300px]` at `max-w-[1128px]` per `DESIGN.md` §10.1, including a 225px left rail. `feed/page.tsx` renders a centred flex with a 520px column and **no left rail at all**. Skeleton→content therefore relayouts the whole page, not just the rail.                              | **open — needs a product call.** Does the feed have a left rail? Fixing the skeleton and fixing the page are opposite changes; guessing would be a redesign, not a bug fix. |
+
+## P2 — cleanup
+
+| #    | Finding                                                                                                                                                                                                                                                                                                                                                                              | Status                                                                                                       |
+| ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------ |
+| P2-1 | `feed/page.tsx` crossed the 300 LOC `qa:design` ceiling. `FeedErrorState` was a local component in a directory whose convention is one file per sub-component (`OnboardingDoneCard`, `ProfileCompletenessCard`).                                                                                                                                                                     | **fixed** — extracted to `feed/FeedErrorState.tsx`; `RetryChip` import was left dead by the move and removed |
+| P2-2 | The i18n ratchet moved **down**: web 163→153 platform-only keys, mobile 100→99. Ten of those closed by declaring `feed.rail` web-only — the rail is `xl:` chrome with no phone twin — rather than by adding keys.                                                                                                                                                                    | **fixed** — ceilings lowered to match                                                                        |
+| P2-3 | **Mobile was audited at source level only.** No emulator booted this pass: `adb` is not on `PATH` (it lives at `%LOCALAPPDATA%\Android\Sdk\platform-tools`), AVD `Pixel_7_Pro` was not running, and a native build is too slow for a 10-minute cycle. Mobile changes are covered by `feed-empty.test.tsx` (verified failing when the CTA is removed) but have not been photographed. | **open** — boot `Pixel_7_Pro` once and screenshot, out of band                                               |
+| P2-4 | English mobile top nav looks like it clips "Me" at 390px. No overflowing element found (the only clipped node is an intentional 1px `sr-only` span) and the harness reports 0 horizontal-overflow hits.                                                                                                                                                                              | **open — unconfirmed.** Re-shoot before treating as a defect                                                 |
+
+## Checked and _not_ filed
+
+Recording these so the next pass does not re-litigate them:
+
+- **`EmptyState`'s CTA is not a 36px hit target.** The visual box is 36px, which is
+  under CLAUDE.md's 40px web / 44pt mobile floor — but `Button` carries
+  `target-area`, a `::before` that expands the _pressable_ box without moving
+  layout. Measured `min-height`/`min-width` on the pseudo-element: **44px each**.
+  `boundingBox()` measures the wrong thing here.
+- **The rail header collision is not present with data.** Measured at 123px gap on
+  a loaded feed. It only appears in the state the harness could not photograph
+  until P0-1 was fixed, which is why it survived every previous visual pass.

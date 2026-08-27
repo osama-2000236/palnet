@@ -197,7 +197,15 @@ export default function FeedScreen(): JSX.Element {
                 <PostCardSkeleton />
               </View>
             ) : (
-              <EmptyState motif="feed" title={t("feed.empty")} />
+              // Lockstep with web's feed empty state: same title, same body,
+              // same single action. Mobile showed a bare title and no way out.
+              <EmptyState
+                motif="feed"
+                title={t("feed.noResults")}
+                body={t("feed.empty.feed")}
+                cta={t("feed.emptyCta")}
+                onAction={() => router.push("/(app)/network")}
+              />
             )
           }
           ListFooterComponent={

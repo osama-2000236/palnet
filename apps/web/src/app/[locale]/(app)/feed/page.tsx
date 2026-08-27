@@ -16,17 +16,11 @@ import {
   Profile as ProfileSchema,
 } from "@baydar/shared";
 import type { Job, PersonSuggestion, Post } from "@baydar/shared";
-import {
-  Button,
-  EmptyState,
-  PostCardSkeleton,
-  RetryChip,
-  staggerDelay,
-  Surface,
-} from "@baydar/ui-web";
+import { Button, EmptyState, PostCardSkeleton, staggerDelay, Surface } from "@baydar/ui-web";
 import { Composer } from "@/components/Composer";
 import { PostCard } from "@/components/PostCard";
 import { RightRail } from "../components/RightRail";
+import { FeedErrorState } from "./FeedErrorState";
 import { OnboardingDoneCard } from "./OnboardingDoneCard";
 import { ProfileCompletenessCard } from "./ProfileCompletenessCard";
 
@@ -194,7 +188,18 @@ function FeedInner(): JSX.Element {
             />
           ) : posts.posts.length === 0 && !error ? (
             <Surface variant="card" padding="0">
-              <EmptyState motif="feed" title={t("noResults")} body={t("empty.feed")} />
+              {/* The body names two actions ("publish a post, or connect with
+                  people") and used to offer neither. The composer sits directly
+                  above, so the missing one is discovery — and the rail that
+                  suggests people is `xl:` only, so on a phone there was no way
+                  to reach anyone from this screen at all. */}
+              <EmptyState
+                motif="feed"
+                title={t("noResults")}
+                body={t("empty.feed")}
+                cta={t("emptyCta")}
+                onAction={() => router.push("/network")}
+              />
             </Surface>
           ) : (
             <ul className="flex flex-col gap-3">
@@ -271,26 +276,4 @@ async function fetchFeedPage(after: string | null) {
   if (after) qs.set("after", after);
   const path = `/feed?${qs.toString()}`;
   return apiFetchPage(path, PostsPage, { token });
-}
-
-function FeedErrorState({
-  title,
-  body,
-  retryLabel,
-  onRetry,
-  loading,
-}: {
-  title: string;
-  body: string;
-  retryLabel: string;
-  onRetry: () => void;
-  loading: boolean;
-}): JSX.Element {
-  return (
-    <Surface variant="tinted" padding="6" className="flex flex-col items-start gap-2">
-      <h2 className="text-ink text-sm font-semibold">{title}</h2>
-      <p className="text-ink-muted text-sm">{body}</p>
-      <RetryChip onRetry={onRetry} label={retryLabel} loading={loading} />
-    </Surface>
-  );
 }
