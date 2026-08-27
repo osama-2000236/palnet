@@ -196,7 +196,7 @@ Not env-gated at boot, but still owner-supplied:
 | Real-device smoke evidence — refresh, deep links, push, haptics, offline/SSE resume, swipe archive, cross-device messaging | owner (physical devices)            | owed since Sprint 11.5                                                                                                                                                |
 | Native-speaker Arabic copy review                                                                                          | human reviewer                      | 47 colloquial strings collected in `docs/audit/ARABIC-REGISTER-2026-07-25.md`; 30 are on product-facing member surfaces, not the landing page as previously recorded  |
 | Legal / privacy counsel review                                                                                             | counsel                             | `apps/web/src/app/[locale]/(public)/legal/legal-copy.tsx` is v0.1 placeholder copy                                                                                    |
-| Staging perf baseline                                                                                                      | owner (needs the staging URL above) | `pnpm load:api:baseline` vs `docs/perf-baseline-*.md`                                                                                                                 |
+| Staging perf baseline                                                                                                      | owner (needs the staging URL above) | `pnpm load:api:baseline` vs `docs/perf-baseline-*.md`; what to do once it runs: [`docs/OPTIMIZATION-PLAN.md`](OPTIMIZATION-PLAN.md) §0                                |
 
 ## Deploy
 
