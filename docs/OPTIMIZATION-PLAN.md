@@ -25,6 +25,11 @@ nothing.
 Staging is blocked: `docs/HANDOFF.md:199` lists "Staging perf baseline" as owner-gated,
 because the staging hostname exists only inside the `RENDER_STAGING_DEPLOY_HOOK` secret.
 
+**The web half has the opposite problem** — see §2.0. Web perf _is_ gated in CI, with hard LCP
+and TBT budgets, but the gate is pointed at the landing page and two auth forms. The instrument
+exists and is aimed away from the weight. That is cheaper to fix than the API's, and it is item
+1 in §5.
+
 **Consequence for sequencing.** The web and mobile work (§2, §3) is measurable locally today
 and should go first. The API work (§1) is real and the reasoning holds without a profiler —
 a removed round-trip is a removed round-trip — but do not claim a percentage until someone
@@ -135,6 +140,36 @@ Two chunks are a third of everything:
 | `30nwbsp4mk5e9.js` | 140 KB | 37 KB  | —                         |
 | `0cz1d0mv5g_q7.js` | 112 KB | 38 KB  | —                         |
 
+### 2.0 There is already a Lighthouse gate, and it points at the four lightest pages
+
+Unlike the API, web perf is gated in CI today — `lighthouse-web` in
+`.github/workflows/ci.yml:189`, running `@lhci/cli` twice, desktop
+(`apps/web/lighthouserc.json`, 3 runs) and mobile (`lighthouserc.mobile.json`, iPhone 390×844
+emulation). Both assert **hard error budgets**: LCP ≤ 2500 ms, TBT ≤ 200 ms, CLS ≤ 0.1,
+accessibility ≥ 0.95. Performance score ≥ 0.85 is a warn, not an error.
+
+So the instrument exists. The problem is where it is pointed:
+
+```
+http://localhost:3000/ar-PS          http://localhost:3000/ar-PS/login
+http://localhost:3000/en             http://localhost:3000/ar-PS/register
+```
+
+**All four are public and unauthenticated.** The landing page and two auth forms. Feed,
+search, messages, jobs, the composer, `/moderation`, `/billing`, the CV renderer — every
+surface where 578 KB of client JS and a 66%-client-component tree actually cost something — is
+measured by nothing. A TBT budget on a login form will not catch a heavy composer.
+
+**This is the cheapest item in the whole plan and it should probably go first.** It needs no
+new tooling, no dependency and no owner: point the existing LHCI config at an authenticated
+route. The obstacle is that Lighthouse needs a session, so it wants either a seeded login step
+or a public-but-representative route. `/j/[id]` — the public share page, already server-rendered
+— is the honest middle ground if seeding a session proves fiddly, because it renders real
+content rather than a form.
+
+Until that happens, treat §2.1–§2.4 as unguarded: nothing in CI fails if a change makes the
+feed heavier.
+
 ### 2.1 Sentry is the single largest thing shipped, and half of it is switched off ⭐
 
 `apps/web/src/instrumentation-client.ts` sets `tracesSampleRate: 0` — performance tracing is
@@ -152,6 +187,10 @@ Verify by rebuilding and re-measuring that chunk. If the define does not land un
 Turbopack, fall back to a dynamic `import()` of `Sentry.init` inside the DSN guard — but note
 `onRouterTransitionStart` is a named export Next.js reads statically, so it must stay a static
 export. Try the define first.
+
+`__SENTRY_TRACING__` was verified against the installed package, not taken from documentation:
+20 occurrences in `@sentry/core@10.65.0`'s build output, including `utils/hasSpansEnabled.js`,
+which is the gate the tracing code sits behind.
 
 ### 2.2 Zod ships to the browser — earned, but sized
 
@@ -263,17 +302,23 @@ Stated once, so it is not re-litigated.
 One PR each, per `CLAUDE.md` commit discipline. Ordered so every step is measurable when it
 lands.
 
-| #   | Work                                                                  | Measurable today?                         |
-| --- | --------------------------------------------------------------------- | ----------------------------------------- |
-| 1   | §2.1 Sentry tree-shake define                                         | yes — rebuild, re-measure the chunk table |
-| 2   | §3.1 `useCallback` + `memo` on `feed.tsx` and `MessageThreadList.tsx` | yes — on emulator                         |
-| 3   | §0 rerun artillery against a **prod-mode** API with Redis up          | yes — first honest API number             |
-| 4   | §1.1 cache the block set in Redis                                     | only after 3                              |
-| 5   | §2.3 `next/dynamic` on composer / admin / CV                          | yes                                       |
-| 6   | §1.2 + §1.3 alert matching into SQL, folded FTS index                 | only after 3                              |
-| 7   | §3.1 remaining eleven lists, §3.2 tuning                              | after 2 shows the shape                   |
+Two of these are instrumentation, not optimization, and they come first on purpose: you cannot
+defend a perf change you cannot measure, and both halves of the product are currently measured
+in the wrong place — the API against a dev build, the web against its four lightest pages.
 
-Items 4 and 6 stall on §0. Items 1, 2 and 5 do not — start there.
+| #   | Work                                                                  | Measurable today?                             |
+| --- | --------------------------------------------------------------------- | --------------------------------------------- |
+| 1   | §2.0 point the existing LHCI config at an authenticated route         | **instrumentation** — unblocks all of §2      |
+| 2   | §2.1 Sentry tree-shake define                                         | yes — rebuild, re-measure the chunk table     |
+| 3   | §3.1 `useCallback` + `memo` on `feed.tsx` and `MessageThreadList.tsx` | yes — on emulator                             |
+| 4   | §0 rerun artillery against a **prod-mode** API with Redis up          | **instrumentation** — first honest API number |
+| 5   | §1.1 cache the block set in Redis                                     | only after 4                                  |
+| 6   | §2.3 `next/dynamic` on composer / admin / CV                          | yes, and #1 makes it defensible               |
+| 7   | §1.2 + §1.3 alert matching into SQL, folded FTS index                 | only after 4                                  |
+| 8   | §3.1 remaining eleven lists, §3.2 tuning                              | after 3 shows the shape                       |
+
+Items 5 and 7 stall on #4, which needs no owner — a local prod-mode API with Redis up. Nothing
+here is blocked on the staging URL; §0's owner gate only blocks calling a number "staging".
 
 **Gate before each handoff** (`CLAUDE.md`): format, lint, type-check, tests,
 release-placeholder check, and the relevant Playwright/a11y checks.
