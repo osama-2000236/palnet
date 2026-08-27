@@ -258,7 +258,9 @@
   },
   "feed": {
     "title": "Feed",
-    "empty": "Start by publishing your first post.",
+    "empty": {
+      "feed": "Start by publishing your first post, or connect with people to see updates here."
+    },
     "welcome": "Welcome {{name}} — your account is ready.",
     "error": "Could not load the feed right now.",
     "profileCompletion": "Profile completion {{completed}} of {{total}}",
@@ -267,7 +269,9 @@
     "jobsEntrySubtitle": "Browse local roles and save the right opportunities before applying.",
     "jobsEntryAction": "View jobs",
     "loadMore": "Load more",
-    "loadingMore": "Loading…"
+    "loadingMore": "Loading…",
+    "emptyCta": "Find people",
+    "noResults": "Nothing in your feed yet"
   },
   "composer": {
     "title": "What's on your mind?",

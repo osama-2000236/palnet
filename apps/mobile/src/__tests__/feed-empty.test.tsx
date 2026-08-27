@@ -17,7 +17,9 @@ jest.mock("react-i18next", () => ({
     t: (key: string, values?: Record<string, unknown>) => {
       const translations: Record<string, string> = {
         "feed.title": "الخلاصة",
-        "feed.empty": "ابدأ بنشر أول منشور لك.",
+        "feed.noResults": "لا يوجد شيء في خلاصتك بعد",
+        "feed.empty.feed": "ابدأ بنشر أول منشور لك، أو تواصل مع أشخاص لتظهر تحديثاتهم هنا.",
+        "feed.emptyCta": "اعثر على أشخاص",
         "feed.welcome": `أهلًا ${String(values?.name ?? "")}`,
         "feed.profileCompletion": `اكتمال الملف ${String(values?.completed ?? "")} من ${String(
           values?.total ?? "",
@@ -96,7 +98,13 @@ describe("FeedScreen empty state", () => {
     const screen = render(<FeedScreen />);
 
     await waitFor(() => {
-      expect(screen.getByText("ابدأ بنشر أول منشور لك.")).toBeTruthy();
+      expect(screen.getByText("لا يوجد شيء في خلاصتك بعد")).toBeTruthy();
+      // The body names an action, so the action has to be on screen with it —
+      // this empty state used to be a title and nothing else.
+      expect(
+        screen.getByText("ابدأ بنشر أول منشور لك، أو تواصل مع أشخاص لتظهر تحديثاتهم هنا."),
+      ).toBeTruthy();
+      expect(screen.getByText("اعثر على أشخاص")).toBeTruthy();
       expect(screen.getByText("ليان خليل")).toBeTruthy();
       expect(screen.getByTestId("feed-search-button")).toBeTruthy();
       expect(screen.getByTestId("feed-notifications-button")).toBeTruthy();

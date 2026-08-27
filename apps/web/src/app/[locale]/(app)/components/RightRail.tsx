@@ -18,6 +18,35 @@ interface RightRailProps {
   onRetryJobs: () => void;
 }
 
+/**
+ * Both rail cards head with the same title + "see all" row. They were two
+ * copies of one block, which is how only one of them was seen to collide:
+ * `justify-between` alone lets the two ends touch once the title fills the row,
+ * and the Arabic title is the longer one. `gap-2` + a truncating title keeps
+ * them apart whatever the label length.
+ */
+function RailHeader({
+  title,
+  href,
+  linkLabel,
+}: {
+  title: string;
+  href: string;
+  linkLabel: string;
+}): JSX.Element {
+  return (
+    <div className="flex items-center justify-between gap-2 px-4 pt-3">
+      <span className="text-ink truncate text-sm font-semibold">{title}</span>
+      <Link
+        href={href}
+        className="min-h-target text-ink-muted hover:text-brand-700 focus-visible:outline-hidden inline-flex shrink-0 items-center rounded-sm text-xs focus-visible:[box-shadow:var(--focus-ring)]"
+      >
+        {linkLabel}
+      </Link>
+    </div>
+  );
+}
+
 export function RightRail({
   suggestions,
   suggestionsLoading,
@@ -33,17 +62,17 @@ export function RightRail({
   const tJobs = useTranslations("jobs");
   const locale = useLocale();
   return (
-    <aside aria-label={t("pymk")} className="hidden flex-col gap-3 xl:sticky xl:top-20 xl:flex">
+    // 300px is the right-rail width in DESIGN.md §10.1 (`225px | 1fr | 300px`).
+    // Without it the aside was content-sized: 323px with suggestions, 169px with
+    // none — a visible shift between loading, empty and loaded, and at 169px the
+    // header below squeezed its title and "see all" link to a 1px gap, which in
+    // Arabic merged two words into one unreadable run.
+    <aside
+      aria-label={t("pymk")}
+      className="hidden w-[300px] shrink-0 flex-col gap-3 xl:sticky xl:top-20 xl:flex"
+    >
       <Surface variant="card" padding="0">
-        <div className="flex items-center justify-between px-4 pt-3">
-          <span className="text-ink text-sm font-semibold">{t("pymk")}</span>
-          <Link
-            href="/network"
-            className="min-h-target text-ink-muted hover:text-brand-700 focus-visible:outline-hidden inline-flex items-center rounded-sm text-xs focus-visible:[box-shadow:var(--focus-ring)]"
-          >
-            {t("pymkAll")}
-          </Link>
-        </div>
+        <RailHeader title={t("pymk")} href="/network" linkLabel={t("pymkAll")} />
         {suggestionsLoading ? (
           <RailRowsSkeleton />
         ) : suggestions.length > 0 ? (
@@ -93,20 +122,21 @@ export function RightRail({
             loading={suggestionsLoading}
           />
         ) : (
-          <div className="text-ink-muted px-4 py-3 text-xs">—</div>
+          // Was a bare "—". The jobs card one Surface below answers its own
+          // empty state with a link out; this one left the reader at a dash.
+          <div className="px-4 py-3 text-xs">
+            <Link
+              href="/network"
+              className="text-ink-muted hover:text-brand-700 focus-visible:outline-hidden rounded-sm focus-visible:[box-shadow:var(--focus-ring)]"
+            >
+              {t("pymkEmpty")}
+            </Link>
+          </div>
         )}
       </Surface>
 
       <Surface variant="card" padding="0">
-        <div className="flex items-center justify-between px-4 pt-3">
-          <span className="text-ink text-sm font-semibold">{t("jobs")}</span>
-          <Link
-            href={`/${locale}/jobs`}
-            className="min-h-target text-ink-muted hover:text-brand-700 focus-visible:outline-hidden inline-flex items-center rounded-sm text-xs focus-visible:[box-shadow:var(--focus-ring)]"
-          >
-            {t("pymkAll")}
-          </Link>
-        </div>
+        <RailHeader title={t("jobs")} href={`/${locale}/jobs`} linkLabel={t("pymkAll")} />
         {jobsLoading ? (
           <RailRowsSkeleton />
         ) : jobs.length > 0 ? (
