@@ -42,3 +42,9 @@ covered by unit specs. Post-fix rerun: zero 5xx.
 pnpm --filter @baydar/db qa:load-fixture --run-id=qa-<id> --users=10
 pnpm load:api:smoke     # or baseline/high/spike per deployment.md
 ```
+
+## What to do with these numbers
+
+This file is a measurement, not a plan. The ranked work it feeds —
+and why this local, no-Redis, watch-mode profile cannot validate the
+caching items in it — is [`OPTIMIZATION-PLAN.md`](OPTIMIZATION-PLAN.md) §0.
