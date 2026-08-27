@@ -102,6 +102,11 @@ async function installState(page, state) {
     // Auth must keep working or every route photographs the sign-in page —
     // exactly the failure that made 15 shots worthless last time.
     if (request.url().includes("/auth/")) return route.continue();
+    // SSE endpoints (`@Sse("stream")` → /notifications/stream, /messaging/stream)
+    // never close, so `route.fetch()` below hangs and its callback outlives the
+    // page — the whole harness threw here. They carry a `?token=` query, so match
+    // the pathname, not the full URL. Nothing to reshape; pass through like auth.
+    if (new URL(request.url()).pathname.endsWith("/stream")) return route.continue();
 
     if (state === "error") {
       if (request.method() !== "GET") return route.continue();
