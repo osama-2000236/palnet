@@ -44,7 +44,11 @@ export function FeedLeftRail({
             <>
               <Link
                 href={`/${locale}/me`}
-                className="text-ink focus-visible:outline-hidden mt-3 block rounded-sm text-sm font-semibold hover:underline focus-visible:[box-shadow:var(--focus-ring)]"
+                // `target-area` expands the pressable box to the 44px token
+                // minimum without growing the rendered one — a 20px name link
+                // is a control, not the inline-in-a-paragraph case WCAG 2.5.8
+                // exempts. `e2e/targets.spec.ts` measures the union of the two.
+                className="target-area text-ink focus-visible:outline-hidden mt-3 block rounded-sm text-sm font-semibold hover:underline focus-visible:[box-shadow:var(--focus-ring)]"
               >
                 {profile.firstName} {profile.lastName}
               </Link>
@@ -59,7 +63,10 @@ export function FeedLeftRail({
             <div className="border-line-soft border-t" />
             <Link
               href={`/${locale}/me/connections`}
-              className="hover:bg-surface-subtle focus-visible:outline-hidden flex items-center justify-between gap-2 rounded-b-xl px-4 py-2.5 focus-visible:[box-shadow:var(--focus-ring)]"
+              // Same reason as the name link: py-2.5 renders ~36px, and the
+              // skeleton draws that height, so expand the hit box rather than
+              // the row.
+              className="target-area hover:bg-surface-subtle focus-visible:outline-hidden flex items-center justify-between gap-2 rounded-b-xl px-4 py-2.5 focus-visible:[box-shadow:var(--focus-ring)]"
             >
               <span className="text-ink-muted truncate text-xs">{t("myConnections")}</span>
               <span className="text-brand-700 shrink-0 text-xs font-semibold">
