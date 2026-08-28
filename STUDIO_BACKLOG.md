@@ -5,7 +5,7 @@ produced it. **Findings here are measured, not eyeballed** — a screenshot star
 an investigation, a measurement closes it. Two entries below are recorded as
 _not_ bugs precisely because the measurement disagreed with the screenshot.
 
-Last pass: 2026-08-28, iteration 7. Surfaces audited: web `/feed` (`empty` and
+Last pass: 2026-08-28, iteration 8. Surfaces audited: web `/feed` (`empty` and
 seeded, ar-PS + en, light + dark, 390px / 1100px / 1440px) and the mobile feed on
 a booted `Pixel_7_Pro`. Iteration 1 shipped as #151.
 
@@ -76,6 +76,25 @@ Found by the harness's own horizontal-overflow detector rather than by eye, and
 that detector is the check: the route now reports `0 hits` and an empty
 `_overflow__long.json` where it listed this card before. The other 11 routes in
 the `long` sweep were clean — they truncate with an ellipsis or wrap correctly.
+
+## Iteration 7–8 — the `loading` sweep, and a janitor pass that found nothing
+
+| #     | Finding                                                                                                                                                                                                                                                         | Status                                                                                         |
+| ----- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| P1-15 | **The inbox said "no conversations yet" before it had looked.** `InboxList` branched on `visibleRooms.length === 0` and nothing else, so a room list still in flight rendered the empty state — illustration and all — to a reader whose inbox had not arrived. | **fixed** (#166) — `roomsLoading` and three row skeletons, as the mobile twin has always drawn |
+
+That completes one component's three phases. #160 separated a **failed** list from
+an empty one; #166 separates a **pending** list from both. Loading, failure and
+emptiness finally render as three different things — and mobile was the reference
+for all three, the fourth such case this session.
+
+**The janitor pass found nothing to delete, which is itself the result.** 404
+source files scanned for unreferenced modules: the only hit was
+`instrumentation-client.ts`, which Next 16 loads by convention. Declared runtime
+dependencies checked against imports across all six workspaces: none unused. The
+eight `console.*` calls in app code are all `console.debug`, tagged and gated on
+`NODE_ENV`/`__DEV__`. Nothing here needs a broom, and saying so beats inventing
+work.
 
 ## Checked and _not_ filed
 
