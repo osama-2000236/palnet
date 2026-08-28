@@ -6,7 +6,10 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 
+import { Alert, Skeleton } from "@baydar/ui-web";
+
 import { apiFetch } from "@/lib/api";
+import { toErrorMessage } from "@/lib/error-message";
 import { getAccessToken } from "@/lib/session";
 import { BasicsSection } from "./_components/EditProfileBasics";
 import { EducationsSection, SkillsSection } from "./_components/EditProfileEducationSkills";
@@ -15,8 +18,11 @@ import { ExperiencesSection } from "./_components/EditProfileExperiences";
 export default function EditProfilePage(): JSX.Element {
   const router = useRouter();
   const t = useTranslations("profile");
+  const tCommon = useTranslations("common");
+  const tErrors = useTranslations("errors");
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const refresh = async (): Promise<void> => {
     const token = getAccessToken();
@@ -24,8 +30,17 @@ export default function EditProfilePage(): JSX.Element {
       router.replace("/login");
       return;
     }
-    const p = await apiFetch("/profiles/me", ProfileSchema, { token });
-    setProfile(p);
+    setError(null);
+    // Without this catch the rejection went nowhere: `profile` stayed null, and
+    // the branch below rendered a single "…" as the entire page — no message, no
+    // way back. `/me` falls back here when it cannot resolve a handle, so a
+    // profile-load failure funnelled the reader straight into that dead end.
+    try {
+      const p = await apiFetch("/profiles/me", ProfileSchema, { token });
+      setProfile(p);
+    } catch (caught) {
+      setError(toErrorMessage(caught, tErrors));
+    }
   };
 
   useEffect(() => {
@@ -33,8 +48,32 @@ export default function EditProfilePage(): JSX.Element {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  if (loading || !profile) {
-    return <main className="text-ink-muted mx-auto max-w-[840px] px-6 py-10">…</main>;
+  // Loading and failure are different things and used to render identically.
+  // Same split the mobile twin already makes (`app/(app)/me/edit.tsx`).
+  if (loading) {
+    return (
+      <main className="mx-auto flex w-full max-w-[840px] flex-col gap-4 px-6 py-8">
+        <Skeleton className="h-9 w-56" />
+        <Skeleton className="h-40 w-full" />
+        <Skeleton className="h-40 w-full" />
+      </main>
+    );
+  }
+
+  if (!profile) {
+    return (
+      <main className="mx-auto w-full max-w-[840px] px-6 py-8">
+        <Alert
+          kind="danger"
+          body={error ?? tCommon("genericError")}
+          cta={tCommon("retry")}
+          onAction={() => {
+            setLoading(true);
+            void refresh().finally(() => setLoading(false));
+          }}
+        />
+      </main>
+    );
   }
 
   return (
