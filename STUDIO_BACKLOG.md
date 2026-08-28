@@ -5,7 +5,7 @@ produced it. **Findings here are measured, not eyeballed** — a screenshot star
 an investigation, a measurement closes it. Two entries below are recorded as
 _not_ bugs precisely because the measurement disagreed with the screenshot.
 
-Last pass: 2026-08-28, iteration 3. Surfaces audited: web `/feed` (`empty` and
+Last pass: 2026-08-28, iteration 4. Surfaces audited: web `/feed` (`empty` and
 seeded, ar-PS + en, light + dark, 390px / 1100px / 1440px) and the mobile feed on
 a booted `Pixel_7_Pro`. Iteration 1 shipped as #151.
 
@@ -42,6 +42,30 @@ _None open._
 | P2-3 | **Mobile was audited at source level only.** No emulator booted this pass: `adb` is not on `PATH` (it lives at `%LOCALAPPDATA%\Android\Sdk\platform-tools`), AVD `Pixel_7_Pro` was not running, and a native build is too slow for a 10-minute cycle. Mobile changes are covered by `feed-empty.test.tsx` (verified failing when the CTA is removed) but have not been photographed.                                | **closed** — booted and photographed; feed renders correctly on device                                       |
 | P2-4 | English mobile top nav looked like it clipped "Me" at 390px. **Not a defect, and not English-only:** the nav strip is deliberately `overflow-x: auto` (`scrollWidth` 770 vs `clientWidth` 290), and both locales overflow it — English pushes 6 items past the edge, Arabic 4. The items are reachable by scrolling, and the page body never scrolls, which is why the harness reported 0 horizontal-overflow hits. | **closed — measured, no change**                                                                             |
 
+## Iteration 4 — the `empty` and `error` sweep
+
+All 33 routes photographed in `empty`, and the core routes in `error` — both
+states unreachable before P0-1 was fixed. Four defects, one deferral.
+
+| #     | Finding                                                                                                                                                                                                                                                                                                                                                     | Status                                                                                                                                                                                                                |
+| ----- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| P1-9  | **A company over its job quota was told nothing.** Billing rendered `{used} of {limit}` in plain ink whatever the numbers, so at-or-over-quota looked like having room, and the consequence only arrived as a `402` after the employer had written the whole job. Reachable normally: a subscription that ends reverts the plan while its jobs stay active. | **fixed** (#157) — `text-warning` at the quota, plus one line naming the two ways out                                                                                                                                 |
+| P1-10 | **`me/edit` rendered a literal "…" as the whole page and stayed there.** One branch covered loading and failure, and `refresh()` had no `catch`, so a failed profile load stranded the reader with no message and no retry. `/me` falls back here when it cannot resolve a handle, so one failing request funnelled people into it.                         | **fixed** (#158) — skeleton for loading, danger `Alert` + retry for failure                                                                                                                                           |
+| P1-11 | **`network` said the reader's network was empty when the server had failed.** `try/finally` with no `catch`: `items` stayed `[]` and the empty state rendered. Confidently wrong — nothing to retry, no sign anything broke.                                                                                                                                | **fixed** (#159) — error branch ahead of the empty branch                                                                                                                                                             |
+| P1-12 | **`messages` said "no conversations yet" on a failed room list.** Same missing `catch`. The hook's existing `error` belongs to the open thread and renders in `RoomView`, which is not on screen at all on a phone, so a room-_list_ failure had nowhere to go.                                                                                             | **fixed** (#160) — a separate `roomsError` in the inbox pane                                                                                                                                                          |
+| P1-13 | **`job-detail` cannot be retried after a transient failure.** `if (error \|\| !job)` treats a 500 and a 404 identically — one sentence and a "back to jobs" link — so a network blip costs the reader the page, while every list route offers a retry.                                                                                                      | **open — deferred.** Mobile makes the same conflation (`app/(app)/jobs/[id].tsx:169`), so this is a shared decision rather than web drift. Splitting it needs a second action slot on `Alert`, which takes one `cta`. |
+
+**The pattern worth naming:** P1-10, P1-11 and P1-12 are one shape — an unhandled
+read rejection collapsing into an empty state — and in all three the mobile twin
+already caught correctly. The lockstep rule found these in reverse: mobile was
+the reference and web had drifted.
+
+**A trap that cost real time:** naming a translator as an effect dependency.
+`useTranslations` is memoized in the app, but the test provider returns a fresh
+function per render, so the effect re-ran forever and hung three tests on a
+timeout. Read it through a ref — and assign that ref inside an effect, because
+touching `ref.current` during render is a lint error here.
+
 ## Checked and _not_ filed
 
 Recording these so the next pass does not re-litigate them:
@@ -60,3 +84,14 @@ Recording these so the next pass does not re-litigate them:
   `clientWidth` of 290 — so the items past the edge are scrolled to, not lost,
   and the page body itself never scrolls. Both locales overflow it (English 6
   items, Arabic 4), so the original "English-only" framing was wrong twice over.
+
+- **The Karama balance is not a broken glyph.** It renders as a small dot, which
+  is Arabic-Indic zero (`٠`). The `٥٠٠٠` ceiling beside it draws its zeros the
+  same way. Reading the script correctly, not measuring, settled this one.
+- **The profile tab strip does not clip `النشاط`.** Measured `overflow-x: auto`,
+  `scrollWidth` 362 against a `clientWidth` of 300 — it scrolls, exactly like the
+  top nav in P2-4. Two screenshots, same wrong conclusion, same measurement.
+- **The employer job limit is enforced.** "٢ من ١" on the billing screen looks
+  like a paywall that does not hold. Posting a third job against that company
+  answers `402 Active job limit reached (2/1)`; the seed created its jobs through
+  Prisma rather than the service. P1-9 above is the display half only.
