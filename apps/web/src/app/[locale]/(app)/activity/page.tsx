@@ -179,14 +179,21 @@ export default function ActivityRoute(): JSX.Element {
             ) : (
               <ul className="grid gap-3 sm:grid-cols-3">
                 {state.jobs.map((job) => (
-                  <li key={job.id}>
+                  // `min-w-0` is the load-bearing half: a grid item defaults to
+                  // `min-width: auto`, so it refuses to shrink below its content
+                  // and a title with no spaces widens the whole page — measured
+                  // at 414px against a 390px viewport. `break-words` is what then
+                  // wraps the token instead of letting it run off the card.
+                  <li key={job.id} className="min-w-0">
                     <Link
                       href={`/jobs/${job.id}`}
                       className="focus-visible:outline-hidden block h-full rounded-md focus-visible:[box-shadow:var(--focus-ring)]"
                     >
                       <Surface variant="flat" padding="4" className="h-full">
-                        <p className="text-ink text-sm font-semibold">{job.title}</p>
-                        <p className="text-ink-muted mt-1 text-sm">{jobSource(job).name}</p>
+                        <p className="text-ink break-words text-sm font-semibold">{job.title}</p>
+                        <p className="text-ink-muted mt-1 break-words text-sm">
+                          {jobSource(job).name}
+                        </p>
                       </Surface>
                     </Link>
                   </li>
