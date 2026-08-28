@@ -14,7 +14,7 @@ import {
   type Invoice as InvoiceDto,
   type PlanOffer as PlanOfferDto,
 } from "@baydar/shared";
-import { Alert, Button, Skeleton, Surface } from "@baydar/ui-web";
+import { Alert, Button, cx, Skeleton, Surface } from "@baydar/ui-web";
 import { useParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
@@ -147,9 +147,23 @@ export default function CompanyBillingPage(): JSX.Element {
 
             <Surface as="article" variant="flat" padding="5" className="flex flex-col gap-1">
               <p className="text-ink-muted text-sm">{t("jobSlots")}</p>
-              <p className="text-ink text-xl font-bold">
+              {/* A company can sit at or over its quota without having done
+               * anything wrong — a subscription that ends reverts the plan while
+               * the jobs posted under it stay active, so "5 of 1" is a normal
+               * lifecycle state. It used to render in plain ink like any other
+               * number, and the only place the consequence appeared was a 402 at
+               * post time. Same `text-warning` the past-due line above uses. */}
+              <p
+                className={cx(
+                  "text-xl font-bold",
+                  summary.activeJobs >= summary.jobLimit ? "text-warning" : "text-ink",
+                )}
+              >
                 {t("jobSlotsValue", { used: summary.activeJobs, limit: summary.jobLimit })}
               </p>
+              {summary.activeJobs >= summary.jobLimit ? (
+                <p className="text-ink-muted text-sm">{t("jobSlotsFull")}</p>
+              ) : null}
             </Surface>
 
             <Surface as="article" variant="flat" padding="5" className="flex flex-col gap-1">

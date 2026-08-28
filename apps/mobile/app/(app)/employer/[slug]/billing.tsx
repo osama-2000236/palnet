@@ -137,12 +137,24 @@ export default function CompanyBillingScreen(): JSX.Element {
               <Text style={[styles.summaryLabel, styles.summarySpacer]}>
                 {t("billing.employer.jobSlots")}
               </Text>
-              <Text style={styles.summaryValue}>
+              {/* Lockstep with web: a subscription that ends reverts the plan
+               * while the jobs posted under it stay active, so "5 of 1" is a
+               * normal lifecycle state that used to render like any other
+               * number — the consequence only showed up as a 402 at post time. */}
+              <Text
+                style={[
+                  styles.summaryValue,
+                  summary.activeJobs >= summary.jobLimit ? styles.warnText : null,
+                ]}
+              >
                 {t("billing.employer.jobSlotsValue", {
                   used: summary.activeJobs,
                   limit: summary.jobLimit,
                 })}
               </Text>
+              {summary.activeJobs >= summary.jobLimit ? (
+                <Text style={styles.bodyText}>{t("billing.employer.jobSlotsFull")}</Text>
+              ) : null}
 
               <Text style={[styles.summaryLabel, styles.summarySpacer]}>
                 {t("billing.employer.credits")}
