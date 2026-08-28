@@ -5,7 +5,7 @@ produced it. **Findings here are measured, not eyeballed** — a screenshot star
 an investigation, a measurement closes it. Two entries below are recorded as
 _not_ bugs precisely because the measurement disagreed with the screenshot.
 
-Last pass: 2026-08-28, iteration 2. Surfaces audited: web `/feed` (`empty` and
+Last pass: 2026-08-28, iteration 3. Surfaces audited: web `/feed` (`empty` and
 seeded, ar-PS + en, light + dark, 390px / 1100px / 1440px) and the mobile feed on
 a booted `Pixel_7_Pro`. Iteration 1 shipped as #151.
 
@@ -35,12 +35,12 @@ _None open._
 
 ## P2 — cleanup
 
-| #    | Finding                                                                                                                                                                                                                                                                                                                                                                              | Status                                                                                                       |
-| ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------ |
-| P2-1 | `feed/page.tsx` crossed the 300 LOC `qa:design` ceiling. `FeedErrorState` was a local component in a directory whose convention is one file per sub-component (`OnboardingDoneCard`, `ProfileCompletenessCard`).                                                                                                                                                                     | **fixed** — extracted to `feed/FeedErrorState.tsx`; `RetryChip` import was left dead by the move and removed |
-| P2-2 | The i18n ratchet moved **down**: web 163→153 platform-only keys, mobile 100→99. Ten of those closed by declaring `feed.rail` web-only — the rail is `xl:` chrome with no phone twin — rather than by adding keys.                                                                                                                                                                    | **fixed** — ceilings lowered to match                                                                        |
-| P2-3 | **Mobile was audited at source level only.** No emulator booted this pass: `adb` is not on `PATH` (it lives at `%LOCALAPPDATA%\Android\Sdk\platform-tools`), AVD `Pixel_7_Pro` was not running, and a native build is too slow for a 10-minute cycle. Mobile changes are covered by `feed-empty.test.tsx` (verified failing when the CTA is removed) but have not been photographed. | **closed** — booted and photographed; feed renders correctly on device                                       |
-| P2-4 | English mobile top nav looks like it clips "Me" at 390px. No overflowing element found (the only clipped node is an intentional 1px `sr-only` span) and the harness reports 0 horizontal-overflow hits.                                                                                                                                                                              | **open — unconfirmed.** Re-shoot before treating as a defect                                                 |
+| #    | Finding                                                                                                                                                                                                                                                                                                                                                                                                             | Status                                                                                                       |
+| ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| P2-1 | `feed/page.tsx` crossed the 300 LOC `qa:design` ceiling. `FeedErrorState` was a local component in a directory whose convention is one file per sub-component (`OnboardingDoneCard`, `ProfileCompletenessCard`).                                                                                                                                                                                                    | **fixed** — extracted to `feed/FeedErrorState.tsx`; `RetryChip` import was left dead by the move and removed |
+| P2-2 | The i18n ratchet moved **down**: web 163→153 platform-only keys, mobile 100→99. Ten of those closed by declaring `feed.rail` web-only — the rail is `xl:` chrome with no phone twin — rather than by adding keys.                                                                                                                                                                                                   | **fixed** — ceilings lowered to match                                                                        |
+| P2-3 | **Mobile was audited at source level only.** No emulator booted this pass: `adb` is not on `PATH` (it lives at `%LOCALAPPDATA%\Android\Sdk\platform-tools`), AVD `Pixel_7_Pro` was not running, and a native build is too slow for a 10-minute cycle. Mobile changes are covered by `feed-empty.test.tsx` (verified failing when the CTA is removed) but have not been photographed.                                | **closed** — booted and photographed; feed renders correctly on device                                       |
+| P2-4 | English mobile top nav looked like it clipped "Me" at 390px. **Not a defect, and not English-only:** the nav strip is deliberately `overflow-x: auto` (`scrollWidth` 770 vs `clientWidth` 290), and both locales overflow it — English pushes 6 items past the edge, Arabic 4. The items are reachable by scrolling, and the page body never scrolls, which is why the harness reported 0 horizontal-overflow hits. | **closed — measured, no change**                                                                             |
 
 ## Checked and _not_ filed
 
@@ -54,3 +54,9 @@ Recording these so the next pass does not re-litigate them:
 - **The rail header collision is not present with data.** Measured at 123px gap on
   a loaded feed. It only appears in the state the harness could not photograph
   until P0-1 was fixed, which is why it survived every previous visual pass.
+
+- **The English mobile nav does not clip.** It looked like it truncated "Me" at
+  390px. The strip is `overflow-x: auto` — `scrollWidth` 770 against a
+  `clientWidth` of 290 — so the items past the edge are scrolled to, not lost,
+  and the page body itself never scrolls. Both locales overflow it (English 6
+  items, Arabic 4), so the original "English-only" framing was wrong twice over.
