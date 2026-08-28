@@ -1,7 +1,16 @@
 "use client";
 
 import { formatNumber, shortTime, type ChatRoom } from "@baydar/shared";
-import { Alert, EmptyState, Icon, RoomRow, SearchField, Tab, Tabs } from "@baydar/ui-web";
+import {
+  Alert,
+  EmptyState,
+  Icon,
+  RecordCardSkeleton,
+  RoomRow,
+  SearchField,
+  Tab,
+  Tabs,
+} from "@baydar/ui-web";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
@@ -11,6 +20,7 @@ import { ONLINE_WINDOW_MS } from "../_utils";
 export interface InboxListProps {
   rooms: ChatRoom[];
   roomsError: string | null;
+  roomsLoading: boolean;
   onRetryRooms: () => void;
   activeRoomId: string | null;
   viewerId: string | null;
@@ -23,6 +33,7 @@ export interface InboxListProps {
 export function InboxList({
   rooms,
   roomsError,
+  roomsLoading,
   onRetryRooms,
   activeRoomId,
   viewerId,
@@ -78,7 +89,16 @@ export function InboxList({
         </Tabs>
       </div>
       <div className="flex-1 overflow-y-auto">
-        {roomsError ? (
+        {roomsLoading ? (
+          // Loading is not emptiness. Without this branch the inbox announced
+          // "no conversations yet" while the first request was still in flight;
+          // the mobile twin has always drawn skeletons here.
+          <div aria-busy="true">
+            <RecordCardSkeleton variant="row" />
+            <RecordCardSkeleton variant="row" />
+            <RecordCardSkeleton variant="row" />
+          </div>
+        ) : roomsError ? (
           // A failed room list used to fall through to the empty state below and
           // report "no conversations yet". The thread pane owns `error`; on a
           // phone it is not even rendered, so this has to live here.
