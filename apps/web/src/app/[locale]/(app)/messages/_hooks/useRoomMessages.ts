@@ -10,6 +10,7 @@ import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { apiCall, apiFetch, ApiRequestError, apiFetchPage } from "@/lib/api";
+import { toErrorMessage } from "@/lib/error-message";
 
 import { useRoomMessageSendActions } from "./useRoomMessageSendActions";
 import { useRoomMessagesDerived } from "./useRoomMessagesDerived";
@@ -23,6 +24,7 @@ import {
 
 export function useRoomMessages({ token, viewerId }: UseRoomMessagesInput): UseRoomMessagesResult {
   const t = useTranslations("messaging");
+  const tErrors = useTranslations("errors");
   const [rooms, setRooms] = useState<ChatRoom[]>([]);
   const [activeRoomId, setActiveRoomId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -51,6 +53,22 @@ export function useRoomMessages({ token, viewerId }: UseRoomMessagesInput): UseR
     at: 0,
   });
 
+  // Separate from `error`, which belongs to the open thread and is rendered by
+  // RoomView. A room *list* failure has to appear in the inbox pane — on a phone
+  // the thread pane is not even on screen.
+  const [roomsError, setRoomsError] = useState<string | null>(null);
+  // Bumped by `retryRooms` to re-run the effect below; the room list has no
+  // other trigger once the first attempt has settled.
+  const [reloadNonce, setReloadNonce] = useState(0);
+  const retryRooms = useCallback((): void => setReloadNonce((n) => n + 1), []);
+  // Read through a ref rather than depending on it. A translator is not a stable
+  // identity — the test provider returns a fresh function per render — and a
+  // changing dep on an effect that also sets state re-runs it forever.
+  const tErrorsRef = useRef(tErrors);
+  useEffect(() => {
+    tErrorsRef.current = tErrors;
+  }, [tErrors]);
+
   const loadRooms = useCallback(async (tk: string): Promise<ChatRoom[]> => {
     const out = await apiFetchPage("/messaging/rooms", RoomsEnvelope, { token: tk });
     setRooms(out.data);
@@ -60,20 +78,29 @@ export function useRoomMessages({ token, viewerId }: UseRoomMessagesInput): UseR
   useEffect(() => {
     if (!token) return undefined;
     let cancelled = false;
-    void loadRooms(token).then((list) => {
-      if (cancelled) return;
-      const requestedRoomId = new URLSearchParams(window.location.search).get("roomId");
-      setActiveRoomId((current) => {
-        if (current || list.length === 0) return current;
-        return requestedRoomId && list.some((room) => room.id === requestedRoomId)
-          ? requestedRoomId
-          : list[0]!.id;
+    setRoomsError(null);
+    void loadRooms(token)
+      .then((list) => {
+        if (cancelled) return;
+        const requestedRoomId = new URLSearchParams(window.location.search).get("roomId");
+        setActiveRoomId((current) => {
+          if (current || list.length === 0) return current;
+          return requestedRoomId && list.some((room) => room.id === requestedRoomId)
+            ? requestedRoomId
+            : list[0]!.id;
+        });
+      })
+      // Without this the rejection went nowhere and `rooms` stayed at `[]`, so a
+      // failed list rendered "no conversations yet" — the same wrong answer the
+      // network page used to give.
+      .catch((caught: unknown) => {
+        if (cancelled) return;
+        setRoomsError(toErrorMessage(caught, tErrorsRef.current));
       });
-    });
     return () => {
       cancelled = true;
     };
-  }, [loadRooms, token]);
+  }, [loadRooms, token, reloadNonce]);
 
   const loadMessages = useCallback(
     async (roomId: string, after: string | null): Promise<void> => {
@@ -214,6 +241,8 @@ export function useRoomMessages({ token, viewerId }: UseRoomMessagesInput): UseR
   }, [activeRoomId, loadMessages, nextCursor]);
 
   return {
+    roomsError,
+    retryRooms,
     rooms,
     filteredRooms,
     activeRoomId,

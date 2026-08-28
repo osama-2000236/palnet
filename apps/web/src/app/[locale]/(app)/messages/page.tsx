@@ -40,6 +40,8 @@ export default function MessagesPage(): JSX.Element {
           activeRoomId={messages.activeRoomId}
           locale={locale}
           rooms={messages.filteredRooms}
+          roomsError={messages.roomsError}
+          onRetryRooms={messages.retryRooms}
           searchTerm={messages.searchTerm}
           viewerId={viewerId}
           onSearchTermChange={messages.setSearchTerm}
