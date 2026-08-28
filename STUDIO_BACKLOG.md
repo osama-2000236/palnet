@@ -5,7 +5,7 @@ produced it. **Findings here are measured, not eyeballed** — a screenshot star
 an investigation, a measurement closes it. Two entries below are recorded as
 _not_ bugs precisely because the measurement disagreed with the screenshot.
 
-Last pass: 2026-08-28, iteration 4. Surfaces audited: web `/feed` (`empty` and
+Last pass: 2026-08-28, iteration 6. Surfaces audited: web `/feed` (`empty` and
 seeded, ar-PS + en, light + dark, 390px / 1100px / 1440px) and the mobile feed on
 a booted `Pixel_7_Pro`. Iteration 1 shipped as #151.
 
@@ -47,13 +47,13 @@ _None open._
 All 33 routes photographed in `empty`, and the core routes in `error` — both
 states unreachable before P0-1 was fixed. Four defects, one deferral.
 
-| #     | Finding                                                                                                                                                                                                                                                                                                                                                     | Status                                                                                                                                                                                                                |
-| ----- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| P1-9  | **A company over its job quota was told nothing.** Billing rendered `{used} of {limit}` in plain ink whatever the numbers, so at-or-over-quota looked like having room, and the consequence only arrived as a `402` after the employer had written the whole job. Reachable normally: a subscription that ends reverts the plan while its jobs stay active. | **fixed** (#157) — `text-warning` at the quota, plus one line naming the two ways out                                                                                                                                 |
-| P1-10 | **`me/edit` rendered a literal "…" as the whole page and stayed there.** One branch covered loading and failure, and `refresh()` had no `catch`, so a failed profile load stranded the reader with no message and no retry. `/me` falls back here when it cannot resolve a handle, so one failing request funnelled people into it.                         | **fixed** (#158) — skeleton for loading, danger `Alert` + retry for failure                                                                                                                                           |
-| P1-11 | **`network` said the reader's network was empty when the server had failed.** `try/finally` with no `catch`: `items` stayed `[]` and the empty state rendered. Confidently wrong — nothing to retry, no sign anything broke.                                                                                                                                | **fixed** (#159) — error branch ahead of the empty branch                                                                                                                                                             |
-| P1-12 | **`messages` said "no conversations yet" on a failed room list.** Same missing `catch`. The hook's existing `error` belongs to the open thread and renders in `RoomView`, which is not on screen at all on a phone, so a room-_list_ failure had nowhere to go.                                                                                             | **fixed** (#160) — a separate `roomsError` in the inbox pane                                                                                                                                                          |
-| P1-13 | **`job-detail` cannot be retried after a transient failure.** `if (error \|\| !job)` treats a 500 and a 404 identically — one sentence and a "back to jobs" link — so a network blip costs the reader the page, while every list route offers a retry.                                                                                                      | **open — deferred.** Mobile makes the same conflation (`app/(app)/jobs/[id].tsx:169`), so this is a shared decision rather than web drift. Splitting it needs a second action slot on `Alert`, which takes one `cta`. |
+| #     | Finding                                                                                                                                                                                                                                                                                                                                                     | Status                                                                                                                                               |
+| ----- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| P1-9  | **A company over its job quota was told nothing.** Billing rendered `{used} of {limit}` in plain ink whatever the numbers, so at-or-over-quota looked like having room, and the consequence only arrived as a `402` after the employer had written the whole job. Reachable normally: a subscription that ends reverts the plan while its jobs stay active. | **fixed** (#157) — `text-warning` at the quota, plus one line naming the two ways out                                                                |
+| P1-10 | **`me/edit` rendered a literal "…" as the whole page and stayed there.** One branch covered loading and failure, and `refresh()` had no `catch`, so a failed profile load stranded the reader with no message and no retry. `/me` falls back here when it cannot resolve a handle, so one failing request funnelled people into it.                         | **fixed** (#158) — skeleton for loading, danger `Alert` + retry for failure                                                                          |
+| P1-11 | **`network` said the reader's network was empty when the server had failed.** `try/finally` with no `catch`: `items` stayed `[]` and the empty state rendered. Confidently wrong — nothing to retry, no sign anything broke.                                                                                                                                | **fixed** (#159) — error branch ahead of the empty branch                                                                                            |
+| P1-12 | **`messages` said "no conversations yet" on a failed room list.** Same missing `catch`. The hook's existing `error` belongs to the open thread and renders in `RoomView`, which is not on screen at all on a phone, so a room-_list_ failure had nowhere to go.                                                                                             | **fixed** (#160) — a separate `roomsError` in the inbox pane                                                                                         |
+| P1-13 | **A job that failed to load and a job that is gone rendered identically.** `if (error \|\| !job)` gave both one sentence and a link back, on both platforms, so a transient 500 cost the reader the page while every list route offers a retry.                                                                                                             | **fixed** (#163) — `NOT_FOUND` leaves `error` null and keeps the neutral copy; only the failure branch carries a retry; the link back stays for both |
 
 **The pattern worth naming:** P1-10, P1-11 and P1-12 are one shape — an unhandled
 read rejection collapsing into an empty state — and in all three the mobile twin
@@ -65,6 +65,17 @@ the reference and web had drifted.
 function per render, so the effect re-ran forever and hung three tests on a
 timeout. Read it through a ref — and assign that ref inside an effect, because
 touching `ref.current` during render is a lint error here.
+
+## Iteration 5–6 — the `long` sweep, and P1-13 closed
+
+| #     | Finding                                                                                                                                                                                                                                                                                                                          | Status                                                                     |
+| ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| P1-14 | **A job title with no spaces scrolled the whole page sideways.** `/activity`'s suggested-job cards are grid items, and a grid item defaults to `min-width: auto` — it will not shrink below its content, so an unbreakable title widened its track, its card and the document: `scrollWidth` 414 against a `clientWidth` of 390. | **fixed** (#162) — `min-w-0` on the `<li>`, `break-words` on the two lines |
+
+Found by the harness's own horizontal-overflow detector rather than by eye, and
+that detector is the check: the route now reports `0 hits` and an empty
+`_overflow__long.json` where it listed this card before. The other 11 routes in
+the `long` sweep were clean — they truncate with an ellipsis or wrap correctly.
 
 ## Checked and _not_ filed
 
@@ -95,3 +106,8 @@ Recording these so the next pass does not re-litigate them:
   like a paywall that does not hold. Posting a third job against that company
   answers `402 Active job limit reached (2/1)`; the seed created its jobs through
   Prisma rather than the service. P1-9 above is the display half only.
+- **The search result headline does not escape its card.** In a contact sheet the
+  long Latin headline looked like it ran past the card's rounded border. Measured:
+  `escapesCard: false`, its right edge 85px _inside_ the card, no truncation, and
+  the page reports no horizontal overflow. The border in the crop belonged to a
+  neighbouring element.
