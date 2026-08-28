@@ -23,6 +23,8 @@ export interface UseRoomMessagesInput {
 export interface UseRoomMessagesResult {
   /** Failure of the room *list*, shown in the inbox pane rather than the thread. */
   roomsError: string | null;
+  /** True until the first room list settles, so loading is not shown as empty. */
+  roomsLoading: boolean;
   retryRooms: () => void;
   rooms: ChatRoom[];
   filteredRooms: ChatRoom[];

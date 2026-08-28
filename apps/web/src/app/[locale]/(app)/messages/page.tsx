@@ -41,6 +41,7 @@ export default function MessagesPage(): JSX.Element {
           locale={locale}
           rooms={messages.filteredRooms}
           roomsError={messages.roomsError}
+          roomsLoading={messages.roomsLoading}
           onRetryRooms={messages.retryRooms}
           searchTerm={messages.searchTerm}
           viewerId={viewerId}

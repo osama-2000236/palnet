@@ -57,6 +57,10 @@ export function useRoomMessages({ token, viewerId }: UseRoomMessagesInput): UseR
   // RoomView. A room *list* failure has to appear in the inbox pane — on a phone
   // the thread pane is not even on screen.
   const [roomsError, setRoomsError] = useState<string | null>(null);
+  // True until the first room list settles. Without it the inbox rendered its
+  // empty state while the request was still in flight — "no conversations yet"
+  // before anything had loaded.
+  const [roomsLoading, setRoomsLoading] = useState(true);
   // Bumped by `retryRooms` to re-run the effect below; the room list has no
   // other trigger once the first attempt has settled.
   const [reloadNonce, setReloadNonce] = useState(0);
@@ -79,6 +83,7 @@ export function useRoomMessages({ token, viewerId }: UseRoomMessagesInput): UseR
     if (!token) return undefined;
     let cancelled = false;
     setRoomsError(null);
+    setRoomsLoading(true);
     void loadRooms(token)
       .then((list) => {
         if (cancelled) return;
@@ -96,6 +101,9 @@ export function useRoomMessages({ token, viewerId }: UseRoomMessagesInput): UseR
       .catch((caught: unknown) => {
         if (cancelled) return;
         setRoomsError(toErrorMessage(caught, tErrorsRef.current));
+      })
+      .finally(() => {
+        if (!cancelled) setRoomsLoading(false);
       });
     return () => {
       cancelled = true;
@@ -242,6 +250,7 @@ export function useRoomMessages({ token, viewerId }: UseRoomMessagesInput): UseR
 
   return {
     roomsError,
+    roomsLoading,
     retryRooms,
     rooms,
     filteredRooms,
