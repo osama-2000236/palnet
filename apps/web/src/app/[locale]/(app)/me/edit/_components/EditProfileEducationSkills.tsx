@@ -42,6 +42,7 @@ export function EducationsSection({
   const t = useTranslations("profile");
   const [draft, setDraft] = useState<Education | null>(null);
   const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function add(): Promise<void> {
     if (!draft) return;
@@ -50,6 +51,7 @@ export function EducationsSection({
     const token = getAccessToken();
     if (!token) return;
     setBusy(true);
+    setError(null);
     try {
       const next = await apiFetch("/profiles/me/educations", ProfileSchema, {
         method: "POST",
@@ -58,6 +60,8 @@ export function EducationsSection({
       });
       onChanged(next);
       setDraft(null);
+    } catch {
+      setError(t("saveFailed"));
     } finally {
       setBusy(false);
     }
@@ -67,12 +71,15 @@ export function EducationsSection({
     const token = getAccessToken();
     if (!token) return;
     setBusy(true);
+    setError(null);
     try {
       const next = await apiFetch(`/profiles/me/educations/${id}`, ProfileSchema, {
         method: "DELETE",
         token,
       });
       onChanged(next);
+    } catch {
+      setError(t("saveFailed"));
     } finally {
       setBusy(false);
     }
@@ -163,6 +170,8 @@ export function EducationsSection({
           </div>
         </div>
       ) : null}
+
+      {error ? <p className="text-danger mt-3 text-sm">{error}</p> : null}
     </Surface>
   );
 }
@@ -177,6 +186,7 @@ export function SkillsSection({
   const t = useTranslations("profile");
   const [name, setName] = useState("");
   const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function add(): Promise<void> {
     const parsed = AddSkillBody.safeParse({ name });
@@ -184,6 +194,7 @@ export function SkillsSection({
     const token = getAccessToken();
     if (!token) return;
     setBusy(true);
+    setError(null);
     try {
       const next = await apiFetch("/profiles/me/skills", ProfileSchema, {
         method: "POST",
@@ -192,6 +203,8 @@ export function SkillsSection({
       });
       onChanged(next);
       setName("");
+    } catch {
+      setError(t("saveFailed"));
     } finally {
       setBusy(false);
     }
@@ -201,12 +214,15 @@ export function SkillsSection({
     const token = getAccessToken();
     if (!token) return;
     setBusy(true);
+    setError(null);
     try {
       const next = await apiFetch(`/profiles/me/skills/${s.id}`, ProfileSchema, {
         method: "DELETE",
         token,
       });
       onChanged(next);
+    } catch {
+      setError(t("saveFailed"));
     } finally {
       setBusy(false);
     }
@@ -254,6 +270,8 @@ export function SkillsSection({
           {t("add")}
         </button>
       </div>
+
+      {error ? <p className="text-danger mt-3 text-sm">{error}</p> : null}
     </Surface>
   );
 }
