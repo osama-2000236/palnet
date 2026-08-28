@@ -5,7 +5,7 @@ produced it. **Findings here are measured, not eyeballed** — a screenshot star
 an investigation, a measurement closes it. Two entries below are recorded as
 _not_ bugs precisely because the measurement disagreed with the screenshot.
 
-Last pass: 2026-08-28, iteration 6. Surfaces audited: web `/feed` (`empty` and
+Last pass: 2026-08-28, iteration 7. Surfaces audited: web `/feed` (`empty` and
 seeded, ar-PS + en, light + dark, 390px / 1100px / 1440px) and the mobile feed on
 a booted `Pixel_7_Pro`. Iteration 1 shipped as #151.
 
@@ -31,7 +31,7 @@ _None open._
 | P1-6 | **The feed page never implemented the 3-column grid it loads into.** `loading.tsx` renders `xl:grid-cols-[225px_minmax(0,1fr)_300px]` at `max-w-[1128px]` per `DESIGN.md` §10.1, including a 225px left rail. `feed/page.tsx` renders a centred flex with a 520px column and **no left rail at all**. Skeleton→content therefore relayouts the whole page, not just the rail.                              | **fixed** — the prototype settled it: `FeedPage.jsx:199` is `225px 1fr 300px` with a mini-profile left rail, so the skeleton was right and the page had drifted. Measured `225px 507px 300px` after. |
 
 | P1-7 | **The unread badge is invisible against its own button.** Mobile's bell fills with `accent600` when unread (`iconButtonActive`) and the count badge on top is `accent700` — measured **1.33:1**, where WCAG 1.4.11 wants 3:1 for a component boundary. The count _text_ is fine (7.70:1 white on `accent700`); it is the badge shape that vanishes. Same 1.34:1 in dark. | **fixed** — a 2px `surface` ring, the treatment the native `Avatar` gives its presence dot. Puts `surface` between the two reds: 5.79:1 vs the bell and 7.70:1 vs the badge in light, 4.29:1 and 3.21:1 in dark. Dot grew 20 → 24 because RN draws `borderWidth` inside the box. |
-| P1-8 | **The mobile screenshot harness reports success on a screen the app has not drawn yet.** A cold run photographed the splash and the profile gate and printed `ok`, `direction verified` and `theme verified` over both. `warmUp` only proves "not blank" and says so; the documented safety net is the end-of-cell duplicate report, which cannot fire on a one-screen `--only=` run — exactly how the bad shots were produced. | **partly fixed** — a cold start is now blocked until React Native mounts (measured: 2116-byte chrome-only hierarchy → 52KB with `tab-feed`). **Still open:** the profile gate renders real text and reads as mounted, so it is not yet caught; its testID could not be made to appear on a warm session, and a check that never fires is worse than none. |
+| P1-8 | **The mobile screenshot harness reported success on a screen the app had not drawn yet.** A cold run photographed the splash and the profile gate and printed `ok`, `direction verified` and `theme verified` over both. `warmUp` only proves "not blank" and says so; the documented safety net is the end-of-cell duplicate report, which cannot fire on a one-screen `--only=` run. | **fixed** (#154, verified 2026-08-28) — a cold start is blocked until React Native mounts. The gate was left open on the assumption that its real text would read as mounted; that assumption was wrong. Forced permanently on and dumped: the gate's hierarchy is **33 bytes with no package and no resource-ids**, so `appMounted()` returns false and the guard blocks the shot. |
 
 ## P2 — cleanup
 
