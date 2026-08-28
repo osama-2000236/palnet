@@ -1,7 +1,7 @@
 "use client";
 
 import { formatNumber, shortTime, type ChatRoom } from "@baydar/shared";
-import { EmptyState, Icon, RoomRow, SearchField, Tab, Tabs } from "@baydar/ui-web";
+import { Alert, EmptyState, Icon, RoomRow, SearchField, Tab, Tabs } from "@baydar/ui-web";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
@@ -10,6 +10,8 @@ import { ONLINE_WINDOW_MS } from "../_utils";
 
 export interface InboxListProps {
   rooms: ChatRoom[];
+  roomsError: string | null;
+  onRetryRooms: () => void;
   activeRoomId: string | null;
   viewerId: string | null;
   locale: string;
@@ -20,6 +22,8 @@ export interface InboxListProps {
 
 export function InboxList({
   rooms,
+  roomsError,
+  onRetryRooms,
   activeRoomId,
   viewerId,
   locale,
@@ -74,7 +78,14 @@ export function InboxList({
         </Tabs>
       </div>
       <div className="flex-1 overflow-y-auto">
-        {visibleRooms.length === 0 ? (
+        {roomsError ? (
+          // A failed room list used to fall through to the empty state below and
+          // report "no conversations yet". The thread pane owns `error`; on a
+          // phone it is not even rendered, so this has to live here.
+          <div className="p-3">
+            <Alert kind="danger" body={roomsError} cta={tCommon("retry")} onAction={onRetryRooms} />
+          </div>
+        ) : visibleRooms.length === 0 ? (
           <EmptyState
             variant="inline"
             motif={searchTerm ? "search" : "messages"}

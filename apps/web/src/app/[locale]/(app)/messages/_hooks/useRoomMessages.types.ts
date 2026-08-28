@@ -21,6 +21,9 @@ export interface UseRoomMessagesInput {
 }
 
 export interface UseRoomMessagesResult {
+  /** Failure of the room *list*, shown in the inbox pane rather than the thread. */
+  roomsError: string | null;
+  retryRooms: () => void;
   rooms: ChatRoom[];
   filteredRooms: ChatRoom[];
   activeRoomId: string | null;
