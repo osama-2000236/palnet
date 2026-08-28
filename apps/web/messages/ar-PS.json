@@ -1279,7 +1279,8 @@
       "originalUsd": "تُحتسب {price, number} دولارًا أمريكيًا",
       "select": "اختيار",
       "selected": "مختارة",
-      "billingLink": "الفوترة"
+      "billingLink": "الفوترة",
+      "jobSlotsFull": "بلغت حصّتك. رقِّ باقتك أو اشترِ رصيد وظائف لتنشر من جديد."
     }
   },
   "publicJob": {

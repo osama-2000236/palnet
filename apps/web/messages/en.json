@@ -1279,7 +1279,8 @@
       "originalUsd": "Billed as {price, number} USD",
       "select": "Select",
       "selected": "Selected",
-      "billingLink": "Billing"
+      "billingLink": "Billing",
+      "jobSlotsFull": "You have used your quota. Upgrade your plan or buy job credits to post again."
     }
   },
   "publicJob": {
