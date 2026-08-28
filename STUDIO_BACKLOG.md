@@ -5,9 +5,11 @@ produced it. **Findings here are measured, not eyeballed** — a screenshot star
 an investigation, a measurement closes it. Two entries below are recorded as
 _not_ bugs precisely because the measurement disagreed with the screenshot.
 
-Last pass: 2026-08-28, iteration 8. Surfaces audited: web `/feed` (`empty` and
-seeded, ar-PS + en, light + dark, 390px / 1100px / 1440px) and the mobile feed on
-a booted `Pixel_7_Pro`. Iteration 1 shipped as #151.
+Last pass: 2026-08-28, iteration 9 — a source-level sweep of the profile edit
+sections' write paths (no harness needed; the pattern is grep-visible). Earlier
+passes audited web `/feed` (`empty` and seeded, ar-PS + en, light + dark, 390px /
+1100px / 1440px) and the mobile feed on a booted `Pixel_7_Pro`. Iteration 1
+shipped as #151.
 
 ---
 
@@ -95,6 +97,30 @@ dependencies checked against imports across all six workspaces: none unused. The
 eight `console.*` calls in app code are all `console.debug`, tagged and gated on
 `NODE_ENV`/`__DEV__`. Nothing here needs a broom, and saying so beats inventing
 work.
+
+## Iteration 9 — the write-error sweep on the profile edit sections
+
+The read-side of this shape was closed in iterations 4–8 (P1-10 through P1-15).
+Iteration 9 grepped the mirror image: **writes** whose rejection is swallowed.
+Repo-wide, exactly two source files had a `try`/`finally` (or `.then`) with no
+`catch` anywhere in them — both are the profile edit sub-components.
+
+| #     | Finding                                                                                                                                                                                                                                                                                                                                                                                                               | Status                                                                                                                                                               |
+| ----- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| P1-16 | **Adding or removing an experience, education or skill said nothing when the write failed.** `ExperiencesSection`, `EducationsSection` and `SkillsSection` each ran `add`/`remove` as `try`/`finally` with no `catch`, so a failed request reset `busy` and left the form untouched — no message, no sign the change had not saved. The reader could re-open and find the item gone or never added, with no clue why. | **fixed** (#168) — mirror the sibling `BasicsSection`: clear on attempt, `catch { setError(t("saveFailed")) }`, one `text-danger` line. Reused key, no i18n movement |
+
+**The pattern, again, in reverse.** `BasicsSection` (the fourth sub-component in
+the same directory) already caught and surfaced this, and **all four mobile edit
+cards** (Experiences/Educations/Skills/Basics) catch on both add and remove — so
+web had drifted from a pattern the rest of the app, and the whole mobile twin,
+already followed. That is the fifth mobile-is-the-reference finding this session
+(P1-10, P1-11, P1-12, #166, and now this).
+
+Guarded by `_components/__tests__/write-errors.test.tsx`: a raw-DOM RTL test that
+asserts the error surfaces on a rejected removal for each of the three sections,
+**verified failing** when any one `catch` is deleted. No new i18n keys — the
+existing `profile.saveFailed` covers add and remove, so the parity ceilings
+(web 153, mobile 99) did not move.
 
 ## Checked and _not_ filed
 
