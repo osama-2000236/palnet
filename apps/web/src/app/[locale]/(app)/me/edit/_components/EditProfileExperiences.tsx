@@ -40,6 +40,7 @@ export function ExperiencesSection({
   const t = useTranslations("profile");
   const [draft, setDraft] = useState<Experience | null>(null);
   const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function add(): Promise<void> {
     if (!draft) return;
@@ -48,6 +49,7 @@ export function ExperiencesSection({
     const token = getAccessToken();
     if (!token) return;
     setBusy(true);
+    setError(null);
     try {
       const next = await apiFetch("/profiles/me/experiences", ProfileSchema, {
         method: "POST",
@@ -56,6 +58,8 @@ export function ExperiencesSection({
       });
       onChanged(next);
       setDraft(null);
+    } catch {
+      setError(t("saveFailed"));
     } finally {
       setBusy(false);
     }
@@ -65,12 +69,15 @@ export function ExperiencesSection({
     const token = getAccessToken();
     if (!token) return;
     setBusy(true);
+    setError(null);
     try {
       const next = await apiFetch(`/profiles/me/experiences/${id}`, ProfileSchema, {
         method: "DELETE",
         token,
       });
       onChanged(next);
+    } catch {
+      setError(t("saveFailed"));
     } finally {
       setBusy(false);
     }
@@ -164,6 +171,8 @@ export function ExperiencesSection({
           </div>
         </div>
       ) : null}
+
+      {error ? <p className="text-danger mt-3 text-sm">{error}</p> : null}
     </Surface>
   );
 }
