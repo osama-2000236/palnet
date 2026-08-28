@@ -29,7 +29,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { NeverPayBanner } from "@/components/NeverPayBanner";
 import { DetailScreenSkeleton } from "@/components/ScreenSkeleton";
-import { apiCall, apiFetch } from "@/lib/api";
+import { apiCall, apiFetch, ApiRequestError } from "@/lib/api";
 import { apiErrorMessage } from "@/lib/api-errors";
 import { track } from "@/lib/analytics";
 import { successHaptic, tapHaptic } from "@/lib/haptics";
@@ -57,26 +57,28 @@ export default function JobDetailScreen(): JSX.Element {
   const [saveBusy, setSaveBusy] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
-  useEffect(() => {
-    let cancelled = false;
-    void (async () => {
-      const token = await getAccessToken();
-      if (!token || !jobId) return;
-      setLoading(true);
-      setError(null);
-      try {
-        const j = await apiFetch(`/jobs/${jobId}`, JobSchema, { token });
-        if (!cancelled) setJob(j);
-      } catch (caught) {
-        if (!cancelled) setError(apiErrorMessage(t, caught));
-      } finally {
-        if (!cancelled) setLoading(false);
+  const loadJob = useCallback(async (): Promise<void> => {
+    const token = await getAccessToken();
+    if (!token || !jobId) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const j = await apiFetch(`/jobs/${jobId}`, JobSchema, { token });
+      setJob(j);
+    } catch (caught) {
+      // A job that is gone stays gone; NOT_FOUND leaves `error` null so the
+      // branch below offers a way back rather than a retry that cannot succeed.
+      if (!(caught instanceof ApiRequestError && caught.code === "NOT_FOUND")) {
+        setError(apiErrorMessage(t, caught));
       }
-    })();
-    return (): void => {
-      cancelled = true;
-    };
+    } finally {
+      setLoading(false);
+    }
   }, [jobId, t]);
+
+  useEffect(() => {
+    void loadJob();
+  }, [loadJob]);
 
   const openApply = useCallback(() => {
     setSubmitError(null);
@@ -169,12 +171,19 @@ export default function JobDetailScreen(): JSX.Element {
   if (error || !job) {
     return (
       <SafeAreaView style={styles.screen}>
-        <View style={{ padding: nativeTokens.space[4] }}>
+        <View style={{ padding: nativeTokens.space[4], gap: nativeTokens.space[3] }}>
+          {/* Lockstep with web: only a failure gets a retry; back stays for both. */}
           <Alert
             body={error ?? t("jobs.notFound")}
-            cta={t("common.back")}
-            onAction={() => router.back()}
+            kind={error ? "danger" : "info"}
+            cta={error ? t("common.retry") : t("common.back")}
+            onAction={error ? () => void loadJob() : () => router.back()}
           />
+          {error ? (
+            <Button variant="ghost" onPress={() => router.back()}>
+              {t("common.back")}
+            </Button>
+          ) : null}
         </View>
       </SafeAreaView>
     );

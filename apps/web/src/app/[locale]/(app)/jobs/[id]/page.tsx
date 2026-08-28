@@ -24,12 +24,13 @@ import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { NeverPayBanner } from "@/components/NeverPayBanner";
 import { apiCall, apiFetch, getValidAccessToken } from "@/lib/api";
 import { getErrorCode, toErrorMessage } from "@/lib/error-message";
 import { ApplyDialog } from "./_components/ApplyDialog";
+import { JobDetailError } from "./_components/JobDetailError";
 import { JobDetailSkeleton } from "./_components/JobDetailSkeleton";
 import { ShareJobButtons } from "./_components/ShareJobButtons";
 
@@ -37,10 +38,17 @@ export default function JobDetailPage(): JSX.Element {
   const t = useTranslations("jobs");
   const tReasons = useTranslations("employer.rejectionReasons");
   const tErr = useTranslations("errors");
+  const tCommon = useTranslations("common");
   const locale = useLocale();
   const params = useParams<{ id: string }>();
   const router = useRouter();
   const jobId = typeof params?.id === "string" ? params.id : "";
+  // Read through a ref rather than as a dependency of the fetch below: a
+  // translator is not a stable identity, and naming it would refetch per render.
+  const tErrRef = useRef(tErr);
+  useEffect(() => {
+    tErrRef.current = tErr;
+  }, [tErr]);
 
   const [token, setToken] = useState<string | null>(null);
   const [job, setJob] = useState<Job | null>(null);
@@ -66,21 +74,29 @@ export default function JobDetailPage(): JSX.Element {
     };
   }, [router]);
 
-  useEffect(() => {
+  const loadJob = useCallback((): void => {
     if (!token || !jobId) return;
     setLoading(true);
     setError(null);
     apiFetch(`/jobs/${jobId}`, JobSchema, { token })
       .then((j) => setJob(j))
       .catch((e) => {
-        if (getErrorCode(e) === "PROFILE_ONBOARDING_REQUIRED") {
+        const code = getErrorCode(e);
+        if (code === "PROFILE_ONBOARDING_REQUIRED") {
           router.replace(`/${locale}/onboarding?return=${encodeURIComponent(`/jobs/${jobId}`)}`);
           return;
         }
-        setError(toErrorMessage(e, tErr));
+        // A job that is gone stays gone; a server that failed may not have.
+        // Retrying only makes sense for the second, so NOT_FOUND deliberately
+        // leaves `error` null and falls through to the "no such job" copy.
+        if (code !== "NOT_FOUND") setError(toErrorMessage(e, tErrRef.current));
       })
       .finally(() => setLoading(false));
-  }, [token, jobId, tErr, router, locale]);
+  }, [token, jobId, router, locale]);
+
+  useEffect(() => {
+    loadJob();
+  }, [loadJob]);
 
   const handleApplied = useCallback(() => {
     setJob((j) => (j ? { ...j, viewer: { ...j.viewer, hasApplied: true } } : j));
@@ -120,22 +136,7 @@ export default function JobDetailPage(): JSX.Element {
   }
 
   if (error || !job) {
-    return (
-      <main className="mx-auto w-full max-w-[820px] px-4 py-6">
-        <Surface variant="tinted" padding="6">
-          <p className="text-ink-muted text-sm">{error ?? t("notFound")}</p>
-          <Link
-            href="/jobs"
-            className="text-brand-700 focus-visible:outline-hidden mt-3 inline-block text-sm hover:underline focus-visible:[box-shadow:var(--focus-ring)]"
-          >
-            <span aria-hidden="true" className="inline-block rtl:rotate-180">
-              ←
-            </span>{" "}
-            {t("title")}
-          </Link>
-        </Surface>
-      </main>
-    );
+    return <JobDetailError error={error} busy={loading} onRetry={loadJob} />;
   }
 
   const metaParts = [
