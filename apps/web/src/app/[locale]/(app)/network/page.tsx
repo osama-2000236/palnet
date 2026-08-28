@@ -7,6 +7,7 @@ import {
   type ConnectionListItem,
 } from "@baydar/shared";
 import {
+  Alert,
   Avatar,
   Button,
   EmptyState,
@@ -21,10 +22,11 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { z } from "zod";
 
 import { apiFetch, getValidAccessToken } from "@/lib/api";
+import { toErrorMessage } from "@/lib/error-message";
 import { readSession } from "@/lib/session";
 import { useCountFormatter } from "../useAppShellLabels";
 
@@ -35,16 +37,27 @@ const Raw = z.object({}).passthrough();
 export default function NetworkRoute(): JSX.Element {
   const router = useRouter();
   const t = useTranslations("network");
+  const tCommon = useTranslations("common");
+  const tErrors = useTranslations("errors");
   const formatCount = useCountFormatter();
   const [filter, setFilter] = useState<Filter>("ACCEPTED");
   const [items, setItems] = useState<ConnectionListItem[]>([]);
   const [counts, setCounts] = useState<ConnectionCountsDto | null>(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  // Read through a ref rather than named as a dependency: a translator is not a
+  // stable identity, and `load` feeds the effect below, so a changing dep would
+  // re-run the fetch on every render.
+  const tErrorsRef = useRef(tErrors);
+  useEffect(() => {
+    tErrorsRef.current = tErrors;
+  }, [tErrors]);
 
   const load = useCallback(async (f: Filter): Promise<void> => {
     const token = await getValidAccessToken();
     if (!token) return;
     setLoading(true);
+    setError(null);
     try {
       // Counts alongside the list, not derived from it: this response holds one
       // filter, and the strip labels all three. A failed count must not fail
@@ -55,6 +68,13 @@ export default function NetworkRoute(): JSX.Element {
       ]);
       setItems(data);
       setCounts(nextCounts);
+    } catch (caught) {
+      // Without this the rejection went nowhere and `items` stayed at its
+      // initial `[]`, so a failed request rendered the empty state: the screen
+      // told the reader their network was empty when the server had simply
+      // answered 500. The mobile twin has always caught here.
+      setError(toErrorMessage(caught, tErrorsRef.current));
+      setItems([]);
     } finally {
       setLoading(false);
     }
@@ -148,6 +168,14 @@ export default function NetworkRoute(): JSX.Element {
             <ConnectionRowSkeleton />
           </ul>
         </Surface>
+      ) : error ? (
+        <Alert
+          kind="danger"
+          body={error}
+          cta={tCommon("retry")}
+          onAction={() => void load(filter)}
+          busy={loading}
+        />
       ) : items.length === 0 ? (
         <Surface variant="card" padding="0">
           <EmptyState
