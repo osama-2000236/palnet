@@ -229,6 +229,59 @@ export async function warmUp(timeoutMs = 90_000) {
   return false;
 }
 
+// ── Boot-screen guard ──────────────────────────────────────────────────────
+// `warmUp` above only proves the screen is not blank, and says so. That leaves
+// a gap it cannot close: the app's two boot screens are *painted*, so a cell
+// that lands on one is photographed and reported `ok`. Both were shot that way
+// — the splash, and the profile gate — while the run printed `ok`, `direction
+// verified` and `theme verified` over them.
+//
+// The end-of-cell duplicate report is the documented safety net for this, and
+// it works on a full matrix: one boot screen shot 37 times collapses into a
+// single fingerprint. It cannot fire on `--only=feed`, which is exactly how a
+// one-screen re-run gets a worthless PNG and a green log.
+//
+// So ask the device what it is showing instead of inferring it from pixels.
+// Measured on a cold start (`am force-stop`, then relaunch, sampled at 700ms):
+//
+//     sample 0   58 bytes    dump raced the window, nothing
+//     sample 1   2116 bytes  Android chrome only — no app node, no text
+//     sample 2   2116 bytes  same
+//     sample 3   52356 bytes feed: `tab-feed`, `feed-search-button`, …
+//
+// The 2116-byte state is what got photographed. React Native has not mounted
+// anything, so the hierarchy holds `action_bar_root` and `android:id/content`
+// and nothing else — no testID, no text, no content-desc. That absence is the
+// signal, and it needs no per-screen table.
+//
+// The two `LoadingIntro` screens each carry a testID, but neither could be made
+// to appear on a warm session, so keying on those ids would be a check that has
+// never once fired. STUDIO_BACKLOG P1-8 keeps the profile gate open for that
+// reason: it renders real text and would read as mounted here.
+const APP_CHROME = /^(android:|ps\.baydar\.app:id\/)/;
+
+// How long a screen may stay unmounted before the cell gives up on it. A cold
+// start after a fresh bundle took ~25s here, so this is deliberately generous:
+// waiting costs seconds, not waiting costs a PNG that lies.
+const BOOT_WAIT_MS = Number(process.env.QA_BOOT_WAIT_MS ?? 45_000);
+
+/** Has React Native put anything of its own on screen yet? */
+function appMounted() {
+  let xml;
+  try {
+    // MSYS rewrites a leading `/sdcard` into a Windows path before adb sees it,
+    // so the dump must not go through a device file. `exec-out … /dev/tty`
+    // returns the XML on stdout and skips that round trip entirely.
+    xml = adb(["exec-out", "uiautomator", "dump", "/dev/tty"]).toString("utf8");
+  } catch {
+    return false; // a dump that races the window is not evidence of a screen
+  }
+  // Scope to our own window: between a force-stop and the relaunch the launcher
+  // is foreground, and its icons are resource-ids too.
+  if (!xml.includes(`package="${APP_ID}"`)) return false;
+  return [...xml.matchAll(/resource-id="([^"]+)"/g)].some(([, id]) => id && !APP_CHROME.test(id));
+}
+
 // ── Device console capture ─────────────────────────────────────────────────
 // The web harness writes `_console__*.json` per cell, and that capture is how
 // the two missing `messaging.*` keys were found — a raw key path renders
@@ -494,6 +547,7 @@ async function main() {
       for (const [name, route] of picked) {
         const file = path.join(OUT_DIR, `${name}__${locale}__${theme}.png`);
         try {
+          const screenStarted = Date.now();
           // Clear immediately before the navigation so whatever lands in the
           // buffer belongs to this screen and not the previous one.
           logcatClear();
@@ -507,6 +561,17 @@ async function main() {
             `baydar://${route}`,
             APP_ID,
           ]);
+          // An unmounted app is painted and perfectly stable, so nothing else
+          // here can tell it apart from the screen we asked for. Wait it out
+          // *before* capturing: checking afterwards accepts a stale PNG whenever
+          // the app finishes mounting between the capture and the check, which
+          // is the common case and made the first version of this guard useless.
+          while (!appMounted()) {
+            if (Date.now() - screenStarted > BOOT_WAIT_MS) {
+              throw new Error(`app never mounted a screen within ${BOOT_WAIT_MS}ms`);
+            }
+            await sleep(700);
+          }
           const { png, id } = await captureStable(settle, maxSettle);
           await writeFile(file, png);
           identical.set(id, [...(identical.get(id) ?? []), name]);
