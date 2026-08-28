@@ -65,7 +65,9 @@ export function useRoomMessages({ token, viewerId }: UseRoomMessagesInput): UseR
   // identity — the test provider returns a fresh function per render — and a
   // changing dep on an effect that also sets state re-runs it forever.
   const tErrorsRef = useRef(tErrors);
-  tErrorsRef.current = tErrors;
+  useEffect(() => {
+    tErrorsRef.current = tErrors;
+  }, [tErrors]);
 
   const loadRooms = useCallback(async (tk: string): Promise<ChatRoom[]> => {
     const out = await apiFetchPage("/messaging/rooms", RoomsEnvelope, { token: tk });
