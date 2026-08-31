@@ -274,7 +274,7 @@
     "noResults": "Nothing in your feed yet",
     "round": {
       "label": "Today's round",
-      "count": "{{count}} posts · ordered by usefulness"
+      "count": "{{count}} posts"
     },
     "provenance": {
       "proximityFirst": "Ordered by proximity to {{city}} first, then usefulness"

@@ -274,7 +274,7 @@
     "noResults": "لا يوجد شيء في خلاصتك بعد",
     "round": {
       "label": "جولة اليوم",
-      "count": "{{count}} منشورًا · مرتّبة بالفائدة"
+      "count": "{{count}} منشورًا"
     },
     "provenance": {
       "proximityFirst": "مرتّبة بالقرب من {{city}} أولًا، ثم بالفائدة"
