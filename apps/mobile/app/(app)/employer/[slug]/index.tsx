@@ -131,7 +131,13 @@ export default function CompanyJobsScreen(): JSX.Element {
                 <RecordCard
                   variant="row"
                   title={item.title}
-                  subtitle={`${item.type} · ${item.locationMode}`}
+                  // Was `${item.type} · ${item.locationMode}` — raw enum values
+                  // ("FULL_TIME · ONSITE") shown to the employer, while every
+                  // other job surface localises them. Same keys jobs/[id] uses.
+                  subtitle={[
+                    t(`jobs.typeLabels.${item.type}`),
+                    t(`jobs.locationLabels.${item.locationMode}`),
+                  ].join(" · ")}
                   meta={t("employer.applicantCount", { count: item.applicantCount })}
                 />
               </Pressable>
