@@ -140,7 +140,7 @@ export default function FeedScreen(): JSX.Element {
       {ranking.explainRanking && posts.length > 0 ? (
         <ProvenanceLine
           testID="feed-provenance"
-          text={t("feed.provenance.proximityFirst", { city: profile?.location ?? "" })}
+          text={t("feed.provenance.newestFromNetwork")}
           trailing={t("feed.round.label")}
         />
       ) : null}

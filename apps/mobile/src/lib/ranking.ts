@@ -20,7 +20,7 @@ export interface RankingPrefs {
 // Left out on purpose: the feed endpoint takes no sort parameter, so the switch
 // could only have changed the caption, not the order. Add it with the API flag.
 
-export const DEFAULT_RANKING_PREFS: RankingPrefs = {
+const DEFAULT_RANKING_PREFS: RankingPrefs = {
   explainRanking: true,
   roundSize: 24,
 };
@@ -40,7 +40,7 @@ function getWebStorage(): WebStorage | null {
 }
 
 /** Parse defensively: a partial or corrupt blob falls back per-field, never throws. */
-export function parseRankingPrefs(raw: string | null): RankingPrefs {
+function parseRankingPrefs(raw: string | null): RankingPrefs {
   if (!raw) return DEFAULT_RANKING_PREFS;
   try {
     const parsed: unknown = JSON.parse(raw);
@@ -73,11 +73,6 @@ function readSync(): string | null {
 /** Synchronous initial prefs, so the first feed paint already obeys them. */
 export function getInitialRankingPrefs(): RankingPrefs {
   return parseRankingPrefs(readSync());
-}
-
-export async function readRankingPrefs(): Promise<RankingPrefs> {
-  if (Platform.OS === "web") return parseRankingPrefs(getWebStorage()?.getItem(KEY) ?? null);
-  return parseRankingPrefs(await SecureStore.getItemAsync(KEY).catch(() => null));
 }
 
 export async function writeRankingPrefs(prefs: RankingPrefs): Promise<void> {

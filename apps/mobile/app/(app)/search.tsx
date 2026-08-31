@@ -8,7 +8,6 @@ import {
   type SearchJobHit,
   type SearchPersonHit,
   type SearchPostHit,
-  Profile as ProfileSchema,
 } from "@baydar/shared";
 import {
   Alert,
@@ -28,7 +27,7 @@ import { useTranslation } from "react-i18next";
 import { FlatList, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { apiFetch, apiFetchPage } from "@/lib/api";
+import { apiFetchPage } from "@/lib/api";
 import { apiErrorMessage } from "@/lib/api-errors";
 import { getInitialRankingPrefs } from "@/lib/ranking";
 import { getAccessToken } from "@/lib/session";
@@ -56,27 +55,6 @@ export default function SearchScreen(): JSX.Element {
   const [error, setError] = useState<string | null>(null);
   // Read once: prefs only change on the settings screen, which remounts this.
   const [ranking] = useState(getInitialRankingPrefs);
-  // The provenance clause names the city results are sorted around. Failing to
-  // read it degrades the clause, never the search.
-  const [viewerCity, setViewerCity] = useState("");
-
-  useEffect(() => {
-    let alive = true;
-    void (async () => {
-      const token = await getAccessToken();
-      if (!token) return;
-      try {
-        const me = await apiFetch("/profiles/me", ProfileSchema, { token });
-        if (alive) setViewerCity(me.location ?? "");
-      } catch {
-        /* the clause simply omits the city */
-      }
-    })();
-    return () => {
-      alive = false;
-    };
-  }, []);
-
   const tabs = useMemo(
     () => [
       { key: "people" as const, label: t("search.tabs.people"), testID: "search-tab-people" },
@@ -170,7 +148,7 @@ export default function SearchScreen(): JSX.Element {
       {ranking.explainRanking && hits.length > 0 ? (
         <ProvenanceLine
           testID="search-provenance"
-          text={t("search.provenance", { city: viewerCity })}
+          text={t("search.provenance")}
           trailing={t("search.resultCount", { count: hits.length })}
         />
       ) : null}

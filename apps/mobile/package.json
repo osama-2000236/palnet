@@ -17,7 +17,6 @@
   "dependencies": {
     "@baydar/shared": "workspace:*",
     "@baydar/ui-native": "workspace:*",
-    "@baydar/ui-tokens": "workspace:*",
     "@expo-google-fonts/ibm-plex-sans-arabic": "^0.2.3",
     "@expo-google-fonts/noto-naskh-arabic": "^0.2.3",
     "@expo/metro-runtime": "^6.1.2",

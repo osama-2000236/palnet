@@ -37,6 +37,11 @@ const PLATFORM_IDIOMS = {
       "did export a Dialog; no screen ever mounted it, so it was deleted " +
       "rather than left as a twin nothing uses",
     ReportDialog: "native uses ReportSheet, the same flow in a sheet",
+    AppShell:
+      "native navigates with expo-router `<Tabs>` in app/(app)/_layout.tsx — " +
+      "the router owns the tab bar, so the hand-built native twin was mounted " +
+      "by nothing but its own test and was deleted (same call as Dialog above)",
+    AppShellRoute: "type for AppShell",
     RoomRow: "native renders rooms through RecordCard",
     TypingIndicator: "inlined in native's message thread",
     Composer: "native uses ComposerEntry — a tap target that opens a screen",

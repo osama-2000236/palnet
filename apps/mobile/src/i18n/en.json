@@ -277,7 +277,7 @@
       "count": "{{count}} posts"
     },
     "provenance": {
-      "proximityFirst": "Ordered by proximity to {{city}} first, then usefulness"
+      "newestFromNetwork": "Newest first, from you and your connections"
     },
     "end": {
       "title": "You've reached the end of what's new",
@@ -389,7 +389,7 @@
     "loadingMore": "Loading…",
     "verified": "Verified",
     "activeJobsCount": "{{count}} open jobs",
-    "provenance": "Sorted by proximity to {{city}} first, then relevance",
+    "provenance": "Sorted by most recently updated",
     "resultCount": "{{count}} results"
   },
   "profile": {
