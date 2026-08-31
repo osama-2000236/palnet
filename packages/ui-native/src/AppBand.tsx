@@ -6,7 +6,7 @@
 // deliberately. See handoff/components/AppBand.md.
 
 import type { ReactNode } from "react";
-import { StyleSheet, Text, View, type StyleProp, type ViewStyle } from "react-native";
+import { StatusBar, StyleSheet, Text, View, type StyleProp, type ViewStyle } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AppHeader } from "./AppHeader";
@@ -78,6 +78,9 @@ export function AppBand({
         style,
       ]}
     >
+      {/* The band owns this: it is the only reason the icons must go light, and
+          19 screens each setting it was 19 writers of one global. */}
+      <StatusBar barStyle="light-content" />
       <AppHeader
         tone="band"
         title={title}
@@ -87,7 +90,9 @@ export function AppBand({
         search={search}
         compact={density === "compact"}
       />
-      {children ? <View style={styles.children}>{children}</View> : null}
+      {children ? (
+        <View style={[styles.children, { borderTopColor: c.bandHairline }]}>{children}</View>
+      ) : null}
     </View>
   );
 }
@@ -106,5 +111,10 @@ const styles = StyleSheet.create({
   },
   children: {
     gap: nativeTokens.space[2],
+    // Separates band extras (a metric row, a ScoreBar) from the title row
+    // without spending elevation. The one consumer of `band.hairline`.
+    marginTop: nativeTokens.space[3],
+    paddingTop: nativeTokens.space[3],
+    borderTopWidth: StyleSheet.hairlineWidth,
   },
 });

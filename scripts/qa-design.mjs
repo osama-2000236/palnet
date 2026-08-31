@@ -86,9 +86,9 @@ for (const file of sourceFiles) {
     const count = lines.length;
     if (count > 300) {
       const entry = `${file}: ${count} LOC`;
-      if (dataFileAllowlist.has(file)) {
-        // Silent: a token table growing is the system working.
-      } else if (legacyOversizeAllowlist.has(file)) {
+      if (dataFileAllowlist.has(file) || legacyOversizeAllowlist.has(file)) {
+        // Warn, never silent: an allowlisted file that doubles should still be
+        // visible in CI output, or the allowlist becomes a blind spot.
         oversizeWarnings.push(entry);
       } else {
         oversizeViolations.push(entry);

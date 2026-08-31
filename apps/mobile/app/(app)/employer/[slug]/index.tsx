@@ -13,7 +13,7 @@ import {
 import { Link, Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { FlatList, Pressable, StatusBar, StyleSheet, View } from "react-native";
+import { FlatList, Pressable, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { apiFetch, apiFetchPage } from "@/lib/api";
@@ -65,7 +65,6 @@ export default function CompanyJobsScreen(): JSX.Element {
 
   return (
     <SafeAreaView edges={["left", "right", "bottom"]} style={styles.screen}>
-      <StatusBar barStyle="light-content" />
       <AppBand title={t("employer.jobsTitle")} density="compact" />
       <Stack.Screen options={{ title: t("employer.jobsTitle"), headerShown: false }} />
       <View style={styles.content}>

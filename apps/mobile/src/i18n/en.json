@@ -277,8 +277,7 @@
       "count": "{{count}} posts · ordered by usefulness"
     },
     "provenance": {
-      "proximityFirst": "Ordered by proximity to {{city}} first, then usefulness",
-      "recentOnly": "Strictly chronological — relevance ordering is off"
+      "proximityFirst": "Ordered by proximity to {{city}} first, then usefulness"
     },
     "end": {
       "title": "You've reached the end of what's new",
@@ -905,10 +904,6 @@
       "label": "Today's round size",
       "value": "{{count}} posts",
       "hint": "The round ends at this count. No infinite scroll."
-    },
-    "rankingOff": {
-      "label": "Turn ranking off — newest only",
-      "hint": "Strictly chronological, no relevance"
     }
   },
   "account": {
@@ -1200,7 +1195,8 @@
       "interview": "Interview",
       "decision": "Decision"
     },
-    "closedNote": "This role closed after another candidate was chosen. Your application is kept, and you can apply to this company again."
+    "closedNote": "This role closed after another candidate was chosen. Your application is kept, and you can apply to this company again.",
+    "withdrawnNote": "You withdrew your application. You can apply again while this job is open."
   },
   "profileEdit": {
     "completion": {

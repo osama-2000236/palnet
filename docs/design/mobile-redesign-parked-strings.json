@@ -332,6 +332,15 @@
         "everyone": "الجميع",
         "label": "من يرى مهنتي وموقعي",
         "verifiedEmployers": "أصحاب العمل الموثّقون"
+      },
+      "rankingOff": {
+        "label": "إيقاف الترتيب — الأحدث فقط",
+        "hint": "ترتيب زمني بحت، دون ملاءمة"
+      }
+    },
+    "feed": {
+      "provenance": {
+        "recentOnly": "ترتيب زمني بحت — الترتيب بالملاءمة موقوف"
       }
     }
   },
@@ -667,6 +676,15 @@
         "everyone": "Everyone",
         "label": "Who sees my occupation and location",
         "verifiedEmployers": "Verified employers"
+      },
+      "rankingOff": {
+        "label": "Turn ranking off — newest only",
+        "hint": "Strictly chronological, no relevance"
+      }
+    },
+    "feed": {
+      "provenance": {
+        "recentOnly": "Strictly chronological — relevance ordering is off"
       }
     }
   }

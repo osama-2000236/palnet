@@ -17,7 +17,7 @@ import {
 import { router } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { FlatList, RefreshControl, StatusBar, View } from "react-native";
+import { FlatList, RefreshControl, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { z } from "zod";
 
@@ -195,7 +195,6 @@ export default function NetworkScreen(): JSX.Element {
 
   return (
     <SafeAreaView edges={["left", "right", "bottom"]} style={styles.screen}>
-      <StatusBar barStyle="light-content" />
       <AppBand title={t("network.title")} density="compact" />
       <View style={styles.content}>
         <Tabs

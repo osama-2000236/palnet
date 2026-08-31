@@ -24,7 +24,7 @@ import { Image } from "expo-image";
 import { router, useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ScrollView, Share, StatusBar, Text, View } from "react-native";
+import { ScrollView, Share, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { NeverPayBanner } from "@/components/NeverPayBanner";
@@ -199,7 +199,6 @@ export default function JobDetailScreen(): JSX.Element {
 
   return (
     <SafeAreaView edges={["left", "right", "bottom"]} style={styles.screen}>
-      <StatusBar barStyle="light-content" />
       <AppBand
         title={t("jobs.title")}
         density="compact"

@@ -8,7 +8,7 @@ import {
 import { router, useLocalSearchParams } from "expo-router";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { KeyboardAvoidingView, Platform, StatusBar } from "react-native";
+import { KeyboardAvoidingView, Platform } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { NeverPayBanner } from "@/components/NeverPayBanner";
@@ -43,7 +43,6 @@ export default function MessageThreadScreen(): JSX.Element {
     >
       {/* The band carries the room identity; it sits OUTSIDE the keyboard
           avoider so it never travels with the keyboard. */}
-      <StatusBar barStyle="light-content" />
       <AppBand
         title={thread.title || t("messaging.title")}
         density="compact"

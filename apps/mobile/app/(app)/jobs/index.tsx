@@ -24,7 +24,7 @@ import {
 import { useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { FlatList, RefreshControl, StatusBar, View } from "react-native";
+import { FlatList, RefreshControl, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { JobRow } from "@/components/rows/JobRow";
@@ -148,7 +148,6 @@ export default function JobsScreen(): JSX.Element {
       edges={["left", "right", "bottom"]}
       style={{ flex: 1, backgroundColor: c.surfaceMuted }}
     >
-      <StatusBar barStyle="light-content" />
       <AppBand
         title={t("jobs.title")}
         trailing={

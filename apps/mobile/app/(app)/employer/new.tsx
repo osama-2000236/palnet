@@ -20,15 +20,7 @@ import {
 import { Stack, useRouter } from "expo-router";
 import { useMemo, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
-import {
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { CityField } from "@/components/CityField";
@@ -92,7 +84,6 @@ export default function NewCompanyScreen(): JSX.Element {
 
   return (
     <SafeAreaView edges={["left", "right", "bottom"]} style={styles.screen}>
-      <StatusBar barStyle="light-content" />
       <AppBand
         title={t("employer.newCompany.title")}
         subtitle={t("employer.newCompany.subtitle")}

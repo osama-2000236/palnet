@@ -25,7 +25,7 @@ import {
 } from "@baydar/ui-native";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { FlatList, StatusBar, StyleSheet, View } from "react-native";
+import { FlatList, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { apiFetch, apiFetchPage } from "@/lib/api";
@@ -148,7 +148,6 @@ export default function SearchScreen(): JSX.Element {
 
   return (
     <SafeAreaView edges={["left", "right", "bottom"]} style={styles.screen}>
-      <StatusBar barStyle="light-content" />
       <AppBand
         title={t("search.title")}
         search={

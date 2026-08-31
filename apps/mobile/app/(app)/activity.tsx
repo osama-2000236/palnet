@@ -2,7 +2,7 @@ import { Alert, AppBand, Button, Surface, nativeTokens, useThemeTokens } from "@
 import { router } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { RefreshControl, ScrollView, StatusBar, Text, View } from "react-native";
+import { RefreshControl, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { apiErrorMessage } from "@/lib/api-errors";
@@ -70,7 +70,6 @@ export default function ActivityScreen(): JSX.Element {
       edges={["left", "right", "bottom"]}
       style={{ flex: 1, backgroundColor: c.surfaceMuted }}
     >
-      <StatusBar barStyle="light-content" />
       <AppBand title={t("activity.title")} subtitle={t("activity.subtitle")} density="compact" />
       <ScrollView
         contentInsetAdjustmentBehavior="automatic"

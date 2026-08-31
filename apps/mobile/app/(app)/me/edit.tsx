@@ -9,7 +9,7 @@ import { Alert, AppBand, Button, ScoreBar, useToast } from "@baydar/ui-native";
 import { router } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { KeyboardAvoidingView, Platform, ScrollView, StatusBar, View } from "react-native";
+import { KeyboardAvoidingView, Platform, ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { CardStackSkeleton } from "@/components/ScreenSkeleton";
@@ -98,7 +98,6 @@ export default function EditProfileScreen(): JSX.Element {
 
   return (
     <SafeAreaView edges={["left", "right", "bottom"]} style={styles.screen}>
-      <StatusBar barStyle="light-content" />
       {/* Completion is the spine of this screen, so it lives in the band —
           the same bar the feed card and Karama use. AppBand rule 4. */}
       <AppBand

@@ -79,7 +79,11 @@ export function AppBand({
         ) : null}
       </div>
       {search ? <div className="mt-3">{search}</div> : null}
-      {children ? <div className="mt-3 flex flex-col gap-2">{children}</div> : null}
+      {children ? (
+        <div className="border-band-hairline mt-3 flex flex-col gap-2 border-t pt-3">
+          {children}
+        </div>
+      ) : null}
     </Tag>
   );
 }

@@ -18,7 +18,7 @@ import { router, useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { z } from "zod";
 import { useTranslation } from "react-i18next";
-import { FlatList, RefreshControl, StatusBar, Text, View } from "react-native";
+import { FlatList, RefreshControl, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { PostRow } from "@/components/rows/PostRow";
@@ -45,8 +45,14 @@ export default function FeedScreen(): JSX.Element {
   const [unread, setUnread] = useState<number>(0);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [feedError, setFeedError] = useState<string | null>(null);
-  // Read once: prefs only change on the settings screen, which remounts this.
-  const [ranking] = useState(getInitialRankingPrefs);
+  // Re-read on focus, NOT once: this screen sits under expo-router `Tabs` and
+  // is never unmounted, so a preference changed in settings would otherwise not
+  // apply until the next cold start.
+  const [ranking, setRanking] = useState(getInitialRankingPrefs);
+
+  // The round is finite and ends HERE — this is what makes settings.roundSize a
+  // setting rather than a decoration, and the "no infinite scroll" hint true.
+  const roundComplete = posts.length >= ranking.roundSize;
 
   const loadUnread = useCallback(async (): Promise<void> => {
     const token = await getAccessToken();
@@ -116,6 +122,9 @@ export default function FeedScreen(): JSX.Element {
   // the profile card, not only the unread badge. Same pattern as saved/me (#79).
   useFocusEffect(
     useCallback(() => {
+      // Synchronous read, same as the initial one — a preference changed in
+      // settings has to apply the moment the user comes back to this tab.
+      setRanking(getInitialRankingPrefs());
       void loadProfile();
       void load(null);
       void loadUnread();
@@ -124,26 +133,23 @@ export default function FeedScreen(): JSX.Element {
 
   return (
     <SafeAreaView edges={["left", "right", "bottom"]} style={feedStyles.screen}>
-      <StatusBar barStyle="light-content" />
+      {/* Band and provenance strip are FULL-BLEED: both sit outside
+          `content`, whose horizontal padding would inset them. */}
+      <FeedTopBar unread={unread} roundCount={posts.length} />
+
+      {ranking.explainRanking && posts.length > 0 ? (
+        <ProvenanceLine
+          testID="feed-provenance"
+          text={t("feed.provenance.proximityFirst", { city: profile?.location ?? "" })}
+          trailing={t("feed.round.label")}
+        />
+      ) : null}
+
       <View style={feedStyles.content}>
-        {/* Only the top bar is pinned. Everything else rides in
+        {/* Only the band is pinned. Everything else rides in
             ListHeaderComponent so it scrolls away and posts get the whole
             screen — as siblings they permanently ate ~half the viewport and
             the feed was stuck in a stub window. */}
-        <FeedTopBar unread={unread} roundCount={posts.length} />
-
-        {ranking.explainRanking && posts.length > 0 ? (
-          <ProvenanceLine
-            testID="feed-provenance"
-            text={
-              ranking.rankingOff
-                ? t("feed.provenance.recentOnly")
-                : t("feed.provenance.proximityFirst", { city: profile?.location ?? "" })
-            }
-            trailing={t("feed.round.label")}
-          />
-        ) : null}
-
         <FlatList
           data={posts}
           keyExtractor={(p) => p.id}
@@ -197,7 +203,7 @@ export default function FeedScreen(): JSX.Element {
           showsVerticalScrollIndicator={false}
           onEndReachedThreshold={0.4}
           onEndReached={() => {
-            if (!loading && hasMore && cursor) void load(cursor);
+            if (!loading && hasMore && cursor && !roundComplete) void load(cursor);
           }}
           refreshControl={
             <RefreshControl
@@ -231,7 +237,7 @@ export default function FeedScreen(): JSX.Element {
               <View style={feedStyles.footerLoading}>
                 <PostCardSkeleton />
               </View>
-            ) : !hasMore && posts.length > 0 ? (
+            ) : (roundComplete || !hasMore) && posts.length > 0 ? (
               // The anti-infinite-scroll promise, made visible: the round is
               // counted at the top and CLOSED here.
               <Surface variant="tinted" padding="6" style={feedStyles.roundEnd}>

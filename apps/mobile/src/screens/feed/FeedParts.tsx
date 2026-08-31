@@ -25,7 +25,6 @@ export function FeedTopBar({
       subtitle={
         roundCount > 0 ? t("feed.round.count", { count: roundCount }) : t("feed.round.label")
       }
-      leading={<Icon name="logo" size={28} />}
       trailing={
         <Pressable
           onPress={() => router.push("/(app)/notifications")}

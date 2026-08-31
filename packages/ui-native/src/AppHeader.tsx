@@ -45,7 +45,11 @@ export function AppHeader({
       <View style={styles.topRow}>
         {leading ? <View style={styles.leading}>{leading}</View> : null}
         <View style={styles.textWrap}>
-          <Text numberOfLines={1} style={[styles.title, { color: titleColor }]}>
+          <Text
+            accessibilityRole="header"
+            numberOfLines={1}
+            style={[styles.title, { color: titleColor }]}
+          >
             {title}
           </Text>
           {subtitle ? (

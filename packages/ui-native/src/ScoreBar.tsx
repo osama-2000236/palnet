@@ -64,12 +64,15 @@ export function ScoreBar({
 }: ScoreBarProps): JSX.Element {
   const c = useThemeTokens().color;
 
-  if (__DEV__ && display === "none" && !caption) {
+  // ponytail: unconditional, matching the web twin — a prop-contract violation
+  // should fail the same way on both platforms, and a __DEV__-only throw means
+  // web users hit a crash native developers never see.
+  if (display === "none" && !caption) {
     throw new Error(
       'ScoreBar: display="none" is only legal with a `caption` — a bare bar is decoration.',
     );
   }
-  if (__DEV__ && (display === "ratio" || display === "value") && max === undefined) {
+  if ((display === "ratio" || display === "value") && max === undefined) {
     throw new Error(`ScoreBar: display="${display}" requires \`max\`.`);
   }
 

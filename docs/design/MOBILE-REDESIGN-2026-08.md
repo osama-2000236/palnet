@@ -76,8 +76,12 @@ Tests: 35 native + 24 web, all from the specs' own test lists.
   `viewer.applicationStatus` the DTO already carries. It absorbed `JobOutcome`,
   because StepRail rule 2 says a closed rail must carry the sentence explaining
   it — the pairing is now structural.
-- **Settings** — the ranking is a setting: explanation switch, round size, and a
-  real off switch, persisted through `src/lib/ranking.ts` (mirrors `theme.ts`).
+- **Settings** — the ranking is a setting: an explanation switch that drives
+  `ProvenanceLine`, and a round size that genuinely bounds the feed, persisted
+  through `src/lib/ranking.ts` (mirrors `theme.ts`). The design's third control,
+  "ranking off — newest only", is **not** shipped: the feed endpoint takes no
+  sort parameter, so it could only have changed the caption. It lands with the
+  API flag.
 
 ---
 
@@ -123,16 +127,16 @@ Tailwind (`bg-band`, `text-band-on`, `bg-bar-fill-weak`, `border-rule-hairline`,
 `bg-surface-band`). What is left is screens.
 
 **Definition of done:** `MAX_PLATFORM_ONLY_KEYS.mobile` in
-`scripts/check-i18n-parity.mjs` drops back from 115 to 99. Those 16 keys are the
+`scripts/check-i18n-parity.mjs` drops back from 112 to 99. Those 13 keys are the
 exact web debt this redesign created.
 
 ### Phase 1 — strings (blocks everything else)
 
 Add the 16 twins to `apps/web/messages/{ar-PS,en}.json`: `feed.round.*`,
 `feed.provenance.*`, `feed.end.*`, `search.provenance`, `search.resultCount`,
-`applications.steps.*`, `applications.closedNote`, `karama.unit`,
-`profileEdit.completion.label`, `settings.explainRanking`,
-`settings.roundSize`, `settings.rankingOff`.
+`applications.steps.*`, `applications.closedNote`, `applications.withdrawnNote`,
+`karama.unit`, `profileEdit.completion.label`, `settings.explainRanking`,
+`settings.roundSize`.
 
 Land these **with** Phase 2, not before — the parity check fails on unreferenced
 keys on web exactly as it does on mobile.
@@ -149,7 +153,9 @@ Mirrors of what native just shipped, in dependency order:
    Note `JobOutcome`'s old comment: web has this block inline, so it needs the
    same fold native just did.
 6. `settings` — the ranking prefs. Web has no `src/lib/ranking.ts` twin;
-   `localStorage` via the existing settings pattern, not SecureStore.
+   `localStorage` via the existing settings pattern, not SecureStore. Web's feed
+   must honour `roundSize` the way native does, or the control is decoration
+   there too.
 
 ### Phase 3 — the band, which is the one real divergence
 
@@ -189,6 +195,31 @@ rhythm transfers.
   rule for this; it does not exist yet on either platform.
 
 ---
+
+## Review fixes (post-review, same PR)
+
+A 15-finding review of this branch caught four blockers, all now fixed and
+covered:
+
+- The **logo mark is `brand600` and so is the band** — the identity mark
+  dissolved into the header. The artboards carry the app name as text with no
+  logo in the leading slot; the `Icon` was a leftover from the white header and
+  is gone.
+- **The feed was the only screen whose band stayed inside the padded content**,
+  so it was inset rather than full-bleed and the light status-bar icons landed
+  on a near-white strip. Band and provenance strip are now full-bleed siblings.
+- **`roundSize` did nothing.** It now bounds the round: `onEndReached` stops at
+  it and the end-state fires there, which is what makes the "no infinite scroll"
+  hint true.
+- **`rankingOff` renamed the caption without changing the order.** Removed
+  rather than shipped; strings parked.
+
+Also: `AppBand` now owns the status bar (one writer, not 19 competing with the
+root's `expo-status-bar`); `AppHeader`'s title is a heading again, matching the
+web twin's `<h1>`; a withdrawal is no longer described as a rejection, and a
+closed rail is now _guaranteed_ a sentence rather than getting one by
+coincidence — with `application-rail.test.tsx` verified by breaking the logic on
+purpose and watching it fail.
 
 ## Gates
 

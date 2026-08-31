@@ -20,7 +20,7 @@ import {
 import { router } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { FlatList, Pressable, StatusBar, Text, View } from "react-native";
+import { FlatList, Pressable, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { z } from "zod";
 
@@ -122,7 +122,6 @@ export default function NewGroupRoomScreen(): JSX.Element {
 
   return (
     <SafeAreaView edges={["left", "right", "bottom"]} style={styles.screen}>
-      <StatusBar barStyle="light-content" />
       <AppBand
         title={t("messaging.newGroup.title")}
         subtitle={t("messaging.newGroup.subtitle")}

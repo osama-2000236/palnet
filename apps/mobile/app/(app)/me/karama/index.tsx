@@ -14,7 +14,7 @@ import { Alert, AppBand, Button, ScoreBar, Surface } from "@baydar/ui-native";
 import { useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ScrollView, StatusBar, Text, View } from "react-native";
+import { ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { CardStackSkeleton } from "@/components/ScreenSkeleton";
@@ -97,7 +97,6 @@ export default function KaramaScreen(): JSX.Element {
 
   return (
     <SafeAreaView edges={["left", "right", "bottom"]} style={styles.screen}>
-      <StatusBar barStyle="light-content" />
       {/* The ledger's headline number IS the band. One bar, read the same way
           as match fit and profile completion — AppBand rule 4. */}
       <AppBand

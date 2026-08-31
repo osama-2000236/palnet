@@ -12,43 +12,6 @@ function makeKaramaStyles(c: NativeTheme["color"]) {
       padding: nativeTokens.space[4],
       gap: nativeTokens.space[4],
     },
-    kicker: {
-      color: c.brand700,
-      fontFamily: nativeTokens.type.family.sans,
-      fontSize: nativeTokens.type.scale.small.size,
-      lineHeight: nativeTokens.type.scale.small.line,
-      fontWeight: "700",
-    },
-    title: {
-      color: c.ink,
-      fontFamily: nativeTokens.type.family.sans,
-      fontSize: nativeTokens.type.scale.h1.size,
-      lineHeight: nativeTokens.type.scale.h1.line,
-      fontWeight: "700",
-    },
-    subtitle: {
-      color: c.inkMuted,
-      fontFamily: nativeTokens.type.family.body,
-      fontSize: nativeTokens.type.scale.small.size,
-      lineHeight: nativeTokens.type.scale.small.line,
-    },
-    balanceCard: {
-      gap: nativeTokens.space[1],
-    },
-    balanceLabel: {
-      color: c.inkMuted,
-      fontFamily: nativeTokens.type.family.sans,
-      fontSize: nativeTokens.type.scale.small.size,
-      lineHeight: nativeTokens.type.scale.small.line,
-    },
-    balanceValue: {
-      color: c.ink,
-      fontFamily: nativeTokens.type.family.sans,
-      fontSize: nativeTokens.type.scale.h1.size,
-      lineHeight: nativeTokens.type.scale.h1.line,
-      fontWeight: "800",
-      writingDirection: "ltr",
-    },
     rewardCard: {
       gap: nativeTokens.space[2],
     },

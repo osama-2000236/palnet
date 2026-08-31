@@ -53,20 +53,21 @@ export function ApplicationRail({ job }: { job: Job }): JSX.Element | null {
     { key: "decision", label: t("applications.steps.decision") },
   ];
 
-  // A greyed rail with no explanation is exactly the thing this redesign
-  // removes. REJECTED already renders its reason through <JobOutcome/>, so only
-  // WITHDRAWN needs its own sentence here.
-  const note = status === ApplicationStatus.WITHDRAWN ? t("applications.closedNote") : null;
+  // StepRail rule 2, enforced rather than assumed: a greyed rail ALWAYS carries
+  // a sentence. A withdrawal is the applicant's own act, not a rejection, so it
+  // gets its own line; and a REJECTED row whose reason is null (the DTO types
+  // the two independently) falls back to the generic closure rather than
+  // rendering the unexplained dead end this redesign exists to remove.
+  const note =
+    status === ApplicationStatus.WITHDRAWN
+      ? t("applications.withdrawnNote")
+      : terminal === "closed" && !outcome
+        ? t("applications.closedNote")
+        : null;
 
   return (
     <View style={styles.wrap} testID="job-application-rail">
-      <StepRail
-        testID="job-step-rail"
-        steps={steps}
-        current={step}
-        terminal={terminal}
-        tone={terminal === "closed" ? "brand" : "accent"}
-      />
+      <StepRail testID="job-step-rail" steps={steps} current={step} terminal={terminal} />
       {note ? <Text style={[styles.note, { color: c.inkMuted }]}>{note}</Text> : null}
       {outcome}
     </View>

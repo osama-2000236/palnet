@@ -42,7 +42,8 @@ export function StepRail({
 }: StepRailProps): JSX.Element {
   const c = useThemeTokens().color;
 
-  if (__DEV__ && (steps.length < 3 || steps.length > 5)) {
+  // ponytail: unconditional — see the note in ScoreBar.
+  if (steps.length < 3 || steps.length > 5) {
     throw new Error(`StepRail: expected 3–5 steps, received ${steps.length}.`);
   }
 

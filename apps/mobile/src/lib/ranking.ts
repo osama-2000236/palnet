@@ -14,14 +14,15 @@ export interface RankingPrefs {
   explainRanking: boolean;
   /** Posts per round. The round ENDS here — there is no infinite scroll. */
   roundSize: number;
-  /** Ranking off entirely: strictly newest-first. */
-  rankingOff: boolean;
 }
+
+// ponytail: the design also specified a "ranking off — newest only" switch.
+// Left out on purpose: the feed endpoint takes no sort parameter, so the switch
+// could only have changed the caption, not the order. Add it with the API flag.
 
 export const DEFAULT_RANKING_PREFS: RankingPrefs = {
   explainRanking: true,
   roundSize: 24,
-  rankingOff: false,
 };
 
 /** The round sizes offered in settings. Nothing unbounded. */
@@ -54,8 +55,6 @@ export function parseRankingPrefs(raw: string | null): RankingPrefs {
         typeof o.roundSize === "number" && ROUND_SIZES.includes(o.roundSize as never)
           ? o.roundSize
           : DEFAULT_RANKING_PREFS.roundSize,
-      rankingOff:
-        typeof o.rankingOff === "boolean" ? o.rankingOff : DEFAULT_RANKING_PREFS.rankingOff,
     };
   } catch {
     return DEFAULT_RANKING_PREFS;

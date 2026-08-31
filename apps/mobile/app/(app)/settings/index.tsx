@@ -3,7 +3,7 @@ import { router } from "expo-router";
 import { formatNumber } from "@baydar/shared";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Pressable, ScrollView, StatusBar, Text, View } from "react-native";
+import { Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import {
@@ -77,26 +77,19 @@ export default function SettingsLandingScreen(): JSX.Element {
       edges={["left", "right", "bottom"]}
       style={{ flex: 1, backgroundColor: c.surfaceMuted }}
     >
-      <StatusBar barStyle="light-content" />
       <AppBand title={t("settings.title")} subtitle={t("settings.subtitle")} />
       <ScrollView
         contentContainerStyle={{ padding: nativeTokens.space[4], gap: nativeTokens.space[3] }}
       >
-        {/* The ranking is a setting, not a secret. Round size bounds the feed,
-            the explanation switch drives ProvenanceLine, and the off switch
-            has to actually exist for the other two to be honest. */}
+        {/* The ranking is a setting, not a secret: round size bounds the feed
+            and the explanation switch drives ProvenanceLine. Both do real work —
+            nothing here is a control that only renames a caption. */}
         <Surface variant="card" padding="4" style={{ gap: nativeTokens.space[3] }}>
           <SwitchRow
             checked={ranking.explainRanking}
             onChange={(value) => updateRanking({ explainRanking: value })}
             label={t("settings.explainRanking.label")}
             description={t("settings.explainRanking.hint")}
-          />
-          <SwitchRow
-            checked={ranking.rankingOff}
-            onChange={(value) => updateRanking({ rankingOff: value })}
-            label={t("settings.rankingOff.label")}
-            description={t("settings.rankingOff.hint")}
           />
           <View style={{ gap: nativeTokens.space[2] }}>
             <Text

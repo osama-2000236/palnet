@@ -18,7 +18,7 @@ import {
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useRef, useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { FlatList, RefreshControl, StatusBar, StyleSheet, View } from "react-native";
+import { FlatList, RefreshControl, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { z } from "zod";
 
@@ -125,7 +125,6 @@ export default function MessagesListScreen(): JSX.Element {
 
   return (
     <SafeAreaView edges={["left", "right", "bottom"]} style={styles.screen}>
-      <StatusBar barStyle="light-content" />
       <AppBand
         title={t("messaging.title")}
         density="compact"

@@ -26,14 +26,7 @@ import {
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import {
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  View,
-} from "react-native";
+import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { CityField } from "@/components/CityField";
@@ -128,7 +121,6 @@ export default function NewJobScreen(): JSX.Element {
 
   return (
     <SafeAreaView edges={["left", "right", "bottom"]} style={styles.screen}>
-      <StatusBar barStyle="light-content" />
       <AppBand
         title={t("employer.newJob.title")}
         density="compact"

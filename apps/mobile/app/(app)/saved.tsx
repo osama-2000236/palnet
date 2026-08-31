@@ -20,15 +20,7 @@ import { Image } from "expo-image";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
-import {
-  FlatList,
-  Pressable,
-  RefreshControl,
-  StatusBar,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { apiCall, apiFetchPage } from "@/lib/api";
@@ -120,7 +112,6 @@ export default function SavedScreen(): JSX.Element {
 
   return (
     <SafeAreaView edges={["left", "right", "bottom"]} style={styles.screen}>
-      <StatusBar barStyle="light-content" />
       <AppBand
         title={t("saved.title")}
         subtitle={t("saved.subtitle")}
