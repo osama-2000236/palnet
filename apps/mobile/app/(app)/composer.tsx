@@ -7,7 +7,7 @@ import {
   type MediaRef,
 } from "@baydar/shared";
 import {
-  AppHeader,
+  AppBand,
   Avatar,
   Button,
   Icon,
@@ -164,26 +164,25 @@ export default function ComposerScreen(): JSX.Element {
   });
 
   return (
-    <SafeAreaView style={styles.screen}>
+    <SafeAreaView edges={["left", "right", "bottom"]} style={styles.screen}>
+      <AppBand
+        title={t("composer.title")}
+        density="compact"
+        trailing={
+          <Button
+            variant="ghost"
+            size="sm"
+            onPress={() => router.back()}
+            accessibilityLabel={t("common.cancel")}
+          >
+            {t("common.cancel")}
+          </Button>
+        }
+      />
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : undefined}
         style={styles.content}
       >
-        <AppHeader
-          title={t("composer.title")}
-          compact
-          trailing={
-            <Button
-              variant="ghost"
-              size="sm"
-              onPress={() => router.back()}
-              accessibilityLabel={t("common.cancel")}
-            >
-              {t("common.cancel")}
-            </Button>
-          }
-        />
-
         <Surface variant="tinted" padding="3" style={styles.authorChip}>
           <Avatar user={author} size="sm" />
           <Text style={styles.authorText}>

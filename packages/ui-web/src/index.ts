@@ -53,6 +53,20 @@ export { ReactionPicker } from "./ReactionPicker";
 export type { ReactionPickerProps, ReactionPickerLabels } from "./ReactionPicker";
 export { REACTION_TYPES, REACTION_TINT, topReactions } from "./reactions";
 export type { ReactionKind } from "./reactions";
+export { AppBand } from "./AppBand";
+export type { AppBandProps } from "./AppBand";
+export { ProvenanceLine } from "./ProvenanceLine";
+export type { ProvenanceLineProps } from "./ProvenanceLine";
+export { ScoreBar } from "./ScoreBar";
+export type {
+  ScoreBarProps,
+  ScoreBarDisplay,
+  ScoreBarSegment,
+  ScoreBarSize,
+  ScoreBarTone,
+} from "./ScoreBar";
+export { StepRail } from "./StepRail";
+export type { StepRailProps, StepRailStep } from "./StepRail";
 export { RecordCard } from "./RecordCard";
 export type { RecordCardProps } from "./RecordCard";
 export { RecordCardSkeleton } from "./RecordCardSkeleton";

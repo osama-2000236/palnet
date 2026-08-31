@@ -4,7 +4,7 @@ import {
   type ConnectionListItem as ConnectionListItemType,
 } from "@baydar/shared";
 import {
-  AppHeader,
+  AppBand,
   Avatar,
   Button,
   Chip,
@@ -121,19 +121,18 @@ export default function NewGroupRoomScreen(): JSX.Element {
   }, [selectedIds, title, token, t]);
 
   return (
-    <SafeAreaView style={styles.screen}>
+    <SafeAreaView edges={["left", "right", "bottom"]} style={styles.screen}>
+      <AppBand
+        title={t("messaging.newGroup.title")}
+        subtitle={t("messaging.newGroup.subtitle")}
+        density="compact"
+        trailing={
+          <Button variant="ghost" size="sm" onPress={() => router.back()}>
+            {t("common.back")}
+          </Button>
+        }
+      />
       <View style={styles.wrap}>
-        <AppHeader
-          title={t("messaging.newGroup.title")}
-          subtitle={t("messaging.newGroup.subtitle")}
-          compact
-          trailing={
-            <Button variant="ghost" size="sm" onPress={() => router.back()}>
-              {t("common.back")}
-            </Button>
-          }
-        />
-
         <Surface variant="card" padding="4">
           <Text style={styles.label}>{t("messaging.newGroup.roomTitle")}</Text>
           <Input

@@ -1,7 +1,7 @@
 import { Company, cursorPage, EmployerJob } from "@baydar/shared";
 import {
   Alert,
-  AppHeader,
+  AppBand,
   Button,
   EmptyState,
   RecordCard,
@@ -64,10 +64,10 @@ export default function CompanyJobsScreen(): JSX.Element {
   }, [load]);
 
   return (
-    <SafeAreaView style={styles.screen}>
+    <SafeAreaView edges={["left", "right", "bottom"]} style={styles.screen}>
+      <AppBand title={t("employer.jobsTitle")} density="compact" />
       <Stack.Screen options={{ title: t("employer.jobsTitle"), headerShown: false }} />
       <View style={styles.content}>
-        <AppHeader title={t("employer.jobsTitle")} compact />
         <View style={styles.actions}>
           <Button
             variant="primary"

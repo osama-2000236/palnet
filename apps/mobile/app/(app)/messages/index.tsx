@@ -5,7 +5,7 @@ import { ChatRoom as ChatRoomSchema, type ChatRoom } from "@baydar/shared";
 import {
   Alert,
   EmptyState,
-  AppHeader,
+  AppBand,
   Button,
   Icon,
   RecordCardSkeleton,
@@ -124,23 +124,22 @@ export default function MessagesListScreen(): JSX.Element {
   );
 
   return (
-    <SafeAreaView style={styles.screen}>
+    <SafeAreaView edges={["left", "right", "bottom"]} style={styles.screen}>
+      <AppBand
+        title={t("messaging.title")}
+        density="compact"
+        trailing={
+          <Button
+            size="sm"
+            leading={<Icon name="message" size={16} color={c.inkInverse} />}
+            onPress={() => router.push("/(app)/messages/new")}
+            accessibilityLabel={t("messaging.newGroup.title")}
+          >
+            {t("messaging.newMessage")}
+          </Button>
+        }
+      />
       <View style={styles.content}>
-        <AppHeader
-          title={t("messaging.title")}
-          compact
-          trailing={
-            <Button
-              size="sm"
-              leading={<Icon name="message" size={16} color={c.inkInverse} />}
-              onPress={() => router.push("/(app)/messages/new")}
-              accessibilityLabel={t("messaging.newGroup.title")}
-            >
-              {t("messaging.newMessage")}
-            </Button>
-          }
-        />
-
         <Tabs
           testID="messages-tabs"
           style={{ marginBottom: nativeTokens.space[3] }}

@@ -1,4 +1,4 @@
-import { Alert, AppHeader, Button, Surface, nativeTokens, useThemeTokens } from "@baydar/ui-native";
+import { Alert, AppBand, Button, Surface, nativeTokens, useThemeTokens } from "@baydar/ui-native";
 import { router } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -66,7 +66,11 @@ export default function ActivityScreen(): JSX.Element {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: c.surfaceMuted }}>
+    <SafeAreaView
+      edges={["left", "right", "bottom"]}
+      style={{ flex: 1, backgroundColor: c.surfaceMuted }}
+    >
+      <AppBand title={t("activity.title")} subtitle={t("activity.subtitle")} density="compact" />
       <ScrollView
         contentInsetAdjustmentBehavior="automatic"
         refreshControl={
@@ -83,7 +87,6 @@ export default function ActivityScreen(): JSX.Element {
           gap: nativeTokens.space[4],
         }}
       >
-        <AppHeader title={t("activity.title")} subtitle={t("activity.subtitle")} compact />
         {loading ? (
           <ActivitySkeleton />
         ) : error || !state ? (

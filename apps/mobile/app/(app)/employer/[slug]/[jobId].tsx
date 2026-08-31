@@ -8,7 +8,7 @@ import {
 } from "@baydar/shared";
 import {
   Alert,
-  AppHeader,
+  AppBand,
   Chip,
   EmptyState,
   RecordCardSkeleton,
@@ -129,10 +129,10 @@ export default function ApplicantsInboxScreen(): JSX.Element {
   );
 
   return (
-    <SafeAreaView style={styles.screen}>
+    <SafeAreaView edges={["left", "right", "bottom"]} style={styles.screen}>
+      <AppBand title={t("employer.applicantsTitle")} density="compact" />
       <Stack.Screen options={{ title: t("employer.applicantsTitle"), headerShown: false }} />
       <View style={styles.content}>
-        <AppHeader title={t("employer.applicantsTitle")} compact />
         <FlatList
           contentContainerStyle={styles.listContent}
           data={items}

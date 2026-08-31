@@ -271,7 +271,18 @@
     "loadMore": "Load more",
     "loadingMore": "Loading…",
     "emptyCta": "Find people",
-    "noResults": "Nothing in your feed yet"
+    "noResults": "Nothing in your feed yet",
+    "round": {
+      "label": "Today's round",
+      "count": "{{count}} posts · ordered by usefulness"
+    },
+    "provenance": {
+      "proximityFirst": "Ordered by proximity to {{city}} first, then usefulness"
+    },
+    "end": {
+      "title": "You've reached the end of what's new",
+      "body": "{{count}} posts in today's round. We'll be back with a new one tomorrow."
+    }
   },
   "composer": {
     "title": "What's on your mind?",
@@ -377,7 +388,9 @@
     "loadMore": "Load more",
     "loadingMore": "Loading…",
     "verified": "Verified",
-    "activeJobsCount": "{{count}} open jobs"
+    "activeJobsCount": "{{count}} open jobs",
+    "provenance": "Sorted by proximity to {{city}} first, then relevance",
+    "resultCount": "{{count}} results"
   },
   "profile": {
     "openToWork": "Open to work",
@@ -486,7 +499,8 @@
     "redeeming": "Redeeming…",
     "premiumActive": "Premium is active — manage it on the Premium page.",
     "premiumLink": "Baydar Premium",
-    "redeemed": "Redeemed: {{reward}}."
+    "redeemed": "Redeemed: {{reward}}.",
+    "unit": "Karama points"
   },
   "network": {
     "title": "My network",
@@ -881,6 +895,15 @@
       "arabic": "العربية",
       "english": "English",
       "restartHint": "Text changes now. Restart Baydar to flip the layout direction."
+    },
+    "explainRanking": {
+      "label": "Tell me why each post appears",
+      "hint": "A short line above each post explaining why it was chosen"
+    },
+    "roundSize": {
+      "label": "Today's round size",
+      "value": "{{count}} posts",
+      "hint": "The round ends at this count. No infinite scroll."
     }
   },
   "account": {
@@ -1163,6 +1186,21 @@
       "selected": "Selected",
       "billingLink": "Billing",
       "jobSlotsFull": "You have used your quota. Upgrade your plan or buy job credits to post again."
+    }
+  },
+  "applications": {
+    "steps": {
+      "sent": "Sent",
+      "seen": "Seen",
+      "interview": "Interview",
+      "decision": "Decision"
+    },
+    "closedNote": "This role closed after another candidate was chosen. Your application is kept, and you can apply to this company again.",
+    "withdrawnNote": "You withdrew your application. You can apply again while this job is open."
+  },
+  "profileEdit": {
+    "completion": {
+      "label": "Profile completion"
     }
   }
 }

@@ -169,6 +169,26 @@ function makeFeedStyles(c: NativeTheme["color"]) {
       backgroundColor: c.warningSoft,
     },
     // Keeps the last card off the tab bar now that posts scroll the full height.
+    roundEnd: {
+      marginTop: nativeTokens.space[4],
+      alignItems: "center",
+      gap: nativeTokens.space[1],
+    },
+    roundEndTitle: {
+      color: c.ink,
+      fontFamily: nativeTokens.type.family.sans,
+      fontSize: nativeTokens.type.scale.h3.size,
+      lineHeight: nativeTokens.type.scale.h3.line,
+      fontWeight: "700",
+      textAlign: "center",
+    },
+    roundEndBody: {
+      color: c.inkMuted,
+      fontFamily: nativeTokens.type.family.body,
+      fontSize: nativeTokens.type.scale.small.size,
+      lineHeight: nativeTokens.type.scale.small.line,
+      textAlign: "center",
+    },
     listContent: {
       paddingBottom: nativeTokens.space[4],
     },

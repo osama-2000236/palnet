@@ -36,6 +36,16 @@ const legacyOversizeAllowlist = new Set([
   "packages/db/prisma/seed.ts",
 ]);
 
+// Not legacy, and not code the 300-LOC rule is aimed at: these two are the
+// token TABLES. The cap exists to stop screens and services sprawling; a flat
+// list of design values gets longer every time the system gains a token, and
+// splitting it would put the source of truth in two files — the one thing
+// `tokens.native.ts` says outright is a bug.
+const dataFileAllowlist = new Set([
+  "packages/ui-tokens/src/index.ts",
+  "packages/ui-tokens/src/tokens.native.ts",
+]);
+
 const colorViolations = [];
 const focusViolations = [];
 const oversizeViolations = [];
@@ -76,7 +86,9 @@ for (const file of sourceFiles) {
     const count = lines.length;
     if (count > 300) {
       const entry = `${file}: ${count} LOC`;
-      if (legacyOversizeAllowlist.has(file)) {
+      if (dataFileAllowlist.has(file) || legacyOversizeAllowlist.has(file)) {
+        // Warn, never silent: an allowlisted file that doubles should still be
+        // visible in CI output, or the allowlist becomes a blind spot.
         oversizeWarnings.push(entry);
       } else {
         oversizeViolations.push(entry);

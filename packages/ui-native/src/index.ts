@@ -58,7 +58,21 @@ export { RecordCardSkeleton } from "./RecordCardSkeleton";
 export type { RecordCardSkeletonProps } from "./RecordCardSkeleton";
 export { PostCardSkeleton } from "./PostCardSkeleton";
 export { AppHeader } from "./AppHeader";
-export type { AppHeaderProps } from "./AppHeader";
+export type { AppHeaderProps, AppHeaderTone } from "./AppHeader";
+export { AppBand } from "./AppBand";
+export type { AppBandProps } from "./AppBand";
+export { ProvenanceLine } from "./ProvenanceLine";
+export type { ProvenanceLineProps } from "./ProvenanceLine";
+export { ScoreBar } from "./ScoreBar";
+export type {
+  ScoreBarProps,
+  ScoreBarDisplay,
+  ScoreBarSegment,
+  ScoreBarSize,
+  ScoreBarTone,
+} from "./ScoreBar";
+export { StepRail } from "./StepRail";
+export type { StepRailProps, StepRailStep } from "./StepRail";
 export { SearchField } from "./SearchField";
 export type { SearchFieldProps } from "./SearchField";
 export { Tabs, Tab } from "./Tabs";

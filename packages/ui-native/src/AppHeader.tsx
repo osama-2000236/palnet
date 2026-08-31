@@ -11,6 +11,9 @@ import {
 import { useThemeTokens } from "./ThemeProvider";
 import { nativeTokens } from "./tokens";
 
+/** Which colour context the header is painted into. `band` is AppBand's olive. */
+export type AppHeaderTone = "surface" | "band";
+
 export interface AppHeaderProps extends Omit<ViewProps, "style"> {
   title: string;
   subtitle?: string | null;
@@ -18,6 +21,8 @@ export interface AppHeaderProps extends Omit<ViewProps, "style"> {
   trailing?: ReactNode;
   search?: ReactNode;
   compact?: boolean;
+  /** Default "surface" keeps every existing call site unchanged. */
+  tone?: AppHeaderTone;
   style?: StyleProp<ViewStyle>;
 }
 
@@ -28,20 +33,27 @@ export function AppHeader({
   trailing,
   search,
   compact = false,
+  tone = "surface",
   style,
   ...rest
 }: AppHeaderProps): JSX.Element {
   const c = useThemeTokens().color;
+  const titleColor = tone === "band" ? c.bandOn : c.ink;
+  const subtitleColor = tone === "band" ? c.bandOnMuted : c.inkMuted;
   return (
     <View style={[styles.wrap, compact ? styles.compact : null, style]} {...rest}>
       <View style={styles.topRow}>
         {leading ? <View style={styles.leading}>{leading}</View> : null}
         <View style={styles.textWrap}>
-          <Text numberOfLines={1} style={[styles.title, { color: c.ink }]}>
+          <Text
+            accessibilityRole="header"
+            numberOfLines={1}
+            style={[styles.title, { color: titleColor }]}
+          >
             {title}
           </Text>
           {subtitle ? (
-            <Text numberOfLines={2} style={[styles.subtitle, { color: c.inkMuted }]}>
+            <Text numberOfLines={2} style={[styles.subtitle, { color: subtitleColor }]}>
               {subtitle}
             </Text>
           ) : null}

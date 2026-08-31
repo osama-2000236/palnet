@@ -26,6 +26,14 @@ export const tokens = {
       600: "#a8482c", // accent
       700: "#8b3a22",
     },
+    // The olive app band. Every screen's chrome sits on this. Separated from
+    // the paper below by colour, never elevation — see AppBand.
+    band: {
+      DEFAULT: "#526030", // = brand.600
+      on: "#f4f6ef", // text/icon on band — 8.9:1
+      onMuted: "#e6ebd6", // secondary on band — 4.8:1  (= brand.100)
+      hairline: "rgba(255, 255, 255, 0.30)",
+    },
     // Ink = foreground text. Warmer than slate.
     ink: {
       DEFAULT: "#1a1a17",
@@ -43,10 +51,28 @@ export const tokens = {
       muted: "#faf9f5",
       subtle: "#f1efe7",
       sunken: "#ebe8dc",
+      // Sixth variant: a tinted FULL-BLEED section, not a card. The alternating
+      // band in the feed/jobs column. Same value as `subtle` in light; they
+      // diverge in dark, which is the whole reason it is its own key.
+      band: "#f1efe7",
     },
     line: {
       soft: "rgba(26, 26, 23, 0.08)",
       hard: "rgba(26, 26, 23, 0.16)",
+    },
+    // The one numeric device (ScoreBar / StepRail). Never red: a low value is a
+    // fact, not an error — see MATCHING.md §1.
+    bar: {
+      track: "#e0dcce",
+      fill: "#526030", // = brand.600
+      fillWeak: "#a9b878", // sub-50% values (= brand.300)
+      onBandTrack: "rgba(244, 246, 239, 0.22)",
+      onBandFill: "#e6ebd6", // = brand.100
+    },
+    // Section rules — TWO weights, no third.
+    rule: {
+      hairline: "rgba(26, 26, 23, 0.08)",
+      strong: "rgba(26, 26, 23, 0.16)",
     },
     semantic: {
       success: "#3b7a3b",
@@ -182,7 +208,13 @@ export const tokens = {
   // the border the Switch draws so the thumb and the OFF track both have a
   // perceivable boundary (WCAG 1.4.11 needs 3:1 and no fill in this palette
   // can reach it).
-  control: { switchThumb: "#ffffff" },
+  control: {
+    switchThumb: "#ffffff",
+    barHeight: 6, // ScoreBar default
+    barHeightLarge: 8, // ScoreBar on a band (Karama header)
+    railNode: 9, // StepRail node diameter
+    railNodeCurrent: 11,
+  },
   focus: {
     ring: "0 0 0 var(--focus-ring-offset) var(--surface), 0 0 0 calc(var(--focus-ring-offset) + var(--focus-ring-width)) var(--focus-ring-color)",
     color: "var(--brand-600)",
@@ -211,6 +243,10 @@ export const tokens = {
     navHeight: 56,
     maxContentWidth: 1128,
     mobileTabHeight: 64,
+    // AppBand: status bar + breathing room. iOS uses this as the floor; Android
+    // resolves it against the real inset (see AppBand's `paddingTop` note).
+    bandPaddingTop: 62,
+    bandPaddingBottom: 14,
   },
   // Illustration scale + backdrop tint — used by EmptyState / Illustration.
   // Three nominal sizes locked here so screens don't drift. Tints map to
@@ -248,8 +284,34 @@ export const tokens = {
       accent: { 50: "#3a241c", 100: "#4a2c20", 600: "#cf6743", 700: "#b5532f" },
       // A6: subtle was #85827a — 4.14 / 3.68. Now 5.51 / 4.90.
       ink: { DEFAULT: "#f1efe8", muted: "#b3afa4", subtle: "#9b988f", inverse: "#1a1a17" },
-      surface: { DEFAULT: "#232220", muted: "#1a1916", subtle: "#2d2b27", sunken: "#37342f" },
+      surface: {
+        DEFAULT: "#232220",
+        muted: "#1a1916",
+        subtle: "#2d2b27",
+        sunken: "#37342f",
+        // Diverges from `subtle` here — the band reads warmer/deeper so an
+        // alternating column still alternates at dark depth.
+        band: "#241f1a",
+      },
       line: { soft: "rgba(255, 255, 255, 0.08)", hard: "rgba(255, 255, 255, 0.17)" },
+      // Olive re-lit at depth, never #000 (design 2d).
+      band: {
+        DEFAULT: "#3a4423",
+        on: "#f4f6ef",
+        onMuted: "#ccd6a8",
+        hairline: "rgba(255, 255, 255, 0.16)",
+      },
+      bar: {
+        track: "#3a352d",
+        fill: "#a9b878",
+        fillWeak: "#6b7a45",
+        onBandTrack: "rgba(244, 246, 239, 0.18)",
+        onBandFill: "#ccd6a8",
+      },
+      rule: {
+        hairline: "rgba(244, 246, 239, 0.10)",
+        strong: "rgba(244, 246, 239, 0.18)",
+      },
       semantic: {
         // A6: the previous comment here claimed "warning + info read fine as-is"
         // and inherited both from light. Measured, `--info` was 2.61:1 against

@@ -99,6 +99,13 @@ const PLATFORM_ONLY_NAMESPACES = {
     onboarding:
       "mobile runs a six-step wizard against web's single form — a screen-parity " +
       "difference tracked in docs/audit, not a copy gap",
+    applications:
+      "the four-step application vocabulary (StepRail). Mobile shows it on the " +
+      "job page today; web gets it with the applications list — see " +
+      "docs/design/MOBILE-REDESIGN-2026-08.md §web",
+    profileEdit:
+      "the completion rail's copy, added by the 2026-08 mobile redesign. Web's " +
+      "profile editor is not redesigned yet — same doc, §web",
   },
   both: {
     landing: "web is acquisition, mobile is the post-install intro — see DIVERGENCES",
@@ -110,10 +117,18 @@ const PLATFORM_ONLY_NAMESPACES = {
  *
  * A ratchet, not a target: the check fails when a number goes **up**, and also
  * when it goes down without this line being lowered, so closing a gap has to be
- * recorded. Both directions matter — 163 keys of web surface that mobile does
- * not have, and 100 the other way.
+ * recorded. Both directions matter — 153 keys of web surface that mobile does
+ * not have, and 112 the other way.
  */
-const MAX_PLATFORM_ONLY_KEYS = { web: 153, mobile: 99 };
+// mobile 99 → 112 (2026-08-31): the mobile redesign landed the band, the
+// provenance line, the score bar and the step rail on native first. Thirteen new
+// strings back them — feed.round/provenance/end, search.provenance +
+// resultCount, applications.steps + closedNote + withdrawnNote, karama.unit,
+// profileEdit.completion, settings.explainRanking/roundSize. The ui-web twins of
+// all four components shipped in the same commit; the web SCREENS that consume
+// these strings are the next step, and drop this line back to 99.
+// See docs/design/MOBILE-REDESIGN-2026-08.md §web.
+const MAX_PLATFORM_ONLY_KEYS = { web: 153, mobile: 112 };
 
 /**
  * Namespaces whose keys are reached through a template literal or a translator

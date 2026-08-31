@@ -69,6 +69,21 @@ export const nativeTokens = {
     lineSoft: c.line.soft,
     lineHard: c.line.hard,
 
+    band: c.band.DEFAULT,
+    bandOn: c.band.on,
+    bandOnMuted: c.band.onMuted,
+    bandHairline: c.band.hairline,
+    surfaceBand: c.surface.band,
+
+    barTrack: c.bar.track,
+    barFill: c.bar.fill,
+    barFillWeak: c.bar.fillWeak,
+    barOnBandTrack: c.bar.onBandTrack,
+    barOnBandFill: c.bar.onBandFill,
+
+    ruleHairline: c.rule.hairline,
+    ruleStrong: c.rule.strong,
+
     success: c.semantic.success,
     successSoft: c.semantic.successSoft,
     successBorder: c.semantic.successBorder,
@@ -160,6 +175,8 @@ export const nativeTokens = {
     navHeight: tokens.chrome.navHeight,
     tabHeight: tokens.chrome.mobileTabHeight,
     minHit: tokens.target.min, // Apple HIG + Material minimum touch target
+    bandPaddingTop: tokens.chrome.bandPaddingTop,
+    bandPaddingBottom: tokens.chrome.bandPaddingBottom,
   },
   focus: {
     ringColor: c.brand[600],
@@ -214,6 +231,21 @@ export const nativeTokensDark = {
 
     lineSoft: d.line.soft,
     lineHard: d.line.hard,
+
+    band: d.band.DEFAULT,
+    bandOn: d.band.on,
+    bandOnMuted: d.band.onMuted,
+    bandHairline: d.band.hairline,
+    surfaceBand: d.surface.band,
+
+    barTrack: d.bar.track,
+    barFill: d.bar.fill,
+    barFillWeak: d.bar.fillWeak,
+    barOnBandTrack: d.bar.onBandTrack,
+    barOnBandFill: d.bar.onBandFill,
+
+    ruleHairline: d.rule.hairline,
+    ruleStrong: d.rule.strong,
 
     // A6: all four re-lit. The previous note claimed warning + info "read fine
     // on warm charcoal"; measured, info was 2.61:1 against its own tint.

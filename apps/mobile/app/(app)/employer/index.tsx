@@ -1,7 +1,7 @@
 import { CompanySummary } from "@baydar/shared";
 import {
   Alert,
-  AppHeader,
+  AppBand,
   EmptyState,
   RecordCard,
   RecordCardSkeleton,
@@ -41,10 +41,10 @@ export default function EmployerHomeScreen(): JSX.Element {
   }, [reloadKey, t]);
 
   return (
-    <SafeAreaView style={styles.screen}>
+    <SafeAreaView edges={["left", "right", "bottom"]} style={styles.screen}>
+      <AppBand title={t("employer.title")} subtitle={t("employer.subtitle")} density="compact" />
       <Stack.Screen options={{ title: t("employer.title"), headerShown: false }} />
       <View style={styles.content}>
-        <AppHeader title={t("employer.title")} subtitle={t("employer.subtitle")} compact />
         <FlatList
           contentContainerStyle={styles.listContent}
           data={items ?? []}

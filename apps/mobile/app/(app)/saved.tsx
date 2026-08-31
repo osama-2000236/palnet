@@ -8,7 +8,7 @@ import {
 import {
   Alert,
   EmptyState,
-  AppHeader,
+  AppBand,
   Button,
   Icon,
   RecordCardSkeleton,
@@ -111,18 +111,17 @@ export default function SavedScreen(): JSX.Element {
   );
 
   return (
-    <SafeAreaView style={styles.screen}>
+    <SafeAreaView edges={["left", "right", "bottom"]} style={styles.screen}>
+      <AppBand
+        title={t("saved.title")}
+        subtitle={t("saved.subtitle")}
+        trailing={
+          <Button variant="ghost" size="sm" onPress={() => router.back()}>
+            {t("common.back")}
+          </Button>
+        }
+      />
       <View style={styles.content}>
-        <AppHeader
-          title={t("saved.title")}
-          subtitle={t("saved.subtitle")}
-          trailing={
-            <Button variant="ghost" size="sm" onPress={() => router.back()}>
-              {t("common.back")}
-            </Button>
-          }
-        />
-
         {firstLoad ? (
           <View style={styles.stack}>
             <RecordCardSkeleton variant="row" />

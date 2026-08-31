@@ -8,7 +8,7 @@ import {
 import {
   Alert,
   EmptyState,
-  AppHeader,
+  AppBand,
   RecordCardSkeleton,
   Tab,
   Tabs,
@@ -194,10 +194,9 @@ export default function NetworkScreen(): JSX.Element {
   }
 
   return (
-    <SafeAreaView style={styles.screen}>
+    <SafeAreaView edges={["left", "right", "bottom"]} style={styles.screen}>
+      <AppBand title={t("network.title")} density="compact" />
       <View style={styles.content}>
-        <AppHeader title={t("network.title")} compact />
-
         <Tabs
           value={filter}
           onChange={(key) => setFilter(key as NetworkFilter)}

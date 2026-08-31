@@ -2,7 +2,7 @@ import { cursorPage, Notification as NotificationSchema, type Notification } fro
 import {
   Alert,
   EmptyState,
-  AppHeader,
+  AppBand,
   Icon,
   RecordCardSkeleton,
   nativeTokens,
@@ -134,10 +134,9 @@ export default function NotificationsScreen(): JSX.Element {
   );
 
   return (
-    <SafeAreaView style={styles.screen}>
+    <SafeAreaView edges={["left", "right", "bottom"]} style={styles.screen}>
+      <AppBand title={t("notifications.title")} density="compact" />
       <View style={styles.content}>
-        <AppHeader title={t("notifications.title")} compact />
-
         <FlatList
           data={items}
           keyExtractor={(n) => n.id}

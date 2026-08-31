@@ -1,15 +1,14 @@
 import {
-  AppHeader,
+  AppBand,
   Avatar,
   Button,
-  nativeTokens,
   type MessageBubbleLabels,
   useThemeTokens,
 } from "@baydar/ui-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { KeyboardAvoidingView, Platform, View } from "react-native";
+import { KeyboardAvoidingView, Platform } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { NeverPayBanner } from "@/components/NeverPayBanner";
@@ -38,42 +37,39 @@ export default function MessageThreadScreen(): JSX.Element {
     : null;
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: c.surfaceMuted }}>
+    <SafeAreaView
+      edges={["left", "right", "bottom"]}
+      style={{ flex: 1, backgroundColor: c.surfaceMuted }}
+    >
+      {/* The band carries the room identity; it sits OUTSIDE the keyboard
+          avoider so it never travels with the keyboard. */}
+      <AppBand
+        title={thread.title || t("messaging.title")}
+        density="compact"
+        leading={
+          other ? (
+            <Avatar
+              size="sm"
+              user={{
+                id: other.userId,
+                handle: other.handle,
+                firstName: other.firstName,
+                lastName: other.lastName,
+                avatarUrl: other.avatarUrl ?? null,
+              }}
+            />
+          ) : undefined
+        }
+        trailing={
+          <Button variant="ghost" size="sm" onPress={() => router.back()}>
+            {t("common.back")}
+          </Button>
+        }
+      />
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : undefined}
         style={{ flex: 1 }}
       >
-        <View
-          style={{
-            backgroundColor: c.surface,
-            paddingHorizontal: nativeTokens.space[4],
-          }}
-        >
-          <AppHeader
-            title={thread.title || t("messaging.title")}
-            compact
-            leading={
-              other ? (
-                <Avatar
-                  size="sm"
-                  user={{
-                    id: other.userId,
-                    handle: other.handle,
-                    firstName: other.firstName,
-                    lastName: other.lastName,
-                    avatarUrl: other.avatarUrl ?? null,
-                  }}
-                />
-              ) : undefined
-            }
-            trailing={
-              <Button variant="ghost" size="sm" onPress={() => router.back()}>
-                {t("common.back")}
-              </Button>
-            }
-          />
-        </View>
-
         {/* Above the list, not inside it: a payment demand arrives mid-thread,
             and a warning that scrolls away is not there when it does.
             Unconditional — a group room has no single counterpart to report,
