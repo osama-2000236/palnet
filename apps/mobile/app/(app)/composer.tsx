@@ -1,6 +1,7 @@
 import {
   CreatePostBody,
   formatNumber,
+  ltrIsolate,
   MediaKind,
   Post,
   Profile as ProfileSchema,
@@ -158,10 +159,15 @@ export default function ComposerScreen(): JSX.Element {
     }
   }
 
-  const charCount = t("composer.charCount", {
-    current: formatNumber(body.length, i18n.language),
-    max: formatNumber(MAX_BODY, i18n.language),
-  });
+  // Isolated: "0 / 3,000" is two numerals around a neutral slash, so an RTL
+  // paragraph rendered it "3,000 / 0" — the same bidi trap as ScoreBar's ratio
+  // and the Karama ledger delta.
+  const charCount = ltrIsolate(
+    t("composer.charCount", {
+      current: formatNumber(body.length, i18n.language),
+      max: formatNumber(MAX_BODY, i18n.language),
+    }),
+  );
 
   return (
     <SafeAreaView edges={["left", "right", "bottom"]} style={styles.screen}>
