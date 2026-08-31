@@ -1,9 +1,15 @@
-import { isProfileComplete, Profile as ProfileSchema, type Profile } from "@baydar/shared";
-import { Alert, AppHeader, Button, useToast } from "@baydar/ui-native";
+import {
+  formatNumber,
+  isProfileComplete,
+  profileCompletion,
+  Profile as ProfileSchema,
+  type Profile,
+} from "@baydar/shared";
+import { Alert, AppBand, Button, ScoreBar, useToast } from "@baydar/ui-native";
 import { router } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { KeyboardAvoidingView, Platform, ScrollView, View } from "react-native";
+import { KeyboardAvoidingView, Platform, ScrollView, StatusBar, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { CardStackSkeleton } from "@/components/ScreenSkeleton";
@@ -18,7 +24,7 @@ import { useStyles } from "@/screens/edit-profile/styles";
 
 export default function EditProfileScreen(): JSX.Element {
   const styles = useStyles();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { showToast } = useToast();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -87,22 +93,38 @@ export default function EditProfileScreen(): JSX.Element {
     );
   }
 
+  // Past the `!profile` guard above, so the rail always has real numbers.
+  const completion = profileCompletion(profile);
+
   return (
-    <SafeAreaView style={styles.screen}>
+    <SafeAreaView edges={["left", "right", "bottom"]} style={styles.screen}>
+      <StatusBar barStyle="light-content" />
+      {/* Completion is the spine of this screen, so it lives in the band —
+          the same bar the feed card and Karama use. AppBand rule 4. */}
+      <AppBand
+        title={t("profile.editTitle")}
+        density="compact"
+        trailing={
+          <Button variant="ghost" size="sm" onPress={() => router.back()}>
+            {t("common.cancel")}
+          </Button>
+        }
+      >
+        <ScoreBar
+          testID="profile-completion-bar"
+          onBand
+          value={completion.completed / completion.total}
+          display="ratio"
+          max={completion.total}
+          label={t("profileEdit.completion.label")}
+          formatNumber={(n) => formatNumber(n, i18n.language)}
+        />
+      </AppBand>
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : undefined}
         style={styles.flex}
       >
         <ScrollView contentContainerStyle={styles.scrollContent}>
-          <AppHeader
-            title={t("profile.editTitle")}
-            compact
-            trailing={
-              <Button variant="ghost" size="sm" onPress={() => router.back()}>
-                {t("common.cancel")}
-              </Button>
-            }
-          />
           {error ? (
             <Alert body={error} cta={t("common.retry")} onAction={() => void refresh()} />
           ) : null}

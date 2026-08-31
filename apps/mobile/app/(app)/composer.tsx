@@ -7,7 +7,7 @@ import {
   type MediaRef,
 } from "@baydar/shared";
 import {
-  AppHeader,
+  AppBand,
   Avatar,
   Button,
   Icon,
@@ -22,7 +22,7 @@ import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { KeyboardAvoidingView, Platform, Pressable, Text, View } from "react-native";
+import { KeyboardAvoidingView, Platform, Pressable, StatusBar, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { apiFetch } from "@/lib/api";
@@ -164,26 +164,26 @@ export default function ComposerScreen(): JSX.Element {
   });
 
   return (
-    <SafeAreaView style={styles.screen}>
+    <SafeAreaView edges={["left", "right", "bottom"]} style={styles.screen}>
+      <StatusBar barStyle="light-content" />
+      <AppBand
+        title={t("composer.title")}
+        density="compact"
+        trailing={
+          <Button
+            variant="ghost"
+            size="sm"
+            onPress={() => router.back()}
+            accessibilityLabel={t("common.cancel")}
+          >
+            {t("common.cancel")}
+          </Button>
+        }
+      />
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : undefined}
         style={styles.content}
       >
-        <AppHeader
-          title={t("composer.title")}
-          compact
-          trailing={
-            <Button
-              variant="ghost"
-              size="sm"
-              onPress={() => router.back()}
-              accessibilityLabel={t("common.cancel")}
-            >
-              {t("common.cancel")}
-            </Button>
-          }
-        />
-
         <Surface variant="tinted" padding="3" style={styles.authorChip}>
           <Avatar user={author} size="sm" />
           <Text style={styles.authorText}>

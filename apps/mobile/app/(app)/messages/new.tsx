@@ -4,7 +4,7 @@ import {
   type ConnectionListItem as ConnectionListItemType,
 } from "@baydar/shared";
 import {
-  AppHeader,
+  AppBand,
   Avatar,
   Button,
   Chip,
@@ -20,7 +20,7 @@ import {
 import { router } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { FlatList, Pressable, Text, View } from "react-native";
+import { FlatList, Pressable, StatusBar, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { z } from "zod";
 
@@ -121,19 +121,19 @@ export default function NewGroupRoomScreen(): JSX.Element {
   }, [selectedIds, title, token, t]);
 
   return (
-    <SafeAreaView style={styles.screen}>
+    <SafeAreaView edges={["left", "right", "bottom"]} style={styles.screen}>
+      <StatusBar barStyle="light-content" />
+      <AppBand
+        title={t("messaging.newGroup.title")}
+        subtitle={t("messaging.newGroup.subtitle")}
+        density="compact"
+        trailing={
+          <Button variant="ghost" size="sm" onPress={() => router.back()}>
+            {t("common.back")}
+          </Button>
+        }
+      />
       <View style={styles.wrap}>
-        <AppHeader
-          title={t("messaging.newGroup.title")}
-          subtitle={t("messaging.newGroup.subtitle")}
-          compact
-          trailing={
-            <Button variant="ghost" size="sm" onPress={() => router.back()}>
-              {t("common.back")}
-            </Button>
-          }
-        />
-
         <Surface variant="card" padding="4">
           <Text style={styles.label}>{t("messaging.newGroup.roomTitle")}</Text>
           <Input

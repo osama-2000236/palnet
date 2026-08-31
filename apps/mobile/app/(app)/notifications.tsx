@@ -2,7 +2,7 @@ import { cursorPage, Notification as NotificationSchema, type Notification } fro
 import {
   Alert,
   EmptyState,
-  AppHeader,
+  AppBand,
   Icon,
   RecordCardSkeleton,
   nativeTokens,
@@ -13,7 +13,15 @@ import {
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useRef, useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { FlatList, I18nManager, RefreshControl, StyleSheet, Text, View } from "react-native";
+import {
+  FlatList,
+  I18nManager,
+  RefreshControl,
+  StatusBar,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import { Swipeable } from "react-native-gesture-handler";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -134,10 +142,10 @@ export default function NotificationsScreen(): JSX.Element {
   );
 
   return (
-    <SafeAreaView style={styles.screen}>
+    <SafeAreaView edges={["left", "right", "bottom"]} style={styles.screen}>
+      <StatusBar barStyle="light-content" />
+      <AppBand title={t("notifications.title")} density="compact" />
       <View style={styles.content}>
-        <AppHeader title={t("notifications.title")} compact />
-
         <FlatList
           data={items}
           keyExtractor={(n) => n.id}

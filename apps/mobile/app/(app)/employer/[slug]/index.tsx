@@ -1,7 +1,7 @@
 import { Company, cursorPage, EmployerJob } from "@baydar/shared";
 import {
   Alert,
-  AppHeader,
+  AppBand,
   Button,
   EmptyState,
   RecordCard,
@@ -13,7 +13,7 @@ import {
 import { Link, Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { FlatList, Pressable, StyleSheet, View } from "react-native";
+import { FlatList, Pressable, StatusBar, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { apiFetch, apiFetchPage } from "@/lib/api";
@@ -64,10 +64,11 @@ export default function CompanyJobsScreen(): JSX.Element {
   }, [load]);
 
   return (
-    <SafeAreaView style={styles.screen}>
+    <SafeAreaView edges={["left", "right", "bottom"]} style={styles.screen}>
+      <StatusBar barStyle="light-content" />
+      <AppBand title={t("employer.jobsTitle")} density="compact" />
       <Stack.Screen options={{ title: t("employer.jobsTitle"), headerShown: false }} />
       <View style={styles.content}>
-        <AppHeader title={t("employer.jobsTitle")} compact />
         <View style={styles.actions}>
           <Button
             variant="primary"

@@ -12,7 +12,7 @@ import {
 import {
   Alert,
   EmptyState,
-  AppHeader,
+  AppBand,
   Button,
   Chip,
   Icon,
@@ -24,7 +24,7 @@ import {
 import { useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { FlatList, RefreshControl, View } from "react-native";
+import { FlatList, RefreshControl, StatusBar, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { JobRow } from "@/components/rows/JobRow";
@@ -144,7 +144,41 @@ export default function JobsScreen(): JSX.Element {
   );
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: c.surfaceMuted }}>
+    <SafeAreaView
+      edges={["left", "right", "bottom"]}
+      style={{ flex: 1, backgroundColor: c.surfaceMuted }}
+    >
+      <StatusBar barStyle="light-content" />
+      <AppBand
+        title={t("jobs.title")}
+        trailing={
+          <Button
+            variant={activeCount > 0 ? "primary" : "secondary"}
+            size="sm"
+            leading={
+              <Icon name="search" size={16} color={activeCount > 0 ? c.inkInverse : c.ink} />
+            }
+            onPress={() => setSheetOpen(true)}
+            accessibilityLabel={t("jobs.filters")}
+          >
+            {activeCount > 0
+              ? `${t("jobs.filters")} ${formatNumber(activeCount, i18n.language)}`
+              : t("jobs.filters")}
+          </Button>
+        }
+        search={
+          <SearchField
+            value={filters.q}
+            onChangeText={(q) => setFilters((current) => ({ ...current, q }))}
+            onClear={() => setFilters((current) => ({ ...current, q: "" }))}
+            clearLabel={t("common.clear")}
+            placeholder={t("jobs.searchPlaceholder")}
+            accessibilityLabel={t("jobs.search")}
+            testID="jobs-search-input"
+            inputDirection="auto"
+          />
+        }
+      />
       <View
         style={{
           flex: 1,
@@ -152,37 +186,6 @@ export default function JobsScreen(): JSX.Element {
           paddingTop: nativeTokens.space[4],
         }}
       >
-        <AppHeader
-          title={t("jobs.title")}
-          trailing={
-            <Button
-              variant={activeCount > 0 ? "primary" : "secondary"}
-              size="sm"
-              leading={
-                <Icon name="search" size={16} color={activeCount > 0 ? c.inkInverse : c.ink} />
-              }
-              onPress={() => setSheetOpen(true)}
-              accessibilityLabel={t("jobs.filters")}
-            >
-              {activeCount > 0
-                ? `${t("jobs.filters")} ${formatNumber(activeCount, i18n.language)}`
-                : t("jobs.filters")}
-            </Button>
-          }
-          search={
-            <SearchField
-              value={filters.q}
-              onChangeText={(q) => setFilters((current) => ({ ...current, q }))}
-              onClear={() => setFilters((current) => ({ ...current, q: "" }))}
-              clearLabel={t("common.clear")}
-              placeholder={t("jobs.searchPlaceholder")}
-              accessibilityLabel={t("jobs.search")}
-              testID="jobs-search-input"
-              inputDirection="auto"
-            />
-          }
-        />
-
         {filters.companyId ? (
           <View
             style={{

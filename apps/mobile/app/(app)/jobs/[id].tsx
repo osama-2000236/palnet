@@ -12,7 +12,7 @@ import {
 } from "@baydar/shared";
 import {
   Alert,
-  AppHeader,
+  AppBand,
   Button,
   Chip,
   Icon,
@@ -24,7 +24,7 @@ import { Image } from "expo-image";
 import { router, useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ScrollView, Share, Text, View } from "react-native";
+import { ScrollView, Share, StatusBar, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { NeverPayBanner } from "@/components/NeverPayBanner";
@@ -38,7 +38,7 @@ import { getAccessToken } from "@/lib/session";
 
 import { ApplyCard } from "@/screens/jobs/ApplyCard";
 import { useStyles } from "@/screens/jobs/detailStyles";
-import { JobOutcome } from "@/screens/jobs/JobOutcome";
+import { ApplicationRail } from "@/screens/jobs/ApplicationRail";
 import { JobDescription, JobSkills } from "@/screens/jobs/JobSections";
 
 export default function JobDetailScreen(): JSX.Element {
@@ -198,20 +198,18 @@ export default function JobDetailScreen(): JSX.Element {
   ].filter(Boolean) as string[];
 
   return (
-    <SafeAreaView style={styles.screen}>
-      <ScrollView
-        contentContainerStyle={{ padding: nativeTokens.space[4], gap: nativeTokens.space[3] }}
-      >
-        <AppHeader
-          title={t("jobs.title")}
-          compact
-          trailing={
-            <Button variant="ghost" size="sm" onPress={() => router.back()}>
-              {t("common.back")}
-            </Button>
-          }
-        />
-
+    <SafeAreaView edges={["left", "right", "bottom"]} style={styles.screen}>
+      <StatusBar barStyle="light-content" />
+      <AppBand
+        title={t("jobs.title")}
+        density="compact"
+        trailing={
+          <Button variant="ghost" size="sm" onPress={() => router.back()}>
+            {t("common.back")}
+          </Button>
+        }
+      />
+      <ScrollView contentContainerStyle={styles.scrollBody}>
         <Surface variant="hero" padding="6">
           <View style={{ flexDirection: "row", gap: nativeTokens.space[3] }}>
             <View style={styles.logoBox}>
@@ -264,6 +262,7 @@ export default function JobDetailScreen(): JSX.Element {
               </View>
             </View>
             {job.viewer.hasApplied ? (
+              // The badge is the label; the rail below is the position.
               <View style={styles.appliedBadge}>
                 <Text style={styles.appliedBadgeText}>✓ {t("jobs.appliedBadge")}</Text>
               </View>
@@ -275,8 +274,8 @@ export default function JobDetailScreen(): JSX.Element {
           </View>
         </Surface>
 
+        <ApplicationRail job={job} />
         <NeverPayBanner />
-        <JobOutcome job={job} />
 
         {applyOpen && !job.viewer.hasApplied ? (
           <ApplyCard

@@ -1,8 +1,17 @@
-import { Surface, nativeTokens, useThemeTokens } from "@baydar/ui-native";
+import { AppBand, Chip, Surface, SwitchRow, nativeTokens, useThemeTokens } from "@baydar/ui-native";
 import { router } from "expo-router";
+import { formatNumber } from "@baydar/shared";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Pressable, Text, View } from "react-native";
+import { Pressable, ScrollView, StatusBar, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+
+import {
+  ROUND_SIZES,
+  getInitialRankingPrefs,
+  writeRankingPrefs,
+  type RankingPrefs,
+} from "@/lib/ranking";
 
 type SettingsHref =
   | "/settings/account"
@@ -20,7 +29,16 @@ interface Item {
 
 export default function SettingsLandingScreen(): JSX.Element {
   const c = useThemeTokens().color;
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const [ranking, setRanking] = useState<RankingPrefs>(getInitialRankingPrefs);
+
+  function updateRanking(patch: Partial<RankingPrefs>): void {
+    const next = { ...ranking, ...patch };
+    setRanking(next);
+    // Fire-and-forget: the UI already reflects `next`, and a failed write only
+    // costs the preference on the next cold start.
+    void writeRankingPrefs(next);
+  }
   const items: Item[] = [
     {
       href: "/settings/account",
@@ -55,34 +73,69 @@ export default function SettingsLandingScreen(): JSX.Element {
   ];
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: c.surfaceMuted }}>
-      <View style={{ flex: 1, padding: nativeTokens.space[4], gap: nativeTokens.space[3] }}>
-        <View style={{ gap: nativeTokens.space[1] }}>
-          <Text
-            accessibilityRole="header"
-            style={{
-              color: c.ink,
-              fontFamily: nativeTokens.type.family.sans,
-              fontSize: nativeTokens.type.scale.h1.size,
-              lineHeight: nativeTokens.type.scale.h1.line,
-              fontWeight: "700",
-              textAlign: "auto",
-            }}
-          >
-            {t("settings.title")}
-          </Text>
-          <Text
-            style={{
-              color: c.inkMuted,
-              fontFamily: nativeTokens.type.family.body,
-              fontSize: nativeTokens.type.scale.small.size,
-              lineHeight: nativeTokens.type.scale.small.line,
-              textAlign: "auto",
-            }}
-          >
-            {t("settings.subtitle")}
-          </Text>
-        </View>
+    <SafeAreaView
+      edges={["left", "right", "bottom"]}
+      style={{ flex: 1, backgroundColor: c.surfaceMuted }}
+    >
+      <StatusBar barStyle="light-content" />
+      <AppBand title={t("settings.title")} subtitle={t("settings.subtitle")} />
+      <ScrollView
+        contentContainerStyle={{ padding: nativeTokens.space[4], gap: nativeTokens.space[3] }}
+      >
+        {/* The ranking is a setting, not a secret. Round size bounds the feed,
+            the explanation switch drives ProvenanceLine, and the off switch
+            has to actually exist for the other two to be honest. */}
+        <Surface variant="card" padding="4" style={{ gap: nativeTokens.space[3] }}>
+          <SwitchRow
+            checked={ranking.explainRanking}
+            onChange={(value) => updateRanking({ explainRanking: value })}
+            label={t("settings.explainRanking.label")}
+            description={t("settings.explainRanking.hint")}
+          />
+          <SwitchRow
+            checked={ranking.rankingOff}
+            onChange={(value) => updateRanking({ rankingOff: value })}
+            label={t("settings.rankingOff.label")}
+            description={t("settings.rankingOff.hint")}
+          />
+          <View style={{ gap: nativeTokens.space[2] }}>
+            <Text
+              style={{
+                color: c.ink,
+                fontFamily: nativeTokens.type.family.sans,
+                fontSize: nativeTokens.type.scale.body.size,
+                lineHeight: nativeTokens.type.scale.body.line,
+                fontWeight: "600",
+                textAlign: "auto",
+              }}
+            >
+              {t("settings.roundSize.label")}
+            </Text>
+            <View style={{ flexDirection: "row", gap: nativeTokens.space[2] }}>
+              {ROUND_SIZES.map((size) => (
+                <Chip
+                  key={size}
+                  selected={ranking.roundSize === size}
+                  onPress={() => updateRanking({ roundSize: size })}
+                  accessibilityLabel={t("settings.roundSize.value", { count: size })}
+                >
+                  {formatNumber(size, i18n.language)}
+                </Chip>
+              ))}
+            </View>
+            <Text
+              style={{
+                color: c.inkMuted,
+                fontFamily: nativeTokens.type.family.body,
+                fontSize: nativeTokens.type.scale.small.size,
+                lineHeight: nativeTokens.type.scale.small.line,
+                textAlign: "auto",
+              }}
+            >
+              {t("settings.roundSize.hint")}
+            </Text>
+          </View>
+        </Surface>
 
         <Surface variant="flat" padding="0">
           <View>
@@ -136,7 +189,7 @@ export default function SettingsLandingScreen(): JSX.Element {
             ))}
           </View>
         </Surface>
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }

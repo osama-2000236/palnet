@@ -1,0 +1,673 @@
+{
+  "_comment": "Strings from the 2026-08 mobile redesign handoff whose SCREENS do not exist yet. Held out of ar.json/en.json because scripts/check-i18n-parity.mjs fails on unreferenced keys, and dead strings drift. Merge each namespace back in the commit that builds its screen. NOTE: the `security.*` block duplicates strings the app already ships under `settings.security.*` — reconcile, do not merge blindly.",
+  "ar": {
+    "applications": {
+      "title": "طلباتي",
+      "count": "{{count}} طلبات",
+      "tabs": {
+        "all": "الكل",
+        "review": "قيد المراجعة",
+        "interview": "مقابلة",
+        "closed": "مغلقة"
+      },
+      "sentAgo": "أُرسل قبل {{count}} أيام",
+      "seenAgo": "شوهد {{when}}",
+      "interviewAt": "مقابلة {{date}} · {{time}} · {{place}}",
+      "retention": "سجلّ الطلبات محفوظ {{count}} أشهر"
+    },
+    "jobPost": {
+      "title": "نشر وظيفة",
+      "draft": "مسودة",
+      "stepOf": "{{current}} / {{total}}",
+      "step2": {
+        "kicker": "الخطوة الثانية",
+        "title": "الأجر ونوع الدوام"
+      },
+      "employmentType": {
+        "label": "نوع الدوام",
+        "fullTime": "دوام كامل",
+        "partTime": "دوام جزئي",
+        "piecework": "بالمقطوعية",
+        "daily": "مياومة"
+      },
+      "wageRange": {
+        "label": "نطاق الأجر الشهري",
+        "from": "من",
+        "to": "إلى"
+      },
+      "wageGuard": {
+        "pass": "أعلى من الحد الأدنى للأجر في فلسطين ({{amount}} {{currency}} شهريًا)",
+        "fail": "أقل من الحد الأدنى للأجر في فلسطين ({{amount}} {{currency}} شهريًا). لا يمكن نشر الوظيفة.",
+        "minimumLabel": "الحد الأدنى {{amount}}",
+        "yourRange": "نطاقك",
+        "occupationMedian": "وسيط المهنة {{amount}}"
+      },
+      "reach": {
+        "title": "من سيرى هذه الوظيفة أولًا",
+        "verifiedNearby": "{{occupation}} موثّقون داخل {{km}} كم من {{city}}",
+        "alertSubscribers": "أصحاب تنبيهات مطابقة لهذه المهنة"
+      },
+      "policyNote": "لا تُنشر الوظائف دون نطاق أجر معلن. الوظائف التي لا تستوفي الحد الأدنى تُرفض تلقائيًا قبل النشر.",
+      "back": "رجوع",
+      "continueToReview": "متابعة إلى المراجعة"
+    },
+    "profileEdit": {
+      "title": "تعديل الملف",
+      "save": "حفظ",
+      "completion": {
+        "hint": "إضافة الخبرة والمهارات ترفعه إلى {{percent}}٪"
+      },
+      "photo": {
+        "cta": "تغيير الصورة",
+        "hint": "صورة واضحة للوجه ترفع ثقة أصحاب العمل. لا تُشترط."
+      },
+      "sections": {
+        "basic": "الأساسي",
+        "remaining": "ما تبقّى لاكتمال الملف"
+      },
+      "fields": {
+        "name": "الاسم",
+        "occupation": "المهنة",
+        "city": "المدينة",
+        "bio": "نبذة"
+      },
+      "occupationInMatching": "تدخل في المطابقة",
+      "occupationVerified": "موثّقة بشهادة {{authority}} · تعديلها يعيد التوثيق",
+      "tasks": {
+        "addExperience": "أضف خبرة عمل واحدة",
+        "addSkills": "أضف {{count}} مهارات",
+        "basicsDone": "المهنة والمدينة والصورة",
+        "done": "تمّ",
+        "gain": "+{{percent}}٪"
+      }
+    },
+    "security": {
+      "title": "الأمان",
+      "subtitle": "كلمة المرور والجلسات والحسابات المحظورة",
+      "sections": {
+        "signIn": "الدخول",
+        "sessions": "الجلسات النشطة",
+        "privacy": "الخصوصية"
+      },
+      "password": {
+        "label": "كلمة المرور",
+        "lastChanged": "آخر تغيير قبل {{count}} أشهر"
+      },
+      "twoFactor": {
+        "label": "التحقق بخطوتين",
+        "hint": "رمز عبر رسالة نصية عند الدخول من جهاز جديد"
+      },
+      "thisDevice": "هذا الجهاز",
+      "sessionMeta": "{{city}} · {{when}}",
+      "endSession": "إنهاء",
+      "blockedAccounts": "الحسابات المحظورة",
+      "downloadData": {
+        "label": "تنزيل بياناتك",
+        "hint": "ملف واحد يشمل ملفك ومنشوراتك وطلباتك"
+      },
+      "deleteAccount": {
+        "label": "حذف الحساب",
+        "hint": "نهائي بعد {{count}} يومًا، ويمكن التراجع خلالها"
+      }
+    },
+    "activity": {
+      "completeProfile": {
+        "body": "الملف المكتمل يساعد الأشخاص وأصحاب العمل على فهم خبرتك.",
+        "cta": "تعديل الملف",
+        "progress": "{{done}} من {{total}}",
+        "title": "أكمل ملفك"
+      },
+      "metrics": {
+        "unread": "تحديثات غير مقروءة"
+      },
+      "needsAttention": "تحتاج انتباهك",
+      "opportunities": "فرص تناسبك",
+      "pendingRequests": {
+        "oldest": "أقدمها منذ {{count}} أيام",
+        "title": "{{count}} طلبات بانتظار ردّك"
+      },
+      "postStats": {
+        "comments": "{{count}} تعليقات",
+        "reactions": "{{count}} تفاعلًا"
+      },
+      "yourPosts": "منشوراتك"
+    },
+    "auth": {
+      "createAccount": "إنشاء حساب جديد",
+      "forgotPassword": "نسيت كلمة المرور؟",
+      "or": "أو",
+      "phone": "رقم الهاتف",
+      "signIn": "تسجيل الدخول",
+      "submit": "دخول",
+      "tagline": "شبكة المهن والعمل في فلسطين"
+    },
+    "company": {
+      "applicants": {
+        "appliedAgo": "تقدّم {{when}}",
+        "count": "{{count}} متقدم",
+        "karamaScore": "كرامة {{value}}",
+        "message": "رسالة",
+        "provenance": "مرتّبون بالملاءمة. المتقدّم يرى النسبة نفسها التي ترى.",
+        "reject": "رفض",
+        "rejectedReasonPrefix": "سبب الرفض:",
+        "shortlist": "قائمة مختصرة",
+        "tabs": {
+          "new": "جديد",
+          "rejected": "مرفوض",
+          "review": "قيد المراجعة",
+          "shortlist": "قائمة مختصرة"
+        },
+        "title": "المتقدمون"
+      },
+      "openRoles": "وظائف متاحة",
+      "reject": {
+        "confirm": "رفض الطلب",
+        "counter": "{{used}} / {{max}}",
+        "note": "توضيح",
+        "noteRequired": "مطلوب. يظهر للمتقدّم."
+      },
+      "stats": {
+        "followers": "متابعًا",
+        "openRoles": "وظيفة متاحة",
+        "workers": "عاملًا"
+      },
+      "viewAllRoles": "عرض الوظائف الـ{{count}}",
+      "wagePolicy": {
+        "minimumMet": "الحد الأدنى {{amount}} {{currency}} شهريًا — مستوفى",
+        "paySchedule": "دفع شهري بموعد ثابت · تأمين عمل",
+        "rangesDisclosed": "تُعلن جميع الوظائف نطاق الأجر",
+        "title": "سياسة الأجور المعلنة"
+      }
+    },
+    "composer": {
+      "asJobCta": "نشره كوظيفة بدلًا من ذلك",
+      "asJobHint": "إن كان المنشور طلب عمل، انشره كوظيفة ليظهر في نتائج المطابقة وضمن ضمانة الحد الأدنى للأجر.",
+      "audience": {
+        "connections": "معارفي فقط",
+        "label": "الجمهور",
+        "occupation": "أصحاب مهنتي",
+        "public": "عام · الجميع"
+      },
+      "counter": "{{used}} / {{max}}",
+      "publish": "نشر",
+      "reach": {
+        "approx": "≈ {{count}}",
+        "followersAndConnections": "متابعوك ومعارفك",
+        "occupationInCity": "أصحاب مهنة {{occupation}} في {{city}}",
+        "permanent": "دائم",
+        "searchResults": "نتائج البحث داخل بيدر",
+        "title": "إلى مَن يصل هذا المنشور"
+      },
+      "topics": {
+        "add": "إضافة",
+        "label": "المهن والمواضيع"
+      }
+    },
+    "karama": {
+      "deltaThisMonth": "+{{count}} هذا الشهر",
+      "ledger": {
+        "certificateVerified": "توثيق شهادة {{name}}",
+        "endorsementFrom": "تزكية من {{company}}",
+        "endorsementPending": "طلب تزكية معلّق — {{company}}",
+        "sentOn": "أُرسل {{date}}",
+        "title": "السجل"
+      },
+      "levelProgress": "{{value}} / {{max}} · المستوى التالي: {{next}}",
+      "levels": {
+        "reference": "مرجع مهني",
+        "trusted": "موثوق"
+      },
+      "requestEndorsement": "طلب تزكية جديدة",
+      "rules": {
+        "body": "تُكتسب النقاط من التوثيق والتزكيات والعمل المُنجز فقط. لا تُخفَض النقاط عند التوقّف عن استخدام بيدر، ولا تدخل في ترتيب الخلاصة.",
+        "cta": "القواعد الكاملة",
+        "title": "كرامة لا تُشترى ولا تنقص بالخمول"
+      },
+      "share": "مشاركة",
+      "sources": {
+        "completedWork": "إتمام أعمال موثّقة داخل بيدر",
+        "endorsements": "تزكيات من أصحاب عمل سابقين",
+        "helping": "مساعدة أعضاء آخرين",
+        "title": "من أين جاءت النقاط",
+        "verification": "توثيق المهنة والشهادات"
+      }
+    },
+    "premium": {
+      "currentPlan": "باقتك الحالية",
+      "payment": {
+        "bankTransfer": {
+          "hint": "{{bank}} · تأكيد خلال يوم عمل",
+          "label": "حوالة بنكية"
+        },
+        "karama": {
+          "hint": "رصيدك {{balance}} · يكفي {{months}} أشهر",
+          "label": "نقاط كرامة"
+        },
+        "title": "طريقة الدفع",
+        "wallets": {
+          "hint": "قريبًا",
+          "label": "جوّال باي · بال باي"
+        }
+      },
+      "priceMonthly": "{{amount}} {{currency}} / شهريًا",
+      "priceUsdApprox": "≈ {{amount}} USD",
+      "recommended": "الموصى بها",
+      "renewalNote": "ثلاثون يومًا في كل مرة. أوقف التجديد وقتما شئت، وتبقى العضوية حتى نهاية المدة المدفوعة."
+    },
+    "profile": {
+      "connect": "تواصل",
+      "credentials": {
+        "endorsements": "{{count}} تزكيات",
+        "verifiedOccupation": "مهنة موثّقة",
+        "yearsExperience": "{{count}} سنوات"
+      },
+      "menu": {
+        "block": "حظر",
+        "blockHint": "لن يتمكن هذا المستخدم من التفاعل معك أو مراسلتك.",
+        "report": "إبلاغ",
+        "share": "مشاركة الملف"
+      },
+      "message": "رسالة",
+      "mutuals": "{{count}} معارف مشتركة",
+      "sections": {
+        "bio": "نبذة",
+        "skills": "المهارات"
+      }
+    },
+    "saved": {
+      "closedJob": {
+        "body": "لم تُعد هذه الوظيفة مفتوحة. تبقى محفوظة حتى تحذفها، ويمكنك متابعة الشركة لتصل الوظائف القادمة.",
+        "label": "أُغلقت"
+      },
+      "retention": "{{count}} عناصر · لا تنتهي المحفوظات تلقائيًا",
+      "savedOn": "حُفظت {{date}}",
+      "tabs": {
+        "all": "الكل",
+        "jobs": "وظيفة",
+        "posts": "منشور"
+      },
+      "types": {
+        "job": "وظيفة",
+        "post": "منشور"
+      }
+    },
+    "search": {
+      "expandRadius": "توسيع إلى {{km}} كم",
+      "matchingJobs": "وظائف مطابقة",
+      "mutualsAndDistance": "{{count}} معارف مشتركة · {{km}} كم",
+      "radiusNote": "{{count}} نتيجة داخل {{km}} كم. وسّع النطاق للحصول على نتائج أبعد.",
+      "scope": {
+        "all": "الكل",
+        "companies": "شركات",
+        "jobs": "وظائف",
+        "people": "أشخاص"
+      }
+    },
+    "settings": {
+      "appearance": {
+        "auto": "تلقائي",
+        "label": "المظهر"
+      },
+      "jobAlerts": {
+        "hint": "مرة واحدة يوميًا، للوظائف فوق {{percent}}٪ ملاءمة",
+        "label": "تنبيهات الوظائف المطابقة"
+      },
+      "languageNumerals": {
+        "label": "اللغة والأرقام",
+        "value": "العربية · ٠١٢٣"
+      },
+      "searchRadius": {
+        "label": "نطاق البحث عن العمل",
+        "value": "{{km}} كم"
+      },
+      "sections": {
+        "matching": "المطابقة والوظائف",
+        "privacyLanguage": "الخصوصية واللغة",
+        "ranking": "الترتيب والخلاصة"
+      },
+      "signOut": "تسجيل الخروج",
+      "version": "بيدر {{version}} ({{build}})",
+      "visibility": {
+        "connections": "معارفي",
+        "everyone": "الجميع",
+        "label": "من يرى مهنتي وموقعي",
+        "verifiedEmployers": "أصحاب العمل الموثّقون"
+      }
+    }
+  },
+  "en": {
+    "applications": {
+      "title": "My applications",
+      "count": "{{count}} applications",
+      "tabs": {
+        "all": "All",
+        "review": "In review",
+        "interview": "Interview",
+        "closed": "Closed"
+      },
+      "sentAgo": "Sent {{count}} days ago",
+      "seenAgo": "Seen {{when}}",
+      "interviewAt": "Interview {{date}} · {{time}} · {{place}}",
+      "retention": "Applications are kept for {{count}} months"
+    },
+    "jobPost": {
+      "title": "Post a job",
+      "draft": "Draft",
+      "stepOf": "{{current}} / {{total}}",
+      "step2": {
+        "kicker": "Step two",
+        "title": "Wage and employment type"
+      },
+      "employmentType": {
+        "label": "Employment type",
+        "fullTime": "Full time",
+        "partTime": "Part time",
+        "piecework": "Piecework",
+        "daily": "Daily"
+      },
+      "wageRange": {
+        "label": "Monthly wage range",
+        "from": "From",
+        "to": "To"
+      },
+      "wageGuard": {
+        "pass": "Above the Palestinian minimum wage ({{amount}} {{currency}}/month)",
+        "fail": "Below the Palestinian minimum wage ({{amount}} {{currency}}/month). This job cannot be published.",
+        "minimumLabel": "Minimum {{amount}}",
+        "yourRange": "Your range",
+        "occupationMedian": "Occupation median {{amount}}"
+      },
+      "reach": {
+        "title": "Who sees this job first",
+        "verifiedNearby": "Verified {{occupation}} within {{km}} km of {{city}}",
+        "alertSubscribers": "Members with alerts for this occupation"
+      },
+      "policyNote": "Jobs cannot be published without a stated wage range. Jobs below the minimum wage are rejected before publishing.",
+      "back": "Back",
+      "continueToReview": "Continue to review"
+    },
+    "profileEdit": {
+      "title": "Edit profile",
+      "save": "Save",
+      "completion": {
+        "hint": "Adding experience and skills takes it to {{percent}}%"
+      },
+      "photo": {
+        "cta": "Change photo",
+        "hint": "A clear photo of your face builds employer trust. Not required."
+      },
+      "sections": {
+        "basic": "Basics",
+        "remaining": "What's left"
+      },
+      "fields": {
+        "name": "Name",
+        "occupation": "Occupation",
+        "city": "City",
+        "bio": "About"
+      },
+      "occupationInMatching": "Used in matching",
+      "occupationVerified": "Verified by {{authority}} · editing restarts verification",
+      "tasks": {
+        "addExperience": "Add one work experience",
+        "addSkills": "Add {{count}} skills",
+        "basicsDone": "Occupation, city, and photo",
+        "done": "Done",
+        "gain": "+{{percent}}%"
+      }
+    },
+    "security": {
+      "title": "Security",
+      "subtitle": "Password, sessions, and blocked accounts",
+      "sections": {
+        "signIn": "Sign in",
+        "sessions": "Active sessions",
+        "privacy": "Privacy"
+      },
+      "password": {
+        "label": "Password",
+        "lastChanged": "Last changed {{count}} months ago"
+      },
+      "twoFactor": {
+        "label": "Two-step verification",
+        "hint": "A code by SMS when signing in from a new device"
+      },
+      "thisDevice": "This device",
+      "sessionMeta": "{{city}} · {{when}}",
+      "endSession": "End",
+      "blockedAccounts": "Blocked accounts",
+      "downloadData": {
+        "label": "Download your data",
+        "hint": "One file with your profile, posts, and applications"
+      },
+      "deleteAccount": {
+        "label": "Delete account",
+        "hint": "Permanent after {{count}} days; reversible until then"
+      }
+    },
+    "activity": {
+      "completeProfile": {
+        "body": "A complete profile helps people and employers understand your experience.",
+        "cta": "Edit profile",
+        "progress": "{{done}} of {{total}}",
+        "title": "Complete your profile"
+      },
+      "metrics": {
+        "unread": "unread updates"
+      },
+      "needsAttention": "Needs your attention",
+      "opportunities": "Opportunities for you",
+      "pendingRequests": {
+        "oldest": "Oldest {{count}} days ago",
+        "title": "{{count}} requests waiting for you"
+      },
+      "postStats": {
+        "comments": "{{count}} comments",
+        "reactions": "{{count}} reactions"
+      },
+      "yourPosts": "Your posts"
+    },
+    "auth": {
+      "createAccount": "Create an account",
+      "forgotPassword": "Forgot your password?",
+      "or": "or",
+      "phone": "Phone number",
+      "signIn": "Sign in",
+      "submit": "Sign in",
+      "tagline": "The professional network for Palestine"
+    },
+    "company": {
+      "applicants": {
+        "appliedAgo": "Applied {{when}}",
+        "count": "{{count}} applicants",
+        "karamaScore": "Karama {{value}}",
+        "message": "Message",
+        "provenance": "Sorted by fit. The applicant sees the same percentage you do.",
+        "reject": "Reject",
+        "rejectedReasonPrefix": "Reason:",
+        "shortlist": "Shortlist",
+        "tabs": {
+          "new": "New",
+          "rejected": "Rejected",
+          "review": "In review",
+          "shortlist": "Shortlist"
+        },
+        "title": "Applicants"
+      },
+      "openRoles": "Open roles",
+      "reject": {
+        "confirm": "Reject application",
+        "counter": "{{used}} / {{max}}",
+        "note": "Explanation",
+        "noteRequired": "Required. Shown to the applicant."
+      },
+      "stats": {
+        "followers": "followers",
+        "openRoles": "open roles",
+        "workers": "workers"
+      },
+      "viewAllRoles": "View all {{count}} roles",
+      "wagePolicy": {
+        "minimumMet": "Minimum wage {{amount}} {{currency}}/month — met",
+        "paySchedule": "Paid monthly on a fixed date · work insurance",
+        "rangesDisclosed": "Every role states its wage range",
+        "title": "Stated wage policy"
+      }
+    },
+    "composer": {
+      "asJobCta": "Post as a job instead",
+      "asJobHint": "If this is a request for workers, post it as a job so it appears in matching and under the minimum-wage guarantee.",
+      "audience": {
+        "connections": "Connections only",
+        "label": "Audience",
+        "occupation": "People in my occupation",
+        "public": "Public · everyone"
+      },
+      "counter": "{{used}} / {{max}}",
+      "publish": "Post",
+      "reach": {
+        "approx": "≈ {{count}}",
+        "followersAndConnections": "Your followers and connections",
+        "occupationInCity": "{{occupation}} in {{city}}",
+        "permanent": "Ongoing",
+        "searchResults": "Baydar search results",
+        "title": "Who this post reaches"
+      },
+      "topics": {
+        "add": "Add",
+        "label": "Occupations and topics"
+      }
+    },
+    "karama": {
+      "deltaThisMonth": "+{{count}} this month",
+      "ledger": {
+        "certificateVerified": "Certificate verified — {{name}}",
+        "endorsementFrom": "Endorsement from {{company}}",
+        "endorsementPending": "Endorsement request pending — {{company}}",
+        "sentOn": "Sent {{date}}",
+        "title": "Ledger"
+      },
+      "levelProgress": "{{value}} / {{max}} · next level: {{next}}",
+      "levels": {
+        "reference": "Professional reference",
+        "trusted": "Trusted"
+      },
+      "requestEndorsement": "Request an endorsement",
+      "rules": {
+        "body": "Points come only from verification, endorsements, and completed work. They are never reduced for inactivity, and they do not affect feed ranking.",
+        "cta": "Full rules",
+        "title": "Karama cannot be bought and does not decay"
+      },
+      "share": "Share",
+      "sources": {
+        "completedWork": "Verified work completed through Baydar",
+        "endorsements": "Endorsements from former employers",
+        "helping": "Helping other members",
+        "title": "Where the points came from",
+        "verification": "Occupation and certificate verification"
+      }
+    },
+    "premium": {
+      "currentPlan": "Your current plan",
+      "payment": {
+        "bankTransfer": {
+          "hint": "{{bank}} · confirmed within one business day",
+          "label": "Bank transfer"
+        },
+        "karama": {
+          "hint": "Balance {{balance}} · covers {{months}} months",
+          "label": "Karama points"
+        },
+        "title": "Payment method",
+        "wallets": {
+          "hint": "Coming soon",
+          "label": "Jawwal Pay · PalPay"
+        }
+      },
+      "priceMonthly": "{{amount}} {{currency}} / month",
+      "priceUsdApprox": "≈ {{amount}} USD",
+      "recommended": "Recommended",
+      "renewalNote": "Thirty days at a time. Stop renewal whenever you like and membership runs to the end of the paid period."
+    },
+    "profile": {
+      "connect": "Connect",
+      "credentials": {
+        "endorsements": "{{count}} endorsements",
+        "verifiedOccupation": "Verified occupation",
+        "yearsExperience": "{{count}} years"
+      },
+      "menu": {
+        "block": "Block",
+        "blockHint": "This member will not be able to interact with you or message you.",
+        "report": "Report",
+        "share": "Share profile"
+      },
+      "message": "Message",
+      "mutuals": "{{count}} mutual connections",
+      "sections": {
+        "bio": "About",
+        "skills": "Skills"
+      }
+    },
+    "saved": {
+      "closedJob": {
+        "body": "This job is no longer open. It stays saved until you remove it, and you can follow the company for future roles.",
+        "label": "Closed"
+      },
+      "retention": "{{count}} items · saved items never expire",
+      "savedOn": "Saved {{date}}",
+      "tabs": {
+        "all": "All",
+        "jobs": "Jobs",
+        "posts": "Posts"
+      },
+      "types": {
+        "job": "Job",
+        "post": "Post"
+      }
+    },
+    "search": {
+      "expandRadius": "Widen to {{km}} km",
+      "matchingJobs": "Matching jobs",
+      "mutualsAndDistance": "{{count}} mutual connections · {{km}} km",
+      "radiusNote": "{{count}} results within {{km}} km. Widen the radius for more.",
+      "scope": {
+        "all": "All",
+        "companies": "Companies",
+        "jobs": "Jobs",
+        "people": "People"
+      }
+    },
+    "settings": {
+      "appearance": {
+        "auto": "Automatic",
+        "label": "Appearance"
+      },
+      "jobAlerts": {
+        "hint": "Once a day, for jobs above {{percent}}% fit",
+        "label": "Matching job alerts"
+      },
+      "languageNumerals": {
+        "label": "Language and numerals",
+        "value": "English · 0123"
+      },
+      "searchRadius": {
+        "label": "Job search radius",
+        "value": "{{km}} km"
+      },
+      "sections": {
+        "matching": "Matching and jobs",
+        "privacyLanguage": "Privacy and language",
+        "ranking": "Ranking and feed"
+      },
+      "signOut": "Sign out",
+      "version": "Baydar {{version}} ({{build}})",
+      "visibility": {
+        "connections": "Connections",
+        "everyone": "Everyone",
+        "label": "Who sees my occupation and location",
+        "verifiedEmployers": "Verified employers"
+      }
+    }
+  }
+}

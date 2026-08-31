@@ -8,7 +8,7 @@
 import { Company, CreateCompanyBody, PS_INDUSTRIES } from "@baydar/shared";
 import {
   Alert,
-  AppHeader,
+  AppBand,
   Button,
   Chip,
   Input,
@@ -20,7 +20,15 @@ import {
 import { Stack, useRouter } from "expo-router";
 import { useMemo, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from "react-native";
+import {
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { CityField } from "@/components/CityField";
@@ -83,23 +91,24 @@ export default function NewCompanyScreen(): JSX.Element {
   };
 
   return (
-    <SafeAreaView style={styles.screen}>
+    <SafeAreaView edges={["left", "right", "bottom"]} style={styles.screen}>
+      <StatusBar barStyle="light-content" />
+      <AppBand
+        title={t("employer.newCompany.title")}
+        subtitle={t("employer.newCompany.subtitle")}
+        density="compact"
+        trailing={
+          <Button variant="ghost" size="sm" onPress={() => router.back()}>
+            {t("common.cancel")}
+          </Button>
+        }
+      />
       <Stack.Screen options={{ title: t("employer.newCompany.title"), headerShown: false }} />
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : undefined}
         style={styles.flex}
       >
         <ScrollView contentContainerStyle={styles.scrollContent}>
-          <AppHeader
-            title={t("employer.newCompany.title")}
-            subtitle={t("employer.newCompany.subtitle")}
-            compact
-            trailing={
-              <Button variant="ghost" size="sm" onPress={() => router.back()}>
-                {t("common.cancel")}
-              </Button>
-            }
-          />
           <Surface variant="card" padding="4" style={styles.formCard}>
             <Field label={t("employer.form.name")} styles={styles}>
               <Input

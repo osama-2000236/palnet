@@ -8,7 +8,7 @@ import {
 import {
   Alert,
   EmptyState,
-  AppHeader,
+  AppBand,
   Button,
   Icon,
   RecordCardSkeleton,
@@ -20,7 +20,15 @@ import { Image } from "expo-image";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from "react-native";
+import {
+  FlatList,
+  Pressable,
+  RefreshControl,
+  StatusBar,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { apiCall, apiFetchPage } from "@/lib/api";
@@ -111,18 +119,18 @@ export default function SavedScreen(): JSX.Element {
   );
 
   return (
-    <SafeAreaView style={styles.screen}>
+    <SafeAreaView edges={["left", "right", "bottom"]} style={styles.screen}>
+      <StatusBar barStyle="light-content" />
+      <AppBand
+        title={t("saved.title")}
+        subtitle={t("saved.subtitle")}
+        trailing={
+          <Button variant="ghost" size="sm" onPress={() => router.back()}>
+            {t("common.back")}
+          </Button>
+        }
+      />
       <View style={styles.content}>
-        <AppHeader
-          title={t("saved.title")}
-          subtitle={t("saved.subtitle")}
-          trailing={
-            <Button variant="ghost" size="sm" onPress={() => router.back()}>
-              {t("common.back")}
-            </Button>
-          }
-        />
-
         {firstLoad ? (
           <View style={styles.stack}>
             <RecordCardSkeleton variant="row" />

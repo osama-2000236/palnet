@@ -1,20 +1,30 @@
 import { profileCompletion, formatNumber, type Profile } from "@baydar/shared";
-import { AppHeader, Avatar, Button, Icon, Surface, useThemeTokens } from "@baydar/ui-native";
+import { AppBand, Avatar, Button, Icon, Surface, useThemeTokens } from "@baydar/ui-native";
 import { router } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { Pressable, Text, View } from "react-native";
 
 import { useFeedStyles } from "./styles";
 
-export function FeedTopBar({ unread }: { unread: number }): JSX.Element {
+export function FeedTopBar({
+  unread,
+  roundCount,
+}: {
+  unread: number;
+  /** Posts in today's round. The round is finite and says so. */
+  roundCount: number;
+}): JSX.Element {
   const { t, i18n } = useTranslation();
   const feedStyles = useFeedStyles();
   const c = useThemeTokens().color;
 
   return (
-    <AppHeader
-      compact
+    <AppBand
+      density="compact"
       title={t("common.appName")}
+      subtitle={
+        roundCount > 0 ? t("feed.round.count", { count: roundCount }) : t("feed.round.label")
+      }
       leading={<Icon name="logo" size={28} />}
       trailing={
         <Pressable

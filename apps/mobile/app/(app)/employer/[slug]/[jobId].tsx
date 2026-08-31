@@ -8,7 +8,7 @@ import {
 } from "@baydar/shared";
 import {
   Alert,
-  AppHeader,
+  AppBand,
   Chip,
   EmptyState,
   RecordCardSkeleton,
@@ -20,7 +20,7 @@ import {
 import { Stack, useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { FlatList, StyleSheet, Text, View } from "react-native";
+import { FlatList, StatusBar, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { RejectSheet } from "@/components/RejectSheet";
@@ -129,10 +129,11 @@ export default function ApplicantsInboxScreen(): JSX.Element {
   );
 
   return (
-    <SafeAreaView style={styles.screen}>
+    <SafeAreaView edges={["left", "right", "bottom"]} style={styles.screen}>
+      <StatusBar barStyle="light-content" />
+      <AppBand title={t("employer.applicantsTitle")} density="compact" />
       <Stack.Screen options={{ title: t("employer.applicantsTitle"), headerShown: false }} />
       <View style={styles.content}>
-        <AppHeader title={t("employer.applicantsTitle")} compact />
         <FlatList
           contentContainerStyle={styles.listContent}
           data={items}

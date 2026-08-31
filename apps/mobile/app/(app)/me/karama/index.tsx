@@ -10,11 +10,11 @@ import {
   type BillingMe as BillingMeDto,
   type KaramaBalance as KaramaBalanceDto,
 } from "@baydar/shared";
-import { Alert, Button, Surface } from "@baydar/ui-native";
+import { Alert, AppBand, Button, ScoreBar, Surface } from "@baydar/ui-native";
 import { useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ScrollView, Text, View } from "react-native";
+import { ScrollView, StatusBar, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { CardStackSkeleton } from "@/components/ScreenSkeleton";
@@ -96,16 +96,28 @@ export default function KaramaScreen(): JSX.Element {
   const hasPremium = billingMe?.subscription?.plan?.code === PlanCode.USER_PREMIUM;
 
   return (
-    <SafeAreaView style={styles.screen}>
+    <SafeAreaView edges={["left", "right", "bottom"]} style={styles.screen}>
+      <StatusBar barStyle="light-content" />
+      {/* The ledger's headline number IS the band. One bar, read the same way
+          as match fit and profile completion — AppBand rule 4. */}
+      <AppBand
+        title={t("karama.title")}
+        subtitle={t("karama.subtitle")}
+        count={balance?.balance ?? 0}
+        formatCount={(n) => formatNumber(n, i18n.language)}
+      >
+        <ScoreBar
+          testID="karama-balance-bar"
+          onBand
+          size="lg"
+          value={(balance?.balance ?? 0) / Math.max(balance?.cap ?? 5000, 1)}
+          display="ratio"
+          max={balance?.cap ?? 5000}
+          label={t("karama.unit")}
+          formatNumber={(n) => formatNumber(n, i18n.language)}
+        />
+      </AppBand>
       <ScrollView contentContainerStyle={styles.scrollBody}>
-        <View>
-          <Text accessibilityRole="header" style={styles.kicker}>
-            {t("karama.kicker")}
-          </Text>
-          <Text style={styles.title}>{t("karama.title")}</Text>
-          <Text style={styles.subtitle}>{t("karama.subtitle")}</Text>
-        </View>
-
         {notice ? (
           <Alert
             body={notice.text}
@@ -114,17 +126,6 @@ export default function KaramaScreen(): JSX.Element {
             onAction={notice.kind === "error" ? () => void load() : undefined}
           />
         ) : null}
-
-        <Surface variant="tinted" padding="4" style={styles.balanceCard}>
-          <Text style={styles.balanceLabel}>{t("karama.balance")}</Text>
-          <Text style={styles.balanceValue}>
-            {formatNumber(balance?.balance ?? 0, i18n.language)}
-          </Text>
-          <Text style={styles.balanceLabel}>
-            {t("karama.cap")}{" "}
-            <Text style={styles.ltr}>{formatNumber(balance?.cap ?? 5000, i18n.language)}</Text>
-          </Text>
-        </Surface>
 
         <Surface variant="card" padding="4" style={styles.rewardCard}>
           <View style={styles.rewardHeader}>

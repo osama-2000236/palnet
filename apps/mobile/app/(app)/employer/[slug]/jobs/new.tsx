@@ -14,7 +14,7 @@ import {
 } from "@baydar/shared";
 import {
   Alert,
-  AppHeader,
+  AppBand,
   Button,
   Input,
   RadioGroup,
@@ -26,7 +26,14 @@ import {
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from "react-native";
+import {
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { CityField } from "@/components/CityField";
@@ -120,22 +127,23 @@ export default function NewJobScreen(): JSX.Element {
   };
 
   return (
-    <SafeAreaView style={styles.screen}>
+    <SafeAreaView edges={["left", "right", "bottom"]} style={styles.screen}>
+      <StatusBar barStyle="light-content" />
+      <AppBand
+        title={t("employer.newJob.title")}
+        density="compact"
+        trailing={
+          <Button variant="ghost" size="sm" onPress={() => router.back()}>
+            {t("common.cancel")}
+          </Button>
+        }
+      />
       <Stack.Screen options={{ title: t("employer.newJob.title"), headerShown: false }} />
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : undefined}
         style={styles.flex}
       >
         <ScrollView contentContainerStyle={styles.scrollContent}>
-          <AppHeader
-            title={t("employer.newJob.title")}
-            compact
-            trailing={
-              <Button variant="ghost" size="sm" onPress={() => router.back()}>
-                {t("common.cancel")}
-              </Button>
-            }
-          />
           <Surface variant="card" padding="4" style={styles.formCard}>
             <Input
               fullWidth

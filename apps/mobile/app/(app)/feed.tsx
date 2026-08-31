@@ -10,18 +10,21 @@ import {
   EmptyState,
   ComposerEntry,
   PostCardSkeleton,
+  ProvenanceLine,
+  Surface,
   useThemeTokens,
 } from "@baydar/ui-native";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { z } from "zod";
 import { useTranslation } from "react-i18next";
-import { FlatList, RefreshControl, View } from "react-native";
+import { FlatList, RefreshControl, StatusBar, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { PostRow } from "@/components/rows/PostRow";
 import { apiFetch, apiFetchPage } from "@/lib/api";
 import { track } from "@/lib/analytics";
+import { getInitialRankingPrefs } from "@/lib/ranking";
 import { getAccessToken, readSession } from "@/lib/session";
 
 import { FeedTopBar, JobsEntry, ProfileSummary } from "@/screens/feed/FeedParts";
@@ -42,6 +45,8 @@ export default function FeedScreen(): JSX.Element {
   const [unread, setUnread] = useState<number>(0);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [feedError, setFeedError] = useState<string | null>(null);
+  // Read once: prefs only change on the settings screen, which remounts this.
+  const [ranking] = useState(getInitialRankingPrefs);
 
   const loadUnread = useCallback(async (): Promise<void> => {
     const token = await getAccessToken();
@@ -118,13 +123,26 @@ export default function FeedScreen(): JSX.Element {
   );
 
   return (
-    <SafeAreaView style={feedStyles.screen}>
+    <SafeAreaView edges={["left", "right", "bottom"]} style={feedStyles.screen}>
+      <StatusBar barStyle="light-content" />
       <View style={feedStyles.content}>
         {/* Only the top bar is pinned. Everything else rides in
             ListHeaderComponent so it scrolls away and posts get the whole
             screen — as siblings they permanently ate ~half the viewport and
             the feed was stuck in a stub window. */}
-        <FeedTopBar unread={unread} />
+        <FeedTopBar unread={unread} roundCount={posts.length} />
+
+        {ranking.explainRanking && posts.length > 0 ? (
+          <ProvenanceLine
+            testID="feed-provenance"
+            text={
+              ranking.rankingOff
+                ? t("feed.provenance.recentOnly")
+                : t("feed.provenance.proximityFirst", { city: profile?.location ?? "" })
+            }
+            trailing={t("feed.round.label")}
+          />
+        ) : null}
 
         <FlatList
           data={posts}
@@ -213,6 +231,15 @@ export default function FeedScreen(): JSX.Element {
               <View style={feedStyles.footerLoading}>
                 <PostCardSkeleton />
               </View>
+            ) : !hasMore && posts.length > 0 ? (
+              // The anti-infinite-scroll promise, made visible: the round is
+              // counted at the top and CLOSED here.
+              <Surface variant="tinted" padding="6" style={feedStyles.roundEnd}>
+                <Text style={feedStyles.roundEndTitle}>{t("feed.end.title")}</Text>
+                <Text style={feedStyles.roundEndBody}>
+                  {t("feed.end.body", { count: posts.length })}
+                </Text>
+              </Surface>
             ) : null
           }
         />

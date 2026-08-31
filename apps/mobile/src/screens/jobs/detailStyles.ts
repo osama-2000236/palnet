@@ -67,6 +67,10 @@ export function makeStyles(c: NativeTheme["color"]) {
       gap: nativeTokens.space[2],
       marginTop: nativeTokens.space[1],
     },
+    scrollBody: {
+      padding: nativeTokens.space[4],
+      gap: nativeTokens.space[3],
+    },
     logoBox: {
       width: nativeTokens.space[8] + nativeTokens.space[6],
       height: nativeTokens.space[8] + nativeTokens.space[6],
