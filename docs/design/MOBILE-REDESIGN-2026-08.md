@@ -221,6 +221,47 @@ closed rail is now _guaranteed_ a sentence rather than getting one by
 coincidence — with `application-rail.test.tsx` verified by breaking the logic on
 purpose and watching it fail.
 
+## Emulator sweep (post-merge, branch `claude/mobile-vision-sweep-0d68b0`)
+
+Every screen the redesign touched, run on a Pixel 7 Pro in both themes. Five
+more bugs, none of which any gate caught — the suite, type-check, lint and every
+repo check were green through all of them.
+
+| Found                                                                                                            | Fix                                                       |
+| ---------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
+| `bar.fillWeak` at 1.56:1 vs its track (2.60 dark) — under WCAG 1.4.11, so exactly the LOW scores were unreadable | re-lit to brand-500 / brand-400                           |
+| the cover gradient silently re-pointed at `--bar-fill-weak` once that token shared brand-500's hex               | generator takes first-writer-wins, plus a gate test       |
+| `pathname.includes("/me")` classified `/me/edit` and `/me/karama` as paper, putting dark icons on olive          | exact matching, list derived from the route files by test |
+| the status bar had two writers; the root's element re-applied on every render and kept winning                   | one owner, in the root layout                             |
+| a ratio, a delta and a counter all reordered under RTL bidi                                                      | `ltrIsolate`, and the rule written into `RTL.md`          |
+
+**Method notes worth keeping.** Navigate by deep link (`baydar://me/karama`), not
+by tapping coordinates: the RTL/LTR direction flips between app restarts and
+taps land on the wrong tab. Seed the feed through the API before judging any
+ranked surface — an empty feed hides the provenance line and the round
+end-state, both of which are gated on `posts.length > 0`.
+
+**Verified working:** the olive band edge-to-edge under the status bar on every
+converted screen; the counted round and its real end-state; the provenance strip
+full-bleed on `surface.band` in both themes; the completion and Karama bars in
+their bands; `StepRail` on a real application (Sent current in accent, labels
+pinned to the rail ends, badge kept above as the label); the ranking settings,
+whose "no infinite scroll" hint is now true rather than decorative.
+
+**Measured, not eyeballed:** StepRail's meaningful boundaries clear 1.4.11 —
+fill-vs-track 5.68:1, current-node-vs-surface 3.73:1 — and the rendered pixels
+match the tokens exactly. The unfilled track sits at 1.31:1 against the page,
+which is by design: 1.4.11 governs the fill/track boundary, not the remainder.
+
+**Not swept:** the message thread (artboard `1e`), the employer screens, and
+`StepRail` in the light theme.
+
+**A caveat on the contrast fix.** Both live `ScoreBar` call sites pass `onBand`,
+and `onBand` short-circuits to `barOnBandFill` regardless of tone — so
+`bar.fill` and `bar.fillWeak` have no live consumer today. That fix is correct
+by measurement, not by screenshot; the surfaces that would exercise it are the
+API-blocked decomposed-fit screens above.
+
 ## Gates
 
 Green at the time of writing: `check:tokens`, `check-ui-lockstep`,
