@@ -89,11 +89,25 @@ const decls = (pairs) => pairs.map(([name, value]) => `  ${name}: ${value};`).jo
 
 // Hex → var(), so the one decorative gradient references the brand ramp rather
 // than freezing a copy of it.
-const brandVarByHex = new Map(
-  colorPairs(color)
-    .filter(([, value]) => isHex(value))
-    .map(([name, value]) => [value.toLowerCase(), `var(${name})`]),
-);
+//
+// FIRST writer wins, not last. Semantic groups alias ramp values by design —
+// `bar.fill` IS brand-600, `bar.fillWeak` IS brand-500 — so a plain Map built
+// in iteration order resolved the cover gradient's #687a3a to `--bar-fill-weak`
+// the moment those two lined up. The gradient is a BRAND statement
+// (DESIGN.md §13); it must not end up pointing at a progress-bar token.
+//
+// FIRST writer wins, not last. Semantic groups alias ramp values by design —
+// `bar.fill` IS brand-600, `bar.fillWeak` IS brand-500 — so a plain Map built
+// in iteration order resolved the cover gradient's #687a3a to `--bar-fill-weak`
+// the moment those two lined up. The gradient is a BRAND statement
+// (DESIGN.md §13); it must not end up pointing at a progress-bar token.
+const brandVarByHex = new Map();
+for (const [name, value] of colorPairs(color)) {
+  if (!isHex(value)) continue;
+  const key = value.toLowerCase();
+  if (!brandVarByHex.has(key)) brandVarByHex.set(key, `var(${name})`);
+}
+
 const varifyHex = (css) =>
   css.replace(/#[0-9a-f]{6}/gi, (hex) => brandVarByHex.get(hex.toLowerCase()) ?? hex);
 

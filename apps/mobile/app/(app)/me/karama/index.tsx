@@ -7,6 +7,7 @@ import {
   PaymentMethod,
   PlanCode,
   formatNumber,
+  ltrIsolate,
   type BillingMe as BillingMeDto,
   type KaramaBalance as KaramaBalanceDto,
 } from "@baydar/shared";
@@ -177,8 +178,11 @@ export default function KaramaScreen(): JSX.Element {
                 <Text
                   style={[styles.ledgerDelta, entry.delta < 0 ? styles.negative : styles.positive]}
                 >
-                  {entry.delta > 0 ? "+" : ""}
-                  {entry.delta}
+                  {/* One isolated string, not sign + number as two children:
+                      RTL rendered "+50" as "50+". */}
+                  {ltrIsolate(
+                    `${entry.delta > 0 ? "+" : ""}${formatNumber(entry.delta, i18n.language)}`,
+                  )}
                 </Text>
               </View>
             ))

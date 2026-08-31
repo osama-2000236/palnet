@@ -37,7 +37,7 @@
   --band-hairline: rgba(255, 255, 255, 0.3);
   --bar-track: #e0dcce;
   --bar-fill: #526030;
-  --bar-fill-weak: #a9b878;
+  --bar-fill-weak: #687a3a;
   --bar-on-band-track: rgba(244, 246, 239, 0.22);
   --bar-on-band-fill: #e6ebd6;
   --rule-hairline: rgba(26, 26, 23, 0.08);
@@ -153,7 +153,7 @@
   --band-on-muted-rgb: 230 235 214;
   --bar-track-rgb: 224 220 206;
   --bar-fill-rgb: 82 96 48;
-  --bar-fill-weak-rgb: 169 184 120;
+  --bar-fill-weak-rgb: 104 122 58;
   --bar-on-band-fill-rgb: 230 235 214;
   --success-rgb: 59 122 59;
   --warning-rgb: 126 87 19;
@@ -250,7 +250,7 @@
   --band-hairline: rgba(255, 255, 255, 0.16);
   --bar-track: #3a352d;
   --bar-fill: #a9b878;
-  --bar-fill-weak: #6b7a45;
+  --bar-fill-weak: #879953;
   --bar-on-band-track: rgba(244, 246, 239, 0.18);
   --bar-on-band-fill: #ccd6a8;
   --rule-hairline: rgba(244, 246, 239, 0.1);
@@ -304,7 +304,7 @@
   --band-on-muted-rgb: 204 214 168;
   --bar-track-rgb: 58 53 45;
   --bar-fill-rgb: 169 184 120;
-  --bar-fill-weak-rgb: 107 122 69;
+  --bar-fill-weak-rgb: 135 153 83;
   --bar-on-band-fill-rgb: 204 214 168;
   --success-rgb: 111 174 95;
   --warning-rgb: 192 150 73;

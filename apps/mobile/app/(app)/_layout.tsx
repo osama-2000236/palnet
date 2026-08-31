@@ -8,7 +8,7 @@ import { nativeTokens, useThemeTokens } from "@baydar/ui-native";
 import { Tabs, router, usePathname } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { BackHandler, StatusBar } from "react-native";
+import { BackHandler } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { z } from "zod";
 
@@ -107,15 +107,6 @@ export default function AppTabsLayout(): JSX.Element {
       return true;
     });
     return () => subscription.remove();
-  }, [pathname]);
-
-  // Status bar: the band screens are olive and need light icons, the band-less
-  // ones (profile, onboarding) are paper and need dark. Driven imperatively
-  // from the FOCUSED route because expo-router Tabs keeps every screen mounted
-  // — a declarative <StatusBar> per screen resolves by mount order instead.
-  useEffect(() => {
-    const bandless = pathname.includes("/me") || pathname.includes("/onboarding");
-    StatusBar.setBarStyle(bandless ? "dark-content" : "light-content", true);
   }, [pathname]);
 
   const unsubscribeRef = useRef<(() => void) | undefined>(undefined);
