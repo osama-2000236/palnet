@@ -183,6 +183,15 @@ export default function AppTabsLayout(): JSX.Element {
         headerShown: false,
         tabBarActiveTintColor: tk.color.brand700,
         tabBarInactiveTintColor: tk.color.inkMuted,
+        // Else React Navigation paints its default iOS red (#ff3b30) in our
+        // chrome. Unread badges are terracotta — tokens.color.accent says so.
+        tabBarBadgeStyle: {
+          backgroundColor: tk.color.accent600,
+          color: tk.color.inkInverse,
+          fontFamily: nativeTokens.type.family.sans,
+          fontSize: nativeTokens.type.scale.micro.size,
+          fontWeight: "700",
+        },
         tabBarStyle: {
           height: nativeTokens.chrome.tabHeight + Math.max(insets.bottom, nativeTokens.space[2]),
           paddingTop: nativeTokens.space[2],
