@@ -285,3 +285,13 @@ export function formatSalaryRange(
   if (hasMax) return formatCurrency(max, currency, locale);
   return null;
 }
+
+/**
+ * Wrap a figure in a Unicode LTR isolate so bidi cannot reorder it: an RTL
+ * paragraph otherwise renders "+50" as "50+" and "3 / 5" as "5 / 3". Android
+ * ignores `writingDirection`, so the direction must travel with the string.
+ * ui-native keeps a private copy (it may not import this package).
+ */
+export function ltrIsolate(text: string): string {
+  return `${String.fromCharCode(0x2066)}${text}${String.fromCharCode(0x2069)}`;
+}

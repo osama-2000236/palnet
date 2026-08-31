@@ -65,7 +65,12 @@ export const tokens = {
     bar: {
       track: "#e0dcce",
       fill: "#526030", // = brand.600
-      fillWeak: "#a9b878", // sub-50% values (= brand.300)
+      // Sub-50% values. Was brand.300 #a9b878, which measured 1.56:1 against
+      // `track` — under WCAG 1.4.11's 3:1 for a graphic that carries meaning,
+      // so exactly the LOW scores rendered as a bar you could not read. Now
+      // brand.500: 3.45:1 on the track, 4.74 on surface. Still olive, still not
+      // `danger` — a 41% fit is a fact about a job, not an error.
+      fillWeak: "#687a3a", // sub-50% values (= brand.500)
       onBandTrack: "rgba(244, 246, 239, 0.22)",
       onBandFill: "#e6ebd6", // = brand.100
     },
@@ -304,7 +309,9 @@ export const tokens = {
       bar: {
         track: "#3a352d",
         fill: "#a9b878",
-        fillWeak: "#6b7a45",
+        // Was #6b7a45 — 2.60:1 on the dark track, same 1.4.11 miss as light.
+        // brand.400 is 3.89:1 and still reads dimmer than `fill`.
+        fillWeak: "#879953",
         onBandTrack: "rgba(244, 246, 239, 0.18)",
         onBandFill: "#ccd6a8",
       },

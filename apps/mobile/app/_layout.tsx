@@ -6,10 +6,9 @@ import {
 import { NotoNaskhArabic_400Regular } from "@expo-google-fonts/noto-naskh-arabic";
 import NetInfo from "@react-native-community/netinfo";
 import { useFonts } from "expo-font";
-import { router, Stack, SplashScreen } from "expo-router";
-import { StatusBar } from "expo-status-bar";
+import { router, Stack, SplashScreen, usePathname } from "expo-router";
 import { useEffect } from "react";
-import { Appearance, I18nManager, Linking } from "react-native";
+import { Appearance, I18nManager, Linking, StatusBar } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { ThemeProvider, ToastProvider } from "@baydar/ui-native";
@@ -23,6 +22,7 @@ import { routeFromUrl } from "@/lib/linking";
 import { initObservability, wrapApp } from "@/lib/observability";
 import { installNotificationHandlers } from "@/lib/push";
 import { QueryProvider } from "@/lib/query-provider";
+import { barStyleFor } from "@/lib/status-bar-routes";
 import { useNetworkStore } from "@/store/network";
 import { useThemeStore } from "@/store/theme";
 
@@ -57,6 +57,17 @@ function RootLayout(): JSX.Element | null {
   const scheme = useThemeStore((state) => state.scheme);
   const hydrateTheme = useThemeStore((state) => state.hydrate);
   const syncSystemTheme = useThemeStore((state) => state.syncSystem);
+  const pathname = usePathname();
+
+  // THE status-bar owner. There is exactly one, deliberately: this used to be an
+  // `expo-status-bar` element here plus a per-route effect in the (app) layout,
+  // and the element re-applied on every root render — including the re-render
+  // navigation triggers — so it kept winning and painted dark icons onto the
+  // olive band. The root is also the only layout that sees (auth), which is
+  // paper. Policy lives in src/lib/status-bar-routes.ts.
+  useEffect(() => {
+    StatusBar.setBarStyle(barStyleFor(pathname), true);
+  }, [pathname]);
 
   // Load the persisted theme choice once, then keep "system" in step with the OS.
   useEffect(() => {
@@ -121,7 +132,6 @@ function RootLayout(): JSX.Element | null {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <ThemeProvider scheme={scheme}>
         <SafeAreaProvider>
-          <StatusBar style={scheme === "dark" ? "light" : "dark"} />
           <QueryProvider>
             <ToastProvider dismissLabel={t("toast.dismiss.aria")}>
               <ErrorBoundary>

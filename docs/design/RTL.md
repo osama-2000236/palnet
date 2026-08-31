@@ -76,6 +76,36 @@ For anything typeset with a lot of numbers (stats, timestamps, phone, code):
 - Use `font-variant-numeric: tabular-nums` (`.mono` class).
 - Wrap in `dir="ltr"` or `unicode-bidi: isolate`.
 
+### Two numbers around a separator: isolate the whole figure
+
+A ratio, a signed delta, or a counter is **two numerals with a bidi-neutral
+between them**, and the neutral is what breaks. On an RTL screen the paragraph
+direction reorders the pair:
+
+| Written     | Rendered in RTL | Where it shipped               |
+| ----------- | --------------- | ------------------------------ |
+| `3 / 5`     | `5 / 3`         | ScoreBar's completion ratio    |
+| `+50`       | `50+`           | the Karama ledger delta        |
+| `0 / 3,000` | `3,000 / 0`     | the composer character counter |
+
+All three reached a device before anyone noticed, and none of them failed a
+test — they are correct strings, reordered at paint time.
+
+**On web** `dir="ltr"` on the element is enough. **On native it is not**:
+`writingDirection: "ltr"` is honoured on iOS and ignored by Android's text
+engine, so the direction has to travel _inside_ the string. Use
+`ltrIsolate()` from `@baydar/shared` (ui-native keeps a private copy in
+`ScoreBar`, because shared UI may not import that package):
+
+```ts
+import { ltrIsolate } from "@baydar/shared";
+
+const counter = ltrIsolate(t("composer.charCount", { current, max }));
+```
+
+It wraps the figure in U+2066 … U+2069, which are invisible. Reach for it any
+time a string puts two numbers on either side of `/`, `:`, `×`, `-`, or a sign.
+
 ## Mixed-language strings
 
 When a string contains both Arabic and Latin (code, product names, URLs):
