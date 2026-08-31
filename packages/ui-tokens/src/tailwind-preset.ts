@@ -60,6 +60,27 @@ const preset: TailwindPreset = {
           muted: v("surface-muted"),
           subtle: v("surface-subtle"),
           sunken: v("surface-sunken"),
+          band: v("surface-band"),
+        },
+        // The olive app band. `on`/`onMuted` are its foregrounds.
+        band: {
+          DEFAULT: v("band"),
+          on: v("band-on"),
+          "on-muted": v("band-on-muted"),
+          hairline: "var(--band-hairline)",
+        },
+        // The one numeric device (ScoreBar / StepRail). Never red.
+        bar: {
+          track: v("bar-track"),
+          fill: v("bar-fill"),
+          "fill-weak": v("bar-fill-weak"),
+          "on-band-track": "var(--bar-on-band-track)",
+          "on-band-fill": v("bar-on-band-fill"),
+        },
+        // Section rules — two weights, no third. Translucent, like `line`.
+        rule: {
+          hairline: "var(--rule-hairline)",
+          strong: "var(--rule-strong)",
         },
         // line is translucent (rgba) — no alpha modifier needed; plain var
         // still re-themes in dark.
