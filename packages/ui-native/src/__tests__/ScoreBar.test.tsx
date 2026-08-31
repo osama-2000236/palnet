@@ -4,13 +4,17 @@ import { StyleSheet } from "react-native";
 import { ScoreBar } from "../ScoreBar";
 import { nativeTokens } from "../tokens";
 
+/** Mirrors ScoreBar's bidi isolate so the expectations stay readable. */
+const ltr = (text: string): string =>
+  `${String.fromCharCode(0x2066)}${text}${String.fromCharCode(0x2069)}`;
+
 const flat = (testID: string): Record<string, unknown> =>
   StyleSheet.flatten(screen.getByTestId(testID).props.style) as Record<string, unknown>;
 
 test("clamps value outside 0–1", () => {
   const { rerender } = render(<ScoreBar testID="bar" value={1.8} />);
   expect(flat("bar-fill").width).toBe("100%");
-  expect(screen.getByText("100%")).toBeTruthy();
+  expect(screen.getByText(ltr("100%"))).toBeTruthy();
 
   rerender(<ScoreBar testID="bar" value={-3} />);
   expect(flat("bar-fill").width).toBe("0%");
@@ -29,15 +33,26 @@ test("a low value is never red", () => {
   expect(flat("bar-fill").backgroundColor).not.toBe(nativeTokens.color.danger);
 });
 
+test("the figure carries an LTR isolate — bidi must not turn 3 / 5 into 5 / 3", () => {
+  // Caught on a real RTL device, not by a style assertion: `writingDirection`
+  // is honoured on iOS and ignored by Android's text engine, so the direction
+  // has to be IN the string. U+2066 … U+2069.
+  render(<ScoreBar testID="bar" value={0.6} display="ratio" max={5} />);
+  expect(screen.getByText(ltr("3 / 5"))).toBeTruthy();
+
+  const style = StyleSheet.flatten(screen.getByText(ltr("3 / 5")).props.style);
+  expect(style.writingDirection).toBe("ltr");
+});
+
 test("display=ratio renders value over max in mono", () => {
   render(<ScoreBar testID="bar" value={0.6} display="ratio" max={500} />);
-  const figure = screen.getByText("300 / 500");
+  const figure = screen.getByText(ltr("300 / 500"));
   expect(StyleSheet.flatten(figure.props.style).fontFamily).toBe(nativeTokens.type.family.mono);
 });
 
 test("formatNumber localises the figure", () => {
   render(<ScoreBar testID="bar" value={0.89} formatNumber={() => "٨٩"} />);
-  expect(screen.getByText("٨٩%")).toBeTruthy();
+  expect(screen.getByText(ltr("٨٩%"))).toBeTruthy();
 });
 
 test("segments fill widths sum to the total and render one progressbar", () => {
@@ -77,7 +92,7 @@ test("size=lg uses barHeightLarge", () => {
 
 test("accessibilityValue.now matches the rendered percent", () => {
   render(<ScoreBar testID="bar" value={0.894} label="ملاءمة" />);
-  expect(screen.getByText("89%")).toBeTruthy();
+  expect(screen.getByText(ltr("89%"))).toBeTruthy();
   const bar = screen.getByRole("progressbar");
   expect(bar.props.accessibilityValue).toEqual({ min: 0, max: 100, now: 89 });
   expect(bar.props.accessibilityLabel).toBe("ملاءمة 89%");

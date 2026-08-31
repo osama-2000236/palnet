@@ -4,9 +4,15 @@
 //
 // Separated from the paper below by COLOUR, never elevation: no shadow here,
 // deliberately. See handoff/components/AppBand.md.
+//
+// The band does NOT set the status bar. It looked like the right owner, but
+// expo-router Tabs keeps every screen mounted, so a declarative <StatusBar>
+// here resolves by mount order and leaked light icons onto the band-less
+// profile tab. apps/mobile/app/(app)/_layout.tsx drives it from the focused
+// route instead — the only place that knows which screen the user is on.
 
 import type { ReactNode } from "react";
-import { StatusBar, StyleSheet, Text, View, type StyleProp, type ViewStyle } from "react-native";
+import { StyleSheet, Text, View, type StyleProp, type ViewStyle } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AppHeader } from "./AppHeader";
@@ -78,9 +84,6 @@ export function AppBand({
         style,
       ]}
     >
-      {/* The band owns this: it is the only reason the icons must go light, and
-          19 screens each setting it was 19 writers of one global. */}
-      <StatusBar barStyle="light-content" />
       <AppHeader
         tone="band"
         title={title}

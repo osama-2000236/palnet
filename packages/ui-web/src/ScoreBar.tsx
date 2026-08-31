@@ -98,7 +98,10 @@ export function ScoreBar({
     <div className={cx("flex flex-col gap-1", className)} style={style} data-testid={testId}>
       <div className="flex items-center gap-2.5">
         {figure ? (
+          // dir="ltr": the figure is a number, and bidi would otherwise reorder
+          // "3 / 5" to "5 / 3" on an RTL page. Twin of the native fix.
           <span
+            dir="ltr"
             className={cx(
               "font-mono text-sm font-semibold",
               onBand ? "text-band-on" : "text-brand-700",

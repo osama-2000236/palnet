@@ -47,6 +47,19 @@ export interface ScoreBarProps {
 
 const clamp = (n: number): number => (n < 0 ? 0 : n > 1 ? 1 : Number.isFinite(n) ? n : 0);
 
+/**
+ * Wrap a figure in a Unicode LTR isolate (U+2066 … U+2069).
+ *
+ * A ratio is two numerals around a neutral slash, so on an RTL screen bidi
+ * renders "3 / 5" as "5 / 3" — caught on a real device, not by any unit test.
+ * `writingDirection: "ltr"` fixes it on iOS and Android ignores it, so the
+ * direction has to travel with the string itself. The isolate characters are
+ * invisible and do not affect the accessibility label built separately below.
+ */
+const LRI = String.fromCharCode(0x2066); // LEFT-TO-RIGHT ISOLATE
+const PDI = String.fromCharCode(0x2069); // POP DIRECTIONAL ISOLATE
+const ltr = (text: string): string => `${LRI}${text}${PDI}`;
+
 export function ScoreBar({
   value,
   display = "percent",
@@ -89,9 +102,9 @@ export function ScoreBar({
     size === "lg" ? nativeTokens.control.barHeightLarge : nativeTokens.control.barHeight;
 
   let figure: string | null = null;
-  if (display === "percent") figure = `${formatNumber(percent)}%`;
+  if (display === "percent") figure = ltr(`${formatNumber(percent)}%`);
   else if (display === "ratio" || display === "value") {
-    figure = `${formatNumber(Math.round(total * (max ?? 1)))} / ${formatNumber(max ?? 0)}`;
+    figure = ltr(`${formatNumber(Math.round(total * (max ?? 1)))} / ${formatNumber(max ?? 0)}`);
   }
 
   const srLabel =
@@ -187,7 +200,13 @@ const styles = StyleSheet.create({
     fontSize: nativeTokens.type.scale.small.size,
     lineHeight: nativeTokens.type.scale.small.line,
     fontWeight: "600",
-    textAlign: "auto",
+    // The figure is a NUMBER, so it is laid out LTR even in an RTL screen.
+    // Without this, bidi reorders "3 / 5" to "5 / 3" — the slash is a neutral
+    // between two numerals — and a percent sign lands on the wrong side. Same
+    // fix, same reason, as RecordCard's `metaLtr`.
+    // eslint-disable-next-line no-restricted-syntax -- paired with writingDirection ltr: a numeral really is LTR content.
+    textAlign: "left",
+    writingDirection: "ltr",
   },
   track: {
     flex: 1,
