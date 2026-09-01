@@ -95,7 +95,10 @@ export function MessageBubble({
 
       <div
         className={cx(
-          "whitespace-pre-wrap break-words rounded-[14px] border px-3.5 py-2.5 text-sm leading-[1.6]",
+          // `bidi-plaintext`: a thread mixes languages message by message, and a
+          // sentence's trailing full stop is a neutral — in the opposite-direction
+          // page it paints at the wrong end of the bubble.
+          "bidi-plaintext whitespace-pre-wrap break-words rounded-[14px] border px-3.5 py-2.5 text-sm leading-[1.6]",
           deleted
             ? "border-line-soft bg-surface-subtle text-ink-muted italic"
             : mine

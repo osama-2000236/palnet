@@ -133,7 +133,7 @@ export default function CompanyPage(): JSX.Element {
           {company.about ? (
             <Surface as="section" variant="flat" padding="6" className="flex flex-col gap-2">
               <h2 className="text-ink text-lg font-semibold">{t("about")}</h2>
-              <p className="text-ink whitespace-pre-wrap text-sm">{company.about}</p>
+              <p className="bidi-plaintext text-ink whitespace-pre-wrap text-sm">{company.about}</p>
             </Surface>
           ) : null}
 

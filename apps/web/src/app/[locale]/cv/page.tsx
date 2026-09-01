@@ -95,7 +95,7 @@ export default function CvPage(): JSX.Element {
 
       {profile.about ? (
         <CvSection title={t("about")}>
-          <p className="whitespace-pre-wrap text-sm leading-6">{profile.about}</p>
+          <p className="bidi-plaintext whitespace-pre-wrap text-sm leading-6">{profile.about}</p>
         </CvSection>
       ) : null}
 
@@ -114,7 +114,9 @@ export default function CvPage(): JSX.Element {
                 </div>
                 {exp.location ? <p className="text-ink-muted text-xs">{exp.location}</p> : null}
                 {exp.description ? (
-                  <p className="mt-1 whitespace-pre-wrap text-sm leading-6">{exp.description}</p>
+                  <p className="bidi-plaintext mt-1 whitespace-pre-wrap text-sm leading-6">
+                    {exp.description}
+                  </p>
                 ) : null}
               </li>
             ))}
