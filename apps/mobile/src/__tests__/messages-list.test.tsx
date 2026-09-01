@@ -91,4 +91,33 @@ describe("MessagesListScreen", () => {
     expect(mockReplace).not.toHaveBeenCalled();
     screen.unmount();
   });
+
+  it("counts message requests in Arabic-Indic digits, through the tab's own count", async () => {
+    // The count used to be interpolated into the label as `(${requestCount})`,
+    // which skipped both the kit's count pill and the digit formatter and put a
+    // Latin "1" in an Arabic-Indic UI.
+    mockApiFetchPage.mockResolvedValue({
+      data: [
+        {
+          id: "room-1",
+          isRequest: true,
+          isGroup: false,
+          unreadCount: 0,
+          members: [],
+          lastMessage: null,
+          updatedAt: new Date("2026-08-01T00:00:00.000Z").toISOString(),
+        },
+      ],
+      meta: { nextCursor: null, hasMore: false },
+    });
+
+    const screen = render(<MessagesListScreen />);
+
+    await waitFor(() => {
+      expect(screen.getByText("١")).toBeTruthy();
+    });
+    expect(screen.queryByText("(1)")).toBeNull();
+    expect(screen.queryByText("messaging.tabRequests (1)")).toBeNull();
+    screen.unmount();
+  });
 });

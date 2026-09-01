@@ -507,13 +507,18 @@
     "myConnections": "علاقاتي",
     "invitations": "الدعوات",
     "sent": "المُرسلة",
-    "empty": "لا يوجد شيء هنا بعد.",
     "connect": "تواصل",
     "withdraw": "سحب الطلب",
     "accept": "قبول",
     "decline": "رفض",
     "removeConnection": "إزالة",
-    "error": "تعذّر إرسال الطلب."
+    "error": "تعذّر إرسال الطلب.",
+    "emptyConnectionsTitle": "ابدأ ببناء شبكتك",
+    "emptyConnectionsBody": "سيظهر الأشخاص الذين تتواصل معهم هنا.",
+    "emptyIncomingTitle": "لا توجد دعوات الآن",
+    "emptyIncomingBody": "عندما يرغب شخص بالتواصل معك، سيظهر طلبه هنا.",
+    "emptyOutgoingTitle": "لا توجد دعوات مُرسلة",
+    "emptyOutgoingBody": "ستظهر طلبات التواصل التي ترسلها هنا حتى يتم الرد عليها."
   },
   "messaging": {
     "title": "الرسائل",

@@ -249,7 +249,11 @@ export default function NetworkScreen(): JSX.Element {
                 onAction={() => void load(filter)}
               />
             ) : (
-              <EmptyState motif="network" title={t("network.empty")} />
+              <EmptyState
+                motif="network"
+                title={t(`network.${EMPTY_COPY[filter].title}`)}
+                body={t(`network.${EMPTY_COPY[filter].body}`)}
+              />
             )
           }
           renderItem={({ item }) => (
@@ -267,3 +271,12 @@ export default function NetworkScreen(): JSX.Element {
     </SafeAreaView>
   );
 }
+
+// One "nothing here yet" for three different situations is three wrong
+// answers. Web has told them apart since the tab strip was built; this is the
+// mobile twin of its EMPTY_STATE_COPY.
+const EMPTY_COPY = {
+  ACCEPTED: { title: "emptyConnectionsTitle", body: "emptyConnectionsBody" },
+  INCOMING: { title: "emptyIncomingTitle", body: "emptyIncomingBody" },
+  OUTGOING: { title: "emptyOutgoingTitle", body: "emptyOutgoingBody" },
+} as const satisfies Record<NetworkFilter, { title: string; body: string }>;
