@@ -150,6 +150,32 @@ isolate does fix Latin digits. The app's digits are Arabic-Indic, and every rati
 in the product was still painting backwards a day later. Measuring in the actual
 locale is the check; "the fix is in the file" is not.
 
+## Iteration 11 — the English pass, and a plural rule nobody had written
+
+The `ar-PS` matrix was clean after iteration 10, so this pass ran the `en`
+locale at 1440px — the viewport and language the loop had never photographed
+together. One product bug, one harness bug, two false alarms.
+
+| #     | Finding                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               | Status                                                                                                                                                                                                                                                                             |
+| ----- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| P1-27 | **Count strings had no plural rule on either platform.** A post with one comment said **"1 comments"**; the same shape covers 13 messages per platform — unread counts, members, applicants, results, round size, active jobs. Arabic had it worse, because a bare numeral is only correct there for 1 and 100+: the catalogs said `٢ تعليق` where Arabic takes the dual `تعليقان`, and `٣ تعليق` where it takes `٣ تعليقات`. Three web strings already carried full six-category ICU plurals, so the pattern existed and 13 messages had simply never been given it. | **fixed** (#177) — ICU on web, i18next category keys on mobile, and `check-i18n-parity.mjs` folds the suffixes so a correctly pluralised pair no longer reads as six mobile-only keys plus one web-only key. Two `activity.tasks.*` entries left the divergence ledger as a result |
+| P1-28 | **The mobile harness could not photograph a dark screen.** `e2e/shots.mjs` read theme luminance from the first _painted_ frame, which is the Android splash — a fixed light window in both themes. Three dark runs were skipped with `theme did not apply — mean luminance 249` while the device settled into dark (measured 43) two seconds later, each time after the appearance flow had actually worked.                                                                                                                                                          | **fixed** (#177) — wait for React Native to mount before reading, the same gate the per-screen capture already uses. The dark matrix then ran clean: `theme verified (luminance 43)`, 36 screens                                                                                   |
+
+**Checked and not filed, both of them expensive-looking:**
+
+- **Five routes rendered a 404 in the `en` matrix, and three had in the `ar`
+  dark one.** They were all _nested_ routes (`/employer/[slug]`,
+  `/settings/appearance`, `/legal/tos`), while every one-segment route answered
+  200 — a `next dev` route manifest left stale by two branch switches, not a
+  product failure. Restarting the dev server restored all of them. Whole cells
+  of two matrices are invalid because of it; re-shoot after any branch change.
+- **An `/en/…` 404 appeared to render the Arabic root not-found.** The HTML
+  payload really does contain `راحت الصفحة` — it is the unauthenticated SSR
+  shell. With a session, `/en/in/does-not-exist` renders the localized page:
+  "We couldn't find this page", `lang="en"`, `dir="ltr"`, app chrome intact.
+  The root 404 being Arabic is a deliberate BRAND.md decision, written into the
+  file.
+
 ## Checked and _not_ filed
 
 Recording these so the next pass does not re-litigate them:
