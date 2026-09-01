@@ -104,14 +104,14 @@ export default function CompanyPage(): JSX.Element {
                 )}
               </div>
               <div className="flex min-w-0 flex-col gap-1">
-                <h1 className="text-ink flex items-center gap-2 text-2xl font-bold">
+                <h1 className="bidi-plaintext text-ink flex items-center gap-2 text-2xl font-bold">
                   {company.name}
                   {company.verified ? (
                     <span className="text-brand-700 text-xs font-semibold">{t("verified")}</span>
                   ) : null}
                 </h1>
                 {company.tagline ? (
-                  <p className="text-ink-muted text-sm">{company.tagline}</p>
+                  <p className="bidi-plaintext text-ink-muted text-sm">{company.tagline}</p>
                 ) : null}
                 <p className="text-ink-muted text-xs">
                   {[company.industry, location].filter(Boolean).join(" · ")}
