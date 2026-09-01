@@ -252,7 +252,12 @@
     }
   },
   "nav": {
-    "unreadNotifications": "{{count}} إشعارات غير مقروءة",
+    "unreadNotifications_zero": "لا إشعارات غير مقروءة",
+    "unreadNotifications_one": "إشعار واحد غير مقروء",
+    "unreadNotifications_two": "إشعاران غير مقروءين",
+    "unreadNotifications_few": "{{count}} إشعارات غير مقروءة",
+    "unreadNotifications_many": "{{count}} إشعارًا غير مقروء",
+    "unreadNotifications_other": "{{count}} إشعار غير مقروء",
     "compose": "إضافة",
     "profile": "ملفي"
   },
@@ -274,14 +279,24 @@
     "noResults": "لا يوجد شيء في خلاصتك بعد",
     "round": {
       "label": "جولة اليوم",
-      "count": "{{count}} منشورًا"
+      "count_zero": "لا منشورات",
+      "count_one": "منشور واحد",
+      "count_two": "منشوران",
+      "count_few": "{{count}} منشورات",
+      "count_many": "{{count}} منشورًا",
+      "count_other": "{{count}} منشور"
     },
     "provenance": {
       "newestFromNetwork": "الأحدث أولًا، منك ومن اتصالاتك"
     },
     "end": {
       "title": "وصلت إلى نهاية الجديد",
-      "body": "{{count}} منشورًا في جولة اليوم. نعود بجولة جديدة غدًا."
+      "body_zero": "لا منشورات في جولة اليوم. نعود بجولة جديدة غدًا.",
+      "body_one": "منشور واحد في جولة اليوم. نعود بجولة جديدة غدًا.",
+      "body_two": "منشوران في جولة اليوم. نعود بجولة جديدة غدًا.",
+      "body_few": "{{count}} منشورات في جولة اليوم. نعود بجولة جديدة غدًا.",
+      "body_many": "{{count}} منشورًا في جولة اليوم. نعود بجولة جديدة غدًا.",
+      "body_other": "{{count}} منشور في جولة اليوم. نعود بجولة جديدة غدًا."
     }
   },
   "composer": {
@@ -388,9 +403,19 @@
     "loadMore": "تحميل المزيد",
     "loadingMore": "جارٍ التحميل…",
     "verified": "موثّقة",
-    "activeJobsCount": "{{count}} وظائف شاغرة",
+    "activeJobsCount_zero": "لا وظائف شاغرة",
+    "activeJobsCount_one": "وظيفة شاغرة واحدة",
+    "activeJobsCount_two": "وظيفتان شاغرتان",
+    "activeJobsCount_few": "{{count}} وظائف شاغرة",
+    "activeJobsCount_many": "{{count}} وظيفة شاغرة",
+    "activeJobsCount_other": "{{count}} وظيفة شاغرة",
     "provenance": "النتائج مرتّبة حسب الأحدث تحديثًا",
-    "resultCount": "{{count}} نتيجة"
+    "resultCount_zero": "لا نتائج",
+    "resultCount_one": "نتيجة واحدة",
+    "resultCount_two": "نتيجتان",
+    "resultCount_few": "{{count}} نتائج",
+    "resultCount_many": "{{count}} نتيجة",
+    "resultCount_other": "{{count}} نتيجة"
   },
   "profile": {
     "openToWork": "متاح للعمل",
@@ -549,8 +574,18 @@
     "editedSuffix": "تم التعديل",
     "deletedBody": "تم حذف الرسالة",
     "unreadJump": {
-      "banner": "{{count}} رسائل غير مقروءة",
-      "accessibility": "انتقل إلى {{count}} رسائل غير مقروءة"
+      "banner_zero": "لا رسائل غير مقروءة",
+      "banner_one": "رسالة واحدة غير مقروءة",
+      "banner_two": "رسالتان غير مقروءتين",
+      "banner_few": "{{count}} رسائل غير مقروءة",
+      "banner_many": "{{count}} رسالة غير مقروءة",
+      "banner_other": "{{count}} رسالة غير مقروءة",
+      "accessibility_zero": "انتقل إلى الرسائل غير المقروءة",
+      "accessibility_one": "انتقل إلى رسالة واحدة غير مقروءة",
+      "accessibility_two": "انتقل إلى رسالتين غير مقروءتين",
+      "accessibility_few": "انتقل إلى {{count}} رسائل غير مقروءة",
+      "accessibility_many": "انتقل إلى {{count}} رسالة غير مقروءة",
+      "accessibility_other": "انتقل إلى {{count}} رسالة غير مقروءة"
     },
     "newGroup": {
       "title": "مجموعة جديدة",
@@ -562,7 +597,12 @@
       "select": "اختيار",
       "selected": "مختار",
       "submit": "إنشاء المجموعة",
-      "memberCount": "{{count}} أعضاء",
+      "memberCount_zero": "لا أعضاء",
+      "memberCount_one": "عضو واحد",
+      "memberCount_two": "عضوان",
+      "memberCount_few": "{{count}} أعضاء",
+      "memberCount_many": "{{count}} عضوًا",
+      "memberCount_other": "{{count}} عضو",
       "loading": "جارٍ تحميل الاتصالات…",
       "empty": "لا توجد اتصالات مطابقة.",
       "validation": "اختر عضوين على الأقل واكتب اسم المجموعة.",
@@ -628,12 +668,22 @@
         "cta": "تعديل الملف"
       },
       "network": {
-        "title": "{{count}} طلبات تواصل",
+        "title_zero": "لا طلبات اتصال",
+        "title_one": "طلب اتصال واحد",
+        "title_two": "طلبا اتصال",
+        "title_few": "{{count}} طلبات اتصال",
+        "title_many": "{{count}} طلب اتصال",
+        "title_other": "{{count}} طلب اتصال",
         "body": "راجع الأشخاص الذين يريدون التواصل معك.",
         "cta": "مراجعة"
       },
       "notifications": {
-        "title": "{{count}} إشعارات غير مقروءة",
+        "title_zero": "لا إشعارات غير مقروءة",
+        "title_one": "إشعار واحد غير مقروء",
+        "title_two": "إشعاران غير مقروءين",
+        "title_few": "{{count}} إشعارات غير مقروءة",
+        "title_many": "{{count}} إشعارًا غير مقروء",
+        "title_other": "{{count}} إشعار غير مقروء",
         "body": "تابع الردود، الإشارات، وتحديثات الملف.",
         "cta": "فتح"
       },
@@ -909,7 +959,12 @@
     },
     "roundSize": {
       "label": "حجم جولة اليوم",
-      "value": "{{count}} منشورًا",
+      "value_zero": "لا منشورات",
+      "value_one": "منشور واحد",
+      "value_two": "منشوران",
+      "value_few": "{{count}} منشورات",
+      "value_many": "{{count}} منشورًا",
+      "value_other": "{{count}} منشور",
       "hint": "الجولة تنتهي عند هذا العدد. لا تمرير لا نهائي."
     }
   },
@@ -978,7 +1033,12 @@
     "jobsEmpty": "لا توجد وظائف نشطة بعد.",
     "applicantsTitle": "المتقدمون",
     "applicantsEmpty": "لا يوجد متقدمون بعد.",
-    "applicantCount": "{{count}} متقدم",
+    "applicantCount_zero": "لا متقدمين",
+    "applicantCount_one": "متقدم واحد",
+    "applicantCount_two": "متقدمان",
+    "applicantCount_few": "{{count}} متقدمين",
+    "applicantCount_many": "{{count}} متقدمًا",
+    "applicantCount_other": "{{count}} متقدم",
     "reject": {
       "title": "سبب الرفض",
       "body": "سيظهر السبب للمتقدّم.",
@@ -1110,7 +1170,12 @@
       "USER_PREMIUM": "بيدر المميّز"
     },
     "features": {
-      "activeJobs": "{{count}} وظائف فعّالة",
+      "activeJobs_zero": "لا وظائف فعّالة",
+      "activeJobs_one": "وظيفة فعّالة واحدة",
+      "activeJobs_two": "وظيفتان فعّالتان",
+      "activeJobs_few": "{{count}} وظائف فعّالة",
+      "activeJobs_many": "{{count}} وظيفة فعّالة",
+      "activeJobs_other": "{{count}} وظيفة فعّالة",
       "applicantInbox": "صندوق المتقدمين",
       "basicAnalytics": "تحليلات أساسية",
       "advancedAnalytics": "تحليلات متقدمة",

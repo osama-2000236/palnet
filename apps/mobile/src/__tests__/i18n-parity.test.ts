@@ -13,6 +13,17 @@ function flattenKeys(node: unknown, prefix = ""): string[] {
   );
 }
 
+/**
+ * i18next spells a plural as one key per category, and the categories differ by
+ * language: Arabic takes all six, English two. Comparing the raw key sets would
+ * therefore report 54 keys "missing in en" for a correctly pluralised catalog,
+ * and the consumed-key check would report every `t("feed.round.count")` as
+ * undefined because only `…count_one`, `…count_other` and friends exist.
+ * Fold the suffix and compare the message, not the spelling.
+ */
+const PLURAL_SUFFIX = /_(zero|one|two|few|many|other)$/;
+const foldPlurals = (keys: string[]): string[] => keys.map((key) => key.replace(PLURAL_SUFFIX, ""));
+
 const ROOTS = [join(__dirname, ".."), join(__dirname, "..", "..", "app")];
 
 function sourceFiles(dir: string): string[] {
@@ -33,8 +44,8 @@ function consumedKeys(file: string): string[] {
 
 describe("mobile i18n catalogs", () => {
   it("ar and en expose the exact same key set", () => {
-    const arKeys = new Set(flattenKeys(ar));
-    const enKeys = new Set(flattenKeys(en));
+    const arKeys = new Set(foldPlurals(flattenKeys(ar)));
+    const enKeys = new Set(foldPlurals(flattenKeys(en)));
     const missingInAr = [...enKeys].filter((key) => !arKeys.has(key));
     const missingInEn = [...arKeys].filter((key) => !enKeys.has(key));
     expect({ missingInAr, missingInEn }).toEqual({ missingInAr: [], missingInEn: [] });
@@ -44,7 +55,7 @@ describe("mobile i18n catalogs", () => {
   // from BOTH stays invisible to it — which is exactly how the web app shipped
   // messaging.connectionLost absent everywhere. Check what the code asks for.
   it("every key the code asks for exists in the catalog", () => {
-    const defined = new Set(flattenKeys(ar));
+    const defined = new Set(foldPlurals(flattenKeys(ar)));
     const missing = [
       ...new Set(ROOTS.flatMap((root) => sourceFiles(root)).flatMap((f) => consumedKeys(f))),
     ]

@@ -282,6 +282,31 @@ function appMounted() {
   return [...xml.matchAll(/resource-id="([^"]+)"/g)].some(([, id]) => id && !APP_CHROME.test(id));
 }
 
+/**
+ * The luminance of a MOUNTED frame, not of whatever is painted first.
+ *
+ * `warmUp` only proves the screen is not blank, and the Android splash is a
+ * fixed light window in both themes — so a dark cell failed with
+ * "theme did not apply — mean luminance 249" while the device settled into
+ * dark (measured 43) two seconds later. Three dark runs were skipped that way,
+ * each after the appearance flow had actually worked. Wait for React Native to
+ * put something of its own on screen, exactly as the per-screen capture gate
+ * does, and read the frame then.
+ *
+ * Returns the last reading either way, so a theme that genuinely never applies
+ * still fails with the number it saw.
+ */
+async function settledLuminance(timeoutMs = BOOT_WAIT_MS) {
+  const until = Date.now() + timeoutMs;
+  let luma = meanLuminance(grabFrame());
+  while (Date.now() < until) {
+    if (appMounted()) return meanLuminance(grabFrame());
+    await sleep(1000);
+    luma = meanLuminance(grabFrame());
+  }
+  return luma;
+}
+
 // ── Device console capture ─────────────────────────────────────────────────
 // The web harness writes `_console__*.json` per cell, and that capture is how
 // the two missing `messaging.*` keys were found — a raw key path renders
@@ -525,7 +550,7 @@ async function main() {
 
       // Prove the cell is the theme it is about to be labelled with, before
       // spending ~15 minutes photographing it. See meanLuminance.
-      const luma = meanLuminance(grabFrame());
+      const luma = await settledLuminance();
       const looksDark = luma < THEME_LUMA_SPLIT;
       if (looksDark !== (theme === "dark")) {
         failures.push({

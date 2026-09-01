@@ -55,8 +55,8 @@
     "jobs": "Jobs",
     "myProfile": "Me",
     "settings": "Settings",
-    "unreadMessages": "{count} unread messages",
-    "unreadNotifications": "{count} unread notifications"
+    "unreadMessages": "{count, plural, one {# unread message} other {# unread messages}}",
+    "unreadNotifications": "{count, plural, one {# unread notification} other {# unread notifications}}"
   },
   "chrome": {
     "bell": {
@@ -268,8 +268,8 @@
     "reposted": "Reposted",
     "save": "Save",
     "saved": "Saved",
-    "commentsCount": "{count, number} comments",
-    "repostsCount": "{count, number} reposts",
+    "commentsCount": "{count, plural, one {# comment} other {# comments}}",
+    "repostsCount": "{count, plural, one {# repost} other {# reposts}}",
     "publicAudience": "Public post",
     "moreOptions": "Options",
     "commentPlaceholder": "Add a comment…",
@@ -354,7 +354,7 @@
     "loadMore": "Load more",
     "loadingMore": "Loading…",
     "verified": "Verified",
-    "activeJobsCount": "{count, number} open jobs"
+    "activeJobsCount": "{count, plural, one {# open job} other {# open jobs}}"
   },
   "profile": {
     "title": "Profile",
@@ -500,8 +500,8 @@
     "editedSuffix": "Edited",
     "deletedBody": "Message deleted",
     "unreadJump": {
-      "banner": "{count, number} unread messages",
-      "accessibility": "Jump to {count} unread messages"
+      "banner": "{count, plural, one {# unread message} other {# unread messages}}",
+      "accessibility": "Jump to {count, plural, one {# unread message} other {# unread messages}}"
     },
     "newGroup": {
       "title": "New group",
@@ -513,7 +513,7 @@
       "select": "Select",
       "selected": "Selected",
       "submit": "Create group",
-      "memberCount": "{count, number} members",
+      "memberCount": "{count, plural, one {# member} other {# members}}",
       "loading": "Loading connections…",
       "empty": "No matching connections.",
       "validation": "Choose at least two members and enter a group name.",
@@ -584,12 +584,12 @@
         "cta": "Edit profile"
       },
       "network": {
-        "title": "{count, number} connection requests",
+        "title": "{count, plural, one {# connection request} other {# connection requests}}",
         "body": "Review people who want to connect with you.",
         "cta": "Review"
       },
       "notifications": {
-        "title": "{count, number} unread notifications",
+        "title": "{count, plural, one {# unread notification} other {# unread notifications}}",
         "body": "Catch up on replies, mentions, and profile updates.",
         "cta": "Open"
       },
@@ -1192,7 +1192,7 @@
       "USER_PREMIUM": "Baydar Premium"
     },
     "features": {
-      "activeJobs": "{count, number} active jobs",
+      "activeJobs": "{count, plural, one {# active job} other {# active jobs}}",
       "applicantInbox": "Applicant inbox",
       "basicAnalytics": "Basic analytics",
       "advancedAnalytics": "Advanced analytics",
