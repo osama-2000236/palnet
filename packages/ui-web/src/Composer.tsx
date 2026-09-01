@@ -245,8 +245,10 @@ export function Composer({
         ) : null}
         <div className="flex-1" />
         {uploading ? <span className="text-ink-muted text-xs">{labels.uploading}</span> : null}
+        {/* No spaces around the slash: with Arabic-Indic digits they flip the
+            counter to "3,000 / 0" whatever `dir` says. See ScoreBar. */}
         <span dir="ltr" className="text-ink-muted text-xs tabular-nums">
-          {body.length} / {maxLength}
+          {body.length}/{maxLength}
         </span>
         <button
           type="button"

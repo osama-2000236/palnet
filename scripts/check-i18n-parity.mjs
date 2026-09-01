@@ -128,7 +128,7 @@ const PLATFORM_ONLY_NAMESPACES = {
 // all four components shipped in the same commit; the web SCREENS that consume
 // these strings are the next step, and drop this line back to 99.
 // See docs/design/MOBILE-REDESIGN-2026-08.md §web.
-const MAX_PLATFORM_ONLY_KEYS = { web: 153, mobile: 112 };
+const MAX_PLATFORM_ONLY_KEYS = { web: 151, mobile: 112 };
 
 /**
  * Namespaces whose keys are reached through a template literal or a translator

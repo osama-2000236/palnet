@@ -1,3 +1,4 @@
+import { ltrIsolate } from "@baydar/shared";
 import { Checkbox, Surface, nativeTokens, useThemeTokens } from "@baydar/ui-native";
 import { Controller, type Control, type FieldErrors } from "react-hook-form";
 import { useTranslation } from "react-i18next";
@@ -81,7 +82,7 @@ export function ProfileStep({
         autoCapitalize="none"
         control={control}
         error={errors.handle?.message}
-        hint={t("onboarding.handleHint", { handle: "your-handle" })}
+        hint={t("onboarding.handleHint", { path: ltrIsolate("/in/your-handle") })}
         inputMode="text"
         label={t("onboarding.handle")}
         name="handle"

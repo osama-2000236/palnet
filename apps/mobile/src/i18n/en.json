@@ -150,7 +150,7 @@
     "back": "Back",
     "offline": "You're offline. You can review fields, but final saving needs a connection.",
     "handle": "Your handle",
-    "handleHint": "Appears as /in/{{handle}}",
+    "handleHint": "Appears as {{path}}",
     "headline": "Headline",
     "headlineHint": "Example: Digital product developer in Ramallah",
     "about": "Short about",
@@ -291,7 +291,7 @@
     "addImage": "Add image",
     "uploading": "Uploading…",
     "removeImage": "Remove image",
-    "charCount": "{{current}} / {{max}}"
+    "charCount": "{{current}}/{{max}}"
   },
   "post": {
     "reactions": {
@@ -655,6 +655,8 @@
     "location": "Location",
     "apply": "Apply",
     "appliedBadge": "Applied",
+    "from": "From",
+    "upTo": "Up to",
     "belowMinimumBadge": "Below minimum",
     "rejectedTitle": "You were not selected for this role",
     "belowMinimumSr": "The advertised pay is below the Palestinian minimum wage",

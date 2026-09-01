@@ -1,5 +1,12 @@
-import { jobSource, jobSourceInitial, type Job } from "@baydar/shared";
 import {
+  belowMinimumWage,
+  formatSalaryRange,
+  jobSource,
+  jobSourceInitial,
+  type Job,
+} from "@baydar/shared";
+import {
+  Badge,
   Icon,
   RecordCard,
   nativeTokens,
@@ -23,11 +30,26 @@ export const JobRow = memo(function JobRow({
 }): JSX.Element {
   const c = useThemeTokens().color;
   const styles = useStyles();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  // Pay rides the meta line, the way web's row carries it. Leaving it off was
+  // not a layout call: mobile showed no wage anywhere, list or detail, on a
+  // jobs board whose readers choose on exactly this number.
+  const range = formatSalaryRange(
+    job.salaryMin,
+    job.salaryMax,
+    job.salaryCurrency ?? "USD",
+    i18n.language,
+  );
+  const salary = range
+    ? job.salaryMin && job.salaryMax
+      ? range
+      : `${t(job.salaryMin ? "jobs.from" : "jobs.upTo")} ${range}`
+    : null;
   const metaParts = [
     job.city,
     t(`jobs.locationLabels.${job.locationMode}`),
     t(`jobs.typeLabels.${job.type}`),
+    salary,
   ].filter(Boolean) as string[];
   const saved = job.viewer.bookmarkId !== null;
   // A job posted by an individual has no company — show the person instead.
@@ -38,7 +60,7 @@ export const JobRow = memo(function JobRow({
       variant="row"
       title={job.title}
       subtitle={source.name}
-      meta={metaParts.join(" . ")}
+      meta={metaParts.join(" · ")}
       onPress={() => router.push({ pathname: "/(app)/jobs/[id]", params: { id: job.id } })}
       accessibilityLabel={`${job.title} - ${source.name}`}
       testID={`job-row-${job.id}`}
@@ -80,6 +102,14 @@ export const JobRow = memo(function JobRow({
             <View style={styles.appliedBadge}>
               <Text style={styles.appliedText}>{t("jobs.appliedBadge")}</Text>
             </View>
+          ) : null}
+          {/* Statutory floor, Council of Ministers Resolution No. 4 of 2021 —
+              shown to the employer writing the job since #140 and to nobody
+              reading one. Web has carried it on every candidate surface. */}
+          {belowMinimumWage(job) ? (
+            <Badge tone="warning" srLabel={t("jobs.belowMinimumSr")}>
+              {t("jobs.belowMinimumBadge")}
+            </Badge>
           ) : null}
         </View>
       }

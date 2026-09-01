@@ -122,6 +122,34 @@ asserts the error surfaces on a rejected removal for each of the three sections,
 existing `profile.saveFailed` covers add and remove, so the parity ceilings
 (web 153, mobile 99) did not move.
 
+## Iteration 10 — a paint-time sweep across both platforms
+
+Web matrix: 92 shots (33 routes, ar-PS, light + dark, 390px). Mobile: 35 screens
+photographed on a booted `Pixel_7_Pro`. Seven defects, every one of them a
+paint-time fact — none is reachable from a unit test, and each had a green gate
+sitting directly on top of it.
+
+| #     | Finding                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | Status                                                                                                                                                                                                                                                       |
+| ----- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| P1-17 | **Every tab strip erased the opening letters of its own first tab.** `Tabs` and the app-shell nav carried a fixed `mask-image` fading 16px at each edge as the scroll affordance. A mask paints on the scrollport, not on the content, so a strip that is not scrolled fades its own start: on `/network` the tablist measures `scrollWidth === clientWidth === 342` with the active tab flush at `gapFromEdge: 0`, and `علاقاتي` rendered with its `ع` cut in half. Same on `/search`, `/messages`, `/me/connections`, `/moderation`, `/billing` — every strip, both themes. | **fixed** — `useEdgeFade` measures child rects against the scrollport and fades only the side that actually hides content. Guarded by `e2e/strips.spec.ts`, verified failing with the old mask restored                                                      |
+| P1-18 | **`/activity`'s three metric tiles put the label at one edge and its number at the other.** The count carries `dir="ltr"` so a locale-aware figure keeps its digit order — which also makes the figure's own start the LEFT edge, and a stretched flex item then parked "٢" opposite "طلبات اتصال" in the same tile.                                                                                                                                                                                                                                                          | **fixed** — `self-start`, so cross-axis alignment follows the tile's direction. Measured label and count sharing one edge at 358px                                                                                                                           |
+| P1-19 | **The "applied" badge took 39% of a job card on a phone.** `JobListRow`'s trailing block is `shrink-0`, so at 390px the badge and the save button side by side measured 126px of a 324px row and left the job itself 126px: title truncated, meta line broken mid-salary, three skill chips on three separate lines. The native twin has always stacked these (`trailing: { alignItems: "flex-end" }`).                                                                                                                                                                       | **fixed** — a column, button first; measured 170px against 126px, chips on 2 rows instead of 3                                                                                                                                                               |
+| P1-20 | **A one-line ellipsis in Arabic cuts a trailing Latin word in half.** RTL clips at the line's visual LEFT edge, which is the middle of an LTR run: a headline ending in "TypeScript" painted as "… و ipt…" and a job titled "… — NestJS" as "… — tJS…" — noise, not truncation. Web `RecordCard` truncated title and subtitle to one line; the native twin has always given both `numberOfLines={2}`.                                                                                                                                                                         | **fixed** — `line-clamp-2` on both, and on `JobListRow`'s title; the break lands on a word, so the Latin word moves whole or goes. Photographed before and after                                                                                             |
+| P1-21 | **The ratio figure's LTR fix never worked in Arabic.** `ScoreBar`, `OnboardingProgress` and both composer counters wrap the figure in `dir="ltr"` / a U+2066 isolate against exactly this — and Arabic-Indic digits are bidi class AN, which makes the neutrals beside them behave as RTL. Measured in Chromium at ar-PS: with the spaces the figure's first character paints 24px to the RIGHT of its last. The emulator agreed — `٣ / ٥` read `٥ / ٣`, `٦٥ / ٥٬٠٠٠` read `٥٬٠٠٠ / ٦٥`, the composer's `٠ / ٣٬٠٠٠` read `٣٬٠٠٠ / ٠`.                                         | **fixed** — the spaces are the trigger; unspaced, the slash is a common separator inside one number run. Six sites across both platforms, plus the `ltrIsolate` docstring that claimed the cure. Re-photographed on the device: `٣/٥`, `٦٥/٥٬٠٠٠`, `٠/٣٬٠٠٠` |
+| P1-22 | **The profile-URL hint read `in/demo/`.** `"سيظهر كرابط: /in/{handle}"` puts a leading slash — a neutral — against Arabic text, so bidi moved it to the far end, and the one thing the hint exists to show was wrong.                                                                                                                                                                                                                                                                                                                                                         | **fixed** — the path travels as one isolated `{path}` value on both platforms                                                                                                                                                                                |
+| P1-23 | **Mobile showed no pay on any candidate-facing job surface**, list or detail, while web carries it on four. `formatSalaryRange` had zero mobile callers. The statutory minimum-wage warning was in the same state: the mobile catalog has carried `jobs.belowMinimum*` since #140 and only the employer's own job form ever rendered it, so the reader of an underpaid job was told nothing.                                                                                                                                                                                  | **fixed** — pay on the meta line in the list and its own line on detail, the badge on both, `JobPay` extracted so the route file stays under the LOC cap. `jobs.from` / `jobs.upTo` added to the mobile catalogs (web-only keys 153 → 151)                   |
+
+**The theme, again: mobile was the reference for three of the seven** (P1-19,
+P1-20, and half of P1-21) — the sixth, seventh and eighth time this loop has
+found web drifting from a pattern the native twin already followed.
+
+**And one fix that was never verified in the language it was written for.**
+P1-21 is the instructive one: the previous loop found the reordering on a device,
+wrote the isolate, and re-photographed a screen where it appeared to hold. An
+isolate does fix Latin digits. The app's digits are Arabic-Indic, and every ratio
+in the product was still painting backwards a day later. Measuring in the actual
+locale is the check; "the fix is in the file" is not.
+
 ## Checked and _not_ filed
 
 Recording these so the next pass does not re-litigate them:
@@ -156,3 +184,18 @@ Recording these so the next pass does not re-litigate them:
   `escapesCard: false`, its right edge 85px _inside_ the card, no truncation, and
   the page reports no horizontal overflow. The border in the crop belonged to a
   neighbouring element.
+
+- **The Karama bar is not stuck full.** At 65 of 5,000 the ScoreBar reads as a
+  filled olive rail with a nub at the end. Sampled the row in the PNG: the rail
+  is `barOnBandTrack` (118,129,89) and the fill is 8px of (230,235,214) at the
+  start edge — 0.85% of a 941px track, which is what 65/5,000 should draw.
+- **A salary range is not the ratio bug.** `formatSalaryRange` joins with a
+  spaced en-dash and therefore paints in RTL order — measured on `/jobs`: min at
+  x 134–174, dash at 125, max at 83–123. Read right to left that is
+  "4,500 – 5,500", the correct reading order for the sentence it sits in. The
+  ratio differs because it is one compact figure, not a phrase.
+- **Three routes rendered the error boundary in the dark pass only** —
+  `employer-detail`, `employer-new`, `settings-blocked`. The light shots of all
+  three are clean, and the same session photographed `employer-billing` and
+  `employer-applicants` fine, so this is the API under a 92-shot run rather than
+  a theme-dependent failure. Worth a second look if it recurs on a small matrix.

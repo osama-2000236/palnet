@@ -58,7 +58,12 @@ export function ActivityMetrics({ metrics }: { metrics: ActivityMetric[] }): JSX
               <span
                 dir="ltr"
                 className={cx(
-                  "text-2xl font-bold tabular-nums",
+                  // `self-start`, not text alignment: `dir="ltr"` makes the
+                  // figure's own start the LEFT edge, so a stretched flex item
+                  // parked the number opposite its own label in Arabic — label
+                  // at the right, count at the left of the same tile. Cross-axis
+                  // alignment follows the tile's direction instead.
+                  "self-start text-2xl font-bold tabular-nums",
                   // A zero is not news. Keeping it at full weight is what made
                   // the screen open on its least actionable number.
                   metric.count > 0 ? "text-ink" : "text-ink-subtle",

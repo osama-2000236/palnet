@@ -42,7 +42,10 @@ export function JobListRow({
           <SourceLogo job={job} />
           <div className="min-w-0 flex-1">
             <div className="min-w-0">
-              <h2 className="bidi-plaintext text-ink truncate text-base font-semibold">
+              {/* `line-clamp-2`, mirroring RecordCard: a one-line ellipsis in
+                  RTL cuts a trailing Latin run mid-word — "… — NestJS" painted
+                  as "… — tJS…". */}
+              <h2 className="bidi-plaintext text-ink line-clamp-2 text-base font-semibold">
                 {job.title}
               </h2>
               <p className="bidi-plaintext text-ink-muted truncate text-sm">
@@ -89,15 +92,13 @@ export function JobListRow({
             ) : null}
           </div>
         </Link>
-        <div className="flex shrink-0 items-start gap-2">
-          {/* Was a `Chip` with three classes overriding the chip recipe's own
-              border, background and text colour — i.e. a Badge, hand-rolled out
-              of the wrong primitive. */}
-          {job.viewer.hasApplied ? (
-            <Badge tone="success" dot srLabel={t("appliedBadge")}>
-              {t("appliedBadge")}
-            </Badge>
-          ) : null}
+        {/* Column, not a row: `shrink-0` beside a `flex-1` column means every
+            pixel this block takes comes out of the job. Measured at 390px, the
+            applied badge and the save button side by side were 126px of a
+            324px card — the title truncated, the meta line broke mid-salary and
+            each skill chip landed on its own line. The native twin has always
+            stacked these (`trailing: { alignItems: "flex-end" }`). */}
+        <div className="flex shrink-0 flex-col items-end gap-2">
           {onToggleSave ? (
             <button
               type="button"
@@ -113,6 +114,14 @@ export function JobListRow({
             >
               <Icon name="bookmark" size={18} />
             </button>
+          ) : null}
+          {/* Was a `Chip` with three classes overriding the chip recipe's own
+              border, background and text colour — i.e. a Badge, hand-rolled out
+              of the wrong primitive. */}
+          {job.viewer.hasApplied ? (
+            <Badge tone="success" dot srLabel={t("appliedBadge")}>
+              {t("appliedBadge")}
+            </Badge>
           ) : null}
         </div>
       </div>

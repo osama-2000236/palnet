@@ -1,6 +1,6 @@
 "use client";
 
-import { OnboardProfileBody, Profile } from "@baydar/shared";
+import { OnboardProfileBody, Profile, ltrIsolate } from "@baydar/shared";
 import { Alert, Button, Input, OnboardingProgress, Surface } from "@baydar/ui-web";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
@@ -157,8 +157,11 @@ export default function OnboardingPage(): JSX.Element {
             maxLength={30}
             fullWidth
           />
+          {/* The path travels as one LTR-isolated value, not as literal text in
+              the Arabic sentence: a leading "/" is a neutral, so bidi moved it
+              to the far end and the hint read "in/demo/". */}
           <span className="text-ink-muted text-xs">
-            {t("handleHint", { handle: state.handle || "your-handle" })}
+            {t("handleHint", { path: ltrIsolate(`/in/${state.handle || "your-handle"}`) })}
           </span>
         </label>
 

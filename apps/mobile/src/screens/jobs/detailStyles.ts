@@ -30,6 +30,12 @@ export function makeStyles(c: NativeTheme["color"]) {
       fontSize: nativeTokens.type.scale.small.size,
       fontFamily: nativeTokens.type.family.sans,
     },
+    salary: {
+      color: c.ink,
+      fontSize: nativeTokens.type.scale.small.size,
+      fontWeight: "600" as const,
+      fontFamily: nativeTokens.type.family.sans,
+    },
     fieldLabel: {
       color: c.ink,
       fontFamily: nativeTokens.type.family.sans,

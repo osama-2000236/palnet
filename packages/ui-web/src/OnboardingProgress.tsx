@@ -40,7 +40,9 @@ function defaultFormat(locale: "ar" | "en"): (n: number) => string {
 }
 
 function fraction(current: number, total: number, format: (n: number) => string): string {
-  return `${format(current)} / ${format(total)}`;
+  // No spaces: with Arabic-Indic digits they flip the figure to "5 / 3".
+  // The reason is written out in ScoreBar.
+  return `${format(current)}/${format(total)}`;
 }
 
 export function OnboardingProgress({

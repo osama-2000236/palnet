@@ -202,7 +202,7 @@
     "title": "Complete your profile",
     "subtitle": "This helps others find you.",
     "handle": "Your handle",
-    "handleHint": "Appears as /in/{handle}",
+    "handleHint": "Appears as {path}",
     "firstName": "First name",
     "lastName": "Last name",
     "headline": "Headline",
