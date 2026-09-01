@@ -14,6 +14,7 @@ import { useCallback, useEffect, useState } from "react";
 import { apiCall, apiFetchPage, getValidAccessToken } from "@/lib/api";
 import { useDismissNotification } from "@/lib/api/notifications";
 import { openStream } from "@/lib/sse";
+import { useOnline } from "@/lib/useOnline";
 import {
   NotificationsErrorState,
   NotificationsList,
@@ -36,6 +37,7 @@ export default function NotificationsPageRoute(): JSX.Element {
   const [firstLoad, setFirstLoad] = useState(true);
   const [loadError, setLoadError] = useState(false);
   const [sseLive, setSseLive] = useState(false);
+  const online = useOnline();
 
   // Session bootstrap — getValidAccessToken (not readSession): on a hard
   // reload the persisted session has no access token until the refresh runs.
@@ -155,7 +157,12 @@ export default function NotificationsPageRoute(): JSX.Element {
     <main className="mx-auto flex w-full max-w-[720px] flex-col gap-4 px-6 py-8">
       <header className="flex items-center justify-between gap-3">
         <h1 className="text-ink text-2xl font-bold">{t("title")}</h1>
-        {sseLive ? (
+        {/* An SSE connection does not notice a dead interface immediately —
+            measured 2.5s after the network dropped and the stream still had not
+            errored — so the page announced "live" directly under the banner
+            saying the reader is offline. The browser's own signal is the
+            faster and more honest one. */}
+        {sseLive && online === "online" ? (
           <span className="bg-success/10 text-success inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs">
             <span className="bg-success h-1.5 w-1.5 rounded-full" />
             {t("live")}

@@ -1,7 +1,7 @@
 "use client";
 
 import { CompanySummary } from "@baydar/shared";
-import { Alert, EmptyState, Surface } from "@baydar/ui-web";
+import { Alert, EmptyState, RecordCardSkeleton, Surface } from "@baydar/ui-web";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -72,8 +72,14 @@ export default function EmployerHomePage(): JSX.Element {
         <Alert kind="danger" body={error} cta={tCommon("retry")} onAction={() => void load()} />
       ) : null}
 
+      {/* A skeleton, not a "loading…" line: every list in the product draws the
+          shape it is about to fill, and this screen's whole content is the
+          list. Same split #158 and #166 made elsewhere. */}
       {companies === null && !error ? (
-        <p className="text-ink-muted text-sm">{tCommon("loading")}</p>
+        <div aria-busy="true" className="flex flex-col gap-3">
+          <RecordCardSkeleton variant="card" />
+          <RecordCardSkeleton variant="card" />
+        </div>
       ) : null}
 
       {companies && companies.length === 0 ? (

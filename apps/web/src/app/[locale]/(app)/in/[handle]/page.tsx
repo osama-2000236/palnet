@@ -7,6 +7,7 @@ import {
   Button,
   ProfileHeader,
   ReportDialog,
+  Skeleton,
   Surface,
   useToast,
   type BlockButtonLabels,
@@ -74,10 +75,19 @@ export default function ProfileRoute(): JSX.Element {
   }
 
   if (loading) {
+    // Was a literal "…" as the whole page — the same thing `/me/edit` used to
+    // render before #158, on the route every profile link in the product lands
+    // on. `aria-busy` as well as the skeletons: the screenshot harness waits on
+    // it, and a reader on a screen reader gets told this is still arriving.
     return (
-      <main className="mx-auto max-w-[840px] px-6 py-10">
+      <main
+        aria-busy="true"
+        className="mx-auto flex w-full max-w-[840px] flex-col gap-4 px-6 py-10"
+      >
         <h1 className="text-ink sr-only">{t("title")}</h1>
-        <p className="text-ink-muted">…</p>
+        <Skeleton className="h-40 w-full" />
+        <Skeleton className="h-10 w-56" />
+        <Skeleton className="h-32 w-full" />
       </main>
     );
   }
