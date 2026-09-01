@@ -45,7 +45,7 @@ export function JobListRow({
               {/* `line-clamp-2`, mirroring RecordCard: a one-line ellipsis in
                   RTL cuts a trailing Latin run mid-word — "… — NestJS" painted
                   as "… — tJS…". */}
-              <h2 className="bidi-plaintext text-ink line-clamp-2 text-base font-semibold">
+              <h2 className="bidi-plaintext text-ink line-clamp-2 break-words text-base font-semibold">
                 {job.title}
               </h2>
               <p className="bidi-plaintext text-ink-muted truncate text-sm">
