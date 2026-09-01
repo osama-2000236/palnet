@@ -45,16 +45,11 @@ const EnvSchema = z.object({
   HYPERPAY_BASE_URL: z.string().url().optional(),
   BANK_TRANSFER_IBAN: z.string().optional(),
   BANK_TRANSFER_BENEFICIARY: z.string().optional(),
-  // Local-wallet providers (Palestinian market). All optional — wallet
-  // checkout stays in "Coming soon" mode until a merchant_id + api_key pair
-  // is set for at least one provider. Webhook-secret / base-url vars land
-  // with each provider's real client when merchant onboarding completes.
-  JAWWALPAY_MERCHANT_ID: z.string().optional(),
-  JAWWALPAY_API_KEY: z.string().optional(),
-  PALPAY_MERCHANT_ID: z.string().optional(),
-  PALPAY_API_KEY: z.string().optional(),
-  REFLECT_MERCHANT_ID: z.string().optional(),
-  REFLECT_API_KEY: z.string().optional(),
+  // Local-wallet providers (Palestinian market) take no env yet. Wallet
+  // checkout stays in "Coming soon" mode until a provider has a real client
+  // class, which is a code fact — see `billing/wallets.ts`. Each provider's
+  // merchant-id / api-key / webhook-secret / base-url vars land with that
+  // client, so there is nothing to set here in the meantime.
   // Observability.
   SENTRY_DSN: z.string().url().optional(),
   SENTRY_RELEASE: z.string().min(7).optional(),

@@ -107,5 +107,3 @@ export type {
   BlockedListItemLabels,
   BlockedListItemProps,
 } from "./safety";
-export { AppShell } from "./AppShell";
-export type { AppShellProps, AppShellRoute, AppShellLabels } from "./AppShell";

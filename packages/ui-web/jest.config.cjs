@@ -12,4 +12,22 @@ module.exports = {
   // made discovery silently find zero tests. Relative pattern + no
   // passWithNoTests = discovery failure fails loud instead.
   testMatch: ["**/src/__tests__/**/*.test.js"],
+  // Resolve @baydar/ui-tokens to its BUILD OUTPUT, not its TypeScript source.
+  //
+  // The package's export map offers `dist` under the `node` condition and
+  // `src/*.ts` under `default`. Jest's jsdom environment asks for `browser`,
+  // matches neither, and falls through to `default` — handing raw TypeScript
+  // to a project with no babel config, which dies on the first `as const`.
+  //
+  // It never surfaced before because no source file these tests reach imported
+  // ui-tokens; the suites that do go through `../../dist`, where node resolved
+  // the import at runtime. `Icon.tsx` importing shared glyph geometry made a
+  // source-side test the first to cross the package boundary.
+  //
+  // turbo's `test` task dependsOn `^build`, so dist is present by the time
+  // this runs.
+  moduleNameMapper: {
+    "^@baydar/ui-tokens/glyphs$": "<rootDir>/../ui-tokens/dist/glyphs.js",
+    "^@baydar/ui-tokens$": "<rootDir>/../ui-tokens/dist/index.js",
+  },
 };

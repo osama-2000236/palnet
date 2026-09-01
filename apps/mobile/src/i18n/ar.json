@@ -277,7 +277,7 @@
       "count": "{{count}} منشورًا"
     },
     "provenance": {
-      "proximityFirst": "مرتّبة بالقرب من {{city}} أولًا، ثم بالفائدة"
+      "newestFromNetwork": "الأحدث أولًا، منك ومن اتصالاتك"
     },
     "end": {
       "title": "وصلت إلى نهاية الجديد",
@@ -389,7 +389,7 @@
     "loadingMore": "جارٍ التحميل…",
     "verified": "موثّقة",
     "activeJobsCount": "{{count}} وظائف شاغرة",
-    "provenance": "النتائج مرتّبة بالقرب من {{city}} أولًا، ثم بالملاءمة",
+    "provenance": "النتائج مرتّبة حسب الأحدث تحديثًا",
     "resultCount": "{{count}} نتيجة"
   },
   "profile": {

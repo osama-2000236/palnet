@@ -16,6 +16,12 @@
       "node": "./dist/tokens.native.js",
       "default": "./src/tokens.native.ts"
     },
+    "./glyphs": {
+      "types": "./src/glyphs.ts",
+      "react-native": "./src/glyphs.ts",
+      "node": "./dist/glyphs.js",
+      "default": "./src/glyphs.ts"
+    },
     "./tokens.css": "./src/tokens.css",
     "./tailwind-preset": {
       "types": "./dist/tailwind-preset.d.ts",
@@ -26,6 +32,9 @@
     "*": {
       "native": [
         "src/tokens.native.ts"
+      ],
+      "glyphs": [
+        "src/glyphs.ts"
       ],
       "tailwind-preset": [
         "dist/tailwind-preset.d.ts"

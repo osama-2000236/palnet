@@ -171,9 +171,6 @@ importers:
       '@baydar/ui-native':
         specifier: workspace:*
         version: link:../../packages/ui-native
-      '@baydar/ui-tokens':
-        specifier: workspace:*
-        version: link:../../packages/ui-tokens
       '@expo-google-fonts/ibm-plex-sans-arabic':
         specifier: ^0.2.3
         version: 0.2.3

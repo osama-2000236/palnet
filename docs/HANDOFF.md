@@ -228,6 +228,43 @@ Not removable despite having zero imports: `react-native-reanimated`, `react-nat
 `expo-linking`, `@react-navigation/native`. All are declared peers of `expo-router` or
 `@react-navigation/bottom-tabs`.
 
+## Ponytail audit 8 — what was cut, and what was refused
+
+Cut: the native `AppShell` (expo-router `<Tabs>` had replaced it; only its own test imported
+it), the six local-wallet env vars behind `WalletRegistry.availability()`, `apps/mobile`'s unused
+`@baydar/ui-tokens` dependency, and `readRankingPrefs`. Reaction geometry and `GEAR_TEETH` moved
+to `@baydar/ui-tokens/glyphs`, which both ui twins import — verified byte-identical to what they
+replaced, so no glyph moved a pixel.
+
+**Refused, with reasons — do not re-file these as dead code:**
+
+- **The ratings module and the company-members API are gaps #3 and #4 above**, not dead code.
+  Both are "complete backend, zero UI" by decision; #3 additionally blocks on the anti-gaming
+  product call, and phase 3's rank engine is specified to build on the existing `UserRating`
+  primitives. An audit that only greps for client callers will keep finding them. It is wrong.
+- **`proximityScore` / `governorateOfCity` / `regionOfGovernorate` have no caller on purpose.**
+  `NEXT-SESSION-PROMPT.md` §B12 phase 4 says to cite the `ponytail:` comment in `palestine.ts`
+  when closing it. The audit's real finding was the other half: the mobile UI was already
+  _claiming_ proximity ranking. That copy is fixed; the helpers stay.
+- **The occupation taxonomy is phase-1 groundwork** (440 lines, one reached function). Its
+  vocabulary is gated by `check:naming` and its keys are append-only until the trade
+  conversation. Reachability is not the test here.
+- **The nine engine-less models stay** for the same reason, already recorded above.
+- **`POST /media/confirm` is not a duplicate to delete.** It is the virus-scan step both
+  upload paths skip — `uploads.ts` presigns, PUTs, and returns without ever calling it. Deleting
+  the endpoint would make the miss permanent. It is a correctness gap, and it needs a fix, not a
+  cut. Its handler also shares the `@RateLimit("media")` bucket that `media.controller.spec.ts`
+  exists to prove.
+- **ui-web's `AppBand` / `ProvenanceLine` / `ScoreBar` / `StepRail` stay.** Unreachable from any
+  web entry point — the 2026-08 redesign landed them on both platforms and only mobile mounts
+  them. Deleting working, tested, spec'd twins to satisfy a reachability scan trades a lockstep
+  law for a number. Mount them or leave them; do not cut them.
+
+Open from this audit: the `Icon` twins still hand-copy ~1,200 characters of path data and have
+**already drifted** (25 web paths against 27 native). Fixing it means restructuring 27 JSX cases
+per side into shared data — a design-system refactor with visual snapshots behind it, not a
+tail-end edit. `@baydar/ui-tokens/glyphs` is where that data goes when someone does it.
+
 ## Semantic colours: A6 measured them against white only
 
 Audit A6 tuned each light semantic to ~4.5:1 **against its own translucent tint over
