@@ -58,6 +58,10 @@ export function EmptyState({
   const resolvedSize: IllustrationSize = size ?? (inline ? "sm" : "md");
   return (
     <div
+      // A marker, not a style: `e2e/error-states.spec.ts` asserts that a screen
+      // showing a danger alert is not also telling the reader their list is
+      // empty. Nothing else in the DOM identifies this component.
+      data-empty-state=""
       className={cx(
         "flex flex-col",
         align === "center" ? "items-center text-center" : "items-start text-start",

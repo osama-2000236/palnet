@@ -1,7 +1,7 @@
 "use client";
 
 import type { ChatRoom, Message } from "@baydar/shared";
-import { Avatar, Button, EmptyState, ReportDialog, type GroupedMessage } from "@baydar/ui-web";
+import { Avatar, Button, EmptyState, ReportDialog, cx, type GroupedMessage } from "@baydar/ui-web";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import type { MutableRefObject } from "react";
@@ -15,6 +15,10 @@ import { RoomComposer } from "./RoomComposer";
 import { useReportLabels } from "@/lib/report-labels";
 
 export interface RoomViewProps {
+  /** Whether the inbox holds any room at all, filters aside. */
+  hasRooms: boolean;
+  /** The room list failed to load — the inbox pane owns that message. */
+  roomsFailed: boolean;
   activeRoomId: string | null;
   activeRoom: ChatRoom | null;
   actionMessage: Message | null;
@@ -94,6 +98,8 @@ export function RoomView({
   onSetReportMessage,
   onSubmit,
   onTyping,
+  hasRooms,
+  roomsFailed,
 }: RoomViewProps): JSX.Element {
   const t = useTranslations("messaging");
   const tSafety = useTranslations("safety");
@@ -101,8 +107,20 @@ export function RoomView({
   const reportLabels = useReportLabels();
 
   if (!activeRoomId) {
+    // "Pick a conversation to start reading" is an instruction, and with an
+    // empty inbox there is nothing to pick. At 390px the two panes stack, so
+    // the screen said "no conversations yet" and then asked the reader to
+    // choose one, with two illustrations, one under the other. Above `md` the
+    // panes sit side by side and the right one still needs to hold something,
+    // so the prompt only disappears where it was a second answer to the same
+    // question — and the inbox header already carries the new-message action.
+    // And when the list did not merely come back empty but FAILED, the prompt
+    // is wrong at every width: the inbox pane is already showing the error, so
+    // this pane would be a second, cheerful answer to the same question. Caught
+    // by e2e/error-states.spec.ts on its first run, at desktop width.
+    if (roomsFailed) return <main className="hidden min-h-0 flex-col md:flex" />;
     return (
-      <main className="flex min-h-0 flex-col">
+      <main className={cx("min-h-0 flex-col", hasRooms ? "flex" : "hidden md:flex")}>
         <div className="flex flex-1 items-center justify-center p-8">
           <EmptyState
             motif="messages"

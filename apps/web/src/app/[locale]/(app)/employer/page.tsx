@@ -1,12 +1,12 @@
 "use client";
 
 import { CompanySummary } from "@baydar/shared";
-import { EmptyState, Surface } from "@baydar/ui-web";
+import { Alert, EmptyState, Surface } from "@baydar/ui-web";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { z } from "zod";
 
 import { apiFetch } from "@/lib/api";
@@ -25,23 +25,31 @@ export default function EmployerHomePage(): JSX.Element {
   const [companies, setCompanies] = useState<CompanySummary[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  const tErrRef = useRef(tErr);
   useEffect(() => {
+    tErrRef.current = tErr;
+  }, [tErr]);
+
+  const load = useCallback(async (): Promise<void> => {
     const session = readSession();
     if (!session) {
       router.replace(`/${locale}/login`);
       return;
     }
-    (async () => {
-      try {
-        const list = await apiFetch("/companies/me", CompanyList, {
-          token: session.tokens.accessToken,
-        });
-        setCompanies(list);
-      } catch (e) {
-        setError(toErrorMessage(e, tErr));
-      }
-    })();
-  }, [router, locale, tErr]);
+    setError(null);
+    try {
+      const list = await apiFetch("/companies/me", CompanyList, {
+        token: session.tokens.accessToken,
+      });
+      setCompanies(list);
+    } catch (e) {
+      setError(toErrorMessage(e, tErrRef.current));
+    }
+  }, [router, locale]);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
 
   return (
     <main className="mx-auto w-full max-w-[960px] px-4 py-6">
@@ -58,10 +66,10 @@ export default function EmployerHomePage(): JSX.Element {
         </Link>
       </header>
 
+      {/* Was a bare red sentence in a card: severity with no icon and no way
+          to try again, on a screen whose whole content is the failed request. */}
       {error ? (
-        <Surface variant="card" padding="4">
-          <p className="text-status-danger text-sm">{error}</p>
-        </Surface>
+        <Alert kind="danger" body={error} cta={tCommon("retry")} onAction={() => void load()} />
       ) : null}
 
       {companies === null && !error ? (

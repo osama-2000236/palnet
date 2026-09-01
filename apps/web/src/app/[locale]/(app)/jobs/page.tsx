@@ -218,10 +218,14 @@ function JobsPageInner(): JSX.Element {
         ) : null}
         <div className="mb-4 flex items-center justify-between">
           <h1 className="text-ink text-xl font-semibold">{t("title")}</h1>
+          {/* A failed load is not a result count. With the list erroring, this
+              line still announced "no results" beside an alert saying the jobs
+              could not be loaded — the same two-answers-on-one-screen shape as
+              the room list (#160) and the job page (#163). */}
           <span className="text-ink-muted text-sm" aria-live="polite">
             {items.length > 0
               ? t("countSummary", { count: items.length })
-              : firstLoad
+              : firstLoad || error
                 ? ""
                 : t("noneSummary")}
           </span>
