@@ -252,7 +252,8 @@
     }
   },
   "nav": {
-    "unreadNotifications": "{{count}} unread notifications",
+    "unreadNotifications_one": "{{count}} unread notification",
+    "unreadNotifications_other": "{{count}} unread notifications",
     "compose": "Add",
     "profile": "Profile"
   },
@@ -274,14 +275,16 @@
     "noResults": "Nothing in your feed yet",
     "round": {
       "label": "Today's round",
-      "count": "{{count}} posts"
+      "count_one": "{{count}} post",
+      "count_other": "{{count}} posts"
     },
     "provenance": {
       "newestFromNetwork": "Newest first, from you and your connections"
     },
     "end": {
       "title": "You've reached the end of what's new",
-      "body": "{{count}} posts in today's round. We'll be back with a new one tomorrow."
+      "body_one": "{{count}} post in today's round. We'll be back with a new one tomorrow.",
+      "body_other": "{{count}} posts in today's round. We'll be back with a new one tomorrow."
     }
   },
   "composer": {
@@ -388,9 +391,11 @@
     "loadMore": "Load more",
     "loadingMore": "Loading…",
     "verified": "Verified",
-    "activeJobsCount": "{{count}} open jobs",
+    "activeJobsCount_one": "{{count}} open job",
+    "activeJobsCount_other": "{{count}} open jobs",
     "provenance": "Sorted by most recently updated",
-    "resultCount": "{{count}} results"
+    "resultCount_one": "{{count}} result",
+    "resultCount_other": "{{count}} results"
   },
   "profile": {
     "openToWork": "Open to work",
@@ -549,8 +554,10 @@
     "editedSuffix": "Edited",
     "deletedBody": "Message deleted",
     "unreadJump": {
-      "banner": "{{count}} unread messages",
-      "accessibility": "Jump to {{count}} unread messages"
+      "banner_one": "{{count}} unread message",
+      "banner_other": "{{count}} unread messages",
+      "accessibility_one": "Jump to {{count}} unread message",
+      "accessibility_other": "Jump to {{count}} unread messages"
     },
     "newGroup": {
       "title": "New group",
@@ -562,7 +569,8 @@
       "select": "Select",
       "selected": "Selected",
       "submit": "Create group",
-      "memberCount": "{{count}} members",
+      "memberCount_one": "{{count}} member",
+      "memberCount_other": "{{count}} members",
       "loading": "Loading connections…",
       "empty": "No matching connections.",
       "validation": "Choose at least two members and enter a group name.",
@@ -628,12 +636,14 @@
         "cta": "Edit profile"
       },
       "network": {
-        "title": "{{count}} connection requests",
+        "title_one": "{{count}} connection request",
+        "title_other": "{{count}} connection requests",
         "body": "Review people who want to connect with you.",
         "cta": "Review"
       },
       "notifications": {
-        "title": "{{count}} unread notifications",
+        "title_one": "{{count}} unread notification",
+        "title_other": "{{count}} unread notifications",
         "body": "Catch up on replies, mentions, and profile updates.",
         "cta": "Open"
       },
@@ -909,7 +919,8 @@
     },
     "roundSize": {
       "label": "Today's round size",
-      "value": "{{count}} posts",
+      "value_one": "{{count}} post",
+      "value_other": "{{count}} posts",
       "hint": "The round ends at this count. No infinite scroll."
     }
   },
@@ -978,7 +989,8 @@
     "jobsEmpty": "No active jobs yet.",
     "applicantsTitle": "Applicants",
     "applicantsEmpty": "No applicants yet.",
-    "applicantCount": "{{count}} applicants",
+    "applicantCount_one": "{{count}} applicant",
+    "applicantCount_other": "{{count}} applicants",
     "reject": {
       "title": "Reason for rejection",
       "body": "The applicant will see this reason.",
@@ -1110,7 +1122,8 @@
       "USER_PREMIUM": "Baydar Premium"
     },
     "features": {
-      "activeJobs": "{{count}} active jobs",
+      "activeJobs_one": "{{count}} active job",
+      "activeJobs_other": "{{count}} active jobs",
       "applicantInbox": "Applicant inbox",
       "basicAnalytics": "Basic analytics",
       "advancedAnalytics": "Advanced analytics",

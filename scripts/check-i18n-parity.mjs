@@ -60,9 +60,7 @@ const DIVERGENCES = new Map([
   ["activity.metrics.jobs", "unreconciled"],
   ["activity.tasks.empty", "unreconciled"],
   ["activity.tasks.profile.title", "unreconciled"],
-  ["activity.tasks.network.title", "unreconciled"],
   ["activity.tasks.network.body", "unreconciled"],
-  ["activity.tasks.notifications.title", "unreconciled"],
   ["activity.tasks.notifications.body", "unreconciled"],
   ["activity.tasks.security.body", "unreconciled"],
   ["activity.jobs.title", "unreconciled"],
@@ -219,9 +217,34 @@ const hits = [];
 const web = new Map(flatten(read(WEB_CATALOG)));
 const mobile = new Map(flatten(read(MOBILE_CATALOG)));
 
+/**
+ * The two libraries spell a plural differently: next-intl puts every category
+ * in one ICU string (`{count, plural, one {…} other {…}}`), i18next puts each
+ * in its own key (`x_one`, `x_other`, … `x_many`). Compared literally, a
+ * correctly pluralised pair reads as six mobile keys web does not have plus one
+ * web key mobile does not have — a ratchet moving the wrong way for doing the
+ * right thing.
+ *
+ * Fold the suffixes to the base key, and remember which keys were folded: for
+ * those, the check that means something is that BOTH platforms pluralise, not
+ * that two different notations match character for character.
+ */
+const PLURAL_SUFFIX = /_(zero|one|two|few|many|other)$/;
+const mobilePlural = new Set();
+for (const key of [...mobile.keys()]) {
+  const base = key.replace(PLURAL_SUFFIX, "");
+  if (base === key) continue;
+  mobilePlural.add(base);
+  if (!mobile.has(base)) mobile.set(base, mobile.get(key));
+  mobile.delete(key);
+}
+const isPlural = (value) => /\{\{?\s*count\s*,\s*plural/.test(String(value));
+
 const diverged = [];
 for (const [key, value] of web) {
   if (!mobile.has(key)) continue;
+  // Both sides pluralise this one; the notations cannot be string-compared.
+  if (mobilePlural.has(key) && isPlural(value)) continue;
   if (normalise(value) === normalise(mobile.get(key))) continue;
   diverged.push(key);
   if (!DIVERGENCES.has(key)) {

@@ -55,8 +55,8 @@
     "jobs": "الوظائف",
     "myProfile": "ملفي",
     "settings": "الإعدادات",
-    "unreadMessages": "{count} رسائل غير مقروءة",
-    "unreadNotifications": "{count} إشعارات غير مقروءة"
+    "unreadMessages": "{count, plural, zero {لا رسائل غير مقروءة} one {رسالة واحدة غير مقروءة} two {رسالتان غير مقروءتين} few {# رسائل غير مقروءة} many {# رسالة غير مقروءة} other {# رسالة غير مقروءة}}",
+    "unreadNotifications": "{count, plural, zero {لا إشعارات غير مقروءة} one {إشعار واحد غير مقروء} two {إشعاران غير مقروءين} few {# إشعارات غير مقروءة} many {# إشعارًا غير مقروء} other {# إشعار غير مقروء}}"
   },
   "chrome": {
     "bell": {
@@ -268,8 +268,8 @@
     "reposted": "أعدت النشر",
     "save": "حفظ",
     "saved": "محفوظ",
-    "commentsCount": "{count, number} تعليق",
-    "repostsCount": "{count, number} إعادة نشر",
+    "commentsCount": "{count, plural, zero {لا تعليقات} one {تعليق واحد} two {تعليقان} few {# تعليقات} many {# تعليقًا} other {# تعليق}}",
+    "repostsCount": "{count, plural, zero {لا إعادات نشر} one {إعادة نشر واحدة} two {إعادتا نشر} few {# إعادات نشر} many {# إعادة نشر} other {# إعادة نشر}}",
     "publicAudience": "منشور عام",
     "moreOptions": "خيارات",
     "commentPlaceholder": "أضف تعليقًا…",
@@ -354,7 +354,7 @@
     "loadMore": "تحميل المزيد",
     "loadingMore": "جارٍ التحميل…",
     "verified": "موثّقة",
-    "activeJobsCount": "{count, number} وظائف شاغرة"
+    "activeJobsCount": "{count, plural, zero {لا وظائف شاغرة} one {وظيفة شاغرة واحدة} two {وظيفتان شاغرتان} few {# وظائف شاغرة} many {# وظيفة شاغرة} other {# وظيفة شاغرة}}"
   },
   "profile": {
     "title": "الملف الشخصي",
@@ -500,8 +500,8 @@
     "editedSuffix": "تم التعديل",
     "deletedBody": "تم حذف الرسالة",
     "unreadJump": {
-      "banner": "{count, number} رسائل غير مقروءة",
-      "accessibility": "انتقل إلى {count} رسائل غير مقروءة"
+      "banner": "{count, plural, zero {لا رسائل غير مقروءة} one {رسالة واحدة غير مقروءة} two {رسالتان غير مقروءتين} few {# رسائل غير مقروءة} many {# رسالة غير مقروءة} other {# رسالة غير مقروءة}}",
+      "accessibility": "انتقل إلى {count, plural, zero {الرسائل غير المقروءة} one {رسالة واحدة غير مقروءة} two {رسالتين غير مقروءتين} few {# رسائل غير مقروءة} many {# رسالة غير مقروءة} other {# رسالة غير مقروءة}}"
     },
     "newGroup": {
       "title": "مجموعة جديدة",
@@ -513,7 +513,7 @@
       "select": "اختيار",
       "selected": "مختار",
       "submit": "إنشاء المجموعة",
-      "memberCount": "{count, number} أعضاء",
+      "memberCount": "{count, plural, zero {لا أعضاء} one {عضو واحد} two {عضوان} few {# أعضاء} many {# عضوًا} other {# عضو}}",
       "loading": "جارٍ تحميل الاتصالات…",
       "empty": "لا توجد اتصالات مطابقة.",
       "validation": "اختر عضوين على الأقل واكتب اسم المجموعة.",
@@ -584,12 +584,12 @@
         "cta": "تعديل الملف"
       },
       "network": {
-        "title": "{count, number} طلب اتصال",
+        "title": "{count, plural, zero {لا طلبات اتصال} one {طلب اتصال واحد} two {طلبا اتصال} few {# طلبات اتصال} many {# طلب اتصال} other {# طلب اتصال}}",
         "body": "راجع الأشخاص الذين يريدون الاتصال بك.",
         "cta": "مراجعة"
       },
       "notifications": {
-        "title": "{count, number} إشعار غير مقروء",
+        "title": "{count, plural, zero {لا إشعارات غير مقروءة} one {إشعار واحد غير مقروء} two {إشعاران غير مقروءين} few {# إشعارات غير مقروءة} many {# إشعارًا غير مقروء} other {# إشعار غير مقروء}}",
         "body": "تابع الردود والإشارات وتحديثات الملف.",
         "cta": "فتح"
       },
@@ -1192,7 +1192,7 @@
       "USER_PREMIUM": "بيدر المميّز"
     },
     "features": {
-      "activeJobs": "{count, number} وظائف فعّالة",
+      "activeJobs": "{count, plural, zero {لا وظائف فعّالة} one {وظيفة فعّالة واحدة} two {وظيفتان فعّالتان} few {# وظائف فعّالة} many {# وظيفة فعّالة} other {# وظيفة فعّالة}}",
       "applicantInbox": "صندوق المتقدمين",
       "basicAnalytics": "تحليلات أساسية",
       "advancedAnalytics": "تحليلات متقدمة",
