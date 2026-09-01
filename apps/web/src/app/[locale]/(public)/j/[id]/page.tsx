@@ -187,7 +187,9 @@ export default async function PublicJobPage(props: {
         {/* Description */}
         <section className="border-line-soft bg-surface shadow-card rounded-lg border p-6">
           <h2 className="text-ink mb-3 font-sans text-lg font-semibold">{tJobs("description")}</h2>
-          <p className="text-ink whitespace-pre-wrap text-base leading-7">{job.description}</p>
+          <p className="bidi-plaintext text-ink whitespace-pre-wrap text-base leading-7">
+            {job.description}
+          </p>
         </section>
 
         {/* Skills */}

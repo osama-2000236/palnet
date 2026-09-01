@@ -80,11 +80,11 @@ export default function CvPage(): JSX.Element {
 
       {/* ── CV header ── */}
       <header className="border-line-hard border-b pb-4">
-        <h1 className="font-sans text-3xl font-bold">
+        <h1 className="bidi-plaintext font-sans text-3xl font-bold">
           {profile.firstName} {profile.lastName}
         </h1>
         {profile.headline ? (
-          <p className="text-ink-muted mt-1 text-base">{profile.headline}</p>
+          <p className="bidi-plaintext text-ink-muted mt-1 text-base">{profile.headline}</p>
         ) : null}
         <p className="bidi-plaintext text-ink-muted mt-2 text-sm">
           {[profile.location, `baydar.ps/in/${profile.handle}`, profile.website]
@@ -95,7 +95,7 @@ export default function CvPage(): JSX.Element {
 
       {profile.about ? (
         <CvSection title={t("about")}>
-          <p className="whitespace-pre-wrap text-sm leading-6">{profile.about}</p>
+          <p className="bidi-plaintext whitespace-pre-wrap text-sm leading-6">{profile.about}</p>
         </CvSection>
       ) : null}
 
@@ -105,7 +105,7 @@ export default function CvPage(): JSX.Element {
             {profile.experiences.map((exp) => (
               <li key={exp.id ?? `${exp.title}-${exp.startDate}`} className="break-inside-avoid">
                 <div className="flex flex-wrap items-baseline justify-between gap-x-3">
-                  <h3 className="text-sm font-semibold">
+                  <h3 className="bidi-plaintext min-w-0 text-sm font-semibold">
                     {exp.title} — {exp.companyName}
                   </h3>
                   <span className="text-ink-muted text-xs">
@@ -114,7 +114,9 @@ export default function CvPage(): JSX.Element {
                 </div>
                 {exp.location ? <p className="text-ink-muted text-xs">{exp.location}</p> : null}
                 {exp.description ? (
-                  <p className="mt-1 whitespace-pre-wrap text-sm leading-6">{exp.description}</p>
+                  <p className="bidi-plaintext mt-1 whitespace-pre-wrap text-sm leading-6">
+                    {exp.description}
+                  </p>
                 ) : null}
               </li>
             ))}
@@ -128,7 +130,7 @@ export default function CvPage(): JSX.Element {
             {profile.educations.map((edu) => (
               <li key={edu.id ?? edu.school} className="break-inside-avoid">
                 <div className="flex flex-wrap items-baseline justify-between gap-x-3">
-                  <h3 className="text-sm font-semibold">{edu.school}</h3>
+                  <h3 className="bidi-plaintext min-w-0 text-sm font-semibold">{edu.school}</h3>
                   <span className="text-ink-muted text-xs">
                     {range(edu.startDate, edu.endDate)}
                   </span>

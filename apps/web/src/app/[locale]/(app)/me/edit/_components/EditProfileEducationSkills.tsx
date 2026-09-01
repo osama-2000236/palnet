@@ -106,10 +106,12 @@ export function EducationsSection({
             key={e.id ?? e.school}
             className="border-ink-muted/10 flex items-start justify-between gap-4 border-b pb-3 last:border-b-0"
           >
-            <div>
-              <p className="text-ink font-semibold">{e.school}</p>
+            {/* `min-w-0` + `bidi-plaintext`, same as the experiences list: a
+                flex item does not shrink below its content. */}
+            <div className="min-w-0">
+              <p className="bidi-plaintext text-ink font-semibold">{e.school}</p>
               {e.degree ? (
-                <p className="text-ink-muted text-sm">
+                <p className="bidi-plaintext text-ink-muted text-sm">
                   {e.degree}
                   {e.fieldOfStudy ? ` · ${e.fieldOfStudy}` : ""}
                 </p>

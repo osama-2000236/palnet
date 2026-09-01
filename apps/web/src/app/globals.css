@@ -223,6 +223,20 @@ samp {
  * text colour and drops it when a real colour class follows in the same cx(). */
 .bidi-plaintext {
   unicode-bidi: plaintext;
+  /* User text has no word-length contract. A handle, a URL or a 49-character
+   * compound has no break opportunity, so it runs past its card: the `long`
+   * matrix caught a search headline crossing the card border and clipping at
+   * the viewport edge, with the document reporting no horizontal overflow
+   * because an ancestor hid it. Only a word that cannot fit is ever broken, so
+   * ordinary copy is untouched — and every surface that renders typed text
+   * already carries this class.
+   *
+   * `anywhere`, not `break-word`: the two wrap identically, but only `anywhere`
+   * counts the break opportunity when the browser computes the element's
+   * min-content width. With `break-word` the CV headline still reported 425px
+   * of content in a 390px viewport and widened the document; with `anywhere` it
+   * wraps and the page stops scrolling sideways. */
+  overflow-wrap: anywhere;
 }
 
 /* `plaintext` also makes `text-align: start` resolve against the *derived*

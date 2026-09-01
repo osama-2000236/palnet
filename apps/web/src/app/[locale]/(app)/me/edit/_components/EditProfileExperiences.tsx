@@ -104,10 +104,17 @@ export function ExperiencesSection({
             key={e.id ?? `${e.companyName}-${e.startDate}`}
             className="border-ink-muted/10 flex items-start justify-between gap-4 border-b pb-3 last:border-b-0"
           >
-            <div>
-              <p className="text-ink font-semibold">{e.title}</p>
-              <p className="text-ink-muted text-sm">{e.companyName}</p>
-              {e.description ? <p className="text-ink mt-1 text-sm">{e.description}</p> : null}
+            {/* `min-w-0`: a flex item will not shrink below its content, so a
+                job title with no space in it widened this row, the list and the
+                document — measured 557px against a 390px viewport. The text
+                itself carries `bidi-plaintext`, which is where the app keeps
+                both its direction rule and its break-word rule. */}
+            <div className="min-w-0">
+              <p className="bidi-plaintext text-ink font-semibold">{e.title}</p>
+              <p className="bidi-plaintext text-ink-muted text-sm">{e.companyName}</p>
+              {e.description ? (
+                <p className="bidi-plaintext text-ink mt-1 text-sm">{e.description}</p>
+              ) : null}
             </div>
             {e.id ? (
               <button

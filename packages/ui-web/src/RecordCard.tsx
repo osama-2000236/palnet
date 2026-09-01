@@ -75,8 +75,10 @@ export function RecordCard({
             trailing Latin run. A headline ending in "TypeScript" rendered as
             "… و ipt…" and a job called "… — NestJS" as "… — tJS…". Clamping
             breaks at a word instead, so the Latin word moves whole or goes. */}
-        <p className="text-ink text-h3 line-clamp-2 font-semibold">{title}</p>
-        {subtitle ? <p className="text-ink-muted text-small line-clamp-2">{subtitle}</p> : null}
+        <p className="bidi-plaintext text-ink text-h3 line-clamp-2 font-semibold">{title}</p>
+        {subtitle ? (
+          <p className="bidi-plaintext text-ink-muted text-small line-clamp-2">{subtitle}</p>
+        ) : null}
         {meta ? (
           <p
             className={cx(
