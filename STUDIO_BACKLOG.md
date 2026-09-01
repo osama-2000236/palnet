@@ -182,6 +182,29 @@ together. One product bug, one harness bug, two false alarms.
   The root 404 being Arabic is a deliberate BRAND.md decision, written into the
   file.
 
+## Iteration 12 — the `empty` and `error` states, swept again
+
+Both states across 35 routes at 390px. The `empty` sweep found one defect; the
+`error` sweep found four, all of them the same shape this loop keeps closing —
+a screen that answers "there is nothing here" when what happened is "we could
+not load it".
+
+| #     | Finding                                                                                                                                                                                                                                                                                                                                                                                       | Status                                                                                                                                                                                                                                                               |
+| ----- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| P1-33 | **`/messages` showed two empty states at once.** At 390px the inbox and thread panes stack, so an empty inbox rendered "no conversations yet" and, directly beneath it, "pick a conversation to start reading" — an instruction that cannot be followed, with a second illustration. On desktop the same prompt also appeared when the room list had **failed**, next to the alert saying so. | **fixed** — the prompt is suppressed where it is a second answer: hidden below `md` when there is nothing to pick, and hidden at every width when the list failed. Above `md` with a merely empty inbox it stays, because the right pane still has to hold something |
+| P1-34 | **`/messages/new` said "no matching contacts" when the contact list had failed.** `.then().finally()` with no `catch` — the ninth time this loop has found that exact shape, and the ninth time the mobile twin already caught it.                                                                                                                                                            | **fixed** — a `catch` that sets its own `loadError`, a danger `Alert` with retry ahead of the empty branch, and the errors translator read through a ref                                                                                                             |
+| P1-35 | **`/jobs` announced "no results" beside the failure.** The header count line reads `items.length === 0` and nothing else, so it printed `لا نتائج` in the same view as an alert saying the jobs could not be loaded.                                                                                                                                                                          | **fixed** — the count is not rendered while `error` is set                                                                                                                                                                                                           |
+| P1-36 | **Three employer surfaces reported a failure as a bare red sentence, and two of them contradicted it.** The dashboard kept its KPI row at `0 / 0 / 0` on a failed load; the applicants list put "no applicants yet" under the error; the workspace index and the applicants list both used a plain `<p class="text-status-danger">` with no icon and no way to try again.                     | **fixed** — `Alert kind="danger"` with retry on all three, the KPI row hidden while the load has failed, and both empty branches gated on `!error`                                                                                                                   |
+
+**The guard that found half of P1-33 by itself.** `e2e/error-states.spec.ts`
+forces every GET to 500 across eight routes and asserts that a screen showing a
+danger alert is not also showing an empty state. It failed on `/ar-PS/messages`
+the first time it ran — at desktop width, the case the phone-sized screenshots
+could not see — and it is **verified failing** when that fix is removed. It also
+asserts that at least one route reported an error, because a suite that
+intercepts nothing passes while asserting nothing. `EmptyState` gained a
+`data-empty-state` marker so the DOM can be asked the question at all.
+
 ## Checked and _not_ filed
 
 Recording these so the next pass does not re-litigate them:
@@ -231,3 +254,10 @@ Recording these so the next pass does not re-litigate them:
   three are clean, and the same session photographed `employer-billing` and
   `employer-applicants` fine, so this is the API under a 92-shot run rather than
   a theme-dependent failure. Worth a second look if it recurs on a small matrix.
+
+- **The demo profile's headline was not a rendering bug.** Three `empty`-state
+  shots showed `????? ??????? ?? ??? ????` where the Arabic headline belongs.
+  That was self-inflicted: an earlier `curl -d '{"headline":"…"}'` from the
+  Windows shell wrote the question marks into the database. Restored through a
+  node script. **Never pass non-ASCII to `curl -d` here** — use `fetch` from a
+  file, where the body is encoded as UTF-8.

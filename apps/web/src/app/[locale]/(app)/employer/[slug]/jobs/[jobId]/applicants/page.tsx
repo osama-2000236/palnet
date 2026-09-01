@@ -9,7 +9,7 @@ import {
   rejectionSummary,
   type RejectionReason,
 } from "@baydar/shared";
-import { EmptyState, Surface } from "@baydar/ui-web";
+import { Alert, EmptyState, Surface } from "@baydar/ui-web";
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
@@ -69,6 +69,7 @@ export default function EmployerApplicantsPage(): JSX.Element {
   const load = useCallback(
     async (cid: string, tk: string, status: ApplicationStatus | "") => {
       setLoading(true);
+      setError(null);
       try {
         const qs = new URLSearchParams({ limit: "20" });
         if (status) qs.set("status", status);
@@ -147,7 +148,17 @@ export default function EmployerApplicantsPage(): JSX.Element {
         ))}
       </div>
 
-      {error ? <p className="text-status-danger mb-3 text-sm">{error}</p> : null}
+      {/* Was a bare red sentence, and the empty state rendered right under it:
+          "no applicants yet" is an answer this screen did not have. */}
+      {error ? (
+        <Alert
+          kind="danger"
+          body={error}
+          cta={tCommon("retry")}
+          onAction={() => token && companyId && void load(companyId, token, filter)}
+          className="mb-3"
+        />
+      ) : null}
 
       {loading && items.length === 0 ? (
         <p className="text-ink-muted text-sm">{tCommon("loading")}</p>
@@ -161,7 +172,7 @@ export default function EmployerApplicantsPage(): JSX.Element {
           The filtered case is separated because the two mean different things:
           "nobody has applied yet" needs direction, "nobody matches this filter"
           needs a way back. */}
-      {!loading && items.length === 0 ? (
+      {!loading && !error && items.length === 0 ? (
         filter === "" ? (
           <EmptyState motif="network" title={t("empty")} body={t("emptyBody")} />
         ) : (

@@ -19,10 +19,11 @@ import { Alert, Avatar, Button, Chip, Input, SearchField, Surface } from "@bayda
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { z } from "zod";
 
 import { apiFetch, apiFetchPage } from "@/lib/api";
+import { toErrorMessage } from "@/lib/error-message";
 import { readSession } from "@/lib/session";
 
 const ConnectionsEnvelope = z.object({ data: z.array(ConnectionListItem) });
@@ -39,6 +40,32 @@ export default function NewMessagePage(): JSX.Element {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const tErrors = useTranslations("errors");
+  const tErrorsRef = useRef(tErrors);
+  useEffect(() => {
+    tErrorsRef.current = tErrors;
+  }, [tErrors]);
+
+  // `.then().finally()` with no `catch`: a failed contact list left
+  // `connections` at `[]` and the screen said "no matching contacts" — the
+  // empty-state collapse this loop has closed on `/network` (#159), the room
+  // list (#160) and the job page (#163). The mobile twin has always caught it.
+  const loadConnections = useCallback(async (accessToken: string) => {
+    setLoading(true);
+    setLoadError(null);
+    try {
+      const out = await apiFetchPage("/connections?filter=ACCEPTED", ConnectionsEnvelope, {
+        token: accessToken,
+      });
+      setConnections(out.data);
+    } catch (caught) {
+      setLoadError(toErrorMessage(caught, tErrorsRef.current));
+      setConnections([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     const session = readSession();
@@ -47,12 +74,8 @@ export default function NewMessagePage(): JSX.Element {
       return;
     }
     setToken(session.tokens.accessToken);
-    void apiFetchPage("/connections?filter=ACCEPTED", ConnectionsEnvelope, {
-      token: session.tokens.accessToken,
-    })
-      .then((out) => setConnections(out.data))
-      .finally(() => setLoading(false));
-  }, [router]);
+    void loadConnections(session.tokens.accessToken);
+  }, [router, loadConnections]);
 
   const filtered = useMemo(() => {
     const needle = query.trim().toLocaleLowerCase();
@@ -145,6 +168,13 @@ export default function NewMessagePage(): JSX.Element {
         <div className="flex flex-col gap-2">
           {loading ? (
             <p className="text-ink-muted text-sm">{t("newGroup.loading")}</p>
+          ) : loadError ? (
+            <Alert
+              kind="danger"
+              body={loadError}
+              cta={tCommon("retry")}
+              onAction={() => token && void loadConnections(token)}
+            />
           ) : filtered.length === 0 ? (
             <p className="text-ink-muted text-sm">{t("newGroup.empty")}</p>
           ) : (

@@ -49,6 +49,8 @@ export default function MessagesPage(): JSX.Element {
           onSelectRoom={messages.setActiveRoomId}
         />
         <RoomView
+          hasRooms={messages.rooms.length > 0}
+          roomsFailed={Boolean(messages.roomsError)}
           activeRoom={messages.activeRoom}
           activeRoomId={messages.activeRoomId}
           actionMessage={messages.actionMessage}

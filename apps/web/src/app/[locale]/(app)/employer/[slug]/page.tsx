@@ -1,7 +1,7 @@
 "use client";
 
 import { Company, cursorPage, EmployerJob, formatNumber } from "@baydar/shared";
-import { Surface } from "@baydar/ui-web";
+import { Alert, Surface } from "@baydar/ui-web";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
@@ -45,6 +45,7 @@ export default function CompanyDashboardPage(): JSX.Element {
   const loadJobs = useCallback(
     async (tk: string, currentFilter: Filter) => {
       setLoading(true);
+      setError(null);
       try {
         const page = await apiFetchPage(
           `/companies/${encodeURIComponent(company?.id ?? slug)}/jobs?status=${currentFilter}&limit=20`,
@@ -119,11 +120,16 @@ export default function CompanyDashboardPage(): JSX.Element {
         </div>
       </header>
 
-      <section className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
-        <Kpi label={t("activeJobs")} value={formatNumber(activeJobs, locale)} />
-        <Kpi label={t("totalApplicants")} value={formatNumber(totalApplicants, locale)} />
-        <Kpi label={t("openShortlist")} value={formatNumber(totalShortlist, locale)} />
-      </section>
+      {/* Zero is a number, and on a failed load it is the wrong one: this row
+          reported "0 active jobs, 0 applicants, 0 shortlisted" beside the error
+          that said nothing had loaded. */}
+      {error ? null : (
+        <section className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
+          <Kpi label={t("activeJobs")} value={formatNumber(activeJobs, locale)} />
+          <Kpi label={t("totalApplicants")} value={formatNumber(totalApplicants, locale)} />
+          <Kpi label={t("openShortlist")} value={formatNumber(totalShortlist, locale)} />
+        </section>
+      )}
 
       <div className="mb-3 flex gap-2">
         <FilterChip
@@ -138,13 +144,21 @@ export default function CompanyDashboardPage(): JSX.Element {
         />
       </div>
 
-      {error ? <p className="text-status-danger mb-3 text-sm">{error}</p> : null}
+      {error ? (
+        <Alert
+          kind="danger"
+          body={error}
+          cta={tCommon("retry")}
+          onAction={() => token && void loadJobs(token, filter)}
+          className="mb-3"
+        />
+      ) : null}
 
       {loading && jobs.length === 0 ? (
         <p className="text-ink-muted text-sm">{tCommon("loading")}</p>
       ) : null}
 
-      {!loading && jobs.length === 0 ? (
+      {!loading && !error && jobs.length === 0 ? (
         <Surface variant="card" padding="4">
           <p className="text-ink text-sm">{t("noJobs")}</p>
         </Surface>
