@@ -189,7 +189,12 @@ export default function JobDetailPage(): JSX.Element {
             )}
           </div>
           <div className="min-w-0 flex-1">
-            <h1 className="text-ink truncate text-xl font-semibold">{job.title}</h1>
+            {/* Not `truncate`: a one-line ellipsis in RTL cuts at the line's visual
+                left edge, which is the middle of a trailing Latin run — the long
+                matrix rendered this title as "…atformInfra", its own tail. */}
+            <h1 className="bidi-plaintext text-ink line-clamp-2 text-xl font-semibold">
+              {job.title}
+            </h1>
             <Link
               href={jobSource(job).href}
               className="text-ink-muted hover:text-ink focus-visible:outline-hidden text-sm focus-visible:[box-shadow:var(--focus-ring)]"
