@@ -21,6 +21,8 @@ import { Fragment, type MutableRefObject } from "react";
 import { shortDayLabel } from "../_utils";
 
 export interface MessageListProps {
+  /** The thread failed to load — suppress the empty state. */
+  loadFailed?: boolean;
   activeRoom: ChatRoom | null;
   activeTyping: { userId: string; expiresAt: number } | null;
   failedClientIds: Set<string>;
@@ -58,12 +60,17 @@ export function MessageList({
   onNewMessage,
   onReport,
   onRetryFailed,
+  loadFailed = false,
 }: MessageListProps): JSX.Element {
   const t = useTranslations("messaging");
   const tSend = useTranslations("messages.send");
   const tSafety = useTranslations("safety");
 
-  if (messages.length === 0 && !activeTyping) {
+  // A failed read is not an empty thread. Without `loadFailed` a room that
+  // 404s or 500s renders "no messages yet — say hello" with the error banner
+  // directly beneath it: two contradictory answers on one screen. Same shape
+  // as the room list (#160) and the job page (#163).
+  if (messages.length === 0 && !activeTyping && !loadFailed) {
     return (
       <EmptyState
         variant="inline"

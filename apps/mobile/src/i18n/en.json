@@ -507,13 +507,18 @@
     "myConnections": "My connections",
     "invitations": "Invitations",
     "sent": "Sent",
-    "empty": "Nothing here yet.",
     "connect": "Connect",
     "withdraw": "Withdraw",
     "accept": "Accept",
     "decline": "Ignore",
     "removeConnection": "Remove",
-    "error": "Could not send request."
+    "error": "Could not send request.",
+    "emptyConnectionsTitle": "Start building your network",
+    "emptyConnectionsBody": "People you connect with will appear here.",
+    "emptyIncomingTitle": "No invitations right now",
+    "emptyIncomingBody": "When someone wants to connect, their request will appear here.",
+    "emptyOutgoingTitle": "No sent invitations",
+    "emptyOutgoingBody": "Connection requests you send will appear here until they respond."
   },
   "messaging": {
     "title": "Messages",

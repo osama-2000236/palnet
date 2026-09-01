@@ -214,6 +214,7 @@ export function RoomView({
           <MessageList
             activeRoom={activeRoom}
             activeTyping={activeTyping}
+            loadFailed={Boolean(error)}
             failedClientIds={failedClientIds}
             firstUnreadIndex={firstUnreadIndex}
             firstUnreadRef={firstUnreadRef}

@@ -51,7 +51,8 @@ export function MessageThreadList({
   otherLastReadAtMs: number;
   memberById: Map<string, ChatRoom["members"][number]>;
   labels: MessageBubbleLabels;
-  emptyLabel: string;
+  /** null while the thread failed to load — a failed read is not an empty thread. */
+  emptyLabel: string | null;
   loadOlderLabel: string;
   typingLabel: string | null;
   hasMore: boolean;
@@ -122,18 +123,20 @@ export function MessageThreadList({
         />
       )}
       ListEmptyComponent={
-        <Surface variant="tinted" padding="6">
-          <Text
-            style={{
-              color: c.inkMuted,
-              fontFamily: nativeTokens.type.family.sans,
-              fontSize: nativeTokens.type.scale.body.size,
-              textAlign: "center",
-            }}
-          >
-            {emptyLabel}
-          </Text>
-        </Surface>
+        emptyLabel === null ? null : (
+          <Surface variant="tinted" padding="6">
+            <Text
+              style={{
+                color: c.inkMuted,
+                fontFamily: nativeTokens.type.family.sans,
+                fontSize: nativeTokens.type.scale.body.size,
+                textAlign: "center",
+              }}
+            >
+              {emptyLabel}
+            </Text>
+          </Surface>
+        )
       }
       onScrollToIndexFailed={() => listRef.current?.scrollToEnd({ animated: false })}
       refreshControl={

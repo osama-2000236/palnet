@@ -97,7 +97,10 @@ export default function MessageThreadScreen(): JSX.Element {
           otherLastReadAtMs={thread.otherLastReadAtMs}
           memberById={thread.memberById}
           labels={bubbleLabels}
-          emptyLabel={t("messaging.emptyThread")}
+          // A failed read is not an empty thread: without this the screen said
+          // "no messages yet — say hello" with the error banner right beneath
+          // it. Same rule as web's MessageList.
+          emptyLabel={thread.error ? null : t("messaging.emptyThread")}
           loadOlderLabel={t("messaging.loadOlder")}
           typingLabel={typingName ? t("messaging.typing", { name: typingName }) : null}
           hasMore={thread.hasMore}

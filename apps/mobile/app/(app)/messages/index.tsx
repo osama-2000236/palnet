@@ -1,7 +1,7 @@
 // Messages list — room roster. Uses ui-native Surface + Avatar so rows look
 // like the web `/messages` left rail instead of the raw-RN cards.
 
-import { ChatRoom as ChatRoomSchema, type ChatRoom } from "@baydar/shared";
+import { ChatRoom as ChatRoomSchema, formatNumber, type ChatRoom } from "@baydar/shared";
 import {
   Alert,
   EmptyState,
@@ -33,7 +33,7 @@ const RoomsEnvelope = z.object({ data: z.array(ChatRoomSchema) });
 export default function MessagesListScreen(): JSX.Element {
   const c = useThemeTokens().color;
   const styles = useStyles();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [rooms, setRooms] = useState<ChatRoom[]>([]);
   const [viewerId, setViewerId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -145,12 +145,15 @@ export default function MessagesListScreen(): JSX.Element {
           style={{ marginBottom: nativeTokens.space[3] }}
           value={tab}
           onChange={(key) => setTab(key as "focused" | "requests")}
+          formatCount={(value) => formatNumber(value, i18n.language)}
         >
           <Tab value="focused">{t("messaging.tabFocused")}</Tab>
-          <Tab value="requests">
-            {requestCount > 0
-              ? `${t("messaging.tabRequests")} (${requestCount})`
-              : t("messaging.tabRequests")}
+          {/* The count rides `Tab`, not the label. Interpolated, it skipped both
+              the kit's count pill and the digit formatter, and the tab read
+              "طلبات الرسائل (1)" — a Latin digit in an Arabic-Indic UI, next to
+              a /network strip that has always formatted its own. */}
+          <Tab value="requests" count={requestCount > 0 ? requestCount : undefined}>
+            {t("messaging.tabRequests")}
           </Tab>
         </Tabs>
 
