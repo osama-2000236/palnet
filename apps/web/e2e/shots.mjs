@@ -336,11 +336,44 @@ async function main() {
             try {
               await page.goto(url, { waitUntil: "domcontentloaded", timeout: 60_000 });
               if (state === "offline") {
-                // Go offline *after* the document loads: this is the state a
-                // user is actually in when connectivity drops mid-session, and
-                // it is the only way to see both the banner and the surface
-                // behind it. Reset before the next route so its HTML can load.
+                // Offline means "the app was running and the network went
+                // away", and that needs the app to be RUNNING first. Cutting
+                // the connection at `domcontentloaded` cut it before the JS
+                // chunks had been fetched: every `--state=offline` shot was a
+                // page whose scripts never arrived — no hydration, no data
+                // request, no listeners — recorded as if it were the app under
+                // a lost connection. `net::ERR_INTERNET_DISCONNECTED` on
+                // `_next/static/chunks/*` in the console capture is the tell.
+                //
+                // So settle first, exactly as the default state does, and only
+                // then pull the cable.
+                await page.waitForLoadState("networkidle", { timeout: 20_000 }).catch(() => {});
+                await page
+                  .waitForFunction(
+                    () =>
+                      document.querySelectorAll(".animate-pulse").length === 0 &&
+                      document.querySelectorAll('[aria-busy="true"]').length === 0,
+                    { timeout: 15_000 },
+                  )
+                  .catch(() => {});
                 await context.setOffline(true);
+                // `setOffline` stops the requests and NOTHING ELSE: it does not
+                // flip `navigator.onLine` in the page and it does not fire the
+                // `offline` event, which is the only thing `useOnline` listens
+                // for. So the state this file exists to photograph — the
+                // connectivity banner over a degraded screen — never appeared in
+                // a single `--state=offline` shot; every one was a plain
+                // request-failure page under a different name. Dispatching the
+                // event is what the browser would have done. Verified by hand:
+                // with the event, `ConnectivityBanner` renders "أنت غير متصل…";
+                // without it, `navigator.onLine` stays true.
+                await page.evaluate(() => {
+                  Object.defineProperty(navigator, "onLine", {
+                    configurable: true,
+                    get: () => false,
+                  });
+                  window.dispatchEvent(new Event("offline"));
+                });
                 await page.waitForTimeout(1_500);
               } else if (state === "loading") {
                 // networkidle never arrives when the API never answers, and

@@ -205,6 +205,25 @@ asserts that at least one route reported an error, because a suite that
 intercepts nothing passes while asserting nothing. `EmptyState` gained a
 `data-empty-state` marker so the DOM can be asked the question at all.
 
+## Iteration 13 — the `loading` and `offline` states
+
+The last two states nobody had swept this pass. `loading` found two screens
+still answering with a sentence where the rest of the product draws a skeleton.
+`offline` found something bigger: the state had never been photographed at all.
+
+| #     | Finding                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             | Status                                                                                                                                                                                                              |
+| ----- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| P1-37 | **`--state=offline` had never photographed an offline app.** The harness cut the connection at `domcontentloaded` — before the JS chunks had been fetched — so every "offline" shot was a page whose scripts never arrived: no hydration, no data request, no listeners, filed as if it were the app under a lost connection. `net::ERR_INTERNET_DISCONNECTED` on `_next/static/chunks/*` is the tell. And `setOffline` alone does not flip `navigator.onLine` or fire the `offline` event, so `ConnectivityBanner` — the one thing this state exists to show — could not render even in principle. | **fixed** — settle first (the wait the default state already uses), then cut the connection, then dispatch the event the browser would have. Every authenticated route now photographs the banner over live content |
+| P1-38 | **The offline banner never appeared if the connection died during startup.** `useOnline` samples `navigator.onLine` once during render and then trusts events, so an `offline` fired between that sample and the effect that starts listening had nobody to hear it — and nothing reads the flag again. Measured: `navigator.onLine === false`, zero banners on screen, skeletons forever. That window is exactly when a phone on a bad link drops.                                                                                                                                                 | **fixed** — re-read the flag when the listeners attach. Guarded in `useOnline.test.tsx` by a component that goes offline during render, **verified failing** without the fix                                        |
+| P1-39 | **`/notifications` announced "مباشر" while the reader was offline.** An SSE connection does not notice a dead interface immediately — measured still "live" 2.5s after the drop — so the pill sat directly under the banner saying there is no connection.                                                                                                                                                                                                                                                                                                                                          | **fixed** — the pill requires `useOnline() === "online"` as well as an open stream                                                                                                                                  |
+| P1-40 | **`/in/[handle]` rendered a literal "…" while loading**, the same thing `/me/edit` did before #158 — on the route every profile link in the product lands on. `/employer` answered with a "جارِ التحميل…" line where every other list draws the shape it is about to fill.                                                                                                                                                                                                                                                                                                                          | **fixed** — a skeleton on both, `aria-busy` on the profile one so the harness stops shooting it mid-load                                                                                                            |
+
+**What the sweep says about the harness.** Two of this loop's four harness bugs
+were the same mistake: a state that reports success while photographing
+something else — `--state=empty` before P0-1, the dark cell before P1-28, and
+now `offline`. The pattern to distrust is a state whose _setup_ is a single call
+with no assertion that it took effect.
+
 ## Checked and _not_ filed
 
 Recording these so the next pass does not re-litigate them:
@@ -261,3 +280,8 @@ Recording these so the next pass does not re-litigate them:
   Windows shell wrote the question marks into the database. Restored through a
   node script. **Never pass non-ASCII to `curl -d` here** — use `fetch` from a
   file, where the body is encoded as UTF-8.
+
+- **The signed-in landing page shows no offline banner.** `ConnectivityBanner`
+  lives in the `(app)` layout and `/` does not use it. Left alone: the marketing
+  page has nothing to save and nothing to lose, and the banner's copy — "changes
+  may not be saved" — would be false there.

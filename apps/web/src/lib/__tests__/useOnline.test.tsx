@@ -62,4 +62,30 @@ describe("useOnline", () => {
     });
     expect(latest).toBe("online");
   });
+
+  it("catches a connection that died before the listeners attached", () => {
+    // The gap this closes: the initial state is sampled during render, and the
+    // browser can go offline between that sample and the effect that starts
+    // listening — during startup, which is when a phone on a bad link does it.
+    // The `offline` event fired in that window has nobody to hear it, and
+    // nothing reads `navigator.onLine` again, so the app stayed "online"
+    // forever: skeletons, no banner, no explanation.
+    let mounted = false;
+    function LateOffline(): JSX.Element {
+      latest = useOnline(500);
+      // Render-time, i.e. after `useState`'s initializer has already read
+      // `navigator.onLine` as true and before the effect runs.
+      if (!mounted) {
+        mounted = true;
+        setNavigatorOnline(false);
+      }
+      return <div data-state={latest} />;
+    }
+
+    React.act(() => {
+      root.render(<LateOffline />);
+    });
+
+    expect(latest).toBe("offline");
+  });
 });
