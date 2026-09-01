@@ -20,6 +20,7 @@ import {
 } from "react";
 
 import { cx } from "./cx";
+import { useEdgeFade } from "./useEdgeFade";
 
 interface TabsCtx {
   value: string;
@@ -108,20 +109,29 @@ export function Tabs({
     [onChange],
   );
 
+  const stripRef = useRef<HTMLDivElement>(null);
+  const fade = useEdgeFade(stripRef);
+
   return (
     <Ctx.Provider
       value={{ value, onChange, baseId, formatCount, register, registerPanel, panels, move }}
     >
       <div
+        ref={stripRef}
         role="tablist"
         aria-label={label}
         // Scrolls, does not wrap. Arabic labels pushed the five profile tabs onto
         // a second row at 390px, which put the active indicator in the gap
         // *between* the rows — reading as an overline on whichever tab happened
         // to fall underneath it. Same treatment the app shell's nav strip uses:
-        // one row, edge-fade mask as the affordance, no visible scrollbar.
+        // one row, edge-fade as the affordance, no visible scrollbar.
+        //
+        // The fade comes from `useEdgeFade`, not a fixed mask: a mask paints on
+        // the scrollport, so a constant one erased the first tab's opening
+        // letters on every strip that was not scrolled.
+        style={fade}
         className={cx(
-          "border-line-soft flex items-end overflow-x-auto overscroll-contain border-b [mask-image:linear-gradient(to_right,transparent_0,black_16px,black_calc(100%-16px),transparent_100%)] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
+          "border-line-soft flex items-end overflow-x-auto overscroll-contain border-b [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
           className,
         )}
       >

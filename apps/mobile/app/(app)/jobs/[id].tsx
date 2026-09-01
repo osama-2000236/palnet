@@ -39,7 +39,7 @@ import { getAccessToken } from "@/lib/session";
 import { ApplyCard } from "@/screens/jobs/ApplyCard";
 import { useStyles } from "@/screens/jobs/detailStyles";
 import { ApplicationRail } from "@/screens/jobs/ApplicationRail";
-import { JobDescription, JobSkills } from "@/screens/jobs/JobSections";
+import { JobDescription, JobPay, JobSkills } from "@/screens/jobs/JobSections";
 
 export default function JobDetailScreen(): JSX.Element {
   const c = useThemeTokens().color;
@@ -231,6 +231,7 @@ export default function JobDetailScreen(): JSX.Element {
               <Text style={[styles.muted, { marginTop: nativeTokens.space[1] }]}>
                 {metaParts.join(" · ")}
               </Text>
+              <JobPay job={job} />
             </View>
           </View>
           <View style={{ marginTop: nativeTokens.space[3], gap: nativeTokens.space[2] }}>

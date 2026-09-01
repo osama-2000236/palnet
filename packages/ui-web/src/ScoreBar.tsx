@@ -84,10 +84,20 @@ export function ScoreBar({
   const fillFor = (segTone: "strong" | "weak"): string =>
     onBand ? "bg-bar-on-band-fill" : segTone === "weak" ? "bg-bar-fill-weak" : "bg-bar-fill";
 
+  // A ratio carries NO spaces around its slash, and that is load-bearing.
+  //
+  // `dir="ltr"` on the figure fixes "65 / 5,000" only while the digits are
+  // Latin. Arabic-Indic digits are bidi class AN, and the algorithm lets AN
+  // influence the neutrals beside it as if they were right-to-left — so the
+  // spaces and slash between two AN runs resolve RTL and the figure paints
+  // "5,000 / 65" whatever direction the element declares. Measured in Chromium
+  // at ar-PS: with spaces the first character landed 24px to the RIGHT of the
+  // last; without them, 55px to the LEFT — the intended order. Unspaced, the
+  // slash is a common separator inside a single number run, which bidi keeps.
   let figure: string | null = null;
   if (display === "percent") figure = `${formatNumber(percent)}%`;
   else if (display === "ratio" || display === "value") {
-    figure = `${formatNumber(Math.round(total * (max ?? 1)))} / ${formatNumber(max ?? 0)}`;
+    figure = `${formatNumber(Math.round(total * (max ?? 1)))}/${formatNumber(max ?? 0)}`;
   }
 
   const srLabel =

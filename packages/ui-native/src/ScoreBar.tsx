@@ -55,6 +55,12 @@ const clamp = (n: number): number => (n < 0 ? 0 : n > 1 ? 1 : Number.isFinite(n)
  * `writingDirection: "ltr"` fixes it on iOS and Android ignores it, so the
  * direction has to travel with the string itself. The isolate characters are
  * invisible and do not affect the accessibility label built separately below.
+ *
+ * The isolate is necessary and NOT sufficient: Arabic-Indic digits are bidi
+ * class AN, and AN makes the neutrals beside it behave as right-to-left, so an
+ * isolated "٣ / ٥" still painted "٥ / ٣" on the emulator. The spaces are what
+ * hand the slash to that rule — unspaced, it is a common separator inside one
+ * number run. Hence `a/b`, not `a / b`, in the figure below.
  */
 const LRI = String.fromCharCode(0x2066); // LEFT-TO-RIGHT ISOLATE
 const PDI = String.fromCharCode(0x2069); // POP DIRECTIONAL ISOLATE
@@ -104,7 +110,7 @@ export function ScoreBar({
   let figure: string | null = null;
   if (display === "percent") figure = ltr(`${formatNumber(percent)}%`);
   else if (display === "ratio" || display === "value") {
-    figure = ltr(`${formatNumber(Math.round(total * (max ?? 1)))} / ${formatNumber(max ?? 0)}`);
+    figure = ltr(`${formatNumber(Math.round(total * (max ?? 1)))}/${formatNumber(max ?? 0)}`);
   }
 
   const srLabel =

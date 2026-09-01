@@ -8,6 +8,7 @@ import { AppShellProfileMenu } from "./AppShellProfileMenu";
 import type { AvatarUser } from "./Avatar";
 import { cx } from "./cx";
 import { Icon } from "./Icon";
+import { useEdgeFade } from "./useEdgeFade";
 
 interface AppShellNavProps {
   navRef: RefObject<HTMLElement | null>;
@@ -44,6 +45,8 @@ export function AppShellNav({
   onOpenSettings,
   onSignOut,
 }: AppShellNavProps): JSX.Element {
+  const fade = useEdgeFade(navRef);
+
   function onNavKeyDown(e: KeyboardEvent<HTMLElement>): void {
     if (e.key !== "ArrowLeft" && e.key !== "ArrowRight" && e.key !== "Home" && e.key !== "End") {
       return;
@@ -69,17 +72,20 @@ export function AppShellNav({
   return (
     <nav
       ref={navRef}
+      style={fade}
       onKeyDown={onNavKeyDown}
       aria-label={labels.mainNavLabel}
       // Edge fade tells narrow viewports the nav scrolls — the bar clips
-      // ~4 items at 390px with the scrollbar hidden.
+      // ~4 items at 390px with the scrollbar hidden. `useEdgeFade` paints it on
+      // the side that actually hides an item; the fixed mask this replaced ate
+      // the first item's opening letters whenever the strip sat at its start.
       // `h-full min-h-0`: without it the buttons size to their own content
       // (icon + label + padding) and overflow the 56px header — 89px tall at
       // 390px — which pushes the `-mb-px border-b-2` active indicator 17px
       // BELOW the header border instead of onto it. Invisible on most screens
       // because it lands on same-coloured background; it strikes straight
       // through the offline banner's tinted text.
-      className="flex h-full min-h-0 min-w-0 shrink items-stretch gap-1 overflow-x-auto overscroll-contain [mask-image:linear-gradient(to_right,transparent_0,black_16px,black_calc(100%-16px),transparent_100%)] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      className="flex h-full min-h-0 min-w-0 shrink items-stretch gap-1 overflow-x-auto overscroll-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
     >
       {NAV_ITEMS.map((item) => (
         <NavButton

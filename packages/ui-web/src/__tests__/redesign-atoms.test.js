@@ -172,7 +172,10 @@ describe("ScoreBar", () => {
     const { container, unmount } = renderClient(
       el(ScoreBar, { value: 0.6, display: "ratio", max: 500, "data-testid": "bar" }),
     );
-    expect(container.textContent).toContain("300 / 500");
+    // Unspaced on purpose: spaces around the slash hand it to the bidi rule
+    // that reorders Arabic-Indic numerals, and the figure paints "500 / 300".
+    expect(container.textContent).toContain("300/500");
+    expect(container.textContent).not.toContain("300 / 500");
     unmount();
   });
 

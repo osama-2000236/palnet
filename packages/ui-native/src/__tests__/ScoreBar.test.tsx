@@ -33,20 +33,26 @@ test("a low value is never red", () => {
   expect(flat("bar-fill").backgroundColor).not.toBe(nativeTokens.color.danger);
 });
 
-test("the figure carries an LTR isolate — bidi must not turn 3 / 5 into 5 / 3", () => {
+test("the figure carries an LTR isolate and no spaces — bidi must not turn 3/5 into 5/3", () => {
   // Caught on a real RTL device, not by a style assertion: `writingDirection`
   // is honoured on iOS and ignored by Android's text engine, so the direction
   // has to be IN the string. U+2066 … U+2069.
+  //
+  // And the isolate alone is not enough. Arabic-Indic digits are bidi class AN,
+  // which makes the neutrals beside them behave as RTL, so the emulator painted
+  // an isolated "٣ / ٥" as "٥ / ٣" anyway. The spaces are what hand the slash
+  // to that rule, so the figure must not contain any.
   render(<ScoreBar testID="bar" value={0.6} display="ratio" max={5} />);
-  expect(screen.getByText(ltr("3 / 5"))).toBeTruthy();
+  expect(screen.getByText(ltr("3/5"))).toBeTruthy();
+  expect(screen.queryByText(ltr("3 / 5"))).toBeNull();
 
-  const style = StyleSheet.flatten(screen.getByText(ltr("3 / 5")).props.style);
+  const style = StyleSheet.flatten(screen.getByText(ltr("3/5")).props.style);
   expect(style.writingDirection).toBe("ltr");
 });
 
 test("display=ratio renders value over max in mono", () => {
   render(<ScoreBar testID="bar" value={0.6} display="ratio" max={500} />);
-  const figure = screen.getByText(ltr("300 / 500"));
+  const figure = screen.getByText(ltr("300/500"));
   expect(StyleSheet.flatten(figure.props.style).fontFamily).toBe(nativeTokens.type.family.mono);
 });
 

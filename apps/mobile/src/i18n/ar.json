@@ -150,7 +150,7 @@
     "back": "رجوع",
     "offline": "أنت غير متصل الآن. يمكنك مراجعة الحقول، لكن الحفظ النهائي يحتاج اتصالًا.",
     "handle": "المعرّف الخاص بك",
-    "handleHint": "سيظهر كرابط: /in/{{handle}}",
+    "handleHint": "سيظهر كرابط: {{path}}",
     "headline": "المسمى الوظيفي",
     "headlineHint": "مثال: مطوّر منتجات رقمية في رام الله",
     "about": "نبذة قصيرة",
@@ -291,7 +291,7 @@
     "addImage": "إضافة صورة",
     "uploading": "جارٍ الرفع…",
     "removeImage": "إزالة الصورة",
-    "charCount": "{{current}} / {{max}}"
+    "charCount": "{{current}}/{{max}}"
   },
   "post": {
     "reactions": {
@@ -655,6 +655,8 @@
     "location": "مكان العمل",
     "apply": "قدّم طلبك",
     "appliedBadge": "تم التقديم",
+    "from": "من",
+    "upTo": "حتى",
     "belowMinimumBadge": "أقل من الحد الأدنى",
     "rejectedTitle": "لم يتم اختيارك لهذه الوظيفة",
     "belowMinimumSr": "الأجر المعلن أقل من الحد الأدنى للأجور في فلسطين",
