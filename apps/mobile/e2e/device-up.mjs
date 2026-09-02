@@ -1,6 +1,7 @@
 // Bring a running Android emulator to a state where `e2e/shots.mjs` works.
 //
 //   node apps/mobile/e2e/device-up.mjs [--skip-bundle] [--metro-port=8083]
+//                                      [--i-verified-no-native-deps-changed]
 //
 // Stays in the foreground: it owns Metro, the API and the bundle proxy, and
 // Ctrl-C takes all three down. Run the matrix from a second terminal:
@@ -136,19 +137,39 @@ function assertFreshDevClient() {
     ]);
   }
   if (apkAgeMs > lockAgeMs) {
+    // The lockfile's mtime is a proxy for "native dependencies changed", and a
+    // proxy has false positives: a tooling-only edit (an eslint plugin, a type
+    // package) rewrites the lockfile without touching a single native module.
+    // Rebuilding costs ~3 minutes plus an install, so there is an override —
+    // but only after you have read the lockfile diff since the APK was built
+    // and confirmed no native module appeared. Do that with:
+    //
+    //   git log --format='%h %ad' --date=iso -- pnpm-lock.yaml   # find the APK-era commit
+    //   git diff <that>..HEAD -- pnpm-lock.yaml | grep '^[+-] '
+    //
+    // If a `react-native-*` or `expo-*` package is genuinely new, rebuild. The
+    // flag is deliberately verbose so it cannot be typed on autopilot.
+    if (flag("i-verified-no-native-deps-changed")) {
+      say(`2/6 dev client  installed ${hours(apkAgeMs)} ago — STALE by mtime, override accepted`);
+      say("    the lockfile changed after this APK was built; you asserted the");
+      say('    delta is tooling-only. A red-box "Compiling JS failed" means it was not.');
+      return;
+    }
     fail([
       "✖ the installed dev client predates the current native dependencies.",
       `    APK installed   ${hours(apkAgeMs)} ago`,
       `    pnpm-lock.yaml  ${hours(lockAgeMs)} ago`,
       "",
       "  Running it anyway red-boxes with \"Compiling JS failed: <line>:<col>:')'",
-      "  expected\", which reads like a syntax error in your change. It is the",
+      '  expected", which reads like a syntax error in your change. It is the',
       "  APK's old Hermes failing on a current bundle.",
       "",
       ...rebuildInstructions(),
     ]);
   }
-  say(`2/6 dev client  installed ${hours(apkAgeMs)} ago, lockfile ${hours(lockAgeMs)} ago — current`);
+  say(
+    `2/6 dev client  installed ${hours(apkAgeMs)} ago, lockfile ${hours(lockAgeMs)} ago — current`,
+  );
 }
 
 function rebuildInstructions() {
@@ -192,6 +213,21 @@ async function ensureApi() {
  * `--entry-file` must be absolute: gradle's `resolveAppEntry` default emits
  * `./index.ts`, which resolves against the pnpm-monorepo Metro root and not
  * this package, and fails.
+ *
+ * `--reset-cache` costs ~50s and buys the harness's whole reason to exist.
+ * babel-preset-expo inlines `process.env.EXPO_PUBLIC_*` at TRANSFORM time, and
+ * Metro caches transforms by file content — not by the env that was in scope
+ * when the transform ran. A module transformed once without the env keeps its
+ * inlined `undefined` forever, and the minifier then folds the dead branch away:
+ *
+ *   getInitialLocale = () => readNativePreference() ?? deviceLocale()
+ *
+ * with the `EXPO_PUBLIC_DEFAULT_LOCALE` fallback simply gone. On 2026-09-02 that
+ * made a fresh install boot English-on-an-English-emulator instead of Arabic,
+ * which reads exactly like an Arabic-first regression in the app and is not —
+ * the same source rebuilt with `--reset-cache` compiled to `?? "ar-PS"`. Every
+ * step reported success and the bundle was valid; only the product was wrong.
+ * That is the silent-wrong-answer this file exists to refuse.
  */
 function buildBundle() {
   if (flag("skip-bundle")) {
@@ -203,7 +239,7 @@ function buildBundle() {
   if (!existsSync(path.join(MOBILE, ".env"))) {
     say("    note: apps/mobile/.env is missing — EXPO_PUBLIC_* defaults get baked in.");
   }
-  say("4/6 bundle      expo export:embed --dev false (~40s) …");
+  say("4/6 bundle      expo export:embed --dev false --reset-cache (~90s) …");
   execFileSync(
     "npx",
     [
@@ -213,6 +249,7 @@ function buildBundle() {
       "android",
       "--dev",
       "false",
+      "--reset-cache",
       "--entry-file",
       path.join(MOBILE, "index.ts"),
       "--bundle-output",
