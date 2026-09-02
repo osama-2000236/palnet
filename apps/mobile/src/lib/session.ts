@@ -16,7 +16,7 @@ type BrowserStorage = {
 
 const memoryStorage = new Map<string, string>();
 
-export interface ProfileCompletionCache {
+interface ProfileCompletionCache {
   userId: string;
   handle: string;
   completedAt: string;

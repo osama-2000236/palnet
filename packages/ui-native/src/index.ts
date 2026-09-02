@@ -7,7 +7,7 @@ export type { SurfaceProps, SurfaceVariant, SurfacePadding } from "./Surface";
 // shadowStyle is package-internal (Surface/Sheet/Toast). Only the type
 // is public — consumers describe shadows, they don't build them.
 export type { ShadowKind } from "./shadow";
-export { Illustration, ILLUSTRATION_MOTIFS, ILLUSTRATION_DIRECTIONS } from "./Illustration";
+export { Illustration } from "./Illustration";
 export type {
   IllustrationProps,
   IllustrationMotif,
@@ -79,7 +79,7 @@ export { Tabs, Tab } from "./Tabs";
 export type { TabsProps, TabProps } from "./Tabs";
 export { Alert } from "./Alert";
 export type { AlertKind, AlertProps } from "./Alert";
-export { Toast, ToastProvider, useToast } from "./Toast";
+export { ToastProvider, useToast } from "./Toast";
 export type {
   ShowToastInput,
   ToastContextValue,

@@ -76,7 +76,7 @@ export interface StreamSource {
   close(): void;
 }
 
-export interface StreamLoopOptions {
+interface StreamLoopOptions {
   /**
    * Mint a fresh single-use stream token for this attempt.
    *

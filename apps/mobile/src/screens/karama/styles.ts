@@ -100,7 +100,7 @@ function makeKaramaStyles(c: NativeTheme["color"]) {
   });
 }
 
-export type KaramaStylesSheet = ReturnType<typeof makeKaramaStyles>;
+type KaramaStylesSheet = ReturnType<typeof makeKaramaStyles>;
 
 export function useKaramaStyles(): KaramaStylesSheet {
   const c = useThemeTokens().color;
