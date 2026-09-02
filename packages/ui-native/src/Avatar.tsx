@@ -112,6 +112,25 @@ export function Avatar({
   const initials = initialsOf(user);
   const label = alt ?? nameOf(user);
   const placeholder = blurhash ?? user.avatarBlurhash ?? null;
+  // The a11y contract is web's, in native props. See ui-web/src/Avatar.tsx:
+  // exactly one announced node — the wrapper — and a nameless avatar is hidden
+  // rather than announced as an unlabeled image, because "image" on its own
+  // tells a screen-reader user nothing they can act on.
+  //
+  // `accessible` has to be explicit. It defaults to false on View, so the
+  // wrapper was carrying a role and a label while never being an accessibility
+  // element, and the photo underneath it was announced instead.
+  const a11yProps = label
+    ? ({ accessible: true, accessibilityRole: "image", accessibilityLabel: label } as const)
+    : ({
+        accessible: false,
+        // Two props for one behaviour: `accessibilityElementsHidden` is iOS
+        // only and `importantForAccessibility` is Android only. Shipping one
+        // without the other hides the subtree on one platform and leaves it
+        // fully exposed on the other — which is what happened below.
+        accessibilityElementsHidden: true,
+        importantForAccessibility: "no-hide-descendants",
+      } as const);
   const box = BOX_SIZE[size];
   const ringWidth = ring ? 2 : 0;
   const ringGap = ring ? 2 : 0;
@@ -166,7 +185,10 @@ export function Avatar({
     <View style={[frame, xlBorder]}>
       {user.avatarUrl ? (
         <Image
-          accessibilityLabel={label || undefined}
+          // No label here on purpose, matching web's `alt=""`: the wrapper is
+          // the announced node and carries the person's name, so a label on the
+          // photo is that name announced twice.
+          accessible={false}
           source={{ uri: user.avatarUrl }}
           style={StyleSheet.absoluteFill}
           contentFit="cover"
@@ -181,7 +203,11 @@ export function Avatar({
             fontWeight: "600",
             fontFamily: nativeTokens.type.family.sans,
           }}
+          // iOS + Android. `accessibilityElementsHidden` alone is an iOS-only
+          // prop, so on Android TalkBack still reached these initials and read
+          // them after the wrapper's label — "Osama Saleh, O S".
           accessibilityElementsHidden
+          importantForAccessibility="no-hide-descendants"
         >
           {initials}
         </Text>
@@ -190,13 +216,16 @@ export function Avatar({
   );
 
   return (
-    <View
-      accessibilityRole="image"
-      accessibilityLabel={label || undefined}
-      style={[ring ? ringFrame : null, style]}
-    >
+    <View {...a11yProps} style={[ring ? ringFrame : null, style]}>
       {avatarBody}
-      {online ? <View style={dot} pointerEvents="none" /> : null}
+      {online ? (
+        <View
+          style={dot}
+          pointerEvents="none"
+          accessibilityElementsHidden
+          importantForAccessibility="no-hide-descendants"
+        />
+      ) : null}
     </View>
   );
 }
