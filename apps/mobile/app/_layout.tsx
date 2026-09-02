@@ -8,7 +8,7 @@ import NetInfo from "@react-native-community/netinfo";
 import { useFonts } from "expo-font";
 import { router, Stack, SplashScreen, usePathname } from "expo-router";
 import { useEffect } from "react";
-import { Appearance, I18nManager, Linking, StatusBar } from "react-native";
+import { Appearance, Linking, StatusBar } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { ThemeProvider, ToastProvider } from "@baydar/ui-native";
@@ -31,12 +31,12 @@ import "../src/i18n";
 initObservability();
 initAnalytics();
 
-// Arabic is the default. Force RTL once on first boot so every screen lays
-// out mirrored without each component having to think about it.
-if (!I18nManager.isRTL) {
-  I18nManager.allowRTL(true);
-  I18nManager.forceRTL(true);
-}
+// Layout direction is written by `../src/i18n` above, which calls
+// applyLocaleDirection(getInitialLocale()) at import time. Nothing else may
+// touch I18nManager here: a second writer that forces RTL whenever
+// `I18nManager.isRTL` is false undoes the user's switch to English on the very
+// launch that was meant to apply it, and the app flip-flops direction forever.
+// Arabic-first is preserved by getInitialLocale() (EXPO_PUBLIC_DEFAULT_LOCALE).
 
 // Keep the native splash up until fonts load so we never flash system text.
 void SplashScreen.preventAutoHideAsync().catch(() => {
