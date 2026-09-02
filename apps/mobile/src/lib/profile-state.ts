@@ -8,7 +8,7 @@ import {
 import { apiFetch, ApiRequestError } from "./api";
 import { clearProfileCache, readProfileCache, writeProfileCache } from "./session";
 
-export type ProfileStatus =
+type ProfileStatus =
   | { status: "complete"; profile: ProfileDto | null; source: "api" | "cache" }
   | { status: "required"; profile: null; source: "api" | "cache" };
 

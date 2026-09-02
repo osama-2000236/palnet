@@ -47,11 +47,7 @@ const PLATFORM_IDIOMS = {
     Composer: "native uses ComposerEntry — a tap target that opens a screen",
     ProfileHeader: "native composes this from Avatar + Surface in the screen",
     ReactionPicker: "native uses a long-press ActionSheet",
-    REACTION_TINT: "web-only styling helper",
     GroupedMessage: "type from groupMessages, web-only helper",
-    TabPanel:
-      "web's tabs own their panel for `aria-controls`; a native screen renders " +
-      "the section below the strip and has nothing to label",
   },
   native: {
     ActionSheet: "platform idiom — see web's Menu",

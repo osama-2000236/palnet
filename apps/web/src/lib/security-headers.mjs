@@ -1,18 +1,14 @@
 const STATIC_R2_ORIGINS = ["https://media.baydar.ps", "https://*.r2.dev"];
 const SENTRY_ORIGINS = ["https://*.ingest.sentry.io", "https://*.sentry.io"];
-const DEFAULT_POSTHOG_ORIGINS = ["https://us.i.posthog.com", "https://us-assets.i.posthog.com"];
 
 export function buildContentSecurityPolicy(env = process.env, nonce) {
   const production = env.NODE_ENV === "production";
   const apiOrigin = originFrom(env.NEXT_PUBLIC_API_URL);
   const r2Origin = originFrom(env.NEXT_PUBLIC_R2_PUBLIC_URL ?? env.R2_PUBLIC_URL);
-  const posthogOrigin = originFrom(env.NEXT_PUBLIC_POSTHOG_HOST);
   const nonceSource = nonce ? `'nonce-${nonce}'` : null;
   const connectOrigins = unique([
     "'self'",
     apiOrigin,
-    posthogOrigin,
-    ...DEFAULT_POSTHOG_ORIGINS,
     ...SENTRY_ORIGINS,
     r2Origin,
     ...STATIC_R2_ORIGINS,
@@ -23,8 +19,6 @@ export function buildContentSecurityPolicy(env = process.env, nonce) {
     "'self'",
     nonceSource,
     nonceSource ? "'strict-dynamic'" : null,
-    posthogOrigin,
-    "https://us-assets.i.posthog.com",
   ]);
   const styleOrigins = unique(["'self'", nonceSource]);
 

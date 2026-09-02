@@ -10,7 +10,7 @@ export { Surface } from "./Surface";
 export type { SurfaceProps, SurfaceVariant, SurfacePadding } from "./Surface";
 
 // ── Illustration & empty states ──────────────────────────────────────
-export { Illustration, ILLUSTRATION_MOTIFS, ILLUSTRATION_DIRECTIONS } from "./Illustration";
+export { Illustration } from "./Illustration";
 export type {
   IllustrationProps,
   IllustrationMotif,
@@ -51,7 +51,7 @@ export { ReactionGlyph } from "./ReactionGlyph";
 export type { ReactionGlyphProps } from "./ReactionGlyph";
 export { ReactionPicker } from "./ReactionPicker";
 export type { ReactionPickerProps, ReactionPickerLabels } from "./ReactionPicker";
-export { REACTION_TYPES, REACTION_TINT, topReactions } from "./reactions";
+export { REACTION_TYPES, topReactions } from "./reactions";
 export type { ReactionKind } from "./reactions";
 export { AppBand } from "./AppBand";
 export type { AppBandProps } from "./AppBand";
@@ -115,9 +115,9 @@ export { SwitchRow } from "./SwitchRow";
 export type { SwitchRowProps } from "./SwitchRow";
 export { Textarea } from "./Textarea";
 export type { TextareaProps, TextareaSize } from "./Textarea";
-export { Tabs, Tab, TabPanel } from "./Tabs";
-export type { TabsProps, TabProps, TabPanelProps } from "./Tabs";
-export { Toast, ToastProvider, useToast } from "./Toast";
+export { Tabs, Tab } from "./Tabs";
+export type { TabsProps, TabProps } from "./Tabs";
+export { ToastProvider, useToast } from "./Toast";
 export type {
   ShowToastInput,
   ToastAction,

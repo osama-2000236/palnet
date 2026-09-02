@@ -36,7 +36,7 @@ export const BANDLESS_ROUTES = new Set([
   "/forgot-password",
 ]);
 
-export type BarStyle = "light-content" | "dark-content";
+type BarStyle = "light-content" | "dark-content";
 
 /** Light on the olive band, dark on paper. Unknown routes assume a band. */
 export function barStyleFor(pathname: string): BarStyle {

@@ -92,7 +92,7 @@ function makeCompanyBillingStyles(c: NativeTheme["color"]) {
   });
 }
 
-export type CompanyBillingStylesSheet = ReturnType<typeof makeCompanyBillingStyles>;
+type CompanyBillingStylesSheet = ReturnType<typeof makeCompanyBillingStyles>;
 
 export function useCompanyBillingStyles(): CompanyBillingStylesSheet {
   const c = useThemeTokens().color;

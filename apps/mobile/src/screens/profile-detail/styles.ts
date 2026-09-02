@@ -156,7 +156,7 @@ function makeProfileStyles(c: NativeTheme["color"]) {
   });
 }
 
-export type ProfileStylesSheet = ReturnType<typeof makeProfileStyles>;
+type ProfileStylesSheet = ReturnType<typeof makeProfileStyles>;
 
 export function useProfileStyles(): ProfileStylesSheet {
   const c = useThemeTokens().color;

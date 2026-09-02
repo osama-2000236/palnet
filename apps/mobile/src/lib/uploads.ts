@@ -14,7 +14,7 @@ export interface PickedAsset {
   filename?: string;
 }
 
-export interface UploadedAsset {
+interface UploadedAsset {
   publicUrl: string;
   blurhash: string | null;
 }

@@ -204,7 +204,7 @@ function makeFeedStyles(c: NativeTheme["color"]) {
   });
 }
 
-export type FeedStyles = ReturnType<typeof makeFeedStyles>;
+type FeedStyles = ReturnType<typeof makeFeedStyles>;
 
 export function useFeedStyles(): FeedStyles {
   const c = useThemeTokens().color;
