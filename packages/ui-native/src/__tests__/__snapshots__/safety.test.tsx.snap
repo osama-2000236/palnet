@@ -107,6 +107,7 @@ exports[`safety primitives renders BlockedListItem identity 1`] = `
   <View
     accessibilityLabel="Blocked User"
     accessibilityRole="image"
+    accessible={true}
     style={
       [
         null,
@@ -132,6 +133,7 @@ exports[`safety primitives renders BlockedListItem identity 1`] = `
     >
       <Text
         accessibilityElementsHidden={true}
+        importantForAccessibility="no-hide-descendants"
         style={
           {
             "color": "#2e371d",

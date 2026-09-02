@@ -167,6 +167,7 @@ exports[`MessageBubble matches the theirs-message snapshot 1`] = `
     <View
       accessibilityLabel="ليلى ناصر"
       accessibilityRole="image"
+      accessible={true}
       style={
         [
           null,
@@ -192,6 +193,7 @@ exports[`MessageBubble matches the theirs-message snapshot 1`] = `
       >
         <Text
           accessibilityElementsHidden={true}
+          importantForAccessibility="no-hide-descendants"
           style={
             {
               "color": "#5c5a52",
