@@ -10,6 +10,7 @@
 
 import js from "@eslint/js";
 import importPlugin from "eslint-plugin-import";
+import reactHooks from "eslint-plugin-react-hooks";
 import prettier from "eslint-config-prettier";
 import globals from "globals";
 import tseslint from "typescript-eslint";
@@ -109,6 +110,30 @@ export function baseConfig({ globals: extraGlobals = {} } = {}) {
       },
       settings: { "import/resolver": { typescript: true, node: true } },
       rules: houseRules,
+    },
+    {
+      // React rules for the shared kits. `ui-web` and `ui-native` are React
+      // component libraries that lint through this base and had no React plugin
+      // at all, so `rules-of-hooks` never ran on them: that is how
+      // `ui-native/src/Avatar.tsx` shipped `if (!user) return null` above a
+      // `useThemeTokens()` call — a conditional hook that throws the moment a
+      // null user becomes non-null. `apps/web` and `apps/mobile` bring their
+      // own React config and are excluded from this base, so nothing here
+      // double-registers the plugin.
+      //
+      // Pinned to react-hooks 5.x on purpose. 7.x adds the React Compiler rules
+      // (`set-state-in-effect`, `purity`, `globals`) as errors; `apps/web` had
+      // to downgrade 51 of those to warnings when it moved to
+      // eslint-config-next@16, and that cleanup is its own pass, not this one.
+      files: ["**/*.{ts,tsx}"],
+      plugins: { "react-hooks": reactHooks },
+      rules: {
+        "react-hooks/rules-of-hooks": "error",
+        // Warn, not error: it flags real stale-closure bugs but also every
+        // deliberate mount-only effect. Worth seeing, not worth blocking on
+        // until someone triages the backlog.
+        "react-hooks/exhaustive-deps": "warn",
+      },
     },
     {
       // CommonJS tooling — jest configs, tailwind presets, postcss. ESLint 9

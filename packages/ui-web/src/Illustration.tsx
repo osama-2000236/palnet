@@ -79,7 +79,9 @@ export function Illustration({
         </svg>
       </div>
     );
-  }, [motif, direction, size, tint, className]);
+    // `px` and `h` are derived from `size`, so listing them instead of `size`
+    // is the same memo with a dependency list the linter can verify.
+  }, [motif, direction, px, h, tint, className]);
 }
 
 function OutlineSet({ motif }: { motif: IllustrationMotif }): JSX.Element | null {

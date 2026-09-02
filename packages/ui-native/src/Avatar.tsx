@@ -102,9 +102,11 @@ export function Avatar({
   blurhash,
   alt,
 }: AvatarProps): JSX.Element | null {
+  // Hooks first: an early `return null` above a hook changes the hook order
+  // between renders, and React throws the moment a null user becomes non-null.
+  const tk = useThemeTokens();
   if (!user) return null;
 
-  const tk = useThemeTokens();
   const seed = user.id || user.handle || nameOf(user) || "0";
   const palette = paletteFor(seed, tk.avatar.palette);
   const initials = initialsOf(user);
