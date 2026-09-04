@@ -130,7 +130,11 @@ known exceptions that fails when an entry goes stale: `check:i18n` (cross-platfo
 keys, and — since 2026-07-30 — a ratchet on keys that exist on one platform only),
 `check:ui-lockstep` (ui-web ↔ ui-native pairing, **ledger at 0 entries** as of 2026-07-30),
 `packages/config/__tests__/rtl-rules` (the RTL eslint selectors, run against known-bad source),
-the shared api-client spec, and `check:security-headers`. `check:native-versions` and
+the shared api-client spec, and `check:security-headers`. `check:enum-parity`
+(Prisma ↔ `packages/shared/src/enums.ts`; joined 2026-09-04, and found two
+`NotificationType` values the mirror was missing on its first run) checks member
+drift on the 19 mirrored enums — coverage is not the contract, since 10 schema enums
+are deliberately API-only. `check:native-versions` and
 `test:gates` (`scripts/__tests__/`, the gates' own tests) joined the lint job on 2026-07-30;
 `check:native-versions` had never run in CI at all.
 

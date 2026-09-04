@@ -18,6 +18,7 @@
     "test:gates": "node --test \"scripts/**/*.test.mjs\"",
     "check:i18n": "node scripts/check-i18n-parity.mjs",
     "check:ui-lockstep": "node scripts/check-ui-lockstep.mjs",
+    "check:enum-parity": "node scripts/check-enum-parity.mjs",
     "check:naming": "node scripts/check-naming.mjs",
     "test": "turbo run test",
     "typecheck": "pnpm type-check",

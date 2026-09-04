@@ -45,6 +45,14 @@ export const NotificationType = {
   JOB_ALERT: "JOB_ALERT",
   PROFILE_VIEW: "PROFILE_VIEW",
   MODERATION_ACTION: "MODERATION_ACTION",
+  /**
+   * Phase 3–4, same front-loaded contract as `Standing` / `WorkProof` (see
+   * docs/HANDOFF.md). No writer yet — and until this mirror named them, the API
+   * could not have written one if there were, since it takes the enum from here
+   * rather than @prisma/client.
+   */
+  STANDING_ADVANCED: "STANDING_ADVANCED",
+  WORK_PROOF_REQUESTED: "WORK_PROOF_REQUESTED",
 } as const;
 export type NotificationType = (typeof NotificationType)[keyof typeof NotificationType];
 
