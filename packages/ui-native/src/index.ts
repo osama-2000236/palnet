@@ -7,7 +7,10 @@ export type { SurfaceProps, SurfaceVariant, SurfacePadding } from "./Surface";
 // shadowStyle is package-internal (Surface/Sheet/Toast). Only the type
 // is public — consumers describe shadows, they don't build them.
 export type { ShadowKind } from "./shadow";
-export { Illustration } from "./Illustration";
+// Public to keep lockstep with ui-web, whose copy the design-sync previews
+// import to render the motif catalogue. Audit 9 cut both sides as unused; the
+// scan covered apps/ and the kits only and never saw .design-sync/previews/.
+export { Illustration, ILLUSTRATION_MOTIFS, ILLUSTRATION_DIRECTIONS } from "./Illustration";
 export type {
   IllustrationProps,
   IllustrationMotif,
@@ -79,7 +82,9 @@ export { Tabs, Tab } from "./Tabs";
 export type { TabsProps, TabProps } from "./Tabs";
 export { Alert } from "./Alert";
 export type { AlertKind, AlertProps } from "./Alert";
-export { ToastProvider, useToast } from "./Toast";
+// `Toast` is the presentational pill. Screens use `useToast`; it stays public
+// to pair with web's, whose design-sync card renders it directly.
+export { Toast, ToastProvider, useToast } from "./Toast";
 export type {
   ShowToastInput,
   ToastContextValue,

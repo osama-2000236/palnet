@@ -17,7 +17,7 @@
 //
 // Exits non-zero on any hit. Prints a grep-friendly report.
 
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { join } from "node:path";
 
@@ -137,6 +137,29 @@ for (const [platform, own, other] of [
       hits.push({
         kind: "stale lockstep entry",
         detail: `${platform}/${name} now exists on both sides (${reason}). Remove it.`,
+      });
+    }
+  }
+}
+
+// The design-sync previews are the only consumer that imports through the
+// barrel — apps/ and the kit tests both reach past it (`../../dist/Foo`). So
+// deleting an `index.ts` re-export breaks a preview card with every other gate
+// green, which is exactly what audit 9 did to Tabs, Illustration and Toast.
+const PREVIEWS = ".design-sync/previews";
+for (const file of readdirSync(join(ROOT, PREVIEWS))) {
+  if (!file.endsWith(".tsx")) continue;
+  const source = readFileSync(join(ROOT, PREVIEWS, file), "utf8");
+  for (const block of source.matchAll(/import\s*\{([^}]+)\}\s*from\s*"@baydar\/ui-web"/g)) {
+    for (const raw of block[1].split(",")) {
+      const name = raw.trim().replace(/^type\s+/, "");
+      if (!name || web.has(name)) continue;
+      hits.push({
+        kind: "preview imports a name the barrel does not export",
+        detail:
+          `${PREVIEWS}/${file} imports ${name} from @baydar/ui-web, which ` +
+          `packages/ui-web/src/index.ts no longer exports. The preview would ` +
+          `render undefined. Re-export it, or drop the story that uses it.`,
       });
     }
   }

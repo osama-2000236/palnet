@@ -32,10 +32,6 @@
       "primaryStory": "Success",
       "viewport": "760x400"
     },
-    "ToastHost": {
-      "cardMode": "single",
-      "viewport": "760x360"
-    },
     "Composer": {
       "cardMode": "column"
     },

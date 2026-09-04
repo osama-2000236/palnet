@@ -1,4 +1,4 @@
-import { Tab, TabPanel, Tabs } from "@baydar/ui-web";
+import { Tab, Tabs } from "@baydar/ui-web";
 
 // <Tab> throws outside <Tabs> — the context lives in the parent, so every
 // preview here is the full composition.
@@ -80,16 +80,4 @@ export const Wrapped = () => (
       <Tab value="activity">النشاط</Tab>
     </Tabs>
   </div>
-);
-
-// A2.3 exports a real panel now, so a tab list has something to point
-// `aria-controls` at.
-export const WithPanel = () => (
-  <Tabs value="about" onChange={noop} label="أقسام الملف">
-    <Tab value="about">نبذة</Tab>
-    <Tab value="experience">الخبرات</Tab>
-    <TabPanel value="about">
-      <p style={{ paddingTop: 12, fontSize: 14 }}>مهندس برمجيات في رام الله.</p>
-    </TabPanel>
-  </Tabs>
 );

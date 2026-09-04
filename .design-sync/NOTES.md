@@ -7,7 +7,7 @@ Repo-specific gotchas for future syncs. Read this before touching anything else.
 `packages/ui-web` builds with plain `tsc`. Its components are styled entirely by
 **Tailwind utility class strings** (`bg-brand-600`, `text-ink-inverse`, …) that
 `apps/web` compiles at app-build time against `@baydar/ui-tokens`'s preset. The
-package itself emits zero CSS, so a naive sync produces 33 fully-functional but
+package itself emits zero CSS, so a naive sync produces 32 fully-functional but
 completely unstyled components.
 
 `.design-sync/ds-styles/` solves this: a design-sync-only Tailwind config +
@@ -77,12 +77,12 @@ Use `packages/ui-web/node_modules` for `--node-modules`: it has `react`,
   ```
 
   Doing this last also rewrites preview source hashes. If a later sync clears all
-  33 grades for no visible reason, that is why — re-verifying is the correct
+  32 grades for no visible reason, that is why — re-verifying is the correct
   response, not chasing it.
 
 ## Grouping
 
-All 33 components land in the single `general` group. Only 6 have real docs
+All 32 components land in the single `general` group. Only 6 have real docs
 (`docs/components/*.md`). Grouping the other 27 would mean pointing `cfg.docsMap`
 at frontmatter-only stub `.md` files — and a component with a `docBody` gets **no
 synthesized `## Examples` section**, so the authored preview JSX would vanish
@@ -148,6 +148,10 @@ the design agent around art that already exists, and it trusts that file.
 - **Previews inline data** (Arabic copy, label objects, data-URI images). None of
   it is `$ref`-backed, so if `apps/web/messages/ar-PS.json` changes wording, the
   cards keep the old strings. Cosmetic, not correctness.
+- **Previews import from the package barrel**, which nothing else does —
+  `apps/` and the kit tests both reach past it (`require("../../dist/Foo")`).
+  Deleting an `index.ts` re-export therefore breaks a card with every gate
+  still green. `check:ui-lockstep` now fails on that; don't route around it.
 - **Fonts are vendored copies**, not links. If `@expo-google-fonts/*` bumps its
   font version, `.design-sync/fonts/*.ttf` will not follow.
 - **Playwright pin**: the render check needs a `playwright` whose `browsers.json`
@@ -192,7 +196,9 @@ wrap it in a `Stage` div with an explicit `minHeight` still work — the overlay
 is `position: fixed` either way — but it no longer server-renders at all, so a
 preview harness that only does SSR will show nothing for it.
 
-`Tabs` gained `TabPanel` and an injected `formatCount`. The preview passes a
+`Tabs` gained an injected `formatCount`. (It also briefly gained a `TabPanel`;
+audit 9 deleted it — no surface ever mounted one — and the `WithPanel` story
+went with it.) The preview passes a
 real `Intl.NumberFormat("ar-PS-u-nu-arab")` formatter on purpose: without it
 the badge renders Latin digits inside an Arabic UI, which is the exact defect
 A2.14 fixed, and a preview showing it uncorrected would teach the wrong thing.
