@@ -10,7 +10,12 @@ export { Surface } from "./Surface";
 export type { SurfaceProps, SurfaceVariant, SurfacePadding } from "./Surface";
 
 // ── Illustration & empty states ──────────────────────────────────────
-export { Illustration } from "./Illustration";
+// The motif/direction tuples are barrel-public on purpose: the design-sync
+// previews import them from "@baydar/ui-web" to render the motif catalogue,
+// and that harness sees nothing but this barrel. Audit 9 cut them as unused
+// because the scan covered apps/ and the kits only — check
+// .design-sync/previews/ before cutting a barrel line.
+export { Illustration, ILLUSTRATION_MOTIFS, ILLUSTRATION_DIRECTIONS } from "./Illustration";
 export type {
   IllustrationProps,
   IllustrationMotif,
@@ -117,7 +122,9 @@ export { Textarea } from "./Textarea";
 export type { TextareaProps, TextareaSize } from "./Textarea";
 export { Tabs, Tab } from "./Tabs";
 export type { TabsProps, TabProps } from "./Tabs";
-export { ToastProvider, useToast } from "./Toast";
+// `Toast` is the presentational pill; apps use `useToast`, but the design-sync
+// Toast card renders it directly. Same reason as ILLUSTRATION_MOTIFS above.
+export { Toast, ToastProvider, useToast } from "./Toast";
 export type {
   ShowToastInput,
   ToastAction,

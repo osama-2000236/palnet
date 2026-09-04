@@ -22,7 +22,7 @@ if [ ! -f .ds-sync/package-build.mjs ]; then
   echo "  skill — install that skill, then re-run this from the repo root." >&2
   echo "" >&2
   echo "  Everything else on the repo side is ready: the Tailwind step below" >&2
-  echo "  compiles clean, .design-sync/config.json is populated, and the 33" >&2
+  echo "  compiles clean, .design-sync/config.json is populated, and the 32" >&2
   echo "  previews in .design-sync/previews/ are committed. Read" >&2
   echo "  .design-sync/NOTES.md before re-syncing." >&2
   exit 1
