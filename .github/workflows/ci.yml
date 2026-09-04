@@ -50,6 +50,7 @@ jobs:
       - run: pnpm qa:design
       - run: pnpm check:i18n
       - run: pnpm check:ui-lockstep
+      - run: pnpm check:enum-parity
       - run: pnpm check:naming
       - run: pnpm check:release-placeholders
       - run: pnpm check:security-headers

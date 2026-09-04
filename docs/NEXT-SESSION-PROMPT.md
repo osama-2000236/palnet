@@ -22,7 +22,7 @@ Read order for either part: `CLAUDE.md` → `project-spec.md` → `DESIGN.md` �
 > The feature surface is complete. What is left is the list below. Pick items **only** from
 > "Actionable now". One item = one PR. After each, run format, lint, `lint:tokens`,
 > type-check and test, plus the gate that covers what you touched (`check:i18n`,
-> `check:ui-lockstep`, `check:native-versions`, `test:gates`, `check:security-headers`,
+> `check:ui-lockstep`, `check:enum-parity`, `check:native-versions`, `test:gates`, `check:security-headers`,
 > `check:release-production`). On a fresh clone run `pnpm --filter @baydar/db db:generate`
 > before `type-check` or `test`, or the whole gate fails on a misleading `TS2305`.
 
