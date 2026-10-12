@@ -13,7 +13,7 @@ export const CreateCommentBody = z.object({
 });
 export type CreateCommentBody = z.infer<typeof CreateCommentBody>;
 
-export const Comment = z.object({
+const CommentFields = z.object({
   id: z.string().cuid(),
   postId: z.string().cuid(),
   parentId: z.string().cuid().nullable(),
@@ -27,6 +27,13 @@ export const Comment = z.object({
     lastName: z.string(),
     avatarUrl: z.string().url().nullable(),
   }),
+});
+export const Comment = CommentFields.extend({
+  /**
+   * Set on the comments list only: the live replies, oldest first. Threads are
+   * one level deep — a reply to a reply joins its root comment's thread.
+   */
+  replies: z.array(CommentFields).optional(),
 });
 export type Comment = z.infer<typeof Comment>;
 

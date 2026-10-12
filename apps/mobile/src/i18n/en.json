@@ -66,6 +66,8 @@
     "firstName": "First name",
     "lastName": "Last name",
     "acceptTerms": "I agree to the Terms and Privacy Policy",
+    "termsLink": "the Terms",
+    "privacyLink": "the Privacy Policy",
     "submitRegister": "Create my account",
     "submitLogin": "Sign in",
     "restoreCta": "Restore account and sign in",
@@ -279,12 +281,17 @@
       "count_other": "{{count}} posts"
     },
     "provenance": {
-      "newestFromNetwork": "Newest first, from you and your connections"
+      "ranked": "Your network first, then the newest and most discussed"
     },
     "end": {
       "title": "You've reached the end of what's new",
       "body_one": "{{count}} post in today's round. We'll be back with a new one tomorrow.",
       "body_other": "{{count}} posts in today's round. We'll be back with a new one tomorrow."
+    },
+    "reason": {
+      "REPOST": "{{actor}} reposted this",
+      "NEARBY": "From professionals in your city",
+      "DISCOVER": "Suggested from outside your network"
     }
   },
   "composer": {
@@ -312,8 +319,12 @@
     "save": "Save",
     "saved": "Saved",
     "commentPlaceholder": "Add a comment…",
-    "commentSubmit": "Reply",
+    "commentSubmit": "Post",
     "commentError": "Could not post comment.",
+    "reply": "Reply",
+    "replyingTo": "Replying to {{name}}",
+    "cancelReply": "Cancel reply",
+    "replyPlaceholder": "Write a reply…",
     "loadMoreComments": "Show more comments"
   },
   "safety": {
@@ -613,6 +624,7 @@
       "POST_MENTION": "{{actor}} mentioned you in a post.",
       "MESSAGE_RECEIVED": "{{actor}} sent you a message.",
       "JOB_APPLICATION_UPDATE": "Your application has an update.",
+      "JOB_APPLICATION_RECEIVED": "{{actor}} applied to {{jobTitle}}.",
       "PROFILE_VIEW": "{{actor}} viewed your profile.",
       "MODERATION_ACTION": "Your report was reviewed by the moderation team.",
       "JOB_ALERT": "New job matches your alert: {{jobTitle}}"

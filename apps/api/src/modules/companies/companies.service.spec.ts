@@ -33,6 +33,8 @@ type PrismaStub = {
     count: jest.Mock;
     groupBy: jest.Mock;
   };
+  subscription: { count: jest.Mock };
+  employerCredit: { count: jest.Mock };
   $transaction: jest.Mock;
   $executeRaw: jest.Mock;
 };
@@ -67,6 +69,8 @@ function buildPrisma(): PrismaStub {
       count: jest.fn().mockResolvedValue(0),
       groupBy: jest.fn().mockResolvedValue([]),
     },
+    subscription: { count: jest.fn().mockResolvedValue(0) },
+    employerCredit: { count: jest.fn().mockResolvedValue(0) },
     $transaction: jest.fn(),
     $executeRaw: jest.fn().mockResolvedValue(0),
   };
@@ -260,6 +264,23 @@ describe("CompaniesService", () => {
         [1, 1],
         [0, 0],
       ]);
+    });
+  });
+
+  describe("remove", () => {
+    it("deletes a company with nothing hanging off it", async () => {
+      await service.remove("co_1");
+      expect(prisma.company.delete).toHaveBeenCalledWith({ where: { id: "co_1" } });
+    });
+
+    it.each([
+      ["applications", "application"],
+      ["a live subscription", "subscription"],
+      ["unused credits", "employerCredit"],
+    ] as const)("refuses while it has %s", async (_label, model) => {
+      prisma[model].count.mockResolvedValue(1);
+      await expect(service.remove("co_1")).rejects.toMatchObject({ code: ErrorCode.CONFLICT });
+      expect(prisma.company.delete).not.toHaveBeenCalled();
     });
   });
 

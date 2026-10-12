@@ -97,6 +97,10 @@ function hrefFor(n: Notification): string | null {
   ) {
     return `/(app)/jobs/${n.jobId}`;
   }
+  if (n.type === NotificationType.JOB_APPLICATION_RECEIVED && n.jobId) {
+    const slug = (n.data as { companySlug?: string | null } | null)?.companySlug;
+    return slug ? `/(app)/employer/${slug}/${n.jobId}` : `/(app)/jobs/${n.jobId}`;
+  }
   if (n.type === NotificationType.PROFILE_VIEW && n.actor?.handle) {
     return `/(app)/in/${n.actor.handle}`;
   }

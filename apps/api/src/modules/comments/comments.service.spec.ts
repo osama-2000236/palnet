@@ -84,6 +84,23 @@ describe("CommentsService", () => {
       ).rejects.toMatchObject({ code: ErrorCode.NOT_FOUND });
     });
 
+    it("cannot comment or reply across a block: post and parent lookups filter the author", async () => {
+      prisma.post.findFirst.mockResolvedValue({ id: "p_1", authorId: "u_author" });
+      prisma.comment.findFirst.mockResolvedValue(null);
+      await expect(
+        service.create("u_me", "p_1", { body: "reply", parentId: "c_1" }),
+      ).rejects.toMatchObject({ code: ErrorCode.NOT_FOUND });
+      expect(prisma.post.findFirst.mock.calls[0]![0].where.author).toEqual({
+        blockedByMe: { none: { blockedId: "u_me" } },
+        blockedMe: { none: { blockerId: "u_me" } },
+      });
+      expect(prisma.comment.findFirst.mock.calls[0]![0].where.author).toEqual({
+        blockedByMe: { none: { blockedId: "u_me" } },
+        blockedMe: { none: { blockerId: "u_me" } },
+      });
+      expect(prisma.comment.create).not.toHaveBeenCalled();
+    });
+
     it("notifies the post author on a top-level comment", async () => {
       prisma.post.findFirst.mockResolvedValue({ id: "p_1", authorId: "u_author" });
       prisma.comment.create.mockResolvedValue(commentRow());
@@ -122,6 +139,27 @@ describe("CommentsService", () => {
 
       expect(notifications.notify).toHaveBeenCalledTimes(1);
     });
+
+    it("threads a reply to a reply under the root comment, one level deep", async () => {
+      prisma.post.findFirst.mockResolvedValue({ id: "p_1", authorId: "u_author" });
+      prisma.comment.findFirst.mockResolvedValue({
+        id: "c_reply",
+        authorId: "u_other",
+        parentId: "c_root",
+      });
+      prisma.comment.create.mockResolvedValue(commentRow({ parentId: "c_root" }));
+
+      await service.create("u_me", "p_1", { body: "reply", parentId: "c_reply" });
+
+      expect(prisma.comment.create).toHaveBeenCalledWith(
+        expect.objectContaining({ data: expect.objectContaining({ parentId: "c_root" }) }),
+      );
+      // The person replied to still hears about it.
+      const recipients = notifications.notify.mock.calls.map(
+        (call: unknown[]) => (call[0] as { recipientId: string }).recipientId,
+      );
+      expect(recipients).toContain("u_other");
+    });
   });
 
   describe("list", () => {
@@ -136,6 +174,24 @@ describe("CommentsService", () => {
 
       expect(out.data.map((c) => c.id)).toEqual(["c_1", "c_2"]);
       expect(out.meta).toMatchObject({ hasMore: true, nextCursor: "c_2", limit: 2 });
+    });
+
+    it("carries each root comment's live replies, hidden authors filtered", async () => {
+      safety.getBlockedEitherIds.mockResolvedValue(["u_blocked"]);
+      prisma.comment.findMany.mockResolvedValue([
+        commentRow({ id: "c_1", replies: [commentRow({ id: "c_r", parentId: "c_1" })] }),
+      ]);
+
+      const out = await service.list("u_me", "p_1", null, 20);
+
+      expect(out.data[0]!.replies?.map((r) => r.id)).toEqual(["c_r"]);
+      const include = prisma.comment.findMany.mock.calls[0]![0].include as {
+        replies: { where: unknown };
+      };
+      expect(include.replies.where).toEqual({
+        deletedAt: null,
+        authorId: { notIn: ["u_blocked"] },
+      });
     });
 
     it("filters out comments authored by blocked users", async () => {

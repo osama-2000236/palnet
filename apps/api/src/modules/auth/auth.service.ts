@@ -13,7 +13,7 @@ import * as bcrypt from "bcrypt";
 
 import { DomainException } from "../../common/domain-exception";
 import type { Env } from "../../config/env";
-import { isWithinRestoreGrace } from "../account/account-retention";
+import { isWithinRestoreGrace, pendingDeletionHolding } from "../account/account-retention";
 import { PrismaService } from "../prisma/prisma.service";
 
 import type { AuthUser } from "./decorators/current-user.decorator";
@@ -36,9 +36,12 @@ export class AuthService {
     deviceId: string,
     meta: SessionMeta = {},
   ): Promise<AuthSession> {
-    const existing = await this.prisma.user.findUnique({
-      where: { email: body.email },
-    });
+    const existing =
+      (await this.prisma.user.findUnique({ where: { email: body.email }, select: { id: true } })) ??
+      (await this.prisma.user.findFirst({
+        where: pendingDeletionHolding(body.email),
+        select: { id: true },
+      }));
     if (existing) {
       throw new DomainException(
         ErrorCode.CONFLICT,

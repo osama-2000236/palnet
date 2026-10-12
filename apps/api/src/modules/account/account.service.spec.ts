@@ -221,6 +221,49 @@ describe("AccountService", () => {
     expect(prisma.blockedUser.findMany).toHaveBeenCalledWith({ where: { blockerId: "u1" } });
   });
 
+  it("restores onto a suffixed handle when the old one was claimed", async () => {
+    const passwordHash = await bcrypt.hash("Password1", 4);
+    prisma.user.findFirst.mockResolvedValue({
+      id: "cluser0abcd",
+      passwordHash,
+      deletedAt: new Date(),
+      profile: { id: "p1" },
+      pendingDeletionSnapshot: {
+        email: "person@example.com",
+        profile: {
+          handle: "person",
+          firstName: "P",
+          lastName: "O",
+          headline: null,
+          avatarUrl: null,
+        },
+      },
+    });
+    prisma.profile.findUnique.mockResolvedValue({ userId: "someone_else" });
+    prisma.user.update.mockResolvedValue({ id: "cluser0abcd" });
+
+    await service.restore({ email: "person@example.com", password: "Password1", deviceId: "d" });
+
+    expect(prisma.profile.update.mock.calls[0]![0].data.handle).toBe("person-abcd");
+  });
+
+  it("maps a lost unique race during restore to 409, not 500", async () => {
+    const passwordHash = await bcrypt.hash("Password1", 4);
+    prisma.user.findFirst.mockResolvedValue({
+      id: "u1",
+      passwordHash,
+      deletedAt: new Date(),
+      profile: null,
+      pendingDeletionSnapshot: { email: "person@example.com", profile: null },
+    });
+    prisma.user.update.mockRejectedValue({ code: "P2002" });
+
+    await expect(
+      service.restore({ email: "person@example.com", password: "Password1", deviceId: "d" }),
+    ).rejects.toMatchObject({ code: ErrorCode.CONFLICT });
+    expect(auth.issueSession).not.toHaveBeenCalled();
+  });
+
   it("rejects restore after the grace window", async () => {
     const passwordHash = await bcrypt.hash("Password1", 4);
     prisma.user.findFirst.mockResolvedValue({

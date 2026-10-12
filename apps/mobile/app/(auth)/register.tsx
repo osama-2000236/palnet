@@ -4,7 +4,7 @@ import { router } from "expo-router";
 import { useState } from "react";
 import { Controller, useForm, type Resolver } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import { View } from "react-native";
+import { Linking, View } from "react-native";
 import { z } from "zod";
 
 import {
@@ -14,6 +14,8 @@ import {
   AuthTextField,
 } from "@/components/auth/AuthScaffold";
 import { ApiRequestError, registerAction } from "@/lib/auth-actions";
+import { WEB_ORIGIN } from "@/lib/linking";
+import { normalizeLocale } from "@/lib/locale";
 import { useNetworkStore } from "@/store/network";
 
 interface RegisterFormValues {
@@ -214,6 +216,22 @@ export default function RegisterScreen(): JSX.Element {
           errorMessage={errors.acceptTerms?.message ? t(errors.acceptTerms.message) : undefined}
           testID="register-accept-terms"
         />
+        {/* Consent to documents the user can open: the legal pages live on web only. */}
+        <View style={{ flexDirection: "row", flexWrap: "wrap", gap: nativeTokens.space[2] }}>
+          {(["tos", "privacy"] as const).map((doc) => (
+            <Button
+              key={doc}
+              variant="ghost"
+              size="sm"
+              onPress={() =>
+                void Linking.openURL(`${WEB_ORIGIN}/${normalizeLocale(i18n.language)}/legal/${doc}`)
+              }
+              testID={`register-legal-${doc}`}
+            >
+              {t(doc === "tos" ? "auth.termsLink" : "auth.privacyLink")}
+            </Button>
+          ))}
+        </View>
       </Surface>
 
       {error ? <AuthError message={error} /> : null}

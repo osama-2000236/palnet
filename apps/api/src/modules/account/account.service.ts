@@ -165,35 +165,67 @@ export class AccountService {
       throw new DomainException(ErrorCode.CONFLICT, "Account restore snapshot is missing.", 409);
     }
 
-    const restored = await this.prisma.$transaction(async (tx) => {
-      const nextUser = await (
-        tx.user.update as unknown as (args: unknown) => Promise<{
-          id: string;
-          email: string;
-          role: "USER" | "COMPANY_ADMIN" | "MODERATOR" | "ADMIN";
-          locale: string;
-          // Restoring a soft-deleted account must not also un-suspend it —
-          // `issueSession` refuses when this is false. The cast above is why
-          // the compiler could not see the field was missing.
-          isActive: boolean;
-        }>
-      )({
-        where: { id: user.id },
-        data: {
-          email: snapshot.email,
-          deletedAt: null,
-          pendingDeletionSnapshot: null,
-        },
-      });
-      if (snapshot.profile && user.profile) {
-        await tx.profile.update({
-          where: { userId: user.id },
-          data: snapshot.profile,
+    // The handle was released at delete time, so someone may have claimed it
+    // during the grace window. Restoring onto it would hit the unique index;
+    // give the owner a suffixed handle they can change back in settings.
+    const profileData = snapshot.profile && {
+      ...snapshot.profile,
+      handle: await this.freeHandle(snapshot.profile.handle, user.id),
+    };
+
+    const restored = await this.prisma
+      .$transaction(async (tx) => {
+        const nextUser = await (
+          tx.user.update as unknown as (args: unknown) => Promise<{
+            id: string;
+            email: string;
+            role: "USER" | "COMPANY_ADMIN" | "MODERATOR" | "ADMIN";
+            locale: string;
+            // Restoring a soft-deleted account must not also un-suspend it —
+            // `issueSession` refuses when this is false. The cast above is why
+            // the compiler could not see the field was missing.
+            isActive: boolean;
+          }>
+        )({
+          where: { id: user.id },
+          data: {
+            email: snapshot.email,
+            deletedAt: null,
+            pendingDeletionSnapshot: null,
+          },
         });
-      }
-      return nextUser;
-    });
+        if (profileData && user.profile) {
+          await tx.profile.update({
+            where: { userId: user.id },
+            data: profileData,
+          });
+        }
+        return nextUser;
+      })
+      .catch((err: unknown) => {
+        // Lost a race for the email or handle between the checks above and the
+        // write: a conflict the client can show, not a 500.
+        if ((err as { code?: unknown } | null)?.code === "P2002") {
+          throw new DomainException(
+            ErrorCode.CONFLICT,
+            "Account details were claimed during the grace period.",
+            409,
+          );
+        }
+        throw err;
+      });
 
     return this.auth.issueSession(restored, body.deviceId);
+  }
+
+  private async freeHandle(handle: string, userId: string): Promise<string> {
+    const owner = await this.prisma.profile.findUnique({
+      where: { handle },
+      select: { userId: true },
+    });
+    if (!owner || owner.userId === userId) return handle;
+    // ponytail: one suffixed attempt; the P2002 catch covers the vanishing
+    // case where that is taken too.
+    return `${handle.slice(0, 25)}-${userId.slice(-4).toLowerCase()}`;
   }
 }

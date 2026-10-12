@@ -235,7 +235,12 @@
       "connect": "تواصل",
       "pymkEmpty": "ابحث عن أشخاص للتواصل ←"
     },
-    "emptyCta": "اعثر على أشخاص"
+    "emptyCta": "اعثر على أشخاص",
+    "reason": {
+      "REPOST": "أعاد {actor} نشر هذا",
+      "NEARBY": "من مهنيين في مدينتك",
+      "DISCOVER": "اقتراح من خارج شبكتك"
+    }
   },
   "composer": {
     "placeholder": "ابدأ منشورًا…",
@@ -273,8 +278,12 @@
     "publicAudience": "منشور عام",
     "moreOptions": "خيارات",
     "commentPlaceholder": "أضف تعليقًا…",
-    "commentSubmit": "رد",
+    "commentSubmit": "نشر",
     "commentError": "تعذّر نشر التعليق.",
+    "reply": "رد",
+    "replyingTo": "ردًا على {name}",
+    "cancelReply": "إلغاء الرد",
+    "replyPlaceholder": "اكتب ردًا…",
     "loadMoreComments": "عرض المزيد من التعليقات"
   },
   "safety": {
@@ -560,6 +569,7 @@
       "POST_MENTION": "أشار إليك {actor} في منشور.",
       "MESSAGE_RECEIVED": "أرسل لك {actor} رسالة.",
       "JOB_APPLICATION_UPDATE": "طرأ تحديث على طلبك للوظيفة.",
+      "JOB_APPLICATION_RECEIVED": "تقدّم {actor} لوظيفة {jobTitle}.",
       "PROFILE_VIEW": "شاهد {actor} ملفك الشخصي.",
       "MODERATION_ACTION": "راجع فريق الإشراف بلاغك.",
       "JOB_ALERT": "وظيفة جديدة تناسب تنبيهك: {jobTitle}"

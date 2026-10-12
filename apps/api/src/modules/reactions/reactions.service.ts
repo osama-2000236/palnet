@@ -4,6 +4,7 @@ import { Injectable } from "@nestjs/common";
 import { DomainException } from "../../common/domain-exception";
 import { NotificationsService } from "../notifications/notifications.service";
 import { PrismaService } from "../prisma/prisma.service";
+import { notBlockedWith } from "../safety/not-blocked-with";
 
 @Injectable()
 export class ReactionsService {
@@ -14,7 +15,7 @@ export class ReactionsService {
 
   async set(viewerId: string, postId: string, type: ReactionType): Promise<void> {
     const post = await this.prisma.post.findFirst({
-      where: { id: postId, deletedAt: null },
+      where: { id: postId, deletedAt: null, author: notBlockedWith(viewerId) },
       select: { id: true, authorId: true },
     });
     if (!post) {

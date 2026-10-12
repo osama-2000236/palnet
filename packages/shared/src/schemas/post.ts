@@ -27,6 +27,17 @@ export const UpdatePostBody = z.object({
 });
 export type UpdatePostBody = z.infer<typeof UpdatePostBody>;
 
+// Why a ranked feed placed a post the viewer might not expect: a connection
+// reposted it, or it comes from outside the network. Posts by the viewer's own
+// connections carry none — the author line already says why.
+export const FeedReasonKind = z.enum(["REPOST", "NEARBY", "DISCOVER"]);
+export type FeedReasonKind = z.infer<typeof FeedReasonKind>;
+export const FeedReason = z.object({
+  kind: FeedReasonKind,
+  actor: z.object({ handle: z.string(), firstName: z.string(), lastName: z.string() }).nullable(),
+});
+export type FeedReason = z.infer<typeof FeedReason>;
+
 export const Post = z.object({
   id: z.string().cuid(),
   authorId: z.string().cuid(),
@@ -63,5 +74,6 @@ export const Post = z.object({
     headline: z.string().nullable(),
     avatarUrl: z.string().url().nullable(),
   }),
+  feedReason: FeedReason.optional(),
 });
 export type Post = z.infer<typeof Post>;

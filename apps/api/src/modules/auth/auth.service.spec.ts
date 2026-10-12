@@ -134,6 +134,30 @@ describe("AuthService", () => {
       await expect(call).rejects.toBeInstanceOf(DomainException);
       await expect(call).rejects.toMatchObject({ code: ErrorCode.CONFLICT });
     });
+
+    it("rejects an email still held by an account pending deletion", async () => {
+      prisma.user.findUnique.mockResolvedValue(null);
+      prisma.user.findFirst.mockResolvedValue({ id: "pending" });
+
+      const call = service.register(
+        {
+          email: "a@b.co",
+          password: "Password1",
+          firstName: "O",
+          lastName: "H",
+          locale: "ar-PS",
+          acceptTerms: true,
+        },
+        "device-1",
+      );
+
+      await expect(call).rejects.toMatchObject({ code: ErrorCode.CONFLICT });
+      expect(prisma.user.findFirst.mock.calls[0]![0].where).toMatchObject({
+        deletedAt: { gt: expect.any(Date) },
+        pendingDeletionSnapshot: { path: ["email"], equals: "a@b.co" },
+      });
+      expect(prisma.user.create).not.toHaveBeenCalled();
+    });
   });
 
   describe("login", () => {

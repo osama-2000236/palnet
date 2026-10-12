@@ -1,6 +1,7 @@
 import { ErrorCode } from "@baydar/shared";
 import { Test } from "@nestjs/testing";
 
+import { NotificationsService } from "../notifications/notifications.service";
 import { PrismaService } from "../prisma/prisma.service";
 
 import { JobsService } from "./jobs.service";
@@ -37,14 +38,22 @@ function buildPrisma(): PrismaStub {
 // application is not `{}`.
 const EMPTY_APPLY = { attachedProofIds: [], portfolioPostIds: [] };
 
+const LIVE_WINDOW = [{ expiresAt: null }, { expiresAt: { gt: expect.any(Date) } }];
+
 describe("JobsService", () => {
   let service: JobsService;
   let prisma: PrismaStub;
+  let notify: jest.Mock;
 
   beforeEach(async () => {
     prisma = buildPrisma();
+    notify = jest.fn().mockResolvedValue(undefined);
     const moduleRef = await Test.createTestingModule({
-      providers: [JobsService, { provide: PrismaService, useValue: prisma }],
+      providers: [
+        JobsService,
+        { provide: PrismaService, useValue: prisma },
+        { provide: NotificationsService, useValue: { notify } },
+      ],
     }).compile();
     service = moduleRef.get(JobsService);
   });
@@ -61,12 +70,14 @@ describe("JobsService", () => {
         values: unknown[];
       };
       expect(sqlArg.strings.join("?")).toMatch(/baydar_fold/);
+      expect(sqlArg.strings.join("?")).toMatch(/"expiresAt" IS NULL OR "expiresAt" > NOW\(\)/);
       // LIKE wildcards in user input arrive escaped.
       expect(sqlArg.values).toContain("مبرمجة 100\\%");
 
       const where = prisma.job.findMany.mock.calls[0]![0].where;
       expect(where.id).toEqual({ in: ["job_1"] });
-      expect(where.OR).toBeUndefined();
+      // The only OR left is the expiry window, not a naive title/description contains.
+      expect(where.OR).toEqual(LIVE_WINDOW);
     });
 
     it("short-circuits to an empty page when no job matches q", async () => {
@@ -98,7 +109,60 @@ describe("JobsService", () => {
     });
   });
 
+  describe("expiry", () => {
+    it("hides jobs past expiresAt from the board", async () => {
+      prisma.job.findMany.mockResolvedValue([]);
+
+      await service.list("user_1", null, 20, {});
+
+      const where = prisma.job.findMany.mock.calls[0]![0].where;
+      expect(where).toMatchObject({ isActive: true, deletedAt: null, OR: LIVE_WINDOW });
+    });
+
+    it("refuses applications to an expired job", async () => {
+      prisma.job.findFirst.mockResolvedValue(null);
+
+      await expect(service.apply("user_1", "job_old", EMPTY_APPLY)).rejects.toMatchObject({
+        code: ErrorCode.NOT_FOUND,
+      });
+      expect(prisma.job.findFirst.mock.calls[0]![0].where).toMatchObject({
+        id: "job_old",
+        isActive: true,
+        OR: LIVE_WINDOW,
+      });
+    });
+  });
+
   describe("apply", () => {
+    // Applying used to tell nobody: the poster found applicants only by
+    // opening the applicants page on a hunch.
+    it("tells the poster about a new applicant, once", async () => {
+      prisma.job.findFirst.mockResolvedValue({
+        id: "job_1",
+        title: "كهربائي",
+        postedById: "poster_1",
+        company: { slug: "acme" },
+      });
+      prisma.application.findUnique.mockResolvedValue(null);
+      prisma.application.create.mockResolvedValue({ id: "app_1", status: "SUBMITTED" });
+
+      await service.apply("user_1", "job_1", EMPTY_APPLY);
+
+      expect(notify).toHaveBeenCalledTimes(1);
+      expect(notify).toHaveBeenCalledWith({
+        type: "JOB_APPLICATION_RECEIVED",
+        recipientId: "poster_1",
+        actorId: "user_1",
+        jobId: "job_1",
+        data: { applicationId: "app_1", jobTitle: "كهربائي", companySlug: "acme" },
+      });
+
+      notify.mockClear();
+      prisma.application.findUnique.mockResolvedValue({ id: "app_1", status: "SUBMITTED" });
+      await service.apply("user_1", "job_1", EMPTY_APPLY);
+      expect(notify).not.toHaveBeenCalled();
+    });
+
     it("creates a submitted application for an active job", async () => {
       prisma.job.findFirst.mockResolvedValue({ id: "job_1" });
       prisma.application.findUnique.mockResolvedValue(null);

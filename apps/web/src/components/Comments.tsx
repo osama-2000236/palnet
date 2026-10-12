@@ -9,7 +9,7 @@ import {
 import { Avatar, ReportDialog } from "@baydar/ui-web";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { apiFetch, apiFetchPage } from "@/lib/api";
 import { useReport } from "@/lib/api/safety";
@@ -17,6 +17,11 @@ import { getAccessToken } from "@/lib/session";
 import { useReportLabels } from "@/lib/report-labels";
 
 const CommentsPage = cursorPage(CommentSchema);
+const ACTION =
+  "text-ink-muted hover:bg-surface hover:text-ink focus-visible:outline-hidden inline-flex h-10 min-w-10 items-center justify-center rounded-md px-2 text-xs focus-visible:[box-shadow:var(--focus-ring)]";
+
+/** Threads are one level deep: replying to a reply answers its root. */
+type ReplyTarget = { rootId: string; name: string };
 
 export function Comments({
   postId,
@@ -35,6 +40,8 @@ export function Comments({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [reportTargetId, setReportTargetId] = useState<string | null>(null);
+  const [replyTo, setReplyTo] = useState<ReplyTarget | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const report = useReport();
 
   const load = useCallback(
@@ -66,7 +73,7 @@ export function Comments({
   async function submit(e: React.FormEvent): Promise<void> {
     e.preventDefault();
     setError(null);
-    const parsed = CreateCommentBody.safeParse({ body: draft });
+    const parsed = CreateCommentBody.safeParse({ body: draft, parentId: replyTo?.rootId });
     if (!parsed.success) return;
     const token = getAccessToken();
     if (!token) return;
@@ -77,8 +84,16 @@ export function Comments({
         body: parsed.data,
         token,
       });
-      setItems((prev) => [...prev, created]);
+      const rootId = replyTo?.rootId;
+      setItems((prev) =>
+        rootId
+          ? prev.map((c) =>
+              c.id === rootId ? { ...c, replies: [...(c.replies ?? []), created] } : c,
+            )
+          : [...prev, created],
+      );
       setDraft("");
+      setReplyTo(null);
       onCountChange?.(1);
     } catch {
       setError(t("commentError"));
@@ -88,40 +103,57 @@ export function Comments({
   }
   const reportLabels = useReportLabels();
 
+  function startReply(rootId: string, author: Comment["author"]): void {
+    setReplyTo({ rootId, name: `${author.firstName} ${author.lastName}`.trim() });
+    inputRef.current?.focus();
+  }
+
+  function renderComment(c: Comment, rootId: string): JSX.Element {
+    return (
+      <div className="bg-surface-muted flex items-start gap-2 rounded-md px-3 py-2 text-sm">
+        <Link
+          href={`/in/${c.author.handle}`}
+          aria-label={`${c.author.firstName} ${c.author.lastName}`}
+        >
+          <Avatar user={c.author} size="sm" />
+        </Link>
+        <div className="flex min-w-0 flex-1 flex-col">
+          <Link href={`/in/${c.author.handle}`} className="text-ink font-semibold hover:underline">
+            <span className="bidi-plaintext">
+              {c.author.firstName} {c.author.lastName}
+            </span>
+          </Link>
+          <p className="bidi-plaintext text-ink whitespace-pre-wrap">{c.body}</p>
+        </div>
+        <button type="button" onClick={() => startReply(rootId, c.author)} className={ACTION}>
+          {t("reply")}
+        </button>
+        <button
+          type="button"
+          aria-label={tSafety("report.action")}
+          onClick={() => setReportTargetId(c.id)}
+          className={ACTION}
+        >
+          {tSafety("report.action")}
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="border-ink-muted/10 mt-3 flex flex-col gap-3 border-t pt-3">
       {items.length === 0 && !loading ? null : (
         <ul className="flex flex-col gap-2">
           {items.map((c) => (
-            <li
-              key={c.id}
-              className="bg-surface-muted flex items-start gap-2 rounded-md px-3 py-2 text-sm"
-            >
-              <Link
-                href={`/in/${c.author.handle}`}
-                aria-label={`${c.author.firstName} ${c.author.lastName}`}
-              >
-                <Avatar user={c.author} size="sm" />
-              </Link>
-              <div className="flex min-w-0 flex-1 flex-col">
-                <Link
-                  href={`/in/${c.author.handle}`}
-                  className="text-ink font-semibold hover:underline"
-                >
-                  <span className="bidi-plaintext">
-                    {c.author.firstName} {c.author.lastName}
-                  </span>
-                </Link>
-                <p className="bidi-plaintext text-ink whitespace-pre-wrap">{c.body}</p>
-              </div>
-              <button
-                type="button"
-                aria-label={tSafety("report.action")}
-                onClick={() => setReportTargetId(c.id)}
-                className="text-ink-muted hover:bg-surface hover:text-ink focus-visible:outline-hidden inline-flex h-10 min-w-10 items-center justify-center rounded-md px-2 text-xs focus-visible:[box-shadow:var(--focus-ring)]"
-              >
-                {tSafety("report.action")}
-              </button>
+            <li key={c.id} className="flex flex-col gap-2">
+              {renderComment(c, c.id)}
+              {c.replies?.length ? (
+                <ul className="ms-10 flex flex-col gap-2">
+                  {c.replies.map((r) => (
+                    <li key={r.id}>{renderComment(r, c.id)}</li>
+                  ))}
+                </ul>
+              ) : null}
             </li>
           ))}
         </ul>
@@ -138,11 +170,20 @@ export function Comments({
         </button>
       ) : null}
 
+      {replyTo ? (
+        <div className="text-ink-muted flex items-center gap-2 text-xs">
+          <span className="bidi-plaintext">{t("replyingTo", { name: replyTo.name })}</span>
+          <button type="button" onClick={() => setReplyTo(null)} className={ACTION}>
+            {t("cancelReply")}
+          </button>
+        </div>
+      ) : null}
       <form onSubmit={submit} className="flex gap-2">
         <input
+          ref={inputRef}
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
-          placeholder={t("commentPlaceholder")}
+          placeholder={replyTo ? t("replyPlaceholder") : t("commentPlaceholder")}
           maxLength={2000}
           className="border-ink-muted/30 bg-surface text-ink focus-visible:outline-hidden min-w-0 flex-1 rounded-md border px-3 py-1.5 text-sm focus-visible:[box-shadow:var(--focus-ring)]"
         />
