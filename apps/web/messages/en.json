@@ -278,8 +278,12 @@
     "publicAudience": "Public post",
     "moreOptions": "Options",
     "commentPlaceholder": "Add a comment…",
-    "commentSubmit": "Reply",
+    "commentSubmit": "Post",
     "commentError": "Could not post comment.",
+    "reply": "Reply",
+    "replyingTo": "Replying to {name}",
+    "cancelReply": "Cancel reply",
+    "replyPlaceholder": "Write a reply…",
     "loadMoreComments": "Show more comments"
   },
   "safety": {

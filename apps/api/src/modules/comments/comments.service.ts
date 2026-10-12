@@ -31,9 +31,19 @@ interface CommentWithAuthor {
       avatarUrl: string | null;
     } | null;
   };
+  replies?: CommentWithAuthor[];
 }
 
+// ponytail: every live reply up to this many rides along with its root
+// comment; a "show more replies" page is owed if real threads outgrow it.
+const REPLIES_PER_COMMENT = 50;
+
 function toCommentDto(row: CommentWithAuthor): CommentDto {
+  const dto = toCommentFields(row);
+  return row.replies ? { ...dto, replies: row.replies.map(toCommentFields) } : dto;
+}
+
+function toCommentFields(row: CommentWithAuthor): CommentDto {
   if (row.author.deletedAt) {
     return {
       id: row.id,
@@ -106,15 +116,18 @@ export class CommentsService {
     }
 
     let parentAuthorId: string | null = null;
+    let rootId: string | null = null;
     if (body.parentId) {
       const parent = await this.prisma.comment.findFirst({
         where: { id: body.parentId, postId, deletedAt: null, author: notBlockedWith(viewerId) },
-        select: { id: true, authorId: true },
+        select: { id: true, authorId: true, parentId: true },
       });
       if (!parent) {
         throw new DomainException(ErrorCode.NOT_FOUND, "Parent comment not found.", 404);
       }
       parentAuthorId = parent.authorId;
+      // One level deep: a reply to a reply joins the root comment's thread.
+      rootId = parent.parentId ?? parent.id;
     }
 
     const row = await this.prisma.comment.create({
@@ -122,7 +135,7 @@ export class CommentsService {
         postId,
         authorId: viewerId,
         body: body.body,
-        parentId: body.parentId ?? null,
+        parentId: rootId,
       },
       include: COMMENT_INCLUDE,
     });
@@ -156,17 +169,25 @@ export class CommentsService {
     limit: number,
   ): Promise<{ data: CommentDto[]; meta: CursorPageMeta }> {
     const excludedUserIds = await this.safety.getBlockedEitherIds(viewerId);
+    const visible = {
+      deletedAt: null,
+      ...(excludedUserIds.length ? { authorId: { notIn: excludedUserIds } } : {}),
+    };
+    const oldestFirst = [{ createdAt: "asc" as const }, { id: "asc" as const }];
     const rows = await this.prisma.comment.findMany({
-      where: {
-        postId,
-        deletedAt: null,
-        parentId: null,
-        ...(excludedUserIds.length ? { authorId: { notIn: excludedUserIds } } : {}),
-      },
-      orderBy: [{ createdAt: "asc" }, { id: "asc" }],
+      where: { postId, parentId: null, ...visible },
+      orderBy: oldestFirst,
       take: limit + 1,
       ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
-      include: COMMENT_INCLUDE,
+      include: {
+        ...COMMENT_INCLUDE,
+        replies: {
+          where: visible,
+          orderBy: oldestFirst,
+          take: REPLIES_PER_COMMENT,
+          include: COMMENT_INCLUDE,
+        },
+      },
     });
     const { rows: page, meta } = takePage(rows, limit);
     return { data: page.map((r) => toCommentDto(r as unknown as CommentWithAuthor)), meta };

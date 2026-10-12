@@ -1,3 +1,4 @@
+import type { Prisma } from "@baydar/db";
 import type { Post as PostDto } from "@baydar/shared";
 
 // Prisma post with includes we count on everywhere.
@@ -170,6 +171,13 @@ export function toPostDto(post: PostWithIncludes): PostDto {
 export function postInclude(viewerId: string, excludedUserIds: string[] = []) {
   const visibleUserWhere = excludedUserIds.length ? { userId: { notIn: excludedUserIds } } : {};
   const visibleAuthorWhere = excludedUserIds.length ? { authorId: { notIn: excludedUserIds } } : {};
+  // What GET /posts/:id/comments shows: live comments, plus replies whose
+  // root comment is itself still shown.
+  const shownComment: Prisma.CommentWhereInput = {
+    deletedAt: null,
+    ...visibleAuthorWhere,
+    OR: [{ parentId: null }, { parent: { deletedAt: null, ...visibleAuthorWhere } }],
+  };
 
   return {
     author: {
@@ -191,10 +199,7 @@ export function postInclude(viewerId: string, excludedUserIds: string[] = []) {
     _count: {
       select: {
         reactions: { where: visibleUserWhere },
-        // Top-level only, to match what GET /posts/:id/comments lists: no
-        // client renders replies yet, so counting them showed "3 comments"
-        // over a thread of two.
-        comments: { where: { deletedAt: null, parentId: null, ...visibleAuthorWhere } },
+        comments: { where: shownComment },
         reposts: { where: visibleUserWhere },
       },
     },

@@ -278,8 +278,12 @@
     "publicAudience": "منشور عام",
     "moreOptions": "خيارات",
     "commentPlaceholder": "أضف تعليقًا…",
-    "commentSubmit": "رد",
+    "commentSubmit": "نشر",
     "commentError": "تعذّر نشر التعليق.",
+    "reply": "رد",
+    "replyingTo": "ردًا على {name}",
+    "cancelReply": "إلغاء الرد",
+    "replyPlaceholder": "اكتب ردًا…",
     "loadMoreComments": "عرض المزيد من التعليقات"
   },
   "safety": {
