@@ -46,6 +46,10 @@ interface ConnectionWithUsers {
   };
 }
 
+// ponytail: fixed three weeks, the norm on comparable networks; make it a
+// per-pair backoff if people start waiting it out to spam.
+export const RESEND_COOLDOWN_MS = 21 * 24 * 60 * 60 * 1000;
+
 @Injectable()
 export class ConnectionsService {
   constructor(
@@ -86,6 +90,25 @@ export class ConnectionsService {
 
     const existing = await this.findExistingBetween(requesterId, body.receiverId);
     if (existing) {
+      // They already asked me: connecting back is a yes, not a 409 that leaves
+      // both people staring at a "pending" button.
+      if (existing.status === "PENDING" && existing.receiverId === requesterId) {
+        return this.respond(requesterId, existing.id, { action: "ACCEPT" });
+      }
+      // A decline or withdraw holds the sender off for a while; otherwise a
+      // declined request could be re-sent (and re-notified) on every tap.
+      if (
+        (existing.status === "DECLINED" || existing.status === "WITHDRAWN") &&
+        existing.requesterId === requesterId &&
+        existing.respondedAt &&
+        Date.now() - existing.respondedAt.getTime() < RESEND_COOLDOWN_MS
+      ) {
+        throw new DomainException(
+          ErrorCode.RATE_LIMITED,
+          "This invitation cannot be sent again yet.",
+          429,
+        );
+      }
       // Allow re-send only if the prior row is WITHDRAWN or DECLINED.
       if (
         existing.status === "PENDING" ||

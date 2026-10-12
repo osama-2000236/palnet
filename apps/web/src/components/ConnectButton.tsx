@@ -41,12 +41,14 @@ export function ConnectButton({
         method: "POST",
         token,
         body: { receiverId: targetUserId },
-      })) as { id: string };
+      })) as { id: string; status?: string };
+      // The API accepts instead when they had already invited the viewer.
+      const accepted = data.status === "ACCEPTED";
       onChange?.({
         isSelf: false,
         connection: {
-          status: "PENDING",
-          direction: "OUTGOING",
+          status: accepted ? "ACCEPTED" : "PENDING",
+          direction: accepted ? "INCOMING" : "OUTGOING",
           connectionId: data.id,
         },
       });
