@@ -1,6 +1,7 @@
 import { ErrorCode } from "@baydar/shared";
 import { Test } from "@nestjs/testing";
 
+import { NotificationsService } from "../notifications/notifications.service";
 import { PrismaService } from "../prisma/prisma.service";
 
 import { JobsService } from "./jobs.service";
@@ -42,11 +43,17 @@ const LIVE_WINDOW = [{ expiresAt: null }, { expiresAt: { gt: expect.any(Date) } 
 describe("JobsService", () => {
   let service: JobsService;
   let prisma: PrismaStub;
+  let notify: jest.Mock;
 
   beforeEach(async () => {
     prisma = buildPrisma();
+    notify = jest.fn().mockResolvedValue(undefined);
     const moduleRef = await Test.createTestingModule({
-      providers: [JobsService, { provide: PrismaService, useValue: prisma }],
+      providers: [
+        JobsService,
+        { provide: PrismaService, useValue: prisma },
+        { provide: NotificationsService, useValue: { notify } },
+      ],
     }).compile();
     service = moduleRef.get(JobsService);
   });
@@ -127,6 +134,35 @@ describe("JobsService", () => {
   });
 
   describe("apply", () => {
+    // Applying used to tell nobody: the poster found applicants only by
+    // opening the applicants page on a hunch.
+    it("tells the poster about a new applicant, once", async () => {
+      prisma.job.findFirst.mockResolvedValue({
+        id: "job_1",
+        title: "كهربائي",
+        postedById: "poster_1",
+        company: { slug: "acme" },
+      });
+      prisma.application.findUnique.mockResolvedValue(null);
+      prisma.application.create.mockResolvedValue({ id: "app_1", status: "SUBMITTED" });
+
+      await service.apply("user_1", "job_1", EMPTY_APPLY);
+
+      expect(notify).toHaveBeenCalledTimes(1);
+      expect(notify).toHaveBeenCalledWith({
+        type: "JOB_APPLICATION_RECEIVED",
+        recipientId: "poster_1",
+        actorId: "user_1",
+        jobId: "job_1",
+        data: { applicationId: "app_1", jobTitle: "كهربائي", companySlug: "acme" },
+      });
+
+      notify.mockClear();
+      prisma.application.findUnique.mockResolvedValue({ id: "app_1", status: "SUBMITTED" });
+      await service.apply("user_1", "job_1", EMPTY_APPLY);
+      expect(notify).not.toHaveBeenCalled();
+    });
+
     it("creates a submitted application for an active job", async () => {
       prisma.job.findFirst.mockResolvedValue({ id: "job_1" });
       prisma.application.findUnique.mockResolvedValue(null);

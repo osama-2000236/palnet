@@ -560,6 +560,7 @@
       "POST_MENTION": "أشار إليك {actor} في منشور.",
       "MESSAGE_RECEIVED": "أرسل لك {actor} رسالة.",
       "JOB_APPLICATION_UPDATE": "طرأ تحديث على طلبك للوظيفة.",
+      "JOB_APPLICATION_RECEIVED": "تقدّم {actor} لوظيفة {jobTitle}.",
       "PROFILE_VIEW": "شاهد {actor} ملفك الشخصي.",
       "MODERATION_ACTION": "راجع فريق الإشراف بلاغك.",
       "JOB_ALERT": "وظيفة جديدة تناسب تنبيهك: {jobTitle}"

@@ -11,6 +11,7 @@ import {
 import { Injectable } from "@nestjs/common";
 
 import { DomainException } from "../../common/domain-exception";
+import { NotificationsService } from "../notifications/notifications.service";
 import { PrismaService } from "../prisma/prisma.service";
 
 const jobInclude = (viewerId: string) =>
@@ -43,7 +44,10 @@ type JobRow = Prisma.JobGetPayload<{ include: ReturnType<typeof jobInclude> }>;
 
 @Injectable()
 export class JobsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notifications: NotificationsService,
+  ) {}
 
   async list(
     viewerId: string,
@@ -177,7 +181,7 @@ export class JobsService {
   ): Promise<{ id: string; status: ApplicationStatus }> {
     const job = await this.prisma.job.findFirst({
       where: { id, ...liveJobWhere() },
-      select: { id: true },
+      select: { id: true, title: true, postedById: true, company: { select: { slug: true } } },
     });
     if (!job) {
       throw new DomainException(ErrorCode.NOT_FOUND, "Job not found.", 404);
@@ -192,7 +196,7 @@ export class JobsService {
     if (existing) return existing;
 
     try {
-      return await this.prisma.application.create({
+      const created = await this.prisma.application.create({
         data: {
           jobId: id,
           applicantId: viewerId,
@@ -201,6 +205,20 @@ export class JobsService {
         },
         select: { id: true, status: true },
       });
+      // Only the first apply notifies: the idempotent re-apply above and the
+      // race loser below both return early, so one applicant is one alert.
+      void this.notifications.notify({
+        type: "JOB_APPLICATION_RECEIVED",
+        recipientId: job.postedById,
+        actorId: viewerId,
+        jobId: id,
+        data: {
+          applicationId: created.id,
+          jobTitle: job.title,
+          companySlug: job.company?.slug ?? null,
+        },
+      });
+      return created;
     } catch (err) {
       // Concurrent duplicate apply lost the race to the unique constraint
       // (P2002) — still idempotent: return the row the winner created.

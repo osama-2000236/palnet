@@ -89,6 +89,14 @@ function buildDeepLink(notification: NotificationDto): string | null {
     return notification.jobId ? `baydar://jobs/${notification.jobId}` : null;
   }
 
+  if (notification.type === NotificationType.JOB_APPLICATION_RECEIVED) {
+    if (!notification.jobId) return null;
+    const slug = dataString(notification, "companySlug");
+    return slug
+      ? `baydar://employer/${slug}/${notification.jobId}`
+      : `baydar://jobs/${notification.jobId}`;
+  }
+
   if (
     notification.type === NotificationType.CONNECTION_REQUEST ||
     notification.type === NotificationType.CONNECTION_ACCEPTED ||
@@ -146,6 +154,15 @@ function buildBody(notification: NotificationDto, locale: string): string {
         : en(`New message from ${actor}`, "You have a new message");
     case NotificationType.JOB_APPLICATION_UPDATE:
       return lang === "ar" ? "هناك تحديث على طلبك الوظيفي" : "Update on your job application";
+    case NotificationType.JOB_APPLICATION_RECEIVED: {
+      const jobTitle = dataString(notification, "jobTitle");
+      if (lang === "ar") {
+        const who = actor ?? "شخص ما";
+        return jobTitle ? `${who} تقدّم لوظيفة ${jobTitle}` : `${who} تقدّم لوظيفتك`;
+      }
+      const who = actor ?? "Someone";
+      return jobTitle ? `${who} applied to ${jobTitle}` : `${who} applied to your job`;
+    }
     case NotificationType.JOB_ALERT: {
       const jobTitle = dataString(notification, "jobTitle");
       if (lang === "ar") {
