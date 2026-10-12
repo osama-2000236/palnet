@@ -72,6 +72,7 @@ export class JobsService {
         FROM   "Job"
         WHERE  "isActive"  = TRUE
           AND  "deletedAt" IS NULL
+          AND  ("expiresAt" IS NULL OR "expiresAt" > NOW())
           AND  baydar_fold(COALESCE("title", '') || ' ' || COALESCE("description", ''))
                ILIKE '%' || baydar_fold(${pattern}) || '%'
       `);
@@ -83,8 +84,7 @@ export class JobsService {
 
     const rows = (await this.prisma.job.findMany({
       where: {
-        isActive: true,
-        deletedAt: null,
+        ...liveJobWhere(),
         ...(filters.companyId ? { companyId: filters.companyId } : {}),
         ...(qIds ? { id: { in: qIds } } : {}),
         ...(filters.city ? { city: { contains: filters.city, mode: "insensitive" } } : {}),
@@ -176,7 +176,7 @@ export class JobsService {
     body: ApplyToJobBody,
   ): Promise<{ id: string; status: ApplicationStatus }> {
     const job = await this.prisma.job.findFirst({
-      where: { id, deletedAt: null, isActive: true },
+      where: { id, ...liveJobWhere() },
       select: { id: true },
     });
     if (!job) {
@@ -213,6 +213,19 @@ export class JobsService {
       throw err;
     }
   }
+}
+
+/**
+ * A job the board may show and accept applications for. `expiresAt` was
+ * written by the employer form and read only by search, so a lapsed posting
+ * stayed on /jobs and kept taking applications until someone toggled it off.
+ */
+function liveJobWhere(): Prisma.JobWhereInput {
+  return {
+    isActive: true,
+    deletedAt: null,
+    OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
+  };
 }
 
 function isUniqueViolation(error: unknown): boolean {

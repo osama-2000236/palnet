@@ -37,6 +37,8 @@ function buildPrisma(): PrismaStub {
 // application is not `{}`.
 const EMPTY_APPLY = { attachedProofIds: [], portfolioPostIds: [] };
 
+const LIVE_WINDOW = [{ expiresAt: null }, { expiresAt: { gt: expect.any(Date) } }];
+
 describe("JobsService", () => {
   let service: JobsService;
   let prisma: PrismaStub;
@@ -61,12 +63,14 @@ describe("JobsService", () => {
         values: unknown[];
       };
       expect(sqlArg.strings.join("?")).toMatch(/baydar_fold/);
+      expect(sqlArg.strings.join("?")).toMatch(/"expiresAt" IS NULL OR "expiresAt" > NOW\(\)/);
       // LIKE wildcards in user input arrive escaped.
       expect(sqlArg.values).toContain("مبرمجة 100\\%");
 
       const where = prisma.job.findMany.mock.calls[0]![0].where;
       expect(where.id).toEqual({ in: ["job_1"] });
-      expect(where.OR).toBeUndefined();
+      // The only OR left is the expiry window, not a naive title/description contains.
+      expect(where.OR).toEqual(LIVE_WINDOW);
     });
 
     it("short-circuits to an empty page when no job matches q", async () => {
@@ -94,6 +98,30 @@ describe("JobsService", () => {
       const where = prisma.job.findMany.mock.calls[0]![0].where;
       expect(where.company).toEqual({
         industry: { contains: "منظمات أهلية وغير حكومية", mode: "insensitive" },
+      });
+    });
+  });
+
+  describe("expiry", () => {
+    it("hides jobs past expiresAt from the board", async () => {
+      prisma.job.findMany.mockResolvedValue([]);
+
+      await service.list("user_1", null, 20, {});
+
+      const where = prisma.job.findMany.mock.calls[0]![0].where;
+      expect(where).toMatchObject({ isActive: true, deletedAt: null, OR: LIVE_WINDOW });
+    });
+
+    it("refuses applications to an expired job", async () => {
+      prisma.job.findFirst.mockResolvedValue(null);
+
+      await expect(service.apply("user_1", "job_old", EMPTY_APPLY)).rejects.toMatchObject({
+        code: ErrorCode.NOT_FOUND,
+      });
+      expect(prisma.job.findFirst.mock.calls[0]![0].where).toMatchObject({
+        id: "job_old",
+        isActive: true,
+        OR: LIVE_WINDOW,
       });
     });
   });
