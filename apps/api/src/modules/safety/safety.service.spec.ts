@@ -17,6 +17,8 @@ type PrismaStub = {
   post: { findUnique: jest.Mock };
   comment: { findUnique: jest.Mock };
   message: { findUnique: jest.Mock };
+  connection: { deleteMany: jest.Mock };
+  $transaction: jest.Mock;
 };
 
 function buildPrisma(): PrismaStub {
@@ -32,6 +34,8 @@ function buildPrisma(): PrismaStub {
     post: { findUnique: jest.fn() },
     comment: { findUnique: jest.fn() },
     message: { findUnique: jest.fn() },
+    connection: { deleteMany: jest.fn().mockReturnValue("sever-op") },
+    $transaction: jest.fn((ops: unknown[]) => Promise.all(ops)),
   };
 }
 
@@ -62,6 +66,28 @@ describe("SafetyService", () => {
       createdAt,
     });
     expect(prisma.blockedUser.create).not.toHaveBeenCalled();
+  });
+
+  it("block severs the connection and any invite, in either direction", async () => {
+    const createdAt = new Date("2026-05-05T00:00:00Z");
+    prisma.blockedUser.findUnique.mockResolvedValue(null);
+    prisma.blockedUser.create.mockResolvedValue({
+      id: "block_1",
+      blockerId: "user_1",
+      blockedId: "user_2",
+      createdAt,
+    });
+
+    await expect(service.block("user_1", "user_2")).resolves.toMatchObject({ id: "block_1" });
+    expect(prisma.connection.deleteMany).toHaveBeenCalledWith({
+      where: {
+        OR: [
+          { requesterId: "user_1", receiverId: "user_2" },
+          { requesterId: "user_2", receiverId: "user_1" },
+        ],
+      },
+    });
+    expect(prisma.$transaction).toHaveBeenCalledWith([expect.anything(), "sever-op"]);
   });
 
   it("unblock is idempotent", async () => {

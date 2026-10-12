@@ -90,9 +90,20 @@ export class SafetyService {
       };
     }
 
-    const row = (await this.prisma.blockedUser.create({
-      data: { blockerId, blockedId: blockedUserId },
-    })) as BlockRow;
+    // A block ends the relationship too, as it does on every network: the
+    // connection, or an invite either way, goes with it and does not come
+    // back on unblock.
+    const [row] = (await this.prisma.$transaction([
+      this.prisma.blockedUser.create({ data: { blockerId, blockedId: blockedUserId } }),
+      this.prisma.connection.deleteMany({
+        where: {
+          OR: [
+            { requesterId: blockerId, receiverId: blockedUserId },
+            { requesterId: blockedUserId, receiverId: blockerId },
+          ],
+        },
+      }),
+    ])) as [BlockRow, unknown];
     return { id: row.id, blockedUserId: row.blockedId, createdAt: row.createdAt };
   }
 
