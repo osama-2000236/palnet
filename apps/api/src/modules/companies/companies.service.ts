@@ -118,7 +118,28 @@ export class CompaniesService {
     return toCompanyDto(company);
   }
 
+  /**
+   * Company rows hard-delete, and the schema cascades from them into jobs,
+   * applicants' applications, subscriptions and paid credits. Refuse while
+   * any of those carries someone else's data or unspent money; the owner
+   * closes jobs and lets billing lapse first.
+   */
   async remove(companyId: string): Promise<void> {
+    const [applications, subscriptions, credits] = await Promise.all([
+      this.prisma.application.count({ where: { job: { companyId } } }),
+      this.prisma.subscription.count({
+        where: { companyId, status: { in: ["TRIALING", "ACTIVE", "PAST_DUE"] } },
+      }),
+      this.prisma.employerCredit.count({ where: { companyId, remaining: { gt: 0 } } }),
+    ]);
+    if (applications + subscriptions + credits > 0) {
+      throw new DomainException(
+        ErrorCode.CONFLICT,
+        "Company still has applications, an active subscription or unused credits.",
+        409,
+        { applications, subscriptions, credits },
+      );
+    }
     await this.prisma.company.delete({ where: { id: companyId } });
   }
 
