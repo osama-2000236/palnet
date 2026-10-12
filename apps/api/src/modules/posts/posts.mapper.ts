@@ -191,7 +191,10 @@ export function postInclude(viewerId: string, excludedUserIds: string[] = []) {
     _count: {
       select: {
         reactions: { where: visibleUserWhere },
-        comments: { where: { deletedAt: null, ...visibleAuthorWhere } },
+        // Top-level only, to match what GET /posts/:id/comments lists: no
+        // client renders replies yet, so counting them showed "3 comments"
+        // over a thread of two.
+        comments: { where: { deletedAt: null, parentId: null, ...visibleAuthorWhere } },
         reposts: { where: visibleUserWhere },
       },
     },
