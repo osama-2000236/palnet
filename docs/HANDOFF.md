@@ -31,6 +31,10 @@ Findings and corrections: [`docs/audit/OPUS5-ROUND2-2026-07-25.md`](audit/OPUS5-
 Screen scores: [`docs/audit/OPUS5-RUBRIC-2026-07-25.md`](audit/OPUS5-RUBRIC-2026-07-25.md).
 Arabic copy review list: [`docs/audit/ARABIC-REGISTER-2026-07-25.md`](audit/ARABIC-REGISTER-2026-07-25.md).
 
+The 2026-10-13 logic review fixed twelve rules a mature network enforces (expiry, blocks,
+deletion holds, crossed invites, applicant notices, a ranked feed, threaded replies) and ordered
+what is still owed by role: [`docs/UPGRADE-PLAN-2026-10.md`](UPGRADE-PLAN-2026-10.md).
+
 ## Open product gaps
 
 Found by scanning all 143 routes in `apps/api/src/modules/api-route-coverage.spec.ts` against every
