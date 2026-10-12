@@ -66,6 +66,8 @@
     "firstName": "الاسم الأول",
     "lastName": "الاسم الأخير",
     "acceptTerms": "أوافق على الشروط وسياسة الخصوصية",
+    "termsLink": "الشروط",
+    "privacyLink": "سياسة الخصوصية",
     "submitRegister": "أنشئ حسابي",
     "submitLogin": "ادخل",
     "restoreCta": "استعادة الحساب والدخول",
