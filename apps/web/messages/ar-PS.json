@@ -235,7 +235,12 @@
       "connect": "تواصل",
       "pymkEmpty": "ابحث عن أشخاص للتواصل ←"
     },
-    "emptyCta": "اعثر على أشخاص"
+    "emptyCta": "اعثر على أشخاص",
+    "reason": {
+      "REPOST": "أعاد {actor} نشر هذا",
+      "NEARBY": "من مهنيين في مدينتك",
+      "DISCOVER": "اقتراح من خارج شبكتك"
+    }
   },
   "composer": {
     "placeholder": "ابدأ منشورًا…",

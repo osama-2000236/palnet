@@ -50,6 +50,9 @@ const EnvSchema = z.object({
   // class, which is a code fact — see `billing/wallets.ts`. Each provider's
   // merchant-id / api-key / webhook-secret / base-url vars land with that
   // client, so there is nothing to set here in the meantime.
+  // Feed ranking (docs/design/FEED-RANKING.md). "false" restores the plain
+  // newest-first network feed without a deploy of new code.
+  FEED_RANKING_ENABLED: z.enum(["true", "false"]).default("true"),
   // Observability.
   SENTRY_DSN: z.string().url().optional(),
   SENTRY_RELEASE: z.string().min(7).optional(),

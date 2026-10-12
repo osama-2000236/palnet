@@ -1222,6 +1222,8 @@ model FeedSlate {
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId      String
   postIds     String[]
+  // { [postId]: { kind, actor? } } — why each non-obvious post is in the slate.
+  reasons     Json?
   generatedAt DateTime @default(now())
   expiresAt   DateTime
 

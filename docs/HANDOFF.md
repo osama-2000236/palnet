@@ -89,9 +89,9 @@ Owed, and easy to lose:
   from job search rather than wrong in it. Harmless only because nothing can create one yet — the
   composer that posts work without a company is phase 5. Phase 4 owns it; the `ponytail:` comment
   at the JOIN names why it is not a one-word fix. **Do not ship phase 5 before this.**
-- **Nine models have no engine.** `OccupationClaim`, `WorkProof`, `Standing`, `Vouch`, `Licence`,
-  `PostTopic`, `InterestWeight`, `FeedSlate`, `TopicMute` are created by the migration and read or
-  written by nothing. They are the phase 3–4 data model, front-loaded into one migration. Either
+- **Eight models have no engine.** `OccupationClaim`, `WorkProof`, `Standing`, `Vouch`, `Licence`,
+  `PostTopic`, `InterestWeight`, `TopicMute` are created by the migration and read or written by
+  nothing (`FeedSlate` gained one on 2026-10-12 — the ranked feed, `FEED-RANKING.md` §0). They are the phase 3–4 data model, front-loaded into one migration. Either
   those phases land or the tables get dropped; empty tables that outlive their plan are how a
   schema rots.
 - **Account deletion is a soft delete** (`deletedAt` + anonymize, with a restore grace window), so

@@ -279,12 +279,17 @@
       "count_other": "{{count}} posts"
     },
     "provenance": {
-      "newestFromNetwork": "Newest first, from you and your connections"
+      "ranked": "Your network first, then the newest and most discussed"
     },
     "end": {
       "title": "You've reached the end of what's new",
       "body_one": "{{count}} post in today's round. We'll be back with a new one tomorrow.",
       "body_other": "{{count}} posts in today's round. We'll be back with a new one tomorrow."
+    },
+    "reason": {
+      "REPOST": "{{actor}} reposted this",
+      "NEARBY": "From professionals in your city",
+      "DISCOVER": "Suggested from outside your network"
     }
   },
   "composer": {

@@ -235,7 +235,12 @@
       "connect": "Connect",
       "pymkEmpty": "Find people to connect with →"
     },
-    "emptyCta": "Find people"
+    "emptyCta": "Find people",
+    "reason": {
+      "REPOST": "{actor} reposted this",
+      "NEARBY": "From professionals in your city",
+      "DISCOVER": "Suggested from outside your network"
+    }
   },
   "composer": {
     "placeholder": "Start a post…",

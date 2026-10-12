@@ -140,7 +140,7 @@ export default function FeedScreen(): JSX.Element {
       {ranking.explainRanking && posts.length > 0 ? (
         <ProvenanceLine
           testID="feed-provenance"
-          text={t("feed.provenance.newestFromNetwork")}
+          text={t("feed.provenance.ranked")}
           trailing={t("feed.round.label")}
         />
       ) : null}
@@ -193,6 +193,7 @@ export default function FeedScreen(): JSX.Element {
           renderItem={({ item }) => (
             <PostRow
               post={item}
+              explainRanking={ranking.explainRanking}
               onChange={(next) =>
                 setPosts((prev) => prev.map((x) => (x.id === next.id ? next : x)))
               }
