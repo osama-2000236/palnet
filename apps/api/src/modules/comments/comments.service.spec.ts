@@ -84,6 +84,23 @@ describe("CommentsService", () => {
       ).rejects.toMatchObject({ code: ErrorCode.NOT_FOUND });
     });
 
+    it("cannot comment or reply across a block: post and parent lookups filter the author", async () => {
+      prisma.post.findFirst.mockResolvedValue({ id: "p_1", authorId: "u_author" });
+      prisma.comment.findFirst.mockResolvedValue(null);
+      await expect(
+        service.create("u_me", "p_1", { body: "reply", parentId: "c_1" }),
+      ).rejects.toMatchObject({ code: ErrorCode.NOT_FOUND });
+      expect(prisma.post.findFirst.mock.calls[0]![0].where.author).toEqual({
+        blockedByMe: { none: { blockedId: "u_me" } },
+        blockedMe: { none: { blockerId: "u_me" } },
+      });
+      expect(prisma.comment.findFirst.mock.calls[0]![0].where.author).toEqual({
+        blockedByMe: { none: { blockedId: "u_me" } },
+        blockedMe: { none: { blockerId: "u_me" } },
+      });
+      expect(prisma.comment.create).not.toHaveBeenCalled();
+    });
+
     it("notifies the post author on a top-level comment", async () => {
       prisma.post.findFirst.mockResolvedValue({ id: "p_1", authorId: "u_author" });
       prisma.comment.create.mockResolvedValue(commentRow());

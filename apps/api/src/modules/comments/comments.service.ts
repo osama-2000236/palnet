@@ -11,6 +11,7 @@ import { Injectable } from "@nestjs/common";
 import { DomainException } from "../../common/domain-exception";
 import { NotificationsService } from "../notifications/notifications.service";
 import { PrismaService } from "../prisma/prisma.service";
+import { notBlockedWith } from "../safety/not-blocked-with";
 import { SafetyService } from "../safety/safety.service";
 
 interface CommentWithAuthor {
@@ -97,7 +98,7 @@ export class CommentsService {
 
   async create(viewerId: string, postId: string, body: CreateCommentBody): Promise<CommentDto> {
     const post = await this.prisma.post.findFirst({
-      where: { id: postId, deletedAt: null },
+      where: { id: postId, deletedAt: null, author: notBlockedWith(viewerId) },
       select: { id: true, authorId: true },
     });
     if (!post) {
@@ -107,7 +108,7 @@ export class CommentsService {
     let parentAuthorId: string | null = null;
     if (body.parentId) {
       const parent = await this.prisma.comment.findFirst({
-        where: { id: body.parentId, postId, deletedAt: null },
+        where: { id: body.parentId, postId, deletedAt: null, author: notBlockedWith(viewerId) },
         select: { id: true, authorId: true },
       });
       if (!parent) {
