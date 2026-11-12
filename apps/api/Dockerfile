@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.7
 
-FROM node:20-alpine AS base
-RUN corepack enable && corepack prepare pnpm@9.12.0 --activate
+FROM node:20-alpine3.20 AS base
+RUN apk add --no-cache openssl openssl1.1-compat && corepack enable && corepack prepare pnpm@9.12.0 --activate
 WORKDIR /repo
 
 # ─── deps ────────────────────────────────────────────
@@ -18,14 +18,15 @@ RUN pnpm install --frozen-lockfile
 FROM deps AS build
 COPY . .
 RUN pnpm --filter @baydar/db db:generate \
- && pnpm --filter @baydar/shared build || true \
+ && pnpm --filter @baydar/shared build \
  && pnpm --filter @baydar/api build
 
 # ─── runtime ─────────────────────────────────────────
-FROM node:20-alpine AS runtime
-RUN corepack enable && corepack prepare pnpm@9.12.0 --activate
+FROM node:20-alpine3.20 AS runtime
+RUN apk add --no-cache openssl openssl1.1-compat && corepack enable && corepack prepare pnpm@9.12.0 --activate
 WORKDIR /app
 ENV NODE_ENV=production
+COPY --from=build /repo/package.json /repo/pnpm-lock.yaml /repo/pnpm-workspace.yaml /repo/turbo.json ./
 COPY --from=build /repo/node_modules ./node_modules
 COPY --from=build /repo/apps/api/node_modules ./apps/api/node_modules
 COPY --from=build /repo/apps/api/dist ./apps/api/dist
