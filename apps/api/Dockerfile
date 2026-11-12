@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1.7
 
-FROM node:20-alpine3.20 AS base
+FROM node:20-alpine3.18 AS base
 RUN apk add --no-cache openssl openssl1.1-compat && corepack enable && corepack prepare pnpm@9.12.0 --activate
 WORKDIR /repo
 
@@ -22,7 +22,7 @@ RUN pnpm --filter @baydar/db db:generate \
  && pnpm --filter @baydar/api build
 
 # ─── runtime ─────────────────────────────────────────
-FROM node:20-alpine3.20 AS runtime
+FROM node:20-alpine3.18 AS runtime
 RUN apk add --no-cache openssl openssl1.1-compat && corepack enable && corepack prepare pnpm@9.12.0 --activate
 WORKDIR /app
 ENV NODE_ENV=production
