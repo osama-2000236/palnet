@@ -18,6 +18,8 @@ concurrency:
 
 jobs:
   migrate:
+    env:
+      PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
     name: Apply and verify checkout idempotency migration
     runs-on: ubuntu-latest
     environment: staging
