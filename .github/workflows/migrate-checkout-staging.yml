@@ -6,7 +6,7 @@ on:
       ref:
         description: "Source ref containing the checkout migration"
         required: true
-        default: "pr31"
+        default: "main"
         type: string
 
 permissions:
