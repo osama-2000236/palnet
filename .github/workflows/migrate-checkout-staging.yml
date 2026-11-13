@@ -38,12 +38,12 @@ jobs:
       - run: pnpm --filter @baydar/db db:generate
       - name: Apply pending Prisma migrations to staging
         env:
-          DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
+          DATABASE_URL: ${{ secrets.STAGING_DIRECT_URL }}
           DIRECT_URL: ${{ secrets.STAGING_DIRECT_URL }}
         run: pnpm --filter @baydar/db db:deploy
       - name: Verify checkout columns and unique index
         env:
-          DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
+          DATABASE_URL: ${{ secrets.STAGING_DIRECT_URL }}
         working-directory: packages/db
         run: |
           node --input-type=module <<'NODE'
