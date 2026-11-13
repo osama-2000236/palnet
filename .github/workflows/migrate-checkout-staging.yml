@@ -1,0 +1,74 @@
+name: Migrate checkout idempotency (staging)
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "Source ref containing the checkout migration"
+        required: true
+        default: "pr31"
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: migrate-checkout-staging
+  cancel-in-progress: false
+
+jobs:
+  migrate:
+    name: Apply and verify checkout idempotency migration
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+      - uses: pnpm/action-setup@v4
+        with:
+          version: "9.12.0"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @baydar/db db:generate
+      - name: Apply pending Prisma migrations to staging
+        env:
+          DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
+          DIRECT_URL: ${{ secrets.STAGING_DIRECT_URL }}
+        run: pnpm --filter @baydar/db db:deploy
+      - name: Verify checkout columns and unique index
+        env:
+          DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
+        working-directory: packages/db
+        run: |
+          node --input-type=module <<'NODE'
+          import { PrismaClient } from '@prisma/client';
+          const prisma = new PrismaClient();
+          try {
+            const expected = ['checkoutFingerprint', 'checkoutKey', 'checkoutProcessingAt'];
+            const rows = await prisma.$queryRawUnsafe(
+              `SELECT column_name FROM information_schema.columns
+               WHERE table_schema = 'public' AND table_name = 'Invoice'
+                 AND column_name IN ('checkoutFingerprint', 'checkoutKey', 'checkoutProcessingAt')
+               ORDER BY column_name`,
+            );
+            const actual = rows.map((row) => row.column_name);
+            const indexes = await prisma.$queryRawUnsafe(
+              `SELECT indexdef FROM pg_indexes
+               WHERE schemaname = 'public' AND tablename = 'Invoice'
+                 AND indexdef LIKE '%checkoutKey%'`,
+            );
+            if (JSON.stringify(actual) !== JSON.stringify(expected)) {
+              throw new Error(`Checkout columns mismatch: ${JSON.stringify(actual)}`);
+            }
+            if (!indexes.some((row) => /\bUNIQUE\b/i.test(row.indexdef))) {
+              throw new Error('Unique checkoutKey index was not found.');
+            }
+            console.log('Verified checkoutFingerprint, checkoutKey, checkoutProcessingAt, and the unique checkoutKey index.');
+          } finally {
+            await prisma.$disconnect();
+          }
+          NODE
