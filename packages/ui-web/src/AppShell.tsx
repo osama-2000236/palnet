@@ -307,69 +307,71 @@ export function AppShell({
             ref={navRef}
             onKeyDown={onNavKeyDown}
             aria-label={labels.mainNavLabel}
-            className="flex min-w-0 shrink items-stretch gap-1 overflow-x-auto overscroll-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            className="flex min-w-0 shrink items-stretch gap-1"
           >
-            {NAV_ITEMS.map((item) => {
-              const active = currentRoute === item.key;
-              const count =
-                item.key === "messages"
-                  ? messagesUnread
-                  : item.key === "notifications"
-                    ? notificationsUnread
+            <div className="flex min-w-0 items-stretch gap-1 overflow-x-auto overscroll-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              {NAV_ITEMS.map((item) => {
+                const active = currentRoute === item.key;
+                const count =
+                  item.key === "messages"
+                    ? messagesUnread
+                    : item.key === "notifications"
+                      ? notificationsUnread
+                      : undefined;
+                const badgeText = typeof count === "number" ? formatBadge(count) : "";
+                const srUnread =
+                  typeof count === "number" && count > 0
+                    ? (labels.unreadTemplate as Record<string, string>)[item.key]?.replace(
+                        "{count}",
+                        String(count),
+                      )
                     : undefined;
-              const badgeText = typeof count === "number" ? formatBadge(count) : "";
-              const srUnread =
-                typeof count === "number" && count > 0
-                  ? (labels.unreadTemplate as Record<string, string>)[item.key]?.replace(
-                      "{count}",
-                      String(count),
-                    )
-                  : undefined;
-              const disconnected = item.key === "notifications" && notificationsConnectionDropped;
+                const disconnected = item.key === "notifications" && notificationsConnectionDropped;
 
-              return (
-                <button
-                  key={item.key}
-                  type="button"
-                  data-nav-item
-                  onClick={() => onNavigate(item.key)}
-                  aria-current={active ? "page" : undefined}
-                  title={disconnected ? labels.bellDisconnected : undefined}
-                  className={cx(
-                    "focus-visible:ring-brand-600 focus-visible:ring-offset-surface relative -mb-px inline-flex min-w-[64px] flex-col items-center gap-0.5 border-b-2 px-3 py-2 text-[11px] font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
-                    active
-                      ? "border-brand-600 text-ink"
-                      : "text-ink-muted hover:text-ink border-transparent",
-                  )}
-                >
-                  <span className="relative">
-                    <Icon name={item.icon} size={20} />
-                    {badgeText ? (
-                      <span
-                        aria-hidden="true"
-                        className="bg-accent-600 text-ink-inverse absolute -top-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-bold leading-none ltr:-end-1.5 rtl:-start-1.5"
-                      >
-                        {badgeText}
-                      </span>
-                    ) : null}
-                    {disconnected ? (
-                      <span
-                        aria-hidden="true"
-                        className="ring-surface absolute -bottom-0.5 h-2 w-2 rounded-full bg-[var(--warning-soft)] ring-2 ltr:-end-1 rtl:-start-1"
-                      />
-                    ) : null}
-                    {srUnread ? <span className="sr-only">{srUnread}</span> : null}
-                    {disconnected ? (
-                      <span className="sr-only">{labels.bellDisconnected}</span>
-                    ) : null}
-                  </span>
-                  <span>{labels.nav[item.key]}</span>
-                </button>
-              );
-            })}
+                return (
+                  <button
+                    key={item.key}
+                    type="button"
+                    data-nav-item
+                    onClick={() => onNavigate(item.key)}
+                    aria-current={active ? "page" : undefined}
+                    title={disconnected ? labels.bellDisconnected : undefined}
+                    className={cx(
+                      "focus-visible:ring-brand-600 focus-visible:ring-offset-surface relative -mb-px inline-flex min-w-[64px] flex-col items-center gap-0.5 border-b-2 px-3 py-2 text-[11px] font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
+                      active
+                        ? "border-brand-600 text-ink"
+                        : "text-ink-muted hover:text-ink border-transparent",
+                    )}
+                  >
+                    <span className="relative">
+                      <Icon name={item.icon} size={20} />
+                      {badgeText ? (
+                        <span
+                          aria-hidden="true"
+                          className="bg-accent-600 text-ink-inverse absolute -top-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-bold leading-none ltr:-end-1.5 rtl:-start-1.5"
+                        >
+                          {badgeText}
+                        </span>
+                      ) : null}
+                      {disconnected ? (
+                        <span
+                          aria-hidden="true"
+                          className="ring-surface absolute -bottom-0.5 h-2 w-2 rounded-full bg-[var(--warning-soft)] ring-2 ltr:-end-1 rtl:-start-1"
+                        />
+                      ) : null}
+                      {srUnread ? <span className="sr-only">{srUnread}</span> : null}
+                      {disconnected ? (
+                        <span className="sr-only">{labels.bellDisconnected}</span>
+                      ) : null}
+                    </span>
+                    <span>{labels.nav[item.key]}</span>
+                  </button>
+                );
+              })}
 
-            {/* Vertical divider. */}
-            <div aria-hidden="true" className="bg-line-soft mx-2 my-2 w-px" />
+              {/* Vertical divider. */}
+              <div aria-hidden="true" className="bg-line-soft mx-2 my-2 w-px" />
+            </div>
 
             {/* Profile menu. */}
             <div className="relative flex items-stretch">

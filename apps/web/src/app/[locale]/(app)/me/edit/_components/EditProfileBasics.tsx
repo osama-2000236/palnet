@@ -159,7 +159,7 @@ export function BasicsSection({
           type="button"
           onClick={save}
           disabled={busy}
-          className="bg-brand-600 text-ink-inverse rounded-md px-4 py-2 text-sm font-semibold focus-visible:[box-shadow:var(--focus-ring)] focus-visible:outline-none disabled:opacity-60"
+          className="bg-brand-600 text-ink-inverse rounded-md px-4 py-2 text-sm font-semibold focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)] disabled:opacity-60"
         >
           {t("save")}
         </button>

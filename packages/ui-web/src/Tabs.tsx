@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, type ReactNode } from "react";
+import { createContext, useContext, type KeyboardEvent, type ReactNode } from "react";
 import { cx } from "./cx";
 
 interface TabsCtx {
@@ -18,11 +18,34 @@ export interface TabsProps {
 }
 
 export function Tabs({ value, onChange, children, className, label }: TabsProps): JSX.Element {
+  function onKeyDown(event: KeyboardEvent<HTMLDivElement>): void {
+    if (!["ArrowRight", "ArrowLeft", "Home", "End"].includes(event.key)) return;
+    const tabs = Array.from(
+      event.currentTarget.querySelectorAll<HTMLButtonElement>('[role="tab"]'),
+    );
+    const activeTab = (event.target as HTMLElement).closest('[role="tab"]');
+    const activeIndex = tabs.findIndex((tab) => tab === activeTab);
+    if (activeIndex < 0 || tabs.length === 0) return;
+
+    event.preventDefault();
+    const direction = getComputedStyle(event.currentTarget).direction === "rtl" ? -1 : 1;
+    const nextIndex =
+      event.key === "Home"
+        ? 0
+        : event.key === "End"
+          ? tabs.length - 1
+          : (activeIndex + (event.key === "ArrowRight" ? direction : -direction) + tabs.length) %
+            tabs.length;
+    tabs[nextIndex]?.focus();
+    tabs[nextIndex]?.click();
+  }
+
   return (
     <Ctx.Provider value={{ value, onChange }}>
       <div
         role="tablist"
         aria-label={label}
+        onKeyDown={onKeyDown}
         className={cx("border-line-soft flex flex-wrap gap-0 border-b", className)}
       >
         {children}
@@ -50,7 +73,7 @@ export function Tab({ value, children, count }: TabProps): JSX.Element {
       onClick={() => ctx.onChange(value)}
       className={cx(
         "-mb-px me-6 inline-flex items-center gap-2 border-b-2 px-0.5 py-3 font-sans text-sm font-medium transition-colors",
-        "focus-visible:[box-shadow:var(--focus-ring)] focus-visible:outline-none",
+        "min-h-11 focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]",
         active ? "border-brand-600 text-ink" : "text-ink-muted hover:text-ink border-transparent",
       )}
     >

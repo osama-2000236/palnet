@@ -182,6 +182,7 @@ export function Composer({
         value={body}
         onChange={(e) => setBody(e.target.value)}
         placeholder={labels.expandedPlaceholder}
+        aria-label={labels.expandedPlaceholder}
         rows={5}
         maxLength={maxLength}
         className="text-ink placeholder:text-ink-muted w-full resize-none rounded-md border-0 bg-transparent p-0 text-base focus:outline-none"
@@ -207,9 +208,9 @@ export function Composer({
                   type="button"
                   onClick={() => onRemoveMedia(m.id)}
                   aria-label={labels.removeMedia}
-                  className="bg-surface text-ink-muted shadow-card hover:text-danger focus-visible:ring-brand-600 absolute -end-2 -top-2 inline-flex h-5 w-5 items-center justify-center rounded-full focus:outline-none focus-visible:ring-2"
+                  className="bg-surface text-ink-muted shadow-card hover:text-danger absolute -end-3 -top-3 inline-flex h-11 w-11 items-center justify-center rounded-full focus:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
                 >
-                  <Icon name="x" size={12} />
+                  <Icon name="x" size={16} />
                 </button>
               ) : null}
             </li>
@@ -285,7 +286,7 @@ function QuietChip({
       type="button"
       onClick={onClick}
       className={cx(
-        "text-ink-muted hover:bg-surface-subtle hover:text-ink focus-visible:ring-brand-600 focus-visible:ring-offset-surface inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
+        "text-ink-muted hover:bg-surface-subtle hover:text-ink inline-flex min-h-11 items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium focus:outline-none focus-visible:[box-shadow:var(--focus-ring)]",
       )}
     >
       <Icon name={icon} size={14} />
@@ -310,7 +311,7 @@ function FileChip({
   return (
     <label
       className={cx(
-        "text-ink-muted hover:bg-surface-subtle hover:text-ink focus-within:ring-brand-600 inline-flex cursor-pointer items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium focus-within:ring-2",
+        "text-ink-muted hover:bg-surface-subtle hover:text-ink relative inline-flex min-h-11 cursor-pointer items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium focus-within:[box-shadow:var(--focus-ring)]",
         disabled && "cursor-not-allowed opacity-60",
       )}
     >
@@ -321,7 +322,8 @@ function FileChip({
         accept={accept}
         onChange={onChange}
         disabled={disabled}
-        className="hidden"
+        aria-label={label}
+        className="absolute inset-0 h-full w-full cursor-pointer opacity-0 focus-visible:outline-none disabled:cursor-not-allowed"
       />
     </label>
   );

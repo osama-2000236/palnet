@@ -203,8 +203,8 @@ function FilterTab({
       onClick={onClick}
       className={
         active
-          ? "bg-brand-600 text-ink-inverse rounded-md px-4 py-1.5 text-sm font-semibold focus-visible:[box-shadow:var(--focus-ring)] focus-visible:outline-none"
-          : "border-ink-muted/30 text-ink hover:bg-ink-muted/5 rounded-md border px-4 py-1.5 text-sm focus-visible:[box-shadow:var(--focus-ring)] focus-visible:outline-none"
+          ? "bg-brand-600 text-ink-inverse rounded-md px-4 py-1.5 text-sm font-semibold focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+          : "border-ink-muted/30 text-ink hover:bg-ink-muted/5 rounded-md border px-4 py-1.5 text-sm focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
       }
     >
       {children}

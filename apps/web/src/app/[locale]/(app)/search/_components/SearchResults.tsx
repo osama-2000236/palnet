@@ -9,7 +9,7 @@ export function PeopleRow({ item }: { item: SearchPersonHit }): JSX.Element {
     <Surface as="li" variant="flat" padding="4">
       <Link
         href={`/in/${item.handle}`}
-        className="flex items-start gap-3 focus-visible:[box-shadow:var(--focus-ring)] focus-visible:outline-none"
+        className="flex items-start gap-3 focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
       >
         <Avatar
           user={{
@@ -41,7 +41,7 @@ export function PostRow({ item }: { item: SearchPostHit }): JSX.Element {
     <Surface as="li" variant="flat" padding="4">
       <Link
         href={`/in/${item.authorHandle}`}
-        className="flex items-start gap-3 focus-visible:[box-shadow:var(--focus-ring)] focus-visible:outline-none"
+        className="flex items-start gap-3 focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
       >
         <Avatar
           user={{
@@ -71,7 +71,7 @@ export function JobRow({ item }: { item: SearchJobHit }): JSX.Element {
     <Surface as="li" variant="flat" padding="4">
       <Link
         href={`/jobs/${item.id}`}
-        className="flex items-start gap-3 focus-visible:[box-shadow:var(--focus-ring)] focus-visible:outline-none"
+        className="flex items-start gap-3 focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
       >
         <div className="bg-surface-sunken text-ink flex h-12 w-12 shrink-0 items-center justify-center rounded-md text-sm font-bold">
           {item.companyName.slice(0, 1)}

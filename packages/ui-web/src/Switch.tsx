@@ -13,6 +13,8 @@
 
 import { type ReactElement } from "react";
 
+import { cx } from "./cx";
+
 export interface SwitchProps {
   checked: boolean;
   onChange(value: boolean): void;
@@ -40,18 +42,18 @@ export function Switch({
       aria-label={ariaLabel}
       disabled={disabled}
       onClick={() => onChange(!checked)}
-      className={
-        "relative inline-flex h-5 w-9 flex-none rounded-full transition-colors duration-150 focus-visible:[box-shadow:var(--focus-ring)] focus-visible:outline-none " +
-        (disabled ? "cursor-not-allowed opacity-55" : "") +
-        (checked ? "bg-brand-600" : "bg-surface-sunken")
-      }
+      className={cx(
+        "relative inline-flex h-5 w-9 flex-none rounded-full transition-colors duration-150 focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]",
+        disabled && "cursor-not-allowed opacity-55",
+        checked ? "bg-brand-600" : "bg-surface-sunken",
+      )}
     >
       <span
         aria-hidden="true"
-        className={
-          "absolute top-0.5 h-4 w-4 rounded-full bg-white shadow-sm transition-transform duration-150 " +
-          (checked ? "start-[18px]" : "start-0.5")
-        }
+        className={cx(
+          "absolute top-0.5 h-4 w-4 rounded-full bg-white shadow-sm transition-transform duration-150",
+          checked ? "start-[18px]" : "start-0.5",
+        )}
       />
     </button>
   );

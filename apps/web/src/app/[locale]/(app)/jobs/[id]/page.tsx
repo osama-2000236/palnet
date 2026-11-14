@@ -77,7 +77,7 @@ export default function JobDetailPage(): JSX.Element {
           <p className="text-ink-muted text-sm">{error ?? t("notFound")}</p>
           <Link
             href="/jobs"
-            className="text-brand-700 mt-3 inline-block text-sm hover:underline focus-visible:[box-shadow:var(--focus-ring)] focus-visible:outline-none"
+            className="text-brand-700 mt-3 inline-block text-sm hover:underline focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
           >
             ← {t("title")}
           </Link>
@@ -104,7 +104,7 @@ export default function JobDetailPage(): JSX.Element {
       <nav className="mb-3">
         <Link
           href="/jobs"
-          className="text-ink-muted hover:text-ink text-sm focus-visible:[box-shadow:var(--focus-ring)] focus-visible:outline-none"
+          className="text-ink-muted hover:text-ink text-sm focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
         >
           ← {t("title")}
         </Link>
@@ -133,7 +133,7 @@ export default function JobDetailPage(): JSX.Element {
             <h1 className="text-ink truncate text-xl font-semibold">{job.title}</h1>
             <Link
               href={`/companies/${job.company.slug}`}
-              className="text-ink-muted hover:text-ink text-sm focus-visible:[box-shadow:var(--focus-ring)] focus-visible:outline-none"
+              className="text-ink-muted hover:text-ink text-sm focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
             >
               {job.company.name}
             </Link>

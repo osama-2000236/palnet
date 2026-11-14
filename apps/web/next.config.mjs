@@ -11,6 +11,7 @@ export { buildContentSecurityPolicy, buildSecurityHeaders };
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  output: "standalone",
   reactStrictMode: true,
   transpilePackages: ["@baydar/shared", "@baydar/ui-tokens", "@baydar/ui-web"],
   experimental: {

@@ -32,6 +32,7 @@ export function Popover({
 }: PopoverProps): JSX.Element {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement | null>(null);
+  const triggerRef = useRef<HTMLButtonElement | null>(null);
 
   useEffect(() => {
     if (!open) return undefined;
@@ -44,19 +45,24 @@ export function Popover({
     return (): void => document.removeEventListener("mousedown", onPointer);
   }, [open]);
 
-  function onKeyDown(event: KeyboardEvent<HTMLButtonElement>): void {
-    if (event.key === "Escape") setOpen(false);
+  function closeOnEscape(event: KeyboardEvent<HTMLElement>): void {
+    if (event.key !== "Escape") return;
+    event.preventDefault();
+    event.stopPropagation();
+    setOpen(false);
+    triggerRef.current?.focus();
   }
 
   return (
     <div ref={rootRef} className={cx("relative inline-flex", className)}>
       <button
+        ref={triggerRef}
         type="button"
         aria-haspopup="dialog"
         aria-expanded={open}
         aria-label={label}
         onClick={() => setOpen((value) => !value)}
-        onKeyDown={onKeyDown}
+        onKeyDown={closeOnEscape}
         className="focus-visible:ring-brand-500 rounded-md focus:outline-none focus-visible:ring-2"
       >
         {trigger}
@@ -64,6 +70,8 @@ export function Popover({
       {open ? (
         <div
           role="dialog"
+          aria-label={label}
+          onKeyDown={closeOnEscape}
           className={cx(
             "border-line-soft bg-surface text-ink shadow-pop absolute z-50 min-w-52 rounded-md border p-2",
             PANEL_PLACEMENT[placement],

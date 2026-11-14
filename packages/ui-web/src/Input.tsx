@@ -19,7 +19,7 @@
 //   • The component forwards refs, so it works with react-hook-form and
 //     `useFocus()` patterns without ceremony.
 
-import { forwardRef, type ComponentPropsWithoutRef, type ReactNode } from "react";
+import { forwardRef, useId, type ComponentPropsWithoutRef, type ReactNode } from "react";
 
 import { cx } from "./cx";
 
@@ -87,7 +87,9 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
 ): JSX.Element {
   // Auto-wire aria-describedby to the helper element when one is rendered.
   // If the consumer already passed `aria-describedby`, append rather than replace.
-  const helperId = (errorMessage || helper) && id ? `${id}-helper` : undefined;
+  const generatedId = useId();
+  const inputId = id ?? generatedId;
+  const helperId = errorMessage || helper ? `${inputId}-helper` : undefined;
   const describedBy =
     helperId && ariaDescribedBy ? `${ariaDescribedBy} ${helperId}` : (helperId ?? ariaDescribedBy);
 
@@ -107,7 +109,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
         ) : null}
         <input
           ref={ref}
-          id={id}
+          id={inputId}
           disabled={disabled}
           aria-invalid={error || undefined}
           aria-describedby={describedBy}
@@ -117,7 +119,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
             "placeholder:text-ink-subtle",
             "transition-colors duration-150 ease-out",
             // focus ring (keyboard-only — matches Button)
-            "focus-visible:border-brand-600 focus-visible:[box-shadow:var(--focus-ring)] focus-visible:outline-none",
+            "focus-visible:border-brand-600 focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]",
             // hover (only when not focused/disabled — outline strengthens)
             "hover:border-line-hard",
             // sizing
@@ -126,9 +128,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
             leading ? ICON_PADDING[size].leading : null,
             trailing ? ICON_PADDING[size].trailing : null,
             // state
-            error
-              ? "border-danger focus-visible:border-danger"
-              : "border-line-hard",
+            error ? "border-danger focus-visible:border-danger" : "border-line-hard",
             disabled && "bg-surface-subtle text-ink-subtle cursor-not-allowed",
             className,
           )}

@@ -1,5 +1,6 @@
 import React from "react";
-import { createRoot, type Root } from "react-dom/client";
+import { createRoot, hydrateRoot, type Root } from "react-dom/client";
+import { renderToString } from "react-dom/server.node";
 
 import { useOnline, type OnlineState } from "../useOnline";
 
@@ -33,10 +34,34 @@ describe("useOnline", () => {
     jest.useRealTimers();
   });
 
-  function Probe(): JSX.Element {
+  function Probe(): JSX.Element | null {
     latest = useOnline(500);
-    return <div data-state={latest} />;
+    return latest === "offline" ? <div role="status" /> : null;
   }
+
+  it("hydrates an initially offline client without a markup mismatch", () => {
+    const serverContainer = document.createElement("div");
+    document.body.appendChild(serverContainer);
+    serverContainer.innerHTML = renderToString(<Probe />);
+    setNavigatorOnline(false);
+
+    const consoleError = jest.spyOn(console, "error").mockImplementation(() => {});
+    const hydrationErrors: Error[] = [];
+    let hydratedRoot: Root | undefined;
+    React.act(() => {
+      hydratedRoot = hydrateRoot(serverContainer, <Probe />, {
+        onCaughtError: (error) => hydrationErrors.push(error),
+      });
+    });
+
+    expect(latest).toBe("offline");
+    expect(hydrationErrors).toEqual([]);
+    expect(consoleError.mock.calls.flat().join(" ")).not.toContain("hydrated");
+
+    React.act(() => hydratedRoot?.unmount());
+    consoleError.mockRestore();
+    serverContainer.remove();
+  });
 
   it("reports offline, restored, and then online states", () => {
     React.act(() => {

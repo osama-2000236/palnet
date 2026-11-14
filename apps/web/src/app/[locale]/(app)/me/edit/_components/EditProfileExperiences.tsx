@@ -81,7 +81,11 @@ export function ExperiencesSection({
       <div className="mb-3 flex items-center justify-between">
         <h2 className="text-ink text-xl font-semibold">{t("experience")}</h2>
         {!draft ? (
-          <button type="button" onClick={() => setDraft({ ...EMPTY_EXPERIENCE })} className={linkButtonClass}>
+          <button
+            type="button"
+            onClick={() => setDraft({ ...EMPTY_EXPERIENCE })}
+            className={linkButtonClass}
+          >
             + {t("add")}
           </button>
         ) : null}
@@ -103,7 +107,7 @@ export function ExperiencesSection({
                 type="button"
                 onClick={() => void remove(e.id as string)}
                 disabled={busy}
-                className="text-danger text-xs hover:underline focus-visible:[box-shadow:var(--focus-ring)] focus-visible:outline-none"
+                className="text-danger text-xs hover:underline focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
               >
                 {t("remove")}
               </button>
@@ -130,7 +134,9 @@ export function ExperiencesSection({
             type="date"
             className={inputClass}
             value={draft.startDate.slice(0, 10)}
-            onChange={(e) => setDraft({ ...draft, startDate: new Date(e.target.value).toISOString() })}
+            onChange={(e) =>
+              setDraft({ ...draft, startDate: new Date(e.target.value).toISOString() })
+            }
           />
           <textarea
             className={inputClass}
@@ -143,7 +149,7 @@ export function ExperiencesSection({
             <button
               type="button"
               onClick={() => setDraft(null)}
-              className="text-ink-muted text-sm focus-visible:[box-shadow:var(--focus-ring)] focus-visible:outline-none"
+              className="text-ink-muted text-sm focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
             >
               {t("cancel")}
             </button>
@@ -151,7 +157,7 @@ export function ExperiencesSection({
               type="button"
               onClick={add}
               disabled={busy}
-              className="bg-brand-600 text-ink-inverse rounded-md px-4 py-2 text-sm font-semibold focus-visible:[box-shadow:var(--focus-ring)] focus-visible:outline-none disabled:opacity-60"
+              className="bg-brand-600 text-ink-inverse rounded-md px-4 py-2 text-sm font-semibold focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)] disabled:opacity-60"
             >
               {t("save")}
             </button>

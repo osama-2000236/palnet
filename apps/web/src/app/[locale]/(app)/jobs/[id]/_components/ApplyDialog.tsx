@@ -23,35 +23,27 @@ export function ApplyDialog({ job, token, onClose, onApplied }: ApplyDialogProps
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const dialogRef = useRef<HTMLDivElement | null>(null);
   const titleId = useId();
   const hintId = useId();
 
   useEffect(() => {
+    const previousFocus = document.activeElement as HTMLElement | null;
     textareaRef.current?.focus();
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     return (): void => {
       document.body.style.overflow = prev;
+      previousFocus?.focus();
     };
   }, []);
-
-  useEffect(() => {
-    function onKey(e: KeyboardEvent): void {
-      if (e.key === "Escape") {
-        e.stopPropagation();
-        onClose();
-      }
-    }
-    window.addEventListener("keydown", onKey);
-    return (): void => window.removeEventListener("keydown", onKey);
-  }, [onClose]);
 
   async function submit(): Promise<void> {
     setSubmitError(null);
     const trimmed = coverLetter.trim();
     const parsed = ApplyToJobBody.safeParse(trimmed ? { coverLetter: trimmed } : {});
     if (!parsed.success) {
-      setSubmitError(tCommon("genericError"));
+      setSubmitError(tErr("VALIDATION_FAILED"));
       return;
     }
     setSubmitting(true);
@@ -78,10 +70,37 @@ export function ApplyDialog({ job, token, onClose, onApplied }: ApplyDialogProps
       className="bg-ink/40 fixed inset-0 z-50 flex items-center justify-center p-4"
     >
       <div
+        ref={dialogRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
         aria-describedby={hintId}
+        onKeyDown={(e) => {
+          if (e.key === "Escape") {
+            e.stopPropagation();
+            onClose();
+            return;
+          }
+          if (e.key !== "Tab") return;
+          const items = Array.from(
+            dialogRef.current?.querySelectorAll<HTMLElement>(
+              'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])',
+            ) ?? [],
+          );
+          if (items.length === 0) {
+            e.preventDefault();
+            return;
+          }
+          const first = items[0];
+          const last = items[items.length - 1];
+          if (e.shiftKey && document.activeElement === first) {
+            e.preventDefault();
+            last?.focus();
+          } else if (!e.shiftKey && document.activeElement === last) {
+            e.preventDefault();
+            first?.focus();
+          }
+        }}
         className="border-line-soft bg-surface shadow-pop w-full max-w-[560px] rounded-lg border"
       >
         <div className="border-line-soft border-b px-5 py-4">
@@ -103,7 +122,7 @@ export function ApplyDialog({ job, token, onClose, onApplied }: ApplyDialogProps
               maxLength={8000}
               rows={6}
               placeholder={t("coverLetterPlaceholder")}
-              className="border-line-hard bg-surface text-ink min-h-[140px] resize-y rounded-md border px-3 py-2 text-sm focus-visible:[box-shadow:var(--focus-ring)] focus-visible:outline-none"
+              className="border-line-hard bg-surface text-ink min-h-[140px] resize-y rounded-md border px-3 py-2 text-sm focus-visible:outline-none focus-visible:[box-shadow:var(--focus-ring)]"
             />
             <span className="text-ink-muted text-xs">{t("coverLetterHint")}</span>
           </label>

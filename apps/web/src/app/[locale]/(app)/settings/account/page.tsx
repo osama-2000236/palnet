@@ -105,6 +105,7 @@ export default function AccountSettingsPage(): JSX.Element {
           }}
           title={t("delete.confirmTitle")}
           description={t("delete.confirmBody")}
+          closeLabel={t("delete.cancel")}
           footer={
             <>
               <Button

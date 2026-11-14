@@ -1,7 +1,4 @@
-import {
-  ChatRoom as ChatRoomSchema,
-  type ChatRoom,
-} from "@baydar/shared";
+import { ChatRoom as ChatRoomSchema, type ChatRoom } from "@baydar/shared";
 import type { AppShellRoute } from "@baydar/ui-web";
 import { z } from "zod";
 

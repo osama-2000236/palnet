@@ -33,23 +33,23 @@ export default function AppLoading(): JSX.Element {
             className="border-line-soft bg-surface shadow-card overflow-hidden rounded-lg border"
           >
             <div className="flex items-start gap-3 px-4 pb-2.5 pt-3.5">
-              <Skeleton kind="circle" className="h-10 w-10 shrink-0 bg-surface-subtle" />
+              <Skeleton kind="circle" className="bg-surface-subtle h-10 w-10 shrink-0" />
               <div className="flex min-w-0 flex-1 flex-col gap-1.5">
-                <Skeleton className="h-3.5 w-32 bg-surface-subtle" />
-                <Skeleton className="h-3 w-24 bg-surface-subtle" />
+                <Skeleton className="bg-surface-subtle h-3.5 w-32" />
+                <Skeleton className="bg-surface-subtle h-3 w-24" />
               </div>
             </div>
             <div className="flex flex-col gap-2 px-4 pb-3">
-              <Skeleton className="h-3.5 w-[92%] bg-surface-subtle" />
-              <Skeleton className="h-3.5 w-[78%] bg-surface-subtle" />
-              <Skeleton className="h-3.5 w-[60%] bg-surface-subtle" />
+              <Skeleton className="bg-surface-subtle h-3.5 w-[92%]" />
+              <Skeleton className="bg-surface-subtle h-3.5 w-[78%]" />
+              <Skeleton className="bg-surface-subtle h-3.5 w-[60%]" />
             </div>
             <div className="border-line-soft border-t" />
             <div className="flex items-stretch gap-1 p-1">
-              <Skeleton radius="var(--radius-md)" className="h-9 flex-1 bg-surface-subtle" />
-              <Skeleton radius="var(--radius-md)" className="h-9 flex-1 bg-surface-subtle" />
-              <Skeleton radius="var(--radius-md)" className="h-9 flex-1 bg-surface-subtle" />
-              <Skeleton radius="var(--radius-md)" className="h-9 flex-1 bg-surface-subtle" />
+              <Skeleton radius="var(--radius-md)" className="bg-surface-subtle h-9 flex-1" />
+              <Skeleton radius="var(--radius-md)" className="bg-surface-subtle h-9 flex-1" />
+              <Skeleton radius="var(--radius-md)" className="bg-surface-subtle h-9 flex-1" />
+              <Skeleton radius="var(--radius-md)" className="bg-surface-subtle h-9 flex-1" />
             </div>
           </article>
         ))}
@@ -58,7 +58,7 @@ export default function AppLoading(): JSX.Element {
       <aside className="hidden flex-col gap-3 xl:flex">
         <div className="border-line-soft bg-surface shadow-card rounded-lg border">
           <div className="px-4 pt-3">
-            <Skeleton className="h-3.5 w-32 bg-surface-subtle" />
+            <Skeleton className="bg-surface-subtle h-3.5 w-32" />
           </div>
           <ul className="flex flex-col">
             {[0, 1, 2].map((i) => (
@@ -66,12 +66,12 @@ export default function AppLoading(): JSX.Element {
                 key={i}
                 className="border-line-soft flex items-start gap-2.5 border-t px-4 py-3 first:border-t-0"
               >
-                <Skeleton kind="circle" className="h-9 w-9 shrink-0 bg-surface-subtle" />
+                <Skeleton kind="circle" className="bg-surface-subtle h-9 w-9 shrink-0" />
                 <div className="flex min-w-0 flex-1 flex-col gap-1.5">
-                  <Skeleton className="h-3.5 w-28 bg-surface-subtle" />
-                  <Skeleton className="h-3 w-20 bg-surface-subtle" />
+                  <Skeleton className="bg-surface-subtle h-3.5 w-28" />
+                  <Skeleton className="bg-surface-subtle h-3 w-20" />
                 </div>
-                <Skeleton kind="pill" className="h-6 w-16 shrink-0 bg-surface-subtle" />
+                <Skeleton kind="pill" className="bg-surface-subtle h-6 w-16 shrink-0" />
               </li>
             ))}
           </ul>

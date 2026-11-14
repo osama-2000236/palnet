@@ -5,12 +5,10 @@ import { useEffect, useState } from "react";
 export type OnlineState = "online" | "offline" | "restored";
 
 export function useOnline(restoredVisibleMs = 4000): OnlineState {
-  const [state, setState] = useState<OnlineState>(() => {
-    if (typeof navigator === "undefined") return "online";
-    return navigator.onLine ? "online" : "offline";
-  });
+  const [state, setState] = useState<OnlineState>("online");
 
   useEffect(() => {
+    if (!navigator.onLine) setState("offline");
     let restoredTimer: ReturnType<typeof setTimeout> | null = null;
 
     const clearRestoredTimer = (): void => {

@@ -192,6 +192,9 @@
     "onboardingDoneBody": "You can start posting, connect with people, or explore roles that match your experience.",
     "loadMore": "Load more",
     "loadingMore": "Loading…",
+    "errorTitle": "Could not load your feed",
+    "errorBody": "Something went wrong while loading posts. Try again.",
+    "retry": "Retry",
     "rail": {
       "followers": "Profile followers",
       "connections": "Connections",

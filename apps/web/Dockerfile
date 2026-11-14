@@ -24,6 +24,8 @@ ENV NODE_ENV=production PORT=3000 HOSTNAME=0.0.0.0
 COPY --from=build /repo/package.json /repo/pnpm-lock.yaml /repo/pnpm-workspace.yaml ./
 COPY --from=build /repo/node_modules ./node_modules
 COPY --from=build /repo/apps/web/package.json ./apps/web/package.json
+COPY --from=build /repo/apps/web/node_modules ./apps/web/node_modules
+COPY --from=build /repo/packages ./packages
 COPY --from=build /repo/apps/web/.next ./apps/web/.next
 COPY --from=build /repo/apps/web/public ./apps/web/public
 EXPOSE 3000
