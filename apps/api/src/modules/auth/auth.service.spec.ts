@@ -235,5 +235,27 @@ describe("AuthService", () => {
       ).rejects.toMatchObject({ status: 401 });
       expect(prisma.refreshToken.create).not.toHaveBeenCalled();
     });
+
+    it("allows exactly one of two concurrent rotations to succeed", async () => {
+      prisma.refreshToken.findFirst.mockResolvedValue({
+        id: "token-1",
+        expiresAt: new Date(Date.now() + 60_000),
+        user: { id: "user-1", email: "owner@baydar.ps", role: "USER", locale: "en" },
+      });
+      prisma.refreshToken.updateMany
+        .mockResolvedValueOnce({ count: 1 })
+        .mockResolvedValueOnce({ count: 0 });
+      prisma.refreshToken.create.mockResolvedValue({});
+      const body = { refreshToken: "opaque-refresh-token", deviceId: "device-1" };
+
+      const attempts = await Promise.allSettled([service.refresh(body), service.refresh(body)]);
+
+      expect(attempts.map((attempt) => attempt.status).sort()).toEqual(["fulfilled", "rejected"]);
+      expect(attempts.find((attempt) => attempt.status === "rejected")).toMatchObject({
+        reason: { status: 401 },
+      });
+      expect(prisma.refreshToken.updateMany).toHaveBeenCalledTimes(2);
+      expect(prisma.refreshToken.create).toHaveBeenCalledTimes(1);
+    });
   });
 });

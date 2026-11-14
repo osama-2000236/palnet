@@ -1,3 +1,6 @@
+import { createHash } from "node:crypto";
+
+import { Prisma } from "@baydar/db";
 import { ConfigService } from "@nestjs/config";
 import { Test } from "@nestjs/testing";
 
@@ -455,6 +458,56 @@ describe("BillingService", () => {
         idempotencyKey: "checkout-request-123456",
       }),
     ).rejects.toMatchObject({ code: "CONFLICT", status: 409 });
+    expect(hyperpay.createCheckout).not.toHaveBeenCalled();
+  });
+
+  it("resolves a checkout uniqueness collision to the original checkout", async () => {
+    prisma.plan.upsert.mockResolvedValue({
+      id: "plan-1",
+      code: "USER_PREMIUM",
+      priceCents: 9900,
+      currency: "USD",
+      intervalDays: 30,
+    });
+    prisma.user.findUnique.mockResolvedValue({ email: "owner@baydar.ps", locale: "en" });
+    const returnUrl = "https://baydar.ps/billing/return";
+    const checkoutFingerprint = createHash("sha256")
+      .update(
+        JSON.stringify({
+          userId: "user-1",
+          planId: "plan-1",
+          companyId: null,
+          intervalDays: 30,
+          method: "CARD",
+          amountCents: 9900,
+          currency: "USD",
+          returnUrl,
+        }),
+      )
+      .digest("hex");
+    prisma.invoice.findUnique.mockResolvedValueOnce(null);
+    prisma.$transaction.mockRejectedValueOnce(
+      new Prisma.PrismaClientKnownRequestError("Duplicate checkout key", {
+        code: "P2002",
+        clientVersion: "5.22.0",
+        meta: { target: ["Invoice_checkoutKey_key"] },
+      }),
+    );
+    prisma.invoice.findUniqueOrThrow.mockResolvedValue({
+      id: "inv-card-1",
+      providerInvoiceId: "checkout-1",
+      checkoutFingerprint,
+    });
+
+    const result = await service.createCheckoutSession("user-1", {
+      planCode: "USER_PREMIUM",
+      returnUrl,
+      method: "CARD",
+      idempotencyKey: "checkout-request-123456",
+    });
+
+    expect(result).toMatchObject({ invoiceId: "inv-card-1", providerCheckoutId: "checkout-1" });
+    expect(tx.invoice.create).not.toHaveBeenCalled();
     expect(hyperpay.createCheckout).not.toHaveBeenCalled();
   });
 
