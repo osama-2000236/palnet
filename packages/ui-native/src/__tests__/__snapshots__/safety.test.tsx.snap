@@ -318,7 +318,7 @@ exports[`safety primitives renders ReportSheet content 1`] = `
     accessibilityLabel="Report content"
     accessibilityRole="dialog"
     accessibilityViewIsModal={true}
-    accessible={true}
+    accessible={false}
     pointerEvents="box-none"
     style={
       [

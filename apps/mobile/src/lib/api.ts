@@ -82,11 +82,19 @@ export async function apiFetchPage<T extends z.ZodTypeAny>(
   return parsed.data as z.infer<T>;
 }
 
+export async function getFreshAccessToken(): Promise<string | null> {
+  const session = await readSession();
+  if (session && Date.parse(session.tokens.accessExpiresAt) <= Date.now() + 30_000) {
+    return refreshAccessToken();
+  }
+  return session?.tokens.accessToken ?? getAccessToken();
+}
+
 async function requestWithAuth(path: string, opts: ApiFetchOptions): Promise<Response> {
   const token = opts.skipAuth
     ? null
     : opts.token === undefined
-      ? await getAccessToken()
+      ? await getFreshAccessToken()
       : opts.token;
   const res = await request(path, opts, token);
   if (res.status !== 401 || opts.skipAuth) return res;

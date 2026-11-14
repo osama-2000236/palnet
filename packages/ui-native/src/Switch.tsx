@@ -1,8 +1,8 @@
 // Switch — native twin of packages/ui-web/src/Switch.tsx.
 //
 // Same prop vocabulary (checked / onChange / ariaLabel / disabled).
-// Tokenised colors via nativeTokens. RTL: thumb slides in the writing
-// direction (`I18nManager.isRTL` flips the X translation sign).
+// Tokenised colors via nativeTokens. RTL: thumb rests at the writing-direction
+// *start* when off and *end* when on (no negative translate from left: PAD).
 //
 // Hitslop guarantees a 44pt touch target even with the compact 36x20 visual.
 
@@ -19,11 +19,25 @@ export interface SwitchProps {
   style?: StyleProp<ViewStyle>;
 }
 
-const TRACK_WIDTH = 36;
-const TRACK_HEIGHT = 20;
-const THUMB = 16;
-const PAD = 2;
-const OFFSET = TRACK_WIDTH - THUMB - PAD * 2; // distance the thumb travels
+/** Exported for unit tests that assert geometry without rendering. */
+export const SWITCH_TRACK_WIDTH = 36;
+export const SWITCH_TRACK_HEIGHT = 20;
+export const SWITCH_THUMB = 16;
+export const SWITCH_PAD = 2;
+/** Distance the thumb travels between off and on. */
+export const SWITCH_OFFSET = SWITCH_TRACK_WIDTH - SWITCH_THUMB - SWITCH_PAD * 2;
+
+/**
+ * Absolute `left` for the thumb inside the track.
+ * Unchecked sits at writing-direction start; checked at end.
+ */
+export function switchThumbLeft(checked: boolean, isRTL: boolean = I18nManager.isRTL): number {
+  if (isRTL) {
+    // Start = right side of track, end = left side.
+    return checked ? SWITCH_PAD : SWITCH_PAD + SWITCH_OFFSET;
+  }
+  return checked ? SWITCH_PAD + SWITCH_OFFSET : SWITCH_PAD;
+}
 
 export function Switch({
   checked,
@@ -33,7 +47,7 @@ export function Switch({
   style,
 }: SwitchProps): ReactElement {
   const c = nativeTokens.color;
-  const direction = I18nManager.isRTL ? -1 : 1;
+  const thumbLeft = switchThumbLeft(checked);
   return (
     <Pressable
       accessibilityRole="switch"
@@ -44,8 +58,8 @@ export function Switch({
       hitSlop={12}
       style={[
         {
-          width: TRACK_WIDTH,
-          height: TRACK_HEIGHT,
+          width: SWITCH_TRACK_WIDTH,
+          height: SWITCH_TRACK_HEIGHT,
           borderRadius: nativeTokens.radius.full,
           backgroundColor: checked ? c.brand600 : c.surfaceSunken,
           opacity: disabled ? 0.55 : 1,
@@ -57,13 +71,12 @@ export function Switch({
       <View
         style={{
           position: "absolute",
-          top: PAD,
-          left: PAD,
-          width: THUMB,
-          height: THUMB,
+          top: SWITCH_PAD,
+          left: thumbLeft,
+          width: SWITCH_THUMB,
+          height: SWITCH_THUMB,
           borderRadius: nativeTokens.radius.full,
           backgroundColor: c.inkInverse,
-          transform: [{ translateX: checked ? OFFSET * direction : 0 }],
         }}
       />
     </Pressable>

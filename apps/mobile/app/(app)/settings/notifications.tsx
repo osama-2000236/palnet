@@ -2,14 +2,14 @@
 //
 // Same NotificationPreferences Zod from @baydar/shared, same /me/notification-preferences endpoint.
 // Locked-row treatment for `moderationAction` matches the web spec.
+// Load failure never seeds DEFAULT prefs as editable state (would overwrite server values on save).
 
 import {
-  DEFAULT_NOTIFICATION_PREFERENCES,
   NotificationPreferences as NotificationPreferencesSchema,
   type NotificationPreferences,
 } from "@baydar/shared";
 import { Button, Surface, Switch, nativeTokens, useToast } from "@baydar/ui-native";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -51,32 +51,39 @@ export default function NotificationsSettingsScreen(): JSX.Element {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const requestId = useRef(0);
+
+  const fetchPrefs = useCallback(async (): Promise<void> => {
+    const id = ++requestId.current;
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await apiFetch(
+        "/me/notification-preferences",
+        NotificationPreferencesSchema,
+        {},
+      );
+      if (id !== requestId.current) return;
+      setPrefs(data);
+      setPristine(data);
+      setError(null);
+    } catch (e) {
+      if (id !== requestId.current) return;
+      // Keep prefs null so the form is not editable with invented defaults.
+      setPrefs(null);
+      setPristine(null);
+      setError(apiErrorMessage(t, e));
+    } finally {
+      if (id === requestId.current) setLoading(false);
+    }
+  }, [t]);
 
   useEffect(() => {
-    let cancelled = false;
-    void (async () => {
-      try {
-        const data = await apiFetch(
-          "/me/notification-preferences",
-          NotificationPreferencesSchema,
-          {},
-        );
-        if (cancelled) return;
-        setPrefs(data);
-        setPristine(data);
-      } catch (e) {
-        if (cancelled) return;
-        setPrefs(DEFAULT_NOTIFICATION_PREFERENCES);
-        setPristine(DEFAULT_NOTIFICATION_PREFERENCES);
-        setError(apiErrorMessage(t, e));
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    })();
-    return (): void => {
-      cancelled = true;
+    void fetchPrefs();
+    return () => {
+      requestId.current += 1;
     };
-  }, [t]);
+  }, [fetchPrefs]);
 
   const dirty = useMemo(
     () => (prefs && pristine ? JSON.stringify(prefs) !== JSON.stringify(pristine) : false),
@@ -143,6 +150,15 @@ export default function NotificationsSettingsScreen(): JSX.Element {
         {loading ? (
           <Surface variant="card" padding="6">
             <Text style={{ color: nativeTokens.color.inkMuted }}>{t("common.loading")}</Text>
+          </Surface>
+        ) : error && !prefs ? (
+          <Surface variant="card" padding="6">
+            <View style={{ gap: nativeTokens.space[3], alignItems: "flex-start" }}>
+              <Text style={{ color: nativeTokens.color.danger, textAlign: "auto" }}>{error}</Text>
+              <Button variant="secondary" size="md" onPress={() => void fetchPrefs()}>
+                {t("common.retry")}
+              </Button>
+            </View>
           </Surface>
         ) : prefs ? (
           <>

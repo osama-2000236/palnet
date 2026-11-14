@@ -65,6 +65,11 @@ describe("Sheet", () => {
       </Sheet>,
     );
 
-    expect(screen.getByRole("dialog", { name: "خيارات البحث" })).toBeTruthy();
+    const dialog = screen.UNSAFE_getByProps({
+      accessibilityRole: "dialog",
+      accessibilityLabel: "خيارات البحث",
+    });
+    expect(dialog.props.accessible).toBe(false);
+    expect(dialog.props.accessibilityViewIsModal).toBe(true);
   });
 });

@@ -80,7 +80,7 @@ export function Sheet({
       <View
         style={[styles.card, { maxHeight: cardMaxHeight }]}
         pointerEvents="box-none"
-        accessible
+        accessible={false}
         accessibilityViewIsModal
         accessibilityRole={"dialog" as never}
         accessibilityLabel={accessibilityLabel ?? title}

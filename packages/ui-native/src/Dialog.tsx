@@ -4,7 +4,7 @@
 // Built on RN Modal; backdrop press closes when not `blocking`.
 
 import type { ReactElement, ReactNode } from "react";
-import { Modal, Pressable, Text, View } from "react-native";
+import { I18nManager, Modal, Pressable, Text, View } from "react-native";
 
 import { shadowStyle } from "./shadow";
 import { nativeTokens } from "./tokens";
@@ -13,11 +13,19 @@ export interface DialogProps {
   open: boolean;
   onClose(): void;
   title: string;
+  closeLabel?: string;
   blocking?: boolean;
   children: ReactNode;
 }
 
-export function Dialog({ open, onClose, title, blocking, children }: DialogProps): ReactElement {
+export function Dialog({
+  open,
+  onClose,
+  title,
+  closeLabel = "Close",
+  blocking,
+  children,
+}: DialogProps): ReactElement {
   const c = nativeTokens.color;
   return (
     <Modal
@@ -42,8 +50,10 @@ export function Dialog({ open, onClose, title, blocking, children }: DialogProps
       >
         <Pressable
           // Stop press propagation so taps inside the card don't dismiss.
+          onStartShouldSetResponder={() => true}
           onPress={(event) => event.stopPropagation()}
-          accessibilityRole="alert"
+          accessibilityRole={"dialog" as never}
+          accessibilityViewIsModal
           accessibilityLabel={title}
           style={{
             width: "100%",
@@ -55,13 +65,30 @@ export function Dialog({ open, onClose, title, blocking, children }: DialogProps
         >
           <View
             style={{
+              flexDirection: I18nManager.isRTL ? "row-reverse" : "row",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: nativeTokens.space[3],
               borderBottomColor: c.lineSoft,
               borderBottomWidth: 1,
               paddingHorizontal: nativeTokens.space[5],
               paddingVertical: nativeTokens.space[4],
             }}
           >
-            <Text style={{ color: c.ink, fontSize: 16, fontWeight: "600" }}>{title}</Text>
+            <Text style={{ flex: 1, color: c.ink, fontSize: 16, fontWeight: "600" }}>{title}</Text>
+            {!blocking ? (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={closeLabel}
+                onPress={onClose}
+                hitSlop={8}
+                style={{ width: 44, height: 44, alignItems: "center", justifyContent: "center" }}
+              >
+                <Text aria-hidden style={{ color: c.inkMuted, fontSize: 22, lineHeight: 24 }}>
+                  ×
+                </Text>
+              </Pressable>
+            ) : null}
           </View>
           <View
             style={{

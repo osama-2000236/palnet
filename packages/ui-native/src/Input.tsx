@@ -52,6 +52,8 @@ export function Input({
   inputStyle,
   placeholderTextColor,
   accessibilityState,
+  accessibilityLabel,
+  accessibilityHint,
   ...rest
 }: InputProps): JSX.Element {
   const disabled = editable === false;
@@ -91,6 +93,8 @@ export function Input({
           editable={editable}
           aria-invalid={error || undefined}
           placeholderTextColor={placeholderTextColor ?? c.inkSubtle}
+          accessibilityLabel={accessibilityLabel ?? rest.placeholder}
+          accessibilityHint={accessibilityHint ?? (error ? errorMessage : undefined)}
           accessibilityState={{ disabled, ...accessibilityState }}
           style={[fieldStyle, inputStyle]}
         />

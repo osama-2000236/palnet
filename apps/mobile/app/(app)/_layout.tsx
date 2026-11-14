@@ -14,7 +14,7 @@ import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 import { z } from "zod";
 
 import { LoadingIntro } from "@/components/LoadingIntro";
-import { apiFetch, ApiRequestError } from "@/lib/api";
+import { apiFetch, ApiRequestError, getFreshAccessToken } from "@/lib/api";
 import { cachedProfileStatus, fetchProfileStatus } from "@/lib/profile-state";
 import { registerForPushAsync } from "@/lib/push";
 import { clearSession, getAccessToken, readSession } from "@/lib/session";
@@ -104,7 +104,7 @@ export default function AppTabsLayout(): JSX.Element {
     }
 
     void (async () => {
-      let token = await getAccessToken();
+      let token = await getFreshAccessToken();
       if (!token) return;
 
       try {

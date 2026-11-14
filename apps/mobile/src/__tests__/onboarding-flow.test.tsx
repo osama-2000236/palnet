@@ -184,8 +184,9 @@ describe("OnboardingScreen", () => {
 
     await waitFor(() => expect(screen.getByTestId("onboarding-submit")).toBeTruthy());
     await waitFor(() => expect(screen.getByText("لا توجد اقتراحات الآن.")).toBeTruthy());
-    expect(mockApiFetch.mock.calls.filter(([path]) => path === "/connections/suggestions?limit=8"))
-      .toHaveLength(1);
+    expect(
+      mockApiFetch.mock.calls.filter(([path]) => path === "/connections/suggestions?limit=8"),
+    ).toHaveLength(1);
 
     fireEvent.press(screen.getByTestId("onboarding-submit"));
 
