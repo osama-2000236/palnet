@@ -26,13 +26,9 @@ param(
     [string]$ApiPublicUrl = "https://d1xu476tj9iv22.cloudfront.net",
     [string]$WebPublicUrl = "https://d1xu476tj9iv22.cloudfront.net",
     [string]$VpcId = "vpc-054e57fe773186c79",
-    [string[]]$PrivateSubnetIds = @(
-        "subnet-061352a39ce32d2d9",
-        "subnet-0eaaaf834a9031c81",
-        "subnet-0507bdc40ba50ce50",
-        "subnet-05d46f3ce258482a1",
-        "subnet-00b00a5e4db8a6c4d"
-    )
+    # Keep empty for this stack: Terraform owns its private subnets and NAT.
+    # External IDs would make Terraform destroy that managed network.
+    [string[]]$PrivateSubnetIds = @()
 )
 
 $ErrorActionPreference = "Stop"
@@ -101,7 +97,11 @@ $env:TF_VAR_image_tag = $ImageTag
 $env:TF_VAR_api_public_url = $ApiPublicUrl
 $env:TF_VAR_web_public_url = $WebPublicUrl
 $env:TF_VAR_vpc_id = $VpcId
-$env:TF_VAR_private_subnet_ids = $PrivateSubnetIds | ConvertTo-Json -Compress -AsArray
+$env:TF_VAR_private_subnet_ids = if ($PrivateSubnetIds.Count -eq 0) {
+    "[]"
+} else {
+    $PrivateSubnetIds | ConvertTo-Json -Compress -AsArray
+}
 Write-Host "==> terraform apply migration task (image tag $ImageTag)"
 terraform -chdir="$awsDir" apply -auto-approve -input=false -target=aws_ecs_task_definition.migration -target=aws_security_group.migration
 if ($LASTEXITCODE -ne 0) { throw "terraform migration-task apply failed." }

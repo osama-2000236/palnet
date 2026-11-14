@@ -78,6 +78,8 @@ The script packs the committed tree, uploads it to the CodeBuild source bucket, 
 pushes both images through `baydar-staging-images`, runs the Prisma migration task with a fresh
 immutable tag (exit 0 required), then switches the application services and finishes with
 CloudFront health checks. It refuses to run unless the active session belongs to account `083712835043`.
+Its default empty subnet list preserves the existing Terraform-managed private subnets and NAT;
+do not supply external subnet IDs unless intentionally migrating the network.
 
 ## Local validation
 

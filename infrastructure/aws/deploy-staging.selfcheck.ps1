@@ -26,7 +26,9 @@ Assert-Contains 'output -raw web_repository_url' "Web repository URL must come f
 Assert-Contains 'value = "${apiRepositoryUrl}:$ImageTag"' "API_IMAGE must use the requested immutable tag."
 Assert-Contains 'value = "${webRepositoryUrl}:$ImageTag"' "WEB_IMAGE must use the requested immutable tag."
 Assert-Contains 'value = "$ApiPublicUrl/api/v1"' "The web build must receive the public API URL."
-Assert-Contains '$env:TF_VAR_private_subnet_ids = $PrivateSubnetIds | ConvertTo-Json -Compress -AsArray' "Subnet IDs must be encoded as a JSON array."
+Assert-Contains '[string[]]$PrivateSubnetIds = @()' "The staging default must preserve Terraform-managed networking."
+Assert-Contains '$env:TF_VAR_private_subnet_ids = if ($PrivateSubnetIds.Count -eq 0) {' "Subnet IDs must handle the managed-network default explicitly."
+Assert-Contains '$PrivateSubnetIds | ConvertTo-Json -Compress -AsArray' "Non-empty subnet IDs must be encoded as a JSON array."
 
 if ($source.Contains('$env:TF_VAR_private_subnet_ids = $PrivateSubnetIds -join ","')) {
     throw "Comma-separated subnet regression detected."
@@ -39,8 +41,11 @@ if ($migrationApply -lt 0 -or $applicationApply -le $migrationApply) {
 }
 
 # Guard the PowerShell JSON behavior the deployment relies on, including one subnet.
+$emptyInput = @()
+$noSubnets = if ($emptyInput.Count -eq 0) { "[]" } else { $emptyInput | ConvertTo-Json -Compress -AsArray }
 $singleSubnet = @("subnet-only") | ConvertTo-Json -Compress -AsArray
 $multipleSubnets = @("subnet-a", "subnet-b") | ConvertTo-Json -Compress -AsArray
+if ($noSubnets -cne '[]') { throw "Empty subnet JSON is not an array: $noSubnets" }
 if ($singleSubnet -cne '["subnet-only"]') { throw "Single-subnet JSON is not an array: $singleSubnet" }
 if ($multipleSubnets -cne '["subnet-a","subnet-b"]') { throw "Multi-subnet JSON is invalid: $multipleSubnets" }
 
