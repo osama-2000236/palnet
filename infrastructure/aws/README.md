@@ -64,6 +64,21 @@ Configure these GitHub **secrets** in each GitHub environment:
 
 ECR rejects reuse of an image tag. A new release therefore requires a new tag and a fresh web build; do not retag an existing image to change its embedded public URL.
 
+## Redeploy from this workstation
+
+When the GitHub OIDC workflow is not yet configured (no `AWS_DEPLOY_ROLE_ARN` secret), the
+same pipeline runs from this workstation against the existing staging stack:
+
+```powershell
+aws login --profile wind --region eu-north-1   # browser sign-in, account 083712835043
+pwsh -File infrastructure/aws/deploy-staging.ps1 -AwsProfile wind
+```
+
+The script packs the committed tree, uploads it to the CodeBuild source bucket, builds and
+pushes both images through `baydar-staging-images`, applies the stack with a fresh immutable
+tag, runs the Prisma migration task (exit 0 required), and finishes with CloudFront health
+checks. It refuses to run unless the active session belongs to account `083712835043`.
+
 ## Local validation
 
 ```sh
