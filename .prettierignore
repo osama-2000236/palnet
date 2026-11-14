@@ -10,3 +10,12 @@ coverage/
 .codex-logs/
 pnpm-lock.yaml
 packages/db/prisma/migrations/
+# Generated analysis/audit artifacts — not maintained source.
+.kiro/
+artifacts/
+design-handoff-2026-05/
+research/
+research_notes/
+reports/
+pillar-*.md
+well-architected-review.md
