@@ -11,8 +11,7 @@ type PrismaStub = {
     findMany: jest.Mock;
   };
   application: {
-    create: jest.Mock;
-    findUnique: jest.Mock;
+    upsert: jest.Mock;
   };
 };
 
@@ -23,8 +22,7 @@ function buildPrisma(): PrismaStub {
       findMany: jest.fn(),
     },
     application: {
-      create: jest.fn(),
-      findUnique: jest.fn(),
+      upsert: jest.fn(),
     },
   };
 }
@@ -42,18 +40,19 @@ describe("JobsService", () => {
   });
 
   describe("apply", () => {
-    it("creates a submitted application for an active job", async () => {
+    it("atomically creates or returns a submitted application for an active job", async () => {
       prisma.job.findFirst.mockResolvedValue({ id: "job_1" });
-      prisma.application.findUnique.mockResolvedValue(null);
-      prisma.application.create.mockResolvedValue({ id: "app_1", status: "SUBMITTED" });
+      prisma.application.upsert.mockResolvedValue({ id: "app_1", status: "SUBMITTED" });
 
       const result = await service.apply("user_1", "job_1", {
         coverLetter: "I can help with React Native and Node.js.",
       });
 
       expect(result).toEqual({ id: "app_1", status: "SUBMITTED" });
-      expect(prisma.application.create).toHaveBeenCalledWith({
-        data: {
+      expect(prisma.application.upsert).toHaveBeenCalledWith({
+        where: { jobId_applicantId: { jobId: "job_1", applicantId: "user_1" } },
+        update: {},
+        create: {
           jobId: "job_1",
           applicantId: "user_1",
           resumeUrl: null,
@@ -63,15 +62,17 @@ describe("JobsService", () => {
       });
     });
 
-    it("returns the existing application when the user reapplies", async () => {
+    it("leaves an existing application unchanged when the user reapplies", async () => {
       prisma.job.findFirst.mockResolvedValue({ id: "job_1" });
-      prisma.application.findUnique.mockResolvedValue({ id: "app_existing", status: "SUBMITTED" });
+      prisma.application.upsert.mockResolvedValue({ id: "app_existing", status: "SUBMITTED" });
 
       await expect(service.apply("user_1", "job_1", {})).resolves.toEqual({
         id: "app_existing",
         status: "SUBMITTED",
       });
-      expect(prisma.application.create).not.toHaveBeenCalled();
+      expect(prisma.application.upsert).toHaveBeenCalledWith(
+        expect.objectContaining({ update: {} }),
+      );
     });
 
     it("404s when the job is unavailable", async () => {

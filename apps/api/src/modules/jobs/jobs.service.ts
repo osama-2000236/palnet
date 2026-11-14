@@ -119,16 +119,11 @@ export class JobsService {
       throw new DomainException(ErrorCode.NOT_FOUND, "Job not found.", 404);
     }
 
-    // Idempotent: (jobId, applicantId) is @@unique, so re-apply returns the
-    // existing row instead of 409ing the client.
-    const existing = await this.prisma.application.findUnique({
+    // The unique key makes retries idempotent even when they arrive concurrently.
+    return this.prisma.application.upsert({
       where: { jobId_applicantId: { jobId: id, applicantId: viewerId } },
-      select: { id: true, status: true },
-    });
-    if (existing) return existing;
-
-    const created = await this.prisma.application.create({
-      data: {
+      update: {},
+      create: {
         jobId: id,
         applicantId: viewerId,
         resumeUrl: body.resumeUrl ?? null,
@@ -136,7 +131,6 @@ export class JobsService {
       },
       select: { id: true, status: true },
     });
-    return created;
   }
 }
 
