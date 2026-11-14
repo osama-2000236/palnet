@@ -1,0 +1,158 @@
+*** Begin Patch
+*** Update File: apps/api/src/modules/auth/auth.service.ts
+@@
+-    // Rotate: revoke old, issue new.
+-    await this.prisma.refreshToken.update({
+-      where: { id: record.id },
++    // Only one concurrent request may consume this token. The active-token
++    // predicate is part of the write, not just the preceding read.
++    const revoked = await this.prisma.refreshToken.updateMany({
++      where: { id: record.id, revokedAt: null, expiresAt: { gt: new Date() } },
+       data: { revokedAt: new Date() },
+     });
++    if (!revoked.count) {
++      throw new UnauthorizedException({
++        error: {
++          code: ErrorCode.AUTH_UNAUTHORIZED,
++          message: "Refresh token invalid or expired.",
++        },
++      });
++    }
+ 
+     return this.issueSession(record.user, body.deviceId);
+*** Update File: packages/shared/src/schemas/billing.ts
+@@
+ export const CheckoutSessionBody = z.object({
++  idempotencyKey: z
++    .string()
++    .trim()
++    .min(16)
++    .max(128)
++    .regex(/^[\w:.-]+$/)
++    .optional(),
+   planCode: z.nativeEnum(PlanCode),
+*** Update File: packages/db/prisma/schema.prisma
+@@
+   dueAt             DateTime?
+   paidAt            DateTime?
+   pdfUrl            String?
++  checkoutKey          String?  @unique
++  checkoutFingerprint  String?
++  checkoutProcessingAt DateTime?
+   createdAt         DateTime      @default(now())
+*** Add File: packages/db/prisma/migrations/20261101000100_checkout_idempotency/migration.sql
++ALTER TABLE "Invoice"
++  ADD COLUMN "checkoutKey" TEXT,
++  ADD COLUMN "checkoutFingerprint" TEXT,
++  ADD COLUMN "checkoutProcessingAt" TIMESTAMP(3);
++
++CREATE UNIQUE INDEX "Invoice_checkoutKey_key" ON "Invoice"("checkoutKey");
+*** Update File: apps/api/src/modules/billing/hyperpay.client.ts
+@@
+   async getCheckoutPayment(providerCheckoutId: string): Promise<HyperPayPayment> {
+@@
+   }
++
++  getCheckoutUrl(providerCheckoutId: string): string {
++    return `${this.checkoutEndpoint()}/v1/paymentWidgets.js?checkoutId=${encodeURIComponent(providerCheckoutId)}`;
++  }
+*** Update File: apps/api/src/modules/billing/billing.service.ts
+@@
+-import { Prisma } from "@baydar/db";
++import * as crypto from "node:crypto";
++
++import { Prisma } from "@baydar/db";
+@@
+   async createCheckoutSession(userId: string, body: CheckoutSessionBody): Promise<CheckoutSession> {
+     await this.assertScope(userId, body.planCode, body.companyId ?? null);
+     const method = body.method ?? "CARD";
++    if (body.idempotencyKey && method !== "CARD") {
++      throw new DomainException(
++        ErrorCode.VALIDATION_FAILED,
++        "idempotencyKey is supported for card checkout only.",
++        400,
++      );
++    }
+     const plan = await this.ensurePlan(body.planCode);
+     const user = await this.prisma.user.findUniqueOrThrow({ where: { id: userId } });
++    const checkoutKey = body.idempotencyKey ? digest(body.idempotencyKey) : null;
++    const checkoutFingerprint = checkoutKey
++      ? digest(
++          JSON.stringify({
++            userId,
++            planId: plan.id,
++            companyId: body.companyId ?? null,
++            amountCents: plan.priceCents,
++            currency: plan.currency,
++            returnUrl: body.returnUrl,
++          }),
++        )
++      : null;
++
++    if (checkoutKey) {
++      const existing = await this.prisma.invoice.findUnique({ where: { checkoutKey } });
++      if (existing) {
++        this.assertCheckoutReuse(existing, userId, checkoutFingerprint);
++        return this.resumeCardCheckout(existing, user.email, body.returnUrl);
++      }
++    }
+@@
+     if (method === "CARD") {
+-      const invoice = await this.prisma.invoice.create({
+-        data: {
+-          subscriptionId: subscription.id,
+-          planId: plan.id,
+-          userId,
+-          companyId: body.companyId ?? null,
+-          amountCents: plan.priceCents,
+-          currency: plan.currency,
+-          method: "CARD",
+-          dueAt,
+-        },
+-      });
+-      const checkout = await this.hyperpay.createCheckout({
+-        invoiceId: invoice.id,
+-        amountCents: plan.priceCents,
+-        currency: plan.currency,
+-        returnUrl: body.returnUrl,
+-        customerEmail: user.email,
+-      });
+-      await this.prisma.invoice.update({
+-        where: { id: invoice.id },
+-        data: { providerInvoiceId: checkout.providerCheckoutId },
+-      });
+-      return {
+-        invoiceId: invoice.id,
+-        method: "CARD",
+-        providerCheckoutId: checkout.providerCheckoutId,
+-        checkoutUrl: checkout.checkoutUrl,
+-      };
++      let invoice;
++      try {
++        invoice = await this.prisma.invoice.create({
++          data: {
++            subscriptionId: subscription.id,
++            planId: plan.id,
++            userId,
++            companyId: body.companyId ?? null,
++            amountCents: plan.priceCents,
++            currency: plan.currency,
++            method: "CARD",
++            dueAt,
++            checkoutKey,
++            checkoutFingerprint,
++          },
++        });
++      } catch (error) {
++        if (
++          !checkoutKey ||
++          !(error instanceof Prisma.PrismaClientKnownRequestError) ||
++          error.code !== "P2002"
++        ) {
++          throw error;
++        }
++        invoice = await this.prisma.invoice.findUniqueOrThrow({ where: { checkoutKey } });
++        this.assertCheckoutReuse(invoice, userId, checkoutFingerprint);
++      }
++      return this.resumeCardCheckout(invoice, user.email, body.returnUrl);
+*** End Patch

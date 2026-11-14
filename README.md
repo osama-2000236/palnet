@@ -10,6 +10,7 @@ Baydar is an Arabic-first, RTL-native professional network for Palestine first. 
 2. [`DESIGN.md`](DESIGN.md), [`BRAND.md`](BRAND.md), [`docs/design/RTL.md`](docs/design/RTL.md), [`docs/design/MOBILE.md`](docs/design/MOBILE.md) — product, visual, RTL, and mobile rules.
 3. [`docs/HANDOFF.md`](docs/HANDOFF.md) — current shipped state and remaining follow-ups.
 4. [`docs/api-contract.md`](docs/api-contract.md), [`docs/erd.md`](docs/erd.md), [`docs/deployment.md`](docs/deployment.md), [`docs/testing-strategy.md`](docs/testing-strategy.md) — implementation references.
+5. [`docs/README.md`](docs/README.md) — documentation index for design, component, and engineering guides.
 
 ## Current Stack
 
