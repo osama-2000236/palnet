@@ -7,9 +7,9 @@
       1. Verifies the active AWS session belongs to account 083712835043.
       2. Packs the committed tree (git archive HEAD) and uploads it to the build bucket.
       3. Runs the CodeBuild project that builds and pushes the API and web images.
-      4. Applies the Terraform stack with a new immutable image tag.
-      5. Runs the Prisma migration task and requires exit code 0.
-      6. Waits for service stability and checks public health endpoints.
+      4. Applies the migration task definition and requires Prisma migration exit code 0.
+      5. Applies the full stack and waits for service stability.
+      6. Checks the public health endpoints.
 
     Requires an authenticated session for account 083712835043 first, e.g.:
         aws login --profile wind --region eu-north-1
@@ -94,7 +94,7 @@ while ($true) {
     Start-Sleep -Seconds 15
 }
 
-# 4. Apply the stack with the new immutable tag (services wait for steady state).
+# 4. Apply only the migration task definition before switching application services.
 $env:TF_VAR_environment = "staging"
 $env:TF_VAR_aws_region = $Region
 $env:TF_VAR_image_tag = $ImageTag
@@ -102,9 +102,9 @@ $env:TF_VAR_api_public_url = $ApiPublicUrl
 $env:TF_VAR_web_public_url = $WebPublicUrl
 $env:TF_VAR_vpc_id = $VpcId
 $env:TF_VAR_private_subnet_ids = $PrivateSubnetIds | ConvertTo-Json -Compress -AsArray
-Write-Host "==> terraform apply (image tag $ImageTag)"
-terraform -chdir="$awsDir" apply -auto-approve -input=false
-if ($LASTEXITCODE -ne 0) { throw "terraform apply failed." }
+Write-Host "==> terraform apply migration task (image tag $ImageTag)"
+terraform -chdir="$awsDir" apply -auto-approve -input=false -target=aws_ecs_task_definition.migration -target=aws_security_group.migration
+if ($LASTEXITCODE -ne 0) { throw "terraform migration-task apply failed." }
 
 # 5. Run the checkout-idempotency migration against RDS and require exit 0.
 $taskDef = & terraform -chdir="$awsDir" output -raw migration_task_definition_arn
@@ -127,7 +127,12 @@ while ($true) {
     Start-Sleep -Seconds 10
 }
 
-# 6. Public health checks through CloudFront.
+# 6. Switch application services only after the migration succeeds.
+Write-Host "==> terraform apply application stack (image tag $ImageTag)"
+terraform -chdir="$awsDir" apply -auto-approve -input=false
+if ($LASTEXITCODE -ne 0) { throw "terraform application apply failed." }
+
+# 7. Public health checks through CloudFront.
 $health = & curl.exe -s -o NUL -w "%{http_code}" --max-time 20 "$ApiPublicUrl/api/v1/health"
 $web = & curl.exe -s -o NUL -w "%{http_code}" --max-time 20 "$WebPublicUrl/ar-PS"
 if ($health -ne "200" -or $web -ne "200") { throw "Health checks failed: api=$health web=$web" }

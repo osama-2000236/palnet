@@ -75,9 +75,9 @@ pwsh -File infrastructure/aws/deploy-staging.ps1 -AwsProfile wind
 ```
 
 The script packs the committed tree, uploads it to the CodeBuild source bucket, builds and
-pushes both images through `baydar-staging-images`, applies the stack with a fresh immutable
-tag, runs the Prisma migration task (exit 0 required), and finishes with CloudFront health
-checks. It refuses to run unless the active session belongs to account `083712835043`.
+pushes both images through `baydar-staging-images`, runs the Prisma migration task with a fresh
+immutable tag (exit 0 required), then switches the application services and finishes with
+CloudFront health checks. It refuses to run unless the active session belongs to account `083712835043`.
 
 ## Local validation
 

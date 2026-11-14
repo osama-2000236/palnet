@@ -32,6 +32,12 @@ if ($source.Contains('$env:TF_VAR_private_subnet_ids = $PrivateSubnetIds -join "
     throw "Comma-separated subnet regression detected."
 }
 
+$migrationApply = $source.IndexOf('terraform -chdir="$awsDir" apply -auto-approve -input=false -target=aws_ecs_task_definition.migration -target=aws_security_group.migration')
+$applicationApply = $source.LastIndexOf('terraform -chdir="$awsDir" apply -auto-approve -input=false')
+if ($migrationApply -lt 0 -or $applicationApply -le $migrationApply) {
+    throw "The migration task must be applied and run before the application stack."
+}
+
 # Guard the PowerShell JSON behavior the deployment relies on, including one subnet.
 $singleSubnet = @("subnet-only") | ConvertTo-Json -Compress -AsArray
 $multipleSubnets = @("subnet-a", "subnet-b") | ConvertTo-Json -Compress -AsArray
@@ -49,4 +55,4 @@ if ($parsedOverrides[0].value -ne "api.example:new-tag" -or $parsedOverrides[1].
     throw "CodeBuild override JSON does not preserve the image tags."
 }
 
-Write-Host "deploy-staging.selfcheck: PASS (parser, image-tag overrides, subnet JSON; no AWS calls)"
+Write-Host "deploy-staging.selfcheck: PASS (parser, image tags, subnet JSON, migration order; no AWS calls)"

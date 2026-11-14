@@ -18,7 +18,7 @@
 - The existing public staging service is reachable through CloudFront: API health returns 200, `/` redirects to `/ar-PS`, and both `/ar-PS` and `/en` return 200.
 - A fresh staging account completed register (201), mobile-transport login (200), `auth/me` (200 with the expected email and `ar-PS` locale), and body-token refresh (200). Reusing the consumed body refresh token was rejected with 401 `AUTH_UNAUTHORIZED`. The web refresh cookie is `HttpOnly`, `Secure`, `SameSite=Lax`, and scoped to `/api/v1/auth`. Synthetic smoke accounts use `@baydar-test.ps` addresses.
 - These checks prove that the existing staging API at `https://d1xu476tj9iv22.cloudfront.net/api/v1`—the URL embedded in the current preview APK—works for a new account over public HTTPS. They do **not** prove that the newly committed application fixes are deployed, nor that the APK works on a physical phone.
-- `infrastructure/aws/deploy-staging.ps1` packages the committed tree, builds matching API/web image tags, applies Terraform, runs migrations, and checks public health. Its offline parser/regression self-check passes; no real AWS deployment was executed while validating the script.
+- `infrastructure/aws/deploy-staging.ps1` packages the committed tree, builds matching API/web image tags, runs migrations before switching application services, and checks public health. Its offline parser/regression self-check passes; no real AWS deployment was executed while validating the script.
 
 ### Remaining owner-only release actions
 
