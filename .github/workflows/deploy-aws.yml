@@ -1,0 +1,154 @@
+name: Deploy AWS
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Target environment (production requires environment approval)
+        required: true
+        type: choice
+        options: [staging, production]
+      image_tag:
+        description: Immutable release tag to build and deploy
+        required: true
+        type: string
+      api_public_url:
+        description: Public HTTPS API origin (without /api/v1)
+        required: true
+        type: string
+      web_public_url:
+        description: Public HTTPS web URL
+        required: true
+        type: string
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  gate:
+    name: Gate (lint + type-check + test)
+    runs-on: ubuntu-latest
+    env:
+      NODE_VERSION: "20"
+      PNPM_VERSION: "9.12.0"
+      DATABASE_URL: "postgresql://ci:ci@localhost:5432/baydar_ci?schema=public"
+      DIRECT_URL: "postgresql://ci:ci@localhost:5432/baydar_ci?schema=public"
+      JWT_ACCESS_SECRET: "ci-access-secret-at-least-32-characters-long"
+      JWT_REFRESH_SECRET: "ci-refresh-secret-at-least-32-characters-long"
+      CORS_ORIGINS: "http://localhost:3000"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @baydar/db db:generate
+      - run: pnpm lint:tokens
+      - run: pnpm check:release-placeholders
+      - run: pnpm lint
+      - run: pnpm type-check
+      - run: pnpm test
+      - run: pnpm --filter @baydar/mobile test
+
+  deploy:
+    name: Build and deploy ${{ inputs.environment }}
+    needs: gate
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    defaults:
+      run:
+        working-directory: infrastructure/aws
+    env:
+      AWS_REGION: eu-north-1
+      TF_VAR_environment: ${{ inputs.environment }}
+      TF_VAR_aws_region: eu-north-1
+      TF_VAR_image_tag: ${{ inputs.image_tag }}
+      TF_VAR_api_public_url: ${{ inputs.api_public_url }}
+      TF_VAR_web_public_url: ${{ inputs.web_public_url }}
+      TF_VAR_vpc_id: ${{ secrets.AWS_VPC_ID }}
+      TF_VAR_private_subnet_ids: ${{ secrets.AWS_PRIVATE_SUBNET_IDS }}
+      TF_VAR_api_secrets_arn: ${{ secrets.AWS_API_SECRETS_ARN }}
+      TF_VAR_database_password: ${{ secrets.AWS_DATABASE_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials with OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.9.8
+          terraform_wrapper: false
+
+      - name: Initialize Terraform
+        run: terraform init -input=false
+
+      - name: Bootstrap ECR repositories
+        run: |
+          terraform apply -auto-approve -input=false \
+            -target=aws_ecr_repository.api \
+            -target=aws_ecr_repository.web
+
+      - name: Build and push API image
+        working-directory: .
+        run: |
+          API_REPOSITORY=$(terraform -chdir=infrastructure/aws output -raw api_repository_url)
+          aws ecr get-login-password | docker login --username AWS --password-stdin "$API_REPOSITORY"
+          docker build --file apps/api/Dockerfile --tag "$API_REPOSITORY:${{ inputs.image_tag }}" .
+          docker push "$API_REPOSITORY:${{ inputs.image_tag }}"
+
+      - name: Deploy API infrastructure
+        run: |
+          terraform apply -auto-approve -input=false \
+            -target=aws_ecs_express_gateway_service.api \
+            -target=aws_ecs_task_definition.migration \
+            -target=aws_security_group.migration
+
+      - name: Run database migrations
+        run: |
+          SUBNETS=$(terraform output -json subnet_ids | jq -r 'join(",")')
+          TASK_ID=$(aws ecs run-task \
+            --cluster "$(terraform output -raw cluster_name)" \
+            --task-definition "$(terraform output -raw migration_task_definition_arn)" \
+            --launch-type FARGATE \
+            --network-configuration "awsvpcConfiguration={subnets=[$SUBNETS],securityGroups=[$(terraform output -raw migration_security_group_id)],assignPublicIp=DISABLED}" \
+            --query 'tasks[0].taskArn' --output text)
+          aws ecs wait tasks-stopped \
+            --cluster "$(terraform output -raw cluster_name)" \
+            --tasks "$TASK_ID"
+          EXIT_CODE=$(aws ecs describe-tasks \
+            --cluster "$(terraform output -raw cluster_name)" \
+            --tasks "$TASK_ID" \
+            --query 'tasks[0].containers[0].exitCode' --output text)
+          test "$EXIT_CODE" = "0"
+
+      - name: Build and push web image
+        working-directory: .
+        run: |
+          API_URL=$(terraform -chdir=infrastructure/aws output -raw api_url)
+          WEB_REPOSITORY=$(terraform -chdir=infrastructure/aws output -raw web_repository_url)
+          aws ecr get-login-password | docker login --username AWS --password-stdin "$WEB_REPOSITORY"
+          docker build --file apps/web/Dockerfile --build-arg NEXT_PUBLIC_API_URL="${API_URL}/api/v1" --tag "$WEB_REPOSITORY:${{ inputs.image_tag }}" .
+          docker push "$WEB_REPOSITORY:${{ inputs.image_tag }}"
+
+      - name: Deploy application infrastructure
+        run: terraform apply -auto-approve -input=false
+
+      - name: Check API and web health
+        run: |
+          API_URL=$(terraform output -raw api_url)
+          curl --fail --silent --show-error --retry 5 --retry-connrefused --retry-delay 5 "${API_URL}/api/v1/health"
+          curl --fail --silent --show-error --retry 5 --retry-connrefused --retry-delay 5 "$TF_VAR_web_public_url"
+
+      - name: Show deployment URLs
+        run: |
+          terraform output api_url
+          terraform output web_url

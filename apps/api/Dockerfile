@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.7
 
-FROM node:20-alpine3.18 AS base
-RUN apk add --no-cache openssl openssl1.1-compat && corepack enable && corepack prepare pnpm@9.12.0 --activate
+FROM node:20-bookworm-slim AS base
+RUN apt-get update && apt-get install -y --no-install-recommends openssl && rm -rf /var/lib/apt/lists/* && corepack enable && corepack prepare pnpm@9.12.0 --activate
 WORKDIR /repo
 
 # ─── deps ────────────────────────────────────────────
@@ -22,8 +22,8 @@ RUN pnpm --filter @baydar/db db:generate \
  && pnpm --filter @baydar/api build
 
 # ─── runtime ─────────────────────────────────────────
-FROM node:20-alpine3.18 AS runtime
-RUN apk add --no-cache openssl openssl1.1-compat && corepack enable && corepack prepare pnpm@9.12.0 --activate
+FROM node:20-bookworm-slim AS runtime
+RUN apt-get update && apt-get install -y --no-install-recommends openssl && rm -rf /var/lib/apt/lists/* && corepack enable && corepack prepare pnpm@9.12.0 --activate
 WORKDIR /app
 ENV NODE_ENV=production
 COPY --from=build /repo/package.json /repo/pnpm-lock.yaml /repo/pnpm-workspace.yaml /repo/turbo.json ./
