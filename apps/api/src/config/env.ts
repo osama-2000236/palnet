@@ -3,6 +3,7 @@ import { z } from "zod";
 // Boot-time env validation. The process exits on failure — never degrade silently.
 const EnvSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
+  BAYDAR_ENV: z.enum(["development", "test", "staging", "production"]).optional(),
   API_PORT: z.coerce.number().int().positive().default(4000),
   CORS_ORIGINS: z
     .string()
@@ -39,7 +40,10 @@ const EnvSchema = z.object({
   // Billing — HyperPay cards + manual bank transfer.
   HYPERPAY_ENTITY_ID: z.string().optional(),
   HYPERPAY_ACCESS_TOKEN: z.string().optional(),
-  HYPERPAY_WEBHOOK_SECRET: z.string().optional(),
+  HYPERPAY_WEBHOOK_SECRET: z
+    .string()
+    .regex(/^[0-9a-f]{64}$/i)
+    .optional(),
   HYPERPAY_BASE_URL: z.string().url().optional(),
   BANK_TRANSFER_IBAN: z.string().optional(),
   BANK_TRANSFER_BENEFICIARY: z.string().optional(),
@@ -72,7 +76,7 @@ export function loadEnv(): Env {
   }
   const data = parsed.data;
 
-  if (data.NODE_ENV === "production") {
+  if ((data.BAYDAR_ENV ?? data.NODE_ENV) === "production") {
     const rawCorsOrigins = process.env.CORS_ORIGINS;
     const origins = rawCorsOrigins
       ?.split(",")

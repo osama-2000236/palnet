@@ -16,14 +16,14 @@ const transportProvider: Provider = {
     const apiKey = config.get<string>("RESEND_API_KEY");
     const from = config.get<string>("MAIL_FROM");
     const replyTo = config.get<string>("MAIL_REPLY_TO");
-    const nodeEnv = config.get<string>("NODE_ENV");
+    const deploymentEnv = config.get<string>("BAYDAR_ENV") ?? config.get<string>("NODE_ENV");
 
     if (apiKey && from) {
       logger.log(`Using Resend mail transport (from=${from}).`);
       return new ResendTransport({ apiKey, from, replyTo });
     }
 
-    if (nodeEnv === "production") {
+    if (deploymentEnv === "production") {
       logger.error("Production mail transport unavailable: missing RESEND_API_KEY or MAIL_FROM.");
       throw new Error("Production requires RESEND_API_KEY and MAIL_FROM.");
     }

@@ -229,14 +229,15 @@ export class NotificationsService {
           readAt: null,
           dismissedAt: null,
         };
-    // One DB round trip: mutate + re-count in the same transaction so the
-    // returned `unread` reflects post-update state.
-    const [result, unread] = await this.prisma.$transaction([
-      this.prisma.notification.updateMany({ where, data: { readAt: at } }),
-      this.prisma.notification.count({
+    // Count after the mutation. Array transactions prepare both statements
+    // before committing either, which can publish a pre-update count.
+    const { result, unread } = await this.prisma.$transaction(async (tx) => {
+      const result = await tx.notification.updateMany({ where, data: { readAt: at } });
+      const unread = await tx.notification.count({
         where: { recipientId: viewerId, readAt: null, dismissedAt: null } as never,
-      }),
-    ]);
+      });
+      return { result, unread };
+    });
 
     this.bus.publish(viewerId, {
       type: "notification.read",
@@ -251,15 +252,16 @@ export class NotificationsService {
 
   async dismiss(viewerId: string, notificationId: string): Promise<void> {
     const at = new Date();
-    const [result, unread] = await this.prisma.$transaction([
-      this.prisma.notification.updateMany({
+    const { result, unread } = await this.prisma.$transaction(async (tx) => {
+      const result = await tx.notification.updateMany({
         where: { id: notificationId, recipientId: viewerId },
         data: { dismissedAt: at } as never,
-      }),
-      this.prisma.notification.count({
+      });
+      const unread = await tx.notification.count({
         where: { recipientId: viewerId, readAt: null, dismissedAt: null } as never,
-      }),
-    ]);
+      });
+      return { result, unread };
+    });
     if (result.count === 0) {
       throw new DomainException(
         ErrorCode.NOT_FOUND,

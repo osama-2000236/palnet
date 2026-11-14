@@ -29,10 +29,7 @@ function buildPrisma(): PrismaStub {
   };
   return {
     notification,
-    // Default: resolve to whatever the per-test mock returns by treating each
-    // operation as a no-op. Specific specs override this to return the
-    // (updateMany.result, count) tuple the service expects.
-    $transaction: jest.fn(async (ops: Array<Promise<unknown>>) => Promise.all(ops)),
+    $transaction: jest.fn(async (callback) => callback({ notification })),
   };
 }
 
@@ -223,7 +220,8 @@ describe("NotificationsService", () => {
 
   describe("markRead", () => {
     it("marks the given ids as read in a single transaction and re-counts unread", async () => {
-      prisma.$transaction.mockResolvedValue([{ count: 2 }, 0]);
+      prisma.notification.updateMany.mockResolvedValue({ count: 2 });
+      prisma.notification.count.mockResolvedValue(0);
 
       const out = await service.markRead("u_rec", { ids: ["n_1", "n_2"] });
       expect(out.count).toBe(2);
@@ -242,7 +240,8 @@ describe("NotificationsService", () => {
     });
 
     it("supports all=true to mark every unread as read", async () => {
-      prisma.$transaction.mockResolvedValue([{ count: 5 }, 0]);
+      prisma.notification.updateMany.mockResolvedValue({ count: 5 });
+      prisma.notification.count.mockResolvedValue(0);
       await service.markRead("u_rec", { all: true });
       expect(prisma.$transaction).toHaveBeenCalledTimes(1);
     });
@@ -261,7 +260,8 @@ describe("NotificationsService", () => {
 
   describe("dismiss", () => {
     it("soft-dismisses an owned notification and republishes unread count", async () => {
-      prisma.$transaction.mockResolvedValue([{ count: 1 }, 3]);
+      prisma.notification.updateMany.mockResolvedValue({ count: 1 });
+      prisma.notification.count.mockResolvedValue(3);
 
       await service.dismiss("u_rec", "n_1");
 
@@ -273,7 +273,8 @@ describe("NotificationsService", () => {
     });
 
     it("enforces owner scope by returning not found when no row matches viewer", async () => {
-      prisma.$transaction.mockResolvedValue([{ count: 0 }, 0]);
+      prisma.notification.updateMany.mockResolvedValue({ count: 0 });
+      prisma.notification.count.mockResolvedValue(0);
 
       await expect(service.dismiss("u_other", "n_1")).rejects.toMatchObject({
         code: ErrorCode.NOT_FOUND,

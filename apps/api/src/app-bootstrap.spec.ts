@@ -1,4 +1,7 @@
+import { Logger } from "@nestjs/common";
+
 import { loadEnv } from "./config/env";
+import { ConsoleMailTransport } from "./modules/mail/console-mail.transport";
 
 describe("app bootstrap env validation", () => {
   const baseEnv = {
@@ -35,6 +38,34 @@ describe("app bootstrap env validation", () => {
         ]),
       }),
     );
+  });
+
+  it("allows staging to boot with console mail and production Node settings", () => {
+    process.env = {
+      ...originalEnv,
+      ...baseEnv,
+      NODE_ENV: "production",
+      BAYDAR_ENV: "staging",
+      CORS_ORIGINS: "https://staging.example.com",
+    };
+
+    expect(loadEnv()).toMatchObject({
+      NODE_ENV: "production",
+      BAYDAR_ENV: "staging",
+    });
+  });
+
+  it("does not log email token URLs when staging uses production Node settings", async () => {
+    process.env = { ...originalEnv, NODE_ENV: "production", BAYDAR_ENV: "staging" };
+    const log = jest.spyOn(Logger.prototype, "log").mockImplementation(() => undefined);
+    const secret = "do-not-log-this-token";
+
+    await new ConsoleMailTransport().send("password-reset", "user@example.com", {
+      url: `https://staging.example.com/reset/${secret}`,
+      locale: "en",
+    });
+
+    expect(log.mock.calls.flat().join(" ")).not.toContain(secret);
   });
 
   it("rejects missing CORS origins in production", () => {
