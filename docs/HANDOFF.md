@@ -9,6 +9,24 @@
 - Product: Baydar (بيدر), Arabic-first and RTL by default.
 - Stack: Next.js 15 web, Expo SDK 54 / React Native 0.81 mobile, NestJS REST API, Prisma/Postgres, SSE live updates, JWT refresh auth, R2 media, Expo push.
 
+## 2026-11-14 Release Checkpoint
+
+### Verified
+
+- The application work is on `pr31`, pushed through `f16254e` (`fix(api): gate production guards on BAYDAR_ENV and validate HyperPay webhook secret`). No pull request is associated with `pr31` yet.
+- Repository gates passed: `pnpm type-check`, `pnpm lint`, `pnpm test`, `pnpm build`, `pnpm lint:tokens`, `pnpm format:check`, release-placeholder checks, and mobile duplicate-import/native-version scans. Both Terraform stacks pass `terraform fmt -check` and `terraform validate`.
+- The existing public staging service is reachable through CloudFront: API health returns 200, `/` redirects to `/ar-PS`, and both `/ar-PS` and `/en` return 200.
+- A fresh staging account completed register (201), mobile-transport login (200), `auth/me` (200 with the expected email and `ar-PS` locale), and body-token refresh (200). Reusing the consumed body refresh token was rejected with 401 `AUTH_UNAUTHORIZED`. The web refresh cookie is `HttpOnly`, `Secure`, `SameSite=Lax`, and scoped to `/api/v1/auth`. Synthetic smoke accounts use `@baydar-test.ps` addresses.
+- These checks prove that the existing staging API at `https://d1xu476tj9iv22.cloudfront.net/api/v1`—the URL embedded in the current preview APK—works for a new account over public HTTPS. They do **not** prove that the newly committed application fixes are deployed, nor that the APK works on a physical phone.
+- `infrastructure/aws/deploy-staging.ps1` packages the committed tree, builds matching API/web image tags, applies Terraform, runs migrations, and checks public health. Its offline parser/regression self-check passes; no real AWS deployment was executed while validating the script.
+
+### Remaining owner-only release actions
+
+1. **Deploy the committed code and AWS RDS migration.** The staging resources belong to account `083712835043`; its `wind`, `default`, and `aws-bedrock` sessions are expired, while the working `osama` session belongs to account `366754056464`. The owner must run `aws login --profile wind --region eu-north-1`, then explicitly authorize and run `pwsh -File infrastructure/aws/deploy-staging.ps1 -AwsProfile wind`. Until then, the checkout-idempotency migration is not applied to the private AWS RDS instance and the new images are not deployed. The GitHub deploy workflow also remains unavailable until its AWS OIDC role and environment secrets are configured.
+2. **Test the APK on the physical phone.** SSH to `k5` currently fails with `Connection refused`; no APK installation or on-device smoke test was completed. Restore the k5/device connection, then run the physical-phone checks in `docs/mobile-preview.md` and `docs/session-handoff-2026-11-13.md`.
+3. **Prepare an actual production release.** `artifacts/baydar-staging-preview.apk` is an internal, debug-signed staging preview, not a production APK. Production DNS (`baydar.ps` and `api.baydar.ps`), the separate production stack and secrets, and a production-signed EAS build are still required. Do not label the current staging service or APK as production-ready.
+4. **Complete production hardening.** AWS RDS is still single-AZ, unencrypted, with one-day backups and no deletion protection; plan an encrypted snapshot/restore rather than an in-place edit. Remote versioned Terraform state with locking, CloudFront-to-ALB TLS review, real PostgreSQL concurrency tests, and HyperPay sandbox verification also remain open.
+
 ## Shipped Through Sprint 11.5
 
 - Shared token system is olive/terracotta and enforced by `pnpm lint:tokens`.
