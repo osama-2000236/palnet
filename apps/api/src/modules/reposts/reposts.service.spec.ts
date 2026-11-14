@@ -33,6 +33,17 @@ describe("RepostsService", () => {
       });
     });
 
+    it("cannot repost across a block: the post lookup filters the author", async () => {
+      prisma.post.findFirst.mockResolvedValue(null);
+      await expect(service.create("u_me", "p_1", {})).rejects.toMatchObject({
+        code: ErrorCode.NOT_FOUND,
+      });
+      expect(prisma.post.findFirst.mock.calls[0]![0].where.author).toEqual({
+        blockedByMe: { none: { blockedId: "u_me" } },
+        blockedMe: { none: { blockerId: "u_me" } },
+      });
+    });
+
     it("upserts so re-reposting overwrites the optional comment", async () => {
       prisma.post.findFirst.mockResolvedValue({ id: "p_1" });
       await service.create("u_me", "p_1", { comment: "hot take" });

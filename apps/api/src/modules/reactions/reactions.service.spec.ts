@@ -41,6 +41,17 @@ describe("ReactionsService", () => {
       expect(prisma.reaction.upsert).not.toHaveBeenCalled();
     });
 
+    it("cannot react across a block: the post lookup filters the author", async () => {
+      prisma.post.findFirst.mockResolvedValue(null);
+      await expect(service.set("u_me", "p_1", "LIKE")).rejects.toMatchObject({
+        code: ErrorCode.NOT_FOUND,
+      });
+      expect(prisma.post.findFirst.mock.calls[0]![0].where.author).toEqual({
+        blockedByMe: { none: { blockedId: "u_me" } },
+        blockedMe: { none: { blockerId: "u_me" } },
+      });
+    });
+
     it("upserts the reaction so toggling between types stays a single row", async () => {
       prisma.post.findFirst.mockResolvedValue({ id: "p_1", authorId: "u_author" });
       prisma.reaction.upsert.mockResolvedValue({});

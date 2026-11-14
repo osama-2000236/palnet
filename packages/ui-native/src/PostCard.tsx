@@ -5,6 +5,7 @@ import { Avatar } from "./Avatar";
 import { Icon, type IconName } from "./Icon";
 import { makeStyles } from "./PostCard.styles";
 import type { PostCardProps } from "./PostCard.types";
+import { ProvenanceLine } from "./ProvenanceLine";
 import { ReactionGlyph } from "./ReactionGlyph";
 import { Surface } from "./Surface";
 import { useThemeTokens } from "./ThemeProvider";
@@ -28,6 +29,7 @@ export function PostCard({
   authorAccessibilityLabel,
   onMorePress,
   moreAccessibilityLabel,
+  context,
   style,
   testID,
 }: PostCardProps): JSX.Element {
@@ -87,6 +89,11 @@ export function PostCard({
 
   return (
     <Surface variant="card" padding="0" style={[styles.card, style]} testID={testID}>
+      {context ? (
+        <View style={styles.context}>
+          <ProvenanceLine variant="inline" text={context} testID="post-context" />
+        </View>
+      ) : null}
       {onAuthorPress ? (
         <Pressable
           onPress={onAuthorPress}

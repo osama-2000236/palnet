@@ -11,6 +11,12 @@ export const makeStyles = (c: typeof nativeTokens.color) =>
     card: {
       overflow: "hidden",
     },
+    context: {
+      paddingHorizontal: nativeTokens.space[4],
+      paddingVertical: nativeTokens.space[1],
+      borderBottomWidth: StyleSheet.hairlineWidth,
+      borderBottomColor: c.ruleHairline,
+    },
     headerPressable: {
       paddingHorizontal: nativeTokens.space[4],
       paddingTop: nativeTokens.space[4],

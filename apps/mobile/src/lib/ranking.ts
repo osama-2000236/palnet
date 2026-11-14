@@ -17,8 +17,9 @@ export interface RankingPrefs {
 }
 
 // ponytail: the design also specified a "ranking off — newest only" switch.
-// Left out on purpose: the feed endpoint takes no sort parameter, so the switch
-// could only have changed the caption, not the order. Add it with the API flag.
+// The API now ranks (FEED_RANKING_ENABLED, server-wide), but /feed still takes
+// no per-viewer order parameter, so the switch could only change the caption.
+// Add it together with an `order=recent` query on GET /feed.
 
 const DEFAULT_RANKING_PREFS: RankingPrefs = {
   explainRanking: true,

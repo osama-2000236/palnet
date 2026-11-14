@@ -58,6 +58,7 @@ enum NotificationType {
   POST_MENTION
   MESSAGE_RECEIVED
   JOB_APPLICATION_UPDATE
+  JOB_APPLICATION_RECEIVED
   JOB_ALERT
   PROFILE_VIEW
   MODERATION_ACTION
@@ -1221,6 +1222,8 @@ model FeedSlate {
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId      String
   postIds     String[]
+  // { [postId]: { kind, actor? } } — why each non-obvious post is in the slate.
+  reasons     Json?
   generatedAt DateTime @default(now())
   expiresAt   DateTime
 

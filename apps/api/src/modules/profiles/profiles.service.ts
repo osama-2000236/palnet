@@ -13,6 +13,7 @@ import { Injectable } from "@nestjs/common";
 import { DomainException } from "../../common/domain-exception";
 import { KaramaService } from "../karama/karama.service";
 import { PrismaService } from "../prisma/prisma.service";
+import { notBlockedWith } from "../safety/not-blocked-with";
 
 import { profileInclude, toProfileDto } from "./profiles.mapper";
 
@@ -83,8 +84,10 @@ export class ProfilesService {
   }
 
   async getByHandle(handle: string, viewerId?: string): Promise<ProfileDto> {
-    const profile = await this.prisma.profile.findUnique({
-      where: { handle },
+    // findFirst: the block filter is not part of the unique key. Anonymous
+    // viewers still see the profile (it is public); a blocked pair does not.
+    const profile = await this.prisma.profile.findFirst({
+      where: { handle, ...(viewerId ? { user: notBlockedWith(viewerId) } : {}) },
       include: profileInclude,
     });
     if (!profile) {
@@ -276,8 +279,8 @@ export class ProfilesService {
     targetHandle: string,
     skillId: string,
   ): Promise<{ endorsements: number; awardedKarama: boolean }> {
-    const targetProfile = await this.prisma.profile.findUnique({
-      where: { handle: targetHandle },
+    const targetProfile = await this.prisma.profile.findFirst({
+      where: { handle: targetHandle, user: notBlockedWith(actorId) },
       select: { id: true, userId: true },
     });
     if (!targetProfile) {

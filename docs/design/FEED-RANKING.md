@@ -6,10 +6,30 @@ Written 2026-07-30, owner-approved.
 
 ## 0. What exists today, exactly
 
-`apps/api/src/modules/feed/feed.service.ts` is **63 lines**: one indexed query for posts by the
-viewer or an `ACCEPTED`-connected peer, `ORDER BY createdAt DESC, id DESC`, cursor-paginated,
-blocked users excluded. It is correct, fast and completely blind — it cannot tell an
-electrician that someone three connections away is hiring electricians in Jenin.
+Updated 2026-10-12. `apps/api/src/modules/feed/feed.service.ts` now ranks a **frozen slate**
+behind `FEED_RANKING_ENABLED` (default `"true"`; `"false"` restores the old newest-first
+network feed, which is kept and tested):
+
+- **Candidates:** the viewer's and their connections' newest 300 posts; up to 200 connection
+  reposts and 200 out-of-network posts from the last 14 days. Blocked and deleted authors are
+  excluded at query time and again when each page is read.
+- **Score:** `0.45·affinity + 0.35·recency + 0.20·quality`. Affinity is 1.0 network, 0.6
+  repost, 0.2 same city, 0.1 elsewhere; recency is `exp(−age/24h)` (from the repost for a
+  repost); quality is `log1p(reactions + 2·comments + 3·reposts) / log1p(50)`, capped at 1.
+  Topic affinity is **not** in yet — nothing writes `PostTopic` until F1 — so its 0.30 is
+  spread over the other three.
+- **Diversity:** ≤ 2 posts per author in any 10, and every 10th slot goes to the best
+  out-of-network post (the cold-start path for a viewer with no connections).
+- **Slate:** ≤ 200 ids plus a reason map in `FeedSlate`, 30-minute TTL, swept per viewer on
+  the next build. Pages 2+ read the slate, so order is stable while scrolling.
+- **Reasons:** `feedReason` on the post DTO for `REPOST` («أعاد … نشر هذا»), `NEARBY` and
+  `DISCOVER`. A post by one of the viewer's own connections carries none — its author line
+  already says why — and the mobile band names the mechanism for the whole list. Both
+  clients draw it as a `ProvenanceLine` inside the card (`PostCard.context`); mobile hides it
+  when «اشرح الترتيب» is off.
+
+Still owed: F1 tagger (topic), F2 negative feedback (`TopicMute`, «لا يهمّني»), a per-viewer
+`order=recent` switch, and the F5 offline evaluation against the chronological baseline.
 
 ## 1. The brand constraint, resolved before anything is built
 

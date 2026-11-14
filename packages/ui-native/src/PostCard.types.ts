@@ -56,6 +56,12 @@ export interface PostCardProps {
    *  Omit it and the header renders no glyph — never a dead affordance. */
   onMorePress?: () => void;
   moreAccessibilityLabel?: string;
+  /**
+   * Why a ranked feed shows this post ("أعاد سامي نشر هذا"), drawn as a
+   * provenance line above the author. Host-composed from i18n; omit it for
+   * posts whose author already explains them.
+   */
+  context?: string;
   style?: StyleProp<ViewStyle>;
   testID?: string;
 }

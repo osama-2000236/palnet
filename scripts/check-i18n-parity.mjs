@@ -152,6 +152,8 @@ const DYNAMIC_NAMESPACES = {
     "settings.notifications",
     "settings.privacy",
     "landing",
+    // `tReason(post.feedReason.kind)` — one key per FeedReasonKind.
+    "feed.reason",
   ],
   mobile: [
     "api",

@@ -10,6 +10,7 @@ import {
   BookmarkType,
   formatNumber,
   formatRelativeTime,
+  personName,
   type Post,
 } from "@baydar/shared";
 import {
@@ -43,6 +44,7 @@ export function PostCard({
   const t = useTranslations("post");
   const tCommon = useTranslations("common");
   const tSafety = useTranslations("safety");
+  const tReason = useTranslations("feed.reason");
   const { showToast } = useToast();
   const locale = useLocale();
   const router = useRouter();
@@ -92,11 +94,7 @@ export function PostCard({
     onChange?.({
       ...post,
       viewer: { ...post.viewer, reaction: next },
-      counts: {
-        ...post.counts,
-        reactions: Math.max(0, post.counts.reactions + delta),
-        byReaction,
-      },
+      counts: { ...post.counts, reactions: Math.max(0, post.counts.reactions + delta), byReaction },
     });
     setBusy(true);
     try {
@@ -187,6 +185,11 @@ export function PostCard({
           kind: m.kind === "IMAGE" ? "IMAGE" : "VIDEO",
         }))}
         timestamp={formatRelativeTime(post.createdAt, locale)}
+        context={
+          post.feedReason
+            ? tReason(post.feedReason.kind, { actor: personName(post.feedReason.actor) })
+            : undefined
+        }
         counts={post.counts}
         reaction={post.viewer.reaction as ReactionKind | null}
         formatCount={formatCount}

@@ -97,4 +97,13 @@ describe("PostCard", () => {
 
     expect(onMorePress).toHaveBeenCalledTimes(1);
   });
+
+  it("says why a ranked post is in the feed, only when the host passes a reason", () => {
+    const actions = [{ key: "like", label: "أعجبني", icon: "thumb" as const }];
+    expect(
+      render(<PostCard {...base} actions={actions} />).queryByTestId("post-context"),
+    ).toBeNull();
+    const screen = render(<PostCard {...base} actions={actions} context="أعاد صالح نشر هذا" />);
+    expect(screen.getByText("أعاد صالح نشر هذا")).toBeTruthy();
+  });
 });

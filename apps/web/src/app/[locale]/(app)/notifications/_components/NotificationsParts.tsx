@@ -201,6 +201,12 @@ function hrefFor(notification: Notification): string | null {
   ) {
     return `/jobs/${notification.jobId}`;
   }
+  if (notification.type === NotificationType.JOB_APPLICATION_RECEIVED && notification.jobId) {
+    const slug = (notification.data as { companySlug?: string | null } | null)?.companySlug;
+    return slug
+      ? `/employer/${slug}/jobs/${notification.jobId}/applicants`
+      : `/jobs/${notification.jobId}`;
+  }
   if (notification.type === NotificationType.PROFILE_VIEW && notification.actor?.handle) {
     return `/in/${notification.actor.handle}`;
   }

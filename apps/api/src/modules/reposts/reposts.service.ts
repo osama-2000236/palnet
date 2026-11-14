@@ -3,6 +3,7 @@ import { Injectable } from "@nestjs/common";
 
 import { DomainException } from "../../common/domain-exception";
 import { PrismaService } from "../prisma/prisma.service";
+import { notBlockedWith } from "../safety/not-blocked-with";
 
 @Injectable()
 export class RepostsService {
@@ -10,7 +11,7 @@ export class RepostsService {
 
   async create(viewerId: string, postId: string, body: CreateRepostBody): Promise<void> {
     const post = await this.prisma.post.findFirst({
-      where: { id: postId, deletedAt: null },
+      where: { id: postId, deletedAt: null, author: notBlockedWith(viewerId) },
       select: { id: true },
     });
     if (!post) {

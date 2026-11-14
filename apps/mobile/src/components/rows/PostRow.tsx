@@ -3,6 +3,7 @@ import {
   BookmarkType,
   formatNumber,
   formatRelativeTime,
+  personName,
   type Post,
 } from "@baydar/shared";
 import {
@@ -27,9 +28,15 @@ import { getAccessToken } from "@/lib/session";
 export interface PostRowProps {
   post: Post;
   onChange?: (next: Post) => void;
+  /** Settings → "explain ranking". Off hides the per-post feed reason too. */
+  explainRanking?: boolean;
 }
 
-export const PostRow = memo(function PostRow({ post, onChange }: PostRowProps): JSX.Element {
+export const PostRow = memo(function PostRow({
+  post,
+  onChange,
+  explainRanking = true,
+}: PostRowProps): JSX.Element {
   const { t, i18n } = useTranslation();
   const { showToast } = useToast();
   const [showComments, setShowComments] = useState(false);
@@ -216,6 +223,11 @@ export const PostRow = memo(function PostRow({ post, onChange }: PostRowProps): 
         authorName={authorName}
         authorHeadline={post.author.headline}
         timestamp={formatRelativeTime(post.createdAt, i18n.language)}
+        context={
+          explainRanking && post.feedReason
+            ? t(`feed.reason.${post.feedReason.kind}`, { actor: personName(post.feedReason.actor) })
+            : undefined
+        }
         body={post.body}
         media={<PostMedia media={post.media} />}
         reactionCount={
@@ -271,6 +283,8 @@ export const PostRow = memo(function PostRow({ post, onChange }: PostRowProps): 
 function areEqual(prev: PostRowProps, next: PostRowProps): boolean {
   return (
     prev.post.id === next.post.id &&
+    prev.explainRanking === next.explainRanking &&
+    prev.post.feedReason?.kind === next.post.feedReason?.kind &&
     prev.post.updatedAt === next.post.updatedAt &&
     prev.post.viewer.reaction === next.post.viewer.reaction &&
     prev.post.viewer.bookmarkId === next.post.viewer.bookmarkId &&

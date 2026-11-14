@@ -3,6 +3,7 @@ export * from "./enums";
 export * from "./pagination";
 export * from "./errors";
 export * from "./format";
+export * from "./person";
 export * from "./messaging";
 export * from "./minimum-wage";
 export * from "./place";

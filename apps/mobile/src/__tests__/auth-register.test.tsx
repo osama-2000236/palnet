@@ -1,4 +1,5 @@
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
+import { Linking } from "react-native";
 
 import RegisterScreen from "../../app/(auth)/register";
 import { useNetworkStore } from "../store/network";
@@ -75,6 +76,19 @@ describe("RegisterScreen", () => {
 
     expect(screen.getAllByTestId("register-first-name-input")).toHaveLength(1);
     expect(screen.getAllByTestId("register-last-name-input")).toHaveLength(1);
+  });
+
+  it("lets the user open both documents they are asked to accept", () => {
+    const open = jest.spyOn(Linking, "openURL").mockResolvedValue(true);
+    const screen = render(<RegisterScreen />);
+
+    fireEvent.press(screen.getByTestId("register-legal-tos"));
+    fireEvent.press(screen.getByTestId("register-legal-privacy"));
+
+    expect(open.mock.calls.map((c) => c[0])).toEqual([
+      "https://baydar.ps/ar-PS/legal/tos",
+      "https://baydar.ps/ar-PS/legal/privacy",
+    ]);
   });
 
   it("registers and routes to mandatory onboarding", async () => {

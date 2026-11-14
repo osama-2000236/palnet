@@ -235,7 +235,12 @@
       "connect": "Connect",
       "pymkEmpty": "Find people to connect with →"
     },
-    "emptyCta": "Find people"
+    "emptyCta": "Find people",
+    "reason": {
+      "REPOST": "{actor} reposted this",
+      "NEARBY": "From professionals in your city",
+      "DISCOVER": "Suggested from outside your network"
+    }
   },
   "composer": {
     "placeholder": "Start a post…",
@@ -273,8 +278,12 @@
     "publicAudience": "Public post",
     "moreOptions": "Options",
     "commentPlaceholder": "Add a comment…",
-    "commentSubmit": "Reply",
+    "commentSubmit": "Post",
     "commentError": "Could not post comment.",
+    "reply": "Reply",
+    "replyingTo": "Replying to {name}",
+    "cancelReply": "Cancel reply",
+    "replyPlaceholder": "Write a reply…",
     "loadMoreComments": "Show more comments"
   },
   "safety": {
@@ -560,6 +569,7 @@
       "POST_MENTION": "{actor} mentioned you in a post.",
       "MESSAGE_RECEIVED": "{actor} sent you a message.",
       "JOB_APPLICATION_UPDATE": "Your application has an update.",
+      "JOB_APPLICATION_RECEIVED": "{actor} applied to {jobTitle}.",
       "PROFILE_VIEW": "{actor} viewed your profile.",
       "MODERATION_ACTION": "Your report was reviewed by the moderation team.",
       "JOB_ALERT": "New job matches your alert: {jobTitle}"

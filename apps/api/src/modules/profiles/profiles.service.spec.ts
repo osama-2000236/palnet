@@ -14,7 +14,7 @@ const karamaStub = {
 };
 
 type PrismaStub = {
-  profile: { create: jest.Mock; findUnique: jest.Mock; update: jest.Mock };
+  profile: { create: jest.Mock; findUnique: jest.Mock; findFirst: jest.Mock; update: jest.Mock };
   experience: {
     create: jest.Mock;
     update: jest.Mock;
@@ -39,7 +39,7 @@ type PrismaStub = {
 
 function buildPrisma(): PrismaStub {
   return {
-    profile: { create: jest.fn(), findUnique: jest.fn(), update: jest.fn() },
+    profile: { create: jest.fn(), findUnique: jest.fn(), findFirst: jest.fn(), update: jest.fn() },
     experience: {
       create: jest.fn(),
       update: jest.fn(),
@@ -321,11 +321,7 @@ describe("ProfilesService (edit)", () => {
     });
 
     it("endorses another user's skill once and increments the visible count", async () => {
-      prisma.profile.findUnique.mockImplementation(async ({ where }) => {
-        if (where.handle === "muna") return { id: "p_target", userId: "u_target" };
-        if (where.userId === "u_1") return profileRow();
-        return null;
-      });
+      prisma.profile.findFirst.mockResolvedValue({ id: "p_target", userId: "u_target" });
       prisma.profileSkill.findUnique.mockResolvedValue({
         profileId: "p_target",
         skillId: "sk_1",
@@ -355,7 +351,7 @@ describe("ProfilesService (edit)", () => {
 
     it("does not increment a repeated endorsement from the same actor", async () => {
       karamaStub.awardOnce.mockResolvedValue(false);
-      prisma.profile.findUnique.mockResolvedValue({ id: "p_target", userId: "u_target" });
+      prisma.profile.findFirst.mockResolvedValue({ id: "p_target", userId: "u_target" });
       prisma.profileSkill.findUnique.mockResolvedValue({
         profileId: "p_target",
         skillId: "sk_1",
@@ -369,7 +365,7 @@ describe("ProfilesService (edit)", () => {
     });
 
     it("increments endorsements without Karama when the skill cap is reached", async () => {
-      prisma.profile.findUnique.mockResolvedValue({ id: "p_target", userId: "u_target" });
+      prisma.profile.findFirst.mockResolvedValue({ id: "p_target", userId: "u_target" });
       prisma.profileSkill.findUnique.mockResolvedValue({
         profileId: "p_target",
         skillId: "sk_1",
@@ -392,7 +388,7 @@ describe("ProfilesService (edit)", () => {
 
     it("increments endorsements without Karama when the monthly cap is reached", async () => {
       karamaStub.getMonthlyEarnings.mockResolvedValue(200);
-      prisma.profile.findUnique.mockResolvedValue({ id: "p_target", userId: "u_target" });
+      prisma.profile.findFirst.mockResolvedValue({ id: "p_target", userId: "u_target" });
       prisma.profileSkill.findUnique.mockResolvedValue({
         profileId: "p_target",
         skillId: "sk_1",
@@ -413,12 +409,50 @@ describe("ProfilesService (edit)", () => {
     });
 
     it("rejects self endorsements", async () => {
-      prisma.profile.findUnique.mockResolvedValue({ id: "p_1", userId: "u_1" });
+      prisma.profile.findFirst.mockResolvedValue({ id: "p_1", userId: "u_1" });
 
       await expect(service.endorseSkill("u_1", "osama", "sk_1")).rejects.toMatchObject({
         code: ErrorCode.VALIDATION_FAILED,
       } as Partial<DomainException>);
       expect(prisma.profileSkill.findUnique).not.toHaveBeenCalled();
+    });
+
+    it("404s an endorsement across a block in either direction", async () => {
+      prisma.profile.findFirst.mockResolvedValue(null);
+
+      await expect(service.endorseSkill("u_actor", "muna", "sk_1")).rejects.toMatchObject({
+        code: ErrorCode.NOT_FOUND,
+      } as Partial<DomainException>);
+      expect(prisma.profile.findFirst.mock.calls[0]![0].where).toEqual({
+        handle: "muna",
+        user: {
+          blockedByMe: { none: { blockedId: "u_actor" } },
+          blockedMe: { none: { blockerId: "u_actor" } },
+        },
+      });
+      expect(karamaStub.awardOnce).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("getByHandle", () => {
+    it("hides the profile from a viewer on either side of a block", async () => {
+      prisma.profile.findFirst.mockResolvedValue(null);
+
+      await expect(service.getByHandle("muna", "u_viewer")).rejects.toMatchObject({
+        code: ErrorCode.NOT_FOUND,
+      } as Partial<DomainException>);
+      expect(prisma.profile.findFirst.mock.calls[0]![0].where).toMatchObject({
+        handle: "muna",
+        user: { blockedMe: { none: { blockerId: "u_viewer" } } },
+      });
+    });
+
+    it("keeps the profile public for anonymous viewers", async () => {
+      prisma.profile.findFirst.mockResolvedValue(null);
+
+      await service.getByHandle("muna").catch(() => undefined);
+
+      expect(prisma.profile.findFirst.mock.calls[0]![0].where).toEqual({ handle: "muna" });
     });
   });
 });

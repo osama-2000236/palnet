@@ -6,7 +6,7 @@ import { NotificationsService } from "../notifications/notifications.service";
 import { PrismaService } from "../prisma/prisma.service";
 import { SafetyService } from "../safety/safety.service";
 
-import { ConnectionsService } from "./connections.service";
+import { ConnectionsService, RESEND_COOLDOWN_MS } from "./connections.service";
 
 type PrismaStub = {
   user: { findUnique: jest.Mock };
@@ -137,6 +137,93 @@ describe("ConnectionsService", () => {
       const call = service.send("u_sender", { receiverId: "u_receiver" });
       await expect(call).rejects.toMatchObject({ code: ErrorCode.BLOCKED });
       expect(prisma.connection.update).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("send — existing rows", () => {
+    // Both people pressed Connect: the second press used to 409 and leave each
+    // of them looking at a pending request the other had already made.
+    it("accepts their pending invitation instead of conflicting", async () => {
+      prisma.user.findUnique.mockResolvedValue({ id: "u_them" });
+      const pending = {
+        id: "c_1",
+        requesterId: "u_them",
+        receiverId: "u_me",
+        status: "PENDING",
+        respondedAt: null,
+      };
+      prisma.connection.findFirst.mockResolvedValue(pending);
+      prisma.connection.findUnique.mockResolvedValue(pending);
+      prisma.connection.update.mockResolvedValue({ id: "c_1", status: "ACCEPTED" });
+
+      const row = await service.send("u_me", { receiverId: "u_them" });
+
+      expect(row.status).toBe("ACCEPTED");
+      expect(prisma.connection.update).toHaveBeenCalledWith(
+        expect.objectContaining({ data: expect.objectContaining({ status: "ACCEPTED" }) }),
+      );
+    });
+
+    it("still conflicts on my own pending invitation", async () => {
+      prisma.user.findUnique.mockResolvedValue({ id: "u_them" });
+      prisma.connection.findFirst.mockResolvedValue({
+        id: "c_1",
+        requesterId: "u_me",
+        receiverId: "u_them",
+        status: "PENDING",
+      });
+
+      await expect(service.send("u_me", { receiverId: "u_them" })).rejects.toMatchObject({
+        code: ErrorCode.CONFLICT,
+      });
+      expect(prisma.connection.update).not.toHaveBeenCalled();
+    });
+
+    it("holds off a re-send right after a decline", async () => {
+      prisma.user.findUnique.mockResolvedValue({ id: "u_them" });
+      prisma.connection.findFirst.mockResolvedValue({
+        id: "c_1",
+        requesterId: "u_me",
+        receiverId: "u_them",
+        status: "DECLINED",
+        respondedAt: new Date(Date.now() - 24 * 60 * 60 * 1000),
+      });
+
+      await expect(service.send("u_me", { receiverId: "u_them" })).rejects.toMatchObject({
+        code: ErrorCode.RATE_LIMITED,
+      });
+      expect(prisma.connection.update).not.toHaveBeenCalled();
+    });
+
+    it("allows the re-send once the cooldown has passed", async () => {
+      prisma.user.findUnique.mockResolvedValue({ id: "u_them" });
+      prisma.connection.findFirst.mockResolvedValue({
+        id: "c_1",
+        requesterId: "u_me",
+        receiverId: "u_them",
+        status: "WITHDRAWN",
+        respondedAt: new Date(Date.now() - RESEND_COOLDOWN_MS - 1000),
+      });
+      prisma.connection.update.mockResolvedValue({ id: "c_1", status: "PENDING" });
+
+      const row = await service.send("u_me", { receiverId: "u_them" });
+      expect(row.status).toBe("PENDING");
+    });
+
+    // The person who declined is not the one being held off.
+    it("lets the decliner invite back straight away", async () => {
+      prisma.user.findUnique.mockResolvedValue({ id: "u_them" });
+      prisma.connection.findFirst.mockResolvedValue({
+        id: "c_1",
+        requesterId: "u_them",
+        receiverId: "u_me",
+        status: "DECLINED",
+        respondedAt: new Date(),
+      });
+      prisma.connection.update.mockResolvedValue({ id: "c_1", status: "PENDING" });
+
+      const row = await service.send("u_me", { receiverId: "u_them" });
+      expect(row.status).toBe("PENDING");
     });
   });
 
