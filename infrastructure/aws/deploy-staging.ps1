@@ -103,7 +103,7 @@ $env:TF_VAR_private_subnet_ids = if ($PrivateSubnetIds.Count -eq 0) {
     $PrivateSubnetIds | ConvertTo-Json -Compress -AsArray
 }
 Write-Host "==> terraform apply migration task (image tag $ImageTag)"
-terraform -chdir="$awsDir" apply -auto-approve -input=false -target=aws_ecs_task_definition.migration -target=aws_security_group.migration
+terraform -chdir="$awsDir" apply -auto-approve -input=false '-target=aws_ecs_task_definition.migration' '-target=aws_security_group.migration'
 if ($LASTEXITCODE -ne 0) { throw "terraform migration-task apply failed." }
 
 # 5. Run the checkout-idempotency migration against RDS and require exit 0.

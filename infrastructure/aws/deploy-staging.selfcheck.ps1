@@ -34,7 +34,7 @@ if ($source.Contains('$env:TF_VAR_private_subnet_ids = $PrivateSubnetIds -join "
     throw "Comma-separated subnet regression detected."
 }
 
-$migrationApply = $source.IndexOf('terraform -chdir="$awsDir" apply -auto-approve -input=false -target=aws_ecs_task_definition.migration -target=aws_security_group.migration')
+$migrationApply = $source.IndexOf('terraform -chdir="$awsDir" apply -auto-approve -input=false ''-target=aws_ecs_task_definition.migration'' ''-target=aws_security_group.migration''')
 $applicationApply = $source.LastIndexOf('terraform -chdir="$awsDir" apply -auto-approve -input=false')
 if ($migrationApply -lt 0 -or $applicationApply -le $migrationApply) {
     throw "The migration task must be applied and run before the application stack."
