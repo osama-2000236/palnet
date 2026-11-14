@@ -106,11 +106,20 @@ export class AuthService {
       });
     }
 
-    // Rotate: revoke old, issue new.
-    await this.prisma.refreshToken.update({
-      where: { id: record.id },
+    // Only one concurrent request may consume this token. The active-token
+    // predicate is part of the write, not just the preceding read.
+    const revoked = await this.prisma.refreshToken.updateMany({
+      where: { id: record.id, revokedAt: null, expiresAt: { gt: new Date() } },
       data: { revokedAt: new Date() },
     });
+    if (!revoked.count) {
+      throw new UnauthorizedException({
+        error: {
+          code: ErrorCode.AUTH_UNAUTHORIZED,
+          message: "Refresh token invalid or expired.",
+        },
+      });
+    }
 
     return this.issueSession(record.user, body.deviceId);
   }

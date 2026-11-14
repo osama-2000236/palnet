@@ -772,6 +772,9 @@ model Invoice {
   dueAt             DateTime?
   paidAt            DateTime?
   pdfUrl            String?
+  checkoutKey          String?  @unique
+  checkoutFingerprint  String?
+  checkoutProcessingAt DateTime?
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
 

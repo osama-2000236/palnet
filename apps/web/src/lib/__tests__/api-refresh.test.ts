@@ -25,8 +25,8 @@ const makeSession = (accessToken: string): AuthSessionType => ({
   tokens: {
     accessToken,
     refreshToken: "",
-    accessExpiresAt: "2026-06-01T00:00:00.000Z",
-    refreshExpiresAt: "2026-07-01T00:00:00.000Z",
+    accessExpiresAt: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
+    refreshExpiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
   },
 });
 
@@ -57,6 +57,7 @@ describe("api refresh handling", () => {
   });
 
   afterEach(() => {
+    Object.defineProperty(window.navigator, "locks", { configurable: true, value: undefined });
     jest.restoreAllMocks();
     clearAccessToken(); // Clear in-memory token after each test
   });
@@ -112,12 +113,29 @@ describe("api refresh handling", () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
-  it("refreshes apiFetchPage after a reload leaves only the blank stored access token", async () => {
+  it("refreshes an expired stored access token before the first request", async () => {
+    const session = makeSession("expired-access");
+    session.tokens.accessExpiresAt = new Date(Date.now() - 1000).toISOString();
+    writeSession(session);
+    const fetchMock = jest.mocked(global.fetch);
+    fetchMock
+      .mockResolvedValueOnce(jsonResponse({ data: makeSession("new-access") }))
+      .mockResolvedValueOnce(jsonResponse({ data: { ok: true } }));
+
+    await expect(apiFetch("/profiles/me", OkPayload)).resolves.toEqual({ ok: true });
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(fetchMock.mock.calls[0]?.[0]).toBe(`${apiBase}/auth/refresh`);
+    expect((fetchMock.mock.calls[1]?.[1]?.headers as Headers).get("Authorization")).toBe(
+      "Bearer new-access",
+    );
+  });
+
+  it("refreshes a blank stored access token before apiFetchPage", async () => {
     writeSession(makeSession("old-access"));
     clearAccessToken();
     const fetchMock = jest.mocked(global.fetch);
     fetchMock
-      .mockResolvedValueOnce(unauthorized())
       .mockResolvedValueOnce(jsonResponse({ data: makeSession("new-access") }))
       .mockResolvedValueOnce(
         jsonResponse({
@@ -131,10 +149,9 @@ describe("api refresh handling", () => {
       meta: { nextCursor: null, hasMore: false },
     });
 
-    expect(fetchMock).toHaveBeenCalledTimes(3);
-    expect((fetchMock.mock.calls[0]?.[1]?.headers as Headers).get("Authorization")).toBeNull();
-    expect(fetchMock.mock.calls[1]?.[0]).toBe(`${apiBase}/auth/refresh`);
-    expect((fetchMock.mock.calls[2]?.[1]?.headers as Headers).get("Authorization")).toBe(
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(fetchMock.mock.calls[0]?.[0]).toBe(`${apiBase}/auth/refresh`);
+    expect((fetchMock.mock.calls[1]?.[1]?.headers as Headers).get("Authorization")).toBe(
       "Bearer new-access",
     );
   });
@@ -197,6 +214,26 @@ describe("api refresh handling", () => {
     );
     expect(refreshCalls).toHaveLength(1);
     expect(fetchMock).toHaveBeenCalledTimes(5);
+  });
+
+  it("serializes refreshes with the cross-tab Web Lock when available", async () => {
+    writeSession(makeSession("old-access"));
+    const request = jest.fn(async (_name: string, callback: () => Promise<string | null>) =>
+      callback(),
+    );
+    Object.defineProperty(window.navigator, "locks", {
+      configurable: true,
+      value: { request },
+    });
+    const fetchMock = jest.mocked(global.fetch);
+    fetchMock
+      .mockResolvedValueOnce(unauthorized())
+      .mockResolvedValueOnce(jsonResponse({ data: makeSession("new-access") }))
+      .mockResolvedValueOnce(jsonResponse({ data: { ok: true } }));
+
+    await expect(apiFetch("/profiles/me", OkPayload)).resolves.toEqual({ ok: true });
+
+    expect(request).toHaveBeenCalledWith("baydar.auth.refresh", expect.any(Function));
   });
 
   it("clears the stored session when refresh fails", async () => {

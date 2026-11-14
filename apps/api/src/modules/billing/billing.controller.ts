@@ -58,8 +58,17 @@ export class BillingController {
   @HttpCode(HttpStatus.OK)
   async hyperpay(
     @Body(new ZodValidationPipe(HyperPayWebhookBody)) body: HyperPayWebhookBody,
+    @Headers("x-initialization-vector") initializationVector?: string,
+    @Headers("x-authentication-tag") authenticationTag?: string,
     @Headers("x-hyperpay-signature") signature?: string,
   ): Promise<InvoiceDto> {
-    return Invoice.parse(await this.billing.handleHyperPayWebhook(body, signature));
+    const encryptedBody = body.encryptedBody;
+    return Invoice.parse(
+      await this.billing.handleHyperPayWebhook(
+        typeof encryptedBody === "string" ? encryptedBody : body,
+        typeof encryptedBody === "string" ? initializationVector : signature,
+        authenticationTag,
+      ),
+    );
   }
 }

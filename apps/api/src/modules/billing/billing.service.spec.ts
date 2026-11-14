@@ -5,7 +5,7 @@ import { KaramaService } from "../karama/karama.service";
 import { PrismaService } from "../prisma/prisma.service";
 
 import { BillingService } from "./billing.service";
-import { HyperPayClient } from "./hyperpay.client";
+import { HyperPayCheckoutError, HyperPayClient } from "./hyperpay.client";
 import { WalletRegistry } from "./wallets/wallet-registry";
 
 type PrismaStub = {
@@ -16,6 +16,7 @@ type PrismaStub = {
   invoice: {
     create: jest.Mock;
     update: jest.Mock;
+    updateMany: jest.Mock;
     findMany: jest.Mock;
     findUnique: jest.Mock;
     findUniqueOrThrow: jest.Mock;
@@ -33,6 +34,7 @@ function buildPrisma(): PrismaStub {
     invoice: {
       create: jest.fn(),
       update: jest.fn(),
+      updateMany: jest.fn(),
       findMany: jest.fn(),
       findUnique: jest.fn(),
       findUniqueOrThrow: jest.fn(),
@@ -45,11 +47,22 @@ function buildPrisma(): PrismaStub {
 describe("BillingService", () => {
   let service: BillingService;
   let prisma: PrismaStub;
-  let hyperpay: { createCheckout: jest.Mock; verifyWebhookSignature: jest.Mock };
+  let hyperpay: {
+    createCheckout: jest.Mock;
+    getCheckoutUrl: jest.Mock;
+    decryptWebhook: jest.Mock;
+    verifyWebhookSignature: jest.Mock;
+    getCheckoutPayment: jest.Mock;
+  };
   let tx: {
-    invoice: { update: jest.Mock };
+    invoice: {
+      create: jest.Mock;
+      update: jest.Mock;
+      updateMany: jest.Mock;
+      findUniqueOrThrow: jest.Mock;
+    };
     payment: { create: jest.Mock };
-    subscription: { update: jest.Mock };
+    subscription: { create: jest.Mock; update: jest.Mock };
     employerCredit: { create: jest.Mock };
   };
 
@@ -57,12 +70,37 @@ describe("BillingService", () => {
     prisma = buildPrisma();
     hyperpay = {
       createCheckout: jest.fn(),
+      getCheckoutUrl: jest.fn((id: string) => `https://hyperpay.test/${id}`),
+      getCheckoutPayment: jest.fn().mockResolvedValue({
+        id: "pay-1",
+        merchantTransactionId: "inv-1",
+        amountCents: 9900,
+        currency: "USD",
+        resultCode: "000.000.000",
+        raw: { id: "pay-1" },
+      }),
       verifyWebhookSignature: jest.fn().mockReturnValue(true),
+      decryptWebhook: jest.fn().mockReturnValue({
+        type: "PAYMENT",
+        payload: {
+          merchantTransactionId: "inv-1",
+          paymentId: "pay-1",
+          result: { code: "000.000.000" },
+        },
+      }),
     };
     tx = {
-      invoice: { update: jest.fn() },
+      invoice: {
+        create: jest.fn((input) => prisma.invoice.create(input)),
+        update: jest.fn(),
+        updateMany: jest.fn().mockResolvedValue({ count: 1 }),
+        findUniqueOrThrow: jest.fn(),
+      },
       payment: { create: jest.fn() },
-      subscription: { update: jest.fn() },
+      subscription: {
+        create: jest.fn((input) => prisma.subscription.create(input)),
+        update: jest.fn(),
+      },
       employerCredit: { create: jest.fn() },
     };
     prisma.$transaction.mockImplementation(async (fn) => fn(tx as never));
@@ -152,6 +190,51 @@ describe("BillingService", () => {
     expect(hyperpay.createCheckout).not.toHaveBeenCalled();
   });
 
+  it("rejects a mismatched payment using the stored HyperPay checkout id", async () => {
+    prisma.invoice.findUnique.mockResolvedValue({
+      providerInvoiceId: "checkout-1",
+      amountCents: 9900,
+      currency: "USD",
+    });
+    hyperpay.getCheckoutPayment.mockResolvedValue({
+      id: "pay-1",
+      merchantTransactionId: "different-invoice",
+      amountCents: 9900,
+      currency: "USD",
+      resultCode: "000.000.000",
+      raw: {},
+    });
+
+    await expect(service.handleHyperPayWebhook("encrypted", "iv", "tag")).rejects.toMatchObject({
+      code: "VALIDATION_FAILED",
+    });
+    expect(hyperpay.getCheckoutPayment).toHaveBeenCalledWith("checkout-1");
+    expect(prisma.$transaction).not.toHaveBeenCalled();
+  });
+
+  it("accepts the legacy signed body while still verifying payment with HyperPay", async () => {
+    const body = { merchantTransactionId: "inv-1", paymentId: "pay-1" };
+    prisma.invoice.findUnique.mockResolvedValue({
+      providerInvoiceId: "checkout-1",
+      amountCents: 9900,
+      currency: "USD",
+    });
+    hyperpay.getCheckoutPayment.mockResolvedValue({
+      id: "pay-1",
+      merchantTransactionId: "inv-1",
+      amountCents: 100,
+      currency: "USD",
+      resultCode: "000.000.000",
+      raw: {},
+    });
+
+    await expect(service.handleHyperPayWebhook(body, "legacy-signature")).rejects.toMatchObject({
+      code: "VALIDATION_FAILED",
+    });
+    expect(hyperpay.verifyWebhookSignature).toHaveBeenCalledWith(body, "legacy-signature");
+    expect(hyperpay.getCheckoutPayment).toHaveBeenCalledWith("checkout-1");
+  });
+
   it("activates subscription idempotently from a paid HyperPay webhook", async () => {
     const invoice = {
       id: "inv-1",
@@ -173,17 +256,13 @@ describe("BillingService", () => {
       subscription: { id: "sub-1" },
     };
     prisma.invoice.findUnique.mockResolvedValue(invoice);
-    tx.invoice.update.mockResolvedValue({
+    tx.invoice.findUniqueOrThrow.mockResolvedValue({
       ...invoice,
       status: "PAID",
       paidAt: new Date("2026-05-15T00:00:00Z"),
     });
 
-    const result = await service.handleHyperPayWebhook({
-      merchantTransactionId: "inv-1",
-      paymentId: "pay-1",
-      result: { code: "000.000.000" },
-    });
+    const result = await service.handleHyperPayWebhook("encrypted", "iv", "tag");
 
     expect(result.status).toBe("PAID");
     expect(tx.subscription.update).toHaveBeenCalledWith({
@@ -199,12 +278,30 @@ describe("BillingService", () => {
     });
 
     prisma.invoice.findUnique.mockResolvedValue({ ...invoice, status: "PAID" });
-    await service.handleHyperPayWebhook({
-      merchantTransactionId: "inv-1",
-      paymentId: "pay-1",
-      result: { code: "000.000.000" },
-    });
+    await service.handleHyperPayWebhook("encrypted", "iv", "tag");
     expect(tx.payment.create).toHaveBeenCalledTimes(1);
+  });
+
+  it("rejects a HyperPay payment that does not match the invoice", async () => {
+    prisma.invoice.findUnique.mockResolvedValue({
+      providerInvoiceId: "checkout-1",
+      amountCents: 9900,
+      currency: "USD",
+    });
+    hyperpay.getCheckoutPayment.mockResolvedValue({
+      id: "pay-1",
+      merchantTransactionId: "inv-1",
+      amountCents: 100,
+      currency: "USD",
+      resultCode: "000.000.000",
+      raw: {},
+    });
+
+    await expect(service.handleHyperPayWebhook("encrypted", "iv", "tag")).rejects.toMatchObject({
+      code: "VALIDATION_FAILED",
+    });
+    expect(hyperpay.getCheckoutPayment).toHaveBeenCalledWith("checkout-1");
+    expect(prisma.$transaction).not.toHaveBeenCalled();
   });
 
   it("admin mark-paid activates a bank-transfer invoice", async () => {
@@ -228,7 +325,7 @@ describe("BillingService", () => {
       subscription: { id: "sub-2" },
     };
     prisma.invoice.findUnique.mockResolvedValue(invoice);
-    tx.invoice.update.mockResolvedValue({
+    tx.invoice.findUniqueOrThrow.mockResolvedValue({
       ...invoice,
       status: "PAID",
       paidAt: new Date("2026-05-15T00:00:00Z"),
@@ -243,14 +340,11 @@ describe("BillingService", () => {
     });
   });
 
-  it("rejects HyperPay webhook with an invalid signature", async () => {
-    hyperpay.verifyWebhookSignature.mockReturnValue(false);
+  it("rejects an unauthenticated HyperPay webhook payload", async () => {
+    hyperpay.decryptWebhook.mockReturnValue(null);
 
     await expect(
-      service.handleHyperPayWebhook(
-        { merchantTransactionId: "inv-1", result: { code: "000.000.000" } },
-        "bogus-signature",
-      ),
+      service.handleHyperPayWebhook("invalid", "bogus-iv", "bogus-tag"),
     ).rejects.toMatchObject({ code: "AUTH_UNAUTHORIZED" });
     expect(prisma.invoice.findUnique).not.toHaveBeenCalled();
     expect(prisma.$transaction).not.toHaveBeenCalled();
@@ -284,6 +378,154 @@ describe("BillingService", () => {
       where: { method: "BANK_TRANSFER", status: "OPEN", bankReceiptUrl: { not: null } },
       orderBy: { createdAt: "desc" },
       take: 25,
+    });
+  });
+
+  it("replays a keyed card checkout without calling HyperPay again", async () => {
+    prisma.plan.upsert.mockResolvedValue({
+      id: "plan-1",
+      code: "USER_PREMIUM",
+      priceCents: 9900,
+      currency: "USD",
+      intervalDays: 30,
+    });
+    prisma.user.findUnique.mockResolvedValue({ email: "owner@baydar.ps", locale: "en" });
+    prisma.subscription.create.mockResolvedValue({ id: "sub-1" });
+    prisma.invoice.create.mockResolvedValue({
+      id: "inv-card-1",
+      providerInvoiceId: null,
+    });
+    prisma.invoice.updateMany.mockResolvedValue({ count: 1 });
+    prisma.invoice.findUnique.mockResolvedValueOnce(null);
+    prisma.invoice.findUniqueOrThrow.mockResolvedValue({
+      id: "inv-card-1",
+      amountCents: 9900,
+      currency: "USD",
+      providerInvoiceId: null,
+    });
+    hyperpay.createCheckout.mockResolvedValue({
+      providerCheckoutId: "checkout-1",
+      checkoutUrl: "https://hyperpay.test/checkout-1",
+    });
+    const body = {
+      planCode: "USER_PREMIUM" as const,
+      returnUrl: "https://baydar.ps/billing/return",
+      method: "CARD" as const,
+      idempotencyKey: "checkout-request-123456",
+    };
+
+    const first = await service.createCheckoutSession("user-1", body);
+    prisma.invoice.findUnique.mockResolvedValue({
+      id: "inv-card-1",
+      providerInvoiceId: "checkout-1",
+      checkoutFingerprint: (
+        prisma.invoice.create.mock.calls[0][0] as { data: { checkoutFingerprint: string } }
+      ).data.checkoutFingerprint,
+    });
+    const replay = await service.createCheckoutSession("user-1", body);
+
+    expect(first).toMatchObject({ invoiceId: "inv-card-1", providerCheckoutId: "checkout-1" });
+    expect(replay).toMatchObject({ invoiceId: "inv-card-1", providerCheckoutId: "checkout-1" });
+    expect(prisma.invoice.create).toHaveBeenCalledTimes(1);
+    expect(prisma.$transaction).toHaveBeenCalledTimes(1);
+    expect(tx.invoice.create).toHaveBeenCalledTimes(1);
+    expect(hyperpay.createCheckout).toHaveBeenCalledTimes(1);
+  });
+
+  it("rejects reuse of a checkout key with different parameters", async () => {
+    prisma.plan.upsert.mockResolvedValue({
+      id: "plan-1",
+      code: "USER_PREMIUM",
+      priceCents: 9900,
+      currency: "USD",
+      intervalDays: 30,
+    });
+    prisma.user.findUnique.mockResolvedValue({ email: "owner@baydar.ps", locale: "en" });
+    prisma.invoice.findUnique.mockResolvedValue({
+      id: "inv-card-1",
+      providerInvoiceId: "checkout-1",
+      checkoutFingerprint: "different-request",
+    });
+
+    await expect(
+      service.createCheckoutSession("user-1", {
+        planCode: "USER_PREMIUM",
+        returnUrl: "https://baydar.ps/billing/return",
+        method: "CARD",
+        idempotencyKey: "checkout-request-123456",
+      }),
+    ).rejects.toMatchObject({ code: "CONFLICT", status: 409 });
+    expect(hyperpay.createCheckout).not.toHaveBeenCalled();
+  });
+
+  it("fails closed when another request already claimed card processing", async () => {
+    prisma.plan.upsert.mockResolvedValue({
+      id: "plan-1",
+      code: "USER_PREMIUM",
+      priceCents: 9900,
+      currency: "USD",
+      intervalDays: 30,
+    });
+    prisma.user.findUnique.mockResolvedValue({ email: "owner@baydar.ps", locale: "en" });
+    prisma.subscription.create.mockResolvedValue({ id: "sub-1" });
+    prisma.invoice.create.mockResolvedValue({ id: "inv-card-1", providerInvoiceId: null });
+    prisma.invoice.findUnique.mockResolvedValueOnce(null);
+    prisma.invoice.updateMany.mockResolvedValue({ count: 0 });
+    prisma.invoice.findUniqueOrThrow.mockResolvedValue({
+      id: "inv-card-1",
+      providerInvoiceId: null,
+    });
+
+    await expect(
+      service.createCheckoutSession("user-1", {
+        planCode: "USER_PREMIUM",
+        returnUrl: "https://baydar.ps/billing/return",
+        method: "CARD",
+        idempotencyKey: "checkout-request-123456",
+      }),
+    ).rejects.toMatchObject({ code: "CONFLICT", status: 409 });
+    expect(hyperpay.createCheckout).not.toHaveBeenCalled();
+  });
+
+  it("releases the processing claim only for a provably safe retry", async () => {
+    prisma.plan.upsert.mockResolvedValue({
+      id: "plan-1",
+      code: "USER_PREMIUM",
+      priceCents: 9900,
+      currency: "USD",
+      intervalDays: 30,
+    });
+    prisma.user.findUnique.mockResolvedValue({ email: "owner@baydar.ps", locale: "en" });
+    prisma.subscription.create.mockResolvedValue({ id: "sub-1" });
+    prisma.invoice.create.mockResolvedValue({ id: "inv-card-1", providerInvoiceId: null });
+    prisma.invoice.findUnique.mockResolvedValue(null);
+    prisma.invoice.updateMany.mockResolvedValue({ count: 1 });
+    prisma.invoice.findUniqueOrThrow.mockResolvedValue({
+      id: "inv-card-1",
+      amountCents: 9900,
+      currency: "USD",
+      providerInvoiceId: null,
+    });
+    const body = {
+      planCode: "USER_PREMIUM" as const,
+      returnUrl: "https://baydar.ps/billing/return",
+      method: "CARD" as const,
+      idempotencyKey: "checkout-request-123456",
+    };
+    hyperpay.createCheckout.mockRejectedValue(new TypeError("fetch failed"));
+
+    await expect(service.createCheckoutSession("user-1", body)).rejects.toThrow("fetch failed");
+    expect(prisma.invoice.update).not.toHaveBeenCalled();
+
+    hyperpay.createCheckout.mockRejectedValue(
+      new HyperPayCheckoutError("HyperPay is not configured.", true),
+    );
+    await expect(service.createCheckoutSession("user-1", body)).rejects.toThrow(
+      "HyperPay is not configured.",
+    );
+    expect(prisma.invoice.update).toHaveBeenCalledWith({
+      where: { id: "inv-card-1" },
+      data: { checkoutProcessingAt: null },
     });
   });
 });

@@ -199,4 +199,41 @@ describe("AuthService", () => {
       });
     });
   });
+
+  describe("refresh", () => {
+    it("consumes the old token before issuing a replacement", async () => {
+      prisma.refreshToken.findFirst.mockResolvedValue({
+        id: "token-1",
+        expiresAt: new Date(Date.now() + 60_000),
+        user: { id: "user-1", email: "owner@baydar.ps", role: "USER", locale: "en" },
+      });
+      prisma.refreshToken.updateMany.mockResolvedValue({ count: 1 });
+      prisma.refreshToken.create.mockResolvedValue({});
+
+      const result = await service.refresh({
+        refreshToken: "opaque-refresh-token",
+        deviceId: "device-1",
+      });
+
+      expect(result.tokens.refreshToken).toBeTruthy();
+      expect(prisma.refreshToken.updateMany).toHaveBeenCalledWith({
+        where: { id: "token-1", revokedAt: null, expiresAt: { gt: expect.any(Date) } },
+        data: { revokedAt: expect.any(Date) },
+      });
+    });
+
+    it("rejects a refresh token already consumed by another request", async () => {
+      prisma.refreshToken.findFirst.mockResolvedValue({
+        id: "token-1",
+        expiresAt: new Date(Date.now() + 60_000),
+        user: { id: "user-1", email: "owner@baydar.ps", role: "USER", locale: "en" },
+      });
+      prisma.refreshToken.updateMany.mockResolvedValue({ count: 0 });
+
+      await expect(
+        service.refresh({ refreshToken: "opaque-refresh-token", deviceId: "device-1" }),
+      ).rejects.toMatchObject({ status: 401 });
+      expect(prisma.refreshToken.create).not.toHaveBeenCalled();
+    });
+  });
 });

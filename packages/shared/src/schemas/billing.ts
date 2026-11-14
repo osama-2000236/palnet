@@ -90,6 +90,13 @@ export const Subscription = z.object({
 export type Subscription = z.infer<typeof Subscription>;
 
 export const CheckoutSessionBody = z.object({
+  idempotencyKey: z
+    .string()
+    .trim()
+    .min(8)
+    .max(128)
+    .regex(/^[\w:.-]+$/)
+    .optional(),
   planCode: z.nativeEnum(PlanCode),
   companyId: z.string().cuid().optional(),
   returnUrl: z.string().url(),

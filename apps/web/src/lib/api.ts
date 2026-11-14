@@ -33,10 +33,15 @@ function usableToken(token: string | null | undefined): string | null {
 }
 
 function currentToken(opts: ApiFetchOptions): string | null {
+  const session = readSession();
+  if (session && Date.parse(session.tokens.accessExpiresAt) <= Date.now() + 30_000) {
+    return null;
+  }
+
   const memoryToken = usableToken(getAccessToken());
   if (memoryToken) return memoryToken;
 
-  const sessionToken = usableToken(readSession()?.tokens.accessToken);
+  const sessionToken = usableToken(session?.tokens.accessToken);
   if (sessionToken) {
     setAccessToken(sessionToken);
     return sessionToken;
@@ -78,8 +83,18 @@ async function refreshAccessToken(): Promise<string | null> {
   return nextAccessToken;
 }
 
+async function refreshAccessTokenAcrossTabs(): Promise<string | null> {
+  if (typeof window === "undefined") return null;
+  if (!navigator.locks) return refreshAccessToken();
+  return navigator.locks.request("baydar.auth.refresh", async () => {
+    // Access tokens stay in tab memory. The next tab uses the shared HttpOnly
+    // cookie already rotated by the previous tab instead of a stale token.
+    return refreshAccessToken();
+  });
+}
+
 async function refreshAccessTokenQueued(): Promise<string | null> {
-  refreshPromise ??= refreshAccessToken().finally(() => {
+  refreshPromise ??= refreshAccessTokenAcrossTabs().finally(() => {
     refreshPromise = null;
   });
   const nextToken = await refreshPromise;
@@ -115,7 +130,7 @@ function errorFrom(status: number, json: unknown): ApiRequestError {
 }
 
 async function jsonWithAuthRetry(path: string, opts: ApiFetchOptions): Promise<unknown> {
-  const firstToken = currentToken(opts);
+  const firstToken = currentToken(opts) ?? (await refreshAccessTokenQueued());
   let res = await send(path, opts, firstToken);
   let json = (await res.json().catch(() => ({}))) as unknown;
 

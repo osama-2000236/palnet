@@ -1,3 +1,5 @@
+import * as crypto from "node:crypto";
+
 import { Prisma } from "@baydar/db";
 import {
   type AdminInvoiceActionBody,
@@ -12,6 +14,7 @@ import {
 } from "@baydar/shared";
 import { Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
+import { z } from "zod";
 
 import { DomainException } from "../../common/domain-exception";
 import type { Env } from "../../config/env";
@@ -19,7 +22,7 @@ import { KaramaService } from "../karama/karama.service";
 import { PrismaService } from "../prisma/prisma.service";
 
 import { convertCents, deriveDisplayCurrency } from "./currency";
-import { HyperPayClient } from "./hyperpay.client";
+import { HyperPayCheckoutError, HyperPayClient } from "./hyperpay.client";
 import { PLAN_DEFS } from "./pricing";
 import { WalletRegistry } from "./wallets/wallet-registry";
 
@@ -32,12 +35,24 @@ const POINTS_PRICE_BY_PLAN: Partial<Record<PlanCode, number>> = {
 
 const WALLET_METHODS = new Set<PaymentMethod>(["JAWWALPAY", "PALPAY", "REFLECT"]);
 
-type HyperPayWebhookPayload = {
-  merchantTransactionId?: string;
-  id?: string;
-  paymentId?: string;
-  result?: { code?: string; description?: string };
-};
+const HyperPayPaymentPayload = z
+  .object({
+    merchantTransactionId: z.string().min(1).optional(),
+    id: z.string().optional(),
+    paymentId: z.string().optional(),
+    result: z
+      .object({ code: z.string(), description: z.string().optional() })
+      .passthrough()
+      .optional(),
+  })
+  .passthrough();
+
+const HyperPayWebhookPayload = z
+  .object({
+    type: z.string().min(1),
+    payload: HyperPayPaymentPayload,
+  })
+  .passthrough();
 
 @Injectable()
 export class BillingService {
@@ -62,6 +77,42 @@ export class BillingService {
     const displayCurrency = deriveDisplayCurrency(user.locale);
     const displayAmountCents = convertCents(plan.priceCents, plan.currency, displayCurrency);
 
+    if (body.idempotencyKey && body.method !== "CARD") {
+      throw new DomainException(
+        ErrorCode.VALIDATION_FAILED,
+        "idempotencyKey is supported for card checkout only.",
+        400,
+      );
+    }
+    const checkoutKey = body.idempotencyKey ? digest(body.idempotencyKey) : null;
+    const checkoutFingerprint = checkoutKey
+      ? digest(
+          JSON.stringify({
+            userId,
+            planId: plan.id,
+            companyId: body.companyId ?? null,
+            intervalDays: plan.intervalDays,
+            method: body.method,
+            amountCents: plan.priceCents,
+            currency: plan.currency,
+            returnUrl: body.returnUrl,
+          }),
+        )
+      : null;
+    if (checkoutKey) {
+      const existing = await this.prisma.invoice.findUnique({ where: { checkoutKey } });
+      if (existing) {
+        this.assertCheckoutReuse(existing, checkoutFingerprint as string);
+        return this.resumeCardCheckout(
+          existing,
+          user.email,
+          body.returnUrl,
+          displayAmountCents,
+          displayCurrency,
+        );
+      }
+    }
+
     // Karama POINTS payment — gated to USER_PREMIUM and processed inline.
     if (body.method === "POINTS") {
       const cost = POINTS_PRICE_BY_PLAN[body.planCode];
@@ -82,32 +133,51 @@ export class BillingService {
       );
     }
 
-    const subscription =
-      plan.intervalDays === null
-        ? null
-        : await this.prisma.subscription.create({
-            data: {
-              userId: body.companyId ? null : userId,
-              companyId: body.companyId ?? null,
-              planId: plan.id,
-              status: "INCOMPLETE",
-            },
-          });
+    const createInvoice = async (db: Prisma.TransactionClient) => {
+      const subscription =
+        plan.intervalDays === null
+          ? null
+          : await db.subscription.create({
+              data: {
+                userId: body.companyId ? null : userId,
+                companyId: body.companyId ?? null,
+                planId: plan.id,
+                status: "INCOMPLETE",
+              },
+            });
 
-    const invoice = await this.prisma.invoice.create({
-      data: {
-        subscriptionId: subscription?.id ?? null,
-        planId: plan.id,
-        userId: body.companyId ? null : userId,
-        companyId: body.companyId ?? null,
-        amountCents: plan.priceCents,
-        currency: plan.currency,
-        // Free plans are activated below (status + paidAt set together inside activateInvoice).
-        status: "OPEN",
-        method: body.method,
-        dueAt:
-          body.method === "BANK_TRANSFER" ? new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) : null,
-      },
+      return db.invoice.create({
+        data: {
+          subscriptionId: subscription?.id ?? null,
+          planId: plan.id,
+          userId: body.companyId ? null : userId,
+          companyId: body.companyId ?? null,
+          amountCents: plan.priceCents,
+          currency: plan.currency,
+          // Free plans are activated below (status + paidAt set together inside activateInvoice).
+          status: "OPEN",
+          method: body.method,
+          dueAt:
+            body.method === "BANK_TRANSFER" ? new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) : null,
+          checkoutKey,
+          checkoutFingerprint,
+        },
+      });
+    };
+
+    const invoice = await (
+      checkoutKey ? this.prisma.$transaction((tx) => createInvoice(tx)) : createInvoice(this.prisma)
+    ).catch(async (error: unknown) => {
+      if (
+        !checkoutKey ||
+        !(error instanceof Prisma.PrismaClientKnownRequestError) ||
+        error.code !== "P2002"
+      ) {
+        throw error;
+      }
+      const existing = await this.prisma.invoice.findUniqueOrThrow({ where: { checkoutKey } });
+      this.assertCheckoutReuse(existing, checkoutFingerprint as string);
+      return existing;
     });
 
     if (plan.priceCents === 0) {
@@ -160,18 +230,99 @@ export class BillingService {
       };
     }
 
-    const checkout = await this.hyperpay.createCheckout({
-      invoiceId: invoice.id,
-      amountCents: invoice.amountCents,
-      currency: invoice.currency,
-      returnUrl: body.returnUrl,
-      customerEmail: user.email,
+    return this.resumeCardCheckout(
+      invoice,
+      user.email,
+      body.returnUrl,
+      displayAmountCents,
+      displayCurrency,
+    );
+  }
+
+  private assertCheckoutReuse(
+    invoice: { checkoutFingerprint: string | null },
+    fingerprint: string,
+  ): void {
+    if (invoice.checkoutFingerprint !== fingerprint) {
+      throw new DomainException(
+        ErrorCode.CONFLICT,
+        "This idempotency key was already used for a different checkout.",
+        409,
+      );
+    }
+  }
+
+  private async resumeCardCheckout(
+    invoice: { id: string; providerInvoiceId: string | null },
+    customerEmail: string,
+    returnUrl: string,
+    displayAmountCents: number,
+    displayCurrency: string,
+  ): Promise<CheckoutSession> {
+    if (invoice.providerInvoiceId) {
+      return {
+        invoiceId: invoice.id,
+        method: "CARD",
+        providerCheckoutId: invoice.providerInvoiceId,
+        checkoutUrl: this.hyperpay.getCheckoutUrl(invoice.providerInvoiceId),
+        bankTransfer: null,
+        wallet: null,
+        displayAmountCents,
+        displayCurrency,
+      };
+    }
+
+    const claimed = await this.prisma.invoice.updateMany({
+      where: { id: invoice.id, providerInvoiceId: null, checkoutProcessingAt: null },
+      data: { checkoutProcessingAt: new Date() },
     });
+    if (!claimed.count) {
+      const current = await this.prisma.invoice.findUniqueOrThrow({ where: { id: invoice.id } });
+      if (current.providerInvoiceId) {
+        return this.resumeCardCheckout(
+          current,
+          customerEmail,
+          returnUrl,
+          displayAmountCents,
+          displayCurrency,
+        );
+      }
+      throw new DomainException(
+        ErrorCode.CONFLICT,
+        "This checkout is already being processed. Retry shortly.",
+        409,
+      );
+    }
+
+    const current = await this.prisma.invoice.findUniqueOrThrow({ where: { id: invoice.id } });
+    let checkout;
+    try {
+      checkout = await this.hyperpay.createCheckout({
+        invoiceId: invoice.id,
+        amountCents: current.amountCents,
+        currency: current.currency,
+        returnUrl,
+        customerEmail,
+      });
+    } catch (error) {
+      if (error instanceof HyperPayCheckoutError && error.retrySafe) {
+        await this.prisma.invoice.update({
+          where: { id: invoice.id },
+          data: { checkoutProcessingAt: null },
+        });
+      }
+      throw error;
+    }
+
+    // Retain the claim if this write fails: HyperPay may already have created
+    // the checkout, so an automatic retry must fail closed.
     await this.prisma.invoice.update({
       where: { id: invoice.id },
-      data: { providerInvoiceId: checkout.providerCheckoutId },
+      data: {
+        providerInvoiceId: checkout.providerCheckoutId,
+        checkoutProcessingAt: null,
+      },
     });
-
     return {
       invoiceId: invoice.id,
       method: "CARD",
@@ -301,33 +452,75 @@ export class BillingService {
   }
 
   async handleHyperPayWebhook(
-    payload: HyperPayWebhookPayload,
-    signature?: string,
+    payloadOrEncryptedBody: Record<string, unknown> | string,
+    signatureOrInitializationVector?: string,
+    authenticationTag?: string,
   ): Promise<InvoiceDto> {
-    if (!this.hyperpay.verifyWebhookSignature(payload, signature)) {
-      throw new DomainException(ErrorCode.AUTH_UNAUTHORIZED, "Invalid webhook signature.", 401);
+    const event =
+      typeof payloadOrEncryptedBody === "string"
+        ? this.hyperpay.decryptWebhook(
+            payloadOrEncryptedBody,
+            signatureOrInitializationVector,
+            authenticationTag,
+          )
+        : this.hyperpay.verifyWebhookSignature(
+              payloadOrEncryptedBody,
+              signatureOrInitializationVector,
+            )
+          ? { type: "LEGACY", payload: payloadOrEncryptedBody }
+          : null;
+    const parsed = HyperPayWebhookPayload.safeParse(event);
+    if (!parsed.success) {
+      throw new DomainException(ErrorCode.AUTH_UNAUTHORIZED, "Invalid webhook payload.", 401);
     }
+    const payload = parsed.data.payload;
     const invoiceId = payload.merchantTransactionId;
     if (!invoiceId) {
       throw new DomainException(ErrorCode.VALIDATION_FAILED, "Missing merchantTransactionId.", 400);
     }
 
-    const paid = isHyperPaySuccess(payload.result?.code);
-    if (!paid) {
+    const invoice = await this.prisma.invoice.findUnique({
+      where: { id: invoiceId },
+      select: { providerInvoiceId: true, amountCents: true, currency: true },
+    });
+    if (!invoice?.providerInvoiceId) {
+      throw new DomainException(ErrorCode.NOT_FOUND, "Card invoice not found.", 404);
+    }
+
+    const payment = await this.hyperpay.getCheckoutPayment(invoice.providerInvoiceId);
+    const paymentId = payload.paymentId ?? payload.id;
+    if (
+      payment.merchantTransactionId !== invoiceId ||
+      payment.amountCents !== invoice.amountCents ||
+      payment.currency !== invoice.currency.toUpperCase() ||
+      !paymentId ||
+      payment.id !== paymentId
+    ) {
+      throw new DomainException(
+        ErrorCode.VALIDATION_FAILED,
+        "Payment does not match invoice.",
+        400,
+      );
+    }
+
+    if (!isHyperPaySuccess(payment.resultCode)) {
       await this.prisma.payment.create({
         data: {
           invoiceId,
-          providerPaymentId: payload.paymentId ?? payload.id ?? null,
-          amountCents: 0,
-          status: payload.result?.code ?? "FAILED",
-          rawPayload: payload as Prisma.InputJsonObject,
+          providerPaymentId: payment.id,
+          amountCents: payment.amountCents,
+          currency: payment.currency,
+          status: payment.resultCode ?? "FAILED",
+          rawPayload: payment.raw as Prisma.InputJsonObject,
         },
       });
-      const invoice = await this.prisma.invoice.findUniqueOrThrow({ where: { id: invoiceId } });
-      return toInvoiceDto(invoice);
+      const failedInvoice = await this.prisma.invoice.findUniqueOrThrow({
+        where: { id: invoiceId },
+      });
+      return toInvoiceDto(failedInvoice);
     }
 
-    return this.activateInvoice(invoiceId, payload.paymentId ?? payload.id ?? "hyperpay");
+    return this.activateInvoice(invoiceId, payment.id, payment.raw);
   }
 
   async adminInvoiceAction(invoiceId: string, body: AdminInvoiceActionBody): Promise<InvoiceDto> {
@@ -341,7 +534,11 @@ export class BillingService {
     return this.activateInvoice(invoiceId, "bank-transfer-admin");
   }
 
-  private async activateInvoice(invoiceId: string, providerPaymentId: string): Promise<InvoiceDto> {
+  private async activateInvoice(
+    invoiceId: string,
+    providerPaymentId: string,
+    rawPayload: Record<string, unknown> = { source: providerPaymentId },
+  ): Promise<InvoiceDto> {
     const now = new Date();
     const invoice = await this.prisma.invoice.findUnique({
       where: { id: invoiceId },
@@ -351,10 +548,15 @@ export class BillingService {
     if (invoice.status === "PAID") return toInvoiceDto(invoice);
 
     const updated = await this.prisma.$transaction(async (tx) => {
-      const row = await tx.invoice.update({
-        where: { id: invoiceId },
+      const claimed = await tx.invoice.updateMany({
+        where: { id: invoiceId, status: "OPEN" },
         data: { status: "PAID", paidAt: now },
       });
+      const row = await tx.invoice.findUniqueOrThrow({ where: { id: invoiceId } });
+      if (!claimed.count) {
+        if (row.status === "PAID") return row;
+        throw new DomainException(ErrorCode.CONFLICT, "Invoice is not open.", 409);
+      }
       await tx.payment.create({
         data: {
           invoiceId,
@@ -362,7 +564,7 @@ export class BillingService {
           amountCents: invoice.amountCents,
           currency: invoice.currency,
           status: "PAID",
-          rawPayload: { source: providerPaymentId },
+          rawPayload: rawPayload as Prisma.InputJsonObject,
         },
       });
       if (invoice.subscriptionId && invoice.plan?.intervalDays) {
@@ -459,6 +661,10 @@ export class BillingService {
     }
     throw new DomainException(ErrorCode.AUTH_FORBIDDEN, "Invoice is not accessible.", 403);
   }
+}
+
+function digest(value: string): string {
+  return crypto.createHash("sha256").update(value).digest("hex");
 }
 
 function isHyperPaySuccess(code: string | undefined): boolean {
